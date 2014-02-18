@@ -65,11 +65,11 @@ if($('#commit_graph')){
     var point_size = 10;
     var page_size = 15;
 
-    var data;
+    var data = {'commits': [], 'built_tree': {}};
     var offset = 1;
     var selected_commit = -1;
     var y_offset = offset * y_space;
-    var tree, next_column, max_x_pos, max_row;
+    var tree, next_column, max_x_pos, max_row = 0, last_row = 0;
 
     var $graph_holder = $('#graph_holder');
     var $scroll_placeholder = $('#graph_scroll_placeholder');
@@ -100,36 +100,55 @@ if($('#commit_graph')){
       $scroll_placeholder.height(graph_height);
     }
 
-    $.getJSON(document.location.href+'_data', function(data) {
-        data = data;
-        tree = data['built_tree'];
-        next_column = data['next_column'];
-        max_x_pos = x_space*next_column;
-        max_row = data['max_row']
-        setHeight(max_row);
-
-        // Calculate the (x,y) positions of all the commits
-        for(var c in tree){
-            var commit = tree[c];
-            var x_pos = x_space+(commit.column*x_space);
-            var y_pos = y_space+((commit.row)*y_space);
-            if (!taken_coords[x_pos]){
-                taken_coords[x_pos] = [y_pos]
-            }
-            else if(taken_coords[x_pos].indexOf(y_pos) == -1){
-                taken_coords[x_pos].push(y_pos);
-            }
-            commit_rows[commit.row] = {
-                url: commit.url,
-                x_pos: x_pos,
-                y_pos: y_pos }
+    function get_data(select_first) {
+        var params = {'limit': 25};
+        if (data['next_commit']) {
+            params['start'] = data['next_commit'];
         }
-        drawGraph(offset);
-        selectCommit(0);
-    });
+        $.getJSON(document.location.href+'_data', params, function(new_data) {
+            $.extend(true, data, new_data);
+            tree = data['built_tree'];
+            next_column = data['next_column'];
+            max_x_pos = x_space*next_column;
+            max_row += data['max_row']
+            for (var c in new_data['built_tree']) {
+                tree[c].row += last_row;
+            }
+            last_row = max_row;
+            setHeight(max_row);
+
+            // Calculate the (x,y) positions of all the commits
+            for(var c in tree){
+                var commit = tree[c];
+                var x_pos = x_space+(commit.column*x_space);
+                var y_pos = y_space+((commit.row)*y_space);
+                if (!taken_coords[x_pos]){
+                    taken_coords[x_pos] = [y_pos]
+                }
+                else if(taken_coords[x_pos].indexOf(y_pos) == -1){
+                    taken_coords[x_pos].push(y_pos);
+                }
+                commit_rows[commit.row] = {
+                    url: commit.url,
+                    x_pos: x_pos,
+                    y_pos: y_pos }
+            }
+            drawGraph(offset);
+            if (select_first) {
+                selectCommit(0);
+            }
+        });
+    }
+    get_data(true);
 
     function selectCommit(index) {
       if (index < 0 || index > max_row) return;
+      if (index == max_row) {
+          if (data['next_commit']) {
+              get_data();
+          }
+          return;
+      }
       var commit = commit_rows[index];
       highlighter_ctx.clearRect(0, 0, canvas.width, canvas.height);
       highlighter_ctx.fillRect(
@@ -179,6 +198,9 @@ if($('#commit_graph')){
 
             for(var i=0,len=commit.parents.length;i<len;i++){
                 var parent = tree[commit.parents[i]];
+                if (!parent) {
+                    continue;
+                }
                 var parent_x = x_space+parent.column*x_space
                 var parent_y = y_space+(parent.row-offset)*y_space;
 
@@ -211,6 +233,11 @@ if($('#commit_graph')){
             canvas_ctx.stroke();
             canvas_ctx.fillStyle = "#000";
             canvas_ctx.fillText(commit.short_id + " " + commit.message, (1+next_column) * x_space, y_pos);
+        }
+        if (data['next_commit']) {
+            var y_pos = y_space+((max_row-offset)*y_space);
+            canvas_ctx.fillStyle = 'rgb(0,0,256)';
+            canvas_ctx.fillText('Show more', (1+next_column) * x_space, y_pos);
         }
     }
 
