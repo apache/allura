@@ -126,32 +126,24 @@ class ProjectList(ew_core.Widget):
         projects = response['projects']
         cred.load_user_roles(c.user._id, *[p._id for p in projects])
         cred.load_project_roles(*[p._id for p in projects])
-        if response['sitemaps'] is None:
+
+        true_list = ['true', 't', '1', 'yes', 'y']
+        for opt in ['show_proj_icon', 'show_download_button', 'show_awards_banner']:
+            if type(response[opt]) == unicode:
+                if response[opt].lower() in true_list:
+                    response[opt] = True
+                else:
+                    response[opt] = False
+
+        if response['sitemaps'] is None and response['display_mode'] != 'list':
             response['sitemaps'] = M.Project.menus(projects)
-        if response['icon_urls'] is None:
+        if response['icon_urls'] is None and response['show_proj_icon']:
             response['icon_urls'] = M.Project.icon_urls(projects)
-        if response['accolades_index'] is None:
+        if response['accolades_index'] is None and response['show_awards_banner']:
             response['accolades_index'] = M.Project.accolades_index(projects)
 
         if type(response['columns']) == unicode:
             response['columns'] = int(response['columns'])
-
-        true_list = ['true', 't', '1', 'yes', 'y']
-        if type(response['show_proj_icon']) == unicode:
-            if response['show_proj_icon'].lower() in true_list:
-                response['show_proj_icon'] = True
-            else:
-                response['show_proj_icon'] = False
-        if type(response['show_download_button']) == unicode:
-            if response['show_download_button'].lower() in true_list:
-                response['show_download_button'] = True
-            else:
-                response['show_download_button'] = False
-        if type(response['show_awards_banner']) == unicode:
-            if response['show_awards_banner'].lower() in true_list:
-                response['show_awards_banner'] = True
-            else:
-                response['show_awards_banner'] = False
 
         return response
 

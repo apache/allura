@@ -30,7 +30,7 @@ import textwrap
 CPUS = multiprocessing.cpu_count()
 CONCURRENT_SUITES = (CPUS // 4) or CPUS
 CONCURRENT_TESTS = (CPUS // CONCURRENT_SUITES) or 1
-PROC_TIMEOUT = 120
+PROC_TIMEOUT = 180
 
 ALT_PKG_PATHS = {
     'Allura': 'allura/tests/',
@@ -117,7 +117,7 @@ def run_tests_in_parallel(options, nosetests_args):
         return ALT_PKG_PATHS.get(pkg, '')
 
     def get_multiproc_args(pkg):
-        if not use_multiproc:
+        if not use_multiproc or options.concurrent_tests == 1:
             return ''
         return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
             procs_per_suite=options.concurrent_tests,

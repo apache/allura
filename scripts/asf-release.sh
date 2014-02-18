@@ -83,9 +83,8 @@ Hello,
 
 This is a call for a vote on Apache Allura $VERSION incubating.
 
-Source tarball and signature are available at:
-  https://dist.apache.org/repos/dist/dev/incubator/allura/$RELEASE_BASE.tar.gz
-  https://dist.apache.org/repos/dist/dev/incubator/allura/$RELEASE_BASE.tar.gz.asc
+Source tarball, signature and checksums are available at:
+  https://dist.apache.org/repos/dist/dev/incubator/allura/
 
 Checksums:
   MD5:    $MD5_CHECKSUM
