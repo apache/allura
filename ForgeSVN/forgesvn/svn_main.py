@@ -199,13 +199,13 @@ class SVNCommitBrowserController(BaseController):
             data['built_tree'][commit['id']] = {
                 'column': 0,
                 'parents': map(str, commit['parents']),
-                'short_id': '[%s]' % commit['id'],
+                'short_id': '[r%s]' % commit['id'],
                 'message': commit['message'],
                 'oid': str(commit['id']),
                 'row': i,
                 'url': c.app.repo.url_for_commit(commit['id']),
             }
-        data['max_row'] = len(data['commits'])
+        data['max_row'] = len(data['commits']) - 1
         return data
 
 

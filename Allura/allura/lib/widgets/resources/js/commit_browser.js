@@ -69,7 +69,7 @@ if($('#commit_graph')){
     var offset = 1;
     var selected_commit = -1;
     var y_offset = offset * y_space;
-    var tree, next_column, max_x_pos, max_row = 0, last_row = 0;
+    var tree, next_column, max_x_pos, max_row = 0, last_row = 0, max_visible_row;
 
     var $graph_holder = $('#graph_holder');
     var $scroll_placeholder = $('#graph_scroll_placeholder');
@@ -111,11 +111,12 @@ if($('#commit_graph')){
             next_column = data['next_column'];
             max_x_pos = x_space*next_column;
             max_row += data['max_row']
+            max_visible_row = max_row + (data['next_commit'] ? 1 : 0);
             for (var c in new_data['built_tree']) {
                 tree[c].row += last_row;
             }
             last_row = max_row;
-            setHeight(max_row);
+            setHeight(max_visible_row);
 
             // Calculate the (x,y) positions of all the commits
             for(var c in tree){
@@ -142,8 +143,8 @@ if($('#commit_graph')){
     get_data(true);
 
     function selectCommit(index) {
-      if (index < 0 || index > max_row) return;
-      if (index == max_row) {
+      if (index < 0 || index > max_visible_row) return;
+      if (index == max_visible_row) {
           if (data['next_commit']) {
               get_data();
           }
@@ -235,7 +236,7 @@ if($('#commit_graph')){
             canvas_ctx.fillText(commit.short_id + " " + commit.message, (1+next_column) * x_space, y_pos);
         }
         if (data['next_commit']) {
-            var y_pos = y_space+((max_row-offset)*y_space);
+            var y_pos = y_space+((max_visible_row-offset)*y_space);
             canvas_ctx.fillStyle = 'rgb(0,0,256)';
             canvas_ctx.fillText('Show more', (1+next_column) * x_space, y_pos);
         }
@@ -245,8 +246,8 @@ if($('#commit_graph')){
       offset = Math.round(x);
       if (offset < 1)
         offset = 1;
-      else if (offset > (max_row - page_size))
-        offset = max_row - page_size + 2;
+      else if (offset > (max_visible_row - page_size))
+        offset = max_visible_row - page_size + 2;
       y_offset = offset * y_space;
       drawGraph(offset);
       if (selected_commit >= offset - 1 && selected_commit <= offset + page_size)

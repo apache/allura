@@ -98,14 +98,14 @@ class TestRootController(SVNTestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
         data = json.loads(resp.body)
-        assert data['max_row'] == 5
-        assert data['next_column'] == 1
+        assert_equal(data['max_row'], 5)
+        assert_equal(data['next_column'], 1)
         for val in data['built_tree'].values():
             if val['url'] == '/p/test/src/1/':
-                assert val['short_id'] == '[r1]'
-                assert val['column'] == 0
-                assert val['row'] == 5
-                assert val['message'] == 'Create readme'
+                assert_equal(val['short_id'], '[r1]')
+                assert_equal(val['column'], 0)
+                assert_equal(val['row'], 5)
+                assert_equal(val['message'], 'Create readme')
 
     def test_feed(self):
         for ext in ['', '.rss']:
