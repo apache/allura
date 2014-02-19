@@ -19,6 +19,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 from pylons import tmpl_context as c
+from paste.deploy.converters import asbool
 
 from allura import model as M
 from allura.lib.security import Credentials
@@ -127,13 +128,8 @@ class ProjectList(ew_core.Widget):
         cred.load_user_roles(c.user._id, *[p._id for p in projects])
         cred.load_project_roles(*[p._id for p in projects])
 
-        true_list = ['true', 't', '1', 'yes', 'y']
         for opt in ['show_proj_icon', 'show_download_button', 'show_awards_banner']:
-            if type(response[opt]) == unicode:
-                if response[opt].lower() in true_list:
-                    response[opt] = True
-                else:
-                    response[opt] = False
+            response[opt] = asbool(response[opt])
 
         if response['sitemaps'] is None and response['display_mode'] != 'list':
             response['sitemaps'] = M.Project.menus(projects)
