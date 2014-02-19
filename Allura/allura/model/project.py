@@ -223,6 +223,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     trove_environment = FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project = FieldProperty(bool, if_missing=False)
+    has_direct_subprojects = FieldProperty(bool)
 
     # transient properties
     notifications_disabled = False
@@ -254,12 +255,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             p = self.parent_project
             result.append(SitemapEntry('Parent Project'))
             result.append(SitemapEntry(p.name or p.script_name, p.script_name))
-        sps = self.direct_subprojects
-        if sps:
+        if self.has_direct_subprojects:
             result.append(SitemapEntry('Child Projects'))
             result += [
                 SitemapEntry(sp.name or sp.script_name, sp.script_name)
-                for sp in sps]
+                for sp in self.direct_subprojects]
         return result
 
     def troves_by_type(self, trove_type):
@@ -481,12 +481,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         delta_ordinal = i
         max_ordinal = i
 
-        for sub in self.direct_subprojects:
-            ordinal = sub.ordinal + delta_ordinal
-            if ordinal > max_ordinal:
-                max_ordinal = ordinal
-            entries.append({'ordinal': sub.ordinal + delta_ordinal,
-                           'entry': SitemapEntry(sub.name, sub.url())})
+        if self.has_direct_subprojects:
+            for sub in self.direct_subprojects:
+                ordinal = sub.ordinal + delta_ordinal
+                if ordinal > max_ordinal:
+                    max_ordinal = ordinal
+                entries.append({'ordinal': sub.ordinal + delta_ordinal,
+                               'entry': SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs + [a.config for a in new_tools]:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
@@ -700,9 +701,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         i = len(anchored_tools)
         self.install_anchored_tools()
 
-        for sub in self.direct_subprojects:
-            result.append(
-                {'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
+        if self.has_direct_subprojects:
+            for sub in self.direct_subprojects:
+                result.append(
+                    {'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:

@@ -662,17 +662,24 @@ class ProjectRegistrationProvider(object):
                 sp.install_app('admin', 'admin', ordinal=1)
                 sp.install_app('search', 'search', ordinal=2)
             g.post_event('project_created')
+        project.has_direct_subprojects = True
         return sp
 
     def delete_project(self, project, user):
         for sp in project.subprojects:
             self.delete_project(sp, user)
         project.deleted = True
+        if not project.is_root:
+            project.parent_project.has_direct_subprojects = bool(
+                    project.parent_project.direct_subprojects)
+
 
     def undelete_project(self, project, user):
         project.deleted = False
         for sp in project.subprojects:
             self.undelete_project(sp, user)
+        if not project.is_root:
+            project.parent_project.has_direct_subprojects = True
 
     def best_download_url(self, project):
         '''This is the url needed to render a download button.
