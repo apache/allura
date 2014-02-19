@@ -106,7 +106,8 @@ if($('#commit_graph')){
             return;
         }
         pending = true;
-        var params = {'limit': 100};
+        drawGraph(offset);
+        var params = {'limit': 50};
         if (data['next_commit']) {
             params['start'] = data['next_commit'];
         }
@@ -139,11 +140,11 @@ if($('#commit_graph')){
                     x_pos: x_pos,
                     y_pos: y_pos }
             }
+            pending = false;
             drawGraph(offset);
             if (select_first) {
                 selectCommit(0);
             }
-            pending = false;
         });
     }
     get_data(true);
@@ -242,7 +243,7 @@ if($('#commit_graph')){
         if (data['next_commit']) {
             var y_pos = y_space+((next_row-offset)*y_space);
             canvas_ctx.fillStyle = 'rgb(0,0,256)';
-            canvas_ctx.fillText('Show more', (2+next_column) * x_space, y_pos);
+            canvas_ctx.fillText(pending ? 'Loading...' : 'Show more', (2+next_column) * x_space, y_pos);
         }
     }
 
