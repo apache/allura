@@ -191,8 +191,13 @@ class SVNCommitBrowserController(BaseController):
             'built_tree': {},
             'next_commit': None,
         }
-        for i, commit in enumerate(c.app.repo.log(revs=start, id_only=False)):
-            if limit and i >= asint(limit):
+        try:
+            limit = asint(limit)
+        except ValueError as e:
+            pass
+        limit = limit or 100
+        for i, commit in enumerate(c.app.repo.log(revs=start, id_only=False, page_size=limit+1)):
+            if i >= limit:
                 data['next_commit'] = str(commit['id'])
                 break
             data['commits'].append(str(commit['id']))

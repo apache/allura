@@ -69,7 +69,7 @@ if($('#commit_graph')){
     var offset = 1;
     var selected_commit = -1;
     var y_offset = offset * y_space;
-    var tree, next_column, max_x_pos, max_row = 0, last_row = 0, max_visible_row;
+    var tree, next_column, max_x_pos, max_row = 0, next_row = 0, max_visible_row;
 
     var $graph_holder = $('#graph_holder');
     var $scroll_placeholder = $('#graph_scroll_placeholder');
@@ -101,7 +101,7 @@ if($('#commit_graph')){
     }
 
     function get_data(select_first) {
-        var params = {'limit': 25};
+        var params = {'limit': 100};
         if (data['next_commit']) {
             params['start'] = data['next_commit'];
         }
@@ -110,12 +110,12 @@ if($('#commit_graph')){
             tree = data['built_tree'];
             next_column = data['next_column'];
             max_x_pos = x_space*next_column;
-            max_row += data['max_row']
-            max_visible_row = max_row + (data['next_commit'] ? 1 : 0);
+            max_row = next_row + data['max_row']
+            max_visible_row = max_row + (data['next_commit'] ? 1 : 0);  // accounts for Show More link
             for (var c in new_data['built_tree']) {
-                tree[c].row += last_row;
+                tree[c].row += next_row;
             }
-            last_row = max_row;
+            next_row = max_row + 1;
             setHeight(max_visible_row);
 
             // Calculate the (x,y) positions of all the commits
@@ -144,10 +144,8 @@ if($('#commit_graph')){
 
     function selectCommit(index) {
       if (index < 0 || index > max_visible_row) return;
-      if (index == max_visible_row) {
-          if (data['next_commit']) {
-              get_data();
-          }
+      if (data['next_commit'] && index == max_visible_row) {
+          get_data();
           return;
       }
       var commit = commit_rows[index];
@@ -233,12 +231,12 @@ if($('#commit_graph')){
             canvas_ctx.fill();
             canvas_ctx.stroke();
             canvas_ctx.fillStyle = "#000";
-            canvas_ctx.fillText(commit.short_id + " " + commit.message, (1+next_column) * x_space, y_pos);
+            canvas_ctx.fillText(commit.short_id + " " + commit.message, (2+next_column) * x_space, y_pos);
         }
         if (data['next_commit']) {
-            var y_pos = y_space+((max_visible_row-offset)*y_space);
+            var y_pos = y_space+((next_row-offset)*y_space);
             canvas_ctx.fillStyle = 'rgb(0,0,256)';
-            canvas_ctx.fillText('Show more', (1+next_column) * x_space, y_pos);
+            canvas_ctx.fillText('Show more', (2+next_column) * x_space, y_pos);
         }
     }
 
