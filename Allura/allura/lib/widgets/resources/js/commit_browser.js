@@ -100,7 +100,12 @@ if($('#commit_graph')){
       $scroll_placeholder.height(graph_height);
     }
 
+    var pending = false;
     function get_data(select_first) {
+        if (pending) {
+            return;
+        }
+        pending = true;
         var params = {'limit': 100};
         if (data['next_commit']) {
             params['start'] = data['next_commit'];
@@ -138,6 +143,7 @@ if($('#commit_graph')){
             if (select_first) {
                 selectCommit(0);
             }
+            pending = false;
         });
     }
     get_data(true);
