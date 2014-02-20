@@ -863,7 +863,7 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/1/')
         assert 'Related' in response
         assert 'Wiki: aaa' in response
-        assert 'Ticket: #2' in response
+        assert 'Tickets: #2' in response
 
         b = tm.Ticket.query.find(dict(ticket_num=2)).first()
         b.deleted = True

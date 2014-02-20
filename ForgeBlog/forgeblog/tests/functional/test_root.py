@@ -213,7 +213,7 @@ class Test(TestController):
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/blog/%s/one/' % d)
         assert 'Related' in r
-        assert 'Blog Post: %s/two' % d in r
+        assert 'Blog: %s/two' % d in r
 
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)
