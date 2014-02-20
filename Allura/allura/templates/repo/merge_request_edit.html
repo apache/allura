@@ -26,7 +26,7 @@
   {% endif %}
 {% endblock %}
 
-{% block header %}Request merge of {{c.app.config.options.mount_label}} {% endblock %}
+{% block header %}Update merge request{% endblock %}
 
 {% block content %}
   {{ c.form.display(action='do_request_merge_edit', value=dict(source_branch=source_branch, target_branch=target_branch, description=description, summary=summary))}}

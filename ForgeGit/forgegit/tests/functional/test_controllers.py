@@ -606,7 +606,7 @@ class TestFork(_TestCase):
                 'target_branch': 'master',
                 'summary': 'summary',
                 'description': 'description'}).follow()
-        assert 'href="edit">Edit</a>' in r
+        assert '<a href="edit" title="Edit"><b data-icon="p" class="ico ico-pencil" title="Edit"></b></a>' in r
         r = self.app.get('/p/test/src-git/merge-requests/1/edit')
         assert 'value="summary"' in r
         assert 'name="description">description</textarea>' in r
@@ -623,13 +623,16 @@ class TestFork(_TestCase):
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
             params={
-                'source_branch': 'zz',
+                'source_branch': 'master',
                 'target_branch': 'master',
                 'summary': 'changed summary',
                 'description': 'changed description'}).follow()
-        assert '<p>changed description</p' in r
 
-        r = self.app.post('/p/test/src-git/merge-requests')
+        assert '[5c4724]' not in r
+        assert '<p>changed description</p' in r
+        assert 'Merge Request #1: changed summary (open)' in r
+
+        r = self.app.get('/p/test/src-git/merge-requests')
         assert '<a href="1/">changed summary</a>' in r
 
 

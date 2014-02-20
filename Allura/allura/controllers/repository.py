@@ -369,12 +369,13 @@ class MergeRequestController(object):
 
     @property
     def mr_widget_edit(self):
-        source_branches = [
-            b.name
-            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
         target_branches = [
             b.name
             for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+        with self.req.push_downstream_context():
+            source_branches = [
+                b.name
+                for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
         return SCMMergeRequestWidget(
             source_branches=source_branches,
             target_branches=target_branches)
@@ -389,7 +390,7 @@ class MergeRequestController(object):
         else:
             source_branch = c.app.default_branch_name
         if self.req['target_branch'] in c.form.target_branches:
-            target_branch = self.req['source_branch']
+            target_branch = self.req['target_branch']
         else:
             target_branch = c.app.default_branch_name
         return {
@@ -410,6 +411,8 @@ class MergeRequestController(object):
         mr.target_branch = kw['target_branch']
         mr.source_branch = kw['source_branch']
         mr.description = kw['description']
+        with self.req.push_downstream_context():
+            mr.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
         M.Notification.post(
             mr, 'merge_request',
             subject='Merge request: ' + mr.summary)
