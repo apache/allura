@@ -102,7 +102,8 @@ class TracExport(object):
         "Remap fields to adhere to standard taxonomy."
         out = {}
         for k, v in dict.iteritems():
-            out[self.FIELD_MAP.get(k, k)] = v
+            key = self.match_pattern(r'\W*(\w+)\W*', k)
+            out[self.FIELD_MAP.get(key, key)] = v
 
         out['id'] = int(out['id'])
         if 'private' in out:
@@ -124,7 +125,8 @@ class TracExport(object):
     @classmethod
     def trac2z_date(cls, s):
         d = dateutil.parser.parse(s)
-        d = d.astimezone(pytz.UTC)
+        if d.tzinfo is not None:
+            d = d.astimezone(pytz.UTC)
         return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @staticmethod
@@ -299,7 +301,7 @@ class DateJSONEncoder(json.JSONEncoder):
 
 
 def export(url, start_id=1, verbose=False, do_attachments=True,
-           only_tickets=False, limit=None):
+           only_tickets=False, limit=None, **kw):
     ex = TracExport(url, start_id=start_id,
                     verbose=verbose, do_attachments=do_attachments)
 
