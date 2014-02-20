@@ -520,7 +520,7 @@ class TestFork(_TestCase):
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
-        assert 'would like you to merge' in r, r.showbrowser()
+        assert 'asked you to merge' in r, r.showbrowser()
         assert 'Improve documentation' in r, r.showbrowser()
         revs = r.html.findAll('tr', attrs={'class': 'rev'})
         assert_equal(len(revs), 1)
@@ -536,8 +536,7 @@ class TestFork(_TestCase):
         assert 'git checkout master' in merge_instructions
         assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
         assert 'git merge {}'.format(c_id) in merge_instructions
-        assert_equal(r.html.findAll('p')[1].getText(), 'Created:less than 1 minute ago')
-        assert_equal(r.html.findAll('p')[2].getText(), 'Updated:less than 1 minute ago')
+        assert_in('less than 1 minute ago', r.html.findAll('p')[0].getText())
 
     def test_merge_request_with_deleted_repo(self):
         self._request_merge()

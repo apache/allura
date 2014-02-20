@@ -34,13 +34,11 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% if req.downstream_repo %}
     <p>
       <a href="{{req.creator_url}}">{{req.creator_name}}</a>
-      would like you to merge {{ req.commits | count }} commits
+      asked you to merge {{h.text.plural(req.commits|count, 'commit', 'commits')}}
       from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
-      to {{ req.target_branch }}
+      to {{ req.target_branch }},
+      {{lib.abbr_date(req.mod_date)}}
     </p>
-
-    <p><strong>Created:</strong> {{lib.abbr_date(req.created)}}</p>
-    <p><strong>Updated:</strong> {{lib.abbr_date(req.mod_date)}}</p>
 
     <div>{{g.markdown.convert(req.description)}}</div>
 
