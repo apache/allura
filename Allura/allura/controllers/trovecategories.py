@@ -19,6 +19,7 @@ from tg import expose, flash, redirect, validate, config
 from pylons import tmpl_context as c
 from string import digits, lowercase
 from webob.exc import HTTPForbidden
+from pylons import app_globals as g
 
 from allura import model as M
 from allura.controllers import BaseController
@@ -26,6 +27,8 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.security import require_authenticated, require_access
 from allura.lib.widgets import forms
+from allura.lib.plugin import SiteAdminExtension
+from allura.app import SitemapEntry
 
 
 class F(object):
@@ -41,16 +44,15 @@ class TroveCategoryController(BaseController):
         return TroveCategoryController(category=cat), remainder
 
     def _check_security(self):
-        enable_editing = config.get('trovecategories.enableediting', 'false')
-        if enable_editing == 'false':
-            raise HTTPForbidden()
-
         require_authenticated()
 
+        enable_editing = config.get('trovecategories.enableediting', 'false')
         if enable_editing == 'admin':
             with h.push_context(config.get('site_admin_project', 'allura'),
                                 neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
                 require_access(c.project, 'admin')
+        elif enable_editing != 'true':
+            raise HTTPForbidden()
 
     def __init__(self, category=None):
         self.category = category
@@ -212,3 +214,11 @@ class TroveCategoryController(BaseController):
 
         flash('Category removed.')
         redirect(redirecturl)
+
+
+class TroveCategorySiteAdminExtension(SiteAdminExtension):
+    def update_sidebar_menu(self, links):
+        enable_editing = config.get('trovecategories.enableediting', 'false')
+        if enable_editing in ('admin', 'true'):
+            links.append(SitemapEntry('Troves', '/categories',
+                ui_icon=g.icons['admin']))

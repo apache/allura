@@ -125,6 +125,7 @@ setup(
 
     [allura.site_admin]
     stats = allura.controllers.site_admin:StatsSiteAdminExtension
+    troves = allura.controllers.trovecategories:TroveCategorySiteAdminExtension
 
     [allura.user_profile.sections]
     personal-data = allura.ext.user_profile.user_main:PersonalDataSection

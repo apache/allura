@@ -38,7 +38,7 @@ class TestTroveCategory(TestController):
         deleted_category_id = post_event.call_args[0][1]
         assert_true(isinstance(deleted_category_id, ObjectId))
         assert_equals(deleted_category_id, category_id)
-        assert_equals(post_event.call_args[0][0], 'trove_category_deleted')        
+        assert_equals(post_event.call_args[0][0], 'trove_category_deleted')
 
     def test_enableediting_setting(self):
         def check_access(username=None, status=None):
