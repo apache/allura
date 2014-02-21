@@ -364,11 +364,11 @@ class Artifact(MappedClass):
         """Return the link text to use when a shortlink to this artifact
         is expanded into an <a></a> tag.
 
-        By default this method returns :meth:`shorthand_id`. Subclasses should
+        By default this method returns :attr:`type_s` + :meth:`shorthand_id`. Subclasses should
         override this method to provide more descriptive link text.
 
         """
-        return self.shorthand_id()
+        return '%s: %s' % (self.type_s, self.shorthand_id())
 
     def get_discussion_thread(self, data=None):
         """Return the discussion thread and parent_id for this artifact.

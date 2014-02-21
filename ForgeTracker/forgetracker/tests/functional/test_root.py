@@ -879,6 +879,18 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/wiki/aaa/')
         assert 'alink notfound' in response
 
+    def test_related_artifacts_closed_tickets(self):
+        self.new_ticket(summary='Ticket 1')
+        self.new_ticket(summary='Ticket 2', status='closed')
+        self.new_ticket(summary='Ticket 3', description='[#1]\n\n[#2]')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/p/test/bugs/3/')
+        assert_in('Ticket: #1', r)
+        assert_not_in('<s>Ticket: #1</s>', r)
+        assert_in('<s>Ticket: #2</s>', r)
+
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)

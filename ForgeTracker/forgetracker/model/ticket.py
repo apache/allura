@@ -621,6 +621,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     reported_by = RelationProperty(User, via='reported_by_id')
 
+    def link_text(self):
+        text = super(Ticket, self).link_text()
+        if self.is_closed:
+            return jinja2.Markup('<s>') + text + jinja2.Markup('</s>')
+        return text
+
     @property
     def activity_name(self):
         return 'ticket #%s' % self.ticket_num
@@ -755,7 +761,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def open_or_closed(self):
-        return 'closed' if self.status in c.app.globals.set_of_closed_status_names else 'open'
+        return 'closed' if self.status in self.app.globals.set_of_closed_status_names else 'open'
+
+    @property
+    def is_closed(self):
+        return self.open_or_closed == 'closed'
 
     @property
     def monitoring_email(self):

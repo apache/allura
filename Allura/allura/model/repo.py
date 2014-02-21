@@ -292,10 +292,10 @@ class Commit(RepoObject, ActivityObject):
         '''The link text that will be used when a shortlink to this artifact
         is expanded into an <a></a> tag.
 
-        By default this method returns shorthand_id(). Subclasses should
+        By default this method returns type_s + shorthand_id(). Subclasses should
         override this method to provide more descriptive link text.
         '''
-        return self.shorthand_id()
+        return '%s: %s' % (self.type_s, self.shorthand_id())
 
     def context(self):
         result = dict(prev=None, next=None)

@@ -648,7 +648,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return None
 
     def link_text(self):
-        return self.subject
+        return '%s: %s' % (self.type_s, self.subject)
 
     def reply_subject(self):
         if self.subject and self.subject.lower().startswith('re:'):
