@@ -155,7 +155,7 @@ def test_post_methods():
     assert_equals(p.attachments, [])
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
-    assert p.link_text() == p.subject
+    assert p.link_text() == '%s: %s' % (p.type_s, p.subject)
 
     ss = p.history().first()
     assert 'version' in h.get_first(ss.index(), 'title')
