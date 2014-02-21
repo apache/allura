@@ -367,7 +367,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def is_user_project(self):
-        return self.shortname.startswith('u/')
+        return self.is_root and self.shortname.startswith('u/')
 
     @LazyProperty
     def user_project_of(self):

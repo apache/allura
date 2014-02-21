@@ -900,10 +900,10 @@ class TestNeighborhood(TestController):
         assert 'macro' in r
 
     @td.with_user_project('test-user')
-    def test_profile_topnav_menu(self):
+    def test_profile_tools(self):
         r = self.app.get('/u/test-user/',
                          extra_environ=dict(username='test-user')).follow()
-        assert r.html.find('div', id='top_nav').find(
+        assert r.html.find('div', 'profile-section tools').find(
             'a', href='/u/test-user/profile/'), r.html
 
     def test_user_project_creates_on_demand(self):

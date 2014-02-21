@@ -28,21 +28,12 @@ class TestUserProfile(TestController):
 
     @td.with_user_project('test-admin')
     def test_profile(self):
-        response = self.app.get('/u/test-admin/profile/')
-        assert '<h2 class="dark title">Test Admin' in response
+        r = self.app.get('/u/test-admin/profile/')
+        assert_equal('Test Admin',
+                r.html.find('h1', 'project_title').find('a').text)
 
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)
-
-    @td.with_user_project('test-admin')
-    @td.with_user_project('test-user')
-    def test_seclusion(self):
-        response = self.app.get('/u/test-admin/profile/')
-        assert 'Email Addresses' in response
-        self.app.get('/u/test-user', extra_environ=dict(
-            username='test-user'))
-        response = self.app.get('/u/test-user/profile/')
-        assert 'Email Addresses' not in response
 
     @td.with_user_project('test-user')
     def test_missing_user(self):
@@ -50,7 +41,6 @@ class TestUserProfile(TestController):
         p = Project.query.get(shortname='u/test-user')
         assert p is not None and p.is_user_project
         response = self.app.get('/u/test-user/profile/', status=404)
-        assert 'Email Addresses' not in response
 
     @td.with_user_project('test-admin')
     @td.with_wiki
@@ -130,13 +120,7 @@ class TestUserProfile(TestController):
                                                'user@example.com')
         r = self.app.get('/u/test-user/profile',
                          status=200)
-        assert '<a href="send_message">Send me a message</a>' in r
-
-        r = self.app.get('/u/test-user/profile',
-                         extra_environ={'username': '*anonymous'},
-                         status=200)
-
-        assert '<a href="send_message">Send me a message</a>' not in r
+        assert r.html.find('a', dict(href='send_message'))
 
     @td.with_user_project('test-user')
     def test_disable_user_messages(self):
