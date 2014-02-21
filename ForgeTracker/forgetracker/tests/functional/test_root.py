@@ -1516,6 +1516,40 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
 
+    def test_ticket_notification_contains_milestones(self):
+        params = dict(
+            custom_fields=[
+                dict(
+                    name='_releases',
+                    label='Releases',
+                    type='milestone',
+                    milestones=[{'name': '0.9.3'}, {'name': '1.0-beta'}],
+                    show_in_search='on',
+                ),
+                dict(
+                    name='_milestone',
+                    label='Milestone',
+                    type='milestone',
+                    milestones=[{'name': '1.0'}, {'name': '2.0'}],
+                    show_in_search='on',
+                ),
+            ],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+        )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        self.new_ticket(summary='test new milestone', _milestone='2.0',
+                        **{'custom_fields._releases': '1.0-beta'})
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        email = M.MonQTask.query.find(
+            dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        assert_in('**Releases:** 1.0-beta', email.kwargs.text)
+        assert_in('**Milestone:** 2.0', email.kwargs.text)
+
     def test_bulk_edit_notifications(self):
         self.new_ticket(summary='test first ticket',
                         status='open', _milestone='2.0')

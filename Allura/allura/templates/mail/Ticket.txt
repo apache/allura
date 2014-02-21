@@ -23,6 +23,9 @@
 ** [{{data.app_config.options.mount_point}}:#{{data.ticket_num}}] {{data.summary|e}}**
 
 **Status:** {{data.status}}
+{% for f in data.globals.milestone_fields -%}
+  **{{ f.label }}:** {{ data.custom_fields.get(f.name, '') }}
+{% endfor -%}
 {% if data.labels.__len__() -%}
     **Labels:** {% for label in data.labels %}{{label}} {% else %}None{% endfor %}
 {% endif -%}
