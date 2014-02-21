@@ -52,7 +52,7 @@ class TestActivityController(TestController):
     def test_anon_read(self):
         r = self.app.get('/u/test-user-1',
                 extra_environ={'username': '*anonymous'}).follow().follow()
-        assert r.html.find('div', dict(id='top_nav')).find('a',
+        assert r.html.find('div', 'profile-section tools').find('a',
                 dict(href='/u/test-user-1/activity/')), \
                         'No Activity tool in top nav'
 
