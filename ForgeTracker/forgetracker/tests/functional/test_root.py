@@ -891,6 +891,9 @@ class TestFunctionalController(TrackerTestController):
         assert_not_in('<s>Ticket: #1</s>', r)
         assert_in('<s>Ticket: #2</s>', r)
 
+        assert_in('<a class="alink" href="/p/test/bugs/1/">[#1]</a>', r)
+        assert_in('<a class="alink strikethrough" href="/p/test/bugs/2/">[#2]</a>', r)
+
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)

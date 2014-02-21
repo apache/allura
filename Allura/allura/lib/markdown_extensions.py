@@ -335,6 +335,8 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         shortlink = M.Shortlink.lookup(link)
         if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
             href = shortlink.url
+            if getattr(shortlink.ref.artifact, 'is_closed', False):
+                classes += ' strikethrough'
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
         elif is_link_with_brackets:
             href = h.urlquote(link)
