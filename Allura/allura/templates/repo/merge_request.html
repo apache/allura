@@ -29,8 +29,11 @@
 {% block header %}{{c.app.config.options.mount_label}}
 Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
+
 {% block actions %}
-      <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}" title="Edit"></b></a>
+  {% if h.has_access(req, 'write')() %}
+    <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}" title="Edit"></b></a>
+  {% endif %}
 {% endblock %}
 
 {% block content %}

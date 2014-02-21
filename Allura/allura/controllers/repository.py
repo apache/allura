@@ -22,6 +22,7 @@ from urllib import quote, unquote
 from collections import defaultdict
 from itertools import islice
 
+from paste.deploy.converters import asbool
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc
@@ -35,22 +36,21 @@ from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
-from allura.lib import security
+from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib import widgets as w
 from allura.lib.decorators import require_post
-from allura.controllers import AppDiscussionController
+from allura.lib.diff import HtmlSideBySideDiff
+from allura.lib.security import require_access, require_authenticated
+from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
 from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura.lib.widgets.subscriptions import SubscribeForm
-from allura import model as M
-from allura.lib.widgets import form_fields as ffw
+from allura.controllers import AppDiscussionController
 from allura.controllers.base import DispatchIndex
 from allura.controllers.feed import FeedController, FeedArgs
-from allura.lib.diff import HtmlSideBySideDiff
-from paste.deploy.converters import asbool
 from .base import BaseController
 
 log = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ class RepoRootController(BaseController, FeedController):
         return FeedArgs(query, title, app.url, description=description)
 
     def _check_security(self):
-        security.require(security.has_access(c.app, 'read'))
+        require_access(c.app, 'read')
 
     @with_trailing_slash
     @expose()
@@ -112,7 +112,7 @@ class RepoRootController(BaseController, FeedController):
     @expose('jinja:allura:templates/repo/fork.html')
     def fork(self, project_id=None, mount_point=None, mount_label=None, **kw):
         # this shows the form and handles the submission
-        security.require_authenticated()
+        require_authenticated()
         if not c.app.forkable:
             raise exc.HTTPNotFound
         from_repo = c.app.repo
@@ -132,7 +132,7 @@ class RepoRootController(BaseController, FeedController):
             with h.push_config(c, project=to_project):
                 if not to_project.database_configured:
                     to_project.configure_project(is_user_project=True)
-                security.require(security.has_access(to_project, 'admin'))
+                require_access(to_project, 'admin')
                 try:
                     to_project.install_app(
                         ep_name=from_repo.tool_name,
@@ -163,7 +163,7 @@ class RepoRootController(BaseController, FeedController):
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/request_merge.html')
     def request_merge(self, branch=None, **kw):
-        security.require(security.has_access(c.app.repo, 'admin'))
+        require_access(c.app.repo, 'admin')
         c.form = self.mr_widget
         if branch in c.form.source_branches:
             source_branch = branch
@@ -382,8 +382,7 @@ class MergeRequestController(object):
 
     @expose('jinja:allura:templates/repo/merge_request_edit.html')
     def edit(self, **kw):
-        security.require(
-            security.has_access(self.req, 'write'), 'Write access required')
+        require_access(self.req, 'write')
         c.form = self.mr_widget_edit
         if self.req['source_branch'] in c.form.source_branches:
             source_branch = self.req['source_branch']
@@ -403,27 +402,24 @@ class MergeRequestController(object):
     @expose()
     @require_post()
     def do_request_merge_edit(self, **kw):
-        security.require(
-            security.has_access(self.req, 'write'), 'Write access required')
+        require_access(self.req, 'write')
         kw = self.mr_widget_edit.to_python(kw)
-        mr = M.MergeRequest.query.get(request_number=self.req['request_number'])
-        mr.summary = kw['summary']
-        mr.target_branch = kw['target_branch']
-        mr.source_branch = kw['source_branch']
-        mr.description = kw['description']
+        self.req.summary = kw['summary']
+        self.req.target_branch = kw['target_branch']
+        self.req.source_branch = kw['source_branch']
+        self.req.description = kw['description']
         with self.req.push_downstream_context():
-            mr.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
+            self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
         M.Notification.post(
-            mr, 'merge_request',
-            subject='Merge request: ' + mr.summary)
-        redirect(mr.url())
+            self.req, 'merge_request',
+            subject='Merge request: ' + self.req.summary)
+        redirect(self.req.url())
 
     @expose()
     @require_post()
     @validate(mr_dispose_form)
     def save(self, status=None, **kw):
-        security.require(
-            security.has_access(self.req, 'write'), 'Write access required')
+        require_access(self.req, 'write')
         self.req.status = status
         redirect('.')
 
@@ -462,7 +458,7 @@ class BranchBrowser(BaseController):
         self._branch = branch
 
     def _check_security(self):
-        security.require(security.has_access(c.app.repo, 'read'))
+        require_access(c.app.repo, 'read')
 
     @expose('jinja:allura:templates/repo/tags.html')
     @with_trailing_slash
