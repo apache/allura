@@ -3375,9 +3375,8 @@ ul.dropdown ul li a:hover {
 .profile-section.projects ul img, .profile-section.projects ol img {
   vertical-align: top;
   margin-right: 10px;
-}
-.profile-section.projects ul .project-info, .profile-section.projects ol .project-info {
-  display: inline-block;
+  margin-bottom: 10px;
+  float: left;
 }
 .profile-section.projects ul .project-info a, .profile-section.projects ol .project-info a {
   font-weight: bold;
