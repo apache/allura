@@ -100,6 +100,67 @@ if($('#commit_graph')){
       $scroll_placeholder.height(graph_height);
     }
 
+    function drawGraph(offset) {
+        // Clear the canvas and set the contetx
+        var canvas_ctx = canvas.getContext('2d');
+        highlighter_ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas_ctx.fillStyle = "rgb(0,0,0)";
+        canvas_ctx.lineWidth = 1;
+        canvas_ctx.lineJoin = 'round';
+        canvas_ctx.textBaseline = "top";
+        canvas_ctx.font = "12px sans-serif";
+
+        for(var c in tree){
+            var commit = tree[c];
+            var x_pos = x_space+(commit.column*x_space);
+            var y_pos = y_space+((commit.row-offset)*y_space);
+
+            for(var i=0,len=commit.parents.length;i<len;i++){
+                var parent = tree[commit.parents[i]];
+                if (!parent) {
+                    continue;
+                }
+                var parent_x = x_space+parent.column*x_space
+                var parent_y = y_space+(parent.row-offset)*y_space;
+
+                canvas_ctx.strokeStyle = color(parent.column % 6);
+
+                // Vertical
+                canvas_ctx.beginPath();
+                canvas_ctx.moveTo(parent_x+point_offset, y_pos+y_space);
+                canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
+                canvas_ctx.stroke();
+
+                // Diagonal
+                canvas_ctx.beginPath()
+                canvas_ctx.moveTo(x_pos + point_offset, y_pos+point_offset);
+                canvas_ctx.lineTo(parent_x+point_offset, y_pos+y_space);
+                canvas_ctx.stroke();
+            }
+        }
+        // draw commit points and message text
+        canvas_ctx.fillStyle = "rgb(0,0,0)";
+        for(var c in tree){
+            var commit = tree[c];
+            var x_pos = x_space+(commit.column*x_space);
+            var y_pos = y_space+((commit.row-offset)*y_space);
+
+            canvas_ctx.strokeStyle = canvas_ctx.fillStyle = color(commit.column % 6);
+            canvas_ctx.beginPath();
+            canvas_ctx.arc(x_pos + point_offset, y_pos + point_offset, point_offset, 0, 2 * Math.PI, false);
+            canvas_ctx.fill();
+            canvas_ctx.stroke();
+            canvas_ctx.fillStyle = "#000";
+            canvas_ctx.fillText(commit.short_id + " " + commit.message, (2+next_column) * x_space, y_pos);
+        }
+        if (data['next_commit']) {
+            var y_pos = y_space+((next_row-offset)*y_space);
+            canvas_ctx.fillStyle = 'rgb(0,0,256)';
+            canvas_ctx.fillText(pending ? 'Loading...' : 'Show more', (2+next_column) * x_space, y_pos);
+        }
+    }
+
     var pending = false;
     function get_data(select_first) {
         if (pending) {
@@ -184,67 +245,6 @@ if($('#commit_graph')){
         case 4: return "rgb(230,159,0)";
         default: return "rgb(86,180,223)";
       }
-    }
-
-    function drawGraph(offset) {
-        // Clear the canvas and set the contetx
-        var canvas_ctx = canvas.getContext('2d');
-        highlighter_ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas_ctx.fillStyle = "rgb(0,0,0)";
-        canvas_ctx.lineWidth = 1;
-        canvas_ctx.lineJoin = 'round';
-        canvas_ctx.textBaseline = "top";
-        canvas_ctx.font = "12px sans-serif";
-
-        for(var c in tree){
-            var commit = tree[c];
-            var x_pos = x_space+(commit.column*x_space);
-            var y_pos = y_space+((commit.row-offset)*y_space);
-
-            for(var i=0,len=commit.parents.length;i<len;i++){
-                var parent = tree[commit.parents[i]];
-                if (!parent) {
-                    continue;
-                }
-                var parent_x = x_space+parent.column*x_space
-                var parent_y = y_space+(parent.row-offset)*y_space;
-
-                canvas_ctx.strokeStyle = color(parent.column % 6);
-
-                // Vertical
-                canvas_ctx.beginPath();
-                canvas_ctx.moveTo(parent_x+point_offset, y_pos+y_space);
-                canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
-                canvas_ctx.stroke();
-
-                // Diagonal
-                canvas_ctx.beginPath()
-                canvas_ctx.moveTo(x_pos + point_offset, y_pos+point_offset);
-                canvas_ctx.lineTo(parent_x+point_offset, y_pos+y_space);
-                canvas_ctx.stroke();
-            }
-        }
-        // draw commit points and message text
-        canvas_ctx.fillStyle = "rgb(0,0,0)";
-        for(var c in tree){
-            var commit = tree[c];
-            var x_pos = x_space+(commit.column*x_space);
-            var y_pos = y_space+((commit.row-offset)*y_space);
-
-            canvas_ctx.strokeStyle = canvas_ctx.fillStyle = color(commit.column % 6);
-            canvas_ctx.beginPath();
-            canvas_ctx.arc(x_pos + point_offset, y_pos + point_offset, point_offset, 0, 2 * Math.PI, false);
-            canvas_ctx.fill();
-            canvas_ctx.stroke();
-            canvas_ctx.fillStyle = "#000";
-            canvas_ctx.fillText(commit.short_id + " " + commit.message, (2+next_column) * x_space, y_pos);
-        }
-        if (data['next_commit']) {
-            var y_pos = y_space+((next_row-offset)*y_space);
-            canvas_ctx.fillStyle = 'rgb(0,0,256)';
-            canvas_ctx.fillText(pending ? 'Loading...' : 'Show more', (2+next_column) * x_space, y_pos);
-        }
     }
 
     function setOffset(x) {
