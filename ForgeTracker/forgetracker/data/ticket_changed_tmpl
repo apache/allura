@@ -54,3 +54,5 @@ ${'\n'.join(difflib.unified_diff(
 {% end %}\
 {% end %}\
 {% end %}\
+{% if comment %}- **Comment**:
+${comment}{% end %}

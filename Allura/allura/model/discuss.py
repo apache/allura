@@ -256,8 +256,9 @@ class Thread(Artifact, ActivityObject):
         else:
             return g.spam_checker.check(post.text, artifact=post, user=c.user)
 
-    def post(self, text, message_id=None, parent_id=None,
-             timestamp=None, ignore_security=False, is_meta=False, **kw):
+    def post(self, text, message_id=None, parent_id=None, notify=True,
+             notification_text=None, timestamp=None, ignore_security=False,
+             is_meta=False, **kw):
         if not ignore_security:
             require_access(self, 'post')
         if self.ref_id and self.artifact:
@@ -283,7 +284,8 @@ class Thread(Artifact, ActivityObject):
         if ignore_security or not self.is_spam(post) and has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
-            post.approve(file_info, notify=kw.get('notify', True))
+            post.approve(file_info, notify=notify,
+                         notification_text=notification_text)
         else:
             self.notify_moderators(post)
         return post
@@ -659,7 +661,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         super(Post, self).delete()
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
-    def approve(self, file_info=None, notify=True):
+    def approve(self, file_info=None, notify=True, notification_text=None):
         if self.status == 'ok':
             return
         self.status = 'ok'
@@ -674,7 +676,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             security.simple_grant(
                 self.acl, author_role._id, 'unmoderated_post')
         if notify:
-            self.notify(file_info=file_info)
+            self.notify(file_info=file_info, notification_text=notification_text)
         artifact = self.thread.artifact or self.thread
         session(self).flush()
         self.thread.last_post_date = max(
@@ -688,14 +690,15 @@ class Post(Message, VersionedArtifact, ActivityObject):
                                        related_nodes=[self.app_config.project],
                                        tags=['comment'])
 
-    def notify(self, file_info=None, check_dup=False):
+    def notify(self, file_info=None, check_dup=False, notification_text=None):
         if self.project.notifications_disabled:
             return  # notifications disabled for entire project
         artifact = self.thread.artifact or self.thread
         n = Notification.query.get(
             _id=artifact.url() + self._id) if check_dup else None
         if not n:
-            n = Notification.post(artifact, 'message', post=self,
+            n = Notification.post(artifact, 'message',
+                                  post=self, text=notification_text,
                                   file_info=file_info)
         if not n:
             return
