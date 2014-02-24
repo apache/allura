@@ -19,11 +19,7 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
 
 {% block title %}
-  {% if c.app.repo %}
-    Repository: {{c.app.repo.name}}
-  {% else %}
-    Repository
-  {% endif %}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Request merge
 {% endblock %}
 
 {% block header %}Request merge of {{c.app.config.options.mount_label}} {% endblock %}
