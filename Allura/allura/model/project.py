@@ -27,6 +27,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
 import formencode as fe
+from datatree import Tree, Node
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -982,6 +983,59 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 for ss in self.get_screenshots()
             ]
         )
+
+    def doap(self):
+        root = Node('rdf:RDF', **{
+            'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            'xmlns:rdfs': "http://www.w3.org/2000/01/rdf-schema#",
+        })
+        p = Node('Project', **{
+            'xmlns': "http://usefulinc.com/ns/doap#",
+            'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
+            'xmlns:sf': "http://sourceforge.net/api/sfelements.rdf#",
+            'xmlns:rss': "http://purl.org/rss/1.0/",
+            'xmlns:dc': "http://dublincore.org/documents/dcmi-namespace/",
+            'xmlns:beer': "http://www.purl.org/net/ontology/beer.owl#",
+            'rdf:about': "http://sourceforge.net/api/project/name/vivo/doap#",
+        })
+        root << p
+        p << Node('name', self.name)
+        p << Node('sf:shortname', self.shortname)
+        p << Node('sf:id', str(self._id))
+        p << Node('sf:private', self.private)
+        p << Node('created', )
+        p << Node('shortdesc', self.short_description, **{'xml:lang': 'en'})
+        p << Node('description', self.description, **{'xml:lang': 'en'})
+        if self.external_homepage:
+            p << Node('homepage', **{'rdf:resource': self.external_homepage})
+
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_audience}}):
+            p << Node('audience', cat.fullname)
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_os}}):
+            p << Node('os', cat.fullname)
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_language}}):
+            p << Node('programming-language', cat.fullname)
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_license}}):
+            p << Node('license', cat.fullname)
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_environment}}):
+            p << Node('sf:environment', cat.fullname)
+        for cat in TroveCategory.query.find({'_id': {'$in': self.trove_root_database}}):
+            p << Node('sf:database', cat.fullname)
+        all_troves = (
+            self.trove_root_database +
+            self.trove_developmentstatus +
+            self.trove_audience +
+            self.trove_license +
+            self.trove_topic +
+            self.trove_os +
+            self.trove_language +
+            self.trove_natlanguage +
+            self.trove_environment
+        )
+        for cat in TroveCategory.query.find({'_id': {'$in': all_troves}}):
+            p << Node('category', **{'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
+
+        return root.render(as_root=True)
 
 
 class AppConfig(MappedClass, ActivityObject):

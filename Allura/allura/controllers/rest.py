@@ -25,7 +25,7 @@ import oauth2 as oauth
 from webob import exc
 from tg import expose, flash, redirect
 from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from pylons import request, response
 
 from ming.orm import session
 from ming.utils import LazyProperty
@@ -307,4 +307,8 @@ class ProjectRestController(object):
 
     @expose('json:')
     def index(self, **kw):
+        if 'doap' in kw:
+            response.headers['Content-Type'] = ''
+            response.content_type = 'application/rdf+xml'
+            return c.project.doap()
         return c.project.__json__()
