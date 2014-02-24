@@ -87,8 +87,7 @@ Optional, for SVN support: symlink the system pysvn package into our virtual env
 
     (env-allura)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/env-allura/lib/python2.7/site-packages/
 
-And now to setup the Allura applications for development.  If you want to setup all of them, run `./rebuild-all.bash`
-If you only want to use a few tools, run:
+Next, run `./rebuild-all.bash` to setup all the Allura applications.  If you only want to use a few tools, run:
 
     cd Allura
     python setup.py develop
