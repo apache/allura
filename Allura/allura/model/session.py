@@ -177,15 +177,20 @@ def substitute_extensions(session, extensions=None):
     """
     original_exts = session._kwargs.get('extensions', [])
 
-    def _set_exts(exts):
+    # flush the session to ensure everything so far
+    # is written using the original extensions
+    session.flush()
+    session.close()
+    try:
+        session._kwargs['extensions'] = extensions or []
+        yield session
+        # if successful, flush the session to ensure everything
+        # new is written using the modified extensions
         session.flush()
         session.close()
-        session._kwargs['extensions'] = exts
-    _set_exts(extensions or [])
-    try:
-        yield session
     finally:
-        _set_exts(original_exts)
+        # restore proper session extension even if everything goes horribly awry
+        session._kwargs['extensions'] = original_exts
 
 
 main_doc_session = Session.by_name('main')
