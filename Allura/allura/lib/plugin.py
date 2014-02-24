@@ -985,7 +985,14 @@ class UserPreferencesProvider(object):
 
     def additional_urls(self):
         '''
-        :return: [[str url, function], ]
+        Returns list of additional routes for AuthProvider.
+
+        No additional routes by default. Subclasses migth override this.
+
+        For example: [('newroute', newroute_handler), ] will add
+        'newroute' attribute to AuthProvider, which will be set to newroute_handler.
+
+        newroutehandler is a usual controller method (decorated with @exposed and other stuff).
         '''
         return []
 
