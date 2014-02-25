@@ -285,7 +285,7 @@ def test_macro_include_extra_br():
 def test_macro_embed():
     r = g.markdown_wiki.convert(
         '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert '''<div class="grid-20"><iframe height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>''' in r
+    assert '''<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>''' in r
     r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
     assert_equal(
         r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')

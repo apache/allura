@@ -23,11 +23,13 @@ import traceback
 import oembed
 import jinja2
 from operator import attrgetter
+from urlparse import urlparse, urlunparse
 
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asint
+from BeautifulSoup import BeautifulSoup
 
 from . import helpers as h
 from . import security
@@ -394,6 +396,20 @@ def embed(url=None):
         'http://www.youtube.com/oembed', ['http://*.youtube.com/*', 'https://*.youtube.com/*'])
     consumer.addEndpoint(endpoint)
     try:
-        return jinja2.Markup('<div class="grid-20">%s</div>' % consumer.embed(url)['html'])
+        html = consumer.embed(url)['html']
     except oembed.OEmbedNoEndpoint:
-        return '[[embed url=%s]]' % url
+        html = None
+
+    if html:
+        html = BeautifulSoup(html)
+        embed_url = html.find('iframe').get('src')
+        if embed_url:
+            embed_url = urlparse(embed_url)
+            if embed_url.scheme == 'http':
+                embed_url = urlunparse(['https'] + list(embed_url[1:]))
+            else:
+                embed_url = embed_url.geturl()
+            html.find('iframe')['src'] = embed_url
+            return jinja2.Markup('<div class="grid-20">%s</div>' % html)
+
+    return '[[embed url=%s]]' % url

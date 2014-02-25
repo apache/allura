@@ -247,6 +247,6 @@ class TestHTMLSanitizer(unittest.TestCase):
     def test_html_sanitizer_youtube_iframe(self):
         p = utils.ForgeHTMLSanitizer('utf-8', '')
         p.feed(
-            '<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+            '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         assert_equal(
-            p.output(), '<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+            p.output(), '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
