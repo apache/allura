@@ -139,7 +139,8 @@ def get_change_text(name, new_value, old_value):
         'forgetracker', 'data/ticket_changed_tmpl')
     return h.render_genshi_plaintext(
         tpl_fn,
-        changelist=changes.get_changed())
+        changelist=changes.get_changed(),
+        comment=None)
 
 
 def _my_trackers(user, current_tracker_app_config):
