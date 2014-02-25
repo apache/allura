@@ -20,6 +20,7 @@ from mock import Mock, MagicMock, patch
 from datetime import timedelta
 
 from allura import model as M
+from allura.app import Application
 from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib.plugin import ThemeProvider
@@ -153,3 +154,33 @@ class TestThemeProvider(object):
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+
+    @patch('allura.app.g')
+    @patch('allura.lib.plugin.g')
+    def test_app_icon_str(self, plugin_g, app_g):
+        class TestApp(Application):
+            icons = {
+                24: 'images/testapp_24.png',
+            }
+        plugin_g.entry_points = {'tool': {'testapp': TestApp}}
+        assert_equals(ThemeProvider().app_icon_url('testapp', 24),
+                      app_g.theme_href.return_value)
+        app_g.theme_href.assert_called_with('images/testapp_24.png')
+
+    @patch('allura.lib.plugin.g')
+    def test_app_icon_str_invalid(self, g):
+        g.entry_points = {'tool': {'testapp': Mock()}}
+        assert_equals(ThemeProvider().app_icon_url('invalid', 24),
+                      None)
+
+    @patch('allura.app.g')
+    def test_app_icon_app(self, g):
+        class TestApp(Application):
+            icons = {
+                24: 'images/testapp_24.png',
+            }
+        app = TestApp(None, None)
+        assert_equals(ThemeProvider().app_icon_url(app, 24),
+                      g.theme_href.return_value)
+        g.theme_href.assert_called_with('images/testapp_24.png')
+
