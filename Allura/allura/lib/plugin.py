@@ -909,8 +909,10 @@ class ThemeProvider(object):
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:
                 return g.theme_href(self.icons[app][size])
-            else:
+            elif app in g.entry_points['tool']:
                 return g.entry_points['tool'][app].icon_url(size)
+            else:
+                return None
         else:
             return app.icon_url(size)
 
