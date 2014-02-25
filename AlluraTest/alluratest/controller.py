@@ -68,8 +68,11 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
         conf_dir = os.getcwd()
     ew.TemplateEngine.initialize({})
     test_file = os.path.join(conf_dir, get_config_file(config))
-    cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'),\
+         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
+         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
+        cmd = SetupCommand('setup-app')
+        cmd.run([test_file])
 
     # run all tasks, e.g. indexing from bootstrap operations
     while M.MonQTask.run_ready('setup'):
