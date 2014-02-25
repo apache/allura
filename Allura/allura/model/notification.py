@@ -151,7 +151,7 @@ class Notification(MappedClass):
         post = ''
         if topic == 'message':
             post = kwargs.pop('post')
-            text = kwargs.get('text', post.text)
+            text = kwargs.get('text') or post.text
             file_info = kwargs.pop('file_info', None)
             if file_info is not None:
                 text = "%s\n\n\nAttachment:" % text
