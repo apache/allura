@@ -150,17 +150,15 @@ class Globals(object):
         # skip empty strings in case of extra commas
         self.solr_server = [s for s in self.solr_server if s]
         self.solr_query_server = config.get('solr.query_server')
-        if asbool(config.get('solr.mock')):
-            self.solr = self.solr_short_timeout = MockSOLR()
-        elif self.solr_server:
+        if self.solr_server:
             self.solr = make_solr_from_config(
                 self.solr_server, self.solr_query_server)
             self.solr_short_timeout = make_solr_from_config(
                 self.solr_server, self.solr_query_server,
                 timeout=int(config.get('solr.short_timeout', 10)))
         else:  # pragma no cover
-            self.solr = None
-            self.solr_short_timeout = None
+            log.warning('Solr config not set; using in-memory MockSOLR')
+            self.solr = self.solr_short_timeout = MockSOLR()
         self.use_queue = asbool(config.get('use_queue', False))
 
         # Load login/logout urls; only used for customized logins
