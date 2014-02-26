@@ -999,6 +999,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             'rdf:about': "http://sourceforge.net/api/project/name/vivo/doap#",
         })
         root << p
+        # Basic fields
         p << Node('name', self.name)
         p << Node('sf:shortname', self.shortname)
         p << Node('sf:id', str(self._id))
@@ -1009,6 +1010,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if self.external_homepage:
             p << Node('homepage', **{'rdf:resource': self.external_homepage})
 
+        # Categories
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_audience}}):
             p << Node('audience', cat.fullname)
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_os}}):
@@ -1035,11 +1037,34 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for cat in TroveCategory.query.find({'_id': {'$in': all_troves}}):
             p << Node('category', **{'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
 
+        # Awards
         for a in self.accolades:
             award = Node('beer:Award')
             award << Node('beer:awardCategory', a.award.full)
             award << Node('beer:awardedAt', a.granted_by_neighborhood.name)
             p << (Node('sf:awarded') << award)
+
+        # Maintainers
+        for u in self.admins():
+            person = Node('foaf:Person', **{
+                'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
+                'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#"})
+            person << Node('foaf:name', u.display_name)
+            person << Node('foaf:nick', u.username)
+            person << Node('foaf:homepage', **{'rdf:resource': h.absurl(u.url())})
+            p << (Node('maintainer') << person)
+
+        # Developers
+        devs = [u for u in self.users_with_role('Developer') if u not in self.admins()]
+        for u in devs:
+            person = Node('foaf:Person', **{
+                'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
+                'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#"})
+            person << Node('foaf:name', u.display_name)
+            person << Node('foaf:nick', u.username)
+            person << Node('foaf:homepage', **{'rdf:resource': h.absurl(u.url())})
+            p << (Node('developer') << person)
+
         return root.render(as_root=True)
 
 
