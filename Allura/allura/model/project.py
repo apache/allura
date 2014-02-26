@@ -27,7 +27,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
 import formencode as fe
-from datatree import Tree, Node
+from datatree import Node
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -1035,6 +1035,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for cat in TroveCategory.query.find({'_id': {'$in': all_troves}}):
             p << Node('category', **{'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
 
+        for a in self.accolades:
+            award = Node('beer:Award')
+            award << Node('beer:awardCategory', a.award.full)
+            award << Node('beer:awardedAt', a.granted_by_neighborhood.name)
+            p << (Node('sf:awarded') << award)
         return root.render(as_root=True)
 
 
