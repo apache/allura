@@ -217,7 +217,8 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
                   debug_each_call=False),
-            Timer('ming', ming.odm.odmsession.ODMSession, 'flush',
+            Timer('ming', ming.odm.odmsession.ODMSession,
+                  'insert_now', 'update_now', 'delete_now',
                   'find', 'find_and_modify', 'remove', 'update', 'update_if_not_modified',
                   'aggregate', 'group', 'map_reduce', 'inline_map_reduce', 'distinct',
                   ),
