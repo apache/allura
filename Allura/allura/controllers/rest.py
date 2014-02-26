@@ -310,5 +310,5 @@ class ProjectRestController(object):
         if 'doap' in kw:
             response.headers['Content-Type'] = ''
             response.content_type = 'application/rdf+xml'
-            return c.project.doap()
+            return '<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()

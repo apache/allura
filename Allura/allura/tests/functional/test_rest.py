@@ -23,12 +23,15 @@ from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalODMSession
+from datatree import Node
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
+
+from forgetracker.tracker_main import ForgeTrackerApp
 
 
 class TestRestHome(TestRestApiBase):
@@ -223,3 +226,67 @@ class TestRestHome(TestRestApiBase):
                 'name', 'value', {})
             r = self.api_get('/rest/p/test/')
             assert r.status_int == 404
+
+class TestDoap(TestRestApiBase):
+    validate_skip = True
+    ns = '{http://usefulinc.com/ns/doap#}'
+    ns_sf = '{http://sourceforge.net/api/sfelements.rdf#}'
+    foaf = '{http://xmlns.com/foaf/0.1/}'
+
+    def test_project_data(self):
+        r = self.app.get('/rest/p/test?doap')
+        assert_equal(r.content_type, 'application/rdf+xml')
+        p = r.xml.find(self.ns + 'Project')
+        assert_equal(p.find(self.ns + 'name').text, 'Test Project')
+        assert_equal(p.find(self.ns_sf + 'shortname').text, 'test')
+        assert p.find(self.ns_sf + 'id') is not None
+
+        maintainers = p.findall(self.ns + 'maintainer')
+        assert_equal(len(maintainers), 1)
+        user = maintainers[0].find(self.foaf + 'Person')
+        assert_equal(user.find(self.foaf + 'name').text, 'Test Admin')
+        assert_equal(user.find(self.foaf + 'nick').text, 'test-admin')
+        assert_equal(user.find(self.foaf + 'homepage').items()[0][1],
+                     'http://localhost/u/test-admin/')
+
+    @td.with_tool('test', 'Tickets', 'bugs')
+    @td.with_tool('test', 'Tickets', 'private-bugs')
+    def test_project_data_tools(self):
+        # Deny anonymous to see 'private-bugs' tool
+        role = M.ProjectRole.by_name('*anonymous')._id
+        read_permission = M.ACE.allow(role, 'read')
+        app = M.Project.query.get(
+            shortname='test').app_instance('private-bugs')
+        if read_permission in app.config.acl:
+            app.config.acl.remove(read_permission)
+
+        # admin sees both 'Tickets' tools
+        r = self.app.get('/rest/p/test?doap')
+        p = r.xml.find(self.ns + 'Project')
+        tools = p.findall(self.ns_sf + 'feature')
+        tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
+                  t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items()[0][1])
+                 for t in tools]
+        assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
+        assert_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
+
+        # anonymous sees only non-private tool
+        r = self.app.get('/rest/p/test?doap',
+                         extra_environ={'username': '*anonymous'})
+        p = r.xml.find(self.ns + 'Project')
+        tools = p.findall(self.ns_sf + 'feature')
+        tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
+                  t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items()[0][1])
+                 for t in tools]
+        assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
+        assert_not_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
+
+    @td.with_tool('test', 'Tickets', 'bugs')
+    def test_tools_additional_entries(self):
+        with mock.patch.object(ForgeTrackerApp, 'additional_doap_entries') as add:
+            add.return_value = [Node('additional-entry1', 'some text1'),
+                                Node('additional-entry2', 'some text2'),]
+            r = self.app.get('/rest/p/test?doap')
+        p = r.xml.find(self.ns + 'Project')
+        assert_equal(p.find(self.ns + 'additional-entry1').text, 'some text1')
+        assert_equal(p.find(self.ns + 'additional-entry2').text, 'some text2')
