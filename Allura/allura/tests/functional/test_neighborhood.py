@@ -91,7 +91,8 @@ class TestNeighborhood(TestController):
             'homepage': '[Homepage]',
             'project_list_url': 'http://fake.org/project_list',
             'project_template': '{"name": "template"}',
-            'anchored_tools': 'wiki:Wiki'
+            'anchored_tools': 'wiki:Wiki',
+            'prohibited_tools': 'wiki, tickets'
 
         }
         self.app.post('/p/_admin/update', params=params,
@@ -111,6 +112,26 @@ class TestNeighborhood(TestController):
         assert check_log('change neighborhood project template to '
                          '{"name": "template"}')
         assert check_log('update neighborhood tracking_id')
+        assert check_log('update neighborhood prohibited tools')
+
+    def test_prohibited_tools(self):
+        self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                          prohibited_tools='wiki, tickets'),
+                          extra_environ=dict(username='root'))
+
+        r = self.app.get('/p/_admin/overview', extra_environ=dict(username='root'))
+        assert 'wiki, tickets' in r
+
+        r = self.app.get('/p/test/admin/tools')
+        assert ' <span class="tool_title">Wiki</span><br />' not in r
+        assert ' <span class="tool_title">Tickets</span><br />' not in r
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                          prohibited_tools='wiki, test'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r), self.webflash(r)
 
     @td.with_wiki
     def test_anchored_tools(self):

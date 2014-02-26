@@ -337,6 +337,8 @@ class Application(object):
         :rtype: bool
 
         """
+        if self.config.tool_name.lower() in self.project.neighborhood.get_prohibited_tools():
+            return False
         tools_list = [tool.tool_name.lower()
                       for tool in self.project.app_configs]
         return tools_list.count(self.config.tool_name.lower()) < self.max_instances

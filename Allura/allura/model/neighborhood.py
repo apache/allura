@@ -90,6 +90,7 @@ class Neighborhood(MappedClass):
         css=str,
         google_analytics=bool))
     anchored_tools = FieldProperty(str, if_missing='')
+    prohibited_tools = FieldProperty(str, if_missing='')
 
     def parent_security_context(self):
         return None
@@ -282,3 +283,9 @@ class Neighborhood(MappedClass):
         except Exception:
             log.warning("anchored_tools isn't valid", exc_info=True)
             return dict()
+
+    def get_prohibited_tools(self):
+        prohibited_tools = []
+        if self.prohibited_tools:
+            prohibited_tools = [tool.lower().strip() for tool in self.prohibited_tools.split(',')]
+        return prohibited_tools

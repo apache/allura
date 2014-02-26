@@ -88,3 +88,6 @@ def test_neighborhood():
     neighborhood.anchored_tools = 'wiki:Wiki, tickets:Tickets'
     assert neighborhood.get_anchored_tools()['wiki'] == 'Wiki'
     assert neighborhood.get_anchored_tools()['tickets'] == 'Tickets'
+
+    neighborhood.prohibited_tools = 'wiki, tickets'
+    assert neighborhood.get_prohibited_tools() == ['wiki', 'tickets']

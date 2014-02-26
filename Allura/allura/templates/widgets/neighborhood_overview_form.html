@@ -56,6 +56,8 @@
 		Anchored tools will be inserted at the beginning of all projects, and cannot be removed by a project.
 		If you change the anchored tools, already-inserted tools will stay on all those projects.  Example: "wiki:Wiki, sometool:The Label"
 	</div>
+    <label class="grid-4">Prohibited tools</label>
+    <div class="grid-14">{{widget.display_field(widget.fields.prohibited_tools)}}</div>
     <label class="grid-4">&nbsp;</label>
     <div class="grid-14"><input type="submit" value="Save"/></div>
     {{lib.csrf_token()}}

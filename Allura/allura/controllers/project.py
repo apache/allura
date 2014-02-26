@@ -614,6 +614,20 @@ class NeighborhoodAdminController(object):
         tracking_id = kw.get('tracking_id', '')
         h.log_if_changed(nbhd, 'tracking_id', tracking_id,
                          'update neighborhood tracking_id')
+        prohibited_tools = kw.get('prohibited_tools', '')
+
+        result = True
+        if prohibited_tools.strip() != '':
+            for prohibited_tool in prohibited_tools.split(','):
+                if prohibited_tool.strip() not in g.entry_points['tool']:
+                    flash('Prohibited tools "%s" is invalid' %
+                      prohibited_tool.strip(), 'error')
+                    result = False
+
+        if result:
+            h.log_if_changed(nbhd, 'prohibited_tools', prohibited_tools,
+                            'update neighborhood prohibited tools')
+
         anchored_tools = kw.get('anchored_tools', '')
         validate_tools = dict()
         result = True
