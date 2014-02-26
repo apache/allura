@@ -115,24 +115,32 @@ class TransientActor(NodeBase, ActivityObjectBase):
         self.activity_name = activity_name
 
 
+def get_activity_object(activity_object_dict):
+    """Given a BSON-serialized activity object (e.g. activity.obj dict in a
+    timeline), return the corresponding :class:`ActivityObject`.
+
+    """
+    extras_dict = activity_object_dict.activity_extras
+    if not extras_dict:
+        return None
+    allura_id = extras_dict.get('allura_id')
+    if not allura_id:
+        return None
+    classname, _id = allura_id.split(':', 1)
+    cls = Mapper.by_classname(classname).mapped_class
+    try:
+        _id = bson.ObjectId(_id)
+    except bson.errors.InvalidId:
+        pass
+    return cls.query.get(_id=_id)
+
+
 def perm_check(user):
     """
     Return a function that returns True if ``user`` has 'read' access to a given activity,
     otherwise returns False.
     """
     def _perm_check(activity):
-        extras_dict = activity.obj.activity_extras
-        if not extras_dict:
-            return True
-        allura_id = extras_dict.get('allura_id')
-        if not allura_id:
-            return True
-        classname, _id = allura_id.split(':', 1)
-        cls = Mapper.by_classname(classname).mapped_class
-        try:
-            _id = bson.ObjectId(_id)
-        except bson.errors.InvalidId:
-            pass
-        obj = cls.query.get(_id=_id)
-        return obj and obj.has_activity_access('read', user, activity)
+        obj = get_activity_object(activity.obj)
+        return obj is None or obj.has_activity_access('read', user, activity)
     return _perm_check

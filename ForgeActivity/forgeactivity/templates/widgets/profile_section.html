@@ -41,8 +41,9 @@
         {% for a in timeline %}
         <li>
             <b>
-                {{am.icon(a.actor, 16, 'avatar')}}{{am.activity_obj(a.actor)}} {{a.verb}} {{am.activity_obj(a.obj)}}
+                {{a.verb.capitalize()}} {{am.activity_obj(a.obj)}}
                 {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
+                {% if a.obj.project %}on <a href="{{a.obj.project.url()}}">{{a.obj.project.name}}</a>{% endif %}
             </b>
             {% if a.obj.activity_extras.get('summary') %}
             <p>
