@@ -39,6 +39,8 @@ python-oembed==0.2.1
 requests==2.0.0
 oauthlib==0.4.2
 requests-oauthlib==0.4.0
+datatree==0.1.8.1
+
 # for taskd proc name switching
 setproctitle==1.1.7
 # dep of pypeline
