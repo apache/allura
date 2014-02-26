@@ -1010,6 +1010,12 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if self.external_homepage:
             p << Node('homepage', **{'rdf:resource': self.external_homepage})
 
+        # Additional entries provided by tools
+        apps = [self.app_instance(ac) for ac in self.app_configs if h.has_access(ac, 'read')]
+        for app in apps:
+            for entry in app.additional_doap_entries():
+                p << entry
+
         # Categories
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_audience}}):
             p << Node('audience', cat.fullname)
@@ -1064,6 +1070,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             person << Node('foaf:nick', u.username)
             person << Node('foaf:homepage', **{'rdf:resource': h.absurl(u.url())})
             p << (Node('developer') << person)
+
+        # Basic tool info
+        for app in apps:
+            p << app.doap()
 
         return root.render(as_root=True)
 

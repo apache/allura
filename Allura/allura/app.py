@@ -29,6 +29,7 @@ from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 from bson.errors import InvalidId
 from formencode import validators as V
+from datatree import Node
 
 from ming.orm import session
 from ming.utils import LazyProperty
@@ -623,6 +624,22 @@ class Application(object):
         """
         raise NotImplementedError, 'bulk_export'
 
+    def doap(self):
+        """App's representation for DOAP API.
+
+        :rtype: datatree.Node
+        """
+        app = Node('sf:Feature')
+        app << Node('name', self.config.options.mount_label)
+        app << Node('foaf:page', **{'rdf:resource': h.absurl(self.url)})
+        return Node('sf:feature') << app
+
+    def additional_doap_entries(self):
+        """Additional DOAP entries to include in project's DOAP represention.
+
+        :rtype: list of datatree.Node
+        """
+        return []
 
 class DefaultAdminController(BaseController):
 
