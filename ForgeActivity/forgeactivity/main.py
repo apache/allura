@@ -19,6 +19,7 @@ import logging
 import calendar
 from itertools import islice, ifilter
 
+from ming.orm import session
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from tg import expose, validate, config
@@ -32,7 +33,7 @@ from allura import version
 from allura import model as M
 from allura.controllers import BaseController
 from allura.lib.security import require_authenticated, require_access
-from allura.model.timeline import perm_check
+from allura.model.timeline import perm_check, get_activity_object
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.widgets.form_fields import PageList
@@ -254,6 +255,18 @@ class ForgeActivityProfileSection(ProfileSectionBase):
         )
         filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
                                         0, 8))
+        for activity in filtered_timeline:
+            # Get the project for the activity.obj so we can use it in the
+            # template. Expunge first so Ming doesn't try to flush the attr
+            # we create to temporarily store the project.
+            #
+            # The get_activity_object() calls are cheap, pulling from
+            # the session identity map instead of mongo since identical
+            # calls are made by perm_check() above.
+            session(activity).expunge(activity)
+            activity_obj = get_activity_object(activity.obj)
+            activity.obj.project = activity_obj.project if activity_obj else None
+
         context.update({
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),
