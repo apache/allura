@@ -35,11 +35,16 @@
     <h4>Related</h4>
     <p>
     {% for related in related_artifacts %}
-      {% set tool = related.app_config.options.mount_label %}
-      {% if related.project != artifact.project %}
-        {% set prefix = '%s: %s' % (related.project.name, tool) %}
+      {% if not related.app_config|default %}
+        {# e.g. a Commit is not currently an Artifact #}
+        {% set prefix = related.type_s %}
       {% else %}
-        {% set prefix = tool %}
+        {% set tool = related.app_config.options.mount_label %}
+        {% if related.project != artifact.project %}
+          {% set prefix = '%s: %s' % (related.project.name, tool) %}
+        {% else %}
+          {% set prefix = tool %}
+        {% endif %}
       {% endif %}
       <a href="{{related.url()}}">{{prefix}}: {{related.link_text()}}</a><br>
     {% endfor %}
