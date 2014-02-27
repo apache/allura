@@ -987,14 +987,30 @@ class UserPreferencesProvider(object):
         '''
         Returns list of additional routes for AuthProvider.
 
-        No additional routes by default. Subclasses migth override this.
+        By default, scans the provider for @expose()ed methods, which are
+        added as pages with the same name as the method.  Note that if you
+        want the new pages to show up in the menu on the various auth pages,
+        you will also need to add it to the list returned by
+        `AuthenticationProvider.account_navigation`.
 
-        For example: [('newroute', newroute_handler), ] will add
-        'newroute' attribute to AuthProvider, which will be set to newroute_handler.
+        If you want to override this behavior, you can override this method
+        and manually return a list of (page_name, handler) tuple pairs.  Note,
+        however, that this could break future subclasses of your providers'
+        ability to extend the list.
 
-        newroutehandler is a usual controller method (decorated with @exposed and other stuff).
+        For example: `[('newroute', newroute_handler)]` will add 'newroute'
+        attribute to the auth controller, which will be set to `newroute_handler`.
+
+        `newroute_handler` must be decorated with @expose(), but does not have
+        to live on the provider.
         '''
-        return []
+        urls = []
+        for attr_name in dir(self):
+            attr_value = getattr(self, attr_name)
+            decoration = getattr(attr_value, 'decoration', None)
+            if getattr(decoration, 'exposed', False):
+                urls.append((attr_name, attr_value))
+        return urls
 
 
 class LocalUserPreferencesProvider(UserPreferencesProvider):

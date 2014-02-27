@@ -35,7 +35,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession, session
-from tg import config
+from tg import config, expose
 from mock import patch
 from allura.lib import plugin
 
@@ -603,6 +603,22 @@ class TestPreferences(TestController):
                       params={'allow_user_messages': 'on'})
         assert not M.User.query.get(
             username='test-admin').get_pref('disable_user_messages')
+
+
+    @td.with_user_project('test-admin')
+    def test_additional_page(self):
+        class MyPP(plugin.UserPreferencesProvider):
+            def not_page(self):
+                return 'not page'
+            @expose()
+            def new_page(self):
+                return 'new page'
+
+        with mock.patch.object(plugin.UserPreferencesProvider, 'get') as upp_get:
+            upp_get.return_value = MyPP()
+            r = self.app.get('/auth/new_page')
+            assert_equal(r.body, 'new page')
+            self.app.get('/auth/not_page', status=404)
 
 
 class TestPasswordReset(TestController):
