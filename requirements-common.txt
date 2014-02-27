@@ -13,7 +13,7 @@ docutils==0.9
 EasyWidgets==0.2dev-20130716
 faulthandler==2.1
 feedparser==5.0.1
-FormEncode==1.2.4
+FormEncode==1.2.6
 # dep of Creoleparser
 Genshi==0.6
 # dep of oauth2
