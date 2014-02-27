@@ -401,6 +401,7 @@ def embed(url=None):
         html = None
 
     if html:
+        # convert iframe src from http to https, to avoid mixed security blocking when used on an https page
         html = BeautifulSoup(html)
         embed_url = html.find('iframe').get('src')
         if embed_url:
@@ -410,6 +411,6 @@ def embed(url=None):
             else:
                 embed_url = embed_url.geturl()
             html.find('iframe')['src'] = embed_url
-            return jinja2.Markup('<div class="grid-20">%s</div>' % html)
+        return jinja2.Markup('<div class="grid-20">%s</div>' % html)
 
     return '[[embed url=%s]]' % url
