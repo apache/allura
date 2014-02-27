@@ -27,6 +27,7 @@ from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
 from pylons import tmpl_context as c, app_globals as g
 from pylons import url, request, response, session
+import pylons
 import tg
 from webob import Response, Request
 import ew
@@ -60,8 +61,28 @@ def get_config_file(config=None):
     return os.path.join(conf_dir, config)
 
 
+def setup_config_test(config_file=None, force=False):
+    '''
+    This may be necessary to use within test setup that needs the app config loaded,
+    especially so that the tests can be run from any directory.
+    When run from the ./Allura/ dir, the setup.cfg file there causes a pylons plugin
+    for nose to run, which runs `loadapp` (among other things).
+    This function lets a test run from any directory.
+    '''
+    if not config_file:
+        config_file = get_config_file()
+    already_loaded = pylons.config.get('pylons.app_globals')
+    if not already_loaded or force:
+        loadapp('config:' + config_file)
+setup_config_test.__test__ = False
+
+
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
-    '''Create clean environment for running tests'''
+    '''
+    Create clean environment for running tests.
+
+    A lightweight alternative is setup_config_test which doesn't bootstrap app data.
+    '''
     try:
         conf_dir = tg.config.here
     except AttributeError:

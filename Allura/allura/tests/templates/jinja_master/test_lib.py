@@ -20,6 +20,7 @@ from mock import Mock
 from nose.tools import assert_equal
 
 from allura.config.app_cfg import ForgeConfig
+from alluratest.controller import setup_config_test
 
 
 def strip_space(s):
@@ -28,6 +29,7 @@ def strip_space(s):
 
 class TemplateTest(object):
     def setUp(self):
+        setup_config_test()
         forge_config = ForgeConfig()
         forge_config.setup_jinja_renderer()
         self.jinja2_env = config['pylons.app_globals'].jinja2_env
