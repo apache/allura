@@ -235,16 +235,16 @@ class TestRootController(TestController):
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you can revert to an old revison, but not the current one
-        assert response.html.find('a', {'href': './revert?version=1'})
-        assert not response.html.find('a', {'href': './revert?version=2'})
+        assert response.html.find('a', {'data-version': '1'})
+        assert not response.html.find('a', {'data-version': '2'})
         response = self.app.get('/wiki/tést/history',
                                 extra_environ=dict(username='*anonymous'))
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you cannot revert to any revision
-        assert not response.html.find('a', {'href': './revert?version=1'})
-        assert not response.html.find('a', {'href': './revert?version=2'})
+        assert not response.html.find('a', {'data-version': '1'})
+        assert not response.html.find('a', {'data-version': '2'})
 
     def test_page_diff(self):
         self.app.post(

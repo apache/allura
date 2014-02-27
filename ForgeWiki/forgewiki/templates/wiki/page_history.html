@@ -52,7 +52,19 @@
           <td><input name="v2" type="radio" value="{{p.version}}"/></td>
           <td class="tright">
             {% if i != 0 and h.has_access(p, 'edit')() %}
-              <a class="post-link" href="./revert?version={{p.version}}"><b data-icon="{{g.icons['fork'].char}}" class="ico {{g.icons['fork'].css}}" title="Revert to version {{p.version}}"></b></a>
+              <a class="post-link" data-version="{{p.version}}" href="#"><b data-icon="{{g.icons['fork'].char}}" class="ico {{g.icons['fork'].css}}" title="Revert to version {{p.version}}"></b></a>
+              <div class="confirm_revert_{{p.version}}" style="display:none">
+                <b class="ico ico-close close" data-icon="D"></b>
+                <h1>Confirm revert to version {{p.version}}</h1>
+                <p>
+                  Do you really want to revert page to version {{p.version}}?
+                  You can undo it later by reverting changes made by this revert.
+                </p>
+                <p>
+                  <button class="continue_revert" href="./revert?version={{p.version}}">Yes</button>
+                  <input type="button" value="Cancel" class="cancel_revert close">
+                </p>
+              </div>
             {% endif %}
             <a href="./?version={{p.version}}"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Revision"></b></a>
           </td>
@@ -63,4 +75,5 @@
   </table>
 </form>
 {{c.page_list.display(limit=limit, page=page, count=count)}}
+{{c.revert.display(content='')}}
 {% endblock %}

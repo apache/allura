@@ -61,6 +61,7 @@ class W:
     create_page_lightbox = CreatePageWidget(
         name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
     markdown_editor = ffw.MarkdownEdit()
+    revert = ffw.Lightbox(name='revert', trigger='a.post-link')
     label_edit = ffw.LabelEdit()
     attachment_add = ffw.AttachmentAdd()
     attachment_list = ffw.AttachmentList()
@@ -558,6 +559,7 @@ class PageController(BaseController, FeedController):
             raise exc.HTTPNotFound
         c.page_list = W.page_list
         c.page_size = W.page_size
+        c.revert = W.revert
         limit, pagenum, start = g.handle_paging(limit, page, default=25)
         count = 0
         pages = self.page.history()
