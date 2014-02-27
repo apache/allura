@@ -18,8 +18,10 @@
 from formencode import validators as fev
 import requests
 
+from allura.lib import validators
 
-class TracURLValidator(fev.URL):
+
+class TracURLValidator(validators.URL):
     not_empty = True
     messages = {
         'unavailable': 'This project is unavailable for import'

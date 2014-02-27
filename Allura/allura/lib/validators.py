@@ -25,6 +25,11 @@ from . import helpers as h
 from datetime import datetime
 
 
+class URL(fev.URL):
+    # allows use of IP address instead of domain name
+    require_tld = False
+
+
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):
