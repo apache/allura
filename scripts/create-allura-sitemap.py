@@ -61,8 +61,8 @@ SITEMAP_TEMPLATE = """\
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     {% for loc in locs -%}
     <url>
-        <loc>{{ loc }}</loc>
-        <lastmod>{{ now }}</lastmod>
+        <loc>{{ loc.url }}</loc>
+        <lastmod>{{ loc.date }}</lastmod>
         <changefreq>daily</changefreq>
     </url>
     {% endfor %}
@@ -99,13 +99,21 @@ def main(options, args):
     creds = security.Credentials.get()
     locs = []
     file_count = 0
+
+    nbhd_id = []
+    if options.neighborhood:
+        nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'name': {'$in': options.neighborhood}})]
+
     # write sitemap files, MAX_SITEMAP_URLS per file
-    for chunk in utils.chunked_find(M.Project):
+    for chunk in utils.chunked_find(M.Project, {'deleted': False, 'neighborhood_id': {'$nin': nbhd_id}}):
         for p in chunk:
             c.project = p
             try:
-                locs += [BASE_URL + s.url if s.url[0] == '/' else s.url
-                         for s in p.sitemap(excluded_tools=['git', 'hg', 'svn'])]
+                for s in p.sitemap(excluded_tools=['git', 'hg', 'svn']):
+                    url = BASE_URL + s.url if s.url[0] == '/' else s.url
+                    locs.append({'url': url,
+                                 'date': p.last_updated.strftime("%Y-%m-%d")})
+
             except Exception, e:
                 print "Error creating sitemap for project '%s': %s" %\
                     (p.shortname, e)
@@ -132,8 +140,20 @@ def main(options, args):
         with open(os.path.join(output_path, 'sitemap.xml'), 'w') as f:
             f.write(sitemap_index_content)
 
+def callback(option, opt_str, value, parser):
+    args=[]
+    for arg in parser.rargs:
+        if arg[0] != "-":
+            args.append(arg)
+        else:
+            del parser.rargs[:len(args)]
+            break
+    if getattr(parser.values, option.dest):
+        args.extend(getattr(parser.values, option.dest))
+    setattr(parser.values, option.dest, args)
 
 def parse_options():
+
     def validate(option, opt_str, value, parser):
         parser.values.urls_per_file = min(value, MAX_SITEMAP_URLS)
 
@@ -151,6 +171,9 @@ def parse_options():
                          '[default: %default, max: ' +
                          str(MAX_SITEMAP_URLS) + ']',
                          action='callback', callback=validate)
+    optparser.add_option('-n', '--neighborhood', dest='neighborhood', action="callback", callback=callback,
+                         help="URL prefix of excluded neighborhood(s)",
+                         default=None, nargs='*')
     options, args = optparser.parse_args()
     return options, args
 
