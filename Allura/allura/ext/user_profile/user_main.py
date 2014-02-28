@@ -296,7 +296,10 @@ class ProjectsSection(ProfileSectionBase):
         context['projects'] = [
             project
             for project in self.user.my_projects()
-            if project != c.project and (self.user == c.user or h.has_access(project, 'read'))]
+            if project != c.project
+            and (self.user == c.user or h.has_access(project, 'read'))
+            and not project.is_nbhd_project
+            and not project.is_user_project]
         return context
 
 
