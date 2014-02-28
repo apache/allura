@@ -132,6 +132,7 @@ setup(
     projects = allura.ext.user_profile.user_main:ProjectsSection
     skills = allura.ext.user_profile.user_main:SkillsSection
     tools = allura.ext.user_profile.user_main:ToolsSection
+    social = allura.ext.user_profile.user_main:SocialSection
 
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand

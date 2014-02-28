@@ -3417,6 +3417,32 @@ ul.dropdown ul li a:hover {
 .profile-section.tools .section-body li.empty {
   margin-left: 10px;
 }
+.profile-section.social {
+  margin-top: 10px;
+}
+.profile-section.social .section-body {
+  padding: 10px;
+}
+.profile-section.social dl dt {
+  display: inline-block;
+  font-weight: bold;
+  margin-right: 4px;
+  width: 100px;
+  vertical-align: top;
+}
+.profile-section.social dl dd {
+  display: inline;
+}
+.profile-section.social dl dd:after {
+  content: '\A';
+  white-space: pre;
+}
+.profile-section.social dl dd.empty {
+  margin-left: 10px;
+}
+.profile-section.social dl dd a {
+  margin: 0;
+}
 #user-message {
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;

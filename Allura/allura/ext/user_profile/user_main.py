@@ -309,3 +309,7 @@ class SkillsSection(ProfileSectionBase):
 
 class ToolsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/tools.html'
+
+
+class SocialSection(ProfileSectionBase):
+    template = 'allura.ext.user_profile:templates/sections/social.html'
