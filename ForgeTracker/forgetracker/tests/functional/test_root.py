@@ -287,9 +287,13 @@ class TestFunctionalController(TrackerTestController):
 
     def test_new_ticket(self):
         summary = 'test new ticket'
-        ticket_view = self.new_ticket(summary=summary).follow()
+        ticket_view = self.new_ticket(summary=summary, labels="test label").follow()
         assert_true(summary in ticket_view)
         assert 'class="artifact_subscribe' in ticket_view
+
+    def test_labels(self):
+        ticket_view = self.new_ticket(summary='summary', labels="test label").follow()
+        assert '''<a href="../search?q=labels:'test+label'">test label (1)</a>''' in ticket_view
 
     def test_new_with_milestone(self):
         ticket_view = self.new_ticket(

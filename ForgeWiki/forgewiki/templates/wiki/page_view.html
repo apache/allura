@@ -66,7 +66,7 @@
     <label class="simple">Labels: </label>
     {% for label in page.labels %}
       {% if label != '' %}
-        <span><a href="{{c.app.url}}search/?q=labels_t:{{label}}&parser=standard">{{label}} ({{page.artifacts_labeled_with(label, page.app_config).count()}})</a></span>
+        <span><a href="{{c.app.url}}search/?q=labels_t:'{{label}}'&parser=standard">{{label}} ({{page.artifacts_labeled_with(label, page.app_config).count()}})</a></span>
       {% endif %}
     {% endfor %}
   </div>

@@ -169,6 +169,16 @@ class TestRootController(TestController):
         assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'renamed'
 
+    def test_labels(self):
+        response = self.app.post(
+            '/wiki/foo-bar/update',
+            params={
+                'title': 'foo',
+                'text': 'sometext',
+                'labels': 'test label',
+                'viewable_by-0.id': 'all'}).follow()
+        assert '''<a href="/p/test/wiki/search/?q=labels_t:'test label'&parser=standard">test label (1)</a>''' in response
+
     def test_title_slashes(self):
         # forward slash not allowed in wiki page title - converted to dash
         response = self.app.post(

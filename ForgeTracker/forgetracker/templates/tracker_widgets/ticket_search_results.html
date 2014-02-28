@@ -59,7 +59,7 @@
               {% elif col['name'] == 'labels' %}
               <td>
                   {%- for l in t.labels -%}
-                  <a href="{{c.app.url}}search?q=labels:{{h.urlquoteplus(l)}}">{{l}}</a>
+                  <a href="{{c.app.url}}search?q=labels:'{{h.urlquoteplus(l)}}'">{{l}}</a>
                     {%- if not loop.last -%}, {% endif -%}
                   {%- endfor -%}
               </td>
