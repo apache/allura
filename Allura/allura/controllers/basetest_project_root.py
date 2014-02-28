@@ -109,7 +109,10 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             ep_name = name
             if name.startswith('test-app-'):
                 ep_name = name[len(prefix):]
-            c.project.install_app(ep_name, name)
+            try:
+                c.project.install_app(ep_name, name)
+            except KeyError:
+                raise exc.HTTPNotFound, name
             app = c.project.app_instance(name)
             if app is None:
                 raise exc.HTTPNotFound, name

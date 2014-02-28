@@ -26,6 +26,6 @@ def test_auth_additional(additional_urls):
     def test_function():
         return 'test'
 
-    additional_urls.return_value = [['test', test_function], ]
+    additional_urls.return_value = {'test': test_function}
     auth = AuthController()
-    assert auth.test()== 'test'
+    assert auth.test() == 'test'

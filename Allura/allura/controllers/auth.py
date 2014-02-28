@@ -76,9 +76,12 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+
+    def __getattr__(self, name):
         urls = plugin.UserPreferencesProvider.get().additional_urls()
-        for u, method in urls:
-            setattr(self, u, method)
+        if name not in urls:
+            raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
+        return urls[name]
 
     @expose()
     def prefs(self, *args, **kwargs):

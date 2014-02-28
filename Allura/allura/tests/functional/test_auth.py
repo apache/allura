@@ -604,12 +604,12 @@ class TestPreferences(TestController):
         assert not M.User.query.get(
             username='test-admin').get_pref('disable_user_messages')
 
-
     @td.with_user_project('test-admin')
     def test_additional_page(self):
         class MyPP(plugin.UserPreferencesProvider):
             def not_page(self):
                 return 'not page'
+
             @expose()
             def new_page(self):
                 return 'new page'

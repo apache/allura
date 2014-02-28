@@ -985,7 +985,7 @@ class UserPreferencesProvider(object):
 
     def additional_urls(self):
         '''
-        Returns list of additional routes for AuthProvider.
+        Returns a mapping of additional routes for AuthProvider.
 
         By default, scans the provider for @expose()ed methods, which are
         added as pages with the same name as the method.  Note that if you
@@ -994,22 +994,24 @@ class UserPreferencesProvider(object):
         `AuthenticationProvider.account_navigation`.
 
         If you want to override this behavior, you can override this method
-        and manually return a list of (page_name, handler) tuple pairs.  Note,
+        and manually return a mapping of `{page_name: handler, ...}`.  Note,
         however, that this could break future subclasses of your providers'
         ability to extend the list.
 
-        For example: `[('newroute', newroute_handler)]` will add 'newroute'
+        For example: `{'newroute', newroute_handler}` will add 'newroute'
         attribute to the auth controller, which will be set to `newroute_handler`.
+        `newroute_handler` can either be an @expose()ed method, or a controller
+        that can dispatch further sub-pages.
 
         `newroute_handler` must be decorated with @expose(), but does not have
         to live on the provider.
         '''
-        urls = []
+        urls = {}
         for attr_name in dir(self):
             attr_value = getattr(self, attr_name)
             decoration = getattr(attr_value, 'decoration', None)
             if getattr(decoration, 'exposed', False):
-                urls.append((attr_name, attr_value))
+                urls[attr_name] = attr_value
         return urls
 
 
