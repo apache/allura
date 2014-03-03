@@ -347,6 +347,7 @@ class MergeRequestController(object):
     mr_dispose_form = SCMMergeRequestDisposeWidget()
 
     def __init__(self, num):
+        self.tmpl = g.jinja2_env.get_template('allura:templates/repo/merge_request_changed.html')
         self.req = M.MergeRequest.query.get(
             app_config_id=c.app.config._id,
             request_number=int(num))
@@ -404,26 +405,28 @@ class MergeRequestController(object):
     def do_request_merge_edit(self, **kw):
         require_access(self.req, 'write')
         kw = self.mr_widget_edit.to_python(kw)
-        changes = ['Merge request %s has been modified:' % self.req.request_number,
-                'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
+        changes = dict()
         if self.req.summary != kw['summary']:
-            changes.append('Summary updated: %r => %r' % (self.req.summary, kw['summary']))
+            changes['Summary'] = [self.req.summary, kw['summary']]
             self.req.summary = kw['summary']
 
         if self.req.target_branch != kw['target_branch']:
-            changes.append('Target branch updated: %r => %r' % (self.req.target_branch, kw['target_branch']))
+            changes['Target branch'] = [self.req.target_branch, kw['target_branch']]
             self.req.target_branch = kw['target_branch']
 
         if self.req.source_branch != kw['source_branch']:
-            changes.append('Source branch updated: %r => %r' % (self.req.source_branch, kw['source_branch']))
+            changes['Source branch'] = [self.req.source_branch, kw['source_branch']]
             self.req.source_branch = kw['source_branch']
 
         if self.req.description != kw['description']:
-            changes.append('Description updated: %r => %r' % (self.req.description, kw['description']))
+            changes['Description'] = [self.req.description, kw['description']]
             self.req.description = kw['description']
         with self.req.push_downstream_context():
             self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
-        self.req.discussion_thread.add_post(text='\n'.join(changes))
+
+        message = self.tmpl.render(changes=changes)
+        self.req.discussion_thread.add_post(text=message, is_meta=True)
+
         M.Notification.post(
             self.req, 'merge_request',
             subject='Merge request: ' + self.req.summary)
@@ -434,7 +437,10 @@ class MergeRequestController(object):
     @validate(mr_dispose_form)
     def save(self, status=None, **kw):
         require_access(self.req, 'write')
-        self.req.status = status
+        if self.req.status != status:
+            message = self.tmpl.render(changes={'Status': [self.req.status, status]})
+            self.req.discussion_thread.add_post(text=message, is_meta=True)
+            self.req.status = status
         redirect('.')
 
 
