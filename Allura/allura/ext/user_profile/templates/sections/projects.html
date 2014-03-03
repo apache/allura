@@ -43,6 +43,12 @@
                 <a href="{{project.url()}}">{{project.name}}</a>
                 {{project.summary}}
             </span>
+            <span class="project-last-updated">
+                Last Updated:
+                <time datetime="{{project.last_updated}}" title="{{project.last_updated}}">
+                    {{h.ago(project.last_updated)}}
+                </time>
+            </span>
         </li>
     {% else %}
         <li class="empty">No projects to display.</li>

@@ -3385,6 +3385,12 @@ ul.dropdown ul li a:hover {
   content: '\A';
   white-space: pre;
 }
+.profile-section.projects ul .project-last-updated {
+  display: block;
+  text-align: right;
+  font-style: italic;
+  font-size: 10px;
+}
 .profile-section.projects .show-more-projects {
       text-align: center;
 }
