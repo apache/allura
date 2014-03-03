@@ -265,7 +265,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             # calls are made by perm_check() above.
             session(activity).expunge(activity)
             activity_obj = get_activity_object(activity.obj)
-            activity.obj.project = activity_obj.project if activity_obj else None
+            activity.obj.project = getattr(activity_obj, 'project', None)
 
         context.update({
             'follow_toggle': W.follow_toggle,
