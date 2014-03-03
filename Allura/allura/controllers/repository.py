@@ -404,12 +404,26 @@ class MergeRequestController(object):
     def do_request_merge_edit(self, **kw):
         require_access(self.req, 'write')
         kw = self.mr_widget_edit.to_python(kw)
-        self.req.summary = kw['summary']
-        self.req.target_branch = kw['target_branch']
-        self.req.source_branch = kw['source_branch']
-        self.req.description = kw['description']
+        changes = ['Merge request %s has been modified:' % self.req.request_number,
+                'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
+        if self.req.summary != kw['summary']:
+            changes.append('Summary updated: %r => %r' % (self.req.summary, kw['summary']))
+            self.req.summary = kw['summary']
+
+        if self.req.target_branch != kw['target_branch']:
+            changes.append('Target branch updated: %r => %r' % (self.req.target_branch, kw['target_branch']))
+            self.req.target_branch = kw['target_branch']
+
+        if self.req.source_branch != kw['source_branch']:
+            changes.append('Source branch updated: %r => %r' % (self.req.source_branch, kw['source_branch']))
+            self.req.source_branch = kw['source_branch']
+
+        if self.req.description != kw['description']:
+            changes.append('Description updated: %r => %r' % (self.req.description, kw['description']))
+            self.req.description = kw['description']
         with self.req.push_downstream_context():
             self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
+        self.req.discussion_thread.add_post(text='\n'.join(changes))
         M.Notification.post(
             self.req, 'merge_request',
             subject='Merge request: ' + self.req.summary)

@@ -631,6 +631,11 @@ class TestFork(_TestCase):
         assert '[5c4724]' not in r
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
+        assert '''<p>Merge request 1 has been modified:<br />
+Edited By: Test Admin (test-admin)<br />
+Summary updated: u'summary' =&gt; u'changed summary'<br />
+Source branch updated: u'zz' =&gt; u'master'<br />
+Description updated: u'description' =&gt; u'changed description'</p>''' in r
 
         r = self.app.get('/p/test/src-git/merge-requests')
         assert '<a href="1/">changed summary</a>' in r
