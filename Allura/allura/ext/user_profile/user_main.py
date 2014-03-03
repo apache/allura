@@ -29,6 +29,7 @@ from webob import exc
 from jinja2 import Markup
 from pytz import timezone
 from datetime import datetime
+from paste.deploy.converters import asbool
 
 from allura import version
 from allura.app import Application, SitemapEntry
@@ -258,16 +259,23 @@ class ProfileSectionBase(object):
         """
         if not self.check_display():
             return ''
-        tmpl = g.jinja2_env.get_template(self.template)
-        context = self.prepare_context({
-            'h': h,
-            'c': c,
-            'g': g,
-            'user': self.user,
-            'config': tg.config,
-            'auth': AuthenticationProvider.get(request),
-        })
-        return Markup(tmpl.render(context))
+        try:
+            tmpl = g.jinja2_env.get_template(self.template)
+            context = self.prepare_context({
+                'h': h,
+                'c': c,
+                'g': g,
+                'user': self.user,
+                'config': tg.config,
+                'auth': AuthenticationProvider.get(request),
+            })
+            return Markup(tmpl.render(context))
+        except Exception as e:
+            log.exception('Error rendering profile section %s: %s', type(self).__name__, e)
+            if asbool(tg.config.get('debug')):
+                raise
+            else:
+                return ''
 
 
 class PersonalDataSection(ProfileSectionBase):
