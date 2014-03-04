@@ -1428,15 +1428,16 @@ class TicketController(BaseController, FeedController):
                 changes[cf.label] = cf_val(cf)
 
         tpl = pkg_resources.resource_filename(
-            'forgetracker','data/ticket_changed_tmpl')
+            'forgetracker', 'data/ticket_changed_tmpl')
         render = partial(h.render_genshi_plaintext, tpl, changelist=changes.get_changed())
         post_text = render(comment=None)
-        notification_text = render(comment=comment) if comment else None 
+        notification_text = render(comment=comment) if comment else None
         thread = self.ticket.discussion_thread
         thread.add_post(text=post_text, is_meta=True,
                         notification_text=notification_text)
         self.ticket.commit()
-        if comment: thread.post(text=comment, notify=False)
+        if comment:
+            thread.post(text=comment, notify=False)
         g.director.create_activity(c.user, 'modified', self.ticket,
                                    related_nodes=[c.project], tags=['ticket'])
         c.app.globals.invalidate_bin_counts()
