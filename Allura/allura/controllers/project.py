@@ -621,12 +621,12 @@ class NeighborhoodAdminController(object):
             for prohibited_tool in prohibited_tools.split(','):
                 if prohibited_tool.strip() not in g.entry_points['tool']:
                     flash('Prohibited tools "%s" is invalid' %
-                      prohibited_tool.strip(), 'error')
+                          prohibited_tool.strip(), 'error')
                     result = False
 
         if result:
             h.log_if_changed(nbhd, 'prohibited_tools', prohibited_tools,
-                            'update neighborhood prohibited tools')
+                             'update neighborhood prohibited tools')
 
         anchored_tools = kw.get('anchored_tools', '')
         validate_tools = dict()
