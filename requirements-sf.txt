@@ -26,7 +26,7 @@ Unidecode==0.04.14
 
 # use version built from https://github.com/johnsca/GitPython/tree/sf-master
 # for unmerged fixes for [#5411], [#6000], and [#6078]
-GitPython==0.3.2.RC1-20140303
+GitPython==0.3.2.RC1-20140130
 
 WebError==0.10.3-20130423
 
