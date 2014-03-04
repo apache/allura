@@ -41,7 +41,7 @@
             {%- endif -%}
             <span class="project-info">
                 <a href="{{project.url()}}">{{project.name}}</a>
-                {{project.summary}}
+                {{project.summary or '&nbsp;'|safe}}
             </span>
             <span class="project-last-updated">
                 Last Updated:

@@ -3391,6 +3391,11 @@ ul.dropdown ul li a:hover {
   font-style: italic;
   font-size: 10px;
 }
+.profile-section.projects ul .project-last-updated:after {
+  display: table;
+  content: "";
+  clear: both;
+}
 .profile-section.projects .show-more-projects {
       text-align: center;
 }
