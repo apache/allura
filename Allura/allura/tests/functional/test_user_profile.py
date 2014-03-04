@@ -30,7 +30,17 @@ class TestUserProfile(TestController):
     def test_profile(self):
         r = self.app.get('/u/test-admin/profile/')
         assert_equal('Test Admin',
-                r.html.find('h1', 'project_title').find('a').text)
+                     r.html.find('h1', 'project_title').find('a').text)
+        sections = set([c for s in r.html.findAll(None, 'profile-section') for c in s['class'].split()])
+        assert_in('personal-data', sections)
+        assert_in('Username:test-admin', r.html.find(None, 'personal-data').getText())
+        assert_in('projects', sections)
+        assert_in('Test Project', r.html.find(None, 'projects').getText())
+        assert_in('Last Updated:less than 1 minute ago', r.html.find(None, 'projects').getText())
+        assert_in('tools', sections)
+        assert_in('Admin', r.html.find(None, 'tools').getText())
+        assert_in('skills', sections)
+        assert_in('No skills entered', r.html.find(None, 'skills').getText())
 
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)
