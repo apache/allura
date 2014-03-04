@@ -92,13 +92,13 @@ class ProjectCategory(MappedClass):
 class TroveCategoryMapperExtension(MapperExtension):
 
     def after_insert(self, obj, state, sess):
-        g.post_event('trove_category_created', obj._id)
+        g.post_event('trove_category_created', obj.fullpath)
 
     def after_update(self, obj, state, sess):
-        g.post_event('trove_category_updated', obj._id)
+        g.post_event('trove_category_updated', obj.fullpath)
 
     def after_delete(self, obj, state, sess):
-        g.post_event('trove_category_deleted', obj._id)
+        g.post_event('trove_category_deleted', obj.fullpath)
 
 
 class TroveCategory(MappedClass):
