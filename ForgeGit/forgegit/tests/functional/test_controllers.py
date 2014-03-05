@@ -21,6 +21,7 @@ import os
 import shutil
 import tempfile
 
+from datadiff.tools import assert_equal as dd_assert_equal
 from nose.tools import assert_equal, assert_in, assert_not_in
 import tg
 import pkg_resources
@@ -632,8 +633,11 @@ class TestFork(_TestCase):
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
         changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
-        assert unicode(changes) == """
+        dd_assert_equal(unicode(changes), """
 <div class="markdown_content"><ul>
+<li>
+<p><strong>Summary</strong>: summary --&gt; changed summary</p>
+</li>
 <li>
 <p><strong>Source branch</strong>: zz --&gt; master</p>
 </li>
@@ -648,10 +652,8 @@ class TestFork(_TestCase):
 <span class="gd">-description</span>
 <span class="gi">+changed description</span>
 </pre></div>
-<ul>
-<li><strong>Summary</strong>: summary --&gt; changed summary</li>
-</ul></div>
-""".strip()
+</div>
+""".strip())
 
         r = self.app.get('/p/test/src-git/merge-requests')
         assert '<a href="1/">changed summary</a>' in r

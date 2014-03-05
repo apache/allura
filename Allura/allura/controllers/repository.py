@@ -19,7 +19,7 @@ import os
 import logging
 import difflib
 from urllib import quote, unquote
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from itertools import islice
 
 from paste.deploy.converters import asbool
@@ -405,7 +405,7 @@ class MergeRequestController(object):
     def do_request_merge_edit(self, **kw):
         require_access(self.req, 'write')
         kw = self.mr_widget_edit.to_python(kw)
-        changes = dict()
+        changes = OrderedDict()
         if self.req.summary != kw['summary']:
             changes['Summary'] = [self.req.summary, kw['summary']]
             self.req.summary = kw['summary']
