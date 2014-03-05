@@ -12,7 +12,7 @@ decorator==3.3.2
 docutils==0.9
 EasyWidgets==0.2dev-20130716
 faulthandler==2.1
-feedparser==5.0.1
+feedparser==5.1.3
 FormEncode==1.2.4
 # dep of Creoleparser
 Genshi==0.6
