@@ -426,10 +426,6 @@ class MergeRequestController(object):
 
         message = self.tmpl.render(changes=changes)
         self.req.discussion_thread.add_post(text=message, is_meta=True)
-
-        M.Notification.post(
-            self.req, 'merge_request',
-            subject='Merge request: ' + self.req.summary)
         redirect(self.req.url())
 
     @expose()
