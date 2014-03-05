@@ -149,7 +149,9 @@ class TicketForm(GenericTicketForm):
         for r in super(TicketForm, self).resources():
             yield r
         yield ew.JSScript('''
-        $(function(){
+        // Sometimes IE11 is not firing jQuery's ready callbacks like
+        // "$(function(){...})" or "$(document).ready(function(){...});"
+        $(window).load(function(){
             $('#show_attach').click(function(evt) {
                 $('#view_attach').show();
                 $('#show_attach').hide();
