@@ -351,7 +351,9 @@ class Post(HierWidget):
                     $('a.edit_post', post).click(function (ele) {
                         $('.display_post', post).hide();
                         $('.edit_post_form', post).show();
-                        $('.edit_post_form textarea', post).focus();
+                        // Calling jQuery's ".focus()" forces browser to reload page
+                        // while using IE11 with sourceforge theme
+                        $('.edit_post_form textarea', post)[0].focus();
                         return false;
                     });
                     $("a.cancel_edit_post", post).click(function(evt){
@@ -362,7 +364,9 @@ class Post(HierWidget):
                 if($('.reply_post', post)){
                     $('.reply_post', post).click(function (ele) {
                         $('.reply_post_form', post).show();
-                        $('.reply_post_form textarea', post).focus();
+                        // Calling jQuery's ".focus()" forces browser to reload page
+                        // while using IE11 with sourceforge theme
+                        $('.reply_post_form textarea', post)[0].focus();
                         return false;
                     });
                     $('.reply_post', post).button();
