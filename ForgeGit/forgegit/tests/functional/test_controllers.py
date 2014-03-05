@@ -631,15 +631,27 @@ class TestFork(_TestCase):
         assert '[5c4724]' not in r
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
-        assert '''<li>
+        changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
+        assert unicode(changes) == """
+<div class="markdown_content"><ul>
+<li>
 <p><strong>Source branch</strong>: zz --&gt; master</p>
 </li>
 <li>
-<p><strong>Description</strong>: description --&gt; changed description</p>
+<p><strong>Description</strong>:</p>
 </li>
-<li>
-<p><strong>Summary</strong>: summary --&gt; changed summary</p>
-</li>''' in r
+</ul>
+<p>Diff:</p>
+<div class="codehilite"><pre><span class="gd">--- old</span>
+<span class="gi">+++ new</span>
+<span class="gu">@@ -1 +1 @@</span>
+<span class="gd">-description</span>
+<span class="gi">+changed description</span>
+</pre></div>
+<ul>
+<li><strong>Summary</strong>: summary --&gt; changed summary</li>
+</ul></div>
+""".strip()
 
         r = self.app.get('/p/test/src-git/merge-requests')
         assert '<a href="1/">changed summary</a>' in r

@@ -419,7 +419,7 @@ class MergeRequestController(object):
             self.req.source_branch = kw['source_branch']
 
         if self.req.description != kw['description']:
-            changes['Description'] = [self.req.description, kw['description']]
+            changes['Description'] = h.unidiff(self.req.description, kw['description'])
             self.req.description = kw['description']
         with self.req.push_downstream_context():
             self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id

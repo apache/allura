@@ -1180,3 +1180,13 @@ def map_jinja_filter(ctx, seq, filter_name, *a, **kw):
     """
     filter_ = get_filter(ctx, filter_name)
     return [filter_(value, *a, **kw) for value in seq]
+
+
+def unidiff(old, new):
+    """Returns unified diff between `one` and `two`."""
+    return '\n'.join(difflib.unified_diff(
+        a=old.splitlines(),
+        b=new.splitlines(),
+        fromfile='old',
+        tofile='new',
+        lineterm=''))

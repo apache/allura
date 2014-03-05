@@ -17,5 +17,16 @@
        under the License.
 -#}
 {% for field, values in changes.iteritems() %}
+{% if field == 'Description': %}
+- **{{ field }}**:
+
+Diff:
+
+~~~~
+{{ values }}
+~~~~
+
+{% else %}
 - **{{ field }}**: {{ values[0] }} --> {{ values[1] }}
+{% endif %}
 {% endfor %}
