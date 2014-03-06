@@ -177,7 +177,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'test label',
                 'viewable_by-0.id': 'all'}).follow()
-        assert '''<a href="/p/test/wiki/search/?q=labels_t:'test label'&parser=standard">test label (1)</a>''' in response
+        assert '''<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>''' in response
 
     def test_title_slashes(self):
         # forward slash not allowed in wiki page title - converted to dash
