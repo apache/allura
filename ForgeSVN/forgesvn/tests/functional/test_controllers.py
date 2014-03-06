@@ -308,6 +308,29 @@ class TestImportController(SVNTestController):
                       {'checkout_url': 'http://fake.svn/'})
         assert tasks.reclone.post.called
 
+    @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
+    @with_tool('test', 'SVN', 'empty', 'empty SVN')
+    def test_validator(self, tasks):
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                      {'checkout_url': 'http://fake.svn/'})
+        assert 'That is not a valid URL' not in r
+
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                      {'checkout_url': 'http://1.1.1.1'})
+        assert 'That is not a valid URL' not in r
+
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                      {'checkout_url': 'http://1.1.1'})
+        assert 'That is not a valid URL' in r
+
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                      {'checkout_url': 'http://256.200.200.200'})
+        assert 'That is not a valid URL' in r
+
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                      {'checkout_url': 'http://fak#e.svn/'})
+        assert 'That is not a valid URL' in r
+
 
 class SVNTestRenames(TestController):
 
