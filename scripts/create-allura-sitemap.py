@@ -70,7 +70,7 @@ SITEMAP_TEMPLATE = """\
 """
 
 
-def main(options, args):
+def main(options):
     # This script will indirectly call app.sidebar_menu() for every app in
     # every project. Some of the sidebar_menu methods expect the
     # pylons.request threadlocal object to be present. So, we're faking it.
@@ -102,7 +102,7 @@ def main(options, args):
 
     nbhd_id = []
     if options.neighborhood:
-        nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'name': {'$in': options.neighborhood}})]
+        nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'url_prefix': {'$in': options.neighborhood}})]
 
     # write sitemap files, MAX_SITEMAP_URLS per file
     for chunk in utils.chunked_find(M.Project, {'deleted': False, 'neighborhood_id': {'$nin': nbhd_id}}):
@@ -140,43 +140,32 @@ def main(options, args):
         with open(os.path.join(output_path, 'sitemap.xml'), 'w') as f:
             f.write(sitemap_index_content)
 
-def callback(option, opt_str, value, parser):
-    args=[]
-    for arg in parser.rargs:
-        if arg[0] != "-":
-            args.append(arg)
-        else:
-            del parser.rargs[:len(args)]
-            break
-    if getattr(parser.values, option.dest):
-        args.extend(getattr(parser.values, option.dest))
-    setattr(parser.values, option.dest, args)
 
 def parse_options():
+    import argparse
+    class Validate(argparse.Action):
+        def __call__(self, parser, namespace, value, option_string=None):
+            value = min(value, MAX_SITEMAP_URLS)
+            setattr(namespace, self.dest, value)
 
-    def validate(option, opt_str, value, parser):
-        parser.values.urls_per_file = min(value, MAX_SITEMAP_URLS)
-
-    from optparse import OptionParser
-    optparser = OptionParser(
-        usage='allurapaste script /var/local/config/production.ini '
-              '-- %prog [OPTIONS]')
-    optparser.add_option('-o', '--output-dir', dest='output_dir',
-                         default='/tmp/allura_sitemap',
-                         help='Output directory (absolute path).'
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-o', '--output-dir',
+                        dest='output_dir',
+                        default='/tmp/allura_sitemap',
+                        help='Output directory (absolute path).'
                               '[default: %default]')
-    optparser.add_option('-u', '--urls-per-file', dest='urls_per_file',
-                         default=10000, type='int',
+    parser.add_argument('-u', '--urls-per-file', dest='urls_per_file',
+                         default=10000, type=int,
                          help='Number of URLs per sitemap file. '
                          '[default: %default, max: ' +
                          str(MAX_SITEMAP_URLS) + ']',
-                         action='callback', callback=validate)
-    optparser.add_option('-n', '--neighborhood', dest='neighborhood', action="callback", callback=callback,
+                         action=Validate)
+    parser.add_argument('-n', '--neighborhood', dest='neighborhood',
                          help="URL prefix of excluded neighborhood(s)",
                          default=None, nargs='*')
-    options, args = optparser.parse_args()
-    return options, args
+
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    options, args = parse_options()
-    main(options, args)
+    sys.exit(main(parse_options()))
