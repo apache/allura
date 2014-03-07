@@ -35,7 +35,7 @@
   <em class="grid-19">
     <strong>Labels:</strong>
     {% for l in value.labels %}
-      <span><a href="{{c.app.url}}search?q=labels_t:{{l}}&parser=standard">{{l}}</a> </span>
+      <span><a href="{{c.app.url}}search?q=labels_t:%22{{l}}%22&parser=standard">{{l}}</a> </span>
     {% endfor %}
   </em>
   {% endif %}
