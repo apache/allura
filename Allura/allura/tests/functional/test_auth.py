@@ -33,6 +33,7 @@ from nose.tools import (
 from pylons import tmpl_context as c
 from allura.tests import TestController
 from allura.tests import decorators as td
+from alluratest.controller import setup_trove_categories
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
@@ -543,6 +544,7 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_skills(self):
+        setup_trove_categories()
         # Add a skill
         skill_cat = M.TroveCategory.query.get(show_as_skill=True)
         level = 'low'

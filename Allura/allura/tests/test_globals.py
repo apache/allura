@@ -36,6 +36,7 @@ from alluratest.controller import (
     setup_global_objects,
     setup_unit_test,
     setup_functional_test,
+    setup_trove_categories,
 )
 
 from allura import model as M
@@ -479,6 +480,7 @@ def test_sort_updated():
 def test_filtering():
     # set up for test
     from random import choice
+    setup_trove_categories()
     random_trove = choice(M.TroveCategory.query.find().all())
     test_project = M.Project.query.get(shortname='test')
     test_project_troves = getattr(test_project, 'trove_' + random_trove.type)

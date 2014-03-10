@@ -36,6 +36,7 @@ import ming.orm
 import pkg_resources
 
 from allura import model as M
+from allura.command import CreateTroveCategoriesCommand
 import allura.lib.security
 from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
@@ -89,11 +90,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
         conf_dir = os.getcwd()
     ew.TemplateEngine.initialize({})
     test_file = os.path.join(conf_dir, get_config_file(config))
-    with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'),\
-         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
-         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
-        cmd = SetupCommand('setup-app')
-        cmd.run([test_file])
+    cmd = SetupCommand('setup-app')
+    cmd.run([test_file])
 
     # run all tasks, e.g. indexing from bootstrap operations
     while M.MonQTask.run_ready('setup'):
@@ -140,6 +138,14 @@ def setup_global_objects():
     setup_unit_test()
     h.set_context('test', 'wiki', neighborhood='Projects')
     c.user = M.User.query.get(username='test-admin')
+
+
+def setup_trove_categories():
+    create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
+    with mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_insert'),\
+         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_update'),\
+         mock.patch.object(M.project.TroveCategoryMapperExtension, 'after_delete'):
+        create_trove_categories.run([''])
 
 
 class TestController(object):
