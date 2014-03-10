@@ -999,8 +999,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             'rdf:about': "http://sourceforge.net/api/project/name/vivo/doap#",
         })
         # Basic fields
-        ET.SubElement(project, 'name').text = self.name
-        ET.SubElement(project, 'sf:shortname').text = self.shortname
+        ET.SubElement(project, 'name').text = self.shortname
+        ET.SubElement(project, 'dc:title').text = self.name
         ET.SubElement(project, 'sf:id').text = str(self._id)
         ET.SubElement(project, 'sf:private').text = self.private
         ET.SubElement(project, 'shortdesc', {'xml:lang': 'en'}).text = self.short_description

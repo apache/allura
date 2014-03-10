@@ -231,13 +231,14 @@ class TestDoap(TestRestApiBase):
     ns = '{http://usefulinc.com/ns/doap#}'
     ns_sf = '{http://sourceforge.net/api/sfelements.rdf#}'
     foaf = '{http://xmlns.com/foaf/0.1/}'
+    dc = '{http://dublincore.org/documents/dcmi-namespace/}'
 
     def test_project_data(self):
         r = self.app.get('/rest/p/test?doap')
         assert_equal(r.content_type, 'application/rdf+xml')
         p = r.xml.find(self.ns + 'Project')
-        assert_equal(p.find(self.ns + 'name').text, 'Test Project')
-        assert_equal(p.find(self.ns_sf + 'shortname').text, 'test')
+        assert_equal(p.find(self.ns + 'name').text, 'test')
+        assert_equal(p.find(self.dc + 'title').text, 'Test Project')
         assert p.find(self.ns_sf + 'id') is not None
 
         maintainers = p.findall(self.ns + 'maintainer')
