@@ -21,13 +21,13 @@ from datetime import datetime
 from copy import deepcopy
 import urllib
 import re
+from xml.etree import ElementTree as ET
 
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
 import formencode as fe
-from datatree import Node
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -985,11 +985,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         )
 
     def doap(self):
-        root = Node('rdf:RDF', **{
+        root = ET.Element('rdf:RDF', {
             'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
             'xmlns:rdfs': "http://www.w3.org/2000/01/rdf-schema#",
         })
-        p = Node('Project', **{
+        project = ET.SubElement(root, 'Project', {
             'xmlns': "http://usefulinc.com/ns/doap#",
             'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
             'xmlns:sf': "http://sourceforge.net/api/sfelements.rdf#",
@@ -998,37 +998,29 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             'xmlns:beer': "http://www.purl.org/net/ontology/beer.owl#",
             'rdf:about': "http://sourceforge.net/api/project/name/vivo/doap#",
         })
-        root << p
         # Basic fields
-        p << Node('name', self.name)
-        p << Node('sf:shortname', self.shortname)
-        p << Node('sf:id', str(self._id))
-        p << Node('sf:private', self.private)
-        p << Node('created', )
-        p << Node('shortdesc', self.short_description, **{'xml:lang': 'en'})
-        p << Node('description', self.description, **{'xml:lang': 'en'})
+        ET.SubElement(project, 'name').text = self.name
+        ET.SubElement(project, 'sf:shortname').text = self.shortname
+        ET.SubElement(project, 'sf:id').text = str(self._id)
+        ET.SubElement(project, 'sf:private').text = self.private
+        ET.SubElement(project, 'shortdesc', {'xml:lang': 'en'}).text = self.short_description
+        ET.SubElement(project, 'description', {'xml:lang': 'en'}).text = self.description
         if self.external_homepage:
-            p << Node('homepage', **{'rdf:resource': self.external_homepage})
-
-        # Additional entries provided by tools
-        apps = [self.app_instance(ac) for ac in self.app_configs if h.has_access(ac, 'read')]
-        for app in apps:
-            for entry in app.additional_doap_entries():
-                p << entry
+            ET.SubElement(project, 'homepage', {'rdf:resource': self.external_homepage})
 
         # Categories
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_audience}}):
-            p << Node('audience', cat.fullname)
+            ET.SubElement(project, 'audience').text = cat.fullname
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_os}}):
-            p << Node('os', cat.fullname)
+            ET.SubElement(project, 'os').text = cat.fullname
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_language}}):
-            p << Node('programming-language', cat.fullname)
+            ET.SubElement(project, 'programming-language').text = cat.fullname
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_license}}):
-            p << Node('license', cat.fullname)
+            ET.SubElement(project, 'license').text = cat.fullname
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_environment}}):
-            p << Node('sf:environment', cat.fullname)
+            ET.SubElement(project, 'sf:environment').text = cat.fullname
         for cat in TroveCategory.query.find({'_id': {'$in': self.trove_root_database}}):
-            p << Node('sf:database', cat.fullname)
+            ET.SubElement(project, 'sf:database').text = cat.fullname
         all_troves = (
             self.trove_root_database +
             self.trove_developmentstatus +
@@ -1041,41 +1033,42 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             self.trove_environment
         )
         for cat in TroveCategory.query.find({'_id': {'$in': all_troves}}):
-            p << Node('category', **{'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
+            ET.SubElement(project, 'category', {'rdf:resource': 'http://sourceforge.net/api/trove/index/rdf#%s' % cat.trove_cat_id})
 
         # Awards
         for a in self.accolades:
-            award = Node('beer:Award')
-            award << Node('beer:awardCategory', a.award.full)
-            award << Node('beer:awardedAt', a.granted_by_neighborhood.name)
-            p << (Node('sf:awarded') << award)
+            award = ET.SubElement(project, 'sf:awarded')
+            award = ET.SubElement(award, 'beer:Award')
+            ET.SubElement(award, 'beer:awardCategory').text = a.award.full
+            ET.SubElement(award, 'beer:awardedAt').text = a.granted_by_neighborhood.name
 
         # Maintainers
         for u in self.admins():
-            person = Node('foaf:Person', **{
+            person = ET.SubElement(project, 'maintainer')
+            person = ET.SubElement(person, 'foaf:Person', {
                 'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
                 'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#"})
-            person << Node('foaf:name', u.display_name)
-            person << Node('foaf:nick', u.username)
-            person << Node('foaf:homepage', **{'rdf:resource': h.absurl(u.url())})
-            p << (Node('maintainer') << person)
+            ET.SubElement(person, 'foaf:name').text = u.display_name
+            ET.SubElement(person, 'foaf:nick').text = u.username
+            ET.SubElement(person, 'foaf:homepage', {'rdf:resource': h.absurl(u.url())})
 
         # Developers
         devs = [u for u in self.users_with_role('Developer') if u not in self.admins()]
         for u in devs:
-            person = Node('foaf:Person', **{
+            person = ET.SubElement(project, 'developer')
+            person = ET.SubElement(person, 'foaf:Person', {
                 'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
                 'xmlns:rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#"})
-            person << Node('foaf:name', u.display_name)
-            person << Node('foaf:nick', u.username)
-            person << Node('foaf:homepage', **{'rdf:resource': h.absurl(u.url())})
-            p << (Node('developer') << person)
+            ET.SubElement(person, 'foaf:name').text = u.display_name
+            ET.SubElement(person, 'foaf:nick').text = u.username
+            ET.SubElement(person, 'foaf:homepage', {'rdf:resource': h.absurl(u.url())})
 
         # Basic tool info
+        apps = [self.app_instance(ac) for ac in self.app_configs if h.has_access(ac, 'read')]
         for app in apps:
-            p << app.doap()
+            app.doap(project)
 
-        return root.render(as_root=True)
+        return ET.tostring(root, encoding='utf-8')
 
 
 class AppConfig(MappedClass, ActivityObject):

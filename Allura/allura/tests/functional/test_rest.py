@@ -23,7 +23,6 @@ from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalODMSession
-from datatree import Node
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -280,13 +279,3 @@ class TestDoap(TestRestApiBase):
                  for t in tools]
         assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
         assert_not_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
-
-    @td.with_tool('test', 'Tickets', 'bugs')
-    def test_tools_additional_entries(self):
-        with mock.patch.object(ForgeTrackerApp, 'additional_doap_entries') as add:
-            add.return_value = [Node('additional-entry1', 'some text1'),
-                                Node('additional-entry2', 'some text2'),]
-            r = self.app.get('/rest/p/test?doap')
-        p = r.xml.find(self.ns + 'Project')
-        assert_equal(p.find(self.ns + 'additional-entry1').text, 'some text1')
-        assert_equal(p.find(self.ns + 'additional-entry2').text, 'some text2')

@@ -20,6 +20,7 @@ import logging
 from urllib import basejoin
 from cStringIO import StringIO
 from collections import defaultdict
+from xml.etree import ElementTree as ET
 
 import pkg_resources
 from tg import expose, redirect, flash, validate
@@ -29,7 +30,6 @@ from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 from bson.errors import InvalidId
 from formencode import validators as V
-from datatree import Node
 
 from ming.orm import session
 from ming.utils import LazyProperty
@@ -624,22 +624,17 @@ class Application(object):
         """
         raise NotImplementedError, 'bulk_export'
 
-    def doap(self):
+    def doap(self, parent):
         """App's representation for DOAP API.
 
-        :rtype: datatree.Node
+        :param parent: Element to contain the results
+        :type parent: xml.etree.ElementTree.Element or xml.etree.ElementTree.SubElement
         """
-        app = Node('sf:Feature')
-        app << Node('name', self.config.options.mount_label)
-        app << Node('foaf:page', **{'rdf:resource': h.absurl(self.url)})
-        return Node('sf:feature') << app
+        feature = ET.SubElement(parent, 'sf:feature')
+        feature = ET.SubElement(feature, 'sf:Feature')
+        ET.SubElement(feature, 'name').text = self.config.options.mount_label
+        ET.SubElement(feature, 'foaf:page', {'rdf:resource': h.absurl(self.url)})
 
-    def additional_doap_entries(self):
-        """Additional DOAP entries to include in project's DOAP represention.
-
-        :rtype: list of datatree.Node
-        """
-        return []
 
 class DefaultAdminController(BaseController):
 
