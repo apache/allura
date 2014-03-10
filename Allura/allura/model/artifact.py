@@ -744,6 +744,23 @@ class AwardGrant(Artifact):
             return None
 
 
+
+class RssFeed(FG.Rss201rev2Feed):
+    def rss_attributes(self):
+        attrs = super(RssFeed, self).rss_attributes()
+        attrs['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
+        return attrs
+
+    def add_root_elements(self, handler):
+        super(RssFeed, self).add_root_elements(handler)
+        if self.feed['feed_url'] is not None:
+            handler.addQuickElement('atom:link', '', {
+                'rel': 'self',
+                'href': self.feed['feed_url'],
+                'type': 'application/rss+xml',
+            })
+
+
 class Feed(MappedClass):
 
     """
@@ -835,11 +852,12 @@ class Feed(MappedClass):
              since=None, until=None, offset=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
         d = dict(title=title, link=h.absurl(link),
-                 description=description, language=u'en')
+                 description=description, language=u'en',
+                 feed_url=request.url)
         if feed_type == 'atom':
             feed = FG.Atom1Feed(**d)
         elif feed_type == 'rss':
-            feed = FG.Rss201rev2Feed(**d)
+            feed = RssFeed(**d)
         query = defaultdict(dict)
         query.update(q)
         if since is not None:
