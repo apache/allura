@@ -17,7 +17,7 @@
 
 import datetime
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 
@@ -193,6 +193,14 @@ class Test(TestController):
     def test_feeds(self):
         self.app.get('/blog/feed.rss')
         self.app.get('/blog/feed.atom')
+
+    def test_rss_feed_contains_self_link(self):
+        r = self.app.get('/blog/feed.rss')
+        # atom namespace included
+        assert_in('<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">', r)
+        # ...and atom:link points to feed url
+        assert_in('<atom:link href="http://localhost/blog/feed.rss" '
+                  'type="application/rss+xml" rel="self"></atom:link>', r)
 
     def test_post_feeds(self):
         self._post()
