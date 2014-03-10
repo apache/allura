@@ -470,6 +470,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
 
+    def test_default_branch(self):
+        self.repo.default_branch_name = 'zz'
+        assert_equal(self.repo.get_default_branch('master'), 'zz')
+
     def test_clone_url(self):
         assert_equal(
             self.repo.clone_url('rw', 'nobody'),

@@ -68,11 +68,7 @@ class ForgeGitApp(RepositoryApp):
 
     @property
     def default_branch_name(self):
-        default_branch_name = getattr(
-            self.repo, 'default_branch_name', 'master')
-        if not default_branch_name:
-            default_branch_name = 'master'
-        return default_branch_name
+        return self.repo.get_default_branch('master')
 
     def admin_menu(self):
         links = []

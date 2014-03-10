@@ -42,11 +42,6 @@ class TestGitApp(unittest.TestCase):
     def test_admin_menu(self):
         assert_equals(len(c.app.admin_menu()), 6)
 
-    def test_default_branch(self):
-        assert c.app.default_branch_name == 'master'
-        c.app.repo.default_branch_name = 'zz'
-        assert c.app.default_branch_name == 'zz'
-
     def test_uninstall(self):
         from allura import model as M
         M.MonQTask.run_ready()

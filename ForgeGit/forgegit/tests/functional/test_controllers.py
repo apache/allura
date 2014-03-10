@@ -725,3 +725,27 @@ class TestGitRename(TestController):
         resp = self.app.get(
             '/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
         assert "2 lines (1 with data), 10 Bytes" in resp
+
+
+class TestGitBranch(TestController):
+    def setUp(self):
+        super(TestGitBranch, self).setUp()
+        self.setup_with_tools()
+
+    @with_git
+    def setup_with_tools(self):
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'test_branch.git'
+        ThreadLocalORMSession.flush_all()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+
+    def test_exotic_default_branch(self):
+        r = self.app.get('/src-git/').follow().follow()
+        assert '<span>README</span>' in r
+        assert_equal(c.app.repo.get_default_branch('master'), 'test')

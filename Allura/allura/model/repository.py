@@ -664,6 +664,22 @@ class Repository(Artifact, ActivityObject):
         self.status = status
         session(self).flush(self)
 
+    def get_default_branch(self, default_name):
+        default_branch_name = getattr(
+            self, 'default_branch_name', None)
+        branch_names = []
+
+        if not self.is_empty():
+            branch_names = [b.name for b in self._impl.branches]
+        if default_branch_name not in branch_names:
+            if (default_name in branch_names) or (len(branch_names) == 0):
+                default_branch_name = default_name
+            else:
+                default_branch_name = branch_names[0]
+                self.set_default_branch(default_branch_name)
+        return default_branch_name
+
+
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses = ['open', 'merged', 'rejected']
