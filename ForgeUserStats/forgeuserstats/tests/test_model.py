@@ -23,7 +23,7 @@ from pylons import tmpl_context as c
 from tg import config
 import mock
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, setup_trove_categories
 from allura.tests import decorators as td
 from allura.model import User, Project, TroveCategory
 from allura.lib import helpers as h
@@ -75,6 +75,8 @@ class TestUserStats(unittest.TestCase):
 
     @td.with_user_project('test-user-2')
     def test_create_artifact_stats(self):
+        setup_trove_categories()
+
         p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
 
@@ -166,6 +168,8 @@ class TestUserStats(unittest.TestCase):
 
     @td.with_user_project('test-user-2')
     def test_modify_artifact_stats(self):
+        setup_trove_categories()
+        
         p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
 
@@ -257,6 +261,8 @@ class TestUserStats(unittest.TestCase):
 
     @td.with_user_project('test-user-2')
     def test_ticket_stats(self):
+        setup_trove_categories()
+
         p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
         create_time = datetime.utcnow() + timedelta(-5)
@@ -357,6 +363,8 @@ class TestUserStats(unittest.TestCase):
     @with_git
     @td.with_user_project('test-user-2')
     def test_commit_stats(self):
+        setup_trove_categories()
+
         p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
         commit_time = datetime.utcnow() + timedelta(-1)

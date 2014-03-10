@@ -38,6 +38,7 @@ from allura.tests import decorators as td
 from allura.tests import TestController
 from allura import model as M
 from allura.lib.helpers import push_config
+from alluratest.controller import setup_trove_categories
 
 
 class TestRootController(TestController):
@@ -103,6 +104,7 @@ class TestRootController(TestController):
             response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 0
 
     def test_neighborhood_home(self):
+        setup_trove_categories()
         # Install home app
         nb = M.Neighborhood.query.get(name='Adobe')
         p = nb.neighborhood_project

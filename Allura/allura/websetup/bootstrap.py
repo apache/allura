@@ -91,6 +91,11 @@ def bootstrap(command, conf, vars):
     except:  # pragma no cover
         log.error('SOLR server is %s', g.solr_server)
         log.error('Error clearing solr index')
+
+    # set up mongo indexes
+    index = EnsureIndexCommand('ensure_index')
+    index.run([''])
+
     if asbool(conf.get('cache_test_data')):
         if restore_test_data():
             h.set_context('test', neighborhood='Projects')
@@ -231,6 +236,10 @@ def bootstrap(command, conf, vars):
             cache_test_data()
     else:  # pragma no cover
         # regular first-time setup
+
+        create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
+        create_trove_categories.run([''])
+
         p0.add_user(u_admin, ['Admin'])
         log.info('Registering initial apps')
         with h.push_config(c, user=u_admin):
@@ -254,9 +263,6 @@ def bootstrap(command, conf, vars):
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn
-    create_trove_categories = CreateTroveCategoriesCommand(
-        'create_trove_categories')
-    index = EnsureIndexCommand('ensure_index')
     if isinstance(conn, mim.Connection):
         clear_all_database_tables()
         for db in conn.database_names():
@@ -275,8 +281,6 @@ def wipe_database():
                     db.drop_collection(coll)
                 except:
                     pass
-    create_trove_categories.run([''])
-    index.run([''])
 
 
 def clear_all_database_tables():

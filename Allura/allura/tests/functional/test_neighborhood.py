@@ -31,6 +31,7 @@ from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
+from alluratest.controller import setup_trove_categories
 
 
 class TestNeighborhood(TestController):
@@ -639,6 +640,7 @@ class TestNeighborhood(TestController):
             status=403)
 
     def test_project_template(self):
+        setup_trove_categories()
         icon_url = 'file://' + \
             os.path.join(allura.__path__[0], 'nf', 'allura',
                          'images', 'neo-icon-set-454545-256x350.png')

@@ -33,7 +33,7 @@ import mock
 
 from allura.tests import TestController
 from allura.tests import decorators as td
-from alluratest.controller import TestRestApiBase
+from alluratest.controller import TestRestApiBase, setup_trove_categories
 from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.plugin import AdminExtension
@@ -537,6 +537,8 @@ class TestProjectAdmin(TestController):
                 config['allow_project_delete'] = old_allow_project_delete
 
     def test_add_remove_trove_cat(self):
+        setup_trove_categories()
+
         r = self.app.get('/admin/trove')
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
@@ -556,6 +558,8 @@ class TestProjectAdmin(TestController):
         assert '<span class="trove_fullpath">Database Environment :: Database API :: Python Database API</span>' not in r
 
     def test_add_remove_label(self):
+        setup_trove_categories()
+
         r = self.app.get('/admin/trove')
         form = r.forms['label_edit_form']
         form['labels'].value = 'foo,bar,baz'

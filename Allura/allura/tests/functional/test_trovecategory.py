@@ -25,12 +25,15 @@ from bson.objectid import ObjectId
 from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import TestController
+from alluratest.controller import setup_trove_categories
 
 
 class TestTroveCategory(TestController):
 
     @mock.patch('allura.model.project.g.post_event')
     def test_events(self, post_event):
+        setup_trove_categories()
+
         # Create event
         cfg = {'trovecategories.enableediting': 'true'}
         with h.push_config(config, **cfg):
