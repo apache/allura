@@ -1043,7 +1043,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ET.SubElement(award, 'beer:awardedAt').text = a.granted_by_neighborhood.name
 
         # Maintainers
-        for u in self.admins():
+        admins = self.admins()
+        for u in admins:
             person = ET.SubElement(project, 'maintainer')
             person = ET.SubElement(person, 'foaf:Person', {
                 'xmlns:foaf': "http://xmlns.com/foaf/0.1/",
@@ -1053,7 +1054,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ET.SubElement(person, 'foaf:homepage', {'rdf:resource': h.absurl(u.url())})
 
         # Developers
-        devs = [u for u in self.users_with_role('Developer') if u not in self.admins()]
+        devs = [u for u in self.users_with_role('Developer') if u not in admins]
         for u in devs:
             person = ET.SubElement(project, 'developer')
             person = ET.SubElement(person, 'foaf:Person', {
