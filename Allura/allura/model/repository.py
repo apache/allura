@@ -670,15 +670,14 @@ class Repository(Artifact, ActivityObject):
         branch_names = []
 
         if not self.is_empty():
-            branch_names = [b.name for b in self._impl.branches]
+            branch_names = [b.name for b in self.get_branches()]
         if default_branch_name not in branch_names:
-            if (default_name in branch_names) or (len(branch_names) == 0):
+            if len(branch_names) == 0:
                 default_branch_name = default_name
             else:
                 default_branch_name = branch_names[0]
                 self.set_default_branch(default_branch_name)
         return default_branch_name
-
 
 
 class MergeRequest(VersionedArtifact, ActivityObject):
