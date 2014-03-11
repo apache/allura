@@ -102,7 +102,8 @@ def main(options):
 
     nbhd_id = []
     if options.neighborhood:
-        nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'url_prefix': {'$in': options.neighborhood}})]
+        prefix = ['/%s/' % n for n in options.neighborhood]
+        nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'url_prefix': {'$in': prefix}})]
 
     # write sitemap files, MAX_SITEMAP_URLS per file
     for chunk in utils.chunked_find(M.Project, {'deleted': False, 'neighborhood_id': {'$nin': nbhd_id}}):
@@ -154,11 +155,11 @@ def parse_options():
                         dest='output_dir',
                         default='/tmp/allura_sitemap',
                         help='Output directory (absolute path).'
-                              '[default: %default]')
+                              '[default: %(default)s]')
     parser.add_argument('-u', '--urls-per-file', dest='urls_per_file',
                          default=10000, type=int,
                          help='Number of URLs per sitemap file. '
-                         '[default: %default, max: ' +
+                         '[default: %(default)s, max: ' +
                          str(MAX_SITEMAP_URLS) + ']',
                          action=Validate)
     parser.add_argument('-n', '--neighborhood', dest='neighborhood',
