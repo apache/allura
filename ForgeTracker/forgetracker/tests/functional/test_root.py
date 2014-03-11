@@ -875,7 +875,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/1/')
-        assert 'Ticket: #2' not in response
+        assert 'Tickets: #2' not in response
         response = self.app.get('/wiki/aaa/')
         assert 'alink notfound' in response
 
@@ -887,9 +887,9 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/p/test/bugs/3/')
-        assert_in('Ticket: #1', r)
-        assert_not_in('<s>Ticket: #1</s>', r)
-        assert_in('<s>Ticket: #2</s>', r)
+        assert_in('Tickets: #1', r)
+        assert_not_in('Tickets: <s>#1</s>', r)
+        assert_in('Tickets: <s>#2</s>', r)
 
         assert_in('<a class="alink" href="/p/test/bugs/1/">[#1]</a>', r)
         assert_in('<a class="alink strikethrough" href="/p/test/bugs/2/">[#2]</a>', r)

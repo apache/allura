@@ -295,7 +295,7 @@ class Commit(RepoObject, ActivityObject):
         By default this method returns type_s + shorthand_id(). Subclasses should
         override this method to provide more descriptive link text.
         '''
-        return '%s: %s' % (self.type_s, self.shorthand_id())
+        return self.shorthand_id()
 
     def context(self):
         result = dict(prev=None, next=None)

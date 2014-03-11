@@ -368,7 +368,7 @@ class Artifact(MappedClass):
         override this method to provide more descriptive link text.
 
         """
-        return '%s: %s' % (self.type_s, self.shorthand_id())
+        return self.shorthand_id()
 
     def get_discussion_thread(self, data=None):
         """Return the discussion thread and parent_id for this artifact.
