@@ -282,10 +282,19 @@ def test_macro_include_extra_br():
     assert html.strip().replace('\n', '') == expected_html, html
 
 
-def test_macro_embed():
+@patch('oembed.OEmbedEndpoint.fetch')
+def test_macro_embed(oembed_fetch):
+    oembed_fetch.return_value = {
+        "html": '<iframe width="480" height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" frameborder="0" allowfullscreen></iframe>)',
+        "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
+    }
     r = g.markdown_wiki.convert(
         '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert '''<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>''' in r
+    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
+              r)
+
+
+def test_macro_embed_notsupported():
     r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
     assert_equal(
         r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')

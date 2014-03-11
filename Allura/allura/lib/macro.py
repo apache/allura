@@ -401,6 +401,9 @@ def embed(url=None):
         html = None
 
     if html:
+        # youtube has a trailing ")" at the moment
+        html = html.rstrip(')')
+
         # convert iframe src from http to https, to avoid mixed security blocking when used on an https page
         html = BeautifulSoup(html)
         embed_url = html.find('iframe').get('src')
