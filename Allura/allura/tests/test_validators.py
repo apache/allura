@@ -233,3 +233,20 @@ class TestPathValidator(unittest.TestCase):
 
     def test_no_input(self):
         self.assertEqual({}, self.val.to_python(''))
+
+
+class TestUrlValidator(unittest.TestCase):
+    val = v.URL
+    def test_valid(self):
+        self.assertEqual('http://192.168.0.1', self.val.to_python('192.168.0.1'))
+        self.assertEqual('http://url', self.val.to_python('url'))
+
+    def test_invalid_ip(self):
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python('192.168.0')
+        self.assertEqual(str(cm.exception), 'That is not a valid URL')
+
+    def test_invalid_url(self):
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python('u"rl')
+        self.assertEqual(str(cm.exception), 'That is not a valid URL')
