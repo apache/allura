@@ -42,8 +42,8 @@
         var selected_option_present = false;
         for (var i = 0; i < data.options.length; i++) {
           var label = data.options[i].label,
-              value = data.options[i].value;
-          var option = $('<option>' + label + '</option>').val(value);
+              value = data.options[i].value;         
+          var option = $('<option>').text(label).val(value);
           if (selected.val() === value) {
             option.attr('selected', 'selected');  // select initial value, if any
             selected_option_present = true;
@@ -149,7 +149,8 @@
 
       input.click(openDropdown);
 
-      $('<span>▼</span>')
+      $('<span>')
+        .text('▼')
         .attr('tabIndex', -1)
         .attr('title', 'Show all options')
         .appendTo(wrapper)
