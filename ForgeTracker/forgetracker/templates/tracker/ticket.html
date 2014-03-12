@@ -178,7 +178,8 @@
 {% block extra_js %}
   {% if h.has_access(ticket, 'update')() %}
     <script type="text/javascript">
-        $(document).ready(function () {
+        // Sometimes IE11 is not firing jQuery's "$(document).ready" callbacks
+        $(window).load(function () {
           // show/hide form
           var form_holder = $('div.form_holder');
           var view_holder = $('div.view_holder');
