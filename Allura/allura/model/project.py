@@ -486,16 +486,23 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             result[award.granted_to_project_id].append(award)
         return result
 
-    def sitemap(self, excluded_tools=None, per_tool_limit=SITEMAP_PER_TOOL_LIMIT):
-        """Return the project sitemap.
+    def sitemap(self, excluded_tools=None, included_tools=None,
+            tools_only=False, per_tool_limit=SITEMAP_PER_TOOL_LIMIT):
+        """
+        Return the project sitemap.
 
         :param list excluded_tools:
-
            Tool names (AppConfig.tool_name) to exclude from sitemap.
 
-        :param int per_tool_limit:
+        :param list included_tools:
+           Tool names (AppConfig.tool_name) to include. Use `None` to
+           include all tool types.
 
-            Max number of entries to include in the sitemap for a single tool
+        :param bool tools_only:
+            Only include tools in the sitemap (exclude subprojects).
+
+        :param int per_tool_limit:
+            Max number of entries included in the sitemap for a single tool
             type. Use `None` to include all.
 
         """
@@ -513,24 +520,30 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         # Keep running count of entries per tool type
         tool_counts = Counter({tool_name: 0 for tool_name in g.entry_points['tool']})
 
-        for sub in self.direct_subprojects:
-            ordinal = sub.ordinal + delta_ordinal
-            if ordinal > max_ordinal:
-                max_ordinal = ordinal
-            entries.append({'ordinal': sub.ordinal + delta_ordinal,
-                           'entry': SitemapEntry(sub.name, sub.url())})
+        if not tools_only:
+            for sub in self.direct_subprojects:
+                ordinal = sub.ordinal + delta_ordinal
+                if ordinal > max_ordinal:
+                    max_ordinal = ordinal
+                entries.append({'ordinal': sub.ordinal + delta_ordinal,
+                               'entry': SitemapEntry(sub.name, sub.url())})
+
         for ac in self.app_configs + [a.config for a in new_tools]:
             if per_tool_limit:
-                # We already have as many entries as we need for every tool type
+                # We already have max entries for every tool type
                 if min(tool_counts.values()) >= per_tool_limit:
                     break
 
-                # We already have as many entries as we need for *this* tool type
+                # We already have max entries for this tool type
                 if tool_counts.get(ac.tool_name, 0) >= per_tool_limit:
                     continue
 
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
+
+            if included_tools and ac.tool_name not in included_tools:
+                continue
+
             # Tool could've been uninstalled in the meantime
             try:
                 App = ac.load()
@@ -560,10 +573,16 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     entries.append({'ordinal': ordinal, 'entry': entry})
                     tool_counts.update({ac.tool_name: 1})
 
-        if self == self.neighborhood.neighborhood_project and h.has_access(self.neighborhood, 'admin'):
-            entries.append(
-                {'ordinal': max_ordinal + 1, 'entry': SitemapEntry('Moderate',
-                                                                   "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
+        if (not tools_only and
+                self == self.neighborhood.neighborhood_project and
+                h.has_access(self.neighborhood, 'admin')):
+            entries.append({
+                'ordinal': max_ordinal + 1,
+                'entry': SitemapEntry(
+                    'Moderate',
+                    "%s_moderate/" % self.neighborhood.url(),
+                    ui_icon="tool-admin")
+                })
             max_ordinal += 1
 
         entries = sorted(entries, key=lambda e: e['ordinal'])

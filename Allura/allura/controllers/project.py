@@ -316,10 +316,10 @@ class ToolListController(object):
 
     @expose('jinja:allura:templates/tool_list.html')
     def _default(self, tool_name, page=0, limit=200, **kw):
-        tool_name = tool_name.lower()
-        entries = [e for e in c.project.sitemap(per_tool_limit=None)
-                   if e.tool_name and e.tool_name.lower() == tool_name]
         c.page_list = W.page_list
+        tool_name = tool_name.lower()
+        entries = c.project.sitemap(included_tools=[tool_name],
+                tools_only=True, per_tool_limit=None)
         total_entries = len(entries)
         limit, page = h.paging_sanitizer(limit, page, total_entries)
         start = page * limit
