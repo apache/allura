@@ -37,15 +37,15 @@ class TestTroveCategory(TestController):
             r = self.app.post('/categories/create/', params=dict(categoryname='test'))
 
         category_id = post_event.call_args[0][1]
-        assert_true(isinstance(category_id, ObjectId))
+        assert_true(isinstance(category_id, int))
         assert_equals(post_event.call_args[0][0], 'trove_category_created')
-        category = M.TroveCategory.query.get(_id=category_id)
+        category = M.TroveCategory.query.get(trove_cat_id=category_id)
 
         # Update event
         category.fullname = 'test2'
         session(M.TroveCategory).flush()
         edited_category_id = post_event.call_args[0][1]
-        assert_true(isinstance(edited_category_id, ObjectId))
+        assert_true(isinstance(edited_category_id, int))
         assert_equals(edited_category_id, category_id)
         assert_equals(post_event.call_args[0][0], 'trove_category_updated')
 
@@ -53,7 +53,7 @@ class TestTroveCategory(TestController):
         M.TroveCategory.delete(category)
         session(M.TroveCategory).flush()
         deleted_category_id = post_event.call_args[0][1]
-        assert_true(isinstance(deleted_category_id, ObjectId))
+        assert_true(isinstance(deleted_category_id, int))
         assert_equals(deleted_category_id, category_id)
         assert_equals(post_event.call_args[0][0], 'trove_category_deleted')
 
