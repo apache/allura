@@ -221,15 +221,19 @@ function jq( id ) {
 				tags_callbacks[id]['onChange'] = settings.onChange;
 			}
 	
-			var markup = '<div id="'+id+'_tagsinput" class="tagsinput"><div id="'+id+'_addTag">';
+			var markup = $('<div>').attr({id: id + '_tagsinput', 'class': 'tagsinput'})
+								   .append($('<div>', {id: id + '_addTag'}));
 			
 			if (settings.interactive) {
-				markup = markup + '<input id="'+id+'_tag" value="" data-default="'+settings.defaultText+'" />';
-			}
-			
-			markup = markup + '</div><div class="tags_clear"></div></div>';
-			
-			$(markup).insertAfter(this);
+				$(markup).children().append($('<input>', {
+					'id': id + '_tag',
+					'value': '',
+					'data-default': settings.defaultText
+				}));
+			};
+
+			markup.append($('<div>', {'class': 'tags_clear'}));			
+			markup.insertAfter(this);
 
 			$(data.holder).css('width',settings.width);
 			$(data.holder).css('min-height',settings.height);
