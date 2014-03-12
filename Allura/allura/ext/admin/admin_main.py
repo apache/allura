@@ -261,15 +261,22 @@ class ProjectAdminController(BaseController):
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_tools.html')
-    def tools(self, **kw):
+    def tools(self, page=0, limit=200, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         c.mount_delete = W.mount_delete
         c.admin_modal = W.admin_modal
         c.install_modal = W.install_modal
+        c.page_list = W.page_list
         mounts = c.project.ordered_mounts()
+        total_mounts = len(mounts)
+        limit, page = h.paging_sanitizer(limit, page, total_mounts)
+        start = page * limit
         return dict(
-            mounts=mounts,
+            page=page,
+            limit=limit,
+            total_mounts=total_mounts,
+            mounts=mounts[start:start + limit],
             installable_tools=AdminApp.installable_tools_for(c.project),
             roles=M.ProjectRole.query.find(
                 dict(project_id=c.project.root_project._id)).sort('_id').all(),

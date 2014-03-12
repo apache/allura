@@ -29,6 +29,7 @@
 {% block header %}{{type}} tools{% endblock %}
 
 {% block content %}
+{{c.page_list.display(page=page, limit=limit, count=total_entries)}}
 <div>
   <ul>
   {% for e in entries %}
@@ -36,4 +37,5 @@
   {% endfor %}
   </ul>
 </div>
+{{c.page_list.display(page=page, limit=limit, count=total_entries)}}
 {% endblock %}

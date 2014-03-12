@@ -56,6 +56,9 @@ from filesystem import File
 
 log = logging.getLogger(__name__)
 
+# max sitemap entries per tool type
+SITEMAP_PER_TOOL_LIMIT = 10
+
 
 class ProjectFile(File):
 
@@ -483,11 +486,18 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             result[award.granted_to_project_id].append(award)
         return result
 
-    def sitemap(self, excluded_tools=None):
+    def sitemap(self, excluded_tools=None, per_tool_limit=SITEMAP_PER_TOOL_LIMIT):
         """Return the project sitemap.
 
-        :param list excluded_tools: tool names (AppConfig.tool_name) to
-                                    exclude from sitemap
+        :param list excluded_tools:
+
+           Tool names (AppConfig.tool_name) to exclude from sitemap.
+
+        :param int per_tool_limit:
+
+            Max number of entries to include in the sitemap for a single tool
+            type. Use `None` to include all.
+
         """
         from allura.app import SitemapEntry
         entries = []
@@ -500,6 +510,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         delta_ordinal = i
         max_ordinal = i
 
+        # Keep running count of entries per tool type
+        tool_counts = Counter({tool_name: 0 for tool_name in g.entry_points['tool']})
+
         for sub in self.direct_subprojects:
             ordinal = sub.ordinal + delta_ordinal
             if ordinal > max_ordinal:
@@ -507,6 +520,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             entries.append({'ordinal': sub.ordinal + delta_ordinal,
                            'entry': SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs + [a.config for a in new_tools]:
+            if per_tool_limit:
+                # We already have as many entries as we need for every tool type
+                if min(tool_counts.values()) >= per_tool_limit:
+                    break
+
+                # We already have as many entries as we need for *this* tool type
+                if tool_counts.get(ac.tool_name, 0) >= per_tool_limit:
+                    continue
+
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
             # Tool could've been uninstalled in the meantime
@@ -536,6 +558,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal': ordinal, 'entry': entry})
+                    tool_counts.update({ac.tool_name: 1})
 
         if self == self.neighborhood.neighborhood_project and h.has_access(self.neighborhood, 'admin'):
             entries.append(
@@ -601,9 +624,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     # add tool url to list of urls that will match this nav
                     # entry
                     grouped_nav[tool_name].matching_urls.append(e.url)
-                    if len(grouped_nav[tool_name].children) < 10:
+                    if len(grouped_nav[tool_name].children) < SITEMAP_PER_TOOL_LIMIT:
                         grouped_nav[tool_name].children.append(e)
-                    elif len(grouped_nav[tool_name].children) == 10:
+                    elif len(grouped_nav[tool_name].children) == SITEMAP_PER_TOOL_LIMIT:
                         e.url = self.url() + '_list/' + tool_name
                         e.label = 'More...'
                         grouped_nav[tool_name].children.append(e)

@@ -315,11 +315,21 @@ class ToolListController(object):
     """Renders a list of all tools of a given type in the current project."""
 
     @expose('jinja:allura:templates/tool_list.html')
-    def _default(self, tool_name, *args, **kw):
+    def _default(self, tool_name, page=0, limit=200, **kw):
         tool_name = tool_name.lower()
-        entries = [e for e in c.project.sitemap()
+        entries = [e for e in c.project.sitemap(per_tool_limit=None)
                    if e.tool_name and e.tool_name.lower() == tool_name]
-        return dict(entries=entries, type=g.entry_points['tool'][tool_name].tool_label if entries else None)
+        c.page_list = W.page_list
+        total_entries = len(entries)
+        limit, page = h.paging_sanitizer(limit, page, total_entries)
+        start = page * limit
+        return dict(
+            page=page,
+            limit=limit,
+            total_entries=total_entries,
+            entries=entries[start:start + limit],
+            type=g.entry_points['tool'][tool_name].tool_label if entries else None,
+            )
 
 
 class ProjectController(FeedController):

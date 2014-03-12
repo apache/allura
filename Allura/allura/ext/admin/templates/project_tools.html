@@ -142,6 +142,7 @@
     {% endfor %}
     </div>
 </div>
+{{c.page_list.display(page=page, limit=limit, count=total_mounts)}}
 <form id="mount_delete_form" style="display:none">
   <div class="grid-13 warning_msg">Warning: This will destroy all data in this tool and is irreversible!</div>
   <div class="grid-13">&nbsp;</div>
