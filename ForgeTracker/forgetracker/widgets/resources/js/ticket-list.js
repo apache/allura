@@ -113,6 +113,26 @@
     $('.ticket-filter select').multiselect({
         selectedText: function() {
           return 'Filtering by ' + $(this.element[0]).attr('data-label');
+        },
+        open: function(a, b, c) {
+          //
+          // As multiselect plugin does not allow to hide toggle button,
+          // we should do it manually with next steps:
+          //
+          // 1. Making dropdown toggle button hidden
+          var toggleButton = $(this).siblings('button.ui-multiselect');
+          toggleButton.css('visibility', 'hidden');
+          var checkboxContainer = $(this).multiselect('widget');
+          // 2. Moving up container by button's height
+          var buttonsHeight = toggleButton.innerHeight();
+          var top = checkboxContainer.css('top').slice(0, -2) - buttonsHeight;
+          checkboxContainer.css('top', top + 'px');          
+          // 3. Decreasing filter's tab height by button's height
+          filterTab = $(this).parent().parent();
+          filterTab.height(filterTab.height() - buttonsHeight);
+
+          // Removing close button
+          $(checkboxContainer).find('a.ui-multiselect-close').remove();
         }
     });
 
