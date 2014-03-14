@@ -20,13 +20,13 @@
 (function(){
 
     function ico_active() {
-    $('.ticket-filter').each(function() {
-          if ($(this).find('select option').attr('selected')) {
-              $(this).siblings('span').css('color', 'green');
-          } else {
-              $(this).siblings('span').css('color', '');
-          }
-    });
+      $('.ticket-filter').each(function() {
+        if ($(this).find('select option').attr('selected')) {
+          $(this).parent().css('color', 'green');
+        } else {
+          $(this).parent().css('color', '');
+        }
+      });
     }
 
     $(document).ready(function() {
