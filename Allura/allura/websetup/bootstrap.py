@@ -28,6 +28,7 @@ from textwrap import dedent
 import tg
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
+import ew
 
 from ming import Session, mim
 from ming.orm import state, session
@@ -39,6 +40,7 @@ from allura.lib import helpers as h
 from allura import model as M
 from allura.command import EnsureIndexCommand
 from allura.command import CreateTroveCategoriesCommand
+from allura.websetup.schema import REGISTRY
 
 from forgewiki import model as WM
 
@@ -67,6 +69,11 @@ def bootstrap(command, conf, vars):
     """Place any commands to setup allura here"""
     # are we being called by the test suite?
     test_run = conf.get('__file__', '').endswith('test.ini')
+
+    if not test_run:
+        # when this is run via the `setup-app` cmd, some macro rendering needs this set up
+        REGISTRY.register(ew.widget_context,
+                          ew.core.WidgetContext('http', ew.ResourceManager()))
 
     # if this is a test_run, skip user project creation to save time
     make_user_projects = not test_run
