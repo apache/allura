@@ -533,7 +533,7 @@ class VersionedArtifact(Artifact):
             data=state(self).clone())
         ss = self.__mongometa__.history_class(**data)
         session(ss).insert_now(ss, state(ss))
-        log.info('Snapshot version %s of %s',
+        log.debug('Snapshot version %s of %s',
                  self.version, self.__class__)
         if update_stats:
             if self.version > 1:

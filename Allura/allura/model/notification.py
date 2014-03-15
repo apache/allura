@@ -235,7 +235,7 @@ class Notification(MappedClass):
         if d.get('project_id', c.project._id) != c.project._id:
             project = Project.query.get(_id=d['project_id'])
         if project.notifications_disabled:
-            log.info(
+            log.debug(
                 'Notifications disabled for project %s, not sending %s(%r)',
                 project.shortname, topic, artifact)
             return None
