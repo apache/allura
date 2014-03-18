@@ -26,5 +26,19 @@ class TestToolListController(TestController):
     def test_default(self):
         """Test that list page contains a link to all tools of that type."""
         r = self.app.get('/p/test/_list/wiki')
-        assert len(r.html.find('a', dict(href='/p/test/wiki/'))) == 1, r
-        assert len(r.html.find('a', dict(href='/p/test/wiki2/'))) == 1, r
+        content = r.html.find('div', id='content_base')
+        assert content.find('a', dict(href='/p/test/wiki/')), r
+        assert content.find('a', dict(href='/p/test/wiki2/')), r
+
+    @td.with_wiki
+    @td.with_tool('test', 'Wiki', 'wiki2')
+    def test_paging(self):
+        """Test that list page handles paging correctly."""
+        r = self.app.get('/p/test/_list/wiki?limit=1&page=0')
+        content = r.html.find('div', id='content_base')
+        assert content.find('a', dict(href='/p/test/wiki/')), r
+        assert not content.find('a', dict(href='/p/test/wiki2/')), r
+        r = self.app.get('/p/test/_list/wiki?limit=1&page=1')
+        content = r.html.find('div', id='content_base')
+        assert not content.find('a', dict(href='/p/test/wiki/')), r
+        assert content.find('a', dict(href='/p/test/wiki2/')), r
