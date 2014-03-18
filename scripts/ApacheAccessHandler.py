@@ -22,6 +22,7 @@ Here is a quick example for your apache settings (assuming ProxyPass)
             AuthBasicAuthoritative off
             PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
             PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
+            PythonOption ALLURA_VIRTUALENV /var/local/env-allura
     </Location>
 
 """
@@ -29,12 +30,24 @@ Here is a quick example for your apache settings (assuming ProxyPass)
 
 from mod_python import apache
 import os
-import requests
 import json
+
+
+requests = None  # will be imported on demand, to allow for virtualenv
 
 
 def log(req, message):
     req.log_error("Allura Access: %s" % message, apache.APLOG_WARNING)
+
+
+def load_requests_lib(req):
+    virtualenv_path = req.get_options().get('ALLURA_VIRTUALENV', None)
+    if virtualenv_path:
+        activate_this = '%s/bin/activate_this.py' % virtualenv_path
+        execfile(activate_this, {'__file__': activate_this})
+    global requests
+    import requests as requests_lib
+    requests = requests_lib
 
 
 # This came straight from accessfs.py
@@ -109,6 +122,7 @@ def check_permissions(req):
 
 
 def handler(req):
+    load_requests_lib(req)
     req.add_common_vars()
 
     if not check_repo_path(req):
