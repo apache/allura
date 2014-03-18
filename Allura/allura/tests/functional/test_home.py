@@ -58,6 +58,20 @@ class TestProjectHome(TestController):
         assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon':
                 u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
 
+    def test_sitemap_limit_per_tool(self):
+        """Test that sitemap is limited to max of 10 items per tool type."""
+        c.user = M.User.by_username('test-admin')
+        p = M.Project.query.get(shortname='test')
+        c.project = p
+        for i in range(11):
+            mnt = 'wiki' + str(i)
+            p.install_app('wiki', mnt, mnt, 10 + i)
+
+        response = self.app.get('/p/test/_nav.json')
+        menu = response.json['menu']
+        wikis = menu[-2]['children']
+        assert_equal(len(wikis), 10)
+
     @td.with_wiki
     def test_project_group_nav_more_than_ten(self):
         for i in range(1, 15):
