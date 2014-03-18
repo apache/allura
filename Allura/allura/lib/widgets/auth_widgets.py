@@ -37,16 +37,14 @@ class LoginForm(ForgeForm):
     def fields(self):
         fields = [
             ew.TextField(name='username', label='Username'),
-            ew.PasswordField(name='password', label='Password')
+            ew.PasswordField(name='password', label='Password'),
+            ew.HiddenField(name='return_to'),
         ]
         if plugin.AuthenticationProvider.get(request).forgotten_password_process:
             # only show link if auth provider has method of recovering password
             fields.append(
                 ew.HTMLField(name='link', text='<a href="forgotten_password">Forgot password?</a>'))
         return fields
-
-    class hidden_fields(ew_core.NameList):
-        return_to = ew.HiddenField()
 
     @validator
     def validate(self, value, state=None):
