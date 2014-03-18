@@ -41,22 +41,14 @@ escape_rules = {'+': r'\+',
                ';': r'\;'}
 
 
-def escaped_seq(term):
-    """ Yield the next string based on the
-        next character (either this char
-        or escaped version """
-    for char in term:
-        if char in escape_rules.keys():
-            yield escape_rules[char]
-        else:
-            yield char
-
-
 def escape_solr_arg(term):
     """ Apply escaping to the passed in query terms
         escaping special characters like : , etc"""
     term = term.replace('\\', r'\\')   # escape \ first
-    return "".join([nextStr for nextStr in escaped_seq(term)])
+    for char, escaped_char in escape_rules.iteritems():
+        term = term.replace(char, escaped_char)
+
+    return term
 
 
 def make_solr_from_config(push_servers, query_server=None, **kwargs):
