@@ -81,8 +81,9 @@ def check_authentication(req):
     auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
     r = requests.post(auth_url, allow_redirects=False, params={
         'username': req.user,
-        'password': req.get_basic_auth_pw()})
-    return r.status_code == 302
+        'password': req.get_basic_auth_pw(),
+        'return_to': '/login_successful'})
+    return r.status_code == 302 and r.headers['location'].endswith('/login_successful')
 
 
 def check_permissions(req):
