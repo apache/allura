@@ -643,9 +643,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     # add tool url to list of urls that will match this nav
                     # entry
                     grouped_nav[tool_name].matching_urls.append(e.url)
-                    if len(grouped_nav[tool_name].children) < SITEMAP_PER_TOOL_LIMIT:
+                    if len(grouped_nav[tool_name].children) < SITEMAP_PER_TOOL_LIMIT - 1:
                         grouped_nav[tool_name].children.append(e)
-                    elif len(grouped_nav[tool_name].children) == SITEMAP_PER_TOOL_LIMIT:
+                    elif len(grouped_nav[tool_name].children) == SITEMAP_PER_TOOL_LIMIT - 1:
                         e.url = self.url() + '_list/' + tool_name
                         e.label = 'More...'
                         grouped_nav[tool_name].children.append(e)

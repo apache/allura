@@ -83,7 +83,7 @@ class TestProjectHome(TestController):
                 c.app = p.install_app('wiki', tool_name, tool_name, i)
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
-        assert_equal(len(menu[0]['children']), 11)
+        assert_equal(len(menu[0]['children']), 10)
         assert {u'url': u'/p/test/_list/wiki', u'name': u'More...',
                 u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[0]['children']
 
