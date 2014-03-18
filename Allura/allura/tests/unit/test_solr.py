@@ -208,3 +208,8 @@ class TestSearch_app(unittest.TestCase):
         text = 'some: weird "text" with symbols'
         escaped_text = escape_solr_arg(text)
         assert_equal(escaped_text, r'some\: weird \"text\" with symbols')
+
+    def test_escape_solr_arg_with_backslash(self):
+        text = 'some: weird "text" with \\ backslash'
+        escaped_text = escape_solr_arg(text)
+        assert_equal(escaped_text, r'some\: weird \"text\" with \\ backslash')
