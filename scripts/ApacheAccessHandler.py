@@ -28,7 +28,6 @@ Here is a quick example for your apache settings (assuming ProxyPass)
 
 
 from mod_python import apache
-import re
 import os
 # because urllib is not for humans
 import requests
@@ -70,6 +69,28 @@ def mangle(path):
     return '/'.join(parts)
 
 
+def get_permission_name(req_path, req_query, req_method):
+    """
+    Determine whether the request is trying to read or write,
+    and return the name of the appropriate permission to check.
+    """
+    if req_path.startswith('/git/'):
+        if req_path.endswith('/git-receive-pack') or 'service=git-receive-pack' in req_query:
+            return 'allow_write'
+        else:
+            return 'allow_read'
+    elif req_path.startswith('/svn/'):
+        if req_method in ('MKACTIVITY', 'PROPPATCH', 'PUT', 'CHECKOUT', 'MKCOL',
+                          'MOVE', 'COPY', 'DELETE', 'LOCK', 'UNLOCK', 'MERGE', 'POST'):
+            return 'allow_write'
+        elif req_method in ("GET", "PROPFIND", "OPTIONS", "REPORT"):
+            return 'allow_read'
+        else:
+            return 'allow_write'  # default to requiring write permission
+    elif req_path.startswith('/hg/'):
+        return 'allow_write'  # TODO: Differentiate reads and write for Hg
+
+
 def handler(req):
     req.add_common_vars()
     req_path = str(req.parsed_uri[apache.URI_PATH])
@@ -89,10 +110,10 @@ def handler(req):
     if req_user:
         log(req, "USER: "+req_user)
         params['username'] = req_user
-        if not ldap_auth(req, req.user, req_passwd):
+        if not ldap_auth(req, req_user, req_passwd):
             return apache.HTTP_UNAUTHORIZED
             #return apache.HTTP_FORBIDDEN
-        log(req, "USER: "+req.user)
+        log(req, "USER: "+req_user)
     else:
         log(req, "USER: Anonymous")
 
@@ -108,43 +129,15 @@ def handler(req):
         log(req, "error decoding JSON %s %s" % (r.headers['content-type'], ex))
         return apache.HTTP_FORBIDDEN
 
-    #
-    # Distinguish READ and WRITE
-    #
-    # TODO: HG
-    #
+    permission = get_permission_name(req_path, req_method)
+    authorized = cred.get(permission, False)
 
-    authorized = False
-    # GIT
-    if re.match('^/git/.*', req_path):
-        if re.match('.*/git-receive-pack', req_path) or re.match('service=git-receive-pack', req_query):
-            # Write access
-            log(req, "Request is GIT Auth Write")
-            authorized = cred.get('allow_write', False)
-        else:
-            # Read access
-            log(req, "Request is GIT Auth READ")
-            authorized = cred.get('allow_read', False)
-    # SVN
-    if re.match('^/svn/.*', req_path):
-        if req_method in ('MKACTIVITY', 'PROPPATCH', 'PUT', 'CHECKOUT', 'MKCOL',
-                          'MOVE', 'COPY', 'DELETE', 'LOCK', 'UNLOCK', 'MERGE', 'POST'):
-            # Write access
-            log(req, "Request is SVN Auth WRITE")
-            authorized = cred.get('allow_write', False)
-        elif req_method in ("GET", "PROPFIND", "OPTIONS", "REPORT"):
-            # Read access
-            log(req, "Request is SVN Auth READ")
-            authorized = cred.get('allow_read', False)
-        else:
-            log(req, "Request is SVN unknown %s" % req_method)
-
-    log(req, "%s -> %s -> authorized:%s" % (r.url, cred, authorized))
+    log(req, "%s -> %s -> %s -> authorized:%s" % (r.url, cred, permission, authorized))
 
     if authorized:
         log(req, "Request ACCEPTED")
         return apache.OK
-    elif req.user:
+    elif req_user:
         log(req, "Request FORBIDDEN")
         return apache.HTTP_UNAUTHORIZED
         #return apache.HTTP_FORBIDDEN
