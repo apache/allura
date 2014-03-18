@@ -20,8 +20,8 @@ Here is a quick example for your apache settings (assuming ProxyPass)
             AuthType Basic
             AuthName "Git Access"
             AuthBasicAuthoritative off
-            PythonOption ALLURA_PERM_URL http://127.0.0.1:8080/auth/repo_permissions
-            PythonOption ALLURA_LDAP_BASE ou=people,dc=opensourceprojects,dc=eu
+            PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
+            PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
     </Location>
 
 """
@@ -29,33 +29,12 @@ Here is a quick example for your apache settings (assuming ProxyPass)
 
 from mod_python import apache
 import os
-# because urllib is not for humans
 import requests
 import json
-import ldap
 
 
 def log(req, message):
     req.log_error("Allura Access: %s" % message, apache.APLOG_WARNING)
-
-
-def ldap_auth(req, username, password):
-    """
-    Return True if the user was authenticated via LDAP
-    """
-
-    l = ldap.initialize('ldap://127.0.0.1')
-    l.protocol_version = ldap.VERSION3
-    ldap_user = "uid=%s,%s" % (username, req.get_options().get('ALLURA_LDAP_BASE', 'ou=people,dc=example,dc=com'))
-
-    try:
-        l.simple_bind_s(ldap_user, password)
-    except ldap.LDAPError as e:
-        log(req, "Unable to authenticate user, %s %s" % (ldap_user, e))
-        return False
-    log(req, "LDAP user authenticated %s" % ldap_user)
-
-    return True
 
 
 # This came straight from accessfs.py
@@ -99,14 +78,17 @@ def check_repo_path(req):
 
 
 def check_authentication(req):
-    log(req, "USER: "+req.user)
-    return ldap_auth(req, req.user, req.get_basic_auth_pw())
+    auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
+    r = requests.post(auth_url, allow_redirects=False, params={
+        'username': req.user,
+        'password': req.get_basic_auth_pw()})
+    return r.status_code == 302
 
 
 def check_permissions(req):
     req_path = str(req.parsed_uri[apache.URI_PATH])
     req_query = str(req.parsed_uri[apache.URI_QUERY])
-    perm_url = req.get_options().get('ALLURA_PERM_URL', 'http://127.0.0.1:8080/auth/repo_permissions')
+    perm_url = req.get_options().get('ALLURA_PERM_URL', 'https://127.0.0.1/auth/repo_permissions')
     r = requests.get(perm_url, params={'username': req.user, 'repo_path': mangle(req_path)})
     if r.status_code != 200:
         log(req, "repo_permissions return error (%d)" % r.status_code)
