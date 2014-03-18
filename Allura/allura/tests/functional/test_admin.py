@@ -319,6 +319,14 @@ class TestProjectAdmin(TestController):
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
 
+    def test_tool_paging(self):
+        r = self.app.get('/admin/tools')
+        assert_equals(2, len(r.html.findAll('ul', {'class': 'deck'})))
+        r = self.app.get('/admin/tools?limit=1&page=0')
+        assert_equals(1, len(r.html.findAll('ul', {'class': 'deck'})))
+        r = self.app.get('/admin/tools?limit=1&page=1')
+        assert_equals(1, len(r.html.findAll('ul', {'class': 'deck'})))
+
     def test_tool_installation_limit(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
             mi.__get__ = mock.Mock(return_value=1)
