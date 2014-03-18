@@ -64,6 +64,8 @@ def mangle(path):
     /SCM/project.neighborhood/a/b/c
     '''
     parts = [p for p in path.split(os.path.sep) if p]
+    if len(parts) < 4:
+        return None
     scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
     parts = ['/SCM/%s.%s' % (proj, nbhd)] + rest
     return '/'.join(parts)
@@ -91,59 +93,51 @@ def get_permission_name(req_path, req_query, req_method):
         return 'allow_write'  # TODO: Differentiate reads and write for Hg
 
 
-def handler(req):
-    req.add_common_vars()
+def check_repo_path(req):
+    repo_path = mangle(str(req.parsed_uri[apache.URI_PATH]))
+    return repo_path is not None
+
+
+def check_authentication(req):
+    log(req, "USER: "+req.user)
+    return ldap_auth(req, req.user, req.get_basic_auth_pw())
+
+
+def check_permissions(req):
     req_path = str(req.parsed_uri[apache.URI_PATH])
     req_query = str(req.parsed_uri[apache.URI_QUERY])
-
-    req_passwd = req.get_basic_auth_pw()
-    req_user = req.user
-    req_method = req.method
-
-    log(req, "PATH: %s QUERY: %s METHOD: %s" % (req_path, req_query, req_method))
-
-    try:
-        params = {'repo_path': mangle(req_path)}
-    except:
-        return apache.HTTP_NOT_FOUND
-
-    if req_user:
-        log(req, "USER: "+req_user)
-        params['username'] = req_user
-        if not ldap_auth(req, req_user, req_passwd):
-            return apache.HTTP_UNAUTHORIZED
-            #return apache.HTTP_FORBIDDEN
-        log(req, "USER: "+req_user)
-    else:
-        log(req, "USER: Anonymous")
-
-    url = req.get_options().get('ALLURA_PERM_URL', 'http://127.0.0.1:8080/auth/repo_permissions')
-    r = requests.get(url, params=params)
+    perm_url = req.get_options().get('ALLURA_PERM_URL', 'http://127.0.0.1:8080/auth/repo_permissions')
+    r = requests.get(perm_url, params={'username': req.user, 'repo_path': mangle(req_path)})
     if r.status_code != 200:
         log(req, "repo_permissions return error (%d)" % r.status_code)
-        return apache.HTTP_FORBIDDEN
+        return False
 
     try:
         cred = json.loads(r.content)
     except Exception as ex:
         log(req, "error decoding JSON %s %s" % (r.headers['content-type'], ex))
-        return apache.HTTP_FORBIDDEN
+        return False
 
-    permission = get_permission_name(req_path, req_method)
+    permission = get_permission_name(req_path, req_query, req.method)
     authorized = cred.get(permission, False)
 
     log(req, "%s -> %s -> %s -> authorized:%s" % (r.url, cred, permission, authorized))
+    return authorized
 
-    if authorized:
-        log(req, "Request ACCEPTED")
-        return apache.OK
-    elif req_user:
-        log(req, "Request FORBIDDEN")
+
+def handler(req):
+    req.add_common_vars()
+
+    if not check_repo_path(req):
+        return apache.HTTP_NOT_FOUND
+
+    if req.user and not check_authentication(req):
         return apache.HTTP_UNAUTHORIZED
-        #return apache.HTTP_FORBIDDEN
-    else:
-        log(req, "Request UNAUTHORIZED")
-        return apache.HTTP_UNAUTHORIZED
+
+    if not check_permissions(req):
+        return apache.HTTP_FORBIDDEN
+
+    return apache.OK
 
 
 def accesshandler(req):
