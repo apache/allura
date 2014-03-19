@@ -44,10 +44,14 @@ class TicketSearchResults(ew_core.SimpleForm):
 
     def __init__(self, filters, *args, **kw):
         super(TicketSearchResults, self).__init__(*args, **kw)
-        self.filters = {name: [{'value': val,
-                            'label': '%s (%s)' % (val, count),
-                            'selected': False} for val, count in field]
-                        for name, field in filters.iteritems()}
+        self.filters = {}
+        for name, field in filters.iteritems():
+            self.filters[name] = options = [{
+                'value': val,
+                'label': '%s (%s)' % (val, count),
+                'selected': False
+            } for val, count in field]
+            options.append({'value': '', 'label': 'Not set', 'selected': False})
 
     def resources(self):
         yield ew.JSLink('tracker_js/jquery.multiselect.min.js')

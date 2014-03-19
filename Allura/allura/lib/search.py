@@ -97,7 +97,15 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     for name, values in (filter or {}).iteritems():
         field_name = name + '_s'
-        fq.append(' OR '.join('%s:%s' % (field_name, escape_solr_arg(v)) for v in values))
+        parts = []
+        for v in values:
+            # Specific solr syntax for empty fields
+            if v == '' or v is None:
+                part = '(-%s:[* TO *] AND *:*)' % (field_name,)
+            else:
+                part = '%s:%s' % (field_name, escape_solr_arg(v))
+            parts.append(part)
+        fq.append(' OR '.join(parts))
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
