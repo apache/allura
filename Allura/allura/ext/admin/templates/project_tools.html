@@ -43,8 +43,8 @@
       </a>
     </span>
   </div>
-  <form method="post" action="update_mounts" id="install_form" style="display:none">
-    <input type="hidden" name="new.ordinal" value="{{installable_tools|length + c.project.direct_subprojects|length}}"/>
+  <form method="post" action="update_mounts?limit={{limit}}&page={{page}}" id="install_form" style="display:none">
+    <input type="hidden" name="new.ordinal" value="{{total_mounts}}"/>
     <input type="hidden" name="new.ep_name" class="new_ep_name">
     <label class="grid-13">Label</label>
     <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"></div>
@@ -162,7 +162,7 @@
 <div><!--dummy-->
 
 <h3 style="clear:left">Grouping</h3>
-<form method="POST" action="configure_tool_grouping" id="configure_grouping_form">
+<form method="POST" action="configure_tool_grouping?limit={{limit}}&page={{page}}" id="configure_grouping_form">
     <label>Threshold for grouping tools by type:
         <input name="grouping_threshold" value="{{c.project.get_tool_data('allura', 'grouping_threshold', 1)}}"/>
     </label>

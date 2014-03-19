@@ -96,18 +96,22 @@
         var tools = 0;
         var subs = 0;
         var params = {'_session_id':$.cookie('_session_id')};
+        var action = $('#install_form').attr('action');
+        var limit = action.match(/limit=(\d+)/)[1];
+        var page = action.match(/page=(\d+)/)[1];
+        var first_tool_ordinal = parseInt(limit) * parseInt(page);
         for (var i = 0, len = sortables.length; i < len; i++) {
             var item = $(sortables[i]);
             var mount_point = item.find('input.mount_point');
             var shortname = item.find('input.shortname');
             if (mount_point.length) {
                 params['tools-' + tools + '.mount_point'] = mount_point.val();
-                params['tools-' + tools + '.ordinal'] = i;
+                params['tools-' + tools + '.ordinal'] = i + first_tool_ordinal;
                 tools++;
             }
             if (shortname.length) {
                 params['subs-' + subs + '.shortname'] = shortname.val();
-                params['subs-' + subs + '.ordinal'] = i;
+                params['subs-' + subs + '.ordinal'] = i + first_tool_ordinal;
                 subs++;
             }
         }

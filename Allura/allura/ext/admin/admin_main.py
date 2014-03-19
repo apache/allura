@@ -261,7 +261,7 @@ class ProjectAdminController(BaseController):
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_tools.html')
-    def tools(self, page=0, limit=200, **kw):
+    def tools(self, page=None, limit=200, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         c.mount_delete = W.mount_delete
@@ -270,7 +270,7 @@ class ProjectAdminController(BaseController):
         c.page_list = W.page_list
         mounts = c.project.ordered_mounts()
         total_mounts = len(mounts)
-        limit, page = h.paging_sanitizer(limit, page, total_mounts)
+        limit, page = h.paging_sanitizer(limit, page or total_mounts / int(limit), total_mounts)
         start = page * limit
         return dict(
             page=page,
@@ -284,7 +284,7 @@ class ProjectAdminController(BaseController):
 
     @expose()
     @require_post()
-    def configure_tool_grouping(self, grouping_threshold='1', **kw):
+    def configure_tool_grouping(self, grouping_threshold='1', page=0, limit=200, **kw):
         try:
             grouping_threshold = int(grouping_threshold)
             if grouping_threshold < 1:
@@ -293,7 +293,7 @@ class ProjectAdminController(BaseController):
                 'allura', grouping_threshold=grouping_threshold)
         except ValueError:
             flash('Invalid threshold', 'error')
-        redirect('tools')
+        redirect('tools?limit=%s&page=%s' % (limit, page))
 
     @expose()
     @require_post()
@@ -679,20 +679,23 @@ class ProjectAdminController(BaseController):
                 h.log_action(log, 'install tool').info(
                     'install tool %s', mount_point,
                     meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
-                c.project.install_app(
+                return c.project.install_app(
                     ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
         g.post_event('project_updated')
 
     @h.vardec
     @expose()
     @require_post()
-    def update_mounts(self, subproject=None, tool=None, new=None, **kw):
+    def update_mounts(self, subproject=None, tool=None, new=None, page=0, limit=200, **kw):
         try:
-            self._update_mounts(subproject, tool, new, **kw)
+            new_app = self._update_mounts(subproject, tool, new, **kw)
+            if new_app:
+                # force redir to last page of tools, where new app will be
+                page = ''
         except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
-        redirect('tools')
+        redirect('tools?limit=%s&page=%s' % (limit, page))
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):
