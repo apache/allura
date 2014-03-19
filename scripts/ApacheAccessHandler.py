@@ -128,10 +128,14 @@ def handler(req):
     if not check_repo_path(req):
         return apache.HTTP_NOT_FOUND
 
-    if req.user and not check_authentication(req):
+    authenticated = check_authentication(req)
+    if req.user and not authenticated:
         return apache.HTTP_UNAUTHORIZED
 
-    if not check_permissions(req):
+    authorized = check_permissions(req)
+    if not req.user and not authorized:
+        return apache.HTTP_UNAUTHORIZED
+    elif not authorized:
         return apache.HTTP_FORBIDDEN
 
     return apache.OK
