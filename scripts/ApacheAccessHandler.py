@@ -92,7 +92,7 @@ def check_repo_path(req):
 
 def check_authentication(req):
     auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
-    r = requests.post(auth_url, allow_redirects=False, params={
+    r = requests.post(auth_url, allow_redirects=False, data={
         'username': req.user,
         'password': req.get_basic_auth_pw(),
         'return_to': '/login_successful'})
