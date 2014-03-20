@@ -555,8 +555,11 @@ class Repository(Artifact, ActivityObject):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
            e.g., for use in a clone/checkout command
         '''
-        tpl = string.Template(
-            tg.config.get('scm.host.%s.%s' % (category, self.tool)))
+        if self.app.config.options.clone_url:
+            tpl = string.Template(self.app.config.options.clone_url)
+        else:
+            tpl = string.Template(
+                tg.config.get('scm.host.%s.%s' % (category, self.tool)))
         return tpl.substitute(dict(username=username, path=self.url_path + self.name))
 
     def clone_command(self, category, username=''):

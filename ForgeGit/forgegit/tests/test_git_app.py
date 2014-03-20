@@ -40,7 +40,7 @@ class TestGitApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert_equals(len(c.app.admin_menu()), 5)
+        assert_equals(len(c.app.admin_menu()), 6)
 
     def test_default_branch(self):
         assert c.app.default_branch_name == 'master'
