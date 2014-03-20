@@ -71,7 +71,10 @@ class Repository(M.Repository):
         return super(Repository, self).suggested_clone_dest_path()[:-4]
 
     def clone_url(self, category, username=''):
-        return super(Repository, self).clone_url(category, username)[:-4]
+        clone_url = super(Repository, self).clone_url(category, username)
+        if clone_url.endswith('.git'):
+            clone_url = clone_url[:-4]
+        return clone_url
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''

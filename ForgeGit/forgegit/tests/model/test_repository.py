@@ -470,6 +470,18 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
 
+    def test_clone_url(self):
+        assert_equal(
+            self.repo.clone_url('rw', 'nobody'),
+            'ssh://nobody@localhost:8022/scm-repo/test/testgit')
+        assert_equal(
+            self.repo.clone_url('https', 'nobody'),
+            'https://nobody@localhost:8022/scm-repo/test/testgit')
+        with h.push_config(self.repo.app.config.options, clone_url='https://$username@foo.com/'):
+            assert_equal(
+                self.repo.clone_url('https', 'user'),
+                'https://user@foo.com/')
+
 
 class TestGitImplementation(unittest.TestCase):
 

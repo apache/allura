@@ -40,7 +40,7 @@ class TestSVNApp(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_admin_menu(self):
-        assert_equals(len(c.app.admin_menu()), 6)
+        assert_equals(len(c.app.admin_menu()), 7)
         assert_equals(c.app.admin_menu()[0].label, 'Checkout URL')
 
     def test_uninstall(self):

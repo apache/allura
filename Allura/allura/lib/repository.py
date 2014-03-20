@@ -20,7 +20,7 @@ from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect
+from tg import expose, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
@@ -54,7 +54,8 @@ class RepositoryApp(Application):
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None),
-        ConfigOption('init_from_url', str, None)
+        ConfigOption('init_from_url', str, None),
+        ConfigOption('clone_url', str, None)
     ]
     tool_label = 'Repository'
     default_mount_label = 'Code'
@@ -101,7 +102,6 @@ class RepositoryApp(Application):
                                   '/refresh',
                                   ))
         links += super(RepositoryApp, self).admin_menu()
-        [links.remove(l) for l in links[:] if l.label == 'Options']
         return links
 
     @h.exceptionless([], log)
@@ -246,3 +246,16 @@ class RepoAdminController(DefaultAdminController):
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/repo/admin_options.html')
+    def options(self):
+        return dict(app=self.app)
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    def set_options(self, clone_url=None, **kw):
+        self.app.config.options.clone_url = clone_url or None
+        flash('Repo options updated')
+        redirect(c.project.url() + 'admin/tools')
