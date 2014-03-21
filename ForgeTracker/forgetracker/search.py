@@ -14,7 +14,6 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
 from pylons import tmpl_context as c
 
 from allura.lib.search import search
@@ -29,7 +28,7 @@ FACET_PARAMS = {
 }
 
 
-def query_filter_choices(arg=None):
+def query_filter_choices(arg=None, final_result=None):
     params = {
         'short_timeout': True,
         'fq': [
@@ -40,18 +39,23 @@ def query_filter_choices(arg=None):
     }
     params.update(FACET_PARAMS)
     result = search(arg, **params)
-    return get_facets(result)
+    return get_facets(result, final_result)
 
 
-def get_facets(solr_hit):
-    if solr_hit is None:
-        return {}
-    def reformat(field):
-        name, val = field
-        # drop "_s"
-        name = name[:-2]
-        new_val = []
-        for i in range(0, len(val), 2):
-            new_val.append((val[i], val[i+1]))
-        return name, new_val
-    return dict(map(reformat, solr_hit.facets['facet_fields'].iteritems()))
+def get_facets(solr_hit, final_result=None):
+    result = {}
+    if solr_hit is not None:
+        for facet_name, values in solr_hit.facets['facet_fields'].iteritems():
+            field_name = facet_name.rsplit('_s', 1)[0]
+            values = [(values[i], values[i+1]) for i in xrange(0, len(values), 2)]
+            if final_result:
+                available_values = []
+                for ticket in final_result:
+                    solr_data = ticket.index()
+                    if facet_name in solr_data:
+                        available_values.append(solr_data[facet_name])
+
+                values = filter(lambda v: v[0] in available_values, values)
+
+            result[field_name] = values
+    return result
