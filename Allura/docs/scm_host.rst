@@ -170,6 +170,47 @@ Then Apache SVN will serve repositories for all Allura projects and subprojects.
 
 
 
+Configuring Git/SVN/Hg to use Allura auth via mod_python and ApacheAccessHandler.py
+===================================================================================
+
+This is the easiest way to integrate authentication for SCM access with Allura.  It uses
+mod_python and the handler in `scripts/ApacheAccessHandler.py` to query Allura directly
+for auth and permissions before allowing access to the SCM.  Of course, this only works
+for SCM access over HTTP(S).
+
+First, you need to ensure that mod_python is installed:
+
+.. code-block:: console
+
+    sudo aptitude install libapache2-mod-python
+
+Then, in the VirtualHost section where you proxy SCM requests to git, SVN, or Hg, add the
+access handler, e.g.:
+
+.. code-block:: apache
+
+    <LocationMatch "^/(git|svn|hg)/">
+        AddHandler mod_python .py
+        PythonAccessHandler /var/local/allura/scripts/ApacheAccessHandler.py
+        AuthType Basic
+        AuthName "SCM Access"
+        AuthBasicAuthoritative off
+        PythonOption ALLURA_VIRTUALENV /var/local/env-allura
+        PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
+        PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
+    </LocationMatch>
+
+If the SCM is hosted seperately from Allura, update the URLs as appropriate.
+Even if using localhost, it is recommended to use HTTPS, since the username
+and password will be otherwise be sent in the clear to Allura.
+
+.. warning::
+
+    Currently, for Mercurial, the handler doesn't correctly distinguish read
+    and write requests and thus requires WRITE permission for every request.
+
+
+
 Configuring Git/SVN/Hg to use Allura auth via LDAP and ssh
 ============================================================
 
