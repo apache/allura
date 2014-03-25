@@ -31,26 +31,63 @@ from pysolr import SolrError
 from allura.lib import helpers as h
 from allura.lib.solr import escape_solr_arg
 from allura.model import ArtifactReference
-from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
 
 
-def solarize(obj):
-    if obj is None:
-        return None
-    doc = obj.index()
-    if doc is None:
-        return None
-    # if index() returned doc without text, assume empty text
-    if not doc.get('text'):
-        doc['text'] = ''
-    # Convert text to plain text (It usually contains markdown markup).
-    # To do so, we convert markdown into html, and then strip all html tags.
-    text = doc['text']
-    text = g.markdown.convert(text)
-    doc['text'] = jinja2.Markup.escape(text).striptags()
-    return doc
+class SearchIndexable(object):
+
+    """
+    Base class for anything you want to search on.
+    """
+
+    def index_id(self):
+        """
+        Should return a globally unique artifact identifier.
+
+        Used for SOLR ID, shortlinks, and possibly elsewhere.
+        """
+        raise NotImplementedError
+
+    def index(self):
+        """
+        Return a :class:`dict` representation of this Artifact suitable for
+        search indexing.
+
+        Subclasses should implement this, providing a dictionary of solr_field => value.
+        These fields & values will be stored by Solr.  Subclasses should call the
+        super().index() and then extend it with more fields.
+
+        You probably want to override at least title and text to have
+        meaningful search results and email senders.
+
+        You can take advantage of Solr's dynamic field typing by adding a type
+        suffix to your field names, e.g.:
+
+            _s (string) (not analyzed)
+            _t (text) (analyzed)
+            _b (bool)
+            _i (int)
+            _f (float)
+            _dt (datetime)
+
+        """
+        raise NotImplementedError
+
+    def solarize(self):
+        doc = self.index()
+        if doc is None:
+            return None
+        # if index() returned doc without text, assume empty text
+        text = doc.setdefault('text', '')
+        # Convert text to plain text (It usually contains markdown markup).
+        # To do so, we convert markdown into html, and then strip all html tags.
+        text = g.markdown.convert(text)
+        doc['text'] = jinja2.Markup.escape(text).striptags()
+        return doc
+
+    def add_to_solr(self, solr_instance):
+        solr_instance.add(self.solarize())
 
 
 class SearchError(SolrError):
@@ -234,6 +271,8 @@ def search_app(q='', fq=None, app=True, **kw):
 
 
 def find_shortlinks(text):
+    from .markdown_extensions import ForgeExtension
+
     md = markdown.Markdown(
         extensions=['codehilite', ForgeExtension(), 'tables'],
         output_format='html4')

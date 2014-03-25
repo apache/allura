@@ -988,6 +988,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         else:
             return 'busy'
 
+    def index_id(self):
+        id = 'unique id'
+        return id
+
+    def index(self):
+        provider = plugin.ProjectRegistrationProvider.get()
+        data = provider.index_project(self)
+        data.update(id=self.index_id(),
+                    title='Project %s' % self._id)
+        return data
+
     def __json__(self):
         result = dict(
             shortname=self.shortname,

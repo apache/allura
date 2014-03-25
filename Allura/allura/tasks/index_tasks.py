@@ -25,7 +25,23 @@ from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 from allura.lib.solr import make_solr_from_config
 
+
 log = logging.getLogger(__name__)
+
+
+@task
+def add_project(project_id, solr_hosts=None):
+    '''
+    Add project to SOLR.
+
+    :param solr_hosts: a list of solr hists to use instead of defaults
+    :type solr_hosts: list of strings
+    '''
+    from allura import model as M
+
+    solr = make_solr_from_config(solr_hosts) if solr_hosts else g.solr
+    project = M.Project.query.get(_id=project_id)
+    project.add_to_solr(solr)
 
 
 @task
@@ -37,7 +53,8 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     :type solr_hosts: [str]
     '''
     from allura import model as M
-    from allura.lib.search import find_shortlinks, solarize
+    from allura.lib.search import find_shortlinks
+
     if solr_hosts:
         solr = make_solr_from_config(solr_hosts)
     else:
@@ -48,7 +65,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
         for ref in M.ArtifactReference.query.find(dict(_id={'$in': ref_ids})):
             try:
                 artifact = ref.artifact
-                s = solarize(artifact)
+                s = artifact.solarize()
                 if s is None:
                     continue
                 if update_solr:

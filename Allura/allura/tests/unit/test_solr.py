@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr, escape_solr_arg
-from allura.lib.search import solarize, search_app
+from allura.lib.search import search_app, SearchIndexable
 
 
 class TestSolr(unittest.TestCase):
@@ -92,34 +92,34 @@ class TestSolr(unittest.TestCase):
         solr.query_server.search.assert_called_once_with('bar', kw='kw')
 
 
-class TestSolarize(unittest.TestCase):
+class TestSearchIndexable(unittest.TestCase):
 
-    def test_no_object(self):
-        assert_equal(solarize(None), None)
+    def setUp(self):
+        self.obj = SearchIndexable()
 
-    def test_empty_index(self):
-        obj = mock.MagicMock()
-        obj.index.return_value = None
-        assert_equal(solarize(obj), None)
+    def test_solarize_empty_index(self):
+        self.obj.index = lambda: None
+        assert_equal(self.obj.solarize(), None)
 
-    def test_doc_without_text(self):
-        obj = mock.MagicMock()
-        obj.index.return_value = {}
-        assert_equal(solarize(obj), {'text': ''})
+    def test_solarize_doc_without_text(self):
+        self.obj.index = lambda: dict()
+        assert_equal(self.obj.solarize(), dict(text=''))
 
-    def test_strip_markdown(self):
-        obj = mock.MagicMock()
-        obj.index.return_value = {'text': '# Header'}
-        assert_equal(solarize(obj), {'text': 'Header'})
+    def test_solarize_strips_markdown(self):
+        self.obj.index = lambda: dict(text='# Header')
+        assert_equal(self.obj.solarize(), dict(text='Header'))
 
-    def test_html_in_text(self):
-        obj = mock.MagicMock()
-        obj.index.return_value = {'text': '<script>alert(1)</script>'}
-        assert_equal(solarize(obj), {'text': ''})
+    def test_solarize_html_in_text(self):
+        self.obj.index = lambda: dict(text='<script>a(1)</script>')
+        assert_equal(self.obj.solarize(), dict(text=''))
+        self.obj.index = lambda: dict(text='&lt;script&gt;a(1)&lt;/script&gt;')
+        assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
 
-        obj.index.return_value = {'text':
-                                  '&lt;script&gt;alert(1)&lt;/script&gt;'}
-        assert_equal(solarize(obj), {'text': '<script>alert(1)</script>'})
+    def test_add_to_solr(self):
+        solr_obj = mock.MagicMock()
+        self.obj.index = lambda: dict(text='test')
+        self.obj.add_to_solr(solr_obj)
+        solr_obj.add.assert_called_once_with(dict(text='test'))
 
 
 class TestSearch_app(unittest.TestCase):
