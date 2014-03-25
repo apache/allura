@@ -321,10 +321,47 @@ def gittip_button(username):
     return response
 
 
+def parse_repo(repo):
+    from allura import model as M
+    parts = repo.split(':')
+    project, app = c.project, c.app
+    if len(parts) == 2:
+        project = M.Project.query.get(shortname=parts[0])
+        app = project.app_instance(parts[1])
+    elif len(parts) == 1:
+        app = project.app_instance(parts[0]) if project else None
+    return app
+
+
+def include_file(repo, path=None, rev=None, **kw):
+    app = parse_repo(repo)
+    if not app:
+        return '[[include repo %s (not found)]]' % repo
+    rev = app.repo.head if rev is None else rev
+    if not path or not app.repo.is_file(path, rev):
+        return "[[include can't find file %s in revision %s]]" % (path, rev)
+
+    file = app.repo.commit(rev).get_path(path)
+    text = ''
+    if file.has_pypeline_view:
+        text = h.render_any_markup(file.name, file.text, code_mode=True)
+    elif file.has_html_view:
+        text = g.highlight(file.text, filename=file.name)
+    else:
+        return "[[include can't display file %s in revision %s]]" % (path, rev)
+
+    from allura.lib.widgets.macros import Include
+    sb = Include()
+    g.resource_manager.register(sb)
+    return sb.display(text=text, attrs=kw)
+
+
 @macro()
-def include(ref=None, **kw):
+def include(ref=None, repo=None, **kw):
     from allura import model as M
     from allura.lib.widgets.macros import Include
+    if repo is not None:
+        return include_file(repo, **kw)
     if ref is None:
         return '[-include-]'
     link = M.Shortlink.lookup(ref)

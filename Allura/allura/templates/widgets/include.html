@@ -17,6 +17,10 @@
        under the License.
 -#}
 <div{{attrs|default({}, true)|xmlattr}}>
-  {{artifact.html_text|safe}}
+  {% if artifact %}
+    {{artifact.html_text|safe}}
+  {% else %}
+    {{text|safe}}
+  {% endif %}
 </div>
 
