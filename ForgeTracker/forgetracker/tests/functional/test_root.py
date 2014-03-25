@@ -2329,7 +2329,8 @@ class TestFunctionalController(TrackerTestController):
         query_filter_choices.return_value = {'status': [('open', 2)], }
         r = self.app.get('/bugs/')
         assert '<option value="open">open (2)</label>' in r
-        query_filter_choices.assert_called_once_with('!status_s:wont-fix && !status_s:closed')
+        assert query_filter_choices.call_count == 1
+        assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed'
 
 class TestMilestoneAdmin(TrackerTestController):
 
