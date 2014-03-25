@@ -32,6 +32,7 @@ from webhelpers import feedgenerator as FG
 from allura.lib import helpers as h
 from allura.lib import security
 
+from allura.lib.search import SearchIndexable
 from .session import main_orm_session
 from .session import project_orm_session
 
@@ -46,7 +47,7 @@ from filesystem import File
 log = logging.getLogger(__name__)
 
 
-class Artifact(MappedClass):
+class Artifact(MappedClass, SearchIndexable):
 
     """
     Base class for anything you want to keep track of.
@@ -296,11 +297,6 @@ class Artifact(MappedClass):
             return self.app_config.load()(self.project, self.app_config)
 
     def index_id(self):
-        """Return a globally unique artifact identifier.
-
-        Used for SOLR ID, shortlinks, and possibly elsewhere.
-
-        """
         id = '%s.%s#%s' % (
             self.__class__.__module__,
             self.__class__.__name__,
@@ -308,25 +304,6 @@ class Artifact(MappedClass):
         return id.replace('.', '/')
 
     def index(self):
-        """Return a :class:`dict` representation of this Artifact suitable for
-        search indexing.
-
-        Subclasses should override this, providing a dictionary of solr_field => value.
-        These fields & values will be stored by Solr.  Subclasses should call the
-        super() index() and then extend it with more fields.
-
-        You probably want to override at least title and text to have
-        meaningful search results and email senders.
-
-        You can take advantage of Solr's dynamic field typing by adding a type
-        suffix to your field names, e.g.:
-
-            _s (string) (not analyzed)
-            _t (text) (analyzed)
-            _b (bool)
-            _i (int)
-
-        """
         project = self.project
         return dict(
             id=self.index_id(),

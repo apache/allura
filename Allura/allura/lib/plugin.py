@@ -389,7 +389,6 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
 
 class ProjectRegistrationProvider(object):
-
     '''
     Project registration services for Allura.  This is a full implementation
     and the default.  Extend this class with your own if you need to add more
@@ -526,6 +525,12 @@ class ProjectRegistrationProvider(object):
         if p:
             raise forge_exc.ProjectConflict(
                 '%s already exists in nbhd %s' % (shortname, neighborhood._id))
+
+    def index_project(self, project):
+        """
+        Put here additional fields given project should be indexed by SOLR.
+        """
+        return dict()
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''

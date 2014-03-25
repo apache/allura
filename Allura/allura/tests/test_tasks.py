@@ -149,7 +149,7 @@ class TestIndexTasks(unittest.TestCase):
         sort_key = operator.itemgetter('id')
         assert_equal(
             sorted(solr.add.call_args[0][0], key=sort_key),
-            sorted([search.solarize(ref.artifact) for ref in arefs],
+            sorted([ref.artifact.solarize() for ref in arefs],
                    key=sort_key))
         index_tasks.del_artifacts(ref_ids)
         M.main_orm_session.flush()
