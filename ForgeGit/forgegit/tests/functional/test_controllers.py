@@ -22,14 +22,17 @@ import shutil
 import tempfile
 
 from datadiff.tools import assert_equal as dd_assert_equal
-from nose.tools import assert_equal, assert_in, assert_not_in
+from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import tg
 import pkg_resources
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
+from mock import patch, PropertyMock
 
+from alluratest.controller import setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import macro
 from alluratest.controller import TestController
 from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
@@ -749,3 +752,43 @@ class TestGitBranch(TestController):
         r = self.app.get('/src-git/').follow().follow()
         assert '<span>README</span>' in r
         assert_equal(c.app.repo.get_default_branch('master'), 'test')
+
+
+class TestIncludeMacro(_TestCase):
+
+    def setUp(self):
+        super(TestIncludeMacro, self).setUp()
+        setup_global_objects()
+
+    def test_parse_repo(self):
+        assert_equal(macro.parse_repo('app'), None)
+        assert_equal(macro.parse_repo('proj:app'), None)
+        assert_equal(macro.parse_repo('a:b:c:d:e:f'), None)
+        assert_not_equal(macro.parse_repo('src-git'), None)
+        assert_not_equal(macro.parse_repo('test:src-git'), None)
+
+    def test_include_file_no_repo(self):
+        expected = '[[include repo %s (not found)]]'
+        assert_equal(macro.include_file(None), expected % None)
+        assert_equal(macro.include_file('a:b'), expected % 'a:b')
+        assert_equal(macro.include_file('repo'), expected % 'repo')
+
+    def test_include_file_cant_find_file(self):
+        expected = "[[include can't find file %s in revision %s]]"
+        assert_equal(macro.include_file('src-git', 'a.txt'),
+                     expected % ('a.txt', '1e146e67985dcd71c74de79613719bef7bddca4a'))
+        assert_equal(macro.include_file('src-git', 'a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'),
+                     expected % ('a.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'))
+
+    @patch('allura.model.repo.Blob.has_pypeline_view', new_callable=PropertyMock)
+    @patch('allura.model.repo.Blob.has_html_view', new_callable=PropertyMock)
+    def test_include_file_cant_display(self, has_html_view, has_pypeline_view):
+        has_html_view.return_value = False
+        has_pypeline_view.return_value = False
+        expected = "[[include can't display file README in revision 1e146e67985dcd71c74de79613719bef7bddca4a]]"
+        assert_equal(macro.include_file('src-git', 'README'), expected)
+
+    def test_include_file_display(self):
+        result = macro.include_file('src-git', 'README')
+        assert_in('This is readme', result)
+        assert_in('Another Line', result)

@@ -322,12 +322,14 @@ def gittip_button(username):
 
 
 def parse_repo(repo):
+    if not repo:
+        return None
     from allura import model as M
     parts = repo.split(':')
-    project, app = c.project, c.app
+    project, app = c.project, None
     if len(parts) == 2:
         project = M.Project.query.get(shortname=parts[0])
-        app = project.app_instance(parts[1])
+        app = project.app_instance(parts[1]) if project else None
     elif len(parts) == 1:
         app = project.app_instance(parts[0]) if project else None
     return app
