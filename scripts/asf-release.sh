@@ -35,7 +35,7 @@ PREV_VERSION=`git tag -l asf_release_* | sort -rn | head -1 | sed -e 's/^asf_rel
 VERSION=`echo $PREV_VERSION | perl -pe '@_ = split /\./; $_[-1]++; $_ = join ".", @_'`
 prompt VERSION "Version" "$VERSION"
 
-RELEASE_BASE=allura-incubating-$VERSION
+RELEASE_BASE=allura-$VERSION
 RELEASE_DIR=$RELEASE_DIR_BASE/$RELEASE_BASE
 RELEASE_FILENAME=$RELEASE_BASE.tar.gz
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
@@ -76,12 +76,12 @@ echo "    git push"
 echo "    git push --tags"
 echo "Then upload the files and signatures, and post the following:"
 echo "-------------------------------------------------------------"
-echo "Subject: [VOTE] Release of Apache Allura $VERSION (incubating)"
+echo "Subject: [VOTE] Release of Apache Allura $VERSION"
 echo "-------------------------------------------------------------"
 cat <<EOF
 Hello,
 
-This is a call for a vote on Apache Allura $VERSION incubating.
+This is a call for a vote on Apache Allura $VERSION.
 
 Source tarball, signature and checksums are available at:
   https://dist.apache.org/repos/dist/dev/incubator/allura/

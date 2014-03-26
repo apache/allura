@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Apache Allura (incubating)'
+project = 'Apache Allura'
 copyright = '2012-2014 The Apache Software Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
