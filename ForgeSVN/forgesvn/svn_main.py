@@ -100,17 +100,10 @@ class ForgeSVNApp(RepositoryApp):
             allura.tasks.repo_tasks.init.post()
 
     def admin_menu(self):
-        links = []
-        links.append(SitemapEntry(
-            'Checkout URL',
-            c.project.url() + 'admin/' +
-            self.config.options.mount_point +
-            '/' + 'checkout_url',
-            className='admin_modal'))
-        links.append(SitemapEntry(
+        links = super(ForgeSVNApp, self).admin_menu()
+        links.insert(1, SitemapEntry(
             'Import Repo',
             c.project.url() + 'admin/' + self.config.options.mount_point + '/' + 'importer/'))
-        links += super(ForgeSVNApp, self).admin_menu()
         return links
 
 
@@ -123,23 +116,25 @@ class SVNRepoAdminController(RepoAdminController):
     @without_trailing_slash
     @expose('jinja:forgesvn:templates/svn/checkout_url.html')
     def checkout_url(self, **kw):
-        return dict(app=self.app,
-                    allow_config=True,
-                    checkout_url=self.app.config.options.get('checkout_url'))
+        return dict(app=self.app, allow_config=True)
 
     @without_trailing_slash
     @expose()
     @require_post()
     def set_checkout_url(self, **post_data):
-        if svn_path_exists("file://%s%s/%s" %
-                          (self.app.repo.fs_path,
-                           self.app.repo.name,
-                           post_data['checkout_url'])):
-            self.app.config.options['checkout_url'] = post_data['checkout_url']
+        checkout_url = post_data.get('checkout_url')
+        external_checkout_url = post_data.get('external_checkout_url')
+        if checkout_url and svn_path_exists("file://%s%s/%s" %
+                                            (self.app.repo.fs_path,
+                                             self.app.repo.name,
+                                             checkout_url)):
+            self.app.config.options['checkout_url'] = checkout_url
             flash("Checkout URL successfully changed")
         else:
             flash("%s is not a valid path for this repository" %
-                  post_data['checkout_url'], "error")
+                  checkout_url, "error")
+        self.app.config.options.external_checkout_url = external_checkout_url
+        flash("External checkout URL successfully changed")
 
 
 class SVNImportController(BaseController):
