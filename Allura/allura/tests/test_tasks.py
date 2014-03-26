@@ -101,6 +101,13 @@ class TestIndexTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
 
+    def test_add_project(self):
+        old_solr_size = len(g.solr.db)
+        project = M.Project.query.find().first()
+        index_tasks.add_project(project._id)
+        new_solr_size = len(g.solr.db)
+        assert old_solr_size + 1 == new_solr_size
+
     @td.with_wiki
     def test_add_artifacts(self):
         from allura.lib.search import find_shortlinks

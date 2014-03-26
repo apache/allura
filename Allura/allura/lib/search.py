@@ -89,7 +89,7 @@ class SearchIndexable(object):
         return doc
 
     def add_to_solr(self, solr_instance):
-        solr_instance.add(self.solarize())
+        solr_instance.add([self.solarize()])
 
 
 class SearchError(SolrError):

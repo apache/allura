@@ -60,7 +60,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
         for ref in M.ArtifactReference.query.find(dict(_id={'$in': ref_ids})):
-            try:
+            # try:
                 artifact = ref.artifact
                 s = artifact.solarize()
                 if s is None:
@@ -72,12 +72,12 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                         continue
                     # Find shortlinks in the raw text, not the escaped html
                     # created by the `solarize()`.
-                    link_text = artifact.index().get('text', '')
+                    link_text = artifact.index().get('text') or ''
                     shortlinks = find_shortlinks(link_text)
-                    ref.references = [link.ref_id for link in shortlinks)]
-            except Exception:
-                log.error('Error indexing artifact %s', ref._id)
-                exceptions.append(sys.exc_info())
+                    ref.references = [link.ref_id for link in shortlinks]
+            # except Exception:
+            #     log.error('Error indexing artifact %s', ref._id)
+            #     exceptions.append(sys.exc_info())
         solr.add(solr_updates)
 
     if len(exceptions) == 1:
