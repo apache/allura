@@ -42,6 +42,7 @@ from allura.lib import exceptions
 from allura.lib import security
 from allura.lib import validators as v
 from allura.lib.security import has_access
+from allura.lib.search import SearchIndexable
 from allura.model.types import MarkdownCache
 
 from .session import main_orm_session
@@ -174,7 +175,7 @@ class ProjectMapperExtension(MapperExtension):
         g.zarkov_event('project_create', project=obj)
 
 
-class Project(MappedClass, ActivityNode, ActivityObject):
+class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     '''
     Projects contain tools, subprojects, and their own metadata.  They live
     in exactly one :class:`~allura.model.neighborhood.Neighborhood`
@@ -196,6 +197,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         unique_indexes = [('neighborhood_id', 'shortname')]
         extensions = [ProjectMapperExtension]
+
+    type_s = 'Project'
 
     # Project schema
     _id = FieldProperty(S.ObjectId)
@@ -989,15 +992,34 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             return 'busy'
 
     def index_id(self):
-        id = 'unique id'
-        return id
+        id = '%s.%s#%s' % (
+            self.__class__.__module__,
+            self.__class__.__name__,
+            self._id)
+        return id.replace('.', '/')
 
     def index(self):
         provider = plugin.ProjectRegistrationProvider.get()
-        data = provider.index_project(self)
-        data.update(id=self.index_id(),
-                    title='Project %s' % self._id)
-        return data
+        fields = dict(id=self.index_id(),
+                      title='Project %s' % self._id,
+                      type_s=self.type_s,
+                      deleted_b=self.deleted,
+                      # Not analyzed fields
+                      category_id_s=str(self.category_id),
+                      neighborhood_id_s=str(self.neighborhood_id),
+                      last_updated_dt=self.last_updated,
+                      removal_changed_date_dt=self.removal_changed_date,
+                      # Analyzed fields
+                      name_t=self.name,
+                      shortname_t=self.shortname,
+                      labels_t=' '.join(self.labels),
+                      summary_t=self.summary,
+                      description_t=self.description,
+                      neighborhood_name_t=self.neighborhood.name)
+        if self.category:
+            fields.update(category_name_t=self.category.name,
+                          category_description_t=self.category.description)
+        return dict(provider.index_project(self), **fields)
 
     def __json__(self):
         result = dict(

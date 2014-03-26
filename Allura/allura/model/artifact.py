@@ -77,6 +77,7 @@ class Artifact(MappedClass, SearchIndexable):
                 log.debug('Not updating mod_date')
             if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
+ 
     type_s = 'Generic Artifact'
 
     # Artifact base schema

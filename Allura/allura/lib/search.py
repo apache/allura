@@ -30,7 +30,6 @@ from pysolr import SolrError
 
 from allura.lib import helpers as h
 from allura.lib.solr import escape_solr_arg
-from allura.model import ArtifactReference
 
 log = getLogger(__name__)
 
@@ -79,7 +78,10 @@ class SearchIndexable(object):
         if doc is None:
             return None
         # if index() returned doc without text, assume empty text
-        text = doc.setdefault('text', '')
+        text = doc.get('text')
+        if text is None:
+            text = doc['text'] = ''
+
         # Convert text to plain text (It usually contains markdown markup).
         # To do so, we convert markdown into html, and then strip all html tags.
         text = g.markdown.convert(text)
@@ -238,6 +240,8 @@ def search_app(q='', fq=None, app=True, **kw):
                 return doc
 
             def paginate_comment_urls(doc):
+                from allura.model import ArtifactReference
+
                 if doc.get('type_s', '') == 'Post':
                     aref = ArtifactReference.query.get(_id=doc.get('id'))
                     if aref and aref.artifact:

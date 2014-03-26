@@ -100,6 +100,10 @@ def test_artifact():
     ThreadLocalORMSession.flush_all()
     c.memoize_cache = {}
     assert not security.has_access(pg, 'delete')(user=u)
+
+
+def test_artifact_index():
+    pg = WM.Page(title='TestPage1')
     idx = pg.index()
     assert 'title' in idx
     assert 'url_s' in idx

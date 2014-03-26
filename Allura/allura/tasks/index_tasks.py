@@ -55,10 +55,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     from allura import model as M
     from allura.lib.search import find_shortlinks
 
-    if solr_hosts:
-        solr = make_solr_from_config(solr_hosts)
-    else:
-        solr = g.solr
+    solr = make_solr_from_config(solr_hosts) if solr_hosts else g.solr
     exceptions = []
     solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
@@ -75,8 +72,9 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                         continue
                     # Find shortlinks in the raw text, not the escaped html
                     # created by the `solarize()`.
-                    ref.references = [
-                        link.ref_id for link in find_shortlinks(artifact.index().get('text') or '')]
+                    link_text = artifact.index().get('text', '')
+                    shortlinks = find_shortlinks(link_text)
+                    ref.references = [link.ref_id for link in shortlinks)]
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
