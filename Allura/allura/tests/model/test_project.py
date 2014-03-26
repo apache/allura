@@ -95,6 +95,18 @@ def test_project():
     c.app.config.breadcrumbs()
 
 
+def test_project_index():
+    project, idx = c.project, c.project.index()
+    assert 'id' in idx
+    assert idx['id'] == project.index_id()
+    assert 'title' in idx
+    assert 'type_s' in idx
+    assert 'deleted_b' in idx
+    assert 'neighborhood_id_s' in idx
+    assert 'category_id_s' in idx
+    assert 'description_t' in idx
+
+
 def test_subproject():
     project = M.Project.query.get(shortname='test')
     with td.raises(ToolError):
