@@ -70,7 +70,7 @@ If there is no output, that is fine (it's an empty repo).
 
 .. warning::
 
-    This configuration has no authentication and is suitable for development only.
+    This configuration has no authentication and is suitable for development only.  See :ref:`below <auth_apache>` for auth config.
 
 Now you will want to change the :samp:`scm.host.{*}.git`
 settings in :file:`development.ini`, so that the proper commands are shown to your visitors
@@ -110,6 +110,7 @@ run :command:`killall svnserve`  More info at http://svnbook.red-bean.com/en/1.8
 .. warning::
 
     This configuration has no authentication and is suitable for development only.
+    (Maybe Allura could gain SASL support someday and use `svnserve with SASL <http://svnbook.red-bean.com/en/1.7/svn.serverconfig.svnserve.html#svn.serverconfig.svnserve.sasl>`_)
 
 Now you will want to change the :samp:`scm.host.{*}.svn`
 settings in :file:`development.ini`, so that the proper commands are shown to your visitors
@@ -166,15 +167,16 @@ Then Apache SVN will serve repositories for all Allura projects and subprojects.
 
 .. warning::
 
-    This configuration has no authentication and is suitable for development only.
+    This configuration has no authentication and is suitable for development only.  See :ref:`the next section <auth_apache>` for auth config.
 
 
+.. _auth_apache:
 
-Configuring Git/SVN/Hg to use Allura auth via mod_python and ApacheAccessHandler.py
-===================================================================================
+Configuring Auth with Apache
+-----------------------------------------------
 
-This is the easiest way to integrate authentication for SCM access with Allura.  It uses
-mod_python and the handler in `scripts/ApacheAccessHandler.py` to query Allura directly
+This is the easiest way to integrate authentication and authorization for SCM access with Allura.  It uses
+mod_python and the handler in :file:`scripts/ApacheAccessHandler.py` to query Allura directly
 for auth and permissions before allowing access to the SCM.  Of course, this only works
 for SCM access over HTTP(S).
 
@@ -191,11 +193,11 @@ access handler, e.g.:
 
     <LocationMatch "^/(git|svn|hg)/">
         AddHandler mod_python .py
-        PythonAccessHandler /var/local/allura/scripts/ApacheAccessHandler.py
+        PythonAccessHandler /PATH/TO/allura/scripts/ApacheAccessHandler.py
         AuthType Basic
         AuthName "SCM Access"
         AuthBasicAuthoritative off
-        PythonOption ALLURA_VIRTUALENV /var/local/env-allura
+        PythonOption ALLURA_VIRTUALENV /PATH/TO/env-allura
         PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
         PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
     </LocationMatch>
@@ -208,184 +210,10 @@ and password will be otherwise be sent in the clear to Allura.
 
     Currently, for Mercurial, the handler doesn't correctly distinguish read
     and write requests and thus requires WRITE permission for every request.
+    See ticket #7288
 
 
+Advanced Alternative
+-----------------------------------------------
 
-Configuring Git/SVN/Hg to use Allura auth via LDAP and ssh
-============================================================
-
-The following instructions will use a chroot, a custom FUSE driver, and LDAP.
-Once completed, an ssh-based configuration of Git, SVN, or Hg that has repos in
-the chroot directory will authenticate the users against LDAP and authorize via an Allura API.
-Allura will be configured to authenticate against LDAP as well.
-
-.. note::
-
-    The previous git & svn configuration instructions are not ssh-based, so will not work with this configuration.
-    You'll have to reconfigure git & svn to use ssh:// instead of http or svn protocols.
-
-We assume you are using a version of Ubuntu with
-support for schroot and debootstrap.  We will use a chroot jail to allow users to
-access their repositories via ssh.
-
-Install a chroot environment
--------------------------------------------
-
-These instructions are based on the documentation in `Debootstrap Chroot`_.  and `OpenLDAPServer`_.
-
-Install debootstrap and schroot: :program:`aptitude install debootstrap schroot`
-
-Append the following text to the file :file:`/etc/schroot/schroot.conf`
-
-.. code-block:: ini
-
-    [scm]
-    description=Ubuntu Chroot for SCM Hosting
-    type=directory
-    directory=/var/chroots/scm
-    script-config=scm/config
-
-Create a directory :file:`/etc/schroot/scm` and populate it with some files:
-
-.. code-block:: console
-
-    # mkdir /etc/schroot/scm
-    # cat > /etc/schroot/scm/config <<EOF
-    FSTAB="/etc/schroot/scm/fstab"
-    COPYFILES="/etc/schroot/scm/copyfiles"
-    NSSDATABASES="/etc/schroot/scm/nssdatabases"
-    EOF
-    # cat > /etc/schroot/scm/fstab <<EOF
-    /proc		/proc		none    rw,rbind        0       0
-    /sys		/sys		none    rw,rbind        0       0
-    /dev            /dev            none    rw,rbind        0       0
-    /tmp		/tmp		none	rw,bind		0	0
-    EOF
-    # cat > /etc/schroot/scm/copyfiles <<EOF
-    /etc/resolv.conf
-    EOF
-    # cat > /etc/schroot/scm/nssdatabases <<EOF
-    services
-    protocols
-    networks
-    hosts
-    EOF
-
-Create a directory :file:`/var/chroots/scm` and create the bootstrap environment.  (You may substitute a mirror from the  `ubuntu mirror list`_ for archive.ubuntu.com)
-
-.. code-block:: console
-
-    $ sudo mkdir -p /var/chroots/scm
-    $ sudo debootstrap --variant=buildd --arch amd64 --components=main,universe --include=git,mercurial,subversion,openssh-server,slapd,ldap-utils,ldap-auth-client,curl maverick /var/chroots/scm http://archive.ubuntu.com/ubuntu/
-
-Test that the chroot is installed by entering it:
-
-.. code-block:: console
-
-    # schroot -c scm -u root
-    (scm) # logout
-
-Configure OpenLDAP in the Chroot
---------------------------------------------------------------
-
-Copy the ldap-setup script into the chroot environment:
-
-.. code-block:: console
-
-    $ sudo cp Allura/ldap-setup.py Allura/ldap-userconfig.py /var/chroots/scm
-    $ sudo chmod +x /var/chroots/scm/ldap-*.py
-
-Log in to the chroot environment:
-
-.. code-block:: console
-
-    # schroot -c scm -u root
-
-Run the setup script, following the prompts:
-
-.. code-block:: console
-
-    (scm) # python /ldap-setup.py
-
-In particular, you will need to answer the following questions (substitute your custom suffix if you are not using dc=localdomain):
-
-* Should debconf manage LDAP configuration? **yes**
-* LDAP server Uniform Resource Identifier: **ldapi:///**
-* Distinguished name of the search base: **dc=localdomain**
-* LDAP version to use: **1** (version 3)
-* Make local root Database admin: **yes**
-* Does the LDAP database require login? **no**
-* LDAP account for root: **cn=admin,dc=localdomain**
-* LDAP root account password: *empty*
-* Local crypt to use when changing passwords: **2** (crypt)
-* PAM profiles to enable: **2**
-
-Update the chroot ssh configuration
--------------------------------------------------
-
-Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port directive:
-
-.. code-block:: guess
-
-    # Port 22
-    Port 8022
-
-Setup the Custom FUSE Driver
--------------------------------------
-
-Copy the accessfs script into the chroot environment:
-
-.. code-block:: console
-
-    $ sudo cp fuse/accessfs.py /var/chroots/scm
-
-Configure allura to point to the chrooted scm environment:
-
-.. code-block:: console
-
-    $ sudo ln -s /var/chroots/scm /srv/git
-    $ sudo ln -s /var/chroots/scm /srv/hg
-    $ sudo ln -s /var/chroots/scm /srv/svn
-
-Log in to the chroot environment & install packages:
-
-.. code-block:: console
-
-    # schroot -c scm -u root
-    (scm) # apt-get install python-fuse
-
-Create the SCM directories:
-
-.. code-block:: console
-
-    (scm) # mkdir /scm /scm-repo
-
-Mount the FUSE filesystem:
-
-.. code-block:: console
-
-    (scm) # python /accessfs.py /scm-repo -o allow_other -s -o root=/scm
-
-Start the SSH daemon:
-
-.. code-block:: console
-
-    (scm) # /etc/init.d/ssh start
-
-Configure Allura to Use the LDAP Server
-------------------------------------------------
-
-Set the following values in your .ini file:
-
-.. code-block:: ini
-
-    auth.method = ldap
-
-    auth.ldap.server = ldap://localhost
-    auth.ldap.suffix = ou=people,dc=localdomain
-    auth.ldap.admin_dn = cn=admin,dc=localdomain
-    auth.ldap.admin_password = secret
-
-.. _Debootstrap Chroot: https://help.ubuntu.com/community/DebootstrapChroot
-.. _OpenLDAPServer: https://help.ubuntu.com/10.10/serverguide/C/openldap-server.html
-.. _ubuntu mirror list: https://launchpad.net/ubuntu/+archivemirrors
+An advanced alternative for SCM hosting using :ref:`SSH, LDAP, and a FUSE driver <scm_hosting_ssh>` is available.
