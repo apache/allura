@@ -784,7 +784,7 @@ class TestRepo(_TestWithRepo):
             self.repo.clone_url('https', 'nobody')
             == 'https://nobody@localhost:8022/scm-repo/p/test/test1/'),\
             self.repo.clone_url('https', 'nobody')
-        with h.push_config(self.repo.app.config.options, clone_url='https://$username@foo.com/'):
+        with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
             assert_equal(
                 self.repo.clone_url('https', 'user'),
                 'https://user@foo.com/')

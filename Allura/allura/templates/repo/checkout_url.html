@@ -17,16 +17,20 @@
        under the License.
 -#}
 <!DOCTYPE html>
-<form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_options" method="post">
-    <label class="grid-4">Clone / checkout URL:</label>
+<form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_checkout_url" method="post">
+    <label class="grid-4">External checkout URL:</label>
     <div class="grid-9">
-        <input type="text" name="clone_url" id="clone_url" value="{{app.config.options.clone_url or ''}}"/>
+        <input type="text" name="external_checkout_url" id="external_checkout_url" value="{{app.config.options.external_checkout_url or ''}}"/>
+    </div>
+    <div class="grid-13">
+        Override the checkout URL with an external one.  This is useful if this repository is a mirror
+        of another, canonical repository.
     </div>
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>
     <div class="grid-13">
-	<input type="submit" value="Save"/>
+        <input type="submit" value="Save"/>
         <a href="#" class="close">Cancel</a>
     </div>
 </form>

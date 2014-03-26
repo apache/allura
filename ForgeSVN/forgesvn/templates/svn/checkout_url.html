@@ -18,16 +18,28 @@
 -#}
 {% block content %}
 <form>
-  <label class="grid-13" for="checkout_url">Checkout url:</label>
-  <div class="grid-13">
+  <label class="grid-13" for="checkout_url">Checkout branch:</label>
+  <div class="grid-9" style="text-align:right">
     {{app.repo.clone_url('ro', app)}}
     {% if allow_config %}
       <input type="text" name="checkout_url"
              id="checkout_url"
-             {% if checkout_url %} value="{{checkout_url}}"{% endif %}/>
+             {% if app.config.options.checkout_url %} value="{{app.config.options.checkout_url}}"{% endif %}/>
     {% else %}
       <span>{{checkout_url}}</span>
     {% endif %}
+  </div>
+  <div class="grid-4">
+      e.g., trunk
+  </div>
+  <div class="grid-13">&nbsp;</div>
+  <label class="grid-4">External checkout URL:</label>
+  <div class="grid-5" style="text-align:right">
+      <input type="text" name="external_checkout_url" id="external_checkout_url" value="{{app.config.options.external_checkout_url or ''}}"/>
+  </div>
+  <div class="grid-13">
+      Override the checkout URL with an external one.  This is useful if this repository is a mirror
+      of another, canonical repository.
   </div>
 
   {% if allow_config %}
@@ -45,6 +57,7 @@
         var cval = $.cookie('_session_id');
         $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_checkout_url', {
             checkout_url: $('#checkout_url').val(),
+            external_checkout_url: $('#external_checkout_url').val(),
             _session_id:cval
         },
         function () {

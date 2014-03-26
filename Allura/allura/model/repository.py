@@ -555,8 +555,8 @@ class Repository(Artifact, ActivityObject):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
            e.g., for use in a clone/checkout command
         '''
-        if self.app.config.options.clone_url:
-            tpl = string.Template(self.app.config.options.clone_url)
+        if self.app.config.options.get('external_checkout_url', None):
+            tpl = string.Template(self.app.config.options.external_checkout_url)
         else:
             tpl = string.Template(
                 tg.config.get('scm.host.%s.%s' % (category, self.tool)))

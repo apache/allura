@@ -55,7 +55,7 @@ class RepositoryApp(Application):
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None),
         ConfigOption('init_from_url', str, None),
-        ConfigOption('clone_url', str, None)
+        ConfigOption('external_checkout_url', str, None)
     ]
     tool_label = 'Repository'
     default_mount_label = 'Code'
@@ -95,13 +95,24 @@ class RepositoryApp(Application):
         admin_url = c.project.url() + 'admin/' + \
             self.config.options.mount_point + '/'
         links = [
-            SitemapEntry('Viewable Files', admin_url + 'extensions', className='admin_modal')]
-        links.append(SitemapEntry('Refresh Repository',
-                                  c.project.url() +
-                                  self.config.options.mount_point +
-                                  '/refresh',
-                                  ))
+            SitemapEntry(
+                'Checkout URL',
+                c.project.url() + 'admin/' +
+                self.config.options.mount_point +
+                '/' + 'checkout_url',
+                className='admin_modal'),
+            SitemapEntry(
+                'Viewable Files',
+                admin_url + 'extensions',
+                className='admin_modal'),
+            SitemapEntry(
+                'Refresh Repository',
+                c.project.url() +
+                self.config.options.mount_point +
+                '/refresh'),
+        ]
         links += super(RepositoryApp, self).admin_menu()
+        [links.remove(l) for l in links[:] if l.label == 'Options']
         return links
 
     @h.exceptionless([], log)
@@ -248,14 +259,14 @@ class RepoAdminController(DefaultAdminController):
                         default_branch_name=self.app.default_branch_name)
 
     @without_trailing_slash
-    @expose('jinja:allura:templates/repo/admin_options.html')
-    def options(self):
+    @expose('jinja:allura:templates/repo/checkout_url.html')
+    def checkout_url(self):
         return dict(app=self.app)
 
     @without_trailing_slash
     @expose()
     @require_post()
-    def set_options(self, clone_url=None, **kw):
-        self.app.config.options.clone_url = clone_url or None
+    def set_checkout_url(self, **post_data):
+        self.app.config.options.external_checkout_url = post_data.get('external_checkout_url') or None
         flash('Repo options updated')
         redirect(c.project.url() + 'admin/tools')
