@@ -271,7 +271,7 @@ class RepoAdminController(DefaultAdminController):
     def set_checkout_url(self, **post_data):
         external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
         if 'external_checkout_url' not in c.form_errors:
-            if self.app.config.options.external_checkout_url != external_checkout_url:
+            if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
                 self.app.config.options.external_checkout_url = external_checkout_url
                 flash("External checkout URL successfully changed")
         else:

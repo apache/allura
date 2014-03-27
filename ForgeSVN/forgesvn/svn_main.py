@@ -130,14 +130,14 @@ class SVNRepoAdminController(RepoAdminController):
                                                (self.app.repo.fs_path,
                                                 self.app.repo.name,
                                                 checkout_url)):
-            if self.app.config.options.checkout_url != checkout_url:
+            if (self.app.config.options.get('checkout_url') or '') != checkout_url:
                 self.app.config.options.checkout_url = checkout_url
                 flash("Checkout URL successfully changed")
         else:
             flash("%s is not a valid path for this repository" %
                   checkout_url, "error")
         if 'external_checkout_url' not in c.form_errors:
-            if self.app.config.options.external_checkout_url != external_checkout_url:
+            if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
                 self.app.config.options.external_checkout_url = external_checkout_url
                 flash("External checkout URL successfully changed")
         else:
