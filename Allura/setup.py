@@ -37,7 +37,7 @@ setup(
     description='Base distribution of the Allura development platform',
     long_description=PROJECT_DESCRIPTION,
     author='Allura Team',
-    url='https://forge-allura.apache.org/p/allura/',
+    url='https://allura.apache.org/',
     keywords='allura forge turbogears pylons jinja2 mongodb',
     license='Apache License, http://www.apache.org/licenses/LICENSE-2.0',
     platforms=[

@@ -17,13 +17,13 @@
     under the License.
 -->
 
-Apache Allura (incubating)
-==========================
+Apache Allura
+=============
 
 Allura is an open source implementation of a software "forge", a web site that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual projects.
 
 To install Allura, see INSTALL.markdown
 
-Website: <https://forge-allura.apache.org/p/allura/>
+Website: <https://allura.apache.org/>
 
 To find more documentation, ask a question, file a bug, or contribute a patch, see the links on our website.  If you're not sure where to start, join the mailing list and ask.

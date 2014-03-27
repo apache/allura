@@ -72,7 +72,7 @@ Now we can get down to actually getting the Allura code and dependencies downloa
 
     (env-allura)~$ mkdir src
     (env-allura)~$ cd src
-    (env-allura)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
+    (env-allura)~/src$ git clone https://git-wip-us.apache.org/repos/asf/allura.git allura
 
 If you already reading this file from an Allura release or checkout, you're ready to continue.
 
@@ -156,7 +156,7 @@ register a new project in your own forge, visit /p/add_project
 
 * Read more documentation: <http://allura.sourceforge.net/docs/>
     * Including how to enable extra features: <http://allura.sourceforge.net/docs/installation.html>
-* Ask questions and discuss Allura on the <http://mail-archives.apache.org/mod_mbox/incubator-allura-dev/>
+* Ask questions and discuss Allura on the <http://mail-archives.apache.org/mod_mbox/allura-dev/>
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
 * Contribute code according to this guide: <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>

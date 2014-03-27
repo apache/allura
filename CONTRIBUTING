@@ -25,7 +25,7 @@ number of individual projects.
 SourceForge.net is running an instance of Allura (aka New Forge, or
 Forge 2.0); and Allura itself is a project managed there:
 
-  <https://forge-allura.apache.org/p/allura/>
+  <https://allura.apache.org/>
 
 The source for Allura is available there from a Git repo under the
 Apache License, Version 2.0.
@@ -81,7 +81,7 @@ possible or applicable:
 
 The code is self-hosted in a public git repository.  Get it by cloning:
 
-  git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
+  git clone https://git-wip-us.apache.org/repos/asf/allura.git allura
 
 - CONTRIBUTING CODE
 
@@ -125,7 +125,7 @@ discussion where we talk about new features, submitted patches, bugs,
 direction, and deployment.  You can join in the discussion on the
 mailing list:
 
-  <http://mail-archives.apache.org/mod_mbox/incubator-allura-dev/>
+  <http://mail-archives.apache.org/mod_mbox/allura-dev/>
 
 
 - ASKING QUESTIONS
