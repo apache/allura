@@ -78,7 +78,7 @@ file { "/var/log/allura":
 
 # clone Allura source from git
 exec { "clone repo":
-  command => "/usr/bin/git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura",
+  command => "/usr/bin/git clone https://git-wip-us.apache.org/repos/asf/allura.git allura",
   cwd     => "/vagrant",
   creates => "/vagrant/allura",
   user => "vagrant",

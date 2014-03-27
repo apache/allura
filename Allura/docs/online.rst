@@ -24,7 +24,7 @@ Generated API docs, useful for browsing through the code, viewing inheritance, e
 
 Our project page, including tickets, discussion forums, etc.:
 
-* https://forge-allura.apache.org/p/allura/
+* https://allura.apache.org/
 
 
 Much of the current forge was inspired by Roundup

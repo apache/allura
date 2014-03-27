@@ -25,7 +25,7 @@ Getting Help
 ------------
 Along the way, you will no doubt have questions that aren't addressed here.
 For help, you can get in touch with other Allura developers on the developer
-mailing list (allura-dev@incubator.apache.org) or in the #allura channel on
+mailing list (dev@allura.apache.org) or in the #allura channel on
 the Freenode IRC network.
 
 Installing Allura

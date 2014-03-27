@@ -84,7 +84,7 @@ Hello,
 This is a call for a vote on Apache Allura $VERSION.
 
 Source tarball, signature and checksums are available at:
-  https://dist.apache.org/repos/dist/dev/incubator/allura/
+  https://dist.apache.org/repos/dist/dev/allura/
 
 Checksums:
   MD5:    $MD5_CHECKSUM
@@ -92,7 +92,7 @@ Checksums:
   SHA512: $SHA512_CHECKSUM
 
 The KEYS file can be found at:
-  http://www.apache.org/dist/incubator/allura/KEYS
+  http://www.apache.org/dist/allura/KEYS
 
 The release has been signed with key ($KEY):
   http://pgp.mit.edu:11371/pks/lookup?op=vindex&search=0x$FINGERPRINT
@@ -100,7 +100,7 @@ The release has been signed with key ($KEY):
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
   Tag:    asf_release_$VERSION
-  Browse: https://git-wip-us.apache.org/repos/asf?p=incubator-allura.git;a=shortlog;h=refs/tags/asf_release_$VERSION
+  Browse: https://git-wip-us.apache.org/repos/asf?p=allura.git;a=shortlog;h=refs/tags/asf_release_$VERSION
 
 The RAT report is available at:
   $RAT_LOG_PASTEBIN_URL
