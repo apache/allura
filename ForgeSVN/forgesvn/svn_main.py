@@ -35,6 +35,7 @@ from allura.lib.decorators import require_post
 from allura.lib.repository import RepositoryApp, RepoAdminController
 from allura.app import SitemapEntry, ConfigOption
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura import model as M
 
 # Local imports
@@ -121,20 +122,26 @@ class SVNRepoAdminController(RepoAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
+    @validate({'external_checkout_url': v.NonHttpUrl})
     def set_checkout_url(self, **post_data):
-        checkout_url = post_data.get('checkout_url')
-        external_checkout_url = post_data.get('external_checkout_url')
-        if checkout_url and svn_path_exists("file://%s%s/%s" %
-                                            (self.app.repo.fs_path,
-                                             self.app.repo.name,
-                                             checkout_url)):
-            self.app.config.options['checkout_url'] = checkout_url
-            flash("Checkout URL successfully changed")
+        checkout_url = (post_data.get('checkout_url') or '').strip()
+        external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
+        if not checkout_url or svn_path_exists("file://%s%s/%s" %
+                                               (self.app.repo.fs_path,
+                                                self.app.repo.name,
+                                                checkout_url)):
+            if self.app.config.options.checkout_url != checkout_url:
+                self.app.config.options.checkout_url = checkout_url
+                flash("Checkout URL successfully changed")
         else:
             flash("%s is not a valid path for this repository" %
                   checkout_url, "error")
-        self.app.config.options.external_checkout_url = external_checkout_url
-        flash("External checkout URL successfully changed")
+        if 'external_checkout_url' not in c.form_errors:
+            if self.app.config.options.external_checkout_url != external_checkout_url:
+                self.app.config.options.external_checkout_url = external_checkout_url
+                flash("External checkout URL successfully changed")
+        else:
+            flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
 
 
 class SVNImportController(BaseController):
