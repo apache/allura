@@ -101,12 +101,23 @@ class TestIndexTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
 
-    def test_add_project(self):
+    def test_add_projects(self):
         old_solr_size = len(g.solr.db)
-        project = M.Project.query.find().first()
-        index_tasks.add_project(project._id)
+        projects = M.Project.query.find().all()
+        index_tasks.add_projects([p._id for p in projects])
         new_solr_size = len(g.solr.db)
-        assert old_solr_size + 1 == new_solr_size
+        assert old_solr_size + len(projects) == new_solr_size
+
+    @td.with_wiki
+    def test_del_projects(self):
+        projects = M.Project.query.find().all()
+        index_tasks.add_projects([p._id for p in projects])
+
+        with mock.patch('allura.tasks.index_tasks.g.solr') as solr:
+            index_tasks.del_projects([p.index_id() for p in projects])
+            assert solr.delete.call_count, 1
+            for project in projects:
+                assert project.index_id() in solr.delete.call_args[1]['q']
 
     @td.with_wiki
     def test_add_artifacts(self):

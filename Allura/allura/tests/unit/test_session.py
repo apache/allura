@@ -21,7 +21,8 @@ import mock
 from unittest import TestCase
 
 from allura.tests import decorators as td
-from allura.model.session import BatchIndexer, substitute_extensions
+from allura.model.session import IndexerSessionExtension, BatchIndexer, \
+                                 substitute_extensions
 
 
 def test_extensions_cm():
@@ -66,6 +67,32 @@ def test_extensions_cm_flush_raises():
     assert session.flush.call_count == 2
     assert session.close.call_count == 1
     assert session._kwargs['extensions'] == []
+
+
+class TestIndexerSessionExtension(TestCase):
+
+    def setUp(self):
+        session = mock.Mock()
+        self.ExtensionClass = IndexerSessionExtension
+        self.extension = self.ExtensionClass(session)
+        self.extension.task_add = mock.Mock()
+        self.extension.task_del = mock.Mock()
+
+    def _mock_indexable(self, **kw):
+        m = mock.Mock(**kw)
+        m.index_id.return_value = id(m)
+        return m
+
+    def test_flush(self):
+        added = [self._mock_indexable(_id=i) for i in (1, 2, 3)]
+        modified = [self._mock_indexable(_id=i) for i in (4, 5)]
+        deleted = [self._mock_indexable(_id=i) for i in (6, 7)]
+        self.extension.objects_added = added
+        self.extension.objects_modified = modified
+        self.extension.objects_deleted = deleted
+        self.extension.after_flush()
+        self.extension.task_add.post.assert_called_once_with([1, 2, 3, 4, 5])
+        self.extension.task_del.post.assert_called_once_with(map(id, deleted))
 
 
 class TestBatchIndexer(TestCase):
