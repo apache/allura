@@ -20,7 +20,7 @@ from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect, flash
+from tg import expose, redirect, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
@@ -33,6 +33,7 @@ from allura import model as M
 from allura.lib import security
 from allura.lib.decorators import require_post
 from allura.lib.security import has_access
+from allura.lib import validators as v
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 
 log = logging.getLogger(__name__)
@@ -266,7 +267,13 @@ class RepoAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
+    @validate({'external_checkout_url': v.NonHttpUrl})
     def set_checkout_url(self, **post_data):
-        self.app.config.options.external_checkout_url = post_data.get('external_checkout_url') or None
-        flash('Repo options updated')
+        external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
+        if 'external_checkout_url' not in c.form_errors:
+            if self.app.config.options.external_checkout_url != external_checkout_url:
+                self.app.config.options.external_checkout_url = external_checkout_url
+                flash("External checkout URL successfully changed")
+        else:
+            flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
         redirect(c.project.url() + 'admin/tools')

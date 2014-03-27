@@ -237,6 +237,7 @@ class TestPathValidator(unittest.TestCase):
 
 class TestUrlValidator(unittest.TestCase):
     val = v.URL
+
     def test_valid(self):
         self.assertEqual('http://192.168.0.1', self.val.to_python('192.168.0.1'))
         self.assertEqual('http://url', self.val.to_python('url'))
@@ -250,3 +251,21 @@ class TestUrlValidator(unittest.TestCase):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('u"rl')
         self.assertEqual(str(cm.exception), 'That is not a valid URL')
+
+
+class TestNonHttpUrlValidator(unittest.TestCase):
+    val = v.NonHttpUrl
+
+    def test_valid(self):
+        self.assertEqual('svn://192.168.0.1', self.val.to_python('svn://192.168.0.1'))
+        self.assertEqual('ssh+git://url', self.val.to_python('ssh+git://url'))
+
+    def test_invalid(self):
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python('http://u"rl')
+        self.assertEqual(str(cm.exception), 'That is not a valid URL')
+
+    def test_no_scheme(self):
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python('url')
+        self.assertEqual(str(cm.exception), 'You must start your URL with a scheme')

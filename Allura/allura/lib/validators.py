@@ -44,6 +44,27 @@ class URL(fev.URL):
     ''', re.I | re.VERBOSE)
 
 
+class NonHttpUrl(URL):
+    messages = {
+        'noScheme': 'You must start your URL with a scheme',
+    }
+    add_http = False
+    scheme_re = re.compile(r'^[a-z][a-z0-9.+-]*:', re.I)
+    url_re = re.compile(r'''
+        ^([a-z][a-z0-9.+-]*)://
+        (?:[%:\w]*@)?                              # authenticator
+        (?:                                        # ip or domain
+        (?P<ip>(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|
+        (?P<domain>[a-z0-9][a-z0-9\-]{,62}\.)*     # subdomain
+        (?P<tld>[a-z]{2,63}|xn--[a-z0-9\-]{2,59})  # top level domain
+        )
+        (?::[0-9]{1,5})?                           # port
+        # files/delims/etc
+        (?P<path>/[a-z0-9\-\._~:/\?#\[\]@!%\$&\'\(\)\*\+,;=]*)?
+        $
+    ''', re.I | re.VERBOSE)
+
+
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):
