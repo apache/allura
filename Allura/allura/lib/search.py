@@ -88,9 +88,6 @@ class SearchIndexable(object):
         doc['text'] = jinja2.Markup.escape(text).striptags()
         return doc
 
-    def add_to_solr(self, solr_instance):
-        solr_instance.add([self.solarize()])
-
 
 class SearchError(SolrError):
     pass

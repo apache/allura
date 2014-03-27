@@ -29,19 +29,37 @@ from allura.lib.solr import make_solr_from_config
 log = logging.getLogger(__name__)
 
 
+class GenericIndexHandler(object):
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(GenericIndexHandler, cls).__new__(cls)
+        return cls._instance
+
+    def get_solr(self, solr_hosts=None):
+        return make_solr_from_config(solr_hosts) if solr_hosts else g.solr
+
+    def add_objects(self, objects, solr_hosts=None):
+        solr_instance = self.get_solr(solr_hosts)
+        solr_instance.add(obj.solarize() for obj in objects)
+
+    def del_objects(self, object_solr_ids):
+        solr_instance = self.get_solr()
+        solr_query = 'id:({0})'.format(' || '.join(object_solr_ids))
+        solr_instance.delete(q=solr_query)
+
+
 @task
-def add_project(project_id, solr_hosts=None):
-    '''
-    Add project to SOLR.
+def add_projects(project_ids):
+    from allura.model.project import Project
+    projects = Project.query.find(dict(_id={'$in': project_ids})).all()
+    GenericIndexHandler().add_objects(projects)
 
-    :param solr_hosts: a list of solr hists to use instead of defaults
-    :type solr_hosts: list of strings
-    '''
-    from allura import model as M
 
-    solr = make_solr_from_config(solr_hosts) if solr_hosts else g.solr
-    project = M.Project.query.get(_id=project_id)
-    project.add_to_solr(solr)
+@task
+def del_projects(project_solr_ids):
+    GenericIndexHandler().del_objects(project_solr_ids)
 
 
 @task
@@ -60,7 +78,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
         for ref in M.ArtifactReference.query.find(dict(_id={'$in': ref_ids})):
-            # try:
+            try:
                 artifact = ref.artifact
                 s = artifact.solarize()
                 if s is None:
@@ -75,9 +93,9 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                     link_text = artifact.index().get('text') or ''
                     shortlinks = find_shortlinks(link_text)
                     ref.references = [link.ref_id for link in shortlinks]
-            # except Exception:
-            #     log.error('Error indexing artifact %s', ref._id)
-            #     exceptions.append(sys.exc_info())
+            except Exception:
+                log.error('Error indexing artifact %s', ref._id)
+                exceptions.append(sys.exc_info())
         solr.add(solr_updates)
 
     if len(exceptions) == 1:
@@ -104,8 +122,8 @@ def commit():
 
 @contextmanager
 def _indexing_disabled(session):
-    session.disable_artifact_index = session.skip_mod_date = True
+    session.disable_index = session.skip_mod_date = True
     try:
         yield session
     finally:
-        session.disable_artifact_index = session.skip_mod_date = False
+        session.disable_index = session.skip_mod_date = False

@@ -29,7 +29,7 @@ from allura.tasks import index_tasks
 log = logging.getLogger(__name__)
 
 
-class ArtifactSessionExtension(SessionExtension):
+class ManagedSessionExtension(SessionExtension):
 
     def __init__(self, session):
         SessionExtension.__init__(self, session)
@@ -51,9 +51,32 @@ class ArtifactSessionExtension(SessionExtension):
             elif st.status == st.deleted:
                 self.objects_deleted = [obj]
 
+
+class IndexerSessionExtension(ManagedSessionExtension):
+    task_add = None
+    task_del = None
+
+    def after_flush(self, obj=None):
+        if (self.task_add or self.task_del) is None:
+            raise Exception('Both "task_add" and "task_del" must be defined')
+
+        modified = self.objects_added + self.objects_modified
+        if modified:
+            self.task_add.post([o._id for o in modified])
+        if self.objects_deleted:
+            self.task_del.post([o.index_id() for o in self.objects_deleted])
+
+
+class ProjectIndexerSessionExtension(IndexerSessionExtension):
+    task_add = index_tasks.add_projects
+    tasd_del = index_tasks.del_projects
+
+
+class ArtifactSessionExtension(ManagedSessionExtension):
+
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
-        if not getattr(self.session, 'disable_artifact_index', False):
+        if not getattr(self.session, 'disable_index', False):
             from pylons import app_globals as g
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
@@ -99,9 +122,6 @@ class BatchIndexer(ArtifactSessionExtension):
     """
     to_delete = set()
     to_add = set()
-
-    def __init__(self, session):
-        ArtifactSessionExtension.__init__(self, session)
 
     def update_index(self, objects_deleted, arefs_added):
         """
@@ -197,7 +217,9 @@ main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')
 task_doc_session = Session.by_name('task')
 main_orm_session = ThreadLocalORMSession(main_doc_session)
-project_orm_session = ThreadLocalORMSession(project_doc_session)
+project_orm_session = ThreadLocalORMSession(
+    doc_session=project_doc_session,
+    extensions=[ProjectIndexerSessionExtension])
 task_orm_session = ThreadLocalORMSession(task_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
