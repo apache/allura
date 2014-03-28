@@ -75,8 +75,9 @@ class TestIndexerSessionExtension(TestCase):
         session = mock.Mock()
         self.ExtensionClass = IndexerSessionExtension
         self.extension = self.ExtensionClass(session)
-        self.extension.task_add = mock.Mock()
-        self.extension.task_del = mock.Mock()
+        self.tasks = {'add': mock.Mock(), 'del': mock.Mock()}
+        self.extension.TASKS = mock.Mock()
+        self.extension.TASKS.get.return_value = self.tasks
 
     def _mock_indexable(self, **kw):
         m = mock.Mock(**kw)
@@ -91,8 +92,8 @@ class TestIndexerSessionExtension(TestCase):
         self.extension.objects_modified = modified
         self.extension.objects_deleted = deleted
         self.extension.after_flush()
-        self.extension.task_add.post.assert_called_once_with([1, 2, 3, 4, 5])
-        self.extension.task_del.post.assert_called_once_with(map(id, deleted))
+        self.tasks['add'].post.assert_called_once_with([1, 2, 3, 4, 5])
+        self.tasks['del'].post.assert_called_once_with(map(id, deleted))
 
 
 class TestBatchIndexer(TestCase):

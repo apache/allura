@@ -17,6 +17,7 @@
 
 import logging
 import pymongo
+from collections import defaultdict
 
 from ming import Session
 from ming.orm.base import state
@@ -53,23 +54,39 @@ class ManagedSessionExtension(SessionExtension):
 
 
 class IndexerSessionExtension(ManagedSessionExtension):
-    task_add = None
-    task_del = None
+
+    TASKS = {
+        'allura.model.project.Project': {'add': index_tasks.add_projects,
+                                         'del': index_tasks.del_projects}
+    }
+
+    def _objects_by_types(self, obj_list):
+        result = defaultdict(list)
+        for obj in obj_list:
+            class_path = '%s.%s' % (type(obj).__module__, type(obj).__name__)
+            result[class_path].append(obj)
+        return result
+
+    def _add_to_index(self, tasks, obj_list):
+        task = tasks.get('add')
+        if task: task.post([o._id for o in obj_list])
+
+    def _del_from_index(self, tasks, obj_list):
+        task = tasks.get('del')
+        if task: task.post([o.index_id() for o in obj_list])
 
     def after_flush(self, obj=None):
-        if (self.task_add or self.task_del) is None:
-            raise Exception('Both "task_add" and "task_del" must be defined')
-
-        modified = self.objects_added + self.objects_modified
-        if modified:
-            self.task_add.post([o._id for o in modified])
-        if self.objects_deleted:
-            self.task_del.post([o.index_id() for o in self.objects_deleted])
-
-
-class ProjectIndexerSessionExtension(IndexerSessionExtension):
-    task_add = index_tasks.add_projects
-    tasd_del = index_tasks.del_projects
+        actions = [
+            ((self.objects_added + self.objects_modified), self._add_to_index),
+            ((self.objects_deleted), self._del_from_index)
+        ]
+        for obj_list, action in actions:
+            if obj_list:
+                types_objects_map = self._objects_by_types(obj_list)
+                for class_path, obj_list in types_objects_map.iteritems():
+                    tasks = self.TASKS.get(class_path, {})
+                    action(tasks, obj_list)
+                        
 
 
 class ArtifactSessionExtension(ManagedSessionExtension):
@@ -216,10 +233,14 @@ def substitute_extensions(session, extensions=None):
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')
 task_doc_session = Session.by_name('task')
-main_orm_session = ThreadLocalORMSession(main_doc_session)
+main_orm_session = ThreadLocalORMSession(
+    doc_session=main_doc_session,
+    extensions=[IndexerSessionExtension]
+    )
 project_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
-    extensions=[ProjectIndexerSessionExtension])
+    extensions=[IndexerSessionExtension]
+)
 task_orm_session = ThreadLocalORMSession(task_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
