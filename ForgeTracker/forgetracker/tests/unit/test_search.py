@@ -46,7 +46,8 @@ def test_query_filter_choices(c, search):
     result = query_filter_choices()
     params = {'short_timeout': True,
               'fq': ['project_id_s:%s' % c.project._id,
-                     'mount_point_s:%s' % c.app.config.options.mount_point],
+                     'mount_point_s:%s' % c.app.config.options.mount_point,
+                     'type_s:Ticket'],
               'rows': 0,
               'facet': 'true',
               'facet.field': ['_milestone_s', 'status_s',
