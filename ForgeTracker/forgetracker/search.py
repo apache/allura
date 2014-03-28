@@ -33,7 +33,8 @@ def query_filter_choices(arg=None, final_result=None):
         'short_timeout': True,
         'fq': [
             'project_id_s:%s' % c.project._id,
-            'mount_point_s:%s' % c.app.config.options.mount_point
+            'mount_point_s:%s' % c.app.config.options.mount_point,
+            'type_s:Ticket',
             ],
         'rows': 0,
     }
