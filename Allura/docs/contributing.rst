@@ -54,7 +54,7 @@ Allura services:
 
 * Web server - the Allura web application
 * :doc:`Taskd <guides/message_bus>` - background task daemon
-* Inbound email handler - processes email sent to the Allura instance (e.g., 
+* Inbound email handler - processes email sent to the Allura instance (e.g.,
   a reply to a ticket notification email)
 
 Logging
@@ -66,7 +66,7 @@ it will contain log messages for all Allura application code.
 Technology Stack
 ----------------
 `MongoDB <http://www.mongodb.org/>`_ - Allura stores all of its data in MongoDB.
-If you're new to MongoDB, you'll want to keep the `reference docs 
+If you're new to MongoDB, you'll want to keep the `reference docs
 <http://docs.mongodb.org/manual/reference/>`_ handy until you're familiar with
 basic query operations and syntax.
 
@@ -88,7 +88,7 @@ native MongoDB, so the learning curve is pretty flat.
 `EasyWidgets <http://easywidgets.pythonisito.com/index.html>`_ - An HTML template
 and form validation library used by Allura. The learning curve on EasyWidgets
 is, ironically, not easy. Be prepared to dig into the source if you want to
-do something complicated with EW. Fortunately, there are lots of exmaples in 
+do something complicated with EW. Fortunately, there are lots of exmaples in
 the Allura source already.
 
 `Jinja <http://jinja.pocoo.org/>`_ - HTML template library used by Allura.
@@ -176,7 +176,7 @@ foreground::
 Make a request to the web app, and when your line of code is hit, a debug
 session will start on the console where the process is running.
 
-For more information about using ``pdb``, see the `official documentation 
+For more information about using ``pdb``, see the `official documentation
 <http://docs.python.org/2/library/pdb.html>`_.
 
 Testing
@@ -186,23 +186,21 @@ for a single package, for example ``forgetracker``::
 
   cd ForgeTracker && nosetests
 
-To learn more about the ``nose`` test runner, consult the `documentation 
+To learn more about the ``nose`` test runner, consult the `documentation
 <http://nose.readthedocs.org/en/latest/>`_.
 
 When writing code for Allura, don't forget that you'll need to also create
 tests that cover behaviour that you've added or changed. You may find this
 :doc:`short guide <tutorials/testing>` helpful.
 
-..  Commenting out merge request instructions until we have forking working
-    on forge-allura.apache.org
 
-    Submitting a Merge Request
-    --------------------------
-    Before submitting a merge request, make sure your changes conform to our
-    `contribution guidelines <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>`_.
-    Once your changes are finished and tested, submit them to be merged back into
-    the main repo:
+Submitting a Merge Request
+--------------------------
+Before submitting a merge request, make sure your changes conform to our
+`contribution guidelines <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>`_.
+Once your changes are finished and tested, submit them to be merged back into
+the main repo:
 
-    * Fork the main Allura repo from here: https://forge-allura.apache.org/p/allura/git/ci/master/tree/
-    * Commit and push your changes to your fork
-    * Submit a Merge Request from your fork
+* Fork the main Allura repo from here: https://forge-allura.apache.org/p/allura/git/
+* Commit and push your changes to your fork
+* Submit a Merge Request from your fork
