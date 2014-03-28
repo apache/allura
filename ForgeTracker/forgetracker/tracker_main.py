@@ -47,6 +47,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_artifact, SearchError
+from allura.lib.solr import escape_solr_arg
 from allura.lib.decorators import require_post
 from allura.lib.security import (require_access, has_access, require,
                                  require_authenticated)
@@ -1809,10 +1810,10 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.progress_key = '%s:%s' % (fld.name, m.name.replace(':', '\:'))
-        self.mongo_query = {
-            'custom_fields.%s' % fld.name: m.name}
-        self.solr_query = '%s:%s' % (_mongo_col_to_solr_col(fld.name), m.name)
+        escaped_name = escape_solr_arg(m.name)
+        self.progress_key = '%s:%s' % (fld.name, escaped_name)
+        self.mongo_query = {'custom_fields.%s' % fld.name: m.name}
+        self.solr_query = '%s:%s' % (_mongo_col_to_solr_col(fld.name), escaped_name)
 
     @with_trailing_slash
     @h.vardec
