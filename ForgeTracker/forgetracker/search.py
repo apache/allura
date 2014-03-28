@@ -51,9 +51,10 @@ def query_filter_choices(arg=None, final_obj_list=None):
 
 def get_facets(solr_hit, final_obj_list=None):
     """
-    Returns solr facets by passed solr result.
+    Filter and reshape facets for given solr result.
+
     If you want to retrieve facets for only a subset of solr results, you
-    can pass this subset as ``final_obj_lis`` arg.
+    can pass this subset as ``final_obj_list``.
 
     :param solr_hit: solr result instance.
     :param final_obj_list: final list of objects facets should be filtered on.
