@@ -20,7 +20,7 @@
 $(function() {
   var cval = $.cookie('_session_id');
   // add a group
-  var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
+  var csrf_input = $('<input>', {name: '_session_id', 'type': 'hidden', value: cval});
   var $popup_title = $('#popup_title');
   var $popup_contents = $('#popup_contents');
   $('a.admin_modal').click(function(evt){
