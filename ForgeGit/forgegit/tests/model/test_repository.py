@@ -470,9 +470,44 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
 
-    def test_default_branch(self):
+    def test_default_branch_set(self):
         self.repo.default_branch_name = 'zz'
         assert_equal(self.repo.get_default_branch('master'), 'zz')
+
+    def test_default_branch_non_standard_unset(self):
+        with mock.patch.object(self.repo, 'get_branches') as gb,\
+             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+            gb.return_value = [Object(name='foo')]
+            assert_equal(self.repo.get_default_branch('master'), 'foo')
+            set_db.assert_called_once_with('foo')
+
+    def test_default_branch_non_standard_invalid(self):
+        with mock.patch.object(self.repo, 'get_branches') as gb,\
+             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+            self.repo.default_branch_name = 'zz'
+            gb.return_value = [Object(name='foo')]
+            assert_equal(self.repo.get_default_branch('master'), 'foo')
+            set_db.assert_called_once_with('foo')
+
+    def test_default_branch_invalid(self):
+        with mock.patch.object(self.repo, 'get_branches') as gb,\
+             mock.patch.object(self.repo, 'set_default_branch') as set_db:
+            self.repo.default_branch_name = 'zz'
+            gb.return_value = [Object(name='foo'), Object(name='master')]
+            assert_equal(self.repo.get_default_branch('master'), 'master')
+            set_db.assert_called_once_with('master')
+
+    def test_default_branch_no_clobber(self):
+        with mock.patch.object(self.repo, 'get_branches') as gb:
+            gb.return_value = []
+            self.repo.default_branch_name = 'zz'
+            assert_equal(self.repo.get_default_branch('master'), 'zz')
+
+    def test_default_branch_clobber_none(self):
+        with mock.patch.object(self.repo, 'get_branches') as gb:
+            gb.return_value = []
+            self.repo.default_branch_name = None
+            assert_equal(self.repo.get_default_branch('master'), 'master')
 
     def test_clone_url(self):
         assert_equal(
