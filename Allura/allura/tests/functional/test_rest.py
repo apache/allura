@@ -232,14 +232,23 @@ class TestDoap(TestRestApiBase):
     ns_sf = '{http://sourceforge.net/api/sfelements.rdf#}'
     foaf = '{http://xmlns.com/foaf/0.1/}'
     dc = '{http://dublincore.org/documents/dcmi-namespace/}'
+    rdf = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
 
     def test_project_data(self):
+        project = M.Project.query.get(shortname='test')
+        project.summary = 'A Summary'
+        project.short_description = 'A Short Description'
+        ThreadLocalODMSession.flush_all()
         r = self.app.get('/rest/p/test?doap')
         assert_equal(r.content_type, 'application/rdf+xml')
         p = r.xml.find(self.ns + 'Project')
+        assert_equal(p.attrib[self.rdf + 'about'], 'http://localhost/rest/p/test?doap#')
         assert_equal(p.find(self.ns + 'name').text, 'test')
         assert_equal(p.find(self.dc + 'title').text, 'Test Project')
-        assert p.find(self.ns_sf + 'id') is not None
+        assert_equal(p.find(self.ns_sf + 'private').text, '0')
+        assert_equal(p.find(self.ns + 'shortdesc').text, 'A Summary')
+        assert_equal(p.find(self.ns + 'description').text, 'A Short Description')
+        assert_equal(p.find(self.ns + 'created').text, project._id.generation_time.strftime('%Y-%m-%d'))
 
         maintainers = p.findall(self.ns + 'maintainer')
         assert_equal(len(maintainers), 1)
