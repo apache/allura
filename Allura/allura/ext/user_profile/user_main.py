@@ -41,6 +41,7 @@ from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post
 from allura.lib.widgets.user_profile import SendMessageForm
+from allura.controllers.rest import UserProfileRestController
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ class UserProfileApp(Application):
         self.root = UserProfileController()
         self.templates = pkg_resources.resource_filename(
             'allura.ext.user_profile', 'templates')
+        self.api_root = UserProfileRestController()
 
     @property
     @h.exceptionless([], log)
@@ -287,6 +289,18 @@ class PersonalDataSection(ProfileSectionBase):
             tz = timezone(context['timezone'])
             context['timezone'] = tz.tzname(datetime.utcnow())
         return context
+
+    def __json__(self):
+        auth_provider = AuthenticationProvider.get()
+        return dict(
+            username=self.user.username,
+            joined=auth_provider.user_registration_date(self.user),
+            localization=self.user.get_pref('localization'),
+            sex=self.user.get_pref('sex'),
+            telnumbers=self.user.get_pref('telnumbers'),
+            skypeaccount=self.user.get_pref('skypeaccount'),
+            webpages=self.user.get_pref('webpages'),
+            availability=self.user.get_pref('availability'))
 
 
 class ProjectsSection(ProfileSectionBase):

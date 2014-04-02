@@ -312,3 +312,18 @@ class ProjectRestController(object):
             response.content_type = 'application/rdf+xml'
             return '<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()
+
+
+class UserProfileRestController(object):
+    @expose('json:')
+    def index(self, **kw):
+        user = c.project.user_project_of
+        if not user:
+            raise exc.HTTPNotFound()
+        sections = [section(user, c.project)
+                    for section in c.app.profile_sections]
+        print sections
+        json = {}
+        for s in sections:
+            json.update(s.__json__())
+        return json

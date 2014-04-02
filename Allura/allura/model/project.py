@@ -989,7 +989,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             return 'busy'
 
     def __json__(self):
-        return dict(
+        result = dict(
             shortname=self.shortname,
             name=self.name,
             _id=str(self._id),
@@ -1025,6 +1025,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 for ss in self.get_screenshots()
             ]
         )
+        if self.is_user_project:
+            result['profile_url'] = h.absurl('/rest' + self.url() + 'profile/')
+        return result
 
     def doap(self):
         root = ET.Element('rdf:RDF', {
