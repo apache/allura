@@ -223,7 +223,7 @@ class RepoRootController(BaseController, FeedController):
         log.info('Grab %d commit objects by ID', len(commit_ids))
         commits_by_id = {
             c_obj._id: c_obj
-            for c_obj in M.repo.CommitDoc.m.find(dict(_id={'$in': commit_ids}))}
+            for c_obj in M.repository.CommitDoc.m.find(dict(_id={'$in': commit_ids}))}
         log.info('... build graph')
         parents = {}
         children = defaultdict(list)
@@ -629,7 +629,7 @@ class TreeBrowser(BaseController, DispatchIndex):
                     obj = self._tree[filename]
                 except KeyError:
                     raise exc.HTTPNotFound()
-                if isinstance(obj, M.repo.Blob):
+                if isinstance(obj, M.repository.Blob):
                     return self.FileBrowserClass(
                         self._commit,
                         self._tree,

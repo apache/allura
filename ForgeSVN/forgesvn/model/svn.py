@@ -42,6 +42,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.model.auth import User
 from allura.model.repository import zipdir
+from allura.model import repository as RM
 
 log = logging.getLogger(__name__)
 
@@ -309,7 +310,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def commit(self, rev):
         oid = self.rev_parse(rev)
-        result = M.repo.Commit.query.get(_id=oid)
+        result = M.repository.Commit.query.get(_id=oid)
         if result:
             result.set_context(self._repo)
         return result
@@ -336,7 +337,7 @@ class SVNImplementation(M.RepositoryImplementation):
             return oids
         # Find max commit id -- everything greater than that will be "unknown"
         prefix = self._oid('')
-        q = M.repo.Commit.query.find(
+        q = M.repository.Commit.query.find(
             dict(
                 type='commit',
                 _id={'$gt': prefix},
@@ -353,7 +354,7 @@ class SVNImplementation(M.RepositoryImplementation):
             oid for oid in oids if oid not in seen_oids]
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
-        from allura.model.repo import CommitDoc, DiffInfoDoc
+        from allura.model.repository import CommitDoc, DiffInfoDoc
         ci_doc = CommitDoc.m.get(_id=oid)
         if ci_doc and lazy:
             return False
@@ -440,7 +441,6 @@ class SVNImplementation(M.RepositoryImplementation):
         return True
 
     def compute_tree_new(self, commit, tree_path='/'):
-        from allura.model import repo as RM
         # always leading slash, never trailing
         tree_path = '/' + tree_path.strip('/')
         tree_id = self._tree_oid(commit._id, tree_path)

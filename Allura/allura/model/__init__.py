@@ -42,7 +42,8 @@ from .session import artifact_orm_session, repository_orm_session
 from .session import task_orm_session
 from .session import ArtifactSessionExtension
 
-import repo
+from . import repository
+from . import repo_refresh
 
 from ming.orm import Mapper
 Mapper.compile_all()

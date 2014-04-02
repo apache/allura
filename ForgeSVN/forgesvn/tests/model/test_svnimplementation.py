@@ -20,7 +20,7 @@ from nose.tools import assert_equal
 from pylons import app_globals as g
 
 from alluratest.controller import setup_unit_test
-from allura.model.repo import Commit
+from allura.model.repository import Commit
 from forgesvn.model.svn import SVNImplementation
 
 
@@ -35,10 +35,10 @@ class TestSVNImplementation(object):
         self._test_compute_tree_new('trunk/foo/')
         self._test_compute_tree_new('trunk/foo')
 
-    @patch('allura.model.repo.LastCommitDoc.m.update_partial')
-    @patch('allura.model.repo.TreesDoc.m.update_partial')
-    @patch('allura.model.repo.Tree.upsert')
-    @patch('allura.model.repo.Tree.query.get')
+    @patch('allura.model.repository.LastCommitDoc.m.update_partial')
+    @patch('allura.model.repository.TreesDoc.m.update_partial')
+    @patch('allura.model.repository.Tree.upsert')
+    @patch('allura.model.repository.Tree.query.get')
     def _test_compute_tree_new(self, path, tree_get, tree_upsert, treesdoc_partial, lcd_partial):
         repo = Mock(fs_path=g.tmpdir + '/')
         repo.name = 'code'

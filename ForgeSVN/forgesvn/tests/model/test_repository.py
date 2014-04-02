@@ -363,7 +363,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         actual = entry.paged_diffs(start=1, end=3)
         self.assertEqual(expected, actual)
 
-        empty = M.repo.Commit().paged_diffs()
+        empty = M.repository.Commit().paged_diffs()
         self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
@@ -653,12 +653,12 @@ class _Test(unittest.TestCase):
     idgen = ('obj_%d' % i for i in count())
 
     def _make_tree(self, object_id, **kwargs):
-        t, isnew = M.repo.Tree.upsert(object_id)
+        t, isnew = M.repository.Tree.upsert(object_id)
         repo = getattr(self, 'repo', None)
         t.repo = repo
         for k, v in kwargs.iteritems():
             if isinstance(v, basestring):
-                obj = M.repo.Blob(
+                obj = M.repository.Blob(
                     t, k, self.idgen.next())
                 t.blob_ids.append(Object(
                     name=k, id=obj._id))
@@ -670,7 +670,7 @@ class _Test(unittest.TestCase):
         return t
 
     def _make_commit(self, object_id, **tree_parts):
-        ci, isnew = M.repo.Commit.upsert(object_id)
+        ci, isnew = M.repository.Commit.upsert(object_id)
         if isnew:
             ci.committed.email = c.user.email_addresses[0]
             ci.authored.email = c.user.email_addresses[0]
@@ -827,7 +827,7 @@ class TestRepo(_TestWithRepo):
             return_value=[['master', 'branch'], []])
 
         def refresh_commit_info(oid, seen, lazy=False):
-            M.repo.CommitDoc(dict(
+            M.repository.CommitDoc(dict(
                 authored=dict(
                     name=committer_name,
                     email=committer_email),
@@ -935,8 +935,8 @@ class TestMergeRequest(_TestWithRepoAndCommit):
 class TestRepoObject(_TestWithRepoAndCommit):
 
     def test_upsert(self):
-        obj0, isnew0 = M.repo.Tree.upsert('foo1')
-        obj1, isnew1 = M.repo.Tree.upsert('foo1')
+        obj0, isnew0 = M.repository.Tree.upsert('foo1')
+        obj1, isnew1 = M.repository.Tree.upsert('foo1')
         assert obj0 is obj1
         assert isnew0 and not isnew1
 
@@ -964,8 +964,8 @@ class TestCommit(_TestWithRepo):
         self.repo._impl.url_for_commit = impl.url_for_commit
 
     def test_upsert(self):
-        obj0, isnew0 = M.repo.Commit.upsert('foo')
-        obj1, isnew1 = M.repo.Commit.upsert('foo')
+        obj0, isnew0 = M.repository.Commit.upsert('foo')
+        obj1, isnew1 = M.repository.Commit.upsert('foo')
         assert obj0 is obj1
         assert not isnew1
         u = M.User.by_username('test-admin')
@@ -978,9 +978,9 @@ class TestCommit(_TestWithRepo):
 
     def test_get_path(self):
         b = self.ci.get_path('a/a/a')
-        assert isinstance(b, M.repo.Blob)
+        assert isinstance(b, M.repository.Blob)
         x = self.ci.get_path('a/a')
-        assert isinstance(x, M.repo.Tree)
+        assert isinstance(x, M.repository.Tree)
 
     def _unique_blobs(self):
         def counter():
