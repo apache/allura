@@ -25,6 +25,7 @@ from pylons import tmpl_context as c
 from allura import model as M
 from allura.controllers.repository import topo_sort
 from allura.model.repository import zipdir, prefix_paths_union
+from allura.model.repo_refresh import CommitRunDoc, CommitRunBuilder
 from alluratest.controller import setup_unit_test
 
 
@@ -33,7 +34,7 @@ class TestCommitRunBuilder(unittest.TestCase):
     def setUp(self):
         setup_unit_test()
         commits = [
-            M.repo.CommitDoc.make(dict(
+            M.repository.CommitDoc.make(dict(
                 _id=str(i)))
             for i in range(10)]
         for p, c in zip(commits, commits[1:]):
@@ -44,35 +45,35 @@ class TestCommitRunBuilder(unittest.TestCase):
         self.commits = commits
 
     def test_single_pass(self):
-        crb = M.repo_refresh.CommitRunBuilder(
+        crb = CommitRunBuilder(
             [ci._id for ci in self.commits])
         crb.run()
-        self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
+        self.assertEqual(CommitRunDoc.m.count(), 1)
 
     def test_two_pass(self):
-        crb = M.repo_refresh.CommitRunBuilder(
+        crb = CommitRunBuilder(
             [ci._id for ci in self.commits[:5]])
         crb.run()
-        crb = M.repo_refresh.CommitRunBuilder(
+        crb = CommitRunBuilder(
             [ci._id for ci in self.commits[5:]])
         crb.run()
-        self.assertEqual(M.repo.CommitRunDoc.m.count(), 2)
+        self.assertEqual(CommitRunDoc.m.count(), 2)
         crb.cleanup()
-        self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
+        self.assertEqual(CommitRunDoc.m.count(), 1)
 
     def test_svn_like(self):
         for ci in self.commits:
-            crb = M.repo_refresh.CommitRunBuilder([ci._id])
+            crb = CommitRunBuilder([ci._id])
             crb.run()
             crb.cleanup()
-        self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
+        self.assertEqual(CommitRunDoc.m.count(), 1)
 
     def test_reversed(self):
         for ci in reversed(self.commits):
-            crb = M.repo_refresh.CommitRunBuilder([ci._id])
+            crb = CommitRunBuilder([ci._id])
             crb.run()
             crb.cleanup()
-        self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
+        self.assertEqual(CommitRunDoc.m.count(), 1)
 
 
 class TestTopoSort(unittest.TestCase):
@@ -129,9 +130,9 @@ def blob(name, id):
 
 class TestTree(unittest.TestCase):
 
-    @patch('allura.model.repo.Tree.__getitem__')
+    @patch('allura.model.repository.Tree.__getitem__')
     def test_get_obj_by_path(self, getitem):
-        tree = M.repo.Tree()
+        tree = M.repository.Tree()
         # test with relative path
         tree.get_obj_by_path('some/path/file.txt')
         getitem.assert_called_with('some')
@@ -147,7 +148,7 @@ class TestTree(unittest.TestCase):
 class TestBlob(unittest.TestCase):
 
     def test_pypeline_view(self):
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob = M.repository.Blob(Mock(), Mock(), Mock())
         blob._id = 'blob1'
         blob.path = Mock(return_value='path')
         blob.name = 'INSTALL.mdown'
@@ -158,14 +159,14 @@ class TestBlob(unittest.TestCase):
 class TestCommit(unittest.TestCase):
 
     def test_activity_extras(self):
-        commit = M.repo.Commit()
+        commit = M.repository.Commit()
         commit.shorthand_id = MagicMock(return_value='abcdef')
         commit.message = 'commit msg'
         self.assertIn('allura_id', commit.activity_extras)
         self.assertEqual(commit.activity_extras['summary'], commit.summary)
 
     def test_get_path_no_create(self):
-        commit = M.repo.Commit()
+        commit = M.repository.Commit()
         commit.get_tree = MagicMock()
         commit.get_path('foo/', create=False)
         commit.get_tree.assert_called_with(False)
@@ -175,7 +176,7 @@ class TestCommit(unittest.TestCase):
     def test_get_tree_no_create(self):
         c.model_cache = Mock()
         c.model_cache.get.return_value = None
-        commit = M.repo.Commit()
+        commit = M.repository.Commit()
         commit.repo = Mock()
 
         commit.tree_id = None
@@ -187,7 +188,7 @@ class TestCommit(unittest.TestCase):
         commit.tree_id = 'tree'
         tree = commit.get_tree(create=False)
         assert not commit.repo.compute_tree_new.called
-        c.model_cache.get.assert_called_with(M.repo.Tree, dict(_id='tree'))
+        c.model_cache.get.assert_called_with(M.repository.Tree, dict(_id='tree'))
         assert_equal(tree, None)
 
         _tree = Mock()
@@ -196,11 +197,11 @@ class TestCommit(unittest.TestCase):
         _tree.set_context.assert_called_with(commit)
         assert_equal(tree, _tree)
 
-    @patch.object(M.repo.Tree.query, 'get')
+    @patch.object(M.repository.Tree.query, 'get')
     def test_get_tree_create(self, tree_get):
         c.model_cache = Mock()
         c.model_cache.get.return_value = None
-        commit = M.repo.Commit()
+        commit = M.repository.Commit()
         commit.repo = Mock()
 
         commit.repo.compute_tree_new.return_value = None
@@ -219,7 +220,7 @@ class TestCommit(unittest.TestCase):
         commit.repo.compute_tree_new.assert_called_once_with(commit)
         assert not tree_get.called
         c.model_cache.get.assert_called_once_with(
-            M.repo.Tree, dict(_id='tree'))
+            M.repository.Tree, dict(_id='tree'))
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
@@ -230,7 +231,7 @@ class TestCommit(unittest.TestCase):
         assert not commit.repo.compute_tree_new.called
         assert not tree_get.called
         c.model_cache.get.assert_called_once_with(
-            M.repo.Tree, dict(_id='tree2'))
+            M.repository.Tree, dict(_id='tree2'))
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
@@ -240,17 +241,17 @@ class TestCommit(unittest.TestCase):
         tree_get.return_value = _tree
         tree = commit.get_tree()
         c.model_cache.get.assert_called_once_with(
-            M.repo.Tree, dict(_id='tree2'))
+            M.repository.Tree, dict(_id='tree2'))
         commit.repo.compute_tree_new.assert_called_once_with(commit)
         assert_equal(commit.tree_id, 'tree')
         tree_get.assert_called_once_with(_id='tree')
         c.model_cache.set.assert_called_once_with(
-            M.repo.Tree, dict(_id='tree'), _tree)
+            M.repository.Tree, dict(_id='tree'), _tree)
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
     def test_tree_create(self):
-        commit = M.repo.Commit()
+        commit = M.repository.Commit()
         commit.get_tree = Mock()
         tree = commit.tree
         commit.get_tree.assert_called_with(create=True)

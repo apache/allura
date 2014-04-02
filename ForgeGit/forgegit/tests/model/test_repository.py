@@ -171,8 +171,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert os.stat(
             os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
 
-    @mock.patch('forgegit.model.git_repo.g.post_event')
-    def test_clone(self, post_event):
+    def test_clone(self):
         repo = GM.Repository(
             name='testgit.git',
             fs_path=g.tmpdir + '/',
@@ -203,8 +202,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         shutil.rmtree(dirname)
 
     @mock.patch('forgegit.model.git_repo.git.Repo.clone_from')
-    @mock.patch('forgegit.model.git_repo.g.post_event')
-    def test_hotcopy(self, post_event, clone_from):
+    def test_hotcopy(self, clone_from):
         with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
             repo = GM.Repository(
                 name='testgit.git',
@@ -340,10 +338,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert str(entry.authored.name) == 'Rick Copeland', entry.authored
         assert entry.message
         # test the auto-gen tree fall-through
-        orig_tree = M.repo.Tree.query.get(_id=entry.tree_id)
+        orig_tree = M.repository.Tree.query.get(_id=entry.tree_id)
         assert orig_tree
         # force it to regenerate the tree
-        M.repo.Tree.query.remove(dict(_id=entry.tree_id))
+        M.repository.Tree.query.remove(dict(_id=entry.tree_id))
         session(orig_tree).flush()
         # ensure we don't just pull it from the session cache
         session(orig_tree).expunge(orig_tree)

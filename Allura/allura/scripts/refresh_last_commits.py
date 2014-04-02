@@ -141,22 +141,22 @@ class RefreshLastCommits(ScriptTask):
         if options.diffs:
             print 'Processing diffs'
             for i, commit_id in enumerate(commit_ids):
-                commit = M.repo.Commit.query.get(_id=commit_id)
+                commit = M.repository.Commit.query.get(_id=commit_id)
                 with time(timings):
                     M.repo_refresh.compute_diffs(
                         c.app.repo._id, tree_cache, commit)
                 if i % 1000 == 0:
                     cls._print_stats(i, timings, 1000)
 
-        model_cache = M.repo.ModelCache(
-            max_instances={M.repo.LastCommit: 4000},
-            max_queries={M.repo.LastCommit: 4000},
+        model_cache = M.repository.ModelCache(
+            max_instances={M.repository.LastCommit: 4000},
+            max_queries={M.repository.LastCommit: 4000},
         )
         lcid_cache = {}
         timings = []
         print 'Processing last commits'
         for i, commit_id in enumerate(commit_ids):
-            commit = M.repo.Commit.query.get(_id=commit_id)
+            commit = M.repository.Commit.query.get(_id=commit_id)
             if commit is None:
                 print "Commit missing, skipping: %s" % commit_id
                 continue
@@ -174,18 +174,18 @@ class RefreshLastCommits(ScriptTask):
     def _clean(cls, commit_ids, clean_diffs):
         if clean_diffs:
             # delete DiffInfoDocs
-            i = M.repo.DiffInfoDoc.m.find(
+            i = M.repository.DiffInfoDoc.m.find(
                 dict(_id={'$in': commit_ids})).count()
             log.info("Deleting %i DiffInfoDoc docs for %i commits...",
                      i, len(commit_ids))
-            M.repo.DiffInfoDoc.m.remove(dict(_id={'$in': commit_ids}))
+            M.repository.DiffInfoDoc.m.remove(dict(_id={'$in': commit_ids}))
 
         # delete LastCommitDocs
-        i = M.repo.LastCommitDoc.m.find(
+        i = M.repository.LastCommitDoc.m.find(
             dict(commit_id={'$in': commit_ids})).count()
         log.info("Deleting %i LastCommitDoc docs for %i commits...",
                  i, len(commit_ids))
-        M.repo.LastCommitDoc.m.remove(dict(commit_id={'$in': commit_ids}))
+        M.repository.LastCommitDoc.m.remove(dict(commit_id={'$in': commit_ids}))
 
     @classmethod
     def _print_stats(cls, processed, timings, debug_step):

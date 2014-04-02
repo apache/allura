@@ -75,26 +75,26 @@ class RefreshRepo(ScriptTask):
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
                             tree_ids.extend([
                                 tree_id for doc in
-                                M.repo.TreesDoc.m.find(
+                                M.repository.TreesDoc.m.find(
                                     {"_id": {"$in": ci_ids_chunk}},
                                     {"tree_ids": 1})
                                 for tree_id in doc.get("tree_ids", [])])
 
-                            i = M.repo.CommitDoc.m.find(
+                            i = M.repository.CommitDoc.m.find(
                                 {"_id": {"$in": ci_ids_chunk}}).count()
                             if i:
                                 log.info("Deleting %i CommitDoc docs...", i)
-                                M.repo.CommitDoc.m.remove(
+                                M.repository.CommitDoc.m.remove(
                                     {"_id": {"$in": ci_ids_chunk}})
 
                         # delete these in chunks, otherwise the query doc can
                         # exceed the max BSON size limit (16MB at the moment)
                         for tree_ids_chunk in chunked_list(tree_ids, 300000):
-                            i = M.repo.TreeDoc.m.find(
+                            i = M.repository.TreeDoc.m.find(
                                 {"_id": {"$in": tree_ids_chunk}}).count()
                             if i:
                                 log.info("Deleting %i TreeDoc docs...", i)
-                                M.repo.TreeDoc.m.remove(
+                                M.repository.TreeDoc.m.remove(
                                     {"_id": {"$in": tree_ids_chunk}})
                         del tree_ids
 
@@ -102,34 +102,34 @@ class RefreshRepo(ScriptTask):
                         # we crash, we don't lose the ability to delete those
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
                             # delete TreesDocs
-                            i = M.repo.TreesDoc.m.find(
+                            i = M.repository.TreesDoc.m.find(
                                 {"_id": {"$in": ci_ids_chunk}}).count()
                             if i:
                                 log.info("Deleting %i TreesDoc docs...", i)
-                                M.repo.TreesDoc.m.remove(
+                                M.repository.TreesDoc.m.remove(
                                     {"_id": {"$in": ci_ids_chunk}})
 
                             # delete LastCommitDocs
-                            i = M.repo.LastCommitDoc.m.find(
+                            i = M.repository.LastCommitDoc.m.find(
                                 dict(commit_ids={'$in': ci_ids_chunk})).count()
                             if i:
                                 log.info(
                                     "Deleting %i remaining LastCommitDoc docs, by repo id...", i)
-                                M.repo.LastCommitDoc.m.remove(
+                                M.repository.LastCommitDoc.m.remove(
                                     dict(commit_ids={'$in': ci_ids_chunk}))
 
-                            i = M.repo.DiffInfoDoc.m.find(
+                            i = M.repository.DiffInfoDoc.m.find(
                                 {"_id": {"$in": ci_ids_chunk}}).count()
                             if i:
                                 log.info("Deleting %i DiffInfoDoc docs...", i)
-                                M.repo.DiffInfoDoc.m.remove(
+                                M.repository.DiffInfoDoc.m.remove(
                                     {"_id": {"$in": ci_ids_chunk}})
 
-                            i = M.repo.CommitRunDoc.m.find(
+                            i = M.repository.CommitRunDoc.m.find(
                                 {"commit_ids": {"$in": ci_ids_chunk}}).count()
                             if i:
                                 log.info("Deleting %i CommitRunDoc docs...", i)
-                                M.repo.CommitRunDoc.m.remove(
+                                M.repository.CommitRunDoc.m.remove(
                                     {"commit_ids": {"$in": ci_ids_chunk}})
                         del ci_ids
 

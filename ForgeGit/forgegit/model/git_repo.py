@@ -24,7 +24,6 @@ from datetime import datetime
 import tg
 import git
 import gitdb
-from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 from paste.deploy.converters import asbool
@@ -175,13 +174,13 @@ class GitImplementation(M.RepositoryImplementation):
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''
-        cache = getattr(c, 'model_cache', '') or M.repo.ModelCache()
-        result = cache.get(M.repo.Commit, dict(_id=rev))
+        cache = getattr(c, 'model_cache', '') or M.repository.ModelCache()
+        result = cache.get(M.repository.Commit, dict(_id=rev))
         if result is None:
             # find the id by branch/tag name
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
-                result = cache.get(M.repo.Commit, dict(_id=impl.hexsha))
+                result = cache.get(M.repository.Commit, dict(_id=impl.hexsha))
             except Exception:
                 url = ''
                 try:
@@ -218,7 +217,7 @@ class GitImplementation(M.RepositoryImplementation):
                 continue
             if not all_commits:
                 # Look up the object
-                if M.repo.Commit.query.find(dict(_id=obj.hexsha)).count():
+                if M.repository.Commit.query.find(dict(_id=obj.hexsha)).count():
                     graph[obj.hexsha] = set()  # mark as parentless
                     continue
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
@@ -226,7 +225,7 @@ class GitImplementation(M.RepositoryImplementation):
         return list(topological_sort(graph))
 
     def refresh_commit_info(self, oid, seen, lazy=True):
-        from allura.model.repo import CommitDoc
+        from allura.model.repository import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)
         if ci_doc and lazy:
             return False
@@ -258,7 +257,7 @@ class GitImplementation(M.RepositoryImplementation):
         return True
 
     def refresh_tree_info(self, tree, seen, lazy=True):
-        from allura.model.repo import TreeDoc
+        from allura.model.repository import TreeDoc
         if lazy and tree.binsha in seen:
             return
         seen.add(tree.binsha)

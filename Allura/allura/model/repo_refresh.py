@@ -31,9 +31,9 @@ from ming.orm import mapper, session, ThreadLocalORMSession
 
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
-from allura.model.repo import CommitRunDoc
-from allura.model.repo import Commit, Tree, LastCommit, ModelCache
+from allura.model.repository import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
+from allura.model.repository import CommitRunDoc
+from allura.model.repository import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 from allura.model.auth import User
 from allura.model.timeline import TransientActor
@@ -178,7 +178,7 @@ def refresh_commit_repos(all_commit_ids, repo):
                 repo_ids={'$ne': repo._id})):
             oid = ci._id
             ci.repo_ids.append(repo._id)
-            index_id = 'allura.model.repo.Commit#' + oid
+            index_id = 'allura.model.repository.Commit#' + oid
             ref = ArtifactReferenceDoc(dict(
                 _id=index_id,
                 artifact_reference=dict(

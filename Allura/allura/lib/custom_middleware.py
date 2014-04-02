@@ -30,7 +30,7 @@ from webob import exc, Request
 import pysolr
 
 from allura.lib import helpers as h
-import allura.model.repo
+import allura.model.repository
 
 log = logging.getLogger(__name__)
 
@@ -235,11 +235,11 @@ class AlluraTimerMiddleware(TimerMiddleware):
                   '_refresh'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
-            Timer('repo.Blob.{method_name}', allura.model.repo.Blob, '*'),
-            Timer('repo.Commit.{method_name}', allura.model.repo.Commit, '*'),
+            Timer('repo.Blob.{method_name}', allura.model.repository.Blob, '*'),
+            Timer('repo.Commit.{method_name}', allura.model.repository.Commit, '*'),
             Timer('repo.LastCommit.{method_name}',
-                  allura.model.repo.LastCommit, '*'),
-            Timer('repo.Tree.{method_name}', allura.model.repo.Tree, '*'),
+                  allura.model.repository.LastCommit, '*'),
+            Timer('repo.Tree.{method_name}', allura.model.repository.Tree, '*'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
                   'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
@@ -250,11 +250,11 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('urlopen', urllib2, 'urlopen'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
-            Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
+            Timer('_diffs_copied', allura.model.repository.Commit, '_diffs_copied'),
             Timer(
-                'sequencematcher.{method_name}', allura.model.repo.SequenceMatcher,
+                'sequencematcher.{method_name}', allura.model.repository.SequenceMatcher,
                 'ratio', 'quick_ratio', 'real_quick_ratio'),
-            Timer('unified_diff', allura.model.repo, 'unified_diff'),
+            Timer('unified_diff', allura.model.repository, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
     def before_logging(self, stat_record):

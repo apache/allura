@@ -20,8 +20,8 @@ import sys
 from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
-from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
-from allura.model.repo import LastCommitDoc, CommitRunDoc
+from allura.model.repository import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
+from allura.model.repository import LastCommitDoc, CommitRunDoc
 from allura.model.repo_refresh import refresh_repo
 
 
