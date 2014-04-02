@@ -199,8 +199,8 @@ class GitImplementation(M.RepositoryImplementation):
         """Yield commit ids, starting with the head(s) of the commit tree and
         ending with the root (first commit).
         """
-        if not self._git.head.is_valid():
-            return  # empty repo
+        if self.is_empty():
+            return
         seen = set()
         for ci in self._git.iter_commits(all=True, topo_order=True):
             if ci.binsha in seen:
@@ -480,7 +480,7 @@ class GitImplementation(M.RepositoryImplementation):
                 os.remove(tmpfilename)
 
     def is_empty(self):
-        return not self._git or len(self._git.heads) == 0
+        return not self.head
 
     def is_file(self, path, rev=None):
         path = path.strip('/')
@@ -493,6 +493,17 @@ class GitImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def head(self):
+        if not self._git or not self._git.heads:
+            return None
+        # if the repo's HEAD file doesn't point to a valid branch, we need to select one
+        # this can happen in particular with masterless repos
+        if not self._git.head.is_valid():
+            for head in self._git.heads:
+                if head.is_valid():
+                    self._git.head.reference = head
+                    break
+            else:
+                return None  # no valid heads
         return self._git.head.commit.hexsha
 
     @LazyProperty
