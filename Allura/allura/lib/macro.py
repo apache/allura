@@ -327,8 +327,17 @@ def parse_repo(repo):
     from allura import model as M
     parts = repo.split(':')
     project, app = c.project, None
+    nbhd = c.project.neighborhood if c.project else None
+    if len(parts) == 3:
+        nbhd = M.Neighborhood.query.get(url_prefix='/' + parts[0] + '/')
+        project = M.Project.query.get(
+            shortname=parts[1],
+            neighborhood_id=nbhd._id) if nbhd else None
+        app = project.app_instance(parts[2]) if project else None
     if len(parts) == 2:
-        project = M.Project.query.get(shortname=parts[0])
+        project = M.Project.query.get(
+            shortname=parts[0],
+            neighborhood_id=nbhd._id) if nbhd else None
         app = project.app_instance(parts[1]) if project else None
     elif len(parts) == 1:
         app = project.app_instance(parts[0]) if project else None

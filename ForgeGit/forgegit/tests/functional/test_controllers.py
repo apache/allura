@@ -763,9 +763,11 @@ class TestIncludeMacro(_TestCase):
     def test_parse_repo(self):
         assert_equal(macro.parse_repo('app'), None)
         assert_equal(macro.parse_repo('proj:app'), None)
+        assert_equal(macro.parse_repo('nbhd:test:src-git'), None)
         assert_equal(macro.parse_repo('a:b:c:d:e:f'), None)
         assert_not_equal(macro.parse_repo('src-git'), None)
         assert_not_equal(macro.parse_repo('test:src-git'), None)
+        assert_not_equal(macro.parse_repo('p:test:src-git'), None)
 
     def test_include_file_no_repo(self):
         expected = '[[include repo %s (not found)]]'
