@@ -291,7 +291,7 @@ class PersonalDataSection(ProfileSectionBase):
         return context
 
     def __json__(self):
-        auth_provider = AuthenticationProvider.get()
+        auth_provider = AuthenticationProvider.get(request)
         return dict(
             username=self.user.username,
             joined=auth_provider.user_registration_date(self.user),
@@ -306,20 +306,36 @@ class PersonalDataSection(ProfileSectionBase):
 class ProjectsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/projects.html'
 
-    def prepare_context(self, context):
-        context['projects'] = [
+    def get_projects(self):
+        return [
             project
             for project in self.user.my_projects()
             if project != c.project
             and (self.user == c.user or h.has_access(project, 'read'))
             and not project.is_nbhd_project
             and not project.is_user_project]
+
+    def prepare_context(self, context):
+        context['projects'] = self.get_projects()
         return context
 
+    def __json__(self):
+        projects = [
+            {
+                'name': project['name'],
+                'url': project.url(),
+            }
+            for project in self.get_projects()]
+        return dict(projects=projects)
 
 class SkillsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/skills.html'
 
+    def __json__(self):
+        skills = {
+            skill['skill']['fullname']: skill['level']
+            for skill in self.user.get_skills()}
+        return dict(skills=skills)
 
 class ToolsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/tools.html'
@@ -327,3 +343,7 @@ class ToolsSection(ProfileSectionBase):
 
 class SocialSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/social.html'
+
+    def __json__(self):
+        return dict(
+            socialnetworks=self.user.get_pref('socialnetworks'))

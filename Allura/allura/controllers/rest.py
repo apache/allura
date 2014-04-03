@@ -325,5 +325,6 @@ class UserProfileRestController(object):
         print sections
         json = {}
         for s in sections:
-            json.update(s.__json__())
+            if hasattr(s, '__json__'):
+                json.update(s.__json__())
         return json
