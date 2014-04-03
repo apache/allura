@@ -142,8 +142,11 @@ class TestBatchIndexer(TestCase):
     def test__post_too_large(self, index_tasks):
         def on_post(chunk):
             if len(chunk) > 1:
-                raise pymongo.errors.InvalidDocument(
+                e = pymongo.errors.InvalidDocument(
                     "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
+                # ming injects a 2nd arg with the document, so we do too
+                e.args = e.args + ("doc:  {'task_name': 'allura.tasks.index_tasks.add_artifacts', ........",)
+                raise e
         index_tasks.add_artifacts.post.side_effect = on_post
         self.ext._post(index_tasks.add_artifacts, range(5))
         expected = [

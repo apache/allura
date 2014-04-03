@@ -177,7 +177,7 @@ class ReindexCommand(base.Command):
         except InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its
             # expected to help
-            if str(e).startswith('BSON document too large'):
+            if e.args[0].startswith('BSON document too large'):
                 self._post_add_artifacts(chunk[:len(chunk) // 2])
                 self._post_add_artifacts(chunk[len(chunk) // 2:])
             else:

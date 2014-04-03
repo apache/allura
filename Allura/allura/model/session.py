@@ -162,7 +162,7 @@ class BatchIndexer(ArtifactSessionExtension):
         except pymongo.errors.InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its
             # expected to help
-            if str(e).startswith('BSON document too large'):
+            if e.args[0].startswith('BSON document too large'):
                 cls._post(task_func, chunk[:len(chunk) // 2])
                 cls._post(task_func, chunk[len(chunk) // 2:])
             else:
