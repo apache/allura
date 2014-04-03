@@ -67,26 +67,31 @@ class IndexerSessionExtension(ManagedSessionExtension):
             result[class_path].append(obj)
         return result
 
-    def _add_to_index(self, tasks, obj_list):
-        task = tasks.get('add')
-        if task: task.post([o._id for o in obj_list])
+    def _index_action(self, tasks, obj_list, action):
+        task = tasks.get(action)
+        if task:
+            if action == 'add':
+                args = ([o._id for o in obj_list],)
+            else:
+                args = ([o.index_id() for o in obj_list],)
 
-    def _del_from_index(self, tasks, obj_list):
-        task = tasks.get('del')
-        if task: task.post([o.index_id() for o in obj_list])
+            try:
+                task.post(*args)
+            except:
+                log.error('Error calling %s', task.__name__)
+
 
     def after_flush(self, obj=None):
         actions = [
-            ((self.objects_added + self.objects_modified), self._add_to_index),
-            ((self.objects_deleted), self._del_from_index)
+            ((self.objects_added + self.objects_modified), 'add'),
+            ((self.objects_deleted), 'del')
         ]
         for obj_list, action in actions:
             if obj_list:
                 types_objects_map = self._objects_by_types(obj_list)
                 for class_path, obj_list in types_objects_map.iteritems():
                     tasks = self.TASKS.get(class_path, {})
-                    action(tasks, obj_list)
-                        
+                    self._index_action(tasks, obj_list, action)
 
 
 class ArtifactSessionExtension(ManagedSessionExtension):
