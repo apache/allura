@@ -104,8 +104,9 @@ class TestIndexTasks(unittest.TestCase):
     def test_add_projects(self):
         g.solr.db.clear()
         old_solr_size = len(g.solr.db)
-        projects = M.Project.query.find().all()
+        projects = M.Project.query.find().all()        
         index_tasks.add_projects.post([p._id for p in projects])
+        M.MonQTask.run_ready()
         new_solr_size = len(g.solr.db)
         assert old_solr_size + len(projects) == new_solr_size
 

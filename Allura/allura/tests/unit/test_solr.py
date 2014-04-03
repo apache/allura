@@ -115,12 +115,6 @@ class TestSearchIndexable(unittest.TestCase):
         self.obj.index = lambda: dict(text='&lt;script&gt;a(1)&lt;/script&gt;')
         assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
 
-    def test_add_to_solr(self):
-        solr_obj = mock.MagicMock()
-        self.obj.index = lambda: dict(text='test')
-        self.obj.add_to_solr(solr_obj)
-        solr_obj.add.assert_called_once_with(dict(text='test'))
-
 
 class TestSearch_app(unittest.TestCase):
 
