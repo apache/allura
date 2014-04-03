@@ -74,6 +74,7 @@ Developing Allura
    guides/message_bus
    guides/email
    guides/permissions
+   guides/scm
    tutorials/testing
 
 
