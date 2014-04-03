@@ -1046,7 +1046,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         ET.SubElement(project, 'sf:private').text = '1' if self.private else '0'  # strange, but sf.net does this
         ET.SubElement(project, 'shortdesc', {'xml:lang': 'en'}).text = self.summary
         ET.SubElement(project, 'description', {'xml:lang': 'en'}).text = self.short_description
-        ET.SubElement(project, 'created').text = self._id.generation_time.strftime('%Y-%m-%d')
+        registration_date = plugin.ProjectRegistrationProvider.get().registration_date(self)
+        ET.SubElement(project, 'created').text = registration_date.strftime('%Y-%m-%d')
         if self.external_homepage:
             ET.SubElement(project, 'homepage', {'rdf:resource': self.external_homepage})
 

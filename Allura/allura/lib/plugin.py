@@ -683,6 +683,12 @@ class ProjectRegistrationProvider(object):
            It should be overridden for your specific envirnoment'''
         return None
 
+    def registration_date(self, project):
+        '''
+        Return the datetime the project was created.
+        '''
+        return project._id.generation_time
+
 
 class ThemeProvider(object):
 
