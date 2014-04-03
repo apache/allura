@@ -727,6 +727,24 @@ allowed, permitting basic styling and layout: &lt;div markdown style="float:left
 </pre></div>
 
 <p>No example output is available for this one because it only works on real wiki pages. Try it in your wiki!</p>
+
+<p>Also, you can embed a file directly from a repository! Just skip the ref parameter and pass repository, path and optional revision:</p>
+<div class="codehilite"><pre>
+[[include repo=code path=README]]
+
+[[include repo=myproject:code path=/ew/forms.py rev=fa61e7]]
+
+[[include repo=p:myproject:code path=/ew/forms.py]]
+</pre></div>
+
+<p>Repo could be specified in three ways:</p>
+<ul>
+  <li>app</li>
+  <li>project:app</li>
+  <li>neighborhood:project:app</li>
+</ul>
+
+<p>Where app is a repository's mount point, project is a project's shortname and neighborhood is a neighborhood's prefix that appears in url.</p>
 </div>
 
 
