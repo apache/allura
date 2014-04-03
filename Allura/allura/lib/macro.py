@@ -349,10 +349,12 @@ def include_file(repo, path=None, rev=None, **kw):
     if not app:
         return '[[include repo %s (not found)]]' % repo
     rev = app.repo.head if rev is None else rev
-    if not path or not app.repo.is_file(path, rev):
+
+    try:
+        file = app.repo.commit(rev).get_path(path)
+    except Exception:
         return "[[include can't find file %s in revision %s]]" % (path, rev)
 
-    file = app.repo.commit(rev).get_path(path)
     text = ''
     if file.has_pypeline_view:
         text = h.render_any_markup(file.name, file.text, code_mode=True)
