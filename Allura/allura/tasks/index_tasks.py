@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 
 
 class GenericIndexHandler(object):
+
     _instance = None
 
     def __new__(cls):
