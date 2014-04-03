@@ -26,9 +26,9 @@ code repository type apps is defined in the base classes in the
 Allura package, which consists of the classes in the following
 packages:
 
-* `allura.lib.respository` for the base application and implementation classes
-* `allura.controllers.respository` for the base controllers
-* `allura.model.respository` for the repo metadata models
+* `allura.lib.repository` for the base application and implementation classes
+* `allura.controllers.repository` for the base controllers
+* `allura.model.repository` for the repo metadata models
 * `allura.model.repo_refresh` for the repo metadata refresh logic
 
 
@@ -38,7 +38,7 @@ Application and Implementation
 The `Application` structure for SCM apps follows the normal pattern for
 Allura applications, though they should inherit from
 `allura.lib.repository.RepositoryApp` instead of `allura.app.Application`.
-The apps are then responsible for implementing sublcasses of
+The apps are then responsible for implementing subclasses of
 `allura.lib.repository.Repository` and `allura.lib.repository.RepositoryImplementation`.
 
 The `Repository` subclass is responsible for implementing tool-specific
