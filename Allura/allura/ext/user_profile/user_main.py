@@ -321,24 +321,38 @@ class ProjectsSection(ProfileSectionBase):
 
     def __json__(self):
         projects = [
-            {
-                'name': project['name'],
-                'url': project.url(),
-            }
+            dict(
+                name=project['name'],
+                url=project.url(),
+                summary=project['summary'],
+                last_updated=project['last_updated'])
             for project in self.get_projects()]
         return dict(projects=projects)
+
 
 class SkillsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/skills.html'
 
     def __json__(self):
-        skills = {
-            skill['skill']['fullname']: skill['level']
-            for skill in self.user.get_skills()}
-        return dict(skills=skills)
+        return dict(skills=self.user.get_skills())
+
 
 class ToolsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/tools.html'
+
+    def __json__(self):
+        tools = []
+        for tool in c.project.grouped_navbar_entries():
+            tool_json = dict(
+                url=tool.url,
+                label=tool.label)
+            if tool.children:
+                tool_json['children'] = [
+                    dict(url=child.url, label=child.label)
+                    for child in tool.children
+                ]
+            tools.append(tool_json)
+        return dict(tools=tools)
 
 
 class SocialSection(ProfileSectionBase):

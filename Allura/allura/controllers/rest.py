@@ -322,7 +322,6 @@ class UserProfileRestController(object):
             raise exc.HTTPNotFound()
         sections = [section(user, c.project)
                     for section in c.app.profile_sections]
-        print sections
         json = {}
         for s in sections:
             if hasattr(s, '__json__'):
