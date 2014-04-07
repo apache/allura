@@ -29,38 +29,31 @@ from allura.lib.solr import make_solr_from_config
 log = logging.getLogger(__name__)
 
 
-class GenericIndexHandler(object):
+def __get_solr(solr_hosts=None):
+    return make_solr_from_config(solr_hosts) if solr_hosts else g.solr
 
-    _instance = None
 
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super(GenericIndexHandler, cls).__new__(cls)
-        return cls._instance
+def __add_objects(objects, solr_hosts=None):
+    solr_instance = __get_solr(solr_hosts)
+    solr_instance.add([obj.solarize() for obj in objects])
 
-    def get_solr(self, solr_hosts=None):
-        return make_solr_from_config(solr_hosts) if solr_hosts else g.solr
 
-    def add_objects(self, objects, solr_hosts=None):
-        solr_instance = self.get_solr(solr_hosts)
-        solr_instance.add(obj.solarize() for obj in objects)
-
-    def del_objects(self, object_solr_ids):
-        solr_instance = self.get_solr()
-        solr_query = 'id:({0})'.format(' || '.join(object_solr_ids))
-        solr_instance.delete(q=solr_query)
+def __del_objects(object_solr_ids):
+    solr_instance = __get_solr()
+    solr_query = 'id:({0})'.format(' || '.join(object_solr_ids))
+    solr_instance.delete(q=solr_query)
 
 
 @task
 def add_projects(project_ids):
     from allura.model.project import Project
     projects = Project.query.find(dict(_id={'$in': project_ids})).all()
-    GenericIndexHandler().add_objects(projects)
+    __add_objects(projects)
 
 
 @task
 def del_projects(project_solr_ids):
-    GenericIndexHandler().del_objects(project_solr_ids)
+    __del_objects(project_solr_ids)
 
 
 @task
@@ -74,7 +67,6 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     from allura import model as M
     from allura.lib.search import find_shortlinks
 
-    solr = make_solr_from_config(solr_hosts) if solr_hosts else g.solr
     exceptions = []
     solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
@@ -97,7 +89,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
-        solr.add(solr_updates)
+        __get_solr(solr_hosts).add(solr_updates)
 
     if len(exceptions) == 1:
         raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
@@ -108,12 +100,10 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
 @task
 def del_artifacts(ref_ids):
     from allura import model as M
-    if not ref_ids:
-        return
-    solr_query = 'id:({0})'.format(' || '.join(ref_ids))
-    g.solr.delete(q=solr_query)
-    M.ArtifactReference.query.remove(dict(_id={'$in': ref_ids}))
-    M.Shortlink.query.remove(dict(ref_id={'$in': ref_ids}))
+    if ref_ids:
+        __del_objects(ref_ids)
+        M.ArtifactReference.query.remove(dict(_id={'$in': ref_ids}))
+        M.Shortlink.query.remove(dict(ref_id={'$in': ref_ids}))
 
 
 @task

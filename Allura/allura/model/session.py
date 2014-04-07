@@ -52,6 +52,11 @@ class ManagedSessionExtension(SessionExtension):
             elif st.status == st.deleted:
                 self.objects_deleted = [obj]
 
+    def after_flush(self, obj=None):
+        self.objects_added = []
+        self.objects_modified = []
+        self.objects_deleted = []
+
 
 class IndexerSessionExtension(ManagedSessionExtension):
 
@@ -71,12 +76,12 @@ class IndexerSessionExtension(ManagedSessionExtension):
         task = tasks.get(action)
         if task:
             if action == 'add':
-                args = ([o._id for o in obj_list],)
+                arg = [o._id for o in obj_list]
             else:
-                args = ([o.index_id() for o in obj_list],)
+                arg = [o.index_id() for o in obj_list]
 
             try:
-                task.post(*args)
+                task.post(arg)
             except:
                 log.error('Error calling %s', task.__name__)
 
@@ -92,6 +97,8 @@ class IndexerSessionExtension(ManagedSessionExtension):
                 for class_path, obj_list in types_objects_map.iteritems():
                     tasks = self.TASKS.get(class_path, {})
                     self._index_action(tasks, obj_list, action)
+
+        super(IndexerSessionExtension, self).after_flush(obj)
 
 
 class ArtifactSessionExtension(ManagedSessionExtension):
