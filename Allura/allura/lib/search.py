@@ -42,7 +42,7 @@ class SearchIndexable(object):
 
     def index_id(self):
         """
-        Should return a globally unique artifact identifier.
+        Should return a globally unique object identifier.
 
         Used for SOLR ID, shortlinks, and possibly elsewhere.
         """
@@ -50,7 +50,7 @@ class SearchIndexable(object):
 
     def index(self):
         """
-        Return a :class:`dict` representation of this Artifact suitable for
+        Return a :class:`dict` representation of this object suitable for
         search indexing.
 
         Subclasses should implement this, providing a dictionary of solr_field => value.
