@@ -67,7 +67,7 @@ class SCMMergeRequestWidget(ff.ForgeForm):
     @property
     def fields(self):
         result = [
-            ew.TextField(name='summary'),
+            ew.TextField(name='summary', css_class='summary'),
             ew.SingleSelectField(
                 name='source_branch',
                 label='Source Branch',
@@ -76,8 +76,12 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 name='target_branch',
                 label='Target Branch',
                 options=self.target_branches),
-            ffw.AutoResizeTextarea(name='description')]
+            ffw.AutoResizeTextarea(name='description',
+                                   css_class='description')]
         return result
+
+    def resources(self):
+        yield ew.CSSLink('css/merge_request.css')
 
 
 class SCMMergeRequestFilterWidget(ff.ForgeForm):
