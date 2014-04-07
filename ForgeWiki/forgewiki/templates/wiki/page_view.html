@@ -92,7 +92,7 @@
 {% endblock %}
 
 {% block after_content %}
-  <hr class="grid-19" style="margin-top: 1em; margin-bottom: 2em; clear:both;">
+  <hr style="margin-top: 1em; margin-bottom: 2em; clear:both;">
   {{lib.related_artifacts(page)}}
   {% if page.discussion_thread and c.app.show_discussion %}
     {% set thread = page.discussion_thread %}
