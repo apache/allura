@@ -1007,6 +1007,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       # Not analyzed fields
                       category_id_s=str(self.category_id),
                       neighborhood_id_s=str(self.neighborhood_id),
+                      created_dt=self._id.generation_time,
                       last_updated_dt=self.last_updated,
                       removal_changed_date_dt=self.removal_changed_date,
                       # Analyzed fields
