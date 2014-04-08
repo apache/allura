@@ -289,3 +289,10 @@ class TestDoap(TestRestApiBase):
                  for t in tools]
         assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
         assert_not_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
+
+
+class TestUserProfile(TestRestApiBase):
+    def test_profile_data(self):
+        r = self.app.get('/rest/u/test-admin/')
+        assert_equal(r.content_type, 'application/json')
+        assert False  # finish test
