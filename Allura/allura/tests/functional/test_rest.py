@@ -292,7 +292,20 @@ class TestDoap(TestRestApiBase):
 
 
 class TestUserProfile(TestRestApiBase):
+    @td.with_user_project('test-admin')
     def test_profile_data(self):
-        r = self.app.get('/rest/u/test-admin/')
+        r = self.app.get('/rest/u/test-admin/profile/')
         assert_equal(r.content_type, 'application/json')
-        assert False  # finish test
+        json = r.json
+        assert_equal(json['username'], 'test-admin')
+        assert_in('availability', json)
+        assert_in('joined', json)
+        assert_in('localization', json)
+        assert_in('projects', json)
+        assert_in('sex', json)
+        assert_in('skills', json)
+        assert_in('skypeaccount', json)
+        assert_in('socialnetworks', json)
+        assert_in('telnumbers', json)
+        assert_in('tools', json)
+        assert_in('webpages', json)
