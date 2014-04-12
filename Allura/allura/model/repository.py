@@ -1313,6 +1313,12 @@ class Tree(RepoObject):
             return []
 
     def _lcd_map(self, lcd):
+        '''
+        Map "last-commit docs" to the structure that templates expect.
+
+        (This exists because LCD logic changed in the past, whereas templates
+        were not changed)
+        '''
         if lcd is None:
             return []
         commit_ids = [e.commit_id for e in lcd.entries]
@@ -1548,7 +1554,13 @@ class LastCommit(RepoObject):
 class ModelCache(object):
 
     '''
-    Cache model instances based on query params passed to get.
+    Cache model instances based on query params passed to get.  LRU cache.
+
+    This does more caching than ming sessions (which only cache individual objects by _id)
+
+    The added complexity here may be unnecessary premature optimization, but
+    should be quite helpful when building up many models in order, like lcd _build
+    for a series of several new commits.
     '''
 
     def __init__(self, max_instances=None, max_queries=None):
