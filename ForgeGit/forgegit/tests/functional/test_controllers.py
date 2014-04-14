@@ -775,6 +775,17 @@ class TestIncludeMacro(_TestCase):
         assert_equal(macro.include_file('a:b'), expected % 'a:b')
         assert_equal(macro.include_file('repo'), expected % 'repo')
 
+    def test_include_file_permissions(self):
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        role = M.ProjectRole.by_name('*anonymous')._id
+        read_perm = M.ACE.allow(role, 'read')
+        acl = c.app.config.acl
+        if read_perm in acl:
+            acl.remove(read_perm)
+        c.user = M.User.anonymous()
+        expected = "[[include: you don't have a read permission for repo src-git]]"
+        assert_equal(macro.include_file('src-git'), expected)
+
     def test_include_file_cant_find_file(self):
         expected = "[[include can't find file %s in revision %s]]"
         assert_equal(macro.include_file('src-git', 'a.txt'),

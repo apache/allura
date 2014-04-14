@@ -26,7 +26,7 @@ import hashlib
 from mock import patch
 
 from bson import ObjectId
-from nose.tools import with_setup, assert_equal, assert_in
+from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
 from pylons import tmpl_context as c, app_globals as g
 import tg
 
@@ -281,6 +281,38 @@ def test_macro_include_extra_br():
 </div>
 '''.strip().replace('\n', '')
     assert html.strip().replace('\n', '') == expected_html, html
+
+@td.with_wiki
+@td.with_tool('test', 'Wiki', 'wiki2')
+def test_macro_include_permissions():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    wiki = p_test.app_instance('wiki')
+    wiki2 = p_test.app_instance('wiki2')
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        p = WM.Page.upsert(title='CanRead')
+        p.text = 'Can see this!'
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+
+    with h.push_context(p_test._id, app_config_id=wiki2.config._id):
+        role = M.ProjectRole.by_name('*anonymous')._id
+        read_perm = M.ACE.allow(role, 'read')
+        acl = c.app.config.acl
+        if read_perm in acl:
+            acl.remove(read_perm)
+        p = WM.Page.upsert(title='CanNotRead')
+        p.text = 'Can not see this!'
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        c.user = M.User.anonymous()
+        md = '[[include ref=CanRead]]\n[[include ref=wiki2:CanNotRead]]'
+        html = g.markdown_wiki.convert(md)
+        assert_in('Can see this!', html)
+        assert_not_in('Can not see this!', html)
+        assert_in("[[include: you don't have a read permission for wiki2:CanNotRead]]", html)
 
 
 @patch('oembed.OEmbedEndpoint.fetch')

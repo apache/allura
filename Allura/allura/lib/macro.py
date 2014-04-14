@@ -348,8 +348,10 @@ def include_file(repo, path=None, rev=None, **kw):
     app = parse_repo(repo)
     if not app:
         return '[[include repo %s (not found)]]' % repo
-    rev = app.repo.head if rev is None else rev
+    if not h.has_access(app.repo, 'read')():
+        return "[[include: you don't have a read permission for repo %s]]" % repo
 
+    rev = app.repo.head if rev is None else rev
     try:
         file = app.repo.commit(rev).get_path(path)
     except Exception:
@@ -383,6 +385,8 @@ def include(ref=None, repo=None, **kw):
     artifact = link.ref.artifact
     if artifact is None:
         return '[[include (artifact not found)]]' % ref
+    if not h.has_access(artifact, 'read')():
+        return "[[include: you don't have a read permission for %s]]" % ref
     included = request.environ.setdefault('allura.macro.included', set())
     if artifact in included:
         return '[[include %s (already included)]' % ref
