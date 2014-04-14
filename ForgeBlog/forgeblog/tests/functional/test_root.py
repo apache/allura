@@ -215,6 +215,7 @@ class Test(TestController):
 
     def test_related_artifacts(self):
         self._post(title='one')
+        M.MonQTask.run_ready()
         d = self._blog_date()
         self._post(title='two', text='[blog:%s/one]' % d)
         M.MonQTask.run_ready()
