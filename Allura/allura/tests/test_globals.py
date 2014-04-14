@@ -282,6 +282,7 @@ def test_macro_include_extra_br():
 '''.strip().replace('\n', '')
     assert html.strip().replace('\n', '') == expected_html, html
 
+@with_setup(setUp, tearDown)
 @td.with_wiki
 @td.with_tool('test', 'Wiki', 'wiki2')
 def test_macro_include_permissions():
