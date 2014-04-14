@@ -85,7 +85,6 @@ class IndexerSessionExtension(ManagedSessionExtension):
             except:
                 log.error('Error calling %s', task.__name__)
 
-
     def after_flush(self, obj=None):
         actions = [
             ((self.objects_added + self.objects_modified), 'add'),
@@ -95,8 +94,9 @@ class IndexerSessionExtension(ManagedSessionExtension):
             if obj_list:
                 types_objects_map = self._objects_by_types(obj_list)
                 for class_path, obj_list in types_objects_map.iteritems():
-                    tasks = self.TASKS.get(class_path, {})
-                    self._index_action(tasks, obj_list, action)
+                    tasks = self.TASKS.get(class_path)
+                    if tasks:
+                        self._index_action(tasks, obj_list, action)
 
         super(IndexerSessionExtension, self).after_flush(obj)
 
