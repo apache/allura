@@ -81,6 +81,10 @@ class NeighborhoodController(object):
 
     def _check_security(self):
         require_access(self.neighborhood, 'read')
+        # A bit of a hack, but _check_security is best place to set c.project
+        # for this whole controller.  __init__ would be nice, but it gets
+        # clobbered by root.py _setup_request.  This gets run after that.
+        c.project = self.neighborhood.neighborhood_project
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -131,7 +135,6 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
-        c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         if not self.neighborhood.has_home_tool:
@@ -181,7 +184,6 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
-        c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
         form_data.setdefault(
