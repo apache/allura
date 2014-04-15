@@ -338,11 +338,17 @@ class Application(object):
         :rtype: bool
 
         """
-        if self.config.tool_name.lower() in self.project.neighborhood.get_prohibited_tools():
+        return self._installable(self.config.tool_name,
+                                 self.project.neighborhood,
+                                 self.project.app_configs,
+                                 )
+
+    @classmethod
+    def _installable(cls, tool_name, nbhd, project_tools):
+        if tool_name.lower() in nbhd.get_prohibited_tools():
             return False
-        tools_list = [tool.tool_name.lower()
-                      for tool in self.project.app_configs]
-        return tools_list.count(self.config.tool_name.lower()) < self.max_instances
+        tools_list = [tool.tool_name.lower() for tool in project_tools]
+        return tools_list.count(tool_name.lower()) < cls.max_instances
 
     @classmethod
     def validate_mount_point(cls, mount_point):

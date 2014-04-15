@@ -18,7 +18,7 @@
 import logging
 import warnings
 
-from pylons import app_globals as g
+from pylons import app_globals as g, tmpl_context as c
 from formencode import validators as fev
 import formencode
 import ew as ew_core
@@ -849,35 +849,31 @@ class NeighborhoodAddProjectForm(ForgeForm):
         submit_text='Start',
         neighborhood=None)
 
-    class fields(ew_core.NameList):
-        project_description = ew.HiddenField(label='Public Description')
-        neighborhood = ew.HiddenField(label='Neighborhood')
-        private_project = ew.Checkbox(label="", attrs={'class': 'unlabeled'})
-        project_name = ew.InputField(label='Project Name', field_type='text',
-                                     validator=formencode.All(
-                                         fev.UnicodeString(
-                                             not_empty=True, max=40),
-                                         V.MaxBytesValidator(max=40)))
-        project_unixname = ew.InputField(
-            label='Short Name', field_type='text',
-            validator=None)  # will be set in __init__
-        tools = ew.CheckboxSet(name='tools', options=[
-            # Required for Neighborhood functional tests to pass
-            ew.Option(label='Wiki', html_value='wiki', selected=True)
-        ])
-
-    def __init__(self, *args, **kwargs):
-        super(NeighborhoodAddProjectForm, self).__init__(*args, **kwargs)
-        # get the shortname validator from the provider
+    @property
+    def fields(self):
         provider = plugin.ProjectRegistrationProvider.get()
-        self.fields.project_unixname.validator = provider.shortname_validator
-        # Dynamically generating CheckboxSet of installable tools
-        from allura.lib.widgets import forms
-        self.fields.tools.options = [
-            forms.ew.Option(label=tool.tool_label, html_value=ep)
-            for ep, tool in g.entry_points["tool"].iteritems()
-            if tool.installable and tool.status == 'production'
-        ]
+        tools_options = []
+        for ep, tool in g.entry_points["tool"].iteritems():
+            if tool.status == 'production' and tool._installable(tool_name=ep,
+                                                                 nbhd=c.project.neighborhood,
+                                                                 project_tools=[]):
+                tools_options.append(ew.Option(label=tool.tool_label, html_value=ep))
+
+        return ew_core.NameList([
+            ew.HiddenField(name='project_description', label='Public Description'),
+            ew.HiddenField(name='neighborhood', label='Neighborhood'),
+            ew.Checkbox(name='private_project', label="", attrs={'class': 'unlabeled'}),
+            ew.InputField(name='project_name', label='Project Name',
+                          field_type='text',
+                          validator=formencode.All(
+                              fev.UnicodeString(not_empty=True, max=40),
+                              V.MaxBytesValidator(max=40)),
+                          ),
+            ew.InputField(name='project_unixname',
+                          label='Short Name', field_type='text',
+                          validator=provider.shortname_validator),
+            ew.CheckboxSet(name='tools', options=tools_options),
+        ])
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources():
