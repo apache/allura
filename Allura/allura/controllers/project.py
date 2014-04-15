@@ -81,9 +81,9 @@ class NeighborhoodController(object):
 
     def _check_security(self):
         require_access(self.neighborhood, 'read')
-        # A bit of a hack, but _check_security is best place to set c.project
-        # for this whole controller.  __init__ would be nice, but it gets
-        # clobbered by root.py _setup_request.  This gets run after that.
+
+    def _before(self, *args, **kwargs):
+        # TurboGears runs this before each request
         c.project = self.neighborhood.neighborhood_project
 
     @expose()
