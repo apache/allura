@@ -251,7 +251,9 @@ def bootstrap(command, conf, vars):
         log.info('Registering initial apps')
         with h.push_config(c, user=u_admin):
             for ep_name, app in g.entry_points['tool'].iteritems():
-                if not app.installable:
+                if not app._installable(tool_name=ep_name,
+                                        nbhd=n_projects,
+                                        project_tools=[]):
                     continue
                 p0.install_app(ep_name)
 
