@@ -27,6 +27,7 @@ from ming.orm.declarative import MappedClass
 from allura.lib import helpers as h
 from .session import main_orm_session
 from .types import MarkdownCache
+from .auth import AlluraUserProperty
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class OAuthConsumerToken(OAuthToken):
         unique_indexes = ['name']
 
     type = FieldProperty(str, if_missing='consumer')
-    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     name = FieldProperty(str)
     description = FieldProperty(str)
     description_cache = FieldProperty(MarkdownCache)
@@ -90,7 +91,7 @@ class OAuthRequestToken(OAuthToken):
 
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
-    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     callback = FieldProperty(str)
     validation_pin = FieldProperty(str)
 
@@ -105,7 +106,7 @@ class OAuthAccessToken(OAuthToken):
     type = FieldProperty(str, if_missing='access')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     request_token_id = ForeignIdProperty('OAuthToken')
-    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     is_bearer = FieldProperty(bool, if_missing=False)
 
     user = RelationProperty('User')

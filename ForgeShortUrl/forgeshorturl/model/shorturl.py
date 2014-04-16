@@ -35,7 +35,7 @@ class ShortUrl(M.Artifact):
     short_name = FieldProperty(str)
     description = FieldProperty(str)
     private = FieldProperty(bool)
-    create_user = ForeignIdProperty(User)
+    create_user = M.AlluraUserProperty()
     created = FieldProperty(datetime, if_missing=datetime.utcnow)
     last_updated = FieldProperty(datetime, if_missing=datetime.utcnow)
 
