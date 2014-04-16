@@ -58,6 +58,7 @@ from allura.model import (
 
     artifact_orm_session,
     project_orm_session,
+    AlluraUserProperty,
 )
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
@@ -614,8 +615,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
-    reported_by_id = ForeignIdProperty(User, if_missing=lambda: c.user._id)
-    assigned_to_id = ForeignIdProperty(User, if_missing=None)
+    reported_by_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    assigned_to_id = AlluraUserProperty(if_missing=None)
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
     custom_fields = FieldProperty({str: None})

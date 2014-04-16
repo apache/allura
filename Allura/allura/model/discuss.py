@@ -37,7 +37,7 @@ from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
-from .auth import User, ProjectRole
+from .auth import User, ProjectRole, AlluraUserProperty
 from .timeline import ActivityObject
 from .types import MarkdownCache
 
@@ -463,7 +463,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     flagged_by = FieldProperty([schema.ObjectId])
     flags = FieldProperty(int, if_missing=0)
     last_edit_date = FieldProperty(datetime, if_missing=None)
-    last_edit_by_id = ForeignIdProperty(User)
+    last_edit_by_id = AlluraUserProperty()
     edit_count = FieldProperty(int, if_missing=0)
     spam_check_id = FieldProperty(str, if_missing='')
     text_cache = FieldProperty(MarkdownCache)

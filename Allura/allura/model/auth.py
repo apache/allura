@@ -99,6 +99,17 @@ def urlencode(params):
     return urllib.urlencode([i for i in generate_smart_str(params)])
 
 
+class AlluraUserProperty(ForeignIdProperty):
+    '''
+    Specialized ForeignIdProperty for users, specifically to set allow_none=True
+    since Allura uses _id=None to represent *anonymous user, and ming
+    (by default) doesn't allow a None foreign key to reference a real object
+    '''
+
+    def __init__(self, **kwargs):
+        super(AlluraUserProperty, self).__init__('User', allow_none=True, **kwargs)
+
+
 class ApiAuthMixIn(object):
 
     def authenticate_request(self, path, params):
@@ -153,7 +164,7 @@ class ApiToken(MappedClass, ApiAuthMixIn):
         unique_indexes = ['user_id']
 
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User')
+    user_id = AlluraUserProperty()
     api_key = FieldProperty(str, if_missing=lambda: str(uuid.uuid4()))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
 
@@ -172,7 +183,7 @@ class ApiTicket(MappedClass, ApiAuthMixIn):
     PREFIX = 'tck'
 
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User')
+    user_id = AlluraUserProperty()
     api_key = FieldProperty(
         str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
@@ -786,7 +797,7 @@ class ProjectRole(MappedClass):
         ]
 
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User', if_missing=None)
+    user_id = AlluraUserProperty(if_missing=None)
     project_id = ForeignIdProperty('Project', if_missing=None)
     name = FieldProperty(str)
     roles = FieldProperty([S.ObjectId])
@@ -950,5 +961,5 @@ class AuditLog(object):
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
     project_id=ForeignIdProperty('Project'),
     project=RelationProperty('Project'),
-    user_id=ForeignIdProperty('User'),
+    user_id=AlluraUserProperty(),
     user=RelationProperty('User')))

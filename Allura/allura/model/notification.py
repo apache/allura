@@ -55,7 +55,7 @@ from allura.lib.utils import take_while_true
 import allura.tasks.mail_tasks
 
 from .session import main_orm_session
-from .auth import User
+from .auth import User, AlluraUserProperty
 
 
 log = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class Notification(MappedClass):
     subject = FieldProperty(str)
     text = FieldProperty(str)
     link = FieldProperty(str)
-    author_id = ForeignIdProperty('User')
+    author_id = AlluraUserProperty()
     feed_meta = FieldProperty(S.Deprecated)
     artifact_reference = FieldProperty(S.Deprecated)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -397,7 +397,7 @@ class Mailbox(MappedClass):
         ]
 
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
     app_config_id = ForeignIdProperty(
         'AppConfig', if_missing=lambda: c.app.config._id)
