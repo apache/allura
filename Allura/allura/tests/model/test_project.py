@@ -102,9 +102,11 @@ def test_project_index():
     assert 'title' in idx
     assert 'type_s' in idx
     assert 'deleted_b' in idx
+    assert 'private_b' in idx
     assert 'neighborhood_id_s' in idx
     assert 'category_id_s' in idx
-    assert 'description_t' in idx
+    assert 'short_description_t' in idx
+    assert 'url_s' in idx
 
 
 def test_subproject():
