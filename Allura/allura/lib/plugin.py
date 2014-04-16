@@ -70,6 +70,7 @@ class AuthenticationProvider(object):
     forgotten_password_process = False
 
     def __init__(self, request):
+        log.info('new AuthProvider for %s', request)
         self.request = request
 
     @classmethod
@@ -84,11 +85,14 @@ class AuthenticationProvider(object):
 
     @LazyProperty
     def session(self):
-        return self.request.environ['beaker.session']
+        s = self.request.environ['beaker.session']
+        log.info('session value: %s %s', s, self.request)
+        return s
 
     def authenticate_request(self):
         from allura import model as M
         user = M.User.query.get(_id=self.session.get('userid', None))
+        log.info('authenticated as %s', user._id if user else '*anon')
         if user is None:
             return M.User.anonymous()
         if user.disabled:
@@ -118,6 +122,7 @@ class AuthenticationProvider(object):
         try:
             if user is None:
                 user = self._login()
+            log.info('login set session to %s', user._id)
             self.session['userid'] = user._id
             self.session.save()
             g.zarkov_event('login', user=user)
