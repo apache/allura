@@ -686,13 +686,44 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             key=lambda r: r.name.lower())
         return roles
 
-    def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
-        App = g.entry_points['tool'][ep_name]
+    def install_apps(self, apps_params):
+        '''
+        Install many apps at once. Better than doing individually if you expect
+        default name conflicts (e.g. "code" for both git & svn), by using the
+        tool_label value.
+
+        :param list apps_params: list of dicts, where each dict is the args used
+        in install_app()
+        '''
+        # determine all the mount points
+        mount_points = dict()
+        for app_params in apps_params:
+            App = g.entry_points['tool'][app_params['ep_name']]
+            mount_point = self._mount_point_for_install(App, app_params.get('mount_point'))
+            mount_points[App] = mount_point
+
+        # count mount point names
+        mount_point_counts = Counter(mount_points.values())
+
+        # install each app with unique names
+        for app_params in apps_params:
+            App = g.entry_points['tool'][app_params['ep_name']]
+            mount_point = mount_points[App]
+            if mount_point_counts[mount_point] > 1:
+                app_params.update(mount_point=App.tool_label.lower(),
+                                  mount_label=App.tool_label)
+            self.install_app(**app_params)
+
+    def _mount_point_for_install(self, App, mount_point):
         with h.push_config(c, project=self):
             try:
-                mount_point = v.MountPointValidator(App).to_python(mount_point)
+                return v.MountPointValidator(App).to_python(mount_point)
             except fe.Invalid as e:
                 raise exceptions.ToolError(str(e))
+
+    def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
+        App = g.entry_points['tool'][ep_name]
+        mount_point = self._mount_point_for_install(App, mount_point)
         if ordinal is None:
             ordinal = int(self.ordered_mounts(include_hidden=True)
                           [-1]['ordinal']) + 1
