@@ -129,9 +129,8 @@ class ArtifactSessionExtension(ManagedSessionExtension):
                 g.zarkov_event('modify', extra=obj.index_id())
             for obj in self.objects_deleted:
                 g.zarkov_event('delete', extra=obj.index_id())
-        self.objects_added = []
-        self.objects_modified = []
-        self.objects_deleted = []
+        
+        super(ArtifactSessionExtension, self).after_flush(obj)
 
     def update_index(self, objects_deleted, arefs):
         # Post delete and add indexing operations

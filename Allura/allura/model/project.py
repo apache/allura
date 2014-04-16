@@ -1032,21 +1032,23 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def index(self):
         provider = plugin.ProjectRegistrationProvider.get()
         fields = dict(id=self.index_id(),
-                      title='Project %s' % self._id,
+                      title='Project %s' % self.name,
                       type_s=self.type_s,
                       deleted_b=self.deleted,
                       # Not analyzed fields
+                      private_b=self.private,
                       category_id_s=str(self.category_id),
                       neighborhood_id_s=str(self.neighborhood_id),
+                      url_s=h.absurl(self.url()),
                       created_dt=self._id.generation_time,
                       last_updated_dt=self.last_updated,
                       removal_changed_date_dt=self.removal_changed_date,
                       # Analyzed fields
                       name_t=self.name,
                       shortname_t=self.shortname,
+                      short_description_t=self.short_description,
                       labels_t=' '.join(self.labels),
                       summary_t=self.summary,
-                      description_t=self.description,
                       neighborhood_name_t=self.neighborhood.name)
         if self.category:
             fields.update(category_name_t=self.category.name,
