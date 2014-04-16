@@ -18,7 +18,9 @@
 import re
 import sys
 import logging
+
 from ming.orm import session
+from mock import patch, Mock
 
 from . import base
 
@@ -63,6 +65,10 @@ class CreateTroveCategoriesCommand(base.Command):
         for k, v in attr_dict.iteritems():
             setattr(t, k, v)
 
+    # patching to avoid a *lot* of event hooks firing, and taking a long long time
+    @patch.object(M.project.TroveCategoryMapperExtension, 'after_insert', Mock())
+    @patch.object(M.project.TroveCategoryMapperExtension, 'after_update', Mock())
+    @patch.object(M.project.TroveCategoryMapperExtension, 'after_delete', Mock())
     def command(self):
         self.basic_setup()
         M.TroveCategory.query.remove()
