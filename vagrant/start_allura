@@ -43,7 +43,7 @@ fi
 cd /home/vagrant/src/allura/Allura
 
 # Start taskd
-if pgrep -f "paster taskd" >/dev/null
+if pgrep -f "^taskd" >/dev/null
 then
     echo "Taskd is running."
 else
