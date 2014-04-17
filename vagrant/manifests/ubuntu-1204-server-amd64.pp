@@ -119,5 +119,5 @@ file { [ "/srv/git", "/srv/hg", "/srv/svn" ]:
   ensure => "directory",
   owner => "vagrant",
   group => "vagrant",
-  mode   => 770,
+  mode   => 775,
 }

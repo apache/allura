@@ -41,8 +41,8 @@ and subsequent chapters.
 
 .. code-block:: bash
 
-    sudo mkdir /srv/git
-    sudo chown allura:allura /srv/git  # or other user, as needed (e.g. "vagrant")
+    sudo chmod 775 /srv/*  # make sure apache can read the repo dirs
+    sudo apt-get install apache2
     sudo a2enmod proxy rewrite
     sudo vi /etc/apache2/sites-available/default
 

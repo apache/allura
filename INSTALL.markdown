@@ -119,6 +119,7 @@ The default configuration stores repos in `/srv`, so we need to create those dir
 
     sudo mkdir /srv/{git,svn,hg}
     sudo chown $USER /srv/{git,svn,hg}
+    sudo chmod 775 /srv/{git,svn,hg}
 
 If you don't have `sudo` permission or just want to store them somewhere else, change the `/srv` paths in `development.ini`
 
