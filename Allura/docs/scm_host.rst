@@ -189,22 +189,39 @@ First, you need to ensure that mod_python is installed:
 Then, in the VirtualHost section where you proxy SCM requests to git, SVN, or Hg, add the
 access handler, e.g.:
 
+.. code-block:: console
+
+    sudo vi /etc/apache2/sites-available/default
+
 .. code-block:: apache
 
     <LocationMatch "^/(git|svn|hg)/">
         AddHandler mod_python .py
-        PythonAccessHandler /PATH/TO/allura/scripts/ApacheAccessHandler.py
+        # Change this path if needed:
+        PythonAccessHandler /home/vagrant/src/allura/scripts/ApacheAccessHandler.py
         AuthType Basic
         AuthName "SCM Access"
         AuthBasicAuthoritative off
-        PythonOption ALLURA_VIRTUALENV /PATH/TO/env-allura
-        PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
-        PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
+        # Change this path if needed:
+        PythonOption ALLURA_VIRTUALENV /home/vagrant/env-allura
+        # This routes back to the allura webapp, port 8080 if running with paster server (~/start_allura)
+        # In a production environment, run allura with a real WSGI server, and
+        # change the IP address and port number as appropriate.
+        # And use https if possible, since the username and password are otherwise
+        # sent in the clear to Allura.
+        PythonOption ALLURA_AUTH_URL http://127.0.0.1:8080/auth/do_login
+        PythonOption ALLURA_PERM_URL http://127.0.0.1:8080/auth/repo_permissions
     </LocationMatch>
 
-If the SCM is hosted seperately from Allura, update the URLs as appropriate.
-Even if using localhost, it is recommended to use HTTPS, since the username
-and password will be otherwise be sent in the clear to Allura.
+.. code-block:: console
+
+    sudo service apache2 reload
+
+To test that it's working, run: :command:`git ls-remote
+http://localhost/git/p/test/git/` (if using Vagrant, use :code:`localhost:8088`
+from your host machine). If there is no output, that is fine (it's an empty
+repo). If it errors, look in :file:`/var/log/apache2/error.log` for the error
+message.
 
 .. warning::
 
