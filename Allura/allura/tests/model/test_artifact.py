@@ -94,11 +94,9 @@ def test_artifact():
     assert not security.has_access(pg, 'delete')(user=u)
     pg.acl.append(M.ACE.allow(pr._id, 'delete'))
     ThreadLocalORMSession.flush_all()
-    c.memoize_cache = {}
     assert security.has_access(pg, 'delete')(user=u)
     pg.acl.pop()
     ThreadLocalORMSession.flush_all()
-    c.memoize_cache = {}
     assert not security.has_access(pg, 'delete')(user=u)
     idx = pg.index()
     assert 'title' in idx

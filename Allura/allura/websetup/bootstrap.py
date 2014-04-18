@@ -89,7 +89,6 @@ def bootstrap(command, conf, vars):
 
     # Clean up all old stuff
     ThreadLocalORMSession.close_all()
-    c.queued_messages = defaultdict(list)
     c.user = c.project = c.app = None
     database = conf.get('db_prefix', '') + 'project:test'
     wipe_database()

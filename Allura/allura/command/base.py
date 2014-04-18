@@ -122,7 +122,6 @@ class Command(command.Command):
         self.registry.register(pylons.app_globals, self.globals)
         self.registry.register(
             allura.credentials, allura.lib.security.Credentials())
-        pylons.tmpl_context.queued_messages = None
 
     def teardown_globals(self):
         self.registry.cleanup()

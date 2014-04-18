@@ -127,8 +127,6 @@ def setup_unit_test():
     REGISTRY.register(response, Response())
     REGISTRY.register(session, beaker.session.SessionObject({}))
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
-    c.memoize_cache = {}
-    c.queued_messages = None
     c.model_cache = None
     ThreadLocalORMSession.close_all()
 setup_unit_test.__test__ = False  # sometimes __test__ above isn't sufficient
