@@ -78,7 +78,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         # This code fixes a race condition in our tests
         c.project = M.Project.query.get(
             shortname='test', neighborhood_id=self.p_nbhd._id)
-        c.memoize_cache = {}
         count = 20
         while c.project is None:
             import time
