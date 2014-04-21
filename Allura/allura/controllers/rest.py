@@ -313,17 +313,3 @@ class ProjectRestController(object):
             return '<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()
 
-
-class UserProfileRestController(object):
-    @expose('json:')
-    def index(self, **kw):
-        user = c.project.user_project_of
-        if not user:
-            raise exc.HTTPNotFound()
-        sections = [section(user, c.project)
-                    for section in c.app.profile_sections]
-        json = {}
-        for s in sections:
-            if hasattr(s, '__json__'):
-                json.update(s.__json__())
-        return json

@@ -41,7 +41,6 @@ from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post
 from allura.lib.widgets.user_profile import SendMessageForm
-from allura.controllers.rest import UserProfileRestController
 
 log = logging.getLogger(__name__)
 
@@ -210,6 +209,21 @@ class UserProfileController(BaseController, FeedController):
                 c.user.user_message_max_messages,
                 c.user.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
+
+
+class UserProfileRestController(object):
+    @expose('json:')
+    def index(self, **kw):
+        user = c.project.user_project_of
+        if not user:
+            raise exc.HTTPNotFound()
+        sections = [section(user, c.project)
+                    for section in c.app.profile_sections]
+        json = {}
+        for s in sections:
+            if hasattr(s, '__json__'):
+                json.update(s.__json__())
+        return json
 
 
 class ProfileSectionBase(object):
