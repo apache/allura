@@ -340,20 +340,6 @@ class SkillsSection(ProfileSectionBase):
 class ToolsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/tools.html'
 
-    def __json__(self):
-        tools = []
-        for tool in c.project.grouped_navbar_entries():
-            tool_json = dict(
-                url=tool.url,
-                label=tool.label)
-            if tool.children:
-                tool_json['children'] = [
-                    dict(url=child.url, label=child.label)
-                    for child in tool.children
-                ]
-            tools.append(tool_json)
-        return dict(tools=tools)
-
 
 class SocialSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/social.html'

@@ -307,5 +307,4 @@ class TestUserProfile(TestRestApiBase):
         assert_in('skypeaccount', json)
         assert_in('socialnetworks', json)
         assert_in('telnumbers', json)
-        assert_in('tools', json)
         assert_in('webpages', json)
