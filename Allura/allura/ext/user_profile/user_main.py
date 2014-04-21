@@ -309,12 +309,12 @@ class PersonalDataSection(ProfileSectionBase):
         return dict(
             username=self.user.username,
             joined=auth_provider.user_registration_date(self.user),
-            localization=self.user.get_pref('localization'),
+            localization=self.user.get_pref('localization')._deinstrument(),
             sex=self.user.get_pref('sex'),
-            telnumbers=self.user.get_pref('telnumbers'),
+            telnumbers=self.user.get_pref('telnumbers')._deinstrument(),
             skypeaccount=self.user.get_pref('skypeaccount'),
-            webpages=self.user.get_pref('webpages'),
-            availability=self.user.get_pref('availability'))
+            webpages=self.user.get_pref('webpages')._deinstrument(),
+            availability=self.user.get_pref('availability')._deinstrument())
 
 
 class ProjectsSection(ProfileSectionBase):
@@ -360,4 +360,4 @@ class SocialSection(ProfileSectionBase):
 
     def __json__(self):
         return dict(
-            socialnetworks=self.user.get_pref('socialnetworks'))
+            socialnetworks=self.user.get_pref('socialnetworks')._deinstrument())
