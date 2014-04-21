@@ -298,6 +298,7 @@ class TestUserProfile(TestRestApiBase):
         assert_equal(r.content_type, 'application/json')
         json = r.json
         assert_equal(json['username'], 'test-admin')
+        assert_equal(json['name'], 'Test Admin')
         assert_in('availability', json)
         assert_in('joined', json)
         assert_in('localization', json)

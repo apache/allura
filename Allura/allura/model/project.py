@@ -1026,7 +1026,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ]
         )
         if self.is_user_project:
-            result['profile_url'] = h.absurl('/rest' + self.url() + 'profile/')
+            result['profile_api_url'] = h.absurl('/rest' + self.url() + 'profile/')
         return result
 
     def doap(self):

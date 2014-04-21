@@ -308,6 +308,7 @@ class PersonalDataSection(ProfileSectionBase):
         auth_provider = AuthenticationProvider.get(request)
         return dict(
             username=self.user.username,
+            name=self.user.display_name,
             joined=auth_provider.user_registration_date(self.user),
             localization=self.user.get_pref('localization')._deinstrument(),
             sex=self.user.get_pref('sex'),
