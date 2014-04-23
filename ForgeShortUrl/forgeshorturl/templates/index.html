@@ -43,7 +43,7 @@
         {% endif %}
 
         <td><small>{{ su.user.username }}</small></td>
-        <td><small><a href="{{ su.short_url() }}">{{ su.short_url() }}</a></small></td>
+        <td><small><a href="{{ su.short_url() }}">{{ su.short_name }}</a></small></td>
         <td><small>{{ su.full_url|urlize(20) }}</small></td>
         <td><small>{{ su.description }}</small></td>
         <td><small>{{ lib.abbr_date(su.created) }}</small></td>
