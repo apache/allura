@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% set hide_left_bar = True %}
 {% extends g.theme.master %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Link is not configured{% endblock %}
 
@@ -38,4 +39,10 @@
         });
     });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pad table { width: 915px; }
+</style>
 {% endblock %}

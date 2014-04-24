@@ -19,6 +19,20 @@
 {% extends 'forgeshorturl:templates/master.html' %}
 
 {% set can_update = c.user and h.has_access(c.app, 'update') %}
+{% set can_create = c.user and h.has_access(c.app, 'create') %}
+
+{% block actions %}
+  {% if can_create %}
+  <a href="{{ '{}admin/{}/add/'.format(c.project.url(), c.app.config.options.mount_point) }}"
+     title="Add Short URL"
+     class="add-short-url">
+    <b data-icon="{{g.icons['plus'].char}}" class="ico {{g.icons['plus'].css}}"></b>
+  </a>
+  {% endif %}
+  <a href="search/" title="Search">
+    <b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b>
+  </a>
+{% endblock %}
 
 {% block content %}
 <table>

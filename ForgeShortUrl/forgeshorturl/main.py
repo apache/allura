@@ -86,17 +86,6 @@ class ForgeShortUrlApp(Application):
         menu_id = self.config.options.mount_label
         return [SitemapEntry(menu_id, '.')]
 
-    def sidebar_menu(self):
-        links = []
-        if has_access(c.app, "create"):
-            url = '%sadmin/%s/add/' % \
-                  (c.project.url(), self.config.options.mount_point)
-            links = [SitemapEntry('Add Short URL',
-                                  url,
-                                  ui_icon=g.icons['plus'],
-                                  className="add-short-url"), ]
-        return links
-
     def admin_menu(self):
         links = []
         if has_access(c.app, "create"):
