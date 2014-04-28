@@ -28,12 +28,11 @@ FACET_PARAMS = {
 }
 
 
-def query_filter_choices(arg=None, final_obj_list=None):
+def query_filter_choices(arg=None):
     """
     Makes solr query and returns facets for tickets.
 
     :param arg: solr query, string
-    :param final_obj_list: final list of tickets
     """
     params = {
         'short_timeout': True,
@@ -46,32 +45,19 @@ def query_filter_choices(arg=None, final_obj_list=None):
     }
     params.update(FACET_PARAMS)
     result = search(arg, **params)
-    return get_facets(result, final_obj_list)
+    return get_facets(result)
 
 
-def get_facets(solr_hit, final_obj_list=None):
+def get_facets(solr_hit):
     """
     Filter and reshape facets for given solr result.
 
-    If you want to retrieve facets for only a subset of solr results, you
-    can pass this subset as ``final_obj_list``.
-
     :param solr_hit: solr result instance.
-    :param final_obj_list: final list of objects facets should be filtered on.
     """
     result = {}
     if solr_hit is not None:
         for facet_name, values in solr_hit.facets['facet_fields'].iteritems():
             field_name = facet_name.rsplit('_s', 1)[0]
             values = [(values[i], values[i+1]) for i in xrange(0, len(values), 2)]
-            if final_obj_list:
-                available_values = []
-                for obj in final_obj_list:
-                    solr_data = obj.index()
-                    if facet_name in solr_data:
-                        available_values.append(solr_data[facet_name])
-
-                values = filter(lambda v: v[0] in available_values, values)
-
             result[field_name] = values
     return result

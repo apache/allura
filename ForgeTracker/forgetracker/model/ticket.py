@@ -1193,7 +1193,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     filter=filter,
-                    filter_choices=tsearch.get_facets(matches, tickets),
+                    filter_choices=tsearch.get_facets(matches),
                     solr_error=solr_error, **kw)
 
     @classmethod
@@ -1215,7 +1215,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             t = cls.query.find().first()
             if t:
                 search_query = cls.translate_query(search_query, t.index())
-            result['filter_choices'] = tsearch.query_filter_choices(search_query, result['tickets'])
+            result['filter_choices'] = tsearch.query_filter_choices(search_query)
         else:
             result = cls.paged_search(app_config, user, search_query, filter=filter,
                                       sort=solr_sort, limit=limit, page=page, **kw)
