@@ -341,11 +341,7 @@ class PreferencesController(BaseController):
     def index(self, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
-        api_token = M.ApiToken.query.get(user_id=c.user._id)
-        return dict(
-            menu=menu,
-            api_token=api_token,
-        )
+        return dict(menu=menu)
 
     @h.vardec
     @expose()
@@ -389,25 +385,6 @@ class PreferencesController(BaseController):
                     v = int(v)
                 c.user.set_pref(k, v)
         redirect('.')
-
-    @expose()
-    @require_post()
-    def gen_api_token(self):
-        tok = M.ApiToken.query.get(user_id=c.user._id)
-        if tok is None:
-            tok = M.ApiToken(user_id=c.user._id)
-        else:
-            tok.secret_key = h.cryptographic_nonce()
-        redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def del_api_token(self):
-        tok = M.ApiToken.query.get(user_id=c.user._id)
-        if tok is None:
-            return
-        tok.delete()
-        redirect(request.referer)
 
     @expose()
     @require_post()
