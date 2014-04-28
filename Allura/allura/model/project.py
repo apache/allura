@@ -1006,7 +1006,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       deleted_b=self.deleted,
                       # Not analyzed fields
                       private_b=self.private,
-                      category_id_s=str(self.category_id),
+                      category_id_s=str(self.category_id or ''),
                       neighborhood_id_s=str(self.neighborhood_id),
                       url_s=h.absurl(self.url()),
                       created_dt=self._id.generation_time,
