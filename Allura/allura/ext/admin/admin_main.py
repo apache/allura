@@ -445,12 +445,13 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project moved to url').info('')
             M.AuditLog.log('change project moved to url to %s', moved_to_url)
             c.project.moved_to_url = moved_to_url
+        export_controlled = asbool(export_controlled)
         if export_controlled != c.project.export_controlled:
             h.log_action(
                 log, 'change project export controlled status').info('')
             M.AuditLog.log(
                 'change project export controlled status to %s', export_controlled)
-            c.project.export_controlled = not not export_controlled
+            c.project.export_controlled = export_controlled
             if not export_controlled:
                 export_control_type = None
         if export_control_type != c.project.export_control_type:
