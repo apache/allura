@@ -59,10 +59,9 @@ def reclone(*args, **kwargs):
     repo = c.app.repo
     if repo is not None:
         shutil.rmtree(repo.full_fs_path, ignore_errors=True)
-        repo.delete()
-    ThreadLocalORMSession.flush_all()
     M.MergeRequest.query.remove(dict(
         app_config_id=c.app.config._id))
+    ThreadLocalORMSession.flush_all()
     clone(*args, **kwargs)
 
 
