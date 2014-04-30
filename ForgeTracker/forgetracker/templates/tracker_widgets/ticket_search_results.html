@@ -39,7 +39,7 @@
                 <li>
                   <select name="filter-{{col['name']}}" data-label="{{col['label']}}" multiple="multiple">
                     {% for o in widget.filters[col['name']] %}
-                      <option value="{{o['value']}}"{% if o['selected'] %} selected="selected"{% endif %}>{{o['label']}}</label>
+                      <option value="{{o['value']}}"{% if o['selected'] %} selected="selected"{% endif %}>{{o['label']}}</option>
                     {% endfor %}
                   </select>
                 </li>

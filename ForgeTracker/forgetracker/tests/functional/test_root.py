@@ -2328,7 +2328,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test2')
         query_filter_choices.return_value = {'status': [('open', 2)], }
         r = self.app.get('/bugs/')
-        assert '<option value="open">open (2)</label>' in r
+        assert '<option value="open">open (2)</option>' in r
         assert query_filter_choices.call_count == 1
         assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed'
 

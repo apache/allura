@@ -150,6 +150,7 @@
     });
 
     function select_active_filter() {
+      /* this 'filter' var is set in HTML */
       for (var name in filter) {
         var fname = 'filter-' + name;
         var $select = $('select[name="' + fname + '"]');

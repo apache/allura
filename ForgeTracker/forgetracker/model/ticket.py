@@ -1167,7 +1167,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_error = None
         except SearchError as e:
             solr_error = e
-            matches = []
+            matches = None
         if matches:
             count = matches.hits
             # ticket_numbers is in sorted order
