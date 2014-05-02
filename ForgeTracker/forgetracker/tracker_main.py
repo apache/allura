@@ -1716,34 +1716,6 @@ class RootRestController(BaseController):
         redirect(str(ticket.ticket_num) + '/')
 
     @expose('json:')
-    def validate_import(self, doc=None, options=None, **post_data):
-        require_access(c.project, 'admin')
-        migrator = ImportSupport()
-        try:
-            status = migrator.validate_import(doc, options, **post_data)
-            return status
-        except Exception, e:
-            log.exception(e)
-            return dict(status=False, errors=[repr(e)])
-
-    @expose('json:')
-    def perform_import(self, doc=None, options=None, **post_data):
-        with h.notifications_disabled(c.project):
-            require_access(c.project, 'admin')
-            if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
-                log.error('Import capability is not enabled for %s',
-                          c.project.shortname)
-                raise exc.HTTPForbidden(detail='Import is not allowed')
-
-            migrator = ImportSupport()
-            try:
-                status = migrator.perform_import(doc, options, **post_data)
-                return status
-            except Exception, e:
-                log.exception(e)
-                return dict(status=False, errors=[str(e)])
-
-    @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):
         results = TM.Ticket.paged_search(
             c.app.config, c.user, q, limit, page, sort, show_deleted=False)
