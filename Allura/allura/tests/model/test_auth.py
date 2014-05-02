@@ -173,23 +173,6 @@ def test_default_project_roles():
 
 
 @with_setup(setUp)
-def test_dup_api_token():
-    from ming.orm import session
-    u = M.User.register(dict(username='nosetest-user'))
-    ThreadLocalORMSession.flush_all()
-    tok = M.ApiToken(user_id=u._id)
-    session(tok).flush()
-    tok2 = M.ApiToken(user_id=u._id)
-    try:
-        session(tok2).flush()
-        assert False, "Entry with duplicate unique key was inserted"
-    except DuplicateKeyError:
-        pass
-    assert len(M.ApiToken.query.find().all()
-               ) == 1, "Duplicate entries with unique key found"
-
-
-@with_setup(setUp)
 def test_email_address_claimed_by_user():
     addr = M.EmailAddress(_id='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)

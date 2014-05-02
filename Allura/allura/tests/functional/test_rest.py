@@ -17,8 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from datetime import datetime, timedelta
-
 from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
@@ -30,38 +28,20 @@ from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
 
-from forgetracker.tracker_main import ForgeTrackerApp
-
 
 class TestRestHome(TestRestApiBase):
 
-    def test_bad_signature(self):
-        r = self.api_post('/rest/p/test/wiki/', api_signature='foo')
-        assert r.status_int == 403
-
-    def test_bad_token(self):
-        r = self.api_post('/rest/p/test/wiki/', api_key='foo')
-        assert r.status_int == 403
-
-    def test_bad_timestamp(self):
-        r = self.api_post('/rest/p/test/wiki/',
-                          api_timestamp=(datetime.utcnow() + timedelta(days=1)).isoformat())
-        assert r.status_int == 403
-
-    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
-    @mock.patch('allura.controllers.rest.request')
-    def test_bearer_token_non_ssl(self, request, OAuthAccessToken):
-        request.params = {'access_token': 'foo'}
-        request.scheme = 'http'
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 403)
-        assert_equal(OAuthAccessToken.query.get.call_count, 0)
+    def _patch_token(self, OAuthAccessToken):
+        at = OAuthAccessToken.return_value
+        at.__ming__ = mock.MagicMock()
+        at.api_key = 'foo'
 
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
     def test_bearer_token_non_bearer(self, request, OAuthAccessToken):
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
+        self._patch_token(OAuthAccessToken)
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
@@ -73,6 +53,7 @@ class TestRestHome(TestRestApiBase):
     def test_bearer_token_invalid(self, request, OAuthAccessToken):
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
+        self._patch_token(OAuthAccessToken)
         OAuthAccessToken.query.get.return_value = None
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 403)

@@ -196,18 +196,6 @@ class TestAuth(TestController):
         r = self.app.get('/auth/subscriptions/')
         assert '<option selected value="both">Combined</option>' in r
 
-    def test_api_key(self):
-        r = self.app.get('/auth/preferences/')
-        assert 'No API token generated' in r
-        r = self.app.post('/auth/preferences/gen_api_token', status=302)
-        r = self.app.get('/auth/preferences/')
-        assert 'No API token generated' not in r
-        assert 'API Key:' in r
-        assert 'Secret Key:' in r
-        r = self.app.post('/auth/preferences/del_api_token', status=302)
-        r = self.app.get('/auth/preferences/')
-        assert 'No API token generated' in r
-
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
