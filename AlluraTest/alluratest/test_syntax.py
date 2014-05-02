@@ -94,7 +94,6 @@ def test_no_prints():
         'Allura/ez_setup/',
         'Allura/allura/lib/AsciiDammit.py',
         '/scripts/',
-        'Allura/allura/lib/import_api.py',
         'ForgeSVN/setup.py',
     ]
     if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | grep 'print ' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
