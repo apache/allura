@@ -189,15 +189,28 @@ class TestRestApiBase(TestController):
         # only create token once, else ming gets dupe key error
         if username not in self._token_cache:
             user = M.User.query.get(username=username)
-            token = M.ApiToken(user_id=user._id)
+            consumer_token = M.OAuthConsumerToken(
+                name='test',
+                description='test-app')
+            request_token = M.OAuthRequestToken(
+                consumer_token_id=consumer_token._id,
+                user_id=user._id,
+                callback='manual',
+                validation_pin=h.nonce(20),
+                is_bearer=True)
+            token = M.OAuthAccessToken(
+                consumer_token_id=consumer_token._id,
+                request_token_id=request_token._id,
+                user_id=user._id,
+                is_bearer=True)
+            ming.orm.session(consumer_token).flush()
+            ming.orm.session(request_token).flush()
             ming.orm.session(token).flush()
             self._token_cache[username] = token
 
         return self._token_cache[username]
 
-    def _api_getpost(
-            self, method, path, api_key=None, api_timestamp=None, api_signature=None,
-            wrap_args=None, user='test-admin', status=None, **params):
+    def _api_getpost(self, method, path, wrap_args=None, user='test-admin', status=None, **params):
         '''
         If you need to use one of the method kwargs as a URL parameter,
         pass params={...} as a dict instead of **kwargs
@@ -209,14 +222,8 @@ class TestRestApiBase(TestController):
         if status is None:
             status = [200, 201, 301, 302, 400, 403, 404]
         params = variabledecode.variable_encode(params, add_repetitions=False)
-        if api_key:
-            params['api_key'] = api_key
-        if api_timestamp:
-            params['api_timestamp'] = api_timestamp
-        if api_signature:
-            params['api_signature'] = api_signature
 
-        params = self.token(user).sign_request(path, params)
+        params['access_token'] = self.token(user).api_key
 
         fn = self.app.post if method == 'POST' else self.app.get
 
@@ -229,12 +236,8 @@ class TestRestApiBase(TestController):
         else:
             return response
 
-    def api_get(
-            self, path, api_key=None, api_timestamp=None, api_signature=None,
-            wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)
+    def api_get(self, path, wrap_args=None, user='test-admin', status=None, **params):
+        return self._api_getpost('GET', path, wrap_args, user, status, **params)
 
-    def api_post(
-            self, path, api_key=None, api_timestamp=None, api_signature=None,
-            wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)
+    def api_post(self, path, wrap_args=None, user='test-admin', status=None, **params):
+        return self._api_getpost('POST', path, wrap_args, user, status, **params)
