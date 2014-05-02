@@ -21,8 +21,6 @@ from datetime import datetime, timedelta
 
 from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from ming.orm import session
-import pymongo
 import bson
 import tg
 from pylons import app_globals as g
@@ -77,7 +75,6 @@ class SiteAdminController(object):
         base_url = '/nf/admin/'
         links = [
             SitemapEntry('Home', base_url, ui_icon=g.icons['admin']),
-            SitemapEntry('API Tickets', base_url + 'api_tickets', ui_icon=g.icons['admin']),
             SitemapEntry('Add Subscribers', base_url + 'add_subscribers', ui_icon=g.icons['admin']),
             SitemapEntry('New Projects', base_url + 'new_projects', ui_icon=g.icons['admin']),
             SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
@@ -91,52 +88,6 @@ class SiteAdminController(object):
     @with_trailing_slash
     def index(self):
         return {}
-
-    @expose('jinja:allura:templates/site_admin_api_tickets.html')
-    @without_trailing_slash
-    def api_tickets(self, **data):
-        import json
-        import dateutil.parser
-        if request.method == 'POST':
-            log.info('api_tickets: %s', data)
-            ok = True
-            for_user = M.User.by_username(data['for_user'])
-            if not for_user:
-                ok = False
-                flash('User not found')
-            caps = None
-            try:
-                caps = json.loads(data['caps'])
-            except ValueError:
-                ok = False
-                flash('JSON format error')
-            if type(caps) is not type({}):
-                ok = False
-                flash(
-                    'Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
-            try:
-                expires = dateutil.parser.parse(data['expires'])
-            except ValueError:
-                ok = False
-                flash('Date format error')
-            if ok:
-                tok = None
-                try:
-                    tok = M.ApiTicket(user_id=for_user._id,
-                                      capabilities=caps, expires=expires)
-                    session(tok).flush()
-                    log.info('New token: %s', tok)
-                    flash('API Ticket created')
-                except:
-                    log.exception('Could not create API ticket:')
-                    flash('Error creating API ticket')
-        elif request.method == 'GET':
-            data = {'expires': datetime.utcnow() + timedelta(days=2)}
-
-        data['token_list'] = M.ApiTicket.query.find().sort(
-            'mod_date', pymongo.DESCENDING).all()
-        log.info(data['token_list'])
-        return data
 
     def subscribe_artifact(self, url, user):
         artifact_url = urlparse(url).path[1:-1].split("/")

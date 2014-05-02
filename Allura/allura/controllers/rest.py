@@ -19,7 +19,6 @@
 
 """REST Controller"""
 import logging
-from urllib import quote, unquote
 
 import oauth2 as oauth
 from webob import exc
@@ -50,23 +49,6 @@ class RestController(object):
         'Based on request.params or oauth, authenticate the request'
         if 'oauth_token' in request.params or 'access_token' in request.params:
             return self.oauth._authenticate()
-        elif 'api_key' in request.params:
-            api_key = request.params.get('api_key')
-            token = M.ApiTicket.get(api_key)
-            if not token:
-                token = M.ApiToken.get(api_key)
-            else:
-                log.info('Authenticating with API ticket')
-            # Sometimes a path might be only partially escaped like /FAQ-Development,%20Bug%20Reporting,
-            # I don't know why.
-            path = quote(unquote(request.path))
-            if path != request.path:
-                log.info('Canonicalized %s to %s', request.path, path)
-            if token is not None and token.authenticate_request(path, request.params):
-                return token
-            else:
-                log.info('API authentication failure')
-                raise exc.HTTPForbidden
         else:
             return None
 

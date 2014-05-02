@@ -25,7 +25,6 @@ import hashlib
 from urlparse import urlparse
 from email import header
 from hashlib import sha256
-import uuid
 from pytz import timezone
 from datetime import timedelta, datetime, time
 
@@ -108,104 +107,6 @@ class AlluraUserProperty(ForeignIdProperty):
 
     def __init__(self, **kwargs):
         super(AlluraUserProperty, self).__init__('User', allow_none=True, **kwargs)
-
-
-class ApiAuthMixIn(object):
-
-    def authenticate_request(self, path, params):
-        try:
-            # Validate timestamp
-            timestamp = iso8601.parse_date(params['api_timestamp'])
-            timestamp_utc = timestamp.replace(
-                tzinfo=None) - timestamp.utcoffset()
-            if abs(datetime.utcnow() - timestamp_utc) > timedelta(minutes=10):
-                return False
-            # Validate signature
-            api_signature = params['api_signature']
-            params = sorted((k, v)
-                            for k, v in params.iteritems() if k != 'api_signature')
-            string_to_sign = path + '?' + urlencode(params)
-            digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
-            return digest.hexdigest() == api_signature
-        except KeyError:
-            return False
-
-    def sign_request(self, path, params):
-        if hasattr(params, 'items'):
-            params = params.items()
-        has_api_key = has_api_timestamp = has_api_signature = False
-        for k, v in params:
-            if k == 'api_key':
-                has_api_key = True
-            if k == 'api_timestamp':
-                has_api_timestamp = True
-            if k == 'api_signature':
-                has_api_signature = True
-        if not has_api_key:
-            params.append(('api_key', self.api_key))
-        if not has_api_timestamp:
-            params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        if not has_api_signature:
-            string_to_sign = urllib.quote(path) + \
-                '?' + urlencode(sorted(params))
-            digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
-            params.append(('api_signature', digest.hexdigest()))
-        return params
-
-    def get_capability(self, key):
-        return None
-
-
-class ApiToken(MappedClass, ApiAuthMixIn):
-
-    class __mongometa__:
-        name = 'api_token'
-        session = main_orm_session
-        unique_indexes = ['user_id']
-
-    _id = FieldProperty(S.ObjectId)
-    user_id = AlluraUserProperty()
-    api_key = FieldProperty(str, if_missing=lambda: str(uuid.uuid4()))
-    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
-
-    user = RelationProperty('User')
-
-    @classmethod
-    def get(cls, api_key):
-        return cls.query.get(api_key=api_key)
-
-
-class ApiTicket(MappedClass, ApiAuthMixIn):
-
-    class __mongometa__:
-        name = 'api_ticket'
-        session = main_orm_session
-    PREFIX = 'tck'
-
-    _id = FieldProperty(S.ObjectId)
-    user_id = AlluraUserProperty()
-    api_key = FieldProperty(
-        str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
-    secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
-    expires = FieldProperty(datetime, if_missing=None)
-    capabilities = FieldProperty({str: None})
-    mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-
-    user = RelationProperty('User')
-
-    @classmethod
-    def get(cls, api_ticket):
-        if not api_ticket.startswith(cls.PREFIX):
-            return None
-        return cls.query.get(api_key=api_ticket)
-
-    def authenticate_request(self, path, params):
-        if self.expires and datetime.utcnow() > self.expires:
-            return False
-        return ApiAuthMixIn.authenticate_request(self, path, params)
-
-    def get_capability(self, key):
-        return self.capabilities.get(key)
 
 
 class EmailAddress(MappedClass):
