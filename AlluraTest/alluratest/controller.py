@@ -190,8 +190,9 @@ class TestRestApiBase(TestController):
         if username not in self._token_cache:
             user = M.User.query.get(username=username)
             consumer_token = M.OAuthConsumerToken(
-                name='test',
-                description='test-app')
+                name='test-%s' % str(user._id),
+                description='test-app-%s' % str(user._id),
+                user_id=user._id)
             request_token = M.OAuthRequestToken(
                 consumer_token_id=consumer_token._id,
                 user_id=user._id,
