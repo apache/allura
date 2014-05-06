@@ -20,7 +20,9 @@ import logging
 import oauth2 as oauth
 from pylons import tmpl_context as c, app_globals as g
 
+import pymongo
 from ming import schema as S
+from ming.orm import session
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 
@@ -67,6 +69,19 @@ class OAuthConsumerToken(OAuthToken):
     description_cache = FieldProperty(MarkdownCache)
 
     user = RelationProperty('User')
+
+    @classmethod
+    def upsert(cls, name):
+        t = cls.query.get(name=name)
+        if t is not None:
+            return t
+        try:
+            t = cls(name=name)
+            session(t).flush(t)
+        except pymongo.errors.DuplicateKeyError:
+            session(t).expunge(t)
+            t = cls.query.get(name=name)
+        return t
 
     @property
     def description_html(self):
