@@ -35,34 +35,12 @@ class TestImportController(TestRestApiBase):  # TestController):
         self.app.get('/discussion/')
         self.json_text = open(here_dir + '/data/sf.json').read()
 
-    def test_no_capability(self):
-        self.set_api_ticket({'import2': ['Projects', 'test']})
-        resp = self.api_post('/rest/p/test/discussion/perform_import',
-                             doc=self.json_text)
-        assert resp.status_int == 403
-
-        self.set_api_ticket({'import': ['Projects', 'test2']})
-        resp = self.api_post('/rest/p/test/discussion/perform_import',
-                             doc=self.json_text)
-        assert resp.status_int == 403
-
-        self.set_api_ticket({'import': ['Projects', 'test']})
-        resp = self.api_post('/rest/p/test/discussion/perform_import',
-                             doc=self.json_text)
-        assert resp.status_int == 200
-
     def test_validate_import(self):
         r = self.api_post('/rest/p/test/discussion/validate_import',
                           doc=self.json_text)
         assert not r.json['errors']
 
     def test_import_anon(self):
-        api_ticket = M.ApiTicket(
-            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
-            expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
-
         r = self.api_post('/rest/p/test/discussion/perform_import',
                           doc=self.json_text)
         assert not r.json['errors'], r.json['errors']
@@ -78,12 +56,6 @@ class TestImportController(TestRestApiBase):  # TestController):
         assert 'Anonymous' in str(r)
 
     def test_import_map(self):
-        api_ticket = M.ApiTicket(
-            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
-            expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
-
         r = self.api_post('/rest/p/test/discussion/perform_import',
                           doc=self.json_text,
                           username_mapping=json.dumps(dict(rick446='test-user')))
@@ -101,12 +73,6 @@ class TestImportController(TestRestApiBase):  # TestController):
         assert 'Anonymous' not in str(r)
 
     def test_import_create(self):
-        api_ticket = M.ApiTicket(
-            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
-            expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
-
         r = self.api_post('/rest/p/test/discussion/perform_import',
                           doc=self.json_text, create_users='True')
         assert not r.json['errors'], r.json['errors']
@@ -121,12 +87,6 @@ class TestImportController(TestRestApiBase):  # TestController):
         assert 'Welcome to Open Discussion' in str(r)
         assert 'Anonymous' not in str(r)
         assert 'test-rick446' in str(r)
-
-    def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities=caps,
-                                 expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
 
     @staticmethod
     def time_normalize(t):

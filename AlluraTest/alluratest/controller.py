@@ -197,8 +197,7 @@ class TestRestApiBase(TestController):
                 consumer_token_id=consumer_token._id,
                 user_id=user._id,
                 callback='manual',
-                validation_pin=h.nonce(20),
-                is_bearer=True)
+                validation_pin=h.nonce(20))
             token = M.OAuthAccessToken(
                 consumer_token_id=consumer_token._id,
                 request_token_id=request_token._id,
