@@ -19,9 +19,6 @@
 
 import types
 from sys import stdout
-import hmac
-import hashlib
-from datetime import datetime
 import os
 import urllib
 from urllib2 import urlopen, HTTPError
@@ -76,18 +73,13 @@ def urlencode(params):
 
 class Signer(object):
 
-    def __init__(self, secret_key, api_key):
-        self.secret_key = secret_key
-        self.api_key = api_key
+    def __init__(self, token):
+        self.token = token
 
     def __call__(self, path, params):
-        if self.api_key is None:
+        if self.token is None:
             return params
-        params.append(('api_key', self.api_key))
-        params.append(('api_timestamp', datetime.utcnow().isoformat()))
-        message = path + '?' + urlencode(sorted(params))
-        digest = hmac.new(self.secret_key, message, hashlib.sha256).hexdigest()
-        params.append(('api_signature', digest))
+        params.append(('token', self.token))
         return params
 
 
@@ -95,8 +87,7 @@ def main():
     usage = 'usage: %prog [options] [PageName [file]]'
     op = OptionParser(usage=usage)
     op.add_option('-c', '--config', metavar='CONFIG')
-    op.add_option('-a', '--api-key', metavar='KEY')
-    op.add_option('-s', '--secret-key', metavar='KEY')
+    op.add_option('-t', '--token', metavar='TOKEN')
     op.add_option('', '--anon', action='store_true')
     op.add_option('-u', '--url', metavar='URL')
     (options, args) = op.parse_args()
@@ -119,18 +110,16 @@ def main():
     config.read(
         [str(os.path.expanduser('~/.forge-api.ini')), str(options.config)])
 
-    api_key = None
-    secret_key = None
+    token = None
     if not options.anon:
-        api_key = options.api_key or config.get('keys', 'api-key')
-        secret_key = options.secret_key or config.get('keys', 'secret-key')
+        token = options.token or config.get('keys', 'token')
 
     url = options.url or config.get('wiki', 'url')
     if pagename_given:
         url = urljoin(url, urllib.quote(pagename))
     print url
 
-    sign = Signer(secret_key, api_key)
+    sign = Signer(token)
     params = [('text', markdown)] if method == 'PUT' else []
     params = sign(urlparse(url).path, params)
     try:
