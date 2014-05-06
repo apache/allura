@@ -65,7 +65,7 @@ class OAuthConsumerToken(OAuthToken):
     type = FieldProperty(str, if_missing='consumer')
     user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     name = FieldProperty(str)
-    description = FieldProperty(str)
+    description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
 
     user = RelationProperty('User')
