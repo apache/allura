@@ -19,7 +19,6 @@ import json
 from optparse import OptionParser
 
 from allura.lib.import_api import AlluraImportApiClient
-from forgetracker.scripts.import_tracker import import_tracker
 from tracwikiimporter.scripts.wiki_from_trac.loaders import import_wiki
 
 
@@ -52,22 +51,15 @@ def main():
 
     import_options['user_map'] = user_map
 
-    cli = AlluraImportApiClient(
-        options.base_url, options.api_key, options.secret_key, options.verbose)
+    cli = AlluraImportApiClient(options.base_url, options.token, options.verbose)
     doc_txt = open(args[0]).read()
 
-    # import the tracker (if any)
-    if options.tracker:
-        import_tracker(
-            cli, options.project, options.tracker, import_options, options, doc_txt,
-            validate=options.validate, verbose=options.verbose,
-            neighborhood=options.neighborhood)
-    elif options.forum:
+    if options.forum:
         import_forum(cli, options.project, options.forum, user_map, doc_txt,
-                validate=options.validate, neighborhood=options.neighborhood)
+                     validate=options.validate, neighborhood=options.neighborhood)
     elif options.wiki:
-        import_wiki(cli, options.project, options.wiki, options, doc_txt,
-                neighborhood=options.neighborhood)
+        import_wiki(cli, options.project, options.wiki, options, doc_txt)
+
 
 
 def import_forum(cli, project, tool, user_map, doc_txt, validate=True,
@@ -89,17 +81,13 @@ def parse_options():
     optparser = OptionParser(usage='''%prog [options] <JSON dump>
 
 Import project data dump in JSON format into an Allura project.''')
-    optparser.add_option('-a', '--api-ticket',
-                         dest='api_key', help='API ticket')
-    optparser.add_option('-s', '--secret-key',
-                         dest='secret_key', help='Secret key')
+    optparser.add_option('-t', '--token', dest='token',
+                         help='OAuth bearer token (generate at /auth/oauth/)')
     optparser.add_option('-p', '--project', dest='project',
                          help='Project to import to')
     optparser.add_option('-n', '--neighborhood', dest='neighborhood',
                          help="URL prefix of destination neighborhood (default is 'p')",
                          default='p')
-    optparser.add_option('-t', '--tracker', dest='tracker',
-                         help='Tracker to import to')
     optparser.add_option('-f', '--forum', dest='forum',
                          help='Forum tool to import to')
     optparser.add_option('-w', '--wiki', dest='wiki',
@@ -119,8 +107,8 @@ Import project data dump in JSON format into an Allura project.''')
     options, args = optparser.parse_args()
     if len(args) != 1:
         optparser.error("Wrong number of arguments")
-    if not options.api_key or not options.secret_key:
-        optparser.error("Keys are required")
+    if not options.token:
+        optparser.error("OAuth bearer token is required")
     if not options.project:
         optparser.error("Target project is required")
     options.neighborhood = options.neighborhood.strip('/')
