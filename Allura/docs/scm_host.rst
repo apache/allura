@@ -65,7 +65,7 @@ Then exit vim (:kbd:`<esc> :wq`) and run:
     sudo service apache2 reload
 
 To test that it's working, run: :command:`git ls-remote http://localhost/git/p/test/git/`
-(if using Vagrant, use :code:`localhost:8088` from your host machine).
+(if using Vagrant, you may also use :code:`localhost:8088` from your host machine).
 If there is no output, that is fine (it's an empty repo).
 
 .. warning::
@@ -74,7 +74,8 @@ If there is no output, that is fine (it's an empty repo).
 
 Now you will want to change the :samp:`scm.host.{*}.git`
 settings in :file:`development.ini`, so that the proper commands are shown to your visitors
-when they browse the code repo web pages.
+when they browse the code repo web pages.  The exact values to use will depend on the
+hostnames and port numbers you are using.
 
 Read-only `git://`
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -92,7 +93,6 @@ and subsequent chapters.
 
 .. code-block:: bash
 
-    sudo mkdir /srv/svn
     sudo chown allura:allura /srv/svn  # or other user, as needed (e.g. "vagrant")
 
     cat > /srv/svn/svnserve.conf <<EOF
