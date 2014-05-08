@@ -16,8 +16,17 @@
 #       under the License.
 
 Vagrant.configure("2") do |config|
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine.
+
   # allura
-  config.vm.network :forwarded_port, guest: 8080, host: 8080
+  config.vm.network :forwarded_port, guest: 8080, host: 8080, auto_correct: true
   # solr
-  config.vm.network :forwarded_port, guest: 8983, host: 8983 
+  config.vm.network :forwarded_port, guest: 8983, host: 8983, auto_correct: true
+  # HTTP (svn or git or other)
+  config.vm.network :forwarded_port, guest: 80, host: 8088, auto_correct: true
+  # SVN
+  config.vm.network :forwarded_port, guest: 3690, host: 3690, auto_correct: true
+  # GIT readonly
+  config.vm.network :forwarded_port, guest: 9418, host: 9418, auto_correct: true
 end
