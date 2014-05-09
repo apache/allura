@@ -1042,19 +1042,22 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       deleted_b=self.deleted,
                       # Not analyzed fields
                       private_b=_private,
-                      category_id_s=str(self.category_id or ''),
                       neighborhood_id_s=str(self.neighborhood_id),
                       url_s=h.absurl(self.url()),
-                      created_dt=self._id.generation_time,
+                      is_root_b=self.is_root,
+                      is_nbhd_project_b=self.is_nbhd_project,
+                      registration_dt=plugin.ProjectRegistrationProvider.get().registration_date(self),
                       last_updated_dt=self.last_updated,
                       removal_changed_date_dt=self.removal_changed_date,
+                      name_s=self.name,
+                      shortname_s=self.shortname,
+                      neighborhood_name_s=self.neighborhood.name,
+                      external_homepage_s=self.external_homepage,
                       # Analyzed fields
-                      name_t=self.name,
-                      shortname_t=self.shortname,
                       short_description_t=self.short_description,
                       labels_t=' '.join(self.labels),
                       summary_t=self.summary,
-                      neighborhood_name_t=self.neighborhood.name)
+                    )
         if self.category:
             fields.update(category_name_t=self.category.name,
                           category_description_t=self.category.description)
