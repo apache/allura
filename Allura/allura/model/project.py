@@ -1031,12 +1031,17 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     def index(self):
         provider = plugin.ProjectRegistrationProvider.get()
+        try:
+            _private = self.private
+        except Exception:
+            log.warn('Error getting self.private on project {}'.format(self.shortname), exc_info=True)
+            _private = False
         fields = dict(id=self.index_id(),
                       title='Project %s' % self.name,
                       type_s=self.type_s,
                       deleted_b=self.deleted,
                       # Not analyzed fields
-                      private_b=self.private,
+                      private_b=_private,
                       category_id_s=str(self.category_id or ''),
                       neighborhood_id_s=str(self.neighborhood_id),
                       url_s=h.absurl(self.url()),
