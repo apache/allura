@@ -46,7 +46,11 @@ class SearchIndexable(object):
 
         Used for SOLR ID, shortlinks, and possibly elsewhere.
         """
-        raise NotImplementedError
+        id = '%s.%s#%s' % (
+            self.__class__.__module__,
+            self.__class__.__name__,
+            self._id)
+        return id.replace('.', '/')
 
     def index(self):
         """
