@@ -53,9 +53,6 @@ class ReindexProjects(ScriptTask):
                 if options.dry_run:
                     continue
                 c.project = p
-                # Clear index for this project
-                if not options.skip_solr_delete:
-                    g.solr.delete(q='project_id_s:%s' % p._id)
                 project_ids.append(p._id)
 
             try:
@@ -104,9 +101,6 @@ class ReindexProjects(ScriptTask):
         parser.add_argument('--dry-run', action='store_true', dest='dry_run',
                             default=False, help='Log names of projects that would be reindexed, '
                             'but do not perform the actual reindex.')
-        parser.add_argument(
-            '--skip-solr-delete', action='store_true', dest='skip_solr_delete', default=False,
-            help='Skip clearing solr index.')
         parser.add_argument('--tasks', action='store_true', dest='tasks',
                             help='Run each individual index operation as a background task.')
         parser.add_argument(
