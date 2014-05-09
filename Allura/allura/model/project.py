@@ -991,13 +991,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         else:
             return 'busy'
 
-    def index_id(self):
-        id = '%s.%s#%s' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self._id)
-        return id.replace('.', '/')
-
     def index(self):
         provider = plugin.ProjectRegistrationProvider.get()
         try:

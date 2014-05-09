@@ -77,7 +77,7 @@ class Artifact(MappedClass, SearchIndexable):
                 log.debug('Not updating mod_date')
             if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
- 
+
     type_s = 'Generic Artifact'
 
     # Artifact base schema
@@ -296,13 +296,6 @@ class Artifact(MappedClass, SearchIndexable):
             return c.app
         else:
             return self.app_config.load()(self.project, self.app_config)
-
-    def index_id(self):
-        id = '%s.%s#%s' % (
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self._id)
-        return id.replace('.', '/')
 
     def index(self):
         project = self.project
