@@ -23,6 +23,8 @@ import os
 import logging
 import subprocess
 import string
+import crypt
+import random
 from urllib2 import urlopen
 from cStringIO import StringIO
 from random import randint
@@ -289,7 +291,6 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def register_user(self, user_doc):
         from allura import model as M
-        password = user_doc['password'].encode('utf-8')
         result = M.User(**user_doc)
         dn_u = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
         uid = str(M.AuthGlobals.get_next_uid())
@@ -301,7 +302,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             display_name = user_doc['display_name'].encode('utf-8')
             ldif_u = modlist.addModlist(dict(
                 uid=uname,
-                userPassword=password,
+                userPassword=self._encode_password(user_doc['password']),
                 objectClass=['account', 'posixAccount'],
                 cn=display_name,
                 uidNumber=uid,
@@ -345,6 +346,22 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                               username, errmsg)
                 assert False, errmsg
 
+    def _get_salt(self, length):
+        def random_char():
+            return random.choice(string.ascii_uppercase + string.digits)
+        return ''.join(random_char() for i in range(length))
+
+    def _encode_password(self, password, salt=None):
+        cfg_prefix = 'auth.ldap.password.'
+        salt_len = asint(config[cfg_prefix + 'salt_len'])
+        algorithm = asint(config[cfg_prefix + 'algorithm'])
+        rounds = asint(config[cfg_prefix + 'rounds'])
+        salt = self._get_salt(salt_len) if salt is None else salt
+        encrypted = crypt.crypt(
+            password.encode('utf-8'),
+            '$%s$rounds=%s$%s' % (algorithm, rounds, salt))
+        return '{CRYPT}%s' % encrypted
+
     def by_username(self, username):
         from allura import model as M
         return M.User.query.get(username=username, disabled=False)
@@ -354,8 +371,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, old_password.encode('utf-8'))
+            new_password = self._encode_password(new_password)
             con.modify_s(
-                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password.encode('utf-8'))])
+                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
             con.unbind_s()
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
@@ -386,6 +404,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if user._id:
             return user._id.generation_time
         return datetime.utcnow()
+
+    def update_notifications(self, user):
+        return ''
 
 
 class ProjectRegistrationProvider(object):
