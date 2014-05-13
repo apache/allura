@@ -1040,7 +1040,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       is_root_b=self.is_root,
                       is_nbhd_project_b=self.is_nbhd_project,
                       registration_dt=plugin.ProjectRegistrationProvider.get().registration_date(self),
-                      last_updated_dt=self.last_updated,
                       removal_changed_date_dt=self.removal_changed_date,
                       name_s=self.name,
                       shortname_s=self.shortname,
@@ -1055,6 +1054,17 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             fields.update(category_name_t=self.category.name,
                           category_description_t=self.category.description)
         return dict(provider.index_project(self), **fields)
+
+    def should_update_index(self, old_doc, new_doc):
+        """Skip index update if only `last_updated` has changed.
+
+        Value of `last_updated` is updated whenever any artifact
+        that belongs to project is changed. This generates a lot of
+        unnecessary `add_projects` tasks for every simple user action.
+        """
+        old_doc.pop('last_updated', None)
+        new_doc.pop('last_updated', None)
+        return old_doc != new_doc
 
     def __json__(self):
         result = dict(

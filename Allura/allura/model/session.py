@@ -76,12 +76,17 @@ class IndexerSessionExtension(ManagedSessionExtension):
         task = tasks.get(action)
         if task:
             if action == 'add':
-                arg = [o._id for o in obj_list]
+                def _needs_update(o):
+                    old = dict(state(o).original_document)
+                    new = dict(state(o).document)
+                    return o.should_update_index(old, new)
+                arg = [o._id for o in obj_list if _needs_update(o)]
             else:
                 arg = [o.index_id() for o in obj_list]
 
             try:
-                task.post(arg)
+                if arg:
+                    task.post(arg)
             except:
                 log.error('Error calling %s', task.__name__)
 

@@ -77,6 +77,14 @@ class SearchIndexable(object):
         """
         raise NotImplementedError
 
+    def should_update_index(self, old_doc, new_doc):
+        """Determines if solr index should be updated.
+
+        Values passed as old_doc and new_doc are original and modified
+        versions of same object, represented as dictionaries.
+        """
+        return True
+
     def solarize(self):
         doc = self.index()
         if doc is None:
