@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% set hide_left_bar = True %}
-{% extends g.theme.master %}
+{% extends "allura:templates/user_account_base.html" %}
 
 {% block title %}{{c.user.username}} / Applications {% endblock %}
 
@@ -69,17 +69,7 @@
 {% endblock %}
 
 {% block content %}
-    <ul id="account-nav-menu" class="b-hornav droppy">
-    {% for item in menu -%}
-        <li id="{{ item.tabid }}">
-            <a href="{{ item.target }}">
-                {{ item.title }}
-                <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
-            </a>
-        </li>
-    {%- endfor %}
-    </ul>
-
+    {{ super() }}
     <h2>Authorized Applications</h2>
     <p>
         These are applications you have authorized to act on your behalf.

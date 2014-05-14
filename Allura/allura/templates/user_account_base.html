@@ -17,22 +17,17 @@
        under the License.
 -#}
 {% set hide_left_bar = True %}
-{% extends "allura:templates/user_account_base.html" %}
-
-{% block title %}{{c.user.username}} / Preferences{% endblock %}
-
-{% block header %}User Preferences for {{c.user.username}}{% endblock %}
+{% extends g.theme.master %}
 
 {% block content %}
-  {{ super() }}
-  <h2>Subscriptions</h2>
-  {% if subscriptions %}
-    <p><em>Mark tools that you want to subscribe to. Unmark tools that you want to unsubscribe from. Press 'Save' button.</em></p>
-        <div class="grid-24">
-        {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions, email_format=c.user.preferences.email_format))}}
-        </div>
-  {% else%}
-    <p>No subscriptions.</p>
-  {% endif %}
-
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+  </ul>
 {% endblock %}
