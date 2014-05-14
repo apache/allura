@@ -76,6 +76,7 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+        self.disable = DisableAccountController()
 
     def __getattr__(self, name):
         urls = plugin.UserPreferencesProvider.get().additional_urls()
@@ -845,3 +846,16 @@ class OAuthController(BaseController):
         access_token.delete()
         flash('Token revoked')
         redirect('.')
+
+
+class DisableAccountController(BaseController):
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_disable_account.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return {'menu': menu}
