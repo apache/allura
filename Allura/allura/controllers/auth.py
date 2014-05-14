@@ -858,4 +858,8 @@ class DisableAccountController(BaseController):
     def index(self, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
-        return {'menu': menu}
+        my_projects = c.user.my_projects_by_role_name('Admin').all()
+        return {
+            'menu': menu,
+            'my_projects': my_projects,
+        }

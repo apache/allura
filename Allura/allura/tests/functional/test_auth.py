@@ -1038,3 +1038,13 @@ class TestOAuth(TestController):
         atok = parse_qs(r.body)
         assert_equal(len(atok['oauth_token']), 1)
         assert_equal(len(atok['oauth_token_secret']), 1)
+
+
+class TestDisableAccount(TestController):
+
+    def test_lists_user_projects(self):
+        r = self.app.get('/auth/disable/')
+        user = M.User.by_username('test-admin')
+        for p in user.my_projects_by_role_name('Admin'):
+            assert_in(p.name, r)
+            assert_in(p.url(), r)

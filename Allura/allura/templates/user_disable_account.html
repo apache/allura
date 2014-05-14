@@ -27,5 +27,16 @@
   {{ super() }}
   <div class='grid-20'>
     <h2>Disable account</h2>
+    {% if my_projects %}
+    <p>
+      Currently you are an admin of the following projects.
+      These projects would be orphaned unless they have another admin.
+      <ul>
+        {% for p in my_projects %}
+          <li><a href="{{ p.url() }}">{{ p.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </p>
+    {% endif %}
   </div>
 {% endblock %}
