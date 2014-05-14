@@ -86,3 +86,16 @@ class TestProject(unittest.TestCase):
         self.assertEqual(p.social_account('Twitter')
                          .accounturl, 'http://twitter.com/allura')
         self.assertEqual(p.twitter_handle, 'http://twitter.com/allura')
+
+    def test_should_update_index(self):
+        p = M.Project()
+        self.assertFalse(p.should_update_index({}, {}))
+        old = {'last_updated': 1}
+        new = {'last_updated': 2}
+        self.assertFalse(p.should_update_index(old, new))
+        old = {'last_updated': 1, 'a': 1}
+        new = {'last_updated': 2, 'a': 1}
+        self.assertFalse(p.should_update_index(old, new))
+        old = {'last_updated': 1, 'a': 1}
+        new = {'last_updated': 2, 'a': 2}
+        self.assertTrue(p.should_update_index(old, new))

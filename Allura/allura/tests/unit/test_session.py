@@ -81,6 +81,7 @@ class TestIndexerSessionExtension(TestCase):
 
     def _mock_indexable(self, **kw):
         m = mock.Mock(**kw)
+        m.__ming__ = mock.MagicMock()
         m.index_id.return_value = id(m)
         return m
 
@@ -94,6 +95,22 @@ class TestIndexerSessionExtension(TestCase):
         self.extension.after_flush()
         self.tasks['add'].post.assert_called_once_with([1, 2, 3, 4, 5])
         self.tasks['del'].post.assert_called_once_with(map(id, deleted))
+
+    def test_flush_skips_update(self):
+        modified = [self._mock_indexable(_id=i) for i in range(5)]
+        modified[1].should_update_index.return_value = False
+        modified[4].should_update_index.return_value = False
+        self.extension.objects_modified = modified
+        self.extension.after_flush()
+        self.tasks['add'].post.assert_called_once_with([0, 2, 3])
+
+    def test_flush_skips_task_if_all_objects_filtered_out(self):
+        modified = [self._mock_indexable(_id=i) for i in range(5)]
+        for m in modified:
+            m.should_update_index.return_value = False
+        self.extension.objects_modified = modified
+        self.extension.after_flush()
+        assert self.tasks['add'].post.call_count == 0
 
 
 class TestBatchIndexer(TestCase):
