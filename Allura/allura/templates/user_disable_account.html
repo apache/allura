@@ -38,5 +38,10 @@
       </ul>
     </p>
     {% endif %}
+    <p>
+    Are you really sure you want to disable your account?
+    If so, enter account password below to confirm.
+    </p>
+    {{ form.display(action='do_disable') }}
   </div>
 {% endblock %}

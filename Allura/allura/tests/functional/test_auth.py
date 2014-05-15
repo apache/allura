@@ -1048,3 +1048,8 @@ class TestDisableAccount(TestController):
         for p in user.my_projects_by_role_name('Admin'):
             assert_in(p.name, r)
             assert_in(p.url(), r)
+
+    def test_has_asks_password(self):
+        r = self.app.get('/auth/disable/')
+        form = r.html.find('form', {'action': 'do_disable'})
+        assert form is not None

@@ -77,3 +77,10 @@ class ForgottenPasswordForm(ForgeForm):
                 'Unable to recover password for this email',
                 {'email': email}, None)
         return value
+
+
+class DisableAccountForm(ForgeForm):
+    submit_text = 'Disable'
+
+    class fields(ew_core.NameList):
+        password = ew.PasswordField(name='password', label='Account password')

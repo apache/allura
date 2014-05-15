@@ -39,7 +39,8 @@ from allura.lib.widgets import (
     OAuthApplicationForm,
     OAuthRevocationForm,
     LoginForm,
-    ForgottenPasswordForm)
+    ForgottenPasswordForm,
+    DisableAccountForm)
 from allura.lib.widgets import forms
 from allura.controllers import BaseController
 
@@ -67,6 +68,7 @@ class F(object):
     remove_inactive_period_form = forms.RemoveInactivePeriodForm()
     save_skill_form = forms.AddUserSkillForm()
     remove_skill_form = forms.RemoveSkillForm()
+    disable_accont_form = DisableAccountForm()
 
 
 class AuthController(BaseController):
@@ -862,4 +864,5 @@ class DisableAccountController(BaseController):
         return {
             'menu': menu,
             'my_projects': my_projects,
+            'form': F.disable_accont_form,
         }
