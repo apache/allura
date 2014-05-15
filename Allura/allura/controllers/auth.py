@@ -68,7 +68,7 @@ class F(object):
     remove_inactive_period_form = forms.RemoveInactivePeriodForm()
     save_skill_form = forms.AddUserSkillForm()
     remove_skill_form = forms.RemoveSkillForm()
-    disable_accont_form = DisableAccountForm()
+    disable_account_form = DisableAccountForm()
 
 
 class AuthController(BaseController):
@@ -864,5 +864,14 @@ class DisableAccountController(BaseController):
         return {
             'menu': menu,
             'my_projects': my_projects,
-            'form': F.disable_accont_form,
+            'form': F.disable_account_form,
         }
+
+    @expose()
+    @require_post()
+    @validate(F.disable_account_form, error_handler=index)
+    def do_disable(self, password):
+        provider = plugin.AuthenticationProvider.get(request)
+        provider.disable_user(c.user)
+        flash('Your account was successfully disabled!')
+        redirect('/')

@@ -47,7 +47,7 @@ from paste.deploy.converters import asbool, asint
 
 from ming.utils import LazyProperty
 from ming.orm import state
-from ming.orm import ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession, session
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -132,6 +132,17 @@ class AuthenticationProvider(object):
     def logout(self):
         self.session['userid'] = None
         self.session.save()
+
+    def validate_password(self, user, password):
+        '''Check that provided password matches actual user password
+
+        :rtype: bool
+        '''
+        raise NotImplementedError, 'validate_password'
+
+    def disable_user(self, user):
+        '''Disable user account'''
+        raise NotImplementedError, 'disable_user'
 
     def by_username(self, username):
         '''
@@ -240,6 +251,13 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if not self._validate_password(user, self.request.params['password']):
             raise exc.HTTPUnauthorized()
         return user
+
+    def disable_user(self, user):
+        user.disabled = True
+        session(user).flush(user)
+
+    def validate_password(self, user, password):
+        return self._validate_password(user, password)
 
     def _validate_password(self, user, password):
         if user is None:

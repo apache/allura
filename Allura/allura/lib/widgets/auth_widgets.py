@@ -19,7 +19,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 from ew.core import validator
 
-from pylons import request
+from pylons import request, tmpl_context as c
 from formencode import Invalid
 from webob import exc
 
@@ -84,3 +84,10 @@ class DisableAccountForm(ForgeForm):
 
     class fields(ew_core.NameList):
         password = ew.PasswordField(name='password', label='Account password')
+
+    @validator
+    def validate(self, value, state=None):
+        provider = plugin.AuthenticationProvider.get(request)
+        if not provider.validate_password(c.user, value['password']):
+            raise Invalid('Invalid password', {}, None)
+        return value

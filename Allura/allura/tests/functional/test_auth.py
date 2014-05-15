@@ -1042,6 +1042,14 @@ class TestOAuth(TestController):
 
 class TestDisableAccount(TestController):
 
+    def test_not_authenticated(self):
+        r = self.app.get(
+            '/auth/disable/',
+            extra_environ={'username': '*anonymous'})
+        assert_equal(r.status_int, 302)
+        assert_equal(r.location,
+                     'http://localhost/auth/?return_to=%2Fauth%2Fdisable%2F')
+
     def test_lists_user_projects(self):
         r = self.app.get('/auth/disable/')
         user = M.User.by_username('test-admin')
@@ -1053,3 +1061,19 @@ class TestDisableAccount(TestController):
         r = self.app.get('/auth/disable/')
         form = r.html.find('form', {'action': 'do_disable'})
         assert form is not None
+
+    def test_bad_password(self):
+        r = self.app.post('/auth/disable/do_disable', {'password': 'bad'})
+        assert_in('Invalid password', r)
+        user = M.User.by_username('test-admin')
+        assert_equal(user.disabled, False)
+
+    def test_disable(self):
+        r = self.app.post('/auth/disable/do_disable', {'password': 'foo'})
+        assert_equal(r.status_int, 302)
+        assert_equal(r.location, 'http://localhost/')
+        flash = json.loads(self.webflash(r))
+        assert_equal(flash['status'], 'ok')
+        assert_equal(flash['message'], 'Your account was successfully disabled!')
+        user = M.User.by_username('test-admin')
+        assert_equal(user.disabled, True)
