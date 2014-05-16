@@ -80,7 +80,6 @@ class MassEdit(ew_core.SimpleForm):
         lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
     def resources(self):
-        yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')
         for r in super(MassEdit, self).resources():
             yield r
