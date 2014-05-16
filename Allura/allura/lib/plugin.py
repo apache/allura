@@ -332,19 +332,19 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return result
 
     def upload_sshkey(self, username, pubkey):
-            if not asbool(config.get('auth.ldap.use_schroot', True)):
-                raise NotImplemented, 'SSH keys are not supported'
+        if not asbool(config.get('auth.ldap.use_schroot', True)):
+            raise NotImplemented, 'SSH keys are not supported'
 
-            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
-                config['auth.ldap.schroot_name'], username)).split() + [pubkey]
-            p = subprocess.Popen(
-                argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            rc = p.wait()
-            if rc != 0:
-                errmsg = p.stdout.read()
-                log.exception('Error uploading public SSH key for %s: %s',
-                              username, errmsg)
-                assert False, errmsg
+        argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
+            config['auth.ldap.schroot_name'], username)).split() + [pubkey]
+        p = subprocess.Popen(
+            argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        rc = p.wait()
+        if rc != 0:
+            errmsg = p.stdout.read()
+            log.exception('Error uploading public SSH key for %s: %s',
+                          username, errmsg)
+            assert False, errmsg
 
     def _get_salt(self, length):
         def random_char():
