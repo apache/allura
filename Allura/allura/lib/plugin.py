@@ -367,10 +367,16 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return M.User.query.get(username=username, disabled=False)
 
     def set_password(self, user, old_password, new_password):
+        dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
+        if old_password:
+            ldap_ident = dn
+            ldap_pass = old_password.encode('utf-8')
+        else:
+            ldap_ident = config['auth.ldap.admin_dn']
+            ldap_pass = config['auth.ldap.admin_password']
         try:
-            dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, old_password.encode('utf-8'))
+            con.bind_s(ldap_ident, ldap_pass)
             new_password = self._encode_password(new_password)
             con.modify_s(
                 dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
