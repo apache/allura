@@ -403,7 +403,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, self.request.params['password'])
             con.unbind_s()
-        except ldap.INVALID_CREDENTIALS:
+        except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM):
             raise exc.HTTPUnauthorized()
         return user
 
