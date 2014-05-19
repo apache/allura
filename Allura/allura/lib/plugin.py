@@ -294,7 +294,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def register_user(self, user_doc):
         from allura import model as M
         result = M.User(**user_doc)
-        dn_u = 'uid=%s,%s' % (user_doc['username'], config['auth.ldap.suffix'])
+        dn_u = 'uid=%s,%s' % (
+            ldap.dn.escape_dn_chars(user_doc['username']),
+            config['auth.ldap.suffix'])
         uid = str(M.AuthGlobals.get_next_uid())
         try:
             con = ldap.initialize(config['auth.ldap.server'])
@@ -369,7 +371,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return M.User.query.get(username=username, disabled=False)
 
     def set_password(self, user, old_password, new_password):
-        dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
+        dn = 'uid=%s,%s' % (
+                ldap.dn.escape_dn_chars(user.username),
+                config['auth.ldap.suffix'])
         if old_password:
             ldap_ident = dn
             ldap_pass = old_password.encode('utf-8')
@@ -393,7 +397,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if user is None:
             raise exc.HTTPUnauthorized()
         try:
-            dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
+            dn = 'uid=%s,%s' % (
+                    ldap.dn.escape_dn_chars(user.username),
+                    config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, self.request.params['password'])
             con.unbind_s()
