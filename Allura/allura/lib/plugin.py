@@ -289,6 +289,8 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
 class LdapAuthenticationProvider(AuthenticationProvider):
 
+    forgotten_password_process = True
+
     def register_user(self, user_doc):
         from allura import model as M
         result = M.User(**user_doc)
