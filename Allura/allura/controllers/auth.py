@@ -25,6 +25,7 @@ from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc as wexc
+from paste.deploy.converters import asbool
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -78,7 +79,8 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
-        self.disable = DisableAccountController()
+        if asbool(config.get('auth.allow_user_to_disable_account', False)):
+            self.disable = DisableAccountController()
 
     def __getattr__(self, name):
         urls = plugin.UserPreferencesProvider.get().additional_urls()

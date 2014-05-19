@@ -143,7 +143,9 @@
     {{ lib.csrf_token() }}
     </form>
 </div>
-<div class="grid-20">
-  <p><a href="/auth/disable">Disable account</a></p>
-</div>
+{% if h.asbool(tg.config.get('auth.allow_user_to_disable_account', False)) %}
+  <div class="grid-20">
+    <p><a href="/auth/disable">Disable account</a></p>
+  </div>
+{% endif %}
 {% endblock %}
