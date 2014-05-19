@@ -125,11 +125,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
                                " the zarkov.host setting in your ini file."
 
     app = tg.TGApp()
-    if asbool(config.get('auth.method', 'local') == 'sfx'):
-        import sfx.middleware
-        d = h.config_with_prefix(config, 'auth.')
-        d.update(h.config_with_prefix(config, 'sfx.'))
-        app = sfx.middleware.SfxMiddleware(app, d)
+    for mw_ep in h.iter_entry_points('allura.middleware'):
+        Middleware = mw_ep.load()
+        app = Middleware(app, config)
     # Required for pylons
     app = RoutesMiddleware(app, config['routes.map'])
     # Required for sessions
