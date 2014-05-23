@@ -357,9 +357,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def _encode_password(self, password, salt=None):
         cfg_prefix = 'auth.ldap.password.'
-        salt_len = asint(config[cfg_prefix + 'salt_len'])
-        algorithm = asint(config[cfg_prefix + 'algorithm'])
-        rounds = asint(config[cfg_prefix + 'rounds'])
+        salt_len = asint(config.get(cfg_prefix + 'salt_len', 16))
+        algorithm = config.get(cfg_prefix + 'algorithm', 6)
+        rounds = asint(config.get(cfg_prefix + 'rounds', 6000))
         salt = self._get_salt(salt_len) if salt is None else salt
         encrypted = crypt.crypt(
             password.encode('utf-8'),
