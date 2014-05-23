@@ -120,11 +120,13 @@ class AuthController(BaseController):
         user_record = M.User.query.find(
             {'tool_data.AuthPasswordReset.hash': hash}).first()
         if not user_record:
+            log.info('Reset hash not found: {}'.format(hash))
             flash('Unable to process reset, please try again')
             redirect(login_url)
         hash_expiry = user_record.get_tool_data(
             'AuthPasswordReset', 'hash_expiry')
         if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
+            log.info('Reset hash expired: {} {}'.format(hash, hash_expiry))
             flash('Unable to process reset, please try again')
             redirect(login_url)
         return user_record

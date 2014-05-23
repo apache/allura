@@ -391,10 +391,13 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             raise exc.HTTPUnauthorized()
 
     def _login(self):
+        if ldap is None:
+            raise Exception('The python-ldap package needs to be installed.  Run `pip install python-ldap` in your allura environment.')
         from allura import model as M
         user = M.User.query.get(
             username=self.request.params['username'], disabled=False)
         if user is None:
+            log.debug('LdapAuth: no active user {} found in local mongo, not checking LDAP'.format(self.request.params['username']))
             raise exc.HTTPUnauthorized()
         try:
             dn = 'uid=%s,%s' % (
@@ -404,6 +407,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con.bind_s(dn, self.request.params['password'])
             con.unbind_s()
         except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM):
+            log.debug('LdapAuth: could not authenticate {}'.format(user.username), exc_info=True)
             raise exc.HTTPUnauthorized()
         return user
 
