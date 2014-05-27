@@ -438,7 +438,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return LocalAuthenticationProvider(None).user_project_shortname(user)
 
     def user_by_project_shortname(self, shortname):
-        return LocalAuthenticationProvider(None).user_by_project_shortname(user)
+        return LocalAuthenticationProvider(None).user_by_project_shortname(shortname)
 
     def user_registration_date(self, user):
         # could read this from an LDAP field?
