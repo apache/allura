@@ -417,17 +417,22 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if user is None:
             log.debug('LdapAuth: no active user {} found in local mongo, not checking LDAP'.format(self.request.params['username']))
             raise exc.HTTPUnauthorized()
-        try:
-            dn = 'uid=%s,%s' % (
-                    ldap.dn.escape_dn_chars(user.username),
-                    config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, self.request.params['password'])
-            con.unbind_s()
-        except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM):
-            log.debug('LdapAuth: could not authenticate {}'.format(user.username), exc_info=True)
+        if not self.validate_password(user, self.request.params['password']):
             raise exc.HTTPUnauthorized()
         return user
+
+    def validate_password(self, user, password):
+        try:
+            dn = 'uid=%s,%s' % (
+                ldap.dn.escape_dn_chars(user.username),
+                config['auth.ldap.suffix'])
+            con = ldap.initialize(config['auth.ldap.server'])
+            con.bind_s(dn, password)
+            con.unbind_s()
+            return True
+        except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM):
+            log.debug('LdapAuth: could not authenticate {}'.format(user.username), exc_info=True)
+        return False
 
     def user_project_shortname(self, user):
         return 'u/' + user.username.replace('_', '-')
