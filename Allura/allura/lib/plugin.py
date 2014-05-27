@@ -435,19 +435,20 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return False
 
     def user_project_shortname(self, user):
-        return 'u/' + user.username.replace('_', '-')
+        return LocalAuthenticationProvider(None).user_project_shortname(user)
 
     def user_by_project_shortname(self, shortname):
-        from allura import model as M
-        return M.User.query.get(username=shortname)
+        return LocalAuthenticationProvider(None).user_by_project_shortname(user)
 
     def user_registration_date(self, user):
-        if user._id:
-            return user._id.generation_time
-        return datetime.utcnow()
+        # could read this from an LDAP field?
+        return LocalAuthenticationProvider(None).user_registration_date(user)
 
     def update_notifications(self, user):
-        return ''
+        return LocalAuthenticationProvider(None).update_notifications(user)
+
+    def disable_user(self, user):
+        return LocalAuthenticationProvider(None).disable_user(user)
 
 
 class ProjectRegistrationProvider(object):
