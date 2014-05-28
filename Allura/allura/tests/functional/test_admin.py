@@ -46,19 +46,23 @@ from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger(__name__)
 
+
 @contextmanager
 def audits(*messages):
     M.AuditLog.query.remove()
     yield
-    entries = M.AuditLog.query.find().sort('_id').all()
-    if not messages:
-        for e in entries:
-            print e.message
-        import pdb
-        pdb.set_trace()
     for message in messages:
         assert M.AuditLog.query.find(dict(
             message=re.compile(message))).count(), 'Could not find "%s"' % message
+
+
+@contextmanager
+def out_audits(*messages):
+    M.AuditLog.query.remove()
+    yield
+    for message in messages:
+        assert not M.AuditLog.query.find(dict(
+            message=re.compile(message))).count(), 'Found unexpected: "%s"' % message
 
 
 class TestProjectAdmin(TestController):
@@ -173,6 +177,22 @@ class TestProjectAdmin(TestController):
         # Check the audit log
         r = self.app.get('/admin/audit/')
         assert "uninstall tool test-tool" in r.body, r.body
+
+    def test_admin_export_control(self):
+        self.app.get('/admin/')
+        with audits('change project export controlled status to True'):
+            self.app.post('/admin/update', params=dict(
+                shortname='test',
+                export_controlled='True'))
+        with out_audits('change project export controlled status to True'):
+            self.app.post('/admin/update', params=dict(
+                shortname='test',
+                summary='TL;DR',
+                export_controlled='True'))
+        with audits('change project export controlled status to False'):
+            self.app.post('/admin/update', params=dict(
+                shortname='test',
+                export_controlled='False'))
 
     @td.with_wiki
     def test_block_user_empty_data(self):
