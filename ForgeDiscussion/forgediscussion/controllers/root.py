@@ -349,9 +349,8 @@ class RootRestController(BaseController):
         require_access(c.project, 'admin')
         if username_mapping is None:
             username_mapping = '{}'
-        if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
-            log.error('Import capability is not enabled for %s',
-                      c.project.shortname)
+        if not c.api_token.can_import_forum():
+            log.error('Import capability is not enabled for %s', c.project.shortname)
             raise exc.HTTPForbidden(detail='Import is not allowed')
         try:
             doc = json.loads(doc)

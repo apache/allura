@@ -21,6 +21,8 @@ import oauth2 as oauth
 from pylons import tmpl_context as c, app_globals as g
 
 import pymongo
+from paste.deploy.converters import aslist
+from tg import config
 from ming import schema as S
 from ming.orm import session
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
@@ -134,3 +136,9 @@ class OAuthAccessToken(OAuthToken):
         if user is None:
             user = c.user
         return cls.query.find(dict(user_id=user._id, type='access')).all()
+
+    def can_import_forum(self):
+        tokens = aslist(config.get('oauth.can_import_forum', ''), ',')
+        if self.api_key in tokens:
+            return True
+        return False
