@@ -124,13 +124,30 @@ class GoogleCodeProjectNameValidator(fev.FancyValidator):
     }
 
     def _to_python(self, value, state=None):
-        url = urlparse(value.strip())
-        if url.netloc.endswith('.googlecode.com'):
-            project_name = url.netloc.split('.')[0]
+        project_name_re = re.compile(r'^[a-z0-9][a-z0-9-]{,61}$')
+        if project_name_re.match(value):
+            # just a name
+            project_name = value
         else:
-            project_name = os.path.basename(url.path.strip('/'))
-        if not re.match(r'^[a-z0-9][a-z0-9-]{,61}$', project_name):
-            raise fev.Invalid(self.message('invalid', state), value, state)
+            # try as a URL
+            project_name = None
+            project_name_simple = None
+            url = urlparse(value.strip())
+            if url.netloc.endswith('.googlecode.com'):
+                project_name = url.netloc.split('.')[0]
+            elif url.netloc == 'code.google.com':
+                path_parts = url.path.lstrip('/').split('/')
+                if len(path_parts) >= 2 and path_parts[0] == 'p':
+                    project_name = path_parts[1]
+                elif len(path_parts) >= 4 and path_parts[0] == 'a' and path_parts[2] == 'p':
+                    project_name_simple = path_parts[3]
+                    project_name = '/'.join(path_parts[0:4])
+
+            if not project_name_simple:
+                project_name_simple = project_name
+
+            if not project_name or not project_name_re.match(project_name_simple):
+                raise fev.Invalid(self.message('invalid', state), value, state)
 
         if not GoogleCodeProjectExtractor(project_name).check_readable():
             raise fev.Invalid(self.message('unavailable', state), value, state)
