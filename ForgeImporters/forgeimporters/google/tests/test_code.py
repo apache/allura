@@ -48,6 +48,18 @@ class TestGetRepoUrl(TestCase):
         r = get_repo_url('projname', 'hg')
         self.assertEqual(r, 'https://code.google.com/p/projname/')
 
+    def test_svn_hosted(self):
+        r = get_repo_url('a/eclipselabs.org/p/projname', 'svn')
+        self.assertEqual(r, 'http://svn.codespot.com/a/eclipselabs.org/projname/')
+
+    def test_git_hosted(self):
+        r = get_repo_url('a/eclipselabs.org/p/projname', 'git')
+        self.assertEqual(r, 'https://code.google.com/a/eclipselabs.org/p/projname/')
+
+    def test_hg_hosted(self):
+        r = get_repo_url('a/eclipselabs.org/p/projname', 'hg')
+        self.assertEqual(r, 'https://code.google.com/a/eclipselabs.org/p/projname/')
+
 
 class TestGoogleRepoImporter(TestCase):
 

@@ -42,17 +42,22 @@ from forgeimporters.base import (
 )
 from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.google import GoogleCodeProjectNameValidator
-
+from forgeimporters.google import split_project_name
 
 REPO_URLS = {
-    'svn': 'http://{0}.googlecode.com/svn/',
-    'git': 'https://code.google.com/p/{0}/',
-    'hg': 'https://code.google.com/p/{0}/',
+    'svn': 'http://{project_name}.googlecode.com/svn/',
+    'svn-hosted': 'http://svn.codespot.com{hosted_domain_prefix}/{project_name}/',
+    'git': 'https://code.google.com{hosted_domain_prefix}/p/{project_name}/',
+    'hg': 'https://code.google.com{hosted_domain_prefix}/p/{project_name}/',
 }
 
 
 def get_repo_url(project_name, type_):
-    return REPO_URLS[type_].format(project_name)
+    hosted_domain_prefix, project_name = split_project_name(project_name)
+    if hosted_domain_prefix and type_ == 'svn':
+        type_ = 'svn-hosted'
+    return REPO_URLS[type_].format(project_name=project_name,
+                                   hosted_domain_prefix=hosted_domain_prefix)
 
 
 class GoogleRepoImportForm(fe.schema.Schema):
