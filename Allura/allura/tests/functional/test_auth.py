@@ -665,6 +665,7 @@ class TestPasswordReset(TestController):
         assert hash_expiry is not None
 
         r = self.app.get('/auth/forgotten_password/%s' % hash)
+        assert_in('Enter a new password for: test-admin', r)
         assert_in('New Password:', r)
         assert_in('New Password (again):', r)
         form = r.forms[0]
@@ -676,6 +677,8 @@ class TestPasswordReset(TestController):
         assert_true(provider._validate_password(user, new_password))
 
         text = '''
+Your username is test-admin
+
 To reset your password on %s, please visit the following URL:
 
 %s/auth/forgotten_password/%s
@@ -686,7 +689,7 @@ To reset your password on %s, please visit the following URL:
             destinations=[email._id],
             fromaddr=config['forgemail.return_path'],
             reply_to=config['forgemail.return_path'],
-            subject='Password recovery',
+            subject='Allura Password recovery',
             message_id=gen_message_id(),
             text=text)
         user = M.User.query.get(username='test-admin')
