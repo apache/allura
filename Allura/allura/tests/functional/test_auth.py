@@ -201,7 +201,7 @@ class TestAuth(TestController):
         assert 'Create an Account' in r
         r = self.app.post('/auth/save_new',
                           params=dict(username='aaa', pw='123'))
-        assert 'Enter a value 8 characters long or more' in r
+        assert 'Enter a value 6 characters long or more' in r
         r = self.app.post(
             '/auth/save_new',
             params=dict(
