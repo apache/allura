@@ -141,12 +141,13 @@ class AuthController(BaseController):
         provider = plugin.AuthenticationProvider.get(request)
         if not provider.forgotten_password_process:
             raise wexc.HTTPNotFound()
+        user_record = None
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
-            self._validate_hash(hash)
+            user_record = self._validate_hash(hash)
             c.recover_password_change_form = F.recover_password_change_form
-        return dict(hash=hash)
+        return dict(hash=hash, user_record=user_record)
 
     @expose()
     @require_post()
@@ -178,18 +179,21 @@ class AuthController(BaseController):
                                   datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
         log.info('Sending password recovery link to %s', email)
+        subject = '%s Password recovery' % config['site_name']
         text = '''
+Your username is %s
+
 To reset your password on %s, please visit the following URL:
 
 %s/auth/forgotten_password/%s
 
-''' % (config['site_name'], config['base_url'], hash)
+''' % (user_record.username, config['site_name'], config['base_url'], hash)
 
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[email],
             fromaddr=config['forgemail.return_path'],
             reply_to=config['forgemail.return_path'],
-            subject='Password recovery',
+            subject=subject,
             message_id=h.gen_message_id(),
             text=text)
 
