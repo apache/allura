@@ -85,6 +85,11 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(extractor.get_page_url('project_info'),
                          'http://code.google.com/p/my-project/')
 
+    def test_get_page_url_hosted(self):
+        extractor = google.GoogleCodeProjectExtractor('a/eclipselabs.org/p/restclient-tool')
+        self.assertEqual(extractor.get_page_url('project_info'),
+                         'http://code.google.com/a/eclipselabs.org/p/restclient-tool/')
+
     def test_get_short_description(self):
         extractor = google.GoogleCodeProjectExtractor(
             'my-project', 'project_info')

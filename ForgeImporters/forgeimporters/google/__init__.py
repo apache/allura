@@ -154,15 +154,31 @@ class GoogleCodeProjectNameValidator(fev.FancyValidator):
         return project_name
 
 
+def split_project_name(project_name):
+    '''
+    For hosted projects, the project_name includes the hosted domain.  Split, like:
+
+    :param str project_name: "a/eclipselabs.org/p/restclient-tool"
+    :return: ``("/a/eclipselabs.org", "restclient-tool")``
+    '''
+    if project_name.startswith('a/'):
+        hosted_domain_prefix = '/a/' + project_name.split('/')[1]
+        project_name = project_name.split('/')[3]
+    else:
+        hosted_domain_prefix = ''
+        project_name = project_name
+    return hosted_domain_prefix, project_name
+
+
 class GoogleCodeProjectExtractor(ProjectExtractor):
     BASE_URL = 'http://code.google.com'
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 
     PAGE_MAP = {
-        'project_info': BASE_URL + '/p/{project_name}/',
-        'source_browse': BASE_URL + '/p/{project_name}/source/browse/',
-        'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&sort=ID&start={start}',
-        'issue': BASE_URL + '/p/{project_name}/issues/detail?id={issue_id}',
+        'project_info': BASE_URL + '{hosted_domain_prefix}/p/{project_name}/',
+        'source_browse': BASE_URL + '{hosted_domain_prefix}/p/{project_name}/source/browse/',
+        'issues_csv': BASE_URL + '{hosted_domain_prefix}/p/{project_name}/issues/csv?can=1&colspec=ID&sort=ID&start={start}',
+        'issue': BASE_URL + '{hosted_domain_prefix}/p/{project_name}/issues/detail?id={issue_id}',
     }
 
     LICENSE_MAP = defaultdict(lambda: 'Other/Proprietary License', {
@@ -179,6 +195,14 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     })
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
+
+    def get_page_url(self, page_name, **kw):
+        # override, to handle hosted domains
+        hosted_domain_prefix, project_name = split_project_name(self.project_name)
+        return self.PAGE_MAP[page_name].format(
+            project_name=urllib.quote(project_name),
+            hosted_domain_prefix=hosted_domain_prefix,
+            **kw)
 
     def check_readable(self):
         resp = requests.head(self.get_page_url('project_info'))
