@@ -61,8 +61,12 @@ def _as_markdown(tag, project_name):
             qs = parse_qs(href.query)
             gc_link = not href.netloc or href.netloc == 'code.google.com'
             path_parts = href.path.split('/')
-            target_project = path_parts[
-                2] if gc_link and len(path_parts) >= 3 else ''
+            target_project = None
+            if gc_link:
+                if len(path_parts) >= 5 and path_parts[1] == 'a':
+                    target_project = '/'.join(path_parts[1:5])
+                elif len(path_parts) >= 3:
+                    target_project = path_parts[2]
             internal_link = target_project == project_name
             if gc_link and internal_link and 'id' in qs:
                 # rewrite issue 123 project-internal issue links
@@ -76,6 +80,8 @@ def _as_markdown(tag, project_name):
                 fragment = '[%s](%s)' % (
                     h.plain2markdown(
                         fragment.text, preserve_multiple_spaces=True, has_html_entities=True),
+                    # possibly need to adjust this URL for /a/ hosted domain URLs,
+                    # but it seems fragment['href'] always starts with / so it replaces the given path
                     urljoin('https://code.google.com/p/%s/issues/' %
                             project_name, fragment['href']),
                 )
