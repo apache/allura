@@ -24,7 +24,7 @@ import formencode
 import ew as ew_core
 import ew.jinja2_ew as ew
 from pytz import common_timezones, country_timezones, country_names
-from paste.deploy.converters import aslist
+from paste.deploy.converters import aslist, asint
 import tg
 
 from allura.lib import validators as V
@@ -134,13 +134,21 @@ class ForgeForm(ew.SimpleForm):
 
 class PasswordChangeBase(ForgeForm):
 
-    class fields(ew_core.NameList):
-        pw = ew.PasswordField(
-            label='New Password',
-            validator=fev.UnicodeString(not_empty=True, min=6))
-        pw2 = ew.PasswordField(
-            label='New Password (again)',
-            validator=fev.UnicodeString(not_empty=True))
+    @property
+    def fields(self):
+        return [
+            ew.PasswordField(
+                name='pw',
+                label='New Password',
+                validator=fev.UnicodeString(
+                    not_empty=True,
+                    min=asint(tg.config['auth.min_password_len']),
+                    max=asint(tg.config['auth.max_password_len']))),
+            ew.PasswordField(
+                name='pw2',
+                label='New Password (again)',
+                validator=fev.UnicodeString(not_empty=True)),
+        ]
 
     @ew_core.core.validator
     def to_python(self, value, state):
@@ -152,16 +160,25 @@ class PasswordChangeBase(ForgeForm):
 
 class PasswordChangeForm(PasswordChangeBase):
 
-    class fields(ew_core.NameList):
-        oldpw = ew.PasswordField(
-            label='Old Password',
-            validator=fev.UnicodeString(not_empty=True))
-        pw = ew.PasswordField(
-            label='New Password',
-            validator=fev.UnicodeString(not_empty=True, min=6))
-        pw2 = ew.PasswordField(
-            label='New Password (again)',
-            validator=fev.UnicodeString(not_empty=True))
+    @property
+    def fields(self):
+        return [
+            ew.PasswordField(
+                name='oldpw',
+                label='Old Password',
+                validator=fev.UnicodeString(not_empty=True)),
+            ew.PasswordField(
+                name='pw',
+                label='New Password',
+                validator=fev.UnicodeString(
+                    not_empty=True,
+                    min=asint(tg.config['auth.min_password_len']),
+                    max=asint(tg.config['auth.max_password_len']))),
+            ew.PasswordField(
+                name='pw2',
+                label='New Password (again)',
+                validator=fev.UnicodeString(not_empty=True)),
+        ]
 
 
 class PersonalDataForm(ForgeForm):
@@ -684,11 +701,10 @@ class UploadKeyForm(ForgeForm):
 
 class RegistrationForm(ForgeForm):
 
-    class fields(ew_core.NameList):
-        display_name = ew.TextField(
-            label='Displayed Name',
-            validator=fev.UnicodeString(not_empty=True))
+    @property
+    def fields(self):
         username = ew.TextField(
+            name='username',
             label='Desired Username',
             validator=fev.Regex(
                 h.re_project_name))
@@ -696,12 +712,24 @@ class RegistrationForm(ForgeForm):
             'Usernames must include only letters, numbers, and dashes.'
             ' They must also start with a letter and be at least 3 characters'
             ' long.')
-        pw = ew.PasswordField(
-            label='New Password',
-            validator=fev.UnicodeString(not_empty=True, min=8))
-        pw2 = ew.PasswordField(
-            label='New Password (again)',
-            validator=fev.UnicodeString(not_empty=True))
+        return [
+            ew.TextField(
+                name='display_name',
+                label='Displayed Name',
+                validator=fev.UnicodeString(not_empty=True)),
+            username,
+            ew.PasswordField(
+                name='pw',
+                label='New Password',
+                validator=fev.UnicodeString(
+                    not_empty=True,
+                    min=asint(tg.config['auth.min_password_len']),
+                    max=asint(tg.config['auth.max_password_len']))),
+             ew.PasswordField(
+                name='pw2',
+                label='New Password (again)',
+                validator=fev.UnicodeString(not_empty=True)),
+        ]
 
     @ew_core.core.validator
     def to_python(self, value, state):
