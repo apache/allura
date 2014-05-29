@@ -18,9 +18,11 @@
 from nose.tools import assert_equal
 from mock import patch
 from formencode.validators import Invalid
+from BeautifulSoup import BeautifulSoup
 
 from allura.tests import decorators as td
 from forgeimporters.google import GoogleCodeProjectNameValidator, GoogleCodeProjectExtractor
+from forgeimporters.google import _as_markdown
 
 
 class TestGoogleCodeProjectNameValidator(object):
@@ -81,3 +83,37 @@ class TestGoogleCodeProjectNameValidator(object):
         )
         with td.raises(Invalid):
             GoogleCodeProjectNameValidator()._to_python('http://code.google.com/a/eclipselabs.org/bogus')
+
+
+class Test_as_markdown(object):
+
+    # this is covered by functional tests (useing test-issue.html)
+    # but adding some unit tests for easier verification of hosted domain link rewriting
+
+    def test_link_within_proj(self):
+        html = BeautifulSoup('''<pre>Foo: <a href="/p/myproj/issues/detail?id=1">issue 1</a></pre>''')
+        assert_equal(
+            _as_markdown(html.first(), 'myproj'),
+            'Foo: [issue 1](#1)'
+        )
+
+    def test_link_other_proj(self):
+        html = BeautifulSoup('''<pre>Foo: <a href="/p/other-project/issues/detail?id=1">issue other-project:1</a></pre>''')
+        assert_equal(
+            _as_markdown(html.first(), 'myproj'),
+            'Foo: [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)'
+        )
+
+    def test_link_hosted_domain_within_proj(self):
+        html = BeautifulSoup('''<pre>Foo: <a href="/a/eclipselabs.org/p/myproj/issues/detail?id=1">issue 1</a></pre>''')
+        assert_equal(
+            _as_markdown(html.first(), 'a/eclipselabs.org/p/myproj'),
+            'Foo: [issue 1](#1)'
+        )
+
+    def test_link_hosted_domain_other_proj(self):
+        html = BeautifulSoup('''<pre>Foo: <a href="/a/eclipselabs.org/p/other-proj/issues/detail?id=1">issue 1</a></pre>''')
+        assert_equal(
+            _as_markdown(html.first(), 'a/eclipselabs.org/p/myproj'),
+            'Foo: [issue 1](https://code.google.com/a/eclipselabs.org/p/other-proj/issues/detail?id=1)'
+        )
