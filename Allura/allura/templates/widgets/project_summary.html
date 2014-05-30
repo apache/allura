@@ -21,7 +21,9 @@
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
   {% if accolades %}
     <div class="box notch sponsor">
-      <div class="feature">{{accolades[0].award.short}}</div>
+      <div class="feature">
+        <a href="{{accolades[0].award_url}}" title="{{accolades[0].comment}}">{{accolades[0].award.short}}</a>
+      </div>
       {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
     </div>
   {% elif icon_url %}
@@ -37,7 +39,9 @@
   <div class="border card">
     {% if accolades %}
       <div class="box notch sponsor">
-        <div class="feature">{{accolades[0].award.short}}</div>
+        <div class="feature">
+          <a href="{{accolades[0].award_url}}" title="{{accolades[0].comment}}">{{accolades[0].award.short}}</a>
+        </div>
         {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
       </div>
     {% elif icon_url %}
