@@ -684,6 +684,8 @@ class AwardGrant(Artifact):
     granted_to_project_id = ForeignIdProperty('Project', if_missing=None)
     granted_to_project = RelationProperty(
         'Project', via='granted_to_project_id')
+    award_url = FieldProperty(str, if_missing='')
+    comment = FieldProperty(str, if_missing='')
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     def index(self):

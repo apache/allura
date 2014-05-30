@@ -62,6 +62,7 @@ class W:
     page_size = ffw.PageSize()
     project_select = ffw.NeighborhoodProjectSelect
     neighborhood_overview_form = ff.NeighborhoodOverviewForm()
+    award_grant_form = ff.AwardGrantForm
 
 
 class NeighborhoodController(object):
@@ -587,8 +588,9 @@ class NeighborhoodAdminController(object):
         grants = M.AwardGrant.query.find(
             dict(granted_by_neighborhood_id=self.neighborhood._id))
         grants_count = grants.count()
-        c.project_select = W.project_select(
-            self.neighborhood.url() + '_admin/project_search')
+        c.award_grant_form = W.award_grant_form(
+            awards=awards,
+            project_select_url=self.neighborhood.url() + '_admin/project_search')
         return dict(
             awards=awards,
             awards_count=awards_count,
@@ -869,7 +871,7 @@ class NeighborhoodAwardsController(object):
 
     @expose()
     @require_post()
-    def grant(self, grant=None, recipient=None):
+    def grant(self, grant=None, recipient=None, url=None, comment=None):
         require_access(self.neighborhood, 'admin')
         grant_q = M.Award.query.find(dict(short=grant,
                                           created_by_neighborhood_id=self.neighborhood._id)).first()
@@ -882,6 +884,8 @@ class NeighborhoodAwardsController(object):
             award.award_id = grant_q._id
             award.granted_to_project_id = recipient_q._id
             award.granted_by_neighborhood_id = self.neighborhood._id
+            award.award_url = url
+            award.comment = comment
             with h.push_context(recipient_q._id):
                 g.post_event('project_updated')
         redirect(request.referer)

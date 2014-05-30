@@ -101,35 +101,7 @@
           {% if awards_count > 0 %}
           <p>
             <h3>Grant an Award</h3>
-            <form method="POST" action="awards/grant">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Award</th>
-                    <th>Recipient</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <select name="grant">
-                        {% for award in awards %}
-                          <option value="{{award.short}}">{{award.short}}</option>
-                        {% endfor %}
-                      </select>
-                    </td>
-                    <td>
-                      {{c.project_select.display(name='recipient')}}
-                    </td>
-                    <td>
-                      <input type="submit" value="Grant"/>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {{lib.csrf_token()}}
-            </form>
+            {{ c.award_grant_form.display(action="awards/grant") }}
           </p>
           {% endif %}
 
@@ -142,6 +114,8 @@
                   <tr>
                     <th>Award</th>
                     <th>Recipient</th>
+                    <th>URL</th>
+                    <th>Comment</th>
                     <th>Revoke?</th>
                   </tr>
                 </thead>
@@ -150,6 +124,8 @@
                     <tr>
                       <td><a href="{{grant.award.longurl()}}">{{grant.award.short}}</a></td>
                       <td><a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a></td>
+                      <td><a href="{{grant.award_url}}">{{grant.award_url}}</a></td>
+                      <td>{{grant.comment}}</td>
                       <td>
                         <form action="{{grant.longurl()}}/revoke" method="post">
                           <input type="submit" value="Revoke"/>

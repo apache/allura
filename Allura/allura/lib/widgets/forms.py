@@ -1008,3 +1008,36 @@ class CsrfForm(ew.SimpleForm):
         if field.name == '_session_id':
             ctx['value'] = tg.request.cookies.get('_session_id')
         return ctx
+
+
+class AwardGrantForm(ForgeForm):
+
+    def __init__(self, *args, **kw):
+        self._awards = kw.pop('awards', [])
+        self._project_select_url = kw.pop('project_select_url', '')
+        super(AwardGrantForm, self).__init__(*args, **kw)
+
+
+    def award_options(self):
+        return [ew.Option(py_value=a.short, label=a.short) for a in self._awards]
+
+    @property
+    def fields(self):
+        return [
+            ew.SingleSelectField(
+                name='grant',
+                label='Award',
+                options=self.award_options()),
+            ffw.NeighborhoodProjectSelect(
+                self._project_select_url,
+                name='recipient'),
+            ew.TextField(
+                name='url',
+                label='Award URL',
+                validator=fev.URL()),
+            ew.TextArea(
+                name='comment',
+                label='Comment',
+                validator=fev.UnicodeString(not_empty=False),
+                attrs={'rows': 5, 'cols': 30}),
+        ]

@@ -22,7 +22,7 @@ import urllib2
 
 import PIL
 from tg import config
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from paste.httpexceptions import HTTPFound
 
@@ -890,8 +890,13 @@ class TestNeighborhood(TestController):
         image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
-                      params=dict(grant='FOO', recipient='adobe-1'),
+                params=dict(grant='FOO', recipient='adobe-1',
+                            url='http://award.org', comment='Winner!'),
                       extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/accolades',
+                         extra_environ=dict(username='root'))
+        assert_in('Winner!', r)
+        assert_in('http://award.org', r)
         self.app.get('/adobe/_admin/awards/%s/adobe-1' %
                      foo_id, extra_environ=dict(username='root'))
         self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
