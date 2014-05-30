@@ -590,16 +590,20 @@ def test_hideawards_macro():
     project = M.Project.query.get(
         neighborhood_id=p_nbhd._id, shortname=u'test')
 
-    M.AwardGrant(award=award, granted_by_neighborhood=p_nbhd,
-                 granted_to_project=project)
+    M.AwardGrant(
+        award=award,
+        award_url='http://award.org',
+        comment='Winner!',
+        granted_by_neighborhood=p_nbhd,
+        granted_to_project=project)
 
     ThreadLocalORMSession.flush_all()
 
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert '<div class="feature">Award short</div>' in r, r
+        assert '<div class="feature">\n<a href="http://award.org" title="Winner!" rel="nofollow">Award short</a>\n</div>' in r, r
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
-        assert '<div class="feature">Award short</div>' not in r, r
+        assert '<div class="feature">\n<a href="http://award.org" title="Winner!" rel="nofollow">Award short</a>\n</div>' not in r, r
 
 
 def get_project_names(r):
