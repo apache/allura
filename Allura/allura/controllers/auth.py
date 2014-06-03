@@ -180,14 +180,11 @@ class AuthController(BaseController):
 
         log.info('Sending password recovery link to %s', email)
         subject = '%s Password recovery' % config['site_name']
-        text = '''
-Your username is %s
-
-To reset your password on %s, please visit the following URL:
-
-%s/auth/forgotten_password/%s
-
-''' % (user_record.username, config['site_name'], config['base_url'], hash)
+        text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
+            user=user_record,
+            config=config,
+            hash=hash,
+        ))
 
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[email],
