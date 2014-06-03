@@ -676,14 +676,11 @@ class TestPasswordReset(TestController):
         provider = plugin.LocalAuthenticationProvider(None)
         assert_true(provider._validate_password(user, new_password))
 
-        text = '''
-Your username is test-admin
+        text = '''Your username is test-admin
 
 To reset your password on %s, please visit the following URL:
 
-%s/auth/forgotten_password/%s
-
-''' % (config['site_name'], config['base_url'], hash)
+%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
 
         sendmail.post.assert_called_once_with(
             destinations=[email._id],
