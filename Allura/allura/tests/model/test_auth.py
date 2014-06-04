@@ -20,6 +20,8 @@
 """
 Model tests for auth
 """
+import calendar
+
 from nose.tools import (
     with_setup,
     assert_equal,
@@ -74,7 +76,9 @@ class TestLocalAuthenticationProvider(object):
         user._id = ObjectId()
         user.last_password_updated = None
         upd = self.provider.get_last_password_updated(user)
-        assert_equal(upd, user._id.generation_time)
+        gen_time = datetime.fromtimestamp(
+            calendar.timegm(user._id.generation_time.utctimetuple()))
+        assert_equal(upd, gen_time)
 
     def test_get_last_password_updated(self):
         user = Mock()

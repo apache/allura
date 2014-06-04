@@ -31,6 +31,7 @@ from random import randint
 from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
+import calendar
 import json
 
 try:
@@ -328,7 +329,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     def get_last_password_updated(self, user):
         d = user.last_password_updated
         if d is None:
-            return self.user_registration_date(user)
+            d = self.user_registration_date(user)
+            # _id.generation_time returns aware datetime (in UTC)
+            # but we're using naive UTC time everywhere
+            d = datetime.fromtimestamp(calendar.timegm(d.utctimetuple()))
         return d
 
 
