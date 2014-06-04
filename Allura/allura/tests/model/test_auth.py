@@ -28,9 +28,10 @@ from nose.tools import (
     assert_not_in,
     assert_in,
     assert_true,
+    assert_raises,
 )
 from pylons import tmpl_context as c, app_globals as g
-from webob import Request
+from webob import Request, exc
 from mock import patch, Mock
 from datetime import datetime, timedelta
 
@@ -62,11 +63,25 @@ class TestLocalAuthenticationProvider(object):
         assert ep('test_pass') != ep('test_pass')
         assert ep('test_pass', '0000') == ep('test_pass', '0000')
 
+    def test_set_password_with_old_password(self):
+        user = Mock()
+        user.__ming__ = Mock()
+        self.provider.validate_password = lambda u, p: False
+        assert_raises(
+            exc.HTTPUnauthorized,
+            self.provider.set_password, user, 'old', 'new')
+        assert_equal(user._encode_password.call_count, 0)
+
+        self.provider.validate_password = lambda u, p: True
+        self.provider.set_password(user, 'old', 'new')
+        user._encode_password.assert_callued_once_with('new')
+
     def test_set_password_sets_last_updated(self):
         user = Mock()
+        user.__ming__ = Mock()
         user.last_password_updated = None
         now1 = datetime.utcnow()
-        self.provider.set_password(user, '', '')
+        self.provider.set_password(user, None, 'new')
         now2 = datetime.utcnow()
         assert_true(user.last_password_updated > now1)
         assert_true(user.last_password_updated < now2)

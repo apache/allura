@@ -652,7 +652,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
-            self, self.password, new_password)
+            self, None, new_password)
 
     @classmethod
     def anonymous(cls):

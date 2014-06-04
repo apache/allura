@@ -300,8 +300,12 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return M.User.query.get(username=rex, disabled=False)
 
     def set_password(self, user, old_password, new_password):
-        user.password = self._encode_password(new_password)
-        user.last_password_updated = datetime.utcnow()
+        if old_password is not None and not self.validate_password(user, old_password):
+            raise exc.HTTPUnauthorized()
+        else:
+            user.password = self._encode_password(new_password)
+            user.last_password_updated = datetime.utcnow()
+            session(user).flush(user)
 
     def _encode_password(self, password, salt=None):
         from allura import model as M
