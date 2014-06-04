@@ -20,12 +20,19 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup, assert_equal, assert_not_in, assert_in
+from nose.tools import (
+    with_setup,
+    assert_equal,
+    assert_not_in,
+    assert_in,
+    assert_true,
+)
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
-from mock import patch
+from mock import patch, Mock
 from datetime import datetime, timedelta
 
+from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -41,13 +48,39 @@ def setUp():
     setup_global_objects()
 
 
-@with_setup(setUp)
-def test_password_encoder():
-    # Verify salt
-    ep = plugin.LocalAuthenticationProvider(
-        Request.blank('/'))._encode_password
-    assert ep('test_pass') != ep('test_pass')
-    assert ep('test_pass', '0000') == ep('test_pass', '0000')
+class TestLocalAuthenticationProvider(object):
+
+    def setUp(self):
+        setUp()
+        self.provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
+
+    def test_password_encoder(self):
+        # Verify salt
+        ep = self.provider._encode_password
+        assert ep('test_pass') != ep('test_pass')
+        assert ep('test_pass', '0000') == ep('test_pass', '0000')
+
+    def test_set_password_sets_last_updated(self):
+        user = Mock()
+        user.last_password_updated = None
+        now1 = datetime.utcnow()
+        self.provider.set_password(user, '', '')
+        now2 = datetime.utcnow()
+        assert_true(user.last_password_updated > now1)
+        assert_true(user.last_password_updated < now2)
+
+    def test_get_last_password_updated_not_set(self):
+        user = Mock()
+        user._id = ObjectId()
+        user.last_password_updated = None
+        upd = self.provider.get_last_password_updated(user)
+        assert_equal(upd, user._id.generation_time)
+
+    def test_get_last_password_updated(self):
+        user = Mock()
+        user.last_password_updated = datetime(2014, 06, 04, 13, 13, 13)
+        upd = self.provider.get_last_password_updated(user)
+        assert_equal(upd, user.last_password_updated)
 
 
 @with_setup(setUp)

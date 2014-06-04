@@ -229,6 +229,26 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'user_registration_date'
 
+    def get_last_password_updated(self, user):
+        '''
+        Returns the date when the user updated password for a last time.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        :rtype: :class:`datetime <datetime.datetime>`
+        '''
+        raise NotImplementedError, 'get_last_password_updated'
+
+    def is_password_expired(self, user):
+        days = asint(config.get('auth.pwdexpire.days', 0))
+        before = asint(config.get('auth.pwdexpire.before', 0))
+        now = datetime.utcnow()
+        last_updated = self.get_last_password_updated(user)
+        if days and now - last_updated > timedelta(days=days):
+            return True
+        if before and last_updated < datetime.fromtimestamp(before):
+            return True
+        return False
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
@@ -280,6 +300,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def set_password(self, user, old_password, new_password):
         user.password = self._encode_password(new_password)
+        user.last_password_updated = datetime.utcnow()
 
     def _encode_password(self, password, salt=None):
         from allura import model as M
@@ -303,6 +324,12 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if user._id:
             return user._id.generation_time
         return datetime.utcnow()
+
+    def get_last_password_updated(self, user):
+        d = user.last_password_updated
+        if d is None:
+            return self.user_registration_date(user)
+        return d
 
 
 def ldap_conn(who=None, cred=None):
