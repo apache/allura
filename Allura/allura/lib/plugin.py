@@ -40,7 +40,7 @@ try:
 except ImportError:
     ldap = modlist = None
 import pkg_resources
-from tg import config
+from tg import config, request, redirect
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from bson.tz_util import FixedOffset
@@ -72,6 +72,12 @@ class AuthenticationProvider(object):
 
     forgotten_password_process = False
 
+    pwd_expired_allowed_urls = [
+        '/auth/pwd_expired',  # form for changing password, must be first here
+        '/auth/pwd_expired_change',
+        '/auth/logout',
+    ]
+
     def __init__(self, request):
         self.request = request
 
@@ -97,6 +103,8 @@ class AuthenticationProvider(object):
         if user.disabled:
             self.logout()
             return M.User.anonymous()
+        if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
+            return redirect(self.pwd_expired_allowed_urls[0])
         return user
 
     def register_user(self, user_doc):
@@ -122,6 +130,8 @@ class AuthenticationProvider(object):
             if user is None:
                 user = self._login()
             self.session['userid'] = user._id
+            if self.is_password_expired(user):
+                self.session['pwd-expired'] = True
             self.session.save()
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
@@ -132,6 +142,7 @@ class AuthenticationProvider(object):
 
     def logout(self):
         self.session['userid'] = None
+        self.session['pwd-expired'] = False
         self.session.save()
 
     def validate_password(self, user, password):
