@@ -37,7 +37,6 @@ Running Allura
    installation
    administration
    scm_host
-   migration
 
 Using Allura
 =====================================================================
