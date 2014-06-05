@@ -91,7 +91,7 @@ class TestLocalAuthenticationProvider(object):
         user._id = ObjectId()
         user.last_password_updated = None
         upd = self.provider.get_last_password_updated(user)
-        gen_time = datetime.fromtimestamp(
+        gen_time = datetime.utcfromtimestamp(
             calendar.timegm(user._id.generation_time.utctimetuple()))
         assert_equal(upd, gen_time)
 

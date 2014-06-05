@@ -257,7 +257,7 @@ class AuthenticationProvider(object):
         last_updated = self.get_last_password_updated(user)
         if days and now - last_updated > timedelta(days=days):
             return True
-        if before and last_updated < datetime.fromtimestamp(before):
+        if before and last_updated < datetime.utcfromtimestamp(before):
             return True
         return False
 
@@ -347,7 +347,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             d = self.user_registration_date(user)
             # _id.generation_time returns aware datetime (in UTC)
             # but we're using naive UTC time everywhere
-            d = datetime.fromtimestamp(calendar.timegm(d.utctimetuple()))
+            d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
         return d
 
 
