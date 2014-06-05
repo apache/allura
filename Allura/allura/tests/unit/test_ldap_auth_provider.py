@@ -17,6 +17,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import calendar
+from datetime import datetime, timedelta
+from bson import ObjectId
 from mock import patch, Mock
 from nose.tools import assert_equal, assert_not_equal, assert_true
 from webob import Request
@@ -46,6 +49,7 @@ class TestLdapAuthenticationProvider(object):
     @patch('allura.lib.plugin.ldap')
     def test_set_password(self, ldap):
         user = Mock(username='test-user')
+        user.__ming__ = Mock()
         self.provider._encode_password = Mock(return_value='new-pass-hash')
         ldap.dn.escape_dn_chars = lambda x: x
 
@@ -100,3 +104,29 @@ class TestLdapAuthenticationProvider(object):
             'admin-password')
         connection.add_s.assert_called_once_with(dn, modlist.addModlist.return_value)
         connection.unbind_s.assert_called_once()
+
+    @patch('allura.lib.plugin.ldap')
+    def test_set_password_sets_last_updated(self, ldap):
+        user = Mock()
+        user.__ming__ = Mock()
+        user.last_password_updated = None
+        now1 = datetime.utcnow()
+        self.provider.set_password(user, None, 'new')
+        now2 = datetime.utcnow()
+        assert_true(user.last_password_updated > now1)
+        assert_true(user.last_password_updated < now2)
+
+    def test_get_last_password_updated_not_set(self):
+        user = Mock()
+        user._id = ObjectId()
+        user.last_password_updated = None
+        upd = self.provider.get_last_password_updated(user)
+        gen_time = datetime.utcfromtimestamp(
+            calendar.timegm(user._id.generation_time.utctimetuple()))
+        assert_equal(upd, gen_time)
+
+    def test_get_last_password_updated(self):
+        user = Mock()
+        user.last_password_updated = datetime(2014, 06, 04, 13, 13, 13)
+        upd = self.provider.get_last_password_updated(user)
+        assert_equal(upd, user.last_password_updated)

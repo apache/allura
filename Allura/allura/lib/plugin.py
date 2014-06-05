@@ -469,6 +469,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con.modify_s(
                 dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
             con.unbind_s()
+            user.last_password_updated = datetime.utcnow()
+            session(user).flush(user)
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
 
@@ -521,6 +523,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def disable_user(self, user):
         return LocalAuthenticationProvider(None).disable_user(user)
+
+    def get_last_password_updated(self, user):
+        return LocalAuthenticationProvider(None).get_last_password_updated(user)
 
 
 class ProjectRegistrationProvider(object):
