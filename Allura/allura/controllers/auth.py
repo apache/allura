@@ -358,7 +358,7 @@ class AuthController(BaseController):
         flash('Password changed')
         del session['pwd-expired']
         session.save()
-        redirect('.')
+        redirect('/')
 
 
 class PreferencesController(BaseController):

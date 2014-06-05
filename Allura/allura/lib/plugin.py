@@ -104,7 +104,7 @@ class AuthenticationProvider(object):
             self.logout()
             return M.User.anonymous()
         if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
-            return redirect(self.pwd_expired_allowed_urls[0])
+            redirect(self.pwd_expired_allowed_urls[0])
         return user
 
     def register_user(self, user_doc):
