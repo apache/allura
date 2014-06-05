@@ -26,103 +26,109 @@
 {% block content %}
   {{ super() }}
   <div class="grid-23">
-      <h2>Preferences</h2>
+    <h2>Preferences</h2>
+    {% block info %}
+      <p>Username: {{ c.user.username }}</p>
+      <p><a href="{{ c.user.private_project().url() }}">My profile and my projects</a></p>
+      <p><a href="{{ c.user.private_project().url() }}admin/overview">Set avatar icon</a></p>
+    {% endblock info %}
+
+    {% block edit_prefs_form %}
+      {% if h.asbool(tg.config.get('auth.allow_edit_prefs', False)) %}
       <form action="update" method="post">
-            {% if tg.config.get('auth.method', 'local') == 'local' %}
-            <label class="grid-4">Display Name</label>
-            <div class="grid-18">
-              <input name="preferences.display_name" value="{{c.user.display_name}}" type="text">
-            </div>
-            <label class="grid-4">Page Size</label>
-            <div class="grid-18">
-              <select name="preferences.results_per_page">
-                {% for per_page in [25, 50, 100, 250] %}
-                    <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}
-                       value="{{per_page}}">{{per_page}}</option>
-                {% endfor %}
-              </select>
-            </div>
-            {% endif %}
+        <label class="grid-4">Display Name</label>
+        <div class="grid-18">
+          <input name="preferences.display_name" value="{{c.user.display_name}}" type="text">
+        </div>
+        <label class="grid-4">Page Size</label>
+        <div class="grid-18">
+          <select name="preferences.results_per_page">
+            {% for per_page in [25, 50, 100, 250] %}
+                <option {% if per_page == c.user.preferences.results_per_page %}selected="selected"{% endif %}
+                   value="{{per_page}}">{{per_page}}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-        {% if tg.config.get('auth.method', 'local') == 'local' %}
-          {% for a in c.user.email_addresses %}
-            <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
-          {% endfor %}
-          {% if c.user.email_addresses %}
-            <h3 class="grid-18">Email Addresses</h3>
-            <table class="grid-18">
-              <tr>
-                <th>Primary?</th>
-                <th>Address</th>
-                <th>Confirmed</th>
-                <th></th>
-              </tr>
-              {% for a in c.user.email_addresses %}
-              <tr>
-                {% set obj = c.user.address_object(a) %}
-                <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
-                <td>{{a}}</td>
-                {% if obj %}
-                <td>
-                  {% if obj.confirmed %}
-                    yes
-                  {% else %}
-                    no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
-                  {% endif %}
-                </td>
+        {% for a in c.user.email_addresses %}
+          <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
+        {% endfor %}
+        {% if c.user.email_addresses %}
+          <h3 class="grid-18">Email Addresses</h3>
+          <table class="grid-18">
+            <tr>
+              <th>Primary?</th>
+              <th>Address</th>
+              <th>Confirmed</th>
+              <th></th>
+            </tr>
+            {% for a in c.user.email_addresses %}
+            <tr>
+              {% set obj = c.user.address_object(a) %}
+              <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+              <td>{{a}}</td>
+              {% if obj %}
+              <td>
+                {% if obj.confirmed %}
+                  yes
                 {% else %}
-                  <td>Unknown addr obj {{a}}</td>
+                  no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
                 {% endif %}
-                <td>{{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}</td>
-              </tr>
-              {% endfor %}
-            </table>
-            {% endif %}
-            <div class="grid-18">
-            {{lib.text_field('new_addr.addr', 'New Email Address')}}
-            {{lib.submit_button('Claim Address', name='new_addr.claim')}}
-            </div>
-
+              </td>
+              {% else %}
+                <td>Unknown addr obj {{a}}</td>
+              {% endif %}
+              <td>{{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}</td>
+            </tr>
+            {% endfor %}
+          </table>
         {% endif %}
         <div class="grid-18">
-        {{lib.submit_button('Save Changes')}}
+          {{lib.text_field('new_addr.addr', 'New Email Address')}}
+          {{lib.submit_button('Claim Address', name='new_addr.claim')}}
+        </div>
+        <div class="grid-18">
+          {{lib.submit_button('Save Changes')}}
         </div>
         {{lib.csrf_token()}}
       </form>
-  </div>
+      {% endif %}  {# allow_edit_prefs #}
+    {% endblock edit_prefs_form %}
 
-   <div style="clear:both"></div>
-  {% if g.theme.password_change_form %}
-  <div class="grid-20">
-    <h2>Change Password</h2>
-    {{ g.theme.password_change_form.display() }}
-  </div>
-  {% endif %}
-
-  {% if g.theme.upload_key_form %}
-  <div class="grid-20">
-    <h2>Upload ssh public key</h2>
-    {{ g.theme.upload_key_form.display() }}
-  </div>
-  {% endif %}
-
-<div class="grid-20">
-    <h2>User Messages</h2>
-    <form method="POST" action="user_message">
-    <div class="grid-19">
-        <input type="checkbox" id="allow_user_messages" name="allow_user_messages" {% if not c.user.get_pref('disable_user_messages') %} checked {% endif %}>
-        <label for="allow_user_messages">Allow another user to send me direct email messages</label>
+    {% if g.theme.password_change_form %}
+    <div class="grid-20">
+      <h2>Change Password</h2>
+      {{ g.theme.password_change_form.display() }}
     </div>
-    <label class="grid-4">&nbsp;</label>
-    <div class="grid-19">
-        <input class="submit" type="submit" value="Save">
+    {% endif %}
+
+    {% if g.theme.upload_key_form %}
+    <div class="grid-20">
+      <h2>Upload ssh public key</h2>
+      {{ g.theme.upload_key_form.display() }}
     </div>
-    {{ lib.csrf_token() }}
-    </form>
-</div>
-{% if h.asbool(tg.config.get('auth.allow_user_to_disable_account', False)) %}
-  <div class="grid-20">
-    <p><a href="/auth/disable">Disable account</a></p>
+    {% endif %}
+
+
+    <div class="grid-20">
+      <h2>User Messages</h2>
+      <form method="POST" action="user_message">
+      <div class="grid-19">
+          <input type="checkbox" id="allow_user_messages" name="allow_user_messages" {% if not c.user.get_pref('disable_user_messages') %} checked {% endif %}>
+          <label for="allow_user_messages">Allow another user to send me direct email messages</label>
+      </div>
+      <label class="grid-4">&nbsp;</label>
+      <div class="grid-19">
+          <input class="submit" type="submit" value="Save">
+      </div>
+      {{ lib.csrf_token() }}
+      </form>
+    </div>
+
+    {% if h.asbool(tg.config.get('auth.allow_user_to_disable_account', False)) %}
+      <div class="grid-20">
+        <p><a href="/auth/disable">Disable account</a></p>
+      </div>
+    {% endif %}
   </div>
-{% endif %}
 {% endblock %}
