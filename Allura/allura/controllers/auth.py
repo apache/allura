@@ -49,6 +49,8 @@ log = logging.getLogger(__name__)
 
 class F(object):
     login_form = LoginForm()
+    password_change_form = forms.PasswordChangeForm(action='/auth/preferences/change_password')
+    upload_key_form = forms.UploadKeyForm(action='/auth/preferences/upload_sshkey')
     recover_password_change_form = forms.PasswordChangeBase()
     forgotten_password_form = ForgottenPasswordForm()
     subscription_form = SubscriptionForm()
@@ -339,6 +341,8 @@ class PreferencesController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura:templates/user_prefs.html')
     def index(self, **kw):
+        c.password_change_form = F.password_change_form
+        c.upload_key_form = F.upload_key_form
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
         return dict(menu=menu)
@@ -390,7 +394,7 @@ class PreferencesController(BaseController):
     @require_post()
     @validate(V.NullValidator(), error_handler=index)
     def change_password(self, **kw):
-        kw = g.theme.password_change_form.to_python(kw, None)
+        kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])

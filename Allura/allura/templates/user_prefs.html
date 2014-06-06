@@ -103,17 +103,17 @@
       {% endif %}  {# allow_edit_prefs #}
     {% endblock edit_prefs_form %}
 
-    {% if g.theme.password_change_form %}
+    {% if c.password_change_form %}
       <fieldset>
         <legend>Change Password</legend>
-        {{ g.theme.password_change_form.display() }}
+        {{ c.password_change_form.display() }}
       </fieldset>
     {% endif %}
 
-    {% if g.theme.upload_key_form %}
+    {% if c.upload_key_form %}
       <fieldset>
         <legend>Upload ssh public key</legend>
-        {{ g.theme.upload_key_form.display() }}
+        {{ c.upload_key_form.display() }}
       </fieldset>
     {% endif %}
 

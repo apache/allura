@@ -169,7 +169,7 @@ class AuthenticationProvider(object):
         :rtype: None
         :raises: AssertionError with user message, upon any error
         '''
-        raise NotImplemented, 'upload_sshkey'
+        raise NotImplementedError, 'upload_sshkey'
 
     def account_navigation(self):
         return [
@@ -218,7 +218,7 @@ class AuthenticationProvider(object):
         raise NotImplementedError, 'user_by_project_shortname'
 
     def update_notifications(self, user):
-        raise NotImplemented, 'update_notifications'
+        raise NotImplementedError, 'update_notifications'
 
     def user_registration_date(self, user):
         '''
@@ -355,7 +355,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def upload_sshkey(self, username, pubkey):
         if not asbool(config.get('auth.ldap.use_schroot', True)):
-            raise NotImplemented, 'SSH keys are not supported'
+            raise NotImplementedError, 'SSH keys are not supported'
 
         argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
             config['auth.ldap.schroot_name'], username)).split() + [pubkey]
@@ -805,14 +805,6 @@ class ThemeProvider(object):
                 os.path.join('nf', name)))
 
     @LazyProperty
-    def password_change_form(self):
-        '''
-        :return: None, or an easywidgets Form to render on the user preferences page
-        '''
-        from allura.lib.widgets.forms import PasswordChangeForm
-        return PasswordChangeForm(action='/auth/preferences/change_password')
-
-    @LazyProperty
     def personal_data_form(self):
         '''
         :return: None, or an easywidgets Form to render on the user preferences page
@@ -955,14 +947,6 @@ class ThemeProvider(object):
         '''
         from allura.lib.widgets.forms import RemoveSkillForm
         return RemoveSkillForm(action='/auth/user_info/skills/remove_skill')
-
-    @LazyProperty
-    def upload_key_form(self):
-        '''
-        :return: None, or an easywidgets Form to render on the user preferences page
-        '''
-        from allura.lib.widgets.forms import UploadKeyForm
-        return UploadKeyForm(action='/auth/preferences/upload_sshkey')
 
     @property
     def master(self):
