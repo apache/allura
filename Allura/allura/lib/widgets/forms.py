@@ -142,8 +142,8 @@ class PasswordChangeBase(ForgeForm):
                 label='New Password',
                 validator=fev.UnicodeString(
                     not_empty=True,
-                    min=asint(tg.config['auth.min_password_len']),
-                    max=asint(tg.config['auth.max_password_len']))),
+                    min=asint(tg.config.get('auth.min_password_len', 6)),
+                    max=asint(tg.config.get('auth.max_password_len', 30)))),
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
@@ -172,8 +172,8 @@ class PasswordChangeForm(PasswordChangeBase):
                 label='New Password',
                 validator=fev.UnicodeString(
                     not_empty=True,
-                    min=asint(tg.config['auth.min_password_len']),
-                    max=asint(tg.config['auth.max_password_len']))),
+                    min=asint(tg.config.get('auth.min_password_len', 6)),
+                    max=asint(tg.config.get('auth.max_password_len', 30)))),
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
@@ -723,8 +723,8 @@ class RegistrationForm(ForgeForm):
                 label='New Password',
                 validator=fev.UnicodeString(
                     not_empty=True,
-                    min=asint(tg.config['auth.min_password_len']),
-                    max=asint(tg.config['auth.max_password_len']))),
+                    min=asint(tg.config.get('auth.min_password_len', 6)),
+                    max=asint(tg.config.get('auth.max_password_len', 30)))),
              ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
