@@ -340,7 +340,7 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/pwd_expired.html')
     @without_trailing_slash
     def pwd_expired(self, **kw):
-        c.form = g.theme.password_change_form
+        c.form = F.password_change_form
         return {}
 
     @expose()
@@ -348,7 +348,7 @@ class AuthController(BaseController):
     @without_trailing_slash
     @validate(V.NullValidator(), error_handler=pwd_expired)
     def pwd_expired_change(self, **kw):
-        kw = g.theme.password_change_form.to_python(kw, None)
+        kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
