@@ -25,7 +25,9 @@
             <a href="{{c.user.url()}}">{{name}}</a>
             <a href="{{logout_url}}">Log Out</a>
           {% else %}
-            <a href="/auth/create_account">Register</a>
+            {% if h.asbool(config.get('auth.allow_user_registration', True)) %}
+              <a href="/auth/create_account">Register</a>
+            {% endif %}
             <a href="{{login_url}}">Log In</a>
           {% endif %}
         </nav>
