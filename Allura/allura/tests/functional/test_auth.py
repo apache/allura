@@ -18,9 +18,13 @@
 from datetime import datetime, time, timedelta
 import re
 import json
-from bson import ObjectId
 from urlparse import urlparse, parse_qs
 
+from ming.orm.ormsession import ThreadLocalORMSession, session
+from bson import ObjectId
+from pylons import tmpl_context as c
+from tg import config, expose
+from mock import patch
 import mock
 from nose.tools import (
     assert_equal,
@@ -30,15 +34,13 @@ from nose.tools import (
     assert_in,
     assert_true
 )
-from pylons import tmpl_context as c
+
 from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_trove_categories
 from allura import model as M
-from ming.orm.ormsession import ThreadLocalORMSession, session
-from tg import config, expose
-from mock import patch
 from allura.lib import plugin
+from allura.lib import helpers as h
 
 
 def unentity(s):
@@ -210,7 +212,7 @@ class TestAuth(TestController):
                 pw2='12345678',
                 display_name='Test Me'))
         r = r.follow()
-        assert 'User "Test Me" registered' in unentity(r.body)
+        assert 'User "aaa" registered' in unentity(r.body)
         r = self.app.post(
             '/auth/save_new',
             params=dict(
@@ -224,6 +226,28 @@ class TestAuth(TestController):
             '/auth/do_login',
             params=dict(username='aaa', password='12345678'),
             status=302)
+
+    def test_create_account_disabled_header_link(self):
+        with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
+            r = self.app.get('/')
+            assert not 'Register' in r
+
+    def test_create_account_disabled_form_gone(self):
+        with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
+            r = self.app.get('/auth/create_account', status=404)
+            assert not 'Create an Account' in r
+
+    def test_create_account_disabled_submit_fails(self):
+        with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
+            self.app.post(
+                '/auth/save_new',
+                params=dict(
+                    username='aaa',
+                    pw='12345678',
+                    pw2='12345678',
+                    display_name='Test Me'),
+                status=404,
+            )
 
     def test_one_project_role(self):
         """Make sure when a user goes to a new project only one project role is created.

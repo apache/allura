@@ -118,6 +118,8 @@ class AuthController(BaseController):
 
     @expose('jinja:allura:templates/create_account.html')
     def create_account(self, **kw):
+        if not asbool(config.get('auth.allow_user_registration', True)):
+            raise wexc.HTTPNotFound()
         c.form = F.registration_form
         return dict()
 
@@ -204,12 +206,14 @@ class AuthController(BaseController):
     @require_post()
     @validate(F.registration_form, error_handler=create_account)
     def save_new(self, display_name=None, username=None, pw=None, **kw):
+        if not asbool(config.get('auth.allow_user_registration', True)):
+            raise wexc.HTTPNotFound()
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,
                  password=pw))
         plugin.AuthenticationProvider.get(request).login(user)
-        flash('User "%s" registered' % user.get_pref('display_name'))
+        flash('User "%s" registered' % username)
         redirect('/')
 
     @expose()
