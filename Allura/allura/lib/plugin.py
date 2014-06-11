@@ -1056,12 +1056,6 @@ class UserPreferencesProvider(object):
         '''
         raise NotImplementedError, 'set_pref'
 
-    def find_by_display_name(self, name):
-        '''
-        :rtype: list of :class:`Users <allura.model.auth.User>`
-        '''
-        raise NotImplementedError, 'find_by_display_name'
-
     def additional_urls(self):
         '''
         Returns a mapping of additional routes for AuthProvider.
@@ -1117,13 +1111,6 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
             user.preferences[pref_name] = pref_value
         else:
             setattr(user, pref_name, pref_value)
-
-    def find_by_display_name(self, name):
-        from allura import model as M
-        name_regex = re.compile('(?i)%s' % re.escape(name))
-        users = M.User.query.find(dict(
-            display_name=name_regex)).sort('username').all()
-        return users
 
 
 class AdminExtension(object):
