@@ -196,6 +196,16 @@ class AuthGlobals(MappedClass):
         return g.next_uid
 
 
+class FieldPropertyDisplayName(FieldProperty):
+    # display_name is mongo field but only for preference storage
+    # force all requests for this field to use the get_pref mechanism
+
+    def __get__(self, instance, cls=None):
+        if instance is None:
+            return self
+        return instance.get_pref('display_name')
+
+
 class User(MappedClass, ActivityNode, ActivityObject):
     SALT_LEN = 8
 
@@ -214,15 +224,17 @@ class User(MappedClass, ActivityNode, ActivityObject):
     # full mount point: prefs dict
     tool_preferences = FieldProperty({str: {str: None}})
     tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
-    display_name = FieldProperty(str)
     disabled = FieldProperty(bool, if_missing=False)
-    # Don't use directly, use get/set_pref() instead
+
+    # Don't use these directly, use get/set_pref() instead
     preferences = FieldProperty(dict(
         results_per_page=int,
         email_address=str,
         email_format=str,
         disable_user_messages=bool))
-
+    # Additional top-level fields can/should be accessed with get/set_pref also
+    # Not sure why we didn't put them within the 'preferences' dictionary :(
+    display_name = FieldPropertyDisplayName(str)
     # Personal data
     sex = FieldProperty(
         S.OneOf('Male', 'Female', 'Other', 'Unknown',
