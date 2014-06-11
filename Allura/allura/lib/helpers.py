@@ -178,16 +178,9 @@ def really_unicode(s):
     return _attempt_encodings(s, encodings())
 
 
-def find_user(email=None, username=None, display_name=None):
+def find_user(email):
     from allura import model as M
-    user = None
-    if email:
-        user = M.User.by_email_address(email)
-    if not user and username:
-        user = M.User.by_username(username)
-    if not user and display_name:
-        user = M.User.by_display_name(display_name)
-    return user
+    return M.User.by_email_address(email)
 
 
 def find_project(url_path):
