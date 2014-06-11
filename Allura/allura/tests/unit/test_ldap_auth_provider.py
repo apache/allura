@@ -21,9 +21,11 @@ from mock import patch, Mock
 from nose.tools import assert_equal, assert_not_equal, assert_true
 from webob import Request
 from ming.orm.ormsession import ThreadLocalORMSession
+from tg import config
 
 from alluratest.controller import setup_basic_test
 from allura.lib import plugin
+from allura.lib import helpers as h
 from allura import model as M
 
 
@@ -85,7 +87,8 @@ class TestLdapAuthenticationProvider(object):
         self.provider._encode_password = Mock(return_value='new-password-hash')
 
         assert_equal(M.User.query.get(username=user_doc['username']), None)
-        self.provider.register_user(user_doc)
+        with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):
+            self.provider.register_user(user_doc)
         ThreadLocalORMSession.flush_all()
         assert_not_equal(M.User.query.get(username=user_doc['username']), None)
 
