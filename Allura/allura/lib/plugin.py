@@ -312,6 +312,15 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def register_user(self, user_doc):
         from allura import model as M
         result = M.User(**user_doc)
+        if asbool(config.get('auth.ldap.autoregister', True)):
+            if asbool(config.get('auth.allow_user_registration', True)):
+                raise Exception('You should not have both "auth.ldap.autoregister" and '
+                                '"auth.allow_user_registration" set to true')
+            else:
+                log.debug('LdapAuth: autoregister is true, so only creating the mongo record (no creating ldap record)')
+                return result
+
+        # full registration into LDAP
         dn_u = 'uid=%s,%s' % (
             ldap.dn.escape_dn_chars(user_doc['username']),
             config['auth.ldap.suffix'])
@@ -412,26 +421,38 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if ldap is None:
             raise Exception('The python-ldap package needs to be installed.  Run `pip install python-ldap` in your allura environment.')
         from allura import model as M
-        user = M.User.query.get(
-            username=self.request.params['username'], disabled=False)
-        if user is None:
-            log.debug('LdapAuth: no active user {} found in local mongo, not checking LDAP'.format(self.request.params['username']))
+        username = self.request.params['username']
+        if not self._validate_password(username, self.request.params['password']):
             raise exc.HTTPUnauthorized()
-        if not self.validate_password(user, self.request.params['password']):
+        user = M.User.query.get(username=username)
+        if user is None:
+            if asbool(config.get('auth.ldap.autoregister', True)):
+                log.debug('LdapAuth: authorized user {} needs a mongo record registered.  Creating...'.format(username))
+                user = M.User.register({'username': username})
+            else:
+                log.debug('LdapAuth: no user {} found in local mongo'.format(username))
+                raise exc.HTTPUnauthorized()
+        elif user.disabled:
+            log.debug('LdapAuth: user {} is disabled in Allura'.format(username))
             raise exc.HTTPUnauthorized()
         return user
 
     def validate_password(self, user, password):
+        '''by user'''
+        return self._validate_password(user.username, password)
+
+    def _validate_password(self, username, password):
+        '''by username'''
         try:
             dn = 'uid=%s,%s' % (
-                ldap.dn.escape_dn_chars(user.username),
+                ldap.dn.escape_dn_chars(username),
                 config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, password)
             con.unbind_s()
             return True
-        except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM):
-            log.debug('LdapAuth: could not authenticate {}'.format(user.username), exc_info=True)
+        except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM, ldap.NO_SUCH_OBJECT):
+            log.debug('LdapAuth: could not authenticate {}'.format(username), exc_info=True)
         return False
 
     def user_project_shortname(self, user):
