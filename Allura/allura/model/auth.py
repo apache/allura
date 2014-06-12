@@ -199,11 +199,17 @@ class AuthGlobals(MappedClass):
 class FieldPropertyDisplayName(FieldProperty):
     # display_name is mongo field but only for preference storage
     # force all requests for this field to use the get_pref mechanism
+    # Cache it per user, since it may be re-used several times in a request
+    # and non-local preferences (ldap, database, etc) can be relatively expensive
 
     def __get__(self, instance, cls=None):
         if instance is None:
             return self
-        return instance.get_pref('display_name')
+        try:
+            display_name = instance._cache_display_name
+        except AttributeError:
+            display_name = instance._cache_display_name = instance.get_pref('display_name')
+        return display_name
 
 
 class User(MappedClass, ActivityNode, ActivityObject):
