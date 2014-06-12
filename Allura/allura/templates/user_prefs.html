@@ -39,7 +39,7 @@
     {% endblock info %}
 
     {% block edit_prefs_form %}
-      {% if h.asbool(tg.config.get('auth.allow_edit_prefs', False)) %}
+      {% if h.asbool(tg.config.get('auth.allow_edit_prefs', True)) %}
       <form action="update" method="post">
         <fieldset>
           <legend>General and Email Settings</legend>

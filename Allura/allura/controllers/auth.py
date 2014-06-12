@@ -358,7 +358,7 @@ class PreferencesController(BaseController):
                new_oid=None,
                preferences=None,
                **kw):
-        if asbool(config.get('auth.allow_edit_prefs', False)):
+        if asbool(config.get('auth.allow_edit_prefs', True)):
             if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.", 'error')
                 redirect('.')
