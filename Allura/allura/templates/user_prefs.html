@@ -103,33 +103,42 @@
       {% endif %}  {# allow_edit_prefs #}
     {% endblock edit_prefs_form %}
 
-    {% if c.password_change_form %}
-      <fieldset>
-        <legend>Change Password</legend>
-        {{ c.password_change_form.display() }}
-      </fieldset>
-    {% endif %}
 
-    {% if c.upload_key_form %}
-      <fieldset>
-        <legend>Upload ssh public key</legend>
-        {{ c.upload_key_form.display() }}
-      </fieldset>
-    {% endif %}
+    {% block password_change_form %}
+      {% if h.asbool(tg.config.get('auth.allow_password_change', True)) %}
+        <fieldset>
+          <legend>Change Password</legend>
+          {{ c.password_change_form.display() }}
+        </fieldset>
+      {% endif %}
+    {% endblock %}
 
-    <fieldset>
-      <legend>User Messages</legend>
-      <form method="POST" action="user_message">
-      <div class="grid-10">
-          <input type="checkbox" id="allow_user_messages" name="allow_user_messages" {% if not c.user.get_pref('disable_user_messages') %} checked {% endif %}>
-          <label for="allow_user_messages">Allow another user to send me direct email messages</label>
-      </div>
-      <div class="grid-2">
-          <input class="submit" type="submit" value="Save">
-      </div>
-      {{ lib.csrf_token() }}
-      </form>
-    </fieldset>
+    {% block upload_key_form %}
+      {% if h.asbool(tg.config.get('auth.allow_upload_ssh_key', False)) %}
+        <fieldset>
+          <legend>Upload ssh public key</legend>
+          {{ c.upload_key_form.display() }}
+        </fieldset>
+      {% endif %}
+    {% endblock %}
+
+    {% block user_messages_form %}
+      {% if h.asbool(tg.config.get('auth.allow_user_messages_config', True)) %}
+        <fieldset>
+          <legend>User Messages</legend>
+          <form method="POST" action="user_message">
+          <div class="grid-10">
+              <input type="checkbox" id="allow_user_messages" name="allow_user_messages" {% if not c.user.get_pref('disable_user_messages') %} checked {% endif %}>
+              <label for="allow_user_messages">Allow another user to send me direct email messages</label>
+          </div>
+          <div class="grid-2">
+              <input class="submit" type="submit" value="Save">
+          </div>
+          {{ lib.csrf_token() }}
+          </form>
+        </fieldset>
+      {% endif %}
+    {% endblock %}
   </div>
 {% endblock %}
 
