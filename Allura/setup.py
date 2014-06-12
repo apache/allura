@@ -112,6 +112,7 @@ setup(
 
     [allura.user_prefs]
     local = allura.lib.plugin:LocalUserPreferencesProvider
+    ldap = allura.lib.plugin:LdapUserPreferencesProvider
 
     [allura.project_registration]
     local = allura.lib.plugin:LocalProjectRegistrationProvider
