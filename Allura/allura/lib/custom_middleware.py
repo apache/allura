@@ -203,7 +203,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import urllib2
         import activitystream
 
-        return self.entry_point_timers() + [
+        timers = self.entry_point_timers() + [
             Timer(
                 'activitystream.director.{method_name}', allura.model.timeline.Director,
                 'create_activity', 'create_timeline', 'get_timeline'),
@@ -256,6 +256,19 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'ratio', 'quick_ratio', 'real_quick_ratio'),
             Timer('unified_diff', allura.model.repository, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
+
+        try:
+            import ldap
+        except ImportError:
+            pass
+        else:
+            timers += [
+                Timer('ldap', ldap, 'initialize'),
+                Timer('ldap', ldap.ldapobject.LDAPObject,
+                      'bind_s', 'unbind_s', 'add_s', 'modify_s', 'search_s'),
+            ]
+
+        return timers
 
     def before_logging(self, stat_record):
         if hasattr(c, "app") and hasattr(c.app, "config"):
