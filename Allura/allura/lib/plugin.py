@@ -1118,6 +1118,45 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
             setattr(user, pref_name, pref_value)
 
 
+class LdapUserPreferencesProvider(UserPreferencesProvider):
+    '''
+    Store preferences in LDAP, falling back to LocalUserPreferencesProvider
+    '''
+
+    @LazyProperty
+    def fields(self):
+        return h.config_with_prefix(config, 'user_prefs_storage.ldap.fields.')
+
+    def get_pref(self, user, pref_name):
+        from allura import model as M
+        if pref_name in self.fields and user != M.User.anonymous():
+            con = ldap_conn()
+            try:
+                rs = con.search_s(ldap_user_dn(user.username), ldap.SCOPE_BASE)
+            except ldap.NO_SUCH_OBJECT:
+                rs = []
+            else:
+                con.unbind_s()
+            if not rs:
+                log.warning('LdapUserPref: No user record found for: {}'.format(user.username))
+                return ''
+            user_dn, user_attrs = rs[0]
+            ldap_attr = self.fields[pref_name]
+            return user_attrs[ldap_attr][0]  # assume single-valued list
+        else:
+            return LocalUserPreferencesProvider().get_pref(user, pref_name)
+
+    def set_pref(self, user, pref_name, pref_value):
+        if pref_name in self.fields:
+            con = ldap_conn()
+            ldap_attr = self.fields[pref_name]
+            con.modify_s(ldap_user_dn(user.username),
+                         [(ldap.MOD_REPLACE, ldap_attr, pref_value.encode('utf-8'))])
+            con.unbind_s()
+        else:
+            return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)
+
+
 class AdminExtension(object):
 
     """
