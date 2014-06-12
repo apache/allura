@@ -60,6 +60,15 @@
           {% for a in c.user.email_addresses %}
             <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
           {% endfor %}
+          {#
+           # This is a hidden copy of a 'Save' submit button.
+           # We need this because form uses several submit buttons, and
+           # if user presses 'Enter' in one of the fields, browser chooses *first* submit button.
+           # In the case when user has at least one email address, first button is delete button
+           # for first email address. So user ends up deleting their first email address,
+           # instead of changing display name, for example.
+           #}
+          {{lib.submit_button('Save', style='display:none')}}
           <hr>
           <h3>Email Addresses</h3>
           <table class="grid-22">

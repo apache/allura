@@ -138,8 +138,8 @@
            {% if option == value %}checked{% endif %}/><br/>
 {% endmacro %}
 
-{% macro submit_button(value, name=None) %}
-    <input type="submit" name="{{name}}" value="{{value}}"/><br/>
+{% macro submit_button(value, name=None, style=None) %}
+  <input type="submit" name="{{name}}" value="{{value}}" style="{{style}}"/><br/>
 {% endmacro %}
 
 {% macro abbr_date(start_time) %}

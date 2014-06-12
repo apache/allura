@@ -43,6 +43,7 @@ from allura.lib.widgets import (
     ForgottenPasswordForm,
     DisableAccountForm)
 from allura.lib.widgets import forms
+from allura.lib import mail_util
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
@@ -372,14 +373,16 @@ class PreferencesController(BaseController):
                     del c.user.email_addresses[i]
                     if obj:
                         obj.delete()
-            if new_addr.get('claim'):
-                if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
+            if new_addr.get('claim') or new_addr.get('addr'):
+                if M.EmailAddress.query.get(_id=new_addr['addr']):
                     flash('Email address already claimed', 'error')
-                else:
+                elif mail_util.isvalid(new_addr['addr']):
                     c.user.email_addresses.append(new_addr['addr'])
                     em = M.EmailAddress.upsert(new_addr['addr'])
                     em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
+                else:
+                    flash('Email address %s is invalid' % new_addr['addr'], 'error')
             if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
                 primary_addr = c.user.email_addresses[0]
             if primary_addr:
