@@ -305,6 +305,24 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return datetime.utcnow()
 
 
+def ldap_conn(who=None, cred=None):
+    '''
+    Init & bind a connection with the given creds, or the admin creds if not
+    specified. Remember to unbind the connection when done.
+    '''
+    con = ldap.initialize(config['auth.ldap.server'])
+    con.bind_s(who or config['auth.ldap.admin_dn'],
+               cred or config['auth.ldap.admin_password'])
+    return con
+
+
+def ldap_user_dn(username):
+    'return a Distinguished Name for a given username'
+    return 'uid=%s,%s' % (
+        ldap.dn.escape_dn_chars(username),
+        config['auth.ldap.suffix'])
+
+
 class LdapAuthenticationProvider(AuthenticationProvider):
 
     forgotten_password_process = True
@@ -321,14 +339,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 return result
 
         # full registration into LDAP
-        dn_u = 'uid=%s,%s' % (
-            ldap.dn.escape_dn_chars(user_doc['username']),
-            config['auth.ldap.suffix'])
         uid = str(M.AuthGlobals.get_next_uid())
         try:
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(config['auth.ldap.admin_dn'],
-                       config['auth.ldap.admin_password'])
+            con = ldap_conn()
             uname = user_doc['username'].encode('utf-8')
             display_name = user_doc['display_name'].encode('utf-8')
             ldif_u = modlist.addModlist(dict(
@@ -343,7 +356,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 gecos=uname,
                 description='SCM user account'))
             try:
-                con.add_s(dn_u, ldif_u)
+                con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
             except ldap.ALREADY_EXISTS:
                 log.exception('Trying to create existing user %s', uname)
                 raise
@@ -398,18 +411,14 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return M.User.query.get(username=username, disabled=False)
 
     def set_password(self, user, old_password, new_password):
-        dn = 'uid=%s,%s' % (
-                ldap.dn.escape_dn_chars(user.username),
-                config['auth.ldap.suffix'])
+        dn = ldap_user_dn(user.username)
         if old_password:
             ldap_ident = dn
             ldap_pass = old_password.encode('utf-8')
         else:
-            ldap_ident = config['auth.ldap.admin_dn']
-            ldap_pass = config['auth.ldap.admin_password']
+            ldap_ident = ldap_pass = None
         try:
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(ldap_ident, ldap_pass)
+            con = ldap_conn(ldap_ident, ldap_pass)
             new_password = self._encode_password(new_password)
             con.modify_s(
                 dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
@@ -444,11 +453,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def _validate_password(self, username, password):
         '''by username'''
         try:
-            dn = 'uid=%s,%s' % (
-                ldap.dn.escape_dn_chars(username),
-                config['auth.ldap.suffix'])
-            con = ldap.initialize(config['auth.ldap.server'])
-            con.bind_s(dn, password)
+            con = ldap_conn(ldap_user_dn(username), password)
             con.unbind_s()
             return True
         except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM, ldap.NO_SUCH_OBJECT):
