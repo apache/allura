@@ -49,6 +49,28 @@ By default this uses port 8825.  Depending on your mail routing, you may need to
 And if the port is in use, this command will fail.  You can check the log file for any errors.
 To change the port number, edit `development.ini` and change `forgemail.port` to the appropriate port number for your environment.
 
+Using LDAP
+^^^^^^^^^^
+
+Allura has a pluggable authentication system, and can use an existing LDAP system. In your config
+file (e.g. :file:`development.ini`), there are several "ldap" settings to set:
+
+* Change auth.method to: :samp:`auth.method = ldap`
+* Set all the :samp:`auth.ldap.{*}` settings to match your LDAP server configuration. (:samp:`auth.ldap.schroot_name` won't be
+  used, don't worry about it.)
+* Keep :samp:`auth.ldap.autoregister = true` This means Allura will use existing users from your LDAP
+  server.
+* Set :samp:`auth.allow_user_registration = false` since your users already are present in LDAP.
+* Change user_prefs_storage.method to :samp:`user_prefs_storage.method = ldap`
+* Change :samp:`user_prefs_storage.ldap.fields.display_name` if needed (e.g. if display names are stored
+  in a different LDAP attribute).
+
+Restart Allura and you should be all set.  Now users can log in with their LDAP credentials and their
+Allura records will be automatically created the first time they log in.
+
+Note: if you want users to register new accounts into your LDAP system via Allura, you should turn
+off :samp:`autoregister` and turn on :samp:`allow_user_registration`
+
 Enabling RabbitMQ
 ^^^^^^^^^^^^^^^^^^
 
