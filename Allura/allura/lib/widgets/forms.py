@@ -178,6 +178,7 @@ class PasswordChangeForm(PasswordChangeBase):
                 name='pw2',
                 label='New Password (again)',
                 validator=fev.UnicodeString(not_empty=True)),
+            ew.HiddenField(name='return_to'),
         ]
 
 

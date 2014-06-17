@@ -40,6 +40,7 @@ try:
 except ImportError:
     ldap = modlist = None
 import pkg_resources
+import tg
 from tg import config, request, redirect
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
@@ -104,7 +105,15 @@ class AuthenticationProvider(object):
             self.logout()
             return M.User.anonymous()
         if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
-            redirect(self.pwd_expired_allowed_urls[0])
+            if self.request.environ['REQUEST_METHOD'] == 'GET':
+                return_to = self.request.environ['PATH_INFO']
+                if self.request.environ.get('QUERY_STRING'):
+                    return_to += '?' + self.request.environ['QUERY_STRING']
+                location = tg.url(self.pwd_expired_allowed_urls[0], dict(return_to=return_to))
+            else:
+                # Don't try to re-post; the body has been lost.
+                location = tg.url(self.pwd_expired_allowed_urls[0])
+            redirect(location)
         return user
 
     def register_user(self, user_doc):

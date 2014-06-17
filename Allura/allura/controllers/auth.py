@@ -20,6 +20,7 @@ import os
 import datetime
 
 import bson
+import tg
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -341,24 +342,28 @@ class AuthController(BaseController):
     @without_trailing_slash
     def pwd_expired(self, **kw):
         c.form = F.password_change_form
-        return {}
+        return {'return_to': kw.get('return_to')}
 
     @expose()
     @require_post()
     @without_trailing_slash
     @validate(V.NullValidator(), error_handler=pwd_expired)
     def pwd_expired_change(self, **kw):
+        return_to = kw.get('return_to')
         kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
-            redirect('.')
+            redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
         flash('Password changed')
         del session['pwd-expired']
         session.save()
-        redirect('/')
+        if return_to and return_to != request.url:
+            redirect(return_to)
+        else:
+            redirect('/')
 
 
 class PreferencesController(BaseController):
