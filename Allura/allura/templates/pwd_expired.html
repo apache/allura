@@ -26,6 +26,7 @@
 
 {% block content %}
   <div class='grid-23'>
+    <p>Your {{config['site_name']}} password has expired - You must now choose a new password before logging into the site</p>
     {{ c.form.display(action='/auth/pwd_expired_change') }}
   </div>
 {% endblock content %}
