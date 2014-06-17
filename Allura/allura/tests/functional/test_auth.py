@@ -20,6 +20,7 @@ from datetime import datetime, time, timedelta
 import re
 import json
 from urlparse import urlparse, parse_qs
+from urllib import urlencode
 
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from bson import ObjectId
@@ -1105,11 +1106,11 @@ class TestPasswordExpire(TestController):
         f['password'] = pwd
         return f.submit(extra_environ={'username': '*anonymous'})
 
-    def assert_redirects(self):
+    def assert_redirects(self, where='/'):
         try:
-            self.app.get('/', extra_environ={'username': 'test-user'}, status=302)
+            self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
         except exc.HTTPFound as e:
-            assert_equal(e.location, '/auth/pwd_expired')
+            assert_equal(e.location, '/auth/pwd_expired?' + urlencode({'return_to': where}))
 
     def assert_not_redirects(self):
         self.app.get('/', extra_environ={'username': 'test-user'}, status=200)
@@ -1232,4 +1233,20 @@ class TestPasswordExpire(TestController):
             assert_in('Passwords must match', r)
             r = self.check_validation('bad', 'qwerty', 'qwerty')
             assert_in('Incorrect password', self.webflash(r))
-            assert_equal(r.location, 'http://localhost/auth/')
+            assert_equal(r.location, 'http://localhost/auth/pwd_expired?return_to=')
+
+    def test_return_to(self):
+        return_to = '/p/test/tickets/?milestone=1.0&page=2'
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            self.assert_redirects(where=return_to)
+
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
+            f = r.forms[0]
+            f['oldpw'] = 'foo'
+            f['pw'] = 'qwerty'
+            f['pw2'] = 'qwerty'
+            f['return_to'] = return_to
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
+            assert_equal(r.location, 'http://localhost/p/test/tickets/?milestone=1.0&page=2')
