@@ -15,16 +15,33 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equals, assert_raises, assert_is_none, assert_is
+import datetime as dt
+import calendar
+
+import tg
+from webob import Request, exc
+from bson import ObjectId
+from ming.orm.ormsession import ThreadLocalORMSession
+from nose.tools import (
+    assert_equals,
+    assert_equal,
+    assert_raises,
+    assert_is_none,
+    assert_is,
+    assert_true,
+    assert_false,
+)
 from mock import Mock, MagicMock, patch
-from datetime import timedelta
 
 from allura import model as M
 from allura.app import Application
+from allura.lib import plugin
+from allura.lib import helpers as h
 from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
+from alluratest.controller import setup_basic_test, setup_global_objects
 
 
 class TestProjectRegistrationProvider(object):
@@ -107,7 +124,7 @@ class TestThemeProvider(object):
         request.cookies = {'site-notification': 'deadbeef-1-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-2-False', max_age=timedelta(days=365))
+            'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -129,7 +146,7 @@ class TestThemeProvider(object):
         request.cookies = {'site-notification': '0ddba11-1000-true'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -141,7 +158,7 @@ class TestThemeProvider(object):
         request.cookies = {}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -153,7 +170,7 @@ class TestThemeProvider(object):
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
 
     @patch('allura.app.g')
     @patch('allura.lib.plugin.g')
@@ -184,3 +201,85 @@ class TestThemeProvider(object):
                       g.theme_href.return_value)
         g.theme_href.assert_called_with('images/testapp_24.png')
 
+
+class TestLocalAuthenticationProvider(object):
+
+    def setUp(self):
+        setup_basic_test()
+        ThreadLocalORMSession.close_all()
+        setup_global_objects()
+        self.provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
+
+    def test_password_encoder(self):
+        # Verify salt
+        ep = self.provider._encode_password
+        assert ep('test_pass') != ep('test_pass')
+        assert ep('test_pass', '0000') == ep('test_pass', '0000')
+
+    def test_set_password_with_old_password(self):
+        user = Mock()
+        user.__ming__ = Mock()
+        self.provider.validate_password = lambda u, p: False
+        assert_raises(
+            exc.HTTPUnauthorized,
+            self.provider.set_password, user, 'old', 'new')
+        assert_equal(user._encode_password.call_count, 0)
+
+        self.provider.validate_password = lambda u, p: True
+        self.provider.set_password(user, 'old', 'new')
+        user._encode_password.assert_callued_once_with('new')
+
+    def test_set_password_sets_last_updated(self):
+        user = Mock()
+        user.__ming__ = Mock()
+        user.last_password_updated = None
+        now1 = dt.datetime.utcnow()
+        self.provider.set_password(user, None, 'new')
+        now2 = dt.datetime.utcnow()
+        assert_true(user.last_password_updated > now1)
+        assert_true(user.last_password_updated < now2)
+
+    def test_get_last_password_updated_not_set(self):
+        user = Mock()
+        user._id = ObjectId()
+        user.last_password_updated = None
+        upd = self.provider.get_last_password_updated(user)
+        gen_time = dt.datetime.utcfromtimestamp(
+            calendar.timegm(user._id.generation_time.utctimetuple()))
+        assert_equal(upd, gen_time)
+
+    def test_get_last_password_updated(self):
+        user = Mock()
+        user.last_password_updated = dt.datetime(2014, 06, 04, 13, 13, 13)
+        upd = self.provider.get_last_password_updated(user)
+        assert_equal(upd, user.last_password_updated)
+
+
+class TestAuthenticationProvider(object):
+
+    def setUp(self):
+        setup_basic_test()
+        self.provider = plugin.AuthenticationProvider(Request.blank('/'))
+        self.pwd_updated = dt.datetime.utcnow() - dt.timedelta(days=100)
+        self.provider.get_last_password_updated = lambda u: self.pwd_updated
+        self.user = Mock()
+
+    def test_is_password_expired_disabled(self):
+        assert_false(self.provider.is_password_expired(self.user))
+
+    def test_is_password_expired_days(self):
+        with h.push_config(tg.config, **{'auth.pwdexpire.days': '180'}):
+            assert_false(self.provider.is_password_expired(self.user))
+        with h.push_config(tg.config, **{'auth.pwdexpire.days': '90'}):
+            assert_true(self.provider.is_password_expired(self.user))
+
+    def test_is_password_expired_before(self):
+        before = dt.datetime.utcnow() - dt.timedelta(days=180)
+        before = calendar.timegm(before.timetuple())
+        with h.push_config(tg.config, **{'auth.pwdexpire.before': str(before)}):
+            assert_false(self.provider.is_password_expired(self.user))
+
+        before = dt.datetime.utcnow() - dt.timedelta(days=1)
+        before = calendar.timegm(before.timetuple())
+        with h.push_config(tg.config, **{'auth.pwdexpire.before': str(before)}):
+            assert_true(self.provider.is_password_expired(self.user))

@@ -20,23 +20,18 @@
 """
 Model tests for auth
 """
-import calendar
 
 from nose.tools import (
     with_setup,
     assert_equal,
     assert_not_in,
     assert_in,
-    assert_true,
-    assert_raises,
 )
 from pylons import tmpl_context as c, app_globals as g
-from webob import Request, exc
-from mock import patch, Mock
+from webob import Request
+from mock import patch
 from datetime import datetime, timedelta
 
-from bson import ObjectId
-from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
@@ -49,57 +44,6 @@ def setUp():
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()
-
-
-class TestLocalAuthenticationProvider(object):
-
-    def setUp(self):
-        setUp()
-        self.provider = plugin.LocalAuthenticationProvider(Request.blank('/'))
-
-    def test_password_encoder(self):
-        # Verify salt
-        ep = self.provider._encode_password
-        assert ep('test_pass') != ep('test_pass')
-        assert ep('test_pass', '0000') == ep('test_pass', '0000')
-
-    def test_set_password_with_old_password(self):
-        user = Mock()
-        user.__ming__ = Mock()
-        self.provider.validate_password = lambda u, p: False
-        assert_raises(
-            exc.HTTPUnauthorized,
-            self.provider.set_password, user, 'old', 'new')
-        assert_equal(user._encode_password.call_count, 0)
-
-        self.provider.validate_password = lambda u, p: True
-        self.provider.set_password(user, 'old', 'new')
-        user._encode_password.assert_callued_once_with('new')
-
-    def test_set_password_sets_last_updated(self):
-        user = Mock()
-        user.__ming__ = Mock()
-        user.last_password_updated = None
-        now1 = datetime.utcnow()
-        self.provider.set_password(user, None, 'new')
-        now2 = datetime.utcnow()
-        assert_true(user.last_password_updated > now1)
-        assert_true(user.last_password_updated < now2)
-
-    def test_get_last_password_updated_not_set(self):
-        user = Mock()
-        user._id = ObjectId()
-        user.last_password_updated = None
-        upd = self.provider.get_last_password_updated(user)
-        gen_time = datetime.utcfromtimestamp(
-            calendar.timegm(user._id.generation_time.utctimetuple()))
-        assert_equal(upd, gen_time)
-
-    def test_get_last_password_updated(self):
-        user = Mock()
-        user.last_password_updated = datetime(2014, 06, 04, 13, 13, 13)
-        upd = self.provider.get_last_password_updated(user)
-        assert_equal(upd, user.last_password_updated)
 
 
 @with_setup(setUp)
