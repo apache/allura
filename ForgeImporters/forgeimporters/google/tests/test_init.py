@@ -19,6 +19,7 @@ from nose.tools import assert_equal
 from mock import patch
 from formencode.validators import Invalid
 from BeautifulSoup import BeautifulSoup
+from IPython.testing.decorators import skipif, module_not_available
 
 from allura.tests import decorators as td
 from forgeimporters.google import GoogleCodeProjectNameValidator, GoogleCodeProjectExtractor
@@ -97,11 +98,21 @@ class Test_as_markdown(object):
             'Foo: [issue 1](#1)'
         )
 
-    def test_link_other_proj(self):
+    @skipif(module_not_available('html2text'))
+    def test_link_other_proj_has_html2text(self):
         html = BeautifulSoup('''<pre>Foo: <a href="/p/other-project/issues/detail?id=1">issue other-project:1</a></pre>''')
         assert_equal(
             _as_markdown(html.first(), 'myproj'),
             'Foo: [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)'
+        )
+
+    @td.without_module('html2text')
+    def test_link_other_proj_no_html2text(self):
+        # without html2text, the dash in other-project doesn't get escaped right
+        html = BeautifulSoup('''<pre>Foo: <a href="/p/other-project/issues/detail?id=1">issue other-project:1</a></pre>''')
+        assert_equal(
+            _as_markdown(html.first(), 'myproj'),
+            'Foo: [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)'
         )
 
     def test_link_hosted_domain_within_proj(self):
