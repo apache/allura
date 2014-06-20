@@ -181,6 +181,15 @@ class PasswordChangeForm(PasswordChangeBase):
             ew.HiddenField(name='return_to'),
         ]
 
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(PasswordChangeForm, self).to_python(value, state)
+        if d['oldpw'] == d['pw']:
+            raise formencode.Invalid(
+                'Your old and new password should not be the same',
+                value, state)
+        return d
+
 
 class PersonalDataForm(ForgeForm):
 

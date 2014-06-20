@@ -1235,6 +1235,10 @@ class TestPasswordExpire(TestController):
             assert_in('Incorrect password', self.webflash(r))
             assert_equal(r.location, 'http://localhost/auth/pwd_expired?return_to=')
 
+            with h.push_config(config, **{'auth.min_password_len': 3}):
+                r = self.check_validation('foo', 'foo', 'foo')
+                assert_in('Your old and new password should not be the same', r)
+
     def test_return_to(self):
         return_to = '/p/test/tickets/?milestone=1.0&page=2'
         self.set_expire_for_user()
