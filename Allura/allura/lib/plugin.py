@@ -31,6 +31,7 @@ from random import randint
 from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
+import calendar
 import json
 
 try:
@@ -39,7 +40,8 @@ try:
 except ImportError:
     ldap = modlist = None
 import pkg_resources
-from tg import config
+import tg
+from tg import config, request, redirect
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from bson.tz_util import FixedOffset
@@ -71,6 +73,12 @@ class AuthenticationProvider(object):
 
     forgotten_password_process = False
 
+    pwd_expired_allowed_urls = [
+        '/auth/pwd_expired',  # form for changing password, must be first here
+        '/auth/pwd_expired_change',
+        '/auth/logout',
+    ]
+
     def __init__(self, request):
         self.request = request
 
@@ -96,6 +104,16 @@ class AuthenticationProvider(object):
         if user.disabled:
             self.logout()
             return M.User.anonymous()
+        if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
+            if self.request.environ['REQUEST_METHOD'] == 'GET':
+                return_to = self.request.environ['PATH_INFO']
+                if self.request.environ.get('QUERY_STRING'):
+                    return_to += '?' + self.request.environ['QUERY_STRING']
+                location = tg.url(self.pwd_expired_allowed_urls[0], dict(return_to=return_to))
+            else:
+                # Don't try to re-post; the body has been lost.
+                location = tg.url(self.pwd_expired_allowed_urls[0])
+            redirect(location)
         return user
 
     def register_user(self, user_doc):
@@ -121,6 +139,8 @@ class AuthenticationProvider(object):
             if user is None:
                 user = self._login()
             self.session['userid'] = user._id
+            if self.is_password_expired(user):
+                self.session['pwd-expired'] = True
             self.session.save()
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
@@ -131,6 +151,7 @@ class AuthenticationProvider(object):
 
     def logout(self):
         self.session['userid'] = None
+        self.session['pwd-expired'] = False
         self.session.save()
 
     def validate_password(self, user, password):
@@ -229,6 +250,26 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'user_registration_date'
 
+    def get_last_password_updated(self, user):
+        '''
+        Returns the date when the user updated password for a last time.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        :rtype: :class:`datetime <datetime.datetime>`
+        '''
+        raise NotImplementedError, 'get_last_password_updated'
+
+    def is_password_expired(self, user):
+        days = asint(config.get('auth.pwdexpire.days', 0))
+        before = asint(config.get('auth.pwdexpire.before', 0))
+        now = datetime.utcnow()
+        last_updated = self.get_last_password_updated(user)
+        if days and now - last_updated > timedelta(days=days):
+            return True
+        if before and last_updated < datetime.utcfromtimestamp(before):
+            return True
+        return False
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
@@ -279,7 +320,12 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return M.User.query.get(username=rex, disabled=False)
 
     def set_password(self, user, old_password, new_password):
-        user.password = self._encode_password(new_password)
+        if old_password is not None and not self.validate_password(user, old_password):
+            raise exc.HTTPUnauthorized()
+        else:
+            user.password = self._encode_password(new_password)
+            user.last_password_updated = datetime.utcnow()
+            session(user).flush(user)
 
     def _encode_password(self, password, salt=None):
         from allura import model as M
@@ -303,6 +349,15 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if user._id:
             return user._id.generation_time
         return datetime.utcnow()
+
+    def get_last_password_updated(self, user):
+        d = user.last_password_updated
+        if d is None:
+            d = self.user_registration_date(user)
+            # _id.generation_time returns aware datetime (in UTC)
+            # but we're using naive UTC time everywhere
+            d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
+        return d
 
 
 def ldap_conn(who=None, cred=None):
@@ -423,6 +478,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con.modify_s(
                 dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
             con.unbind_s()
+            user.last_password_updated = datetime.utcnow()
+            session(user).flush(user)
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
 
@@ -475,6 +532,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def disable_user(self, user):
         return LocalAuthenticationProvider(None).disable_user(user)
+
+    def get_last_password_updated(self, user):
+        return LocalAuthenticationProvider(None).get_last_password_updated(user)
 
 
 class ProjectRegistrationProvider(object):

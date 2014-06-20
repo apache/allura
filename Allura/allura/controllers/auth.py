@@ -20,8 +20,9 @@ import os
 import datetime
 
 import bson
-from tg import expose, flash, redirect, validate, config
-from tg.decorators import with_trailing_slash
+import tg
+from tg import expose, flash, redirect, validate, config, session
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc as wexc
@@ -336,6 +337,33 @@ class AuthController(BaseController):
         return dict(allow_read=has_access(c.app, 'read')(user=user),
                     allow_write=has_access(c.app, 'write')(user=user),
                     allow_create=has_access(c.app, 'create')(user=user))
+
+    @expose('jinja:allura:templates/pwd_expired.html')
+    @without_trailing_slash
+    def pwd_expired(self, **kw):
+        c.form = F.password_change_form
+        return {'return_to': kw.get('return_to')}
+
+    @expose()
+    @require_post()
+    @without_trailing_slash
+    @validate(V.NullValidator(), error_handler=pwd_expired)
+    def pwd_expired_change(self, **kw):
+        return_to = kw.get('return_to')
+        kw = F.password_change_form.to_python(kw, None)
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.set_password(c.user, kw['oldpw'], kw['pw'])
+        except wexc.HTTPUnauthorized:
+            flash('Incorrect password', 'error')
+            redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
+        flash('Password changed')
+        del session['pwd-expired']
+        session.save()
+        if return_to and return_to != request.url:
+            redirect(return_to)
+        else:
+            redirect('/')
 
 
 class PreferencesController(BaseController):

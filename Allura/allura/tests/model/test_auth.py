@@ -20,13 +20,18 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup, assert_equal, assert_not_in, assert_in
+
+from nose.tools import (
+    with_setup,
+    assert_equal,
+    assert_not_in,
+    assert_in,
+)
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch
 from datetime import datetime, timedelta
 
-from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
@@ -39,15 +44,6 @@ def setUp():
     setup_basic_test()
     ThreadLocalORMSession.close_all()
     setup_global_objects()
-
-
-@with_setup(setUp)
-def test_password_encoder():
-    # Verify salt
-    ep = plugin.LocalAuthenticationProvider(
-        Request.blank('/'))._encode_password
-    assert ep('test_pass') != ep('test_pass')
-    assert ep('test_pass', '0000') == ep('test_pass', '0000')
 
 
 @with_setup(setUp)

@@ -369,7 +369,8 @@ class TestUserStats(unittest.TestCase):
         topic = TroveCategory.query.get(shortname='scientific')
         commit_time = datetime.utcnow() + timedelta(-1)
 
-        self.user.set_password('testpassword')
+        with mock.patch('allura.lib.plugin.session'):
+            self.user.set_password('testpassword')
         addr = M.EmailAddress.upsert('rcopeland@geek.net')
         self.user.claim_address('rcopeland@geek.net')
 

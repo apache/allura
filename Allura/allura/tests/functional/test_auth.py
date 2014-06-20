@@ -15,10 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import calendar
 from datetime import datetime, time, timedelta
 import re
 import json
 from urlparse import urlparse, parse_qs
+from urllib import urlencode
 
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from bson import ObjectId
@@ -32,8 +34,12 @@ from nose.tools import (
     assert_is_none,
     assert_is_not_none,
     assert_in,
-    assert_true
+    assert_not_in,
+    assert_true,
+    assert_false,
 )
+from pylons import tmpl_context as c
+from webob import exc
 
 from allura.tests import TestController
 from allura.tests import decorators as td
@@ -1089,3 +1095,162 @@ class TestDisableAccount(TestController):
         assert_equal(flash['message'], 'Your account was successfully disabled!')
         user = M.User.by_username('test-admin')
         assert_equal(user.disabled, True)
+
+
+class TestPasswordExpire(TestController):
+
+    def login(self, username='test-user', pwd='foo'):
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
+        f = r.forms[0]
+        f['username'] = username
+        f['password'] = pwd
+        return f.submit(extra_environ={'username': '*anonymous'})
+
+    def assert_redirects(self, where='/'):
+        try:
+            self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
+        except exc.HTTPFound as e:
+            assert_equal(e.location, '/auth/pwd_expired?' + urlencode({'return_to': where}))
+
+    def assert_not_redirects(self):
+        self.app.get('/', extra_environ={'username': 'test-user'}, status=200)
+
+    def test_disabled(self):
+        r = self.login()
+        assert_false(r.session.get('pwd-expired'))
+        self.assert_not_redirects()
+
+    def expired(self, r):
+        return r.session.get('pwd-expired')
+
+    def set_expire_for_user(self, username='test-user', days=100):
+        user = M.User.by_username(username)
+        user.last_password_updated = datetime.utcnow() - timedelta(days=days)
+        session(user).flush(user)
+        return user
+
+    def test_days(self):
+        self.set_expire_for_user()
+
+        with h.push_config(config, **{'auth.pwdexpire.days': 180}):
+            r = self.login()
+            assert_false(self.expired(r))
+            self.assert_not_redirects()
+
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+
+    def test_before(self):
+        self.set_expire_for_user()
+
+        before = datetime.utcnow() - timedelta(days=180)
+        before = calendar.timegm(before.timetuple())
+        with h.push_config(config, **{'auth.pwdexpire.before': before}):
+            r = self.login()
+            assert_false(self.expired(r))
+            self.assert_not_redirects()
+
+        before = datetime.utcnow() - timedelta(days=90)
+        before = calendar.timegm(before.timetuple())
+        with h.push_config(config, **{'auth.pwdexpire.before': before}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+
+    def test_logout(self):
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+            r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
+            assert_false(self.expired(r))
+            self.assert_not_redirects()
+
+    def test_change_pwd(self):
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+
+            user = M.User.by_username('test-user')
+            old_update_time = user.last_password_updated
+            old_password = user.password
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
+            f = r.forms[0]
+            f['oldpw'] = 'foo'
+            f['pw'] = 'qwerty'
+            f['pw2'] = 'qwerty'
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
+            assert_equal(r.location, 'http://localhost/')
+            assert_false(self.expired(r))
+            user = M.User.by_username('test-user')
+            assert_true(user.last_password_updated > old_update_time)
+            assert_not_equal(user.password, old_password)
+
+            # Can log in with new password and change isn't required anymore
+            r = self.login(pwd='qwerty')
+            assert_equal(r.location, 'http://localhost/')
+            assert_not_in('Invalid login', r)
+            assert_false(self.expired(r))
+            self.assert_not_redirects()
+
+            # and can't log in with old password
+            r = self.login(pwd='foo')
+            assert_in('Invalid login', r)
+
+    def check_validation(self, oldpw, pw, pw2):
+        user = M.User.by_username('test-user')
+        old_update_time = user.last_password_updated
+        old_password = user.password
+        r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
+        f = r.forms[0]
+        f['oldpw'] = oldpw
+        f['pw'] = pw
+        f['pw2'] = pw2
+        r = f.submit(extra_environ={'username': 'test-user'})
+        assert_true(self.expired(r))
+        user = M.User.by_username('test-user')
+        assert_equal(user.last_password_updated, old_update_time)
+        assert_equal(user.password, old_password)
+        return r
+
+    def test_change_pwd_validation(self):
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+
+            r = self.check_validation('', '', '')
+            assert_in('Please enter a value', r)
+            r = self.check_validation('', 'qwe', 'qwerty')
+            assert_in('Enter a value 6 characters long or more', r)
+            r = self.check_validation('bad', 'qwerty1', 'qwerty')
+            assert_in('Passwords must match', r)
+            r = self.check_validation('bad', 'qwerty', 'qwerty')
+            assert_in('Incorrect password', self.webflash(r))
+            assert_equal(r.location, 'http://localhost/auth/pwd_expired?return_to=')
+
+            with h.push_config(config, **{'auth.min_password_len': 3}):
+                r = self.check_validation('foo', 'foo', 'foo')
+                assert_in('Your old and new password should not be the same', r)
+
+    def test_return_to(self):
+        return_to = '/p/test/tickets/?milestone=1.0&page=2'
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            self.assert_redirects(where=return_to)
+
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
+            f = r.forms[0]
+            f['oldpw'] = 'foo'
+            f['pw'] = 'qwerty'
+            f['pw2'] = 'qwerty'
+            f['return_to'] = return_to
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
+            assert_equal(r.location, 'http://localhost/p/test/tickets/?milestone=1.0&page=2')

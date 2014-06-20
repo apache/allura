@@ -226,6 +226,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
     username = FieldProperty(str)
     email_addresses = FieldProperty([str])
     password = FieldProperty(str)
+    last_password_updated = FieldProperty(datetime)
     projects = FieldProperty(S.Deprecated)
     # full mount point: prefs dict
     tool_preferences = FieldProperty({str: {str: None}})
@@ -651,7 +652,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
-            self, self.password, new_password)
+            self, None, new_password)
 
     @classmethod
     def anonymous(cls):
