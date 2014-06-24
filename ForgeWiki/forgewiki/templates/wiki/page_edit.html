@@ -34,7 +34,20 @@
 {% block actions %}
   <a href="." title="View Page"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Page"></b></a>
   {% if page_exists and h.has_access(page, 'delete')() %}
-    <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+    <a class="post-link" href="#" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+    <div class="confirmation_dialog" style="display:none">
+        <b class="ico ico-close close" data-icon="D"></b>
+
+        <h1>Confirm page deletion</h1>
+        <p>
+            Do you really want to delete the page?
+            You can undo it later.
+        </p>
+        <p>
+            <button class="continue_confirm" href="./delete">Yes</button>
+            <input type="button" value="Cancel" class="cancel_confirmation close">
+        </p>
+    </div>
   {% endif %}
 {% endblock %}
 
@@ -66,6 +79,7 @@
     {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
   {% endif %}
 </div>
+{{c.confirmation.display(content='')}}
 {% endblock %}
 
 {% block wiki_extra_js %}

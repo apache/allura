@@ -61,7 +61,9 @@ class W:
     create_page_lightbox = CreatePageWidget(
         name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
     markdown_editor = ffw.MarkdownEdit()
-    revert = ffw.Lightbox(name='revert', trigger='a.post-link')
+    confirmation = ffw.Lightbox(name='confirm',
+                                trigger='a.post-link',
+                                options="{ modalCSS: { minHeight: 0, width: 'inherit', top: '150px'}}")
     label_edit = ffw.LabelEdit()
     attachment_add = ffw.AttachmentAdd()
     attachment_list = ffw.AttachmentList()
@@ -488,6 +490,7 @@ class PageController(BaseController, FeedController):
     def index(self, version=None, page=0, limit=25, **kw):
         if not self.page:
             redirect(c.app.url + h.urlquote(self.title) + '/edit')
+        c.confirmation = W.confirmation
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
@@ -524,6 +527,7 @@ class PageController(BaseController, FeedController):
             page = self.page
         else:
             page = self.fake_page()
+        c.confirmation = W.confirmation
         c.markdown_editor = W.markdown_editor
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
@@ -558,7 +562,7 @@ class PageController(BaseController, FeedController):
             raise exc.HTTPNotFound
         c.page_list = W.page_list
         c.page_size = W.page_size
-        c.revert = W.revert
+        c.confirmation = W.confirmation
         limit, pagenum, start = g.handle_paging(limit, page, default=25)
         count = 0
         pages = self.page.history()

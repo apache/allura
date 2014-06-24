@@ -43,20 +43,26 @@
         <div class="grid-7"><input type="submit" value="Create page"></div>
     </form>
   ''')}}
-<script type="text/javascript">
-  $('.post-link')
-    .click(function() {
-        var dialog_text = $(".confirm_revert_"+$(this).data("version"));
-        var modal = $('#lightbox_revert');
-        modal.html(dialog_text.html());
-        modal.find('.continue_revert').click(function(evt) {
-          var cval = $.cookie('_session_id');
-          evt.preventDefault();
-          $.post($(this).attr('href'), {_session_id:cval}, function(val)
-              { window.location = val.location; },
-              'json');
-          });
-      });
-</script>
+    <script type="text/javascript">
+        $('.post-link').click(function () {
+            var version = $(this).data("dialog-id");
+            if (version) {
+                var dialog_text = $(".confirmation_dialog_" + version);
+            } else {
+                var dialog_text = $(".confirmation_dialog");
+            }
+
+            var modal = $('#lightbox_confirm');
+            modal.html(dialog_text.html());
+
+            modal.find('.continue_confirm').click(function (evt) {
+                var cval = $.cookie('_session_id');
+                evt.preventDefault();
+                $.post($(this).attr('href'), {_session_id: cval}, function (val) {
+                    window.location = val.location;
+                }, 'json');
+            });
+        });
+    </script>
   {% block wiki_extra_js %}{% endblock %}
 {% endblock %}

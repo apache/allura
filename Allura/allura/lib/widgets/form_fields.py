@@ -508,6 +508,7 @@ class Lightbox(ew_core.Widget):
     defaults = dict(
         name=None,
         trigger=None,
+        options='',
         content='',
         content_template=None)
 
@@ -517,14 +518,14 @@ class Lightbox(ew_core.Widget):
             var $lightbox = $('#lightbox_%s');
             var $trigger = $('%s');
             $trigger.bind('click', function(e) {
-                $lightbox.lightbox_me();
+                $lightbox.lightbox_me(%s);
                 return false;
             });
             $($lightbox).delegate('.close', 'click', function(e) {
                 $lightbox.trigger('close');
                 return false;
             });
-        ''' % (self.name, self.trigger))
+        ''' % (self.name, self.trigger, self.options))
 
 
 class DisplayOnlyField(ew.HiddenField):
