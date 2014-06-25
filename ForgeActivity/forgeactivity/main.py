@@ -164,7 +164,7 @@ class ForgeActivityController(BaseController):
                                 t.actor.activity_name,
                 t.verb,
                 t.obj.activity_name,
-                ' on %s' % (t.target.activity_name or ''),
+                ' on %s' % t.target.activity_name if t.target.activity_name else '',
             ),
                 link=url,
                 pubdate=t.published,

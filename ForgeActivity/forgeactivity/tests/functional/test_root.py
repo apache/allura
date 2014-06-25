@@ -226,6 +226,30 @@ class TestActivityController(TestController):
         assert_equal(activity.find('link').text,
                      'http://localhost/p/test/tickets/34/?limit=25#ed7c')
 
+    @td.with_tool('test', 'activity')
+    @patch('forgeactivity.main.g.director')
+    def test_feed_rss_project_verb_without_activity_name(self, director):
+        from activitystream.storage.base import StoredActivity
+        director.get_timeline.return_value = [StoredActivity(**{
+            "obj": {
+                "activity_extras": {},
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "ticket #34"
+            },
+            "target": {},
+            "actor": {
+                "activity_name": "Administrator 1",
+            },
+            "verb": "created"
+        })]
+
+        r = self.app.get('/p/test/activity/feed.rss')
+        timeline = r.xml.find('channel')
+        assert_equal(1, len(timeline.findall('item')))
+        activity = timeline.find('item')
+
+        assert_equal(activity.find('title').text, 'Administrator 1 created ticket #34')
+
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
     @patch('forgeactivity.main.g.director')
