@@ -416,7 +416,9 @@ class PreferencesController(BaseController):
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
-                primary_addr = c.user.email_addresses[0]
+                obj = c.user.address_object(c.user.email_addresses[0])
+                if obj.confirmed:
+                    primary_addr = c.user.email_addresses[0]
             if primary_addr:
                 c.user.set_pref('email_address', primary_addr)
             for k, v in preferences.iteritems():

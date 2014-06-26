@@ -81,7 +81,11 @@
             {% for a in c.user.email_addresses %}
             <tr>
               {% set obj = c.user.address_object(a) %}
-              <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+              {% if obj.confirmed %}
+                <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+              {% else %} 
+                <td> <input type="radio" disabled="disabled"></td>
+              {% endif %}
               <td>{{a}}</td>
               {% if obj %}
               <td>

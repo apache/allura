@@ -113,9 +113,9 @@ class TestAuth(TestController):
             extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
-        # preferred address has changed to remaining address
+        # preferred address has not change if not varifucated
         assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
-                     'test@example.com')
+                     None)
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
