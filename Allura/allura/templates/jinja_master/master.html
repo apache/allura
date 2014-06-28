@@ -29,7 +29,7 @@
 {% do g.register_forge_js('js/pb.transformie.min.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
-{% do g.register_css('/nf/tool_icon_css', compress=False) %}
+{% do g.register_css('/nf/tool_icon_css?' + g.build_key, compress=False) %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
 {# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
