@@ -22,7 +22,15 @@ $(function() {
     $(this).find('.screenshot').each(function(i) {
       params[$(this).data('ss-id')] = i;
     });
-    $.post('sort_screenshots', params);
+
+    $.post('sort_screenshots', params)
+      .done(function() {
+        flash('New sort order saved.', 'success');
+      })
+      .fail(function() {
+        flash('Sorting failed. Please refresh the page and try again.', 'error');
+      });
+
   });
 });
 

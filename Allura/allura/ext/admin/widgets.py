@@ -138,10 +138,12 @@ class NewGroupSettings(ff.AdminForm):
         name = ew.InputField(label='Name')
 
 
-class ScreenshotAdmin(ff.AdminForm):
+class ScreenshotAdmin(ff.ForgeForm):
     defaults = dict(
-        ff.AdminForm.defaults,
-        enctype='multipart/form-data')
+        ff.ForgeForm.defaults,
+        enctype='multipart/form-data',
+        submit_text='Upload',
+        )
 
     @property
     def fields(self):
