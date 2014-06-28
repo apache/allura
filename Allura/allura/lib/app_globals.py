@@ -602,6 +602,10 @@ class Globals(object):
     def noreply(self):
         return unicode(config.get('noreply', 'noreply@%s' % config['domain']))
 
+    @property
+    def build_key(self):
+        return config.get('build_key', '')
+
 
 class Icon(object):
 

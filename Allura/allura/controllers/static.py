@@ -43,10 +43,10 @@ class NewForgeController(object):
         return html
 
     @expose()
-    def tool_icon_css(self):
+    def tool_icon_css(self, *args, **kw):
         """Serve stylesheet containing icon urls for every installed tool.
 
         """
         css, md5 = g.tool_icon_css
-        return utils.serve_file(StringIO(css), 'tool_icon_css', 'text/css',
-                                etag=md5)
+        return utils.serve_file(
+            StringIO(css), 'tool_icon_css', 'text/css', etag=md5)
