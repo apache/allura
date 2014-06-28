@@ -17,23 +17,23 @@
        under the License.
  */
 .sortable {
-    float: left;
+    margin: 0 1em;
 }
 .sortable .screenshot {
-    margin: 0 0 10px 10px;
+    margin: 0 0 1em 0;
     border: 1px solid #eee;
     background: #fff;
-    float: left;
+    padding: 1em;
+}
+.sortable .screenshot:hover {
+    border: 1px solid #ccc;
+    cursor: move;
 }
 .sortable .screenshot .image {
-    margin-left: 0;
-    float: left;
-}
-.sortable .screenshot .image img {
-    display: block;
+    display: inline-block;
+    vertical-align: middle;
 }
 .sortable .screenshot .controls {
-    margin: 50px 15px 0 20px;
-    width: 190px;
-    float: left;
+    display: inline-block;
+    margin-left: 1em;
 }
