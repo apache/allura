@@ -1829,6 +1829,10 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/admin/bugs/set_options',
                       params={'EnableVoting': 'true'})
 
+        # test vote form not visible to anon user
+        r = self.app.get('/bugs/1/', extra_environ=dict(username='*anonymous'))
+        assert_false(r.html.find('div', {'id': 'vote'}))
+
         r = self.app.get('/bugs/1/')
         votes_up = r.html.find('span', {'class': 'votes-up'})
         votes_down = r.html.find('span', {'class': 'votes-down'})

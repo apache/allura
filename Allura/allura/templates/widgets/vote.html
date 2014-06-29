@@ -21,6 +21,7 @@
                   and h.has_access(artifact, 'post')() %}
 {% set voted = artifact.user_voted(c.user) %}
 
+{% if can_vote %}
 <div id="vote" class="gray">
   <span class="btn-set duo">
   <a href="" class="btn {% if voted == 1 %}active{% endif %} {% if can_vote %}js-vote-up{% endif %}" onclick="javascript:return false;">
@@ -31,7 +32,7 @@
   </a>
   </span>
   <div class="grid-8 vote-text">
-    <span class="votes-up">{{ artifact.votes_up }}</span> up votes | 
+    <span class="votes-up">{{ artifact.votes_up }}</span> up votes |
     <span class="votes-down">{{ artifact.votes_down }}</span> down votes |
     <span class="votes-percent">{{ artifact.votes_up_percent }}</span>%
   </div>
@@ -49,3 +50,4 @@
   </form>
   {% endif %}
 </div>
+{% endif %}
