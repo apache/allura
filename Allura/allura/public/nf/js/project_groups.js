@@ -85,7 +85,7 @@ $(function() {
       }
       else{
         holder.attr('data-user', data.username).addClass('deleter');
-        holder.html(perm_delete_ico+' '+data.displayname);
+        holder.html(perm_delete_ico+' '+data.displayname+' ('+data.username+')');
         holder.children('b').click(delete_user);
       }
     });
