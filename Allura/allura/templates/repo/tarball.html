@@ -36,28 +36,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             });
         {% endif %}
     {% elif status in ('ready', 'busy') %}
-        var opts = {
-            lines: 9, // The number of lines to draw
-            length: 4, // The length of each line
-            width: 2, // The line thickness
-            radius: 3, // The radius of the inner circle
-            rotate: 0, // The rotation offset
-            color: '#555', // #rgb or #rrggbb
-            speed: 1, // Rounds per second
-            trail: 60, // Afterglow percentage
-            shadow: false, // Whether to render a shadow
-            hwaccel: false, // Whether to use hardware acceleration
-            className: 'spinner', // The CSS class to assign to the spinner
-            zIndex: 2e9, // The z-index (defaults to 2000000000)
-            top: 10, // Top position relative to parent in px
-            left: 10 // Left position relative to parent in px
-        };
-        var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
+        $('.spinner').show()
         var delay = 500;
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
                 if (data.status === 'complete') {
-                    spinner.stop();
+                    $('.spinner').hide()
                     $('#snapshot_status h2').hide();
                     $('#snapshot_status h2.complete').show();
                     {% if 'no-redirect' not in request.params %}
@@ -70,7 +54,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                         $('#snapshot_status h2.busy').show();
                     } else {
                         // something went wrong
-                        spinner.stop();
+                        $('.spinner').hide()
                         $('#snapshot_status h2').hide();
                         $('#snapshot_status form').show();
                     }
@@ -90,6 +74,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% block content %}
 {% set path = request.params.get('path', '') %}
 <div id='snapshot_status'>
+    <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
     <h2 class="busy ready">Generating snapshot...</h2>
     <h2 class="complete">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
     <form action="tarball" method="post" class="None">
@@ -103,12 +88,14 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 
 {% block extra_css %}
 <style type="text/css">
+    #snapshot_status {
+      margin: 0 10px;
+    }
     #snapshot_status h2 {
-        padding-left: 33px;
         display: none;
     }
     #snapshot_status .{{ status }} {
-        display: block;
+        display: inline-block;
     }
     #snapshot_status form {
       display: none;
