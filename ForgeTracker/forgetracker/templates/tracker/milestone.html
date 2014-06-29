@@ -38,7 +38,7 @@
 {% block edit_box %}
 <div class="editbox">
     <div class="grid-6">
-      <label>Status:</label> {{milestone.closed and 'Closed' or 'Open'}}
+      <label>Status:</label> {{milestone.complete and 'Closed' or 'Open'}}
     </div>
     <div class="grid-6">
       <label>Due Date:</label> {{milestone.due_date or 'N/A'}}
