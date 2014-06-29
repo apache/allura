@@ -525,7 +525,6 @@ class PageController(BaseController, FeedController):
         else:
             page = self.fake_page()
         c.markdown_editor = W.markdown_editor
-        c.user_select = ffw.ProjectUserSelect()
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit

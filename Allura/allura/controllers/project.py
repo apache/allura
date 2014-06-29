@@ -466,11 +466,16 @@ class ProjectController(FeedController):
 
     @expose('json:')
     def users(self):
+        users = c.project.users()
+        if c.user and c.user in users:
+            users.remove(c.user)
+            users.insert(0, c.user)
+
         return {
             'options': [{
                 'value': u.username,
                 'label': '%s (%s)' % (u.display_name, u.username)
-            } for u in c.project.users()]
+            } for u in users]
         }
 
 
