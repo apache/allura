@@ -122,7 +122,7 @@ class RepositoryApp(Application):
             return []
         links = [SitemapEntry('Browse Commits', c.app.url +
                               'commit_browser', ui_icon=g.icons['folder'])]
-        if self.forkable and self.repo.status == 'ready':
+        if self.forkable and self.repo.status == 'ready' and not self.repo.is_empty():
             links.append(
                 SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
         merge_request_count = self.repo.merge_requests_by_statuses(
