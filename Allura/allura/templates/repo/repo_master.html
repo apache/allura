@@ -34,7 +34,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript" src="{{g.forge_static('js/spin.min.js')}}"></script>
 <script type="text/javascript">(function() {
   $('#access_urls .btn').click(function(evt){
     evt.preventDefault();
@@ -50,30 +49,12 @@
   var repo_status = document.getElementById('repo_status');
   // The repo_status div will only be present if repo.status != 'ready'
   if (repo_status) {
-    var opts = {
-        lines: 9, // The number of lines to draw
-        length: 4, // The length of each line
-        width: 2, // The line thickness
-        radius: 3, // The radius of the inner circle
-        rotate: 0, // The rotation offset
-        color: '#555', // #rgb or #rrggbb
-        speed: 1, // Rounds per second
-        trail: 60, // Afterglow percentage
-        shadow: false, // Whether to render a shadow
-        hwaccel: false, // Whether to use hardware acceleration
-        className: 'spinner', // The CSS class to assign to the spinner
-        zIndex: 2e9, // The z-index (defaults to 2000000000)
-        top: 10, // Top position relative to parent in px
-        left: 10 // Left position relative to parent in px
-    };
-    var spinner = new Spinner(opts).spin(repo_status);
+    $('.spinner').show()
     function check_status() {
         $.get('{{repo.url()}}status', function(data) {
             if (data.status === 'ready') {
                 window.clearInterval(status_checker);
-                spinner.opts.speed = 0;
-                spinner.opts.opacity = 1;
-                spinner.spin(repo_status)
+                $('.spinner').hide()
                 $('#repo_status h2').html('Repo status: ready. <a href=".">Click here to refresh this page.</a>');
             }
             else {
@@ -92,6 +73,7 @@
 {% block before_content %}
   {% if repo and repo.status != 'ready' %}
     <div id="repo_status">
+        <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
         <h2>Repo status: <span>{{repo.status}}</span>...</h2>
     </div>
   {% endif %}

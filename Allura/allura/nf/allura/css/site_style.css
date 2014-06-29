@@ -2911,8 +2911,11 @@ h1.title .viewer:hover {
 }
 
 /* Repo status indicator, displayed on repo pages if status != 'ready' */
+#repo_status {
+  margin: 0 10px;
+}
 #repo_status h2 {
-  padding-left: 33px;
+  display: inline-block;
 }
 
 .neighborhood_feed_entry h3 {
