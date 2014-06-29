@@ -62,7 +62,7 @@ class OAuthConsumerToken(OAuthToken):
     class __mongometa__:
         polymorphic_identity = 'consumer'
         name = 'oauth_consumer_token'
-        unique_indexes = ['name']
+        unique_indexes = [('name', 'user_id')]
 
     type = FieldProperty(str, if_missing='consumer')
     user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
