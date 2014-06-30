@@ -55,7 +55,7 @@ class LoginForm(ForgeForm):
             msg = 'Invalid login'
             raise Invalid(
                 msg,
-                dict(username=value['username'], return_to=value['return_to']),
+                dict(username=value['username'], return_to=value.get('return_to')),
                 None)
         return value
 
