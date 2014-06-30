@@ -113,7 +113,7 @@ class TestAuth(TestController):
             extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
-        # preferred address has not change if not varifucated
+        # preferred address has not changed if email is not verified
         assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
                      None)
 
