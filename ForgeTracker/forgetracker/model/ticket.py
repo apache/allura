@@ -1256,4 +1256,7 @@ class MovedTicket(MovedArtifact):
 
     ticket_num = FieldProperty(int, required=True, allow_none=False)
 
+    def url(self):
+        return self.moved_to_url
+
 Mapper.compile_all()
