@@ -48,7 +48,7 @@ b.ico.ico-plus { background-position: -16px -128px; }
 b.ico.ico-minus { background-position: -48px -128px; }
 b.ico.ico-minuscirc { background-position: -48px -128px; }
 b.ico.ico-undelete { background-position: 0px -64px; }
-b.ico.ico-delete { background-position: -80px -128px; }
+b.ico.ico-delete, b.ico.ico-noentry { background-position: -80px -128px; }
 b.ico.ico-help { background-position: -48px -144px; }
 b.ico.ico-pin { background-position: -144px -144px; }
 b.ico.ico-feed { background-position: -16px -176px; }
@@ -56,6 +56,7 @@ b.ico.ico-close { background-position: -80px -128px; }
 b.ico.ico-vote-up { background-image: url('../images/vote_up.png'); }
 b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 b.ico.ico-star { background-position: -240px -96px; }
+b.ico.ico-check, b.ico.ico-checkcircle { background-position: -64px -144px; } /* TODO: these should be separate images */
 
 
 #ticket_search_results_holder{
