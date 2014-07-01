@@ -1213,6 +1213,7 @@ nav .ico {
   text-transform: none;
 }
 
+/* these don't work with sprite images (only if the icons were font-based)
 .x16 {
   font-size: 16px;
   width: 16px;
@@ -1242,6 +1243,7 @@ nav .ico {
   width: 64px;
   height: 64px;
 }
+*/
 
 .modal b.close {
   position: absolute;
