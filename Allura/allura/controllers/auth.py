@@ -433,6 +433,7 @@ class PreferencesController(BaseController):
                     em = M.EmailAddress.upsert(new_addr['addr'])
                     em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
+                    flash('A verification email has been sent.  Please check your email and click to confirm.')
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
