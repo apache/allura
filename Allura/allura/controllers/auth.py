@@ -239,7 +239,7 @@ class AuthController(BaseController):
             flash('Email address confirmed')
         else:
             flash('Unknown verification link', 'error')
-        redirect('/')
+        redirect('/auth/preferences/')
 
     @expose()
     def logout(self):
