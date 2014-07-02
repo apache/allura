@@ -373,6 +373,13 @@ class AuthController(BaseController):
             redirect('/')
 
 
+def select_new_primary_addr(user, ignore_emails=[]):
+    for obj_e in user.email_addresses:
+        obj = user.address_object(obj_e)
+        if obj and obj.confirmed and obj_e not in ignore_emails:
+            return obj_e
+
+
 class PreferencesController(BaseController):
 
     def _check_security(self):
@@ -407,8 +414,14 @@ class PreferencesController(BaseController):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
                     if primary_addr == c.user.email_addresses[i]:
-                        c.user.set_pref('email_address', None)
-                        primary_addr = None
+                        if select_new_primary_addr(c.user, ignore_emails=primary_addr) is None \
+                                and asbool(config.get('auth.require_email_addr', False)):
+                            flash('You must have at least one verified email address.', 'error')
+                            redirect('.')
+                        else:
+                            # clear it now, a new one will get set below
+                            c.user.set_pref('email_address', None)
+                            primary_addr = None
                     del c.user.email_addresses[i]
                     if obj:
                         obj.delete()
@@ -423,11 +436,7 @@ class PreferencesController(BaseController):
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
-                for obj_e in c.user.email_addresses:
-                    obj = c.user.address_object(obj_e)
-                    if obj:
-                        if obj.confirmed:
-                            primary_addr = obj_e
+                primary_addr = select_new_primary_addr(c.user)
             if primary_addr:
                 c.user.set_pref('email_address', primary_addr)
             for k, v in preferences.iteritems():
