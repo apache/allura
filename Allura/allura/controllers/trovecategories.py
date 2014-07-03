@@ -14,10 +14,12 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from collections import OrderedDict
 
 from tg import expose, flash, redirect, validate, config
 from pylons import tmpl_context as c
 from string import digits, lowercase
+from tg.decorators import without_trailing_slash
 from webob.exc import HTTPForbidden
 from pylons import app_globals as g
 
@@ -76,6 +78,29 @@ class TroveCategoryController(BaseController):
             categories=l,
             selected_cat=selected_cat,
             hierarchy=hierarchy)
+
+    def generate_category(self, category):
+        if not category:
+            return ()
+
+        children = {
+            key: value
+            for (key, value) in
+            (self.generate_category(child) for child in category.subcategories)
+        }
+
+        return category.fullname, OrderedDict(sorted(children.iteritems()))
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/browse_trove_categories.html')
+    def browse(self):
+        parent_categories = M.TroveCategory.query.find(dict(trove_parent_id=0)).all()
+        tree = {
+            key: value
+            for (key, value) in
+            (self.generate_category(child) for child in parent_categories)
+        }
+        return dict(tree=OrderedDict(sorted(tree.iteritems())))
 
     @expose()
     @require_post()

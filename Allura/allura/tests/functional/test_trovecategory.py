@@ -14,18 +14,19 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from collections import OrderedDict
 
 import mock
 
 from tg import config
 from nose.tools import assert_equals, assert_true
 from ming.orm import session
-from bson.objectid import ObjectId
 
 from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_trove_categories
+from allura.tests import decorators as td
 
 
 class TestTroveCategory(TestController):
@@ -80,3 +81,36 @@ class TestTroveCategory(TestController):
         with h.push_config(config, **cfg):
             check_access(username='test-user', status=403)
             check_access(username='root', status=200)
+
+class TestTroveCategoryController(TestController):
+    @td.with_tool('test2', 'admin_main', 'admin')
+    def test_trove_hierarchy(self):
+        root_parent = M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)
+        category_a = M.TroveCategory(fullname="CategoryA", trove_cat_id=2, trove_parent_id=1)
+        category_b = M.TroveCategory(fullname="CategoryB", trove_cat_id=3, trove_parent_id=1)
+        child_a = M.TroveCategory(fullname="ChildA", trove_cat_id=4, trove_parent_id=2)
+        child_b = M.TroveCategory(fullname="ChildB", trove_cat_id=5, trove_parent_id=2)
+
+        session(M.TroveCategory).flush()
+
+        r = self.app.get('/categories/browse')
+        tree = r.controller_output['tree']
+
+        expected_data = OrderedDict(
+            [('Root', OrderedDict(
+                [('CategoryA', OrderedDict([
+                    ('ChildA', OrderedDict()),
+                    ('ChildB', OrderedDict())
+                ])),
+                 ('CategoryB', OrderedDict())
+                ])
+             )]
+        )
+        assert tree == expected_data
+
+    @td.with_tool('test2', 'admin_main', 'admin')
+    def test_trove_empty_hierarchy(self):
+        r = self.app.get('/categories/browse')
+        tree = r.controller_output['tree']
+        assert tree == OrderedDict()
+

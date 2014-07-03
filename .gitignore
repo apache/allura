@@ -32,3 +32,4 @@ Allura/forced_upgrade.ini
 scripts/teamforge-export/
 report.clonedigger
 .ropeproject
+.idea
