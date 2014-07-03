@@ -21,7 +21,8 @@ from urlparse import urljoin
 
 from tg import config
 from BeautifulSoup import BeautifulSoup
-
+import html5lib
+import html5lib.serializer
 import markdown
 
 from . import macro
@@ -504,12 +505,12 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        try:
-            p = ForgeHTMLSanitizer('utf-8')
-        except TypeError:  # $@%## pre-released versions from SOG
-            p = ForgeHTMLSanitizer('utf-8', '')
-        p.feed(text.encode('utf-8'))
-        return unicode(p.output(), 'utf-8')
+        parser = html5lib.HTMLParser(tokenizer=ForgeHTMLSanitizer)
+        parsed = parser.parse(text)
+        serializer = html5lib.serializer.HTMLSerializer()
+        walker = html5lib.getTreeWalker("etree")
+        out = ''.join(serializer.serialize(walker(parsed)))
+        return out
 
 
 class AutolinkPattern(markdown.inlinepatterns.Pattern):

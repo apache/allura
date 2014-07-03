@@ -111,7 +111,7 @@ class TestSearchIndexable(unittest.TestCase):
 
     def test_solarize_html_in_text(self):
         self.obj.index = lambda: dict(text='<script>a(1)</script>')
-        assert_equal(self.obj.solarize(), dict(text=''))
+        assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
         self.obj.index = lambda: dict(text='&lt;script&gt;a(1)&lt;/script&gt;')
         assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
 

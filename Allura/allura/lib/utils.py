@@ -44,7 +44,7 @@ from webhelpers.html import literal
 from webob import exc
 from pygments.formatters import HtmlFormatter
 from setproctitle import getproctitle
-from feedparser import _HTMLSanitizer
+import html5lib.sanitizer
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
@@ -538,12 +538,16 @@ def serve_file(fp, filename, content_type, last_modified=None, cache_expires=Non
         return iter(lambda: fp.read(block_size), '')
 
 
-class ForgeHTMLSanitizer(_HTMLSanitizer):
+class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
 
-    def unknown_starttag(self, tag, attrs):
-        if 'iframe' in self.acceptable_elements:
-            self.acceptable_elements.remove('iframe')
-        if (tag == 'iframe') and (dict(attrs).get('src', '').startswith('https://www.youtube.com/embed/') or
-                                  dict(attrs).get('src', '').startswith('https://www.gittip.com/')):
-            self.acceptable_elements.add('iframe')
-        _HTMLSanitizer.unknown_starttag(self, tag, attrs)
+    valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
+
+    def sanitize_token(self, token):
+        if 'iframe' in self.allowed_elements:
+            self.allowed_elements.remove('iframe')
+        if token.get('name') == 'iframe':
+            attrs = dict(token.get('data'))
+            if attrs.get('src', '').startswith(self.valid_iframe_srcs):
+                self.allowed_elements.append('iframe')
+        return super(ForgeHTMLSanitizer, self).sanitize_token(token)
+
