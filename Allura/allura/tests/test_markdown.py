@@ -134,13 +134,13 @@ class TestCommitMessageExtension(unittest.TestCase):
 Not *strong* or _underlined_."""
 
         expected_html = """\
-<div class="markdown_content"><p># Not A Heading #<br />
----<br />
-* <a href="/p/project/tool/artifact/">#100</a>, <a href="/p/project/tool/artifact/">r2</a><br />
-* <a href="/p/project/tool/artifact/">ticket:100</a><br />
-* <a href="/p/project/tool/artifact/#abc">comment:13:ticket:2</a><br />
-* <a href="/p/project/tool/2/tree/test.py#l3">source:test.py@2#L3</a></p>
-<p>Not *strong* or _underlined_.</p></div>"""
+<div class="markdown_content"><p># Not A Heading #<br>
+---<br>
+* <a href=/p/project/tool/artifact/>#100</a>, <a href=/p/project/tool/artifact/>r2</a><br>
+* <a href=/p/project/tool/artifact/>ticket:100</a><br>
+* <a href=/p/project/tool/artifact/#abc>comment:13:ticket:2</a><br>
+* <a href=/p/project/tool/2/tree/test.py#l3>source:test.py@2#L3</a></p>
+<p>Not *strong* or _underlined_.</div>"""
 
         md = ForgeMarkdown(
             extensions=[mde.CommitMessageExtension(app), 'nl2br'],

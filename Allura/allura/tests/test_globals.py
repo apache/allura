@@ -120,45 +120,45 @@ def test_macro_projects():
                        project=p_nbhd.neighborhood_project,
                        user=M.User.by_username('test-admin')):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=root]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' not in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=sub1]]')
-        assert '<img alt="Test Project Logo"' not in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' not in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' not in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
-        assert '<img alt="Test Project Logo"' not in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' not in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=root|sub1]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root|root,sub1]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' not in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root|test,sub1]]')
-        assert '<img alt="Test Project Logo"' in r, r
-        assert '<img alt="A Subproject Logo"' in r, r
+        assert 'alt="Test Project Logo"' in r, r
+        assert 'alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
-        assert '<p class="macro_projects_total">3 Projects</p>' in r, r
+        assert '<p class="macro_projects_total">3 Projects' in r, r
         r = g.markdown_wiki.convert(
             '[[projects show_total=True private=True sort=random]]')
-        assert '<p class="macro_projects_total">1 Projects</p>' in r, r
-        assert '<img alt="Test 2 Logo"' in r, r
-        assert '<img alt="Test Project Logo"' not in r, r
-        assert '<img alt="A Subproject Logo"' not in r, r
+        assert '<p class="macro_projects_total">1 Projects' in r, r
+        assert 'alt="Test 2 Logo"' in r, r
+        assert 'alt="Test Project Logo"' not in r, r
+        assert 'alt="A Subproject Logo"' not in r, r
 
         r = g.markdown_wiki.convert('[[projects show_proj_icon=True]]')
-        assert '<img alt="Test Project Logo"' in r
+        assert 'alt="Test Project Logo"' in r
         r = g.markdown_wiki.convert('[[projects show_proj_icon=False]]')
-        assert '<img alt="Test Project Logo"' not in r
+        assert 'alt="Test Project Logo"' not in r
 
 
 def test_macro_gittip_button():
@@ -167,7 +167,7 @@ def test_macro_gittip_button():
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[gittip_button username=test]]')
     assert_equal(
-        r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
+        r, u'<div class="markdown_content"><p><iframe width="48pt" height="22pt" style="border: 0; margin: 0; padding: 0;" src="https://www.gittip.com/test/widget.html"></iframe>\n</p></div>')
 
 
 def test_macro_neighborhood_feeds():
@@ -212,7 +212,7 @@ def test_macro_members():
     r = g.markdown_wiki.convert('[[members limit=2]]')
     assert_equal(r, '<div class="markdown_content"><h6>Project Members:</h6>\n'
                  '<ul class="md-users-list">\n'
-                 '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li><li><a href="/u/test-user/">Test User</a></li>\n'
+                 '<li><a href="/u/test-admin">Test Admin</a> (admin)</li><li><a href="/u/test-user">Test User</a></li>\n'
                  '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>\n'
                  '</ul>\n'
                  '</div>')
@@ -225,7 +225,7 @@ def test_macro_members_escaping():
     r = g.markdown_wiki.convert('[[members]]')
     assert_equal(r, u'<div class="markdown_content"><h6>Project Members:</h6>\n'
                  u'<ul class="md-users-list">\n'
-                 u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>\n'
+                 u'<li><a href="/u/test-admin">Test Admin &lt;script&gt;</a> (admin)</li>\n'
                  u'</ul>\n</div>')
 
 
@@ -236,7 +236,7 @@ def test_macro_project_admins():
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[project_admins]]')
     assert_equal(
-        r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
+        r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
 
 
 @with_setup(setUp)
@@ -253,7 +253,7 @@ def test_macro_project_admins_one_br():
 
 
 @td.with_wiki
-def test_macro_include_extra_br():
+def test_macro_include_no_extra_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     wiki = p_test.app_instance('wiki')
@@ -278,6 +278,7 @@ def test_macro_include_extra_br():
 <div><div class="markdown_content"><p>included page 2</p></div></div>
 <div><div class="markdown_content"><p>included page 3</p></div></div>
 </p>
+<p></p>
 </div>
 '''.strip().replace('\n', '')
     assert html.strip().replace('\n', '') == expected_html, html
@@ -324,7 +325,7 @@ def test_macro_embed(oembed_fetch):
     }
     r = g.markdown_wiki.convert(
         '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
+    assert_in('<div class="grid-20"><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" height="270" width="480"></iframe>\n</div>',
               r)
 
 
@@ -355,29 +356,29 @@ def test_wiki_artifact_links():
     assert 'See <span>[18:13:49]</span>' in text, text
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('Read [here](Home) about our project')
-        assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text
+        assert '<a href="/p/test/wiki/Home/" class="">here</a>' in text, text
         text = g.markdown.convert('[Go home](test:wiki:Home)')
-        assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text, text
+        assert '<a href="/p/test/wiki/Home/" class="">Go home</a>' in text, text
         text = g.markdown.convert('See [test:wiki:Home]')
-        assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
+        assert '<a href="/p/test/wiki/Home/" class="alink">[test:wiki:Home]</a>' in text, text
 
 
 def test_markdown_links():
     with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
         text = g.markdown.convert(
             'Read [here](http://foobar.net/) about our project')
-        assert_in('href="http://foobar.net/">here</a> about', text)
+        assert_in('href="http://foobar.net/" class="">here</a> about', text)
 
     text = g.markdown.convert(
         'Read [here](http://foobar.net/) about our project')
-    assert_in('href="http://foobar.net/" rel="nofollow">here</a> about', text)
+    assert_in('href="http://foobar.net/" class="" rel="nofollow">here</a> about', text)
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
-    assert_in('href="/p/foobar/blah">here</a> about', text)
+    assert_in('href="/p/foobar/blah" class="">here</a> about', text)
 
     text = g.markdown.convert('Read <http://foobar.net/> about our project')
     assert_in(
-        'href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about', text)
+        'href="http://foobar.net" rel="nofollow">http://foobar.net/</a> about', text)
 
 
 def test_markdown_and_html():
@@ -397,7 +398,7 @@ def test_markdown_within_html():
 
 def test_markdown_with_html_comments():
     text = g.markdown.convert('test <!-- comment -->')
-    assert '<div class="markdown_content"><p>test <!-- comment --></p></div>' == text, text
+    assert '<div class="markdown_content"><p>test </p></div>' == text, text
 
 
 def test_markdown_big_text():
@@ -411,7 +412,7 @@ def test_markdown_big_text():
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
-        assert '<a class="alink" href=' in text, text
+        assert '<a href="/p/test/wiki/Home/" class="alink">[Home]</a>' in text, text
         text = g.markdown.convert('# Foo!\n[Rooted]')
         assert '<a href=' not in text, text
 
@@ -462,6 +463,21 @@ def test_markdown_autolink_with_escape():
     r = g.markdown.convert(
         'a http://www.phpmyadmin.net/home\_page/security/\#target b')
     assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
+
+
+def test_markdown_invalid_script():
+    r = g.markdown.convert('<script>alert(document.cookies)</script>')
+    assert_equal('<div class="markdown_content">&lt;script&gt;alert(document.cookies)&lt;/script&gt;\n</div>', r)
+
+
+def test_markdown_invalid_onerror():
+    r = g.markdown.convert('<img src=x onerror=alert(document.cookie)>')
+    assert_not_in('onerror', r)
+
+
+def test_markdown_invalid_tagslash():
+    r = g.markdown.convert('<div/onload><img src=x onerror=alert(document.cookie)>')
+    assert_not_in('onerror', r)
 
 
 @td.with_wiki
@@ -564,8 +580,8 @@ def test_myprojects_macro():
     for p in c.user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
-        assert proj_title in r
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url().rstrip('/'), p.name)
+        assert_in(proj_title, r)
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
     user = M.User.query.get(username='test-user-1')
@@ -573,8 +589,8 @@ def test_myprojects_macro():
     for p in user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
-        assert proj_title in r
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url().rstrip('/'), p.name)
+        assert_in(proj_title, r)
 
 
 @td.with_wiki

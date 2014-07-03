@@ -239,14 +239,17 @@ class TestCodeStats(unittest.TestCase):
 
 class TestHTMLSanitizer(unittest.TestCase):
 
+    def simple_tag_list(self, sanitizer):
+        # no attrs, no close tag flag check, just real simple
+        return [
+            t['name'] for t in sanitizer if t.get('name')
+        ]
+
     def test_html_sanitizer_iframe(self):
-        p = utils.ForgeHTMLSanitizer('utf-8', '')
-        p.feed('<div><iframe></iframe></div>')
-        assert_equal(p.output(), '<div></div>')
+        p = utils.ForgeHTMLSanitizer('<div><iframe></iframe></div>')
+        assert_equal(self.simple_tag_list(p), ['div', 'div'])
 
     def test_html_sanitizer_youtube_iframe(self):
-        p = utils.ForgeHTMLSanitizer('utf-8', '')
-        p.feed(
-            '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        p = utils.ForgeHTMLSanitizer('<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         assert_equal(
-            p.output(), '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+            self.simple_tag_list(p), ['div', 'iframe', 'div'])

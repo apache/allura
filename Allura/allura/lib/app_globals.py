@@ -107,7 +107,7 @@ class ForgeMarkdown(markdown.Markdown):
         md5 = None
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
-            if cache.md5 == md5:
+            if cache.md5 == md5 and getattr(cache, 'fix7528', False):
                 return h.html.literal(cache.html)
 
         start = time.time()
@@ -126,6 +126,7 @@ class ForgeMarkdown(markdown.Markdown):
             if md5 is None:
                 md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
+            cache.fix7528 = True  # flag to indicate good caches created after [#7528] was fixed
         return html
 
 
