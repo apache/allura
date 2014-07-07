@@ -33,3 +33,5 @@ scripts/teamforge-export/
 report.clonedigger
 .ropeproject
 .idea
+._*
+.DS_Store

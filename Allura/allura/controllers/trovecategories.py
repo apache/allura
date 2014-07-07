@@ -39,7 +39,6 @@ class F(object):
 
 
 class TroveCategoryController(BaseController):
-
     @expose()
     def _lookup(self, catshortname, *remainder):
         cat = M.TroveCategory.query.get(shortname=catshortname)
@@ -246,4 +245,4 @@ class TroveCategorySiteAdminExtension(SiteAdminExtension):
         enable_editing = config.get('trovecategories.enableediting', 'false')
         if enable_editing in ('admin', 'true'):
             links.append(SitemapEntry('Troves', '/categories',
-                ui_icon=g.icons['admin']))
+                                      ui_icon=g.icons['admin']))

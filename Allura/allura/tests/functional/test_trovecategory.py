@@ -14,8 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from collections import OrderedDict
-
+from BeautifulSoup import BeautifulSoup
 import mock
 
 from tg import config
@@ -30,7 +29,6 @@ from allura.tests import decorators as td
 
 
 class TestTroveCategory(TestController):
-
     @mock.patch('allura.model.project.g.post_event')
     def test_events(self, post_event):
         setup_trove_categories()
@@ -82,6 +80,7 @@ class TestTroveCategory(TestController):
             check_access(username='test-user', status=403)
             check_access(username='root', status=200)
 
+
 class TestTroveCategoryController(TestController):
     @td.with_tool('test2', 'admin_main', 'admin')
     def test_trove_hierarchy(self):
@@ -94,23 +93,28 @@ class TestTroveCategoryController(TestController):
         session(M.TroveCategory).flush()
 
         r = self.app.get('/categories/browse')
-        tree = r.controller_output['tree']
-
-        expected_data = OrderedDict(
-            [('Root', OrderedDict(
-                [('CategoryA', OrderedDict([
-                    ('ChildA', OrderedDict()),
-                    ('ChildB', OrderedDict())
-                ])),
-                 ('CategoryB', OrderedDict())
-                ])
-             )]
-        )
-        assert tree == expected_data
+        rendered_tree = r.html.find('div', {'id': 'content_base'}).find('div').find('div').find('ul')
+        expected = BeautifulSoup("""
+        <ul>
+            <li>Root</li>
+            <ul>
+                <li>CategoryA</li>
+                <ul>
+                    <li>ChildA</li>
+                    <li>ChildB</li>
+                </ul>
+                <li>CategoryB</li>
+            </ul>
+        </ul>
+        """.strip())
+        assert str(expected) == str(rendered_tree)
 
     @td.with_tool('test2', 'admin_main', 'admin')
     def test_trove_empty_hierarchy(self):
         r = self.app.get('/categories/browse')
-        tree = r.controller_output['tree']
-        assert tree == OrderedDict()
-
+        rendered_tree = r.html.find('div', {'id': 'content_base'}).find('div').find('div').find('ul')
+        expected = BeautifulSoup("""
+        <ul>
+        </ul>
+        """.strip())
+        assert str(expected) == str(rendered_tree)

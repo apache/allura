@@ -14,14 +14,12 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from collections import OrderedDict
 
 import logging
 from datetime import datetime
 from urlparse import urlparse
 import json
 from operator import itemgetter
-
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
@@ -32,7 +30,6 @@ from webob import exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.odm import session
-
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
@@ -45,9 +42,10 @@ from allura.lib import plugin
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.tasks import export_tasks
+from allura.lib.widgets.project_list import ProjectScreenshots
 
 from . import widgets as aw
-from allura.lib.widgets.project_list import ProjectScreenshots
+
 
 log = logging.getLogger(__name__)
 
@@ -73,7 +71,6 @@ class W:
 
 
 class AdminApp(Application):
-
     '''This is the admin app.  It is pretty much required for
     a functioning allura project.
     '''
@@ -136,7 +133,7 @@ class AdminApp(Application):
 
         if c.project.is_nbhd_project:
             links.append(SitemapEntry('Add Project', c.project.url()
-                         + 'add_project', ui_icon=g.icons['plus']))
+                                      + 'add_project', ui_icon=g.icons['plus']))
             nbhd_admin_url = c.project.neighborhood.url() + '_admin/'
             links = links + [
                 SitemapEntry('Neighborhood'),
@@ -184,7 +181,6 @@ class AdminApp(Application):
 
 
 class AdminExtensionLookup(object):
-
     @expose()
     def _lookup(self, name, *remainder):
         for ep_name in sorted(g.entry_points['admin'].keys()):
@@ -196,7 +192,6 @@ class AdminExtensionLookup(object):
 
 
 class ProjectAdminController(BaseController):
-
     def _check_security(self):
         require_access(c.project, 'admin')
 
@@ -229,14 +224,15 @@ class ProjectAdminController(BaseController):
         c.explain_export_modal = W.explain_export_modal
         show_export_control = asbool(config.get('show_export_control', False))
         allow_project_delete = asbool(config.get('allow_project_delete', True))
-        explain_export_text = '''The purpose of this section is to determine whether your project is subject to the provisions of the
-        US Export Administration Regulations. You should consult section 734.4 and Supplement 2 to Part 734 for information on such items
-        and the calculation of U.S. controlled content.
-        <a href="http://www.bis.doc.gov/encryption/default.htm" target="_blank">http://www.bis.doc.gov/encryption/default.htm</a>'''
+        explain_export_text = '''The purpose of this section is to determine whether your project is subject to the
+         provisions of the US Export Administration Regulations. You should consult section 734.4 and Supplement 2
+          to Part 734 for information on such items and the calculation of U.S. controlled content.
+          <a href="http://www.bis.doc.gov/encryption/default.htm" target="_blank">
+          http://www.bis.doc.gov/encryption/default.htm</a>'''
         if 'us_export_contact' in config:
-            explain_export_text += 'If you have additional questions, please contact <a href="mailto:{contact}">{contact}</a>.'.format(
-                contact=config['us_export_contact']
-            )
+            explain_export_text += \
+                'If you have additional questions, ' \
+                'please contact <a href="mailto:{contact}">{contact}</a>.'.format(contact=config['us_export_contact'])
         return dict(show_export_control=show_export_control,
                     allow_project_delete=allow_project_delete,
                     explain_export_text=explain_export_text)
@@ -722,7 +718,6 @@ class ProjectAdminController(BaseController):
 
 
 class ProjectAdminRestController(BaseController):
-
     """
     Exposes RESTful APi for project admin actions.
     """
@@ -817,36 +812,35 @@ class ProjectAdminRestController(BaseController):
         controller = ProjectAdminController()
 
         if not tool or not mount_point or not mount_label:
-            return {'success': False,
-                    'info': 'All arguments required.'
-                    }
+            return {
+                'success': False,
+                'info': 'All arguments required.'
+            }
         installable_tools = AdminApp.installable_tools_for(c.project)
         tools_names = [t['name'] for t in installable_tools]
-        if not tool in tools_names:
-            return {'success': False,
-                    'info': 'Incorrect tool name, or limit is reached.'
-                    }
+        if not (tool in tools_names):
+            return {
+                'success': False,
+                'info': 'Incorrect tool name, or limit is reached.'
+            }
         if c.project.app_instance(mount_point) is not None:
-            return {'success': False,
-                    'info': 'Mount point already exists.',
-                    }
+            return {
+                'success': False,
+                'info': 'Mount point already exists.',
+            }
 
         if order is None:
             order = 'last'
-        mounts = [{
-            'ordinal': ac.options.ordinal,
-            'label': ac.options.mount_label,
-            'mount': ac.options.mount_point,
-            'type': ac.tool_name.lower(),
-        } for ac in c.project.app_configs]
-        subs = {p.shortname:
-                p for p in M.Project.query.find({'parent_id': c.project._id})}
+        mounts = [{'ordinal': ac.options.ordinal,
+                   'label': ac.options.mount_label,
+                   'mount': ac.options.mount_point,
+                   'type': ac.tool_name.lower()}
+                  for ac in c.project.app_configs]
+        subs = {p.shortname: p for p in M.Project.query.find({'parent_id': c.project._id})}
         for sub in subs.values():
-            mounts.append({
-                'ordinal': sub.ordinal,
-                'mount': sub.shortname,
-                'type': 'sub-project',
-            })
+            mounts.append({'ordinal': sub.ordinal,
+                           'mount': sub.shortname,
+                           'type': 'sub-project'})
         mounts.sort(key=itemgetter('ordinal'))
         if order == 'first':
             ordinal = 0
@@ -879,17 +873,18 @@ class ProjectAdminRestController(BaseController):
         try:
             controller._update_mounts(new=data)
         except forge_exc.ForgeError as e:
-            return {'success': False,
-                    'info': str(e),
-                    }
-        return {'success': True,
-                'info': 'Tool %s with mount_point %s and mount_label %s was created.'
-                        % (tool, mount_point, mount_label)
-                }
+            return {
+                'success': False,
+                'info': str(e),
+            }
+        return {
+            'success': True,
+            'info': 'Tool %s with mount_point %s and mount_label %s was created.'
+                    % (tool, mount_point, mount_label)
+        }
 
 
 class PermissionsController(BaseController):
-
     def _check_security(self):
         require_access(c.project, 'admin')
 
@@ -951,7 +946,6 @@ class PermissionsController(BaseController):
 
 
 class GroupsController(BaseController):
-
     def _check_security(self):
         require_access(c.project, 'admin')
 
@@ -973,7 +967,7 @@ class GroupsController(BaseController):
             permissions_by_role[str(role._id)] = []
             for perm in permissions:
                 perm_info = dict(has="no", text="Does not have permission %s" %
-                                 perm, name=perm)
+                                                perm, name=perm)
                 role_ids = permissions[perm]
                 if role._id in role_ids:
                     perm_info['text'] = "Has permission %s" % perm
@@ -1161,7 +1155,6 @@ class GroupsController(BaseController):
 
 
 class GroupController(BaseController):
-
     def __init__(self, name):
         self._group = M.ProjectRole.query.get(_id=ObjectId(name))
 
@@ -1201,7 +1194,6 @@ class GroupController(BaseController):
 
 
 class AuditController(BaseController):
-
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/audit.html')
     def index(self, limit=10, page=0, **kwargs):
@@ -1224,6 +1216,5 @@ class AuditController(BaseController):
 
 
 class AdminAppAdminController(DefaultAdminController):
-
     '''Administer the admin app'''
     pass
