@@ -1074,6 +1074,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             url=h.absurl(self.url()),
             private=self.private,
             short_description=self.short_description,
+            creation_date=plugin.ProjectRegistrationProvider.get().registration_date(self).strftime('%Y-%m-%d'),
             summary=self.summary,
             external_homepage=self.external_homepage,
             video_url=self.video_url,
