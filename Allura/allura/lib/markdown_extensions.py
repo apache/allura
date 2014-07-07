@@ -505,7 +505,6 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        print text
         parser = html5lib.HTMLParser(tokenizer=ForgeHTMLSanitizer)
         parsed = parser.parse(text)
         serializer = html5lib.serializer.HTMLSerializer()
