@@ -167,7 +167,7 @@ def test_macro_gittip_button():
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[gittip_button username=test]]')
     assert_equal(
-        r, u'<div class="markdown_content"><p><iframe width="48pt" height="22pt" style="border: 0; margin: 0; padding: 0;" src="https://www.gittip.com/test/widget.html"></iframe>\n</p></div>')
+        r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe>\n</p></div>')
 
 
 def test_macro_neighborhood_feeds():
@@ -325,7 +325,7 @@ def test_macro_embed(oembed_fetch):
     }
     r = g.markdown_wiki.convert(
         '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<div class="grid-20"><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" height="270" width="480"></iframe>\n</div>',
+    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>\n</div>',
               r)
 
 
@@ -356,25 +356,25 @@ def test_wiki_artifact_links():
     assert 'See <span>[18:13:49]</span>' in text, text
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('Read [here](Home) about our project')
-        assert '<a href="/p/test/wiki/Home/" class="">here</a>' in text, text
+        assert '<a class="" href="/p/test/wiki/Home">here</a>' in text, text
         text = g.markdown.convert('[Go home](test:wiki:Home)')
-        assert '<a href="/p/test/wiki/Home/" class="">Go home</a>' in text, text
+        assert '<a class="" href="/p/test/wiki/Home">Go home</a>' in text, text
         text = g.markdown.convert('See [test:wiki:Home]')
-        assert '<a href="/p/test/wiki/Home/" class="alink">[test:wiki:Home]</a>' in text, text
+        assert '<a class="alink" href="/p/test/wiki/Home">[test:wiki:Home]</a>' in text, text
 
 
 def test_markdown_links():
     with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
         text = g.markdown.convert(
             'Read [here](http://foobar.net/) about our project')
-        assert_in('href="http://foobar.net/" class="">here</a> about', text)
+        assert_in('class="" href="http://foobar.net">here</a> about', text)
 
     text = g.markdown.convert(
         'Read [here](http://foobar.net/) about our project')
-    assert_in('href="http://foobar.net/" class="" rel="nofollow">here</a> about', text)
+    assert_in('class="" href="http://foobar.net" rel="nofollow">here</a> about', text)
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
-    assert_in('href="/p/foobar/blah" class="">here</a> about', text)
+    assert_in('class="" href="/p/foobar/blah">here</a> about', text)
 
     text = g.markdown.convert('Read <http://foobar.net/> about our project')
     assert_in(
@@ -412,7 +412,7 @@ def test_markdown_big_text():
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
-        assert '<a href="/p/test/wiki/Home/" class="alink">[Home]</a>' in text, text
+        assert '<a class="alink" href="/p/test/wiki/Home">[Home]</a>' in text, text
         text = g.markdown.convert('# Foo!\n[Rooted]')
         assert '<a href=' not in text, text
 

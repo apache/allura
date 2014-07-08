@@ -891,8 +891,8 @@ class TestFunctionalController(TrackerTestController):
         assert_not_in('Tickets: <s>#1</s>', r)
         assert_in('Tickets: <s>#2</s>', r)
 
-        assert_in('<a href="/p/test/bugs/1/" class="alink">[#1]</a>', r.body)
-        assert_in('<a href="/p/test/bugs/2/" class="alink strikethrough">[#2]</a>', r.body)
+        assert_in('<a class="alink" href="/p/test/bugs/1">[#1]</a>', r.body)
+        assert_in('<a class="alink strikethrough" href="/p/test/bugs/2">[#2]</a>', r.body)
 
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
@@ -2324,7 +2324,7 @@ class TestFunctionalController(TrackerTestController):
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
-            assert '<p><strong> <a href="http://localhost/p/test/bugs/1/" class="alink">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>' in body
+            assert '<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>' in body
 
     @patch('forgetracker.search.query_filter_choices')
     def test_multiselect(self, query_filter_choices):

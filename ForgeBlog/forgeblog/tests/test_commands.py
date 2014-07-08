@@ -149,8 +149,8 @@ def test_plaintext_preprocessor():
     html = g.markdown.convert(text)
     assert_equal(html,
                  '<div class="markdown_content"><p>1. foo '
-                 '#foo bar <a href="../baz" class="">baz</a> foo bar '
-                 '#foo bar <a href="../baz" class=""> baz </a></p></div>'
+                 '#foo bar <a class="" href="../baz">baz</a> foo bar '
+                 '#foo bar <a class="" href="../baz"> baz </a></p></div>'
                  )
 
 
@@ -172,6 +172,6 @@ def test_plaintext_preprocessor_wrapped():
     html = g.markdown.convert(text)
     assert_equal(html,
                  '<div class="markdown_content"><p>1. foo</p>\n'
-                 '<p>#foo bar <a href="../baz" class="">baz</a> foo bar </p>\n'
-                 '<p>#foo bar <a href="../baz" class=""> baz </a></p></div>'
+                 '<p>#foo bar <a class="" href="../baz">baz</a> foo bar </p>\n'
+                 '<p>#foo bar <a class="" href="../baz"> baz </a></p></div>'
                  )

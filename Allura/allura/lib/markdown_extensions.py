@@ -23,6 +23,7 @@ from tg import config
 from BeautifulSoup import BeautifulSoup
 import html5lib
 import html5lib.serializer
+import html5lib.filters.alphabeticalattributes
 import markdown
 
 from . import macro
@@ -509,7 +510,8 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
         parsed = parser.parse(text)
         serializer = html5lib.serializer.HTMLSerializer()
         walker = html5lib.getTreeWalker("etree")
-        out = ''.join(serializer.serialize(walker(parsed)))
+        stream = html5lib.filters.alphabeticalattributes.Filter(walker(parsed))
+        out = ''.join(serializer.serialize(stream))
         return out
 
 
