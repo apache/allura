@@ -1095,10 +1095,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             screenshots=[
                 dict(
                     url=h.absurl(self.url() + 'screenshot/' +
-                                 urllib.quote(ss.filename)),
+                                 urllib.quote(ss.filename.encode('utf8'))),
                     thumbnail_url=h.absurl(
                         self.url(
-                        ) + 'screenshot/' + urllib.quote(ss.filename) + '/thumb'),
+                        ) + 'screenshot/' + urllib.quote(ss.filename.encode('utf8')) + '/thumb'),
                     caption=ss.caption,
                 )
                 for ss in self.get_screenshots()
