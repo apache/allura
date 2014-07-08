@@ -1,6 +1,7 @@
 pytz==2012j
 ActivityStream==0.2.0
 BeautifulSoup==3.2.0
+Beaker==1.6.4
 chardet==1.0.1
 colander==0.9.3
 # dep of pypeline
@@ -53,7 +54,6 @@ wsgiref==0.1.2
 
 # tg2 deps (not used directly)
 Babel==0.9.6
-Beaker==1.5.4
 Mako==0.3.2
 MarkupSafe==0.15
 Pylons==1.0
