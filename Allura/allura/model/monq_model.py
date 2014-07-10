@@ -74,11 +74,9 @@ class MonQTask(MappedClass):
                 ('time_queue', ming.ASCENDING)
             ],
             [
-                # used by SF internal tool, but could be generally useful to
-                # have an index on task_name
+                # used by repo tarball status check, etc
                 'state', 'task_name', 'time_queue'
             ],
-            'args',
         ]
 
     _id = FieldProperty(S.ObjectId)
