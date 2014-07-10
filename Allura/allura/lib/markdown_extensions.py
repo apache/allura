@@ -335,7 +335,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             classes = 'alink'
         href = link
         shortlink = M.Shortlink.lookup(link)
-        if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
+        if shortlink and shortlink.ref and not getattr(shortlink.ref.artifact, 'deleted', False):
             href = shortlink.url
             if getattr(shortlink.ref.artifact, 'is_closed', False):
                 classes += ' strikethrough'

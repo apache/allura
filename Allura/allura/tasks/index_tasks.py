@@ -73,6 +73,8 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
         for ref in M.ArtifactReference.query.find(dict(_id={'$in': ref_ids})):
             try:
                 artifact = ref.artifact
+                if not artifact:
+                    continue
                 s = artifact.solarize()
                 if s is None:
                     continue
