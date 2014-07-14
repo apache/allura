@@ -27,6 +27,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
+from urlparse import urlparse, urljoin
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -247,7 +248,10 @@ class AuthController(BaseController):
     @validate(F.login_form, error_handler=index)
     def do_login(self, return_to=None, **kw):
         if return_to and return_to != request.url:
-            redirect(return_to)
+            rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
+            base_host = urlparse(config['base_url']).netloc
+            if rt_host == base_host:
+                redirect(return_to)
         redirect('/')
 
     @expose(content_type='text/plain')

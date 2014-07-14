@@ -296,6 +296,24 @@ class TestAuth(TestController):
         assert_equal(r.location,
                      'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
 
+    def test_no_open_return_to(self):
+        r = self.app.get('/auth/logout')
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            return_to='/foo'))
+        assert_equal(r.location, 'http://localhost/foo')
+
+        r = self.app.get('/auth/logout')
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            return_to='https://localhost/foo'))
+        assert_equal(r.location, 'https://localhost/foo')
+
+        r = self.app.get('/auth/logout')
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            return_to='http://example.com/foo'))
+
 
 class TestPreferences(TestController):
 
