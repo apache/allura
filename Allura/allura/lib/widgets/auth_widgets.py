@@ -67,18 +67,6 @@ class ForgottenPasswordForm(ForgeForm):
     class fields(ew_core.NameList):
         email = ew.TextField(label='Your e-mail')
 
-    @validator
-    def validate(self, value, state=None):
-        email = value['email']
-        email_record = M.EmailAddress.query.find({'_id': email}).first()
-        user = M.User.by_email_address(email)
-        if user is None or not email_record.confirmed:
-            raise Invalid(
-                'Unable to recover password for this email',
-                {'email': email}, None)
-        return value
-
-
 class DisableAccountForm(ForgeForm):
     submit_text = 'Disable'
 

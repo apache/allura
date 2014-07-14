@@ -171,37 +171,40 @@ class AuthController(BaseController):
 
     @expose()
     @require_post()
-    @validate(F.forgotten_password_form, error_handler=forgotten_password)
     def password_recovery_hash(self, email=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         if not provider.forgotten_password_process:
             raise wexc.HTTPNotFound()
         if not email:
             redirect('/')
+
+        email_record = M.EmailAddress.query.find({'_id': email}).first()
         user_record = M.User.by_email_address(email)
-        hash = h.nonce(42)
-        user_record.set_tool_data('AuthPasswordReset',
-                                  hash=hash,
-                                  hash_expiry=datetime.datetime.utcnow() +
-                                  datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
-        log.info('Sending password recovery link to %s', email)
-        subject = '%s Password recovery' % config['site_name']
-        text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
-            user=user_record,
-            config=config,
-            hash=hash,
-        ))
+        if user_record and email_record.confirmed:
+            hash = h.nonce(42)
+            user_record.set_tool_data('AuthPasswordReset',
+                                      hash=hash,
+                                      hash_expiry=datetime.datetime.utcnow() +
+                                      datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
-        allura.tasks.mail_tasks.sendmail.post(
-            destinations=[email],
-            fromaddr=config['forgemail.return_path'],
-            reply_to=config['forgemail.return_path'],
-            subject=subject,
-            message_id=h.gen_message_id(),
-            text=text)
+            log.info('Sending password recovery link to %s', email)
+            subject = '%s Password recovery' % config['site_name']
+            text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
+                user=user_record,
+                config=config,
+                hash=hash,
+            ))
 
-        flash('Email with instructions has been sent.')
+            allura.tasks.mail_tasks.sendmail.post(
+                destinations=[email],
+                fromaddr=config['forgemail.return_path'],
+                reply_to=config['forgemail.return_path'],
+                subject=subject,
+                message_id=h.gen_message_id(),
+                text=text)
+
+        flash('A password reset email has been sent, if the given email address is on record in our system.')
         redirect('/')
 
     @expose()
