@@ -141,6 +141,10 @@ class AuthenticationProvider(object):
             self.session['userid'] = user._id
             if self.is_password_expired(user):
                 self.session['pwd-expired'] = True
+            if 'rememberme' in self.request.params:
+                self.session.cookie_expires = datetime.now() + timedelta(365)
+            else:
+                self.session.cookie_expires = True
             self.session.save()
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)

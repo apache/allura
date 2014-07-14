@@ -38,6 +38,7 @@ class LoginForm(ForgeForm):
         fields = [
             ew.TextField(name='username', label='Username'),
             ew.PasswordField(name='password', label='Password'),
+            ew.Checkbox(name='rememberme', label='Remember Me'),
             ew.HiddenField(name='return_to'),
         ]
         if plugin.AuthenticationProvider.get(request).forgotten_password_process:
