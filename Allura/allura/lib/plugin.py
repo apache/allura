@@ -144,7 +144,7 @@ class AuthenticationProvider(object):
                 from allura.model import AuditLog
                 AuditLog.log_user('Password expired', user=user)
             if 'rememberme' in self.request.params:
-                self.session.cookie_expires = datetime.now() + timedelta(365)
+                self.session.cookie_expires = datetime.utcnow() + timedelta(365)
             else:
                 self.session.cookie_expires = True
             self.session.save()
