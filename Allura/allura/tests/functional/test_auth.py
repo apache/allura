@@ -313,6 +313,13 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='http://example.com/foo'))
+        assert_equal(r.location, 'http://localhost/')
+
+        r = self.app.get('/auth/logout')
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            return_to='//example.com/foo'))
+        assert_equal(r.location, 'http://localhost/')
 
 
 class TestPreferences(TestController):
