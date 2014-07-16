@@ -27,7 +27,6 @@ import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool
 from paste.registry import RegistryManager
-from beaker.middleware import SessionMiddleware
 from routes.middleware import RoutesMiddleware
 from pylons.middleware import StatusCodeRedirect
 
@@ -45,6 +44,7 @@ from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
+from allura.lib.custom_middleware import RememberLoginSessionMiddleware
 from allura.lib import patches
 from allura.lib import helpers as h
 
@@ -131,7 +131,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Required for pylons
     app = RoutesMiddleware(app, config['routes.map'])
     # Required for sessions
-    app = SessionMiddleware(app, config)
+    app = RememberLoginSessionMiddleware(app, config)
     # Redirect 401 to the login page
     app = LoginRedirectMiddleware(app)
     # Add instrumentation
