@@ -28,6 +28,8 @@ from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
+from beaker.middleware import SessionMiddleware
+from beaker.session import SessionObject
 
 from allura.lib import helpers as h
 import allura.model.repository
@@ -281,3 +283,40 @@ class AlluraTimerMiddleware(TimerMiddleware):
             func = ep.load()
             timers += aslist(func())
         return timers
+
+
+class RememberLoginSessionMiddleware(SessionMiddleware):
+    
+    def __call__(self, environ, start_response):
+        session = SessionObject(environ, **self.options)
+        if environ.get('paste.registry'):
+            if environ['paste.registry'].reglist:
+                environ['paste.registry'].register(self.session, session)
+        environ[self.environ_key] = session
+        environ['beaker.get_session'] = self._get_session
+
+        if 'paste.testing_variables' in environ and 'webtest_varname' in self.options:
+            environ['paste.testing_variables'][self.options['webtest_varname']] = session
+
+        def session_start_response(status, headers, exc_info=None):
+            if session.accessed():
+                session.persist()
+                cookie_out = None
+                login_expires = session.get('login_expires')
+                if login_expires is not None:
+                    session.cookie_expires = login_expires
+                    if login_expires == True:
+                        session.cookie[session.key]['expires'] = ''
+                    else:
+                        session._set_cookie_expires(None)
+                    cookie_out = session.cookie[session.key].output(header='')
+
+                if session.__dict__['_headers']['set_cookie']:
+                    if cookie_out:
+                        cookie = cookie_out
+                    else:
+                        cookie = session.__dict__['_headers']['cookie_out']
+                    if cookie:
+                        headers.append(('Set-cookie', cookie))
+            return start_response(status, headers, exc_info)
+        return self.wrap_app(environ, session_start_response)
