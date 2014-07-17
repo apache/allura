@@ -1,18 +1,20 @@
 #!/usr/bin/env python
-from itertools import tee, izip
+from itertools import tee, izip, chain
 import json
 import git
+from collections import Counter
 
 
-filename = "/Users/alexl/Code/allura-backup-2014-07-09-183025/tickets.json"  # Absolute path to exported tickets.json
-output = "/Users/alexl/Code/allura-backup-2014-07-09-183025/updated_tickets_100.json"  # Absolute path to the output
-
-gitrepository = "/Users/alexl/Code/allura-git"  # Path to allura repository
+filename = "/var/local/allura/tickets.json"  # Absolute path to exported tickets.json
+output = "/var/local/allura/updated_tickets.json"  # Absolute path to the output
+ticket_list = "/var/local/allura/ticket_ids.list"
+top_usernames = "/var/local/allura/top_usernames.list"
+gitrepository = "/var/local/allura"  # Path to allura repository
 g = git.Git(gitrepository)
 
 reviews = ['code-review', 'design-review']
 backlog = ['open', 'in-progress', 'validation', 'review', 'blocked']
-released = ['closed', 'wontfix', 'invalid']
+released = ['closed', 'wont-fix', 'invalid']
 
 with open(filename, 'r') as json_file:
     data = json.loads(json_file.read())
@@ -25,7 +27,7 @@ def pairwise(iterable):
     return izip(a, b)
 
 
-tags = ['asf_release_1.0.0', 'asf_release_1.0.0-RC1', 'asf_release_1.0.1', 'asf_release_1.1.0']
+tags = ['asf_release_1.0.0', 'asf_release_1.0.0-RC1', 'asf_release_1.0.1', 'asf_release_1.1.0', 'HEAD']
 
 tag_log = dict()
 for tag1, tag2 in pairwise(tags):
@@ -40,12 +42,12 @@ for ticket in tickets:
             ticket_tag[ticket['ticket_num']] = key
             continue
 
-del data['milestones']
-del data['saved_bins']
+data.pop('milestones', None)
+data.pop('saved_bins', None)
 
 updated = []
 for ticket in tickets:
-    if ticket['ticket_num'] == 6054 or (ticket['status'] != 'deleted' and not ticket['private']):
+    if not ticket['private'] or ticket['ticket_num'] == 6054:
         if ticket['status'] in reviews:
             ticket['status'] = 'review'
 
@@ -53,20 +55,70 @@ for ticket in tickets:
         if not milestone:
             if ticket['status'] in released:
                 milestone = tags[0]
-        ticket['custom_fields']['_milestone'] = milestone or 'unreleased'
+        ticket['custom_fields']['_milestone'] = milestone if milestone != 'HEAD' else 'unreleased'
         if '_size' in ticket['custom_fields'].keys():
             size = ticket['custom_fields']['_size']
             if size:
                 ticket['labels'].append("sf-%d" % int(size))
-            del ticket['custom_fields']['_size']
+            ticket['custom_fields'].pop('_size', None)
 
         if '_qa' in ticket['custom_fields'].keys():
-            ticket['custom_fields']['Reviewer'] = ticket['custom_fields']['_qa']
-            del ticket['custom_fields']['_qa']
+            ticket['custom_fields']['_reviewer'] = ticket['custom_fields']['_qa']
+            ticket['custom_fields'].pop('_qa', None)
         updated.append(ticket)
+tags[-1] = 'unreleased'
 
 data['tickets'] = updated
-data['saved_bins'] = []
-data['milestones'] = []
+
+# Remove milestones from the list
+custom_fields = filter(lambda d: d.get('name') not in ['_milestone', 'name', '_size', '_qa'], data['custom_fields'])
+data['custom_fields'] = custom_fields
+
+milestones = {
+    "milestones": [
+        dict(name=milestone_name,
+             old_name=milestone_name,
+             default=False,
+             complete=False,
+             due_date="",
+             description="")
+        for milestone_name in tags
+    ],
+    "name": "_milestone",
+    "show_in_search": False,
+    "label": "Milestone",
+    "type": "milestone",
+    "options": ""
+}
+data['custom_fields'].append(milestones)
+data['custom_fields'].append({
+    "show_in_search": True,
+    "label": "Reviewer",
+    "type": "user",
+    "options": "",
+    "name": "_reviewer"
+})
+
+# Count top used usernames
+
+assigned_to = [ticket.get('assigned_to', None) for ticket in updated]
+reported_by = [ticket.get('reported_by', None) for ticket in updated]
+reviewed_by = [ticket['custom_fields'].get('_reviewer', None) for ticket in updated]
+
+posts = [ticket['discussion_thread']['posts'] for ticket in updated]
+
+post_authors = [post.get('author', None) for post in list(chain(*posts))]
+
+usernames = filter(lambda x: bool(x), chain(assigned_to, reported_by, reviewed_by, post_authors))
+
+top_users = Counter(usernames).most_common(50)
+
 with open(output, 'w') as outfile:
-    json.dump(data, outfile)
+    json.dump(data, outfile, indent=2)
+
+with open(ticket_list, 'w') as outfile:
+    outfile.write('\n'.join(sorted([str(ticket['ticket_num']) for ticket in updated])))
+
+with open(top_usernames, 'w') as outfile:
+    lines = ["%s - %s" % (username, frequency) for username, frequency in top_users]
+    outfile.write('\n'.join(lines))
