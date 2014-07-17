@@ -155,11 +155,11 @@ please visit the following URL:
     %s
 ''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
-        allura.tasks.mail_tasks.sendmail.post(
-            destinations=[self._id],
-            fromaddr=self._id,
-            reply_to='',
-            subject='Email address verification',
+        allura.tasks.mail_tasks.sendsimplemail.post(
+            fromaddr=g.noreply,
+            reply_to=g.noreply,
+            toaddr=self._id,
+            subject='%s - Email address verification' % config['site_name'],
             message_id=h.gen_message_id(),
             text=text)
 
