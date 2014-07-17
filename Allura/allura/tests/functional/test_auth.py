@@ -78,6 +78,20 @@ class TestAuth(TestController):
             username='test-usera', password='foo'))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    def test_track_login(self):
+        user = M.User.by_username('test-user')
+        assert_equal(user.last_access['login_date'], None)
+        assert_equal(user.last_access['login_ip'], None)
+        assert_equal(user.last_access['login_ua'], None)
+
+        self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo'),
+            headers={'X_FORWARDED_FOR': 'addr', 'User-Agent': 'browser'})
+        user = M.User.by_username('test-user')
+        assert_not_equal(user.last_access['login_date'], None)
+        assert_equal(user.last_access['login_ip'], 'addr')
+        assert_equal(user.last_access['login_ua'], 'browser')
+
     @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
