@@ -125,7 +125,10 @@ def main(options):
 
     if not options.dry_run:
         M.EmailAddress.query.remove()
-        M.User.query.update({}, {"$set": {"email_addresses": []}}, multi=True)
+        M.User.query.update({}, {
+            "$set": {"email_addresses": [],
+                     "last_access": {}},
+        }, multi=True)
         DM.Forum.query.update({"monitoring_email": {"$nin": [None, ""]}},
                               {"$set": {"monitoring_email": None}}, multi=True)
     return 0
