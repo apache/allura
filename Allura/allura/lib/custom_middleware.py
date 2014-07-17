@@ -286,6 +286,9 @@ class AlluraTimerMiddleware(TimerMiddleware):
 
 
 class RememberLoginSessionMiddleware(SessionMiddleware):
+    '''Modified version of beaker's SessionMiddleware.
+    This middleware changes session's cookie expiration time according to login_expires
+    session variable'''
     
     def __call__(self, environ, start_response):
         session = SessionObject(environ, **self.options)
