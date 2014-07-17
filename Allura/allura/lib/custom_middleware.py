@@ -301,21 +301,17 @@ class RememberLoginSessionMiddleware(SessionMiddleware):
         def session_start_response(status, headers, exc_info=None):
             if session.accessed():
                 session.persist()
-                cookie_out = None
-                login_expires = session.get('login_expires')
-                if login_expires is not None:
-                    session.cookie_expires = login_expires
-                    if login_expires == True:
-                        session.cookie[session.key]['expires'] = ''
-                    else:
-                        session._set_cookie_expires(None)
-                    cookie_out = session.cookie[session.key].output(header='')
 
                 if session.__dict__['_headers']['set_cookie']:
-                    if cookie_out:
-                        cookie = cookie_out
-                    else:
-                        cookie = session.__dict__['_headers']['cookie_out']
+                    login_expires = session.get('login_expires')
+                    if login_expires is not None:
+                        session.cookie_expires = login_expires
+                        if login_expires == True:
+                            session.cookie[session.key]['expires'] = ''
+                        else:
+                            session._set_cookie_expires(None)
+                    cookie = session.cookie[session.key].output(header='')
+
                     if cookie:
                         headers.append(('Set-cookie', cookie))
             return start_response(status, headers, exc_info)
