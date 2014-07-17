@@ -274,6 +274,21 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     # Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
+    last_access = FieldProperty(dict(
+        login_date=S.DateTime,
+        login_ip=str,
+        login_ua=str,
+        session_date=S.DateTime,
+        session_ip=str,
+        session_ua=str))
+
+    def track_login(self, req):
+        user_ip = req.headers.get('X_FORWARDED_FOR', req.remote_addr)
+        user_agent = req.headers.get('User-Agent')
+        self.last_access['login_date'] = datetime.utcnow()
+        self.last_access['login_ip'] = user_ip
+        self.last_access['login_ua'] = user_agent
+        session(self).flush(self)
 
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.

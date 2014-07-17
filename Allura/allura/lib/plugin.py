@@ -144,6 +144,7 @@ class AuthenticationProvider(object):
             self.session.save()
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
+            user.track_login(self.request)
             return user
         except exc.HTTPUnauthorized:
             self.logout()
