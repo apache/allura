@@ -87,6 +87,8 @@ class RootController(WsgiDispatchController):
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         assert c.user is not None, ('c.user should always be at least User.anonymous(). '
                                     'Did you run `paster setup-app` to create the database?')
+        if not c.user.is_anonymous():
+            c.user.track_active(request)
 
     def _cleanup_request(self):
         pass

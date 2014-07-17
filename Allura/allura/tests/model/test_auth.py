@@ -24,20 +24,23 @@ Model tests for auth
 from nose.tools import (
     with_setup,
     assert_equal,
+    assert_not_equal,
+    assert_true,
     assert_not_in,
     assert_in,
 )
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
-from mock import patch
+from mock import patch, Mock
 from datetime import datetime, timedelta
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import session
 
 from allura import model as M
 from allura.lib import plugin
 from allura.tests import decorators as td
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test
 
 
 def setUp():
@@ -229,3 +232,46 @@ def test_check_sent_user_message_times():
     user1.sent_user_message_times.append(
         datetime.utcnow() - timedelta(minutes=15))
     assert not user1.can_send_user_message()
+
+
+@td.with_user_project('test-admin')
+@with_setup(setUp)
+def test_user_track_active():
+    # without this session flushing inside track_active raises Exception
+    setup_functional_test()
+    c.user = M.User.by_username('test-admin')
+
+    assert_equal(c.user.last_access['session_date'], None)
+    assert_equal(c.user.last_access['session_ip'], None)
+    assert_equal(c.user.last_access['session_ua'], None)
+
+    req = Mock(headers={'User-Agent': 'browser'}, remote_addr='addr')
+    c.user.track_active(req)
+    c.user = M.User.by_username(c.user.username)
+    assert_not_equal(c.user.last_access['session_date'], None)
+    assert_equal(c.user.last_access['session_ip'], 'addr')
+    assert_equal(c.user.last_access['session_ua'], 'browser')
+
+    # ensure that session activity tracked with a whole-day granularity
+    prev_date = c.user.last_access['session_date']
+    c.user.track_active(req)
+    c.user = M.User.by_username(c.user.username)
+    assert_equal(c.user.last_access['session_date'], prev_date)
+    yesterday = datetime.utcnow() - timedelta(1)
+    c.user.last_access['session_date'] = yesterday
+    session(c.user).flush(c.user)
+    c.user.track_active(req)
+    c.user = M.User.by_username(c.user.username)
+    assert_true(c.user.last_access['session_date'] > yesterday)
+
+    # ...or if IP or User Agent has changed
+    req.remote_addr = 'new addr'
+    c.user.track_active(req)
+    c.user = M.User.by_username(c.user.username)
+    assert_equal(c.user.last_access['session_ip'], 'new addr')
+    assert_equal(c.user.last_access['session_ua'], 'browser')
+    req.headers['User-Agent'] = 'new browser'
+    c.user.track_active(req)
+    c.user = M.User.by_username(c.user.username)
+    assert_equal(c.user.last_access['session_ip'], 'new addr')
+    assert_equal(c.user.last_access['session_ua'], 'new browser')
