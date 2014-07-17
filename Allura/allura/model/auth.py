@@ -290,6 +290,20 @@ class User(MappedClass, ActivityNode, ActivityObject):
         self.last_access['login_ua'] = user_agent
         session(self).flush(self)
 
+    def track_active(self, req):
+        user_ip = req.headers.get('X_FORWARDED_FOR', req.remote_addr)
+        user_agent = req.headers.get('User-Agent')
+        now = datetime.utcnow()
+        last_date = self.last_access['session_date']
+        date_changed = last_date is None or last_date.date() != now.date()
+        ip_changed = user_ip != self.last_access['session_ip']
+        ua_changed = user_agent != self.last_access['session_ua']
+        if date_changed or ip_changed or ua_changed:
+            self.last_access['session_date'] = datetime.utcnow()
+            self.last_access['session_ip'] = user_ip
+            self.last_access['session_ua'] = user_agent
+            session(self).flush(self)
+
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.
 
