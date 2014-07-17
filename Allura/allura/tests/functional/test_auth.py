@@ -92,6 +92,29 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ip'], 'addr')
         assert_equal(user.last_access['login_ua'], 'browser')
 
+    def test_rememberme(self):
+        userid = M.User.query.get(username='test-user')._id
+
+        # Login as test-user with remember me checkbox off
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo'))
+        assert_equal(r.session['userid'], userid)
+        assert_equal(r.session['login_expires'], True)
+
+        for header, contents in r.headerlist:
+            if header == 'Set-cookie':
+                assert_not_in('expires', contents)
+
+        # Login as test-user with remember me checkbox on
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo', rememberme='on'))
+        assert_equal(r.session['userid'], userid)
+        assert_not_equal(r.session['login_expires'], True)
+
+        for header, contents in r.headerlist:
+            if header == 'Set-cookie':
+                assert_in('expires', contents)
+
     @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
