@@ -235,6 +235,19 @@ class Thread(Artifact, ActivityObject):
             return self
         return self.ref.artifact
 
+    def post_to_feed(self, post):
+        if self.ref and post.status == 'ok':
+            link = None
+            if self.app.tool_label.lower() == 'tickets':
+                link = post.url_paginated()
+            Feed.post(
+                self.primary(),
+                title=post.subject,
+                description=post.text,
+                link=link,
+                pubdate=post.mod_date,
+            )
+
     def add_post(self, **kw):
         """Helper function to avoid code duplication."""
         p = self.post(**kw)
@@ -242,12 +255,7 @@ class Thread(Artifact, ActivityObject):
         self.num_replies += 1
         if not self.first_post:
             self.first_post_id = p._id
-        link = None
-        if self.app.tool_label.lower() == 'tickets':
-            link = p.url_paginated()
-        if self.ref:
-            Feed.post(self.primary(), title=p.subject,
-                      description=p.text, link=link)
+        self.post_to_feed(p)
         return p
 
     def is_spam(self, post):

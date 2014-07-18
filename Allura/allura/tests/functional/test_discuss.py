@@ -16,6 +16,7 @@
 #       under the License.
 
 from mock import patch
+from nose.tools import assert_in, assert_not_in, assert_equal
 
 from allura.tests import TestController
 from allura import model as M
@@ -171,6 +172,23 @@ class TestDiscuss(TestController):
         assert post.status == 'ok'
         self.app.post(post_link + 'moderate', params=dict(delete='delete'))
         assert M.Post.query.find().count() == 0
+
+    @patch.object(M.Thread, 'is_spam')
+    def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
+        is_spam.return_value = True
+        r = self._make_post('Post needs moderation!')
+        post_link = str(
+            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post = M.Post.query.find().first()
+        assert_equal(post.status, 'pending')
+        r = self.app.get('/wiki/feed.rss')
+        assert_not_in('Post needs moderation!', r)
+
+        self.app.post(post_link + 'moderate', params=dict(approve='approve'))
+        post = M.Post.query.find().first()
+        assert_equal(post.status, 'ok')
+        r = self.app.get('/wiki/feed.rss')
+        assert_in('Post needs moderation!', r)
 
     def test_post_paging(self):
         home = self.app.get('/wiki/_discuss/')
