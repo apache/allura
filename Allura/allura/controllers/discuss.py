@@ -356,9 +356,11 @@ class PostController(BaseController):
         elif kw.pop('spam', None):
             self.post.spam()
         elif kw.pop('approve', None):
-            self.post.status = 'ok'
-            g.spam_checker.submit_ham(
-                self.post.text, artifact=self.post, user=c.user)
+            if self.post.status != 'ok':
+                self.post.status = 'ok'
+                g.spam_checker.submit_ham(
+                    self.post.text, artifact=self.post, user=c.user)
+                self.post.thread.post_to_feed(self.post)
         self.thread.update_stats()
         return dict(result='success')
 
@@ -480,6 +482,7 @@ class ModerationController(BaseController):
                             posted.thread.last_post_date,
                             posted.mod_date)
                         posted.thread.num_replies += 1
+                        posted.thread.post_to_feed(posted)
         redirect(request.referer)
 
 
