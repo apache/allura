@@ -36,6 +36,7 @@ from allura.lib.decorators import require_post
 from allura.lib.plugin import SiteAdminExtension
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
+from allura.ext.admin.widgets import AuditLog
 from allura import model as M
 from allura.command.show_models import dfs, build_model_inheritance_graph
 import allura
@@ -49,6 +50,7 @@ log = logging.getLogger(__name__)
 class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
+    audit = AuditLog()
 
 
 class SiteAdminController(object):
@@ -79,6 +81,7 @@ class SiteAdminController(object):
             SitemapEntry('New Projects', base_url + 'new_projects', ui_icon=g.icons['admin']),
             SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
             SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
+            SitemapEntry('Users Audit Log', base_url + 'users', ui_icon=g.icons['admin']),
         ]
         for ep_name in sorted(g.entry_points['site_admin']):
             g.entry_points['site_admin'][ep_name]().update_sidebar_menu(links)
@@ -239,6 +242,33 @@ class SiteAdminController(object):
             mount_point = ''
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
 
+    @expose('jinja:allura:templates/site_admin_users_audit.html')
+    def users(self, username=None, limit=10, page=0, **kwargs):
+        user = M.User.by_username(username)
+        limit = int(limit)
+        page = int(page)
+        if user is None or user.is_anonymous():
+            return dict(
+                entries=[],
+                limit=limit,
+                page=page,
+                count=0,
+                username=username)
+        count = M.AuditLog.for_user(user).count()
+        q = M.AuditLog.for_user(user)
+        q = q.sort('timestamp', -1)
+        q = q.skip(page * limit)
+        if count > limit:
+            q = q.limit(limit)
+        else:
+            limit = count
+        c.widget = W.audit
+        return dict(
+            entries=q.all(),
+            limit=limit,
+            page=page,
+            count=count,
+            username=username)
 
 class TaskManagerController(object):
 
