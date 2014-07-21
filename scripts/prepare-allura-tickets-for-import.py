@@ -3,6 +3,7 @@ from itertools import tee, izip, chain
 import json
 import git
 from collections import Counter
+from random import randint
 
 
 filename = "/var/local/allura/tickets.json"  # Absolute path to exported tickets.json
@@ -13,8 +14,6 @@ gitrepository = "/var/local/allura"  # Path to allura repository
 g = git.Git(gitrepository)
 
 reviews = ['code-review', 'design-review']
-backlog = ['open', 'in-progress', 'validation', 'review', 'blocked']
-released = ['closed', 'wont-fix', 'invalid']
 
 with open(filename, 'r') as json_file:
     data = json.loads(json_file.read())
@@ -53,9 +52,9 @@ for ticket in tickets:
 
         milestone = ticket_tag.get(ticket['ticket_num'], None)
         if not milestone:
-            if ticket['status'] in released:
+            if ticket['status'] == 'closed':
                 milestone = tags[0]
-        ticket['custom_fields']['_milestone'] = milestone if milestone != 'HEAD' else 'unreleased'
+        ticket['custom_fields']['_milestone'] = milestone if milestone and milestone != 'HEAD' else 'unreleased'
         if '_size' in ticket['custom_fields'].keys():
             size = ticket['custom_fields']['_size']
             if size:
@@ -98,6 +97,8 @@ data['custom_fields'].append({
     "options": "",
     "name": "_reviewer"
 })
+data['milestones'] = milestones
+data['saved_bins'] = []
 
 # Count top used usernames
 
