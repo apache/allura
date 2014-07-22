@@ -585,11 +585,13 @@ class SVNImplementation(M.RepositoryImplementation):
     def _map_log(self, ci, url, path=None):
         revno = ci.revision.number
         rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
-        try:
-            size = int(
-                self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
-        except pysvn.ClientError:
-            size = None
+        size = None
+        if path:
+            try:
+                size = int(
+                    self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
+            except pysvn.ClientError:
+                pass
         rename_details = {}
         changed_paths = ci.get('changed_paths', [])
         for changed_path in changed_paths:

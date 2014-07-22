@@ -247,7 +247,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
                  'name': u'coldmind',
                  'email': ''
-             }, 'size': 0},
+             }, 'size': None},
             {'parents': [4],
              'refs': [],
              'committed': {
@@ -261,7 +261,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
                  'name': u'rick446',
                  'email': ''},
-             'size': 0},
+             'size': None},
             {'parents': [3],
              'refs': [],
              'committed': {
@@ -275,7 +275,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
                  'name': u'rick446',
                  'email': ''},
-             'size': 0},
+             'size': None},
             {'parents': [2],
              'refs': [],
              'committed': {
@@ -289,7 +289,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
               'name': u'rick446',
               'email': ''},
-             'size': 0},
+             'size': None},
             {'parents': [1],
              'refs': [],
              'committed': {
@@ -303,7 +303,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
                  'name': u'rick446',
                  'email': ''},
-             'size': 0},
+             'size': None},
             {'parents': [],
              'refs': [],
              'committed': {
@@ -317,7 +317,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                  'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
                  'name': u'rick446',
                  'email': ''},
-             'size': 0}])
+             'size': None}])
 
     def test_log_file(self):
         entries = list(self.repo.log(path='/README', id_only=False))
