@@ -112,8 +112,12 @@ class TestAuth(TestController):
             extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
-        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
-                     'test-admin@users.localhost')
+        user = M.User.query.get(username='test-admin')
+        assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
+        log = M.AuditLog.for_user(user).all()
+        assert_equal(len(log), 1)
+        assert_equal(log[0].message, 'New email address: test@example.com')
+        M.AuditLog.query.remove()
 
         # remove test-admin@users.localhost
         r = self.app.post('/auth/preferences/update', params={
@@ -128,8 +132,21 @@ class TestAuth(TestController):
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified
-        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
-                     None)
+        user = M.User.query.get(username='test-admin')
+        assert_equal(user.get_pref('email_address'), None)
+        log = M.AuditLog.for_user(user).all()
+        assert_equal(len(log), 1)
+        assert_equal(log[0].message, 'Email address deleted: test-admin@users.localhost')
+        M.AuditLog.query.remove()
+
+        r = self.app.post('/auth/preferences/update', params={
+            'preferences.display_name': 'Admin',
+            'new_addr.addr': ''},
+            extra_environ=dict(username='test-admin'))
+        user = M.User.query.get(username='test-admin')
+        log = M.AuditLog.for_user(user).all()
+        assert_equal(len(log), 1)
+        assert_equal(log[0].message, 'Display Name changed Test Admin => Admin')
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
@@ -751,6 +768,13 @@ To reset your password on %s, please visit the following URL:
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert_equal(hash, '')
         assert_equal(hash_expiry, '')
+        log = M.AuditLog.for_user(user).all()
+        assert_equal(len(log), 2)
+        messages = set([l.message for l in log])
+        assert_equal(
+            messages,
+            set(['Password recovery link sent to: test-admin@users.localhost',
+                 'Password changed (through recovery process)']))
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
