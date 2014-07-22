@@ -57,8 +57,7 @@ class TestAuth(TestController):
 
     def test_login(self):
         self.app.get('/auth/')
-        r = self.app.post('/auth/send_verification_link',
-                          params=dict(a='test@example.com'))
+        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
         email = M.User.query.get(username='test-admin').email_addresses[0]
         r = self.app.post('/auth/send_verification_link', params=dict(a=email))
         ThreadLocalORMSession.flush_all()
@@ -114,6 +113,60 @@ class TestAuth(TestController):
         for header, contents in r.headerlist:
             if header == 'Set-cookie':
                 assert_in('expires', contents)
+
+    def test_claimed_duplicate_emails_by_different_users(self):
+        email_address = 'test-email@domain.com'
+
+        user1 = M.User.query.get(username='test-user-0')
+        user2 = M.User.query.get(username='test-user-1')
+
+        user1.claim_address(email_address)
+        user2.claim_address(email_address)
+
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/send_verification_link',
+                          params=dict(a=email_address),
+                          extra_environ={'username': 'test-user-0'})
+        email1 = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
+        email2 = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user2._id)).first()
+
+        # User1 verifies claimed address. All other duplicates should be removed once it is confirmed
+        r = self.app.get('/auth/verify_addr', params=dict(a=email1.nonce))
+
+        assert email1.confirmed == True
+        assert M.EmailAddress.query.find(dict(email=email_address)).count() == 1
+        assert email_address in M.User.query.get(username='test-user-0').email_addresses
+        assert email_address not in M.User.query.get(username='test-user-1').email_addresses
+
+    @td.with_user_project('test-admin')
+    def test_user_can_not_claim_duplicate_emails(self):
+        email_address = 'test_abcd_123@domain.net'
+        user = M.User.query.get(username='test-admin')
+        addresses_number = len(user.email_addresses)
+        self.app.post('/auth/preferences/update',
+                      params={
+                          'preferences.display_name': 'Test Admin',
+                          'new_addr.addr': email_address,
+                          'new_addr.claim': 'Claim Address',
+                          'primary_addr': 'test-admin@users.localhost',
+                          'preferences.email_format': 'plain'
+                      },
+                      extra_environ=dict(username='test-admin'))
+
+        assert M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
+        r = self.app.post('/auth/preferences/update',
+                          params={
+                              'preferences.display_name': 'Test Admin',
+                              'new_addr.addr': email_address,
+                              'new_addr.claim': 'Claim Address',
+                              'primary_addr': 'test-admin@users.localhost',
+                              'preferences.email_format': 'plain'
+                          },
+                          extra_environ=dict(username='test-admin'))
+
+        assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
+        assert M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
+        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
@@ -792,7 +845,7 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = False
         ThreadLocalORMSession.flush_all()
-        self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        self.app.post('/auth/password_recovery_hash', {'email': email.email})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
@@ -804,7 +857,7 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        self.app.post('/auth/password_recovery_hash', {'email': email.email})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
@@ -818,7 +871,7 @@ class TestPasswordReset(TestController):
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
         with td.audits('Password recovery link sent to: test-admin@users.localhost'):
-            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            r = self.app.post('/auth/password_recovery_hash', {'email': email.email})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert hash is not None
@@ -865,7 +918,7 @@ To reset your password on %s, please visit the following URL:
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        r = self.app.post('/auth/password_recovery_hash', {'email': email.email})
         user = M.User.by_username('test-admin')
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         user.set_tool_data('AuthPasswordReset',

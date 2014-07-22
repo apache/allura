@@ -193,7 +193,7 @@ class TestIdentifySender(object):
         EA.query.get.side_effect = [
             mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', None, None), 'user')
-        EA.query.get.assert_called_once_with(_id='arg')
+        EA.query.get.assert_called_once_with(email='arg')
 
     @mock.patch('allura.model.EmailAddress')
     def test_header(self, EA):
@@ -203,7 +203,7 @@ class TestIdentifySender(object):
         assert_equal(
             identify_sender(None, 'arg', {'From': 'from'}, None), 'user')
         assert_equal(EA.query.get.call_args_list,
-                     [mock.call(_id='arg'), mock.call(_id='from')])
+                     [mock.call(email='arg'), mock.call(email='from')])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
@@ -213,7 +213,7 @@ class TestIdentifySender(object):
         EA.query.get.side_effect = [
             None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', {}, None), anon)
-        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg')])
+        assert_equal(EA.query.get.call_args_list, [mock.call(email='arg')])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
@@ -224,7 +224,7 @@ class TestIdentifySender(object):
         assert_equal(
             identify_sender(None, 'arg', {'From': 'from'}, None), anon)
         assert_equal(EA.query.get.call_args_list,
-                     [mock.call(_id='arg'), mock.call(_id='from')])
+                     [mock.call(email='arg'), mock.call(email='from')])
 
 
 def test_parse_message_id():

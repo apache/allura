@@ -115,12 +115,12 @@ class EmailAddress(MappedClass):
     class __mongometa__:
         name = 'email_address'
         session = main_orm_session
-        indexes = [
-            'claimed_by_user_id']
+        unique_indexes = [('email', 'claimed_by_user_id'),]
 
-    _id = FieldProperty(str)
+    _id = FieldProperty(S.ObjectId)
+    email = FieldProperty(str)
     claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
-    confirmed = FieldProperty(bool)
+    confirmed = FieldProperty(bool, if_missing=False)
     nonce = FieldProperty(str)
 
     def claimed_by_user(self):
@@ -129,10 +129,7 @@ class EmailAddress(MappedClass):
     @classmethod
     def upsert(cls, addr):
         addr = cls.canonical(addr)
-        result = cls.query.get(_id=addr)
-        if not result:
-            result = cls(_id=addr)
-        return result
+        return cls(email=addr)
 
     @classmethod
     def canonical(cls, addr):
@@ -147,13 +144,13 @@ class EmailAddress(MappedClass):
 
     def send_verification_link(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()
-        log.info('Sending verification link to %s', self._id)
+        log.info('Sending verification link to %s', self.email)
         text = '''
 To verify the email address %s belongs to the user %s,
 please visit the following URL:
 
     %s
-''' % (self._id, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
+''' % (self.email, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
             fromaddr=g.noreply,
@@ -550,7 +547,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def by_email_address(cls, addr):
-        ea = EmailAddress.query.get(_id=addr)
+        ea = EmailAddress.query.get(email=addr)
         if ea is None:
             return None
         return ea.claimed_by_user()
@@ -573,7 +570,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         state(self).soil()
 
     def address_object(self, addr):
-        return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
+        return EmailAddress.query.get(email=addr, claimed_by_user_id=self._id)
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
@@ -592,10 +589,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
         addresses = set(self.email_addresses)
         for addr in EmailAddress.query.find(
                 dict(claimed_by_user_id=self._id)):
-            if addr._id in addresses:
+            if addr.email in addresses:
                 if not addr.confirmed:
                     addr.confirmed = True
-                addresses.remove(addr._id)
+                addresses.remove(addr.email)
             else:
                 addr.delete()
         for a in addresses:

@@ -51,23 +51,25 @@ def setUp():
 
 @with_setup(setUp)
 def test_email_address():
-    addr = M.EmailAddress(_id='test_admin@domain.net',
+    addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() == c.user
     addr2 = M.EmailAddress.upsert('test@domain.net')
     addr3 = M.EmailAddress.upsert('test_admin@domain.net')
-    assert addr3 is addr
+
+    # Duplicate emails are allowed, until the email is confirmed
+    assert addr3 is not addr
+
     assert addr2 is not addr
     assert addr2
     addr4 = M.EmailAddress.upsert('test@DOMAIN.NET')
-    assert addr4 is addr2
+    assert addr4 is not addr2
     with patch('allura.lib.app_globals.request', Request.blank('/')):
         addr.send_verification_link()
     assert addr is c.user.address_object('test_admin@domain.net')
     c.user.claim_address('test@DOMAIN.NET')
     assert 'test@domain.net' in c.user.email_addresses
-
 
 @td.with_user_project('test-admin')
 @with_setup(setUp)
@@ -173,7 +175,7 @@ def test_default_project_roles():
 
 @with_setup(setUp)
 def test_email_address_claimed_by_user():
-    addr = M.EmailAddress(_id='test_admin@domain.net',
+    addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
     c.user.disabled = True
     ThreadLocalORMSession.flush_all()

@@ -179,7 +179,7 @@ class AuthController(BaseController):
         if not email:
             redirect('/')
 
-        email_record = M.EmailAddress.query.find({'_id': email}).first()
+        email_record = M.EmailAddress.query.find({'email': email}).first()
         user_record = M.User.by_email_address(email)
 
         if user_record and email_record.confirmed:
@@ -225,7 +225,7 @@ class AuthController(BaseController):
 
     @expose()
     def send_verification_link(self, a):
-        addr = M.EmailAddress.query.get(_id=a)
+        addr = M.EmailAddress.query.get(email=a, claimed_by_user_id=c.user._id)
         if addr:
             addr.send_verification_link()
             flash('Verification link sent')
@@ -236,8 +236,25 @@ class AuthController(BaseController):
     @expose()
     def verify_addr(self, a):
         addr = M.EmailAddress.query.get(nonce=a)
+        # import pydevd
+        # pydevd.settrace('localhost', port=14000, stdoutToServer=True, stderrToServer=True)
+
         if addr:
             addr.confirmed = True
+            # Remove other non-confirmed emails claimed by other users
+            claimed_by_others = M.EmailAddress.query.find({
+                'email': addr.email,
+                'claimed_by_user_id': {"$ne": addr.claimed_by_user_id}
+            }).all()
+
+            users = [email.claimed_by_user() for email in claimed_by_others]
+            for user in users:
+                user.email_addresses.remove(addr.email)
+
+            M.EmailAddress.query.remove({
+                'email': addr.email,
+                'claimed_by_user_id': {'$ne': addr.claimed_by_user_id}
+            })
             flash('Email address confirmed')
             M.AuditLog.log_user('Email address verified: %s', addr._id)
         else:
@@ -442,7 +459,8 @@ class PreferencesController(BaseController):
                 if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
                     flash('You must provide your current password to claim new email', 'error')
                     redirect('.')
-                if M.EmailAddress.query.get(_id=new_addr['addr']):
+                if M.EmailAddress.query.get(email=new_addr['addr'], confirmed=True) \
+                        or M.EmailAddress.query.get(email=new_addr['addr'], claimed_by_user_id=c.user._id):
                     flash('Email address already claimed', 'error')
                 elif mail_util.isvalid(new_addr['addr']):
                     c.user.email_addresses.append(new_addr['addr'])
