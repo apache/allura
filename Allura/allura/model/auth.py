@@ -901,11 +901,17 @@ class AuditLog(object):
             message = message % args
         elif kwargs:
             message = message % kwargs
-        return cls(project_id=project._id, user_id=user._id, url=url, message=message)
+        pid = project._id if project is not None else None
+        return cls(project_id=pid, user_id=user._id, url=url, message=message)
 
     @classmethod
     def for_user(cls, user):
         return cls.query.find(dict(project_id=None, user_id=user._id))
+
+    @classmethod
+    def log_user(cls, message, *args, **kwargs):
+        kwargs['project'] = None
+        return cls.log(message, *args, **kwargs)
 
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
     project_id=ForeignIdProperty('Project'),

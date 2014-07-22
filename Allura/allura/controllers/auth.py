@@ -166,6 +166,7 @@ class AuthController(BaseController):
         user = self._validate_hash(hash)
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
+        M.AuditLog.log_user('Password changed (through recovery process)', user=user)
         flash('Password changed')
         redirect('/auth/')
 
@@ -204,6 +205,7 @@ class AuthController(BaseController):
                 message_id=h.gen_message_id(),
                 text=text)
 
+        M.AuditLog.log_user('Password recovery link sent to: %s', email, user=user_record)
         flash('A password reset email has been sent, if the given email address is on record in our system.')
         redirect('/')
 
@@ -237,6 +239,7 @@ class AuthController(BaseController):
         if addr:
             addr.confirmed = True
             flash('Email address confirmed')
+            M.AuditLog.log_user('Email address verified: %s', addr._id)
         else:
             flash('Unknown verification link', 'error')
         redirect('/auth/preferences/')
@@ -409,7 +412,10 @@ class PreferencesController(BaseController):
             if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.", 'error')
                 redirect('.')
+            old = c.user.get_pref('display_name')
             c.user.set_pref('display_name', preferences['display_name'])
+            if old != preferences['display_name']:
+                M.AuditLog.log_user('Display Name changed %s => %s', old, preferences['display_name'])
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
@@ -422,6 +428,7 @@ class PreferencesController(BaseController):
                             # clear it now, a new one will get set below
                             c.user.set_pref('email_address', None)
                             primary_addr = None
+                    M.AuditLog.log_user('Email address deleted: %s', c.user.email_addresses[i])
                     del c.user.email_addresses[i]
                     if obj:
                         obj.delete()
@@ -433,12 +440,18 @@ class PreferencesController(BaseController):
                     em = M.EmailAddress.upsert(new_addr['addr'])
                     em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
+                    M.AuditLog.log_user('New email address: %s', new_addr['addr'])
                     flash('A verification email has been sent.  Please check your email and click to confirm.')
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
                 primary_addr = select_new_primary_addr(c.user)
             if primary_addr:
+                if c.user.get_pref('email_address') != primary_addr:
+                    M.AuditLog.log_user(
+                        'Primary email changed: %s => %s',
+                        c.user.get_pref('email_address'),
+                        primary_addr)
                 c.user.set_pref('email_address', primary_addr)
             for k, v in preferences.iteritems():
                 if k == 'results_per_page':
@@ -458,6 +471,7 @@ class PreferencesController(BaseController):
             flash('Incorrect password', 'error')
             redirect('.')
         flash('Password changed')
+        M.AuditLog.log_user('Password changed')
         redirect('.')
 
     @expose()
