@@ -902,6 +902,8 @@ class AuditLog(object):
         elif kwargs:
             message = message % kwargs
         pid = project._id if project is not None else None
+        if pid is None and user is None or user.is_anonymous():
+            return
         return cls(project_id=pid, user_id=user._id, url=url, message=message)
 
     @classmethod
