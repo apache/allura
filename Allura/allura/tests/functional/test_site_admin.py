@@ -17,8 +17,10 @@
 
 import json
 
-from nose.tools import assert_equal
+from mock import patch
+from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.tests import TestController
@@ -159,6 +161,23 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.body)['doc'] == 'test_task doc string'
+
+    @patch('allura.model.auth.request')
+    def test_users(self, request):
+        request.url = 'http://host.domain/path/'
+        c.user = M.User.by_username('test-user-1')
+        M.AuditLog.log_user('test activity user 1')
+        M.AuditLog.log_user('test activity user 2', user=M.User.by_username('test-user-2'))
+        r = self.app.get('/nf/admin/users')
+        assert_not_in('test activity', r)
+        r = self.app.get('/nf/admin/users?username=admin1')
+        assert_not_in('test activity', r)
+        r = self.app.get('/nf/admin/users?username=test-user-1')
+        assert_in('test activity user 1', r)
+        assert_not_in('test activity user 2', r)
+        r = self.app.get('/nf/admin/users?username=test-user-2')
+        assert_not_in('test activity user 1', r)
+        assert_in('test activity user 2', r)
 
 
 @task
