@@ -83,16 +83,18 @@ class BulkExport(object):
             'tools': exported_names,
             'not_exported_tools': list(set(tools) - set(exported_names)),
         }
+
         email = {
-            'sender': unicode(tg.config['forgemail.return_path']),
+            'toaddr': unicode(user._id),
             'fromaddr': unicode(tg.config['forgemail.return_path']),
+            'sender': unicode(tg.config['forgemail.return_path']),
             'reply_to': unicode(tg.config['forgemail.return_path']),
             'message_id': h.gen_message_id(),
-            'destinations': [unicode(user._id)],
             'subject': u'Bulk export for project %s completed' % project.shortname,
-            'text': tmpl.render(tmpl_context),
+            'text': tmpl.render(tmpl_context)
         }
-        mail_tasks.sendmail.post(**email)
+
+        mail_tasks.sendsimplemail.post(**email)
 
     def get_export_path(self, export_base_path, export_filename):
         """Create temporary directory for export files"""

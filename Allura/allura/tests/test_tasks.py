@@ -516,7 +516,7 @@ class TestExportTasks(unittest.TestCase):
         # check notification
         M.MonQTask.run_ready()
         tasks = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+            dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
         assert_equal(len(tasks), 1)
         assert_equal(tasks[0].kwargs['subject'],
                      'Bulk export for project test completed')

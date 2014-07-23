@@ -196,8 +196,8 @@ class AuthController(BaseController):
                 hash=hash,
             ))
 
-            allura.tasks.mail_tasks.sendmail.post(
-                destinations=[email],
+            allura.tasks.mail_tasks.sendsimplemail.post(
+                toaddr=email,
                 fromaddr=config['forgemail.return_path'],
                 reply_to=config['forgemail.return_path'],
                 subject=subject,

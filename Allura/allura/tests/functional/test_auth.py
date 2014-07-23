@@ -706,7 +706,7 @@ class TestPasswordReset(TestController):
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
-    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_password_reset(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
@@ -740,7 +740,7 @@ To reset your password on %s, please visit the following URL:
 %s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
 
         sendmail.post.assert_called_once_with(
-            destinations=[email._id],
+            toaddr=email._id,
             fromaddr=config['forgemail.return_path'],
             reply_to=config['forgemail.return_path'],
             subject='Allura Password recovery',
@@ -752,7 +752,7 @@ To reset your password on %s, please visit the following URL:
         assert_equal(hash, '')
         assert_equal(hash_expiry, '')
 
-    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_hash_expired(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')

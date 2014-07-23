@@ -85,6 +85,10 @@ def route_email(
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
              message_id, in_reply_to=None, sender=None, references=None):
+    '''
+    Send an email to the specified list of destinations with respect to the preferred email format specified by user.
+    It is best for broadcast messages.
+    '''
     from allura import model as M
     addrs_plain = []
     addrs_html = []
@@ -157,6 +161,10 @@ def sendsimplemail(
         sender=None,
         references=None,
         cc=None):
+    '''
+    Send a single mail to the specified address.
+    It is best for single user notifications.
+    '''
     from allura import model as M
     if fromaddr is None:
         fromaddr = g.noreply
@@ -168,6 +176,17 @@ def sendsimplemail(
             fromaddr = g.noreply
         else:
             fromaddr = user.email_address_header()
+
+
+    if '@' not in toaddr:
+        log.warning('Looking up user with toaddr: %s', toaddr)
+        user = M.User.query.get(_id=ObjectId(toaddr), disabled=False)
+        if not user:
+            log.warning('Cannot find user with ID: %s', toaddr)
+            toaddr = g.noreply
+        else:
+            toaddr = user.email_address_header()
+
     htmlparser = HTMLParser.HTMLParser()
     plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
     html_text = g.forge_markdown(email=True).convert(text)

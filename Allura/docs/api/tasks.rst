@@ -28,3 +28,9 @@
   .. automodule:: allura.tasks.export_tasks
 
         .. autofunction:: allura.tasks.export_tasks.bulk_export
+
+  .. automodule:: allura.tasks.mail_tasks
+
+        .. autofunction:: allura.tasks.mail_tasks.sendmail
+
+        .. autofunction:: allura.tasks.mail_tasks.sendsimplemail
