@@ -28,8 +28,6 @@ from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
-from beaker.middleware import SessionMiddleware
-from beaker.session import SessionObject
 
 from allura.lib import helpers as h
 import allura.model.repository
@@ -285,37 +283,33 @@ class AlluraTimerMiddleware(TimerMiddleware):
         return timers
 
 
-class RememberLoginSessionMiddleware(SessionMiddleware):
+class RememberLoginMiddleware(object):
     '''Modified version of beaker's SessionMiddleware.
     This middleware changes session's cookie expiration time according to login_expires
     session variable'''
-    
+
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
     def __call__(self, environ, start_response):
-        session = SessionObject(environ, **self.options)
-        if environ.get('paste.registry'):
-            if environ['paste.registry'].reglist:
-                environ['paste.registry'].register(self.session, session)
-        environ[self.environ_key] = session
-        environ['beaker.get_session'] = self._get_session
 
-        if 'paste.testing_variables' in environ and 'webtest_varname' in self.options:
-            environ['paste.testing_variables'][self.options['webtest_varname']] = session
-
-        def session_start_response(status, headers, exc_info=None):
-            if session.accessed():
-                session.persist()
-
-                if session.__dict__['_headers']['set_cookie']:
-                    login_expires = session.get('login_expires')
-                    if login_expires is not None:
-                        session.cookie_expires = login_expires
-                        if login_expires == True:
-                            session.cookie[session.key]['expires'] = ''
-                        else:
-                            session._set_cookie_expires(None)
-                    cookie = session.cookie[session.key].output(header='')
-
-                    if cookie:
-                        headers.append(('Set-cookie', cookie))
+        def remember_login_start_response(status, headers, exc_info=None):
+            session = environ.get('beaker.session')
+            userid = session.get('userid')
+            login_expires = session.get('login_expires')
+            if userid and login_expires is not None:
+                if login_expires is True:
+                    session.cookie[session.key]['expires'] = ''
+                else:
+                    session._set_cookie_expires(login_expires)
+                cookie = session.cookie[session.key].output(header='')
+                for i in range(len(headers)):
+                    header, contents = headers[i]
+                    if header == 'Set-cookie' and \
+                            contents.lstrip().startswith(session.key):
+                        headers[i] = ('Set-cookie', cookie)
+                        break
             return start_response(status, headers, exc_info)
-        return self.wrap_app(environ, session_start_response)
+
+        return self.app(environ, remember_login_start_response)
