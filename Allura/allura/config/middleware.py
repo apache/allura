@@ -29,6 +29,7 @@ from paste.deploy.converters import asbool
 from paste.registry import RegistryManager
 from routes.middleware import RoutesMiddleware
 from pylons.middleware import StatusCodeRedirect
+from beaker.middleware import SessionMiddleware
 
 import activitystream
 import ew
@@ -44,7 +45,7 @@ from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
-from allura.lib.custom_middleware import RememberLoginSessionMiddleware
+from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib import patches
 from allura.lib import helpers as h
 
@@ -131,7 +132,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Required for pylons
     app = RoutesMiddleware(app, config['routes.map'])
     # Required for sessions
-    app = RememberLoginSessionMiddleware(app, config)
+    app = SessionMiddleware(app, config)
+    # Handle "Remember me" functionality
+    app = RememberLoginMiddleware(app, config)
     # Redirect 401 to the login page
     app = LoginRedirectMiddleware(app)
     # Add instrumentation
