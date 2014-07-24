@@ -44,7 +44,9 @@ class LoginForm(ForgeForm):
         if plugin.AuthenticationProvider.get(request).forgotten_password_process:
             # only show link if auth provider has method of recovering password
             fields.append(
-                ew.HTMLField(name='link', text='<a href="forgotten_password">Forgot password?</a>'))
+                ew.HTMLField(
+                    name='link', text='<div class="forgotten-password">'
+                    '<a href="forgotten_password">Forgot password?</a></div>'))
         return fields
 
     @validator
