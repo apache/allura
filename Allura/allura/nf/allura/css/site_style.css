@@ -3497,3 +3497,7 @@ ul.dropdown ul li a:hover {
     top: 10px;
 }
 .strikethrough { text-decoration: line-through; }
+/* Login form */
+#loginform input[name="rememberme"], #loginform .forgotten-password {
+  margin-left: 162px;
+}
