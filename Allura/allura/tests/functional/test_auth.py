@@ -103,50 +103,41 @@ class TestAuth(TestController):
                      'test-admin@users.localhost')
 
         # add test@example
-        r = self.app.post('/auth/preferences/update', params={
-            'preferences.display_name': 'Test Admin',
-            'new_addr.addr': 'test@example.com',
-            'new_addr.claim': 'Claim Address',
-            'primary_addr': 'test-admin@users.localhost',
-            'preferences.email_format': 'plain'},
-            extra_environ=dict(username='test-admin'))
+        with td.audits('New email address: test@example.com'):
+            r = self.app.post('/auth/preferences/update', params={
+                'preferences.display_name': 'Test Admin',
+                'new_addr.addr': 'test@example.com',
+                'new_addr.claim': 'Claim Address',
+                'primary_addr': 'test-admin@users.localhost',
+                'preferences.email_format': 'plain'},
+                extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
-        log = M.AuditLog.for_user(user).all()
-        assert_equal(len(log), 1)
-        assert_equal(log[0].message, 'New email address: test@example.com')
-        M.AuditLog.query.remove()
 
         # remove test-admin@users.localhost
-        r = self.app.post('/auth/preferences/update', params={
-            'preferences.display_name': 'Test Admin',
-            'addr-1.ord': '1',
-            'addr-1.delete': 'on',
-            'addr-2.ord': '2',
-            'new_addr.addr': '',
-            'primary_addr': 'test-admin@users.localhost',
-            'preferences.email_format': 'plain'},
-            extra_environ=dict(username='test-admin'))
+        with td.audits('Email address deleted: test-admin@users.localhost'):
+            r = self.app.post('/auth/preferences/update', params={
+                'preferences.display_name': 'Test Admin',
+                'addr-1.ord': '1',
+                'addr-1.delete': 'on',
+                'addr-2.ord': '2',
+                'new_addr.addr': '',
+                'primary_addr': 'test-admin@users.localhost',
+                'preferences.email_format': 'plain'},
+                extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('email_address'), None)
-        log = M.AuditLog.for_user(user).all()
-        assert_equal(len(log), 1)
-        assert_equal(log[0].message, 'Email address deleted: test-admin@users.localhost')
-        M.AuditLog.query.remove()
 
-        r = self.app.post('/auth/preferences/update', params={
-            'preferences.display_name': 'Admin',
-            'new_addr.addr': ''},
-            extra_environ=dict(username='test-admin'))
-        user = M.User.query.get(username='test-admin')
-        log = M.AuditLog.for_user(user).all()
-        assert_equal(len(log), 1)
-        assert_equal(log[0].message, 'Display Name changed Test Admin => Admin')
+        with td.audits('Display Name changed Test Admin => Admin'):
+            r = self.app.post('/auth/preferences/update', params={
+                'preferences.display_name': 'Admin',
+                'new_addr.addr': ''},
+                extra_environ=dict(username='test-admin'))
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
@@ -732,7 +723,8 @@ class TestPasswordReset(TestController):
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
-        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        with td.audits('Password recovery link sent to: test-admin@users.localhost'):
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert hash is not None
@@ -744,7 +736,9 @@ class TestPasswordReset(TestController):
         assert_in('New Password (again):', r)
         form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
-        r = form.submit()
+        with td.audits('Password changed \(through recovery process\)'):
+            # escape parentheses, so they would not be treated as regex group
+            r = form.submit()
         user = M.User.query.get(username='test-admin')
         assert_not_equal(old_pw_hash, user.password)
         provider = plugin.LocalAuthenticationProvider(None)
@@ -768,13 +762,6 @@ To reset your password on %s, please visit the following URL:
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert_equal(hash, '')
         assert_equal(hash_expiry, '')
-        log = M.AuditLog.for_user(user).all()
-        assert_equal(len(log), 2)
-        messages = set([l.message for l in log])
-        assert_equal(
-            messages,
-            set(['Password recovery link sent to: test-admin@users.localhost',
-                 'Password changed (through recovery process)']))
 
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')

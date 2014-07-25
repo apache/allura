@@ -34,6 +34,7 @@ import mock
 
 from allura.tests import TestController
 from allura.tests import decorators as td
+from allura.tests.decorators import audits, out_audits
 from alluratest.controller import TestRestApiBase, setup_trove_categories
 from allura import model as M
 from allura.app import SitemapEntry
@@ -45,24 +46,6 @@ from forgewiki.wiki_main import ForgeWikiApp
 
 
 log = logging.getLogger(__name__)
-
-
-@contextmanager
-def audits(*messages):
-    M.AuditLog.query.remove()
-    yield
-    for message in messages:
-        assert M.AuditLog.query.find(dict(
-            message=re.compile(message))).count(), 'Could not find "%s"' % message
-
-
-@contextmanager
-def out_audits(*messages):
-    M.AuditLog.query.remove()
-    yield
-    for message in messages:
-        assert not M.AuditLog.query.find(dict(
-            message=re.compile(message))).count(), 'Found unexpected: "%s"' % message
 
 
 class TestProjectAdmin(TestController):
