@@ -1079,3 +1079,26 @@ class AwardGrantForm(ForgeForm):
                 validator=fev.UnicodeString(not_empty=False),
                 attrs={'rows': 5, 'cols': 30}),
         ]
+
+
+class SearchProjectsForm(ForgeForm):
+    defaults = dict(
+        ForgeForm.defaults,
+        action='',
+        method='get',
+        submit_text=None)
+
+    @property
+    def fields(self):
+        return [
+            ew.RowField(fields=[
+                ew.SingleSelectField(
+                    name='f',
+                    show_label=False,
+                    options=['shortname']),
+                ew.InputField(name='q', show_label=False),
+                ew.SubmitButton(
+                    show_label=False,
+                    attrs={'value': 'Search'},
+                    show_errors=False),
+            ])]
