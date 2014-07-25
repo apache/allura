@@ -37,6 +37,7 @@ from allura.lib.plugin import SiteAdminExtension
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.ext.admin.widgets import AuditLog
+from allura.lib.widgets import forms
 from allura import model as M
 from allura.command.show_models import dfs, build_model_inheritance_graph
 import allura
@@ -51,6 +52,7 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     audit = AuditLog()
+    search_projects_form = forms.SearchProjectsForm()
 
 
 class SiteAdminController(object):
@@ -82,6 +84,7 @@ class SiteAdminController(object):
             SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
             SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
             SitemapEntry('Users Audit Log', base_url + 'users', ui_icon=g.icons['admin']),
+            SitemapEntry('Search Projects', base_url + 'search_projects', ui_icon=g.icons['search']),
         ]
         for ep_name in sorted(g.entry_points['site_admin']):
             g.entry_points['site_admin'][ep_name]().update_sidebar_menu(links)
@@ -283,6 +286,21 @@ class SiteAdminController(object):
         else:
             flash('Can not add comment "%s" for user %s' % (comment, user))
         redirect(request.referer)
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/site_admin_search_projects.html')
+    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
+                              limit=validators.Int(if_invalid=None),
+                              page=validators.Int(if_empty=0, if_invalid=0)))
+    def search_projects(self, q=None, page=0, limit=None, **kw):
+        c.search_projects_form = W.search_projects_form
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        return {
+            'count': 2,
+            'page': page,
+            'limit': limit,
+        }
 
 
 class TaskManagerController(object):
