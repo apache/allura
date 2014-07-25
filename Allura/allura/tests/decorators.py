@@ -16,6 +16,7 @@
 #       under the License.
 
 import sys
+import re
 from functools import wraps
 import contextlib
 
@@ -150,3 +151,21 @@ class patch_middleware_config(object):
     def __exit__(self, exc_type, exc_val, exc_t):
         allura.config.middleware.make_app = self._make_app
         return self
+
+
+@contextlib.contextmanager
+def audits(*messages):
+    M.AuditLog.query.remove()
+    yield
+    for message in messages:
+        assert M.AuditLog.query.find(dict(
+            message=re.compile(message))).count(), 'Could not find "%s"' % message
+
+
+@contextlib.contextmanager
+def out_audits(*messages):
+    M.AuditLog.query.remove()
+    yield
+    for message in messages:
+        assert not M.AuditLog.query.find(dict(
+            message=re.compile(message))).count(), 'Found unexpected: "%s"' % message
