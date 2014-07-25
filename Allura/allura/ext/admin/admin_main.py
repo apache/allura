@@ -1196,7 +1196,7 @@ class GroupController(BaseController):
 class AuditController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/audit.html')
-    def index(self, limit=10, page=0, **kwargs):
+    def index(self, limit=25, page=0, **kwargs):
         limit = int(limit)
         page = int(page)
         count = M.AuditLog.query.find(dict(project_id=c.project._id)).count()
