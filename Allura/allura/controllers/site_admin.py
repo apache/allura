@@ -243,7 +243,7 @@ class SiteAdminController(object):
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
 
     @expose('jinja:allura:templates/site_admin_users_audit.html')
-    def users(self, username=None, limit=10, page=0, **kwargs):
+    def users(self, username=None, limit=25, page=0, **kwargs):
         user = M.User.by_username(username)
         limit = int(limit)
         page = int(page)
