@@ -284,7 +284,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
 
 
 class RememberLoginMiddleware(object):
-    '''Modified version of beaker's SessionMiddleware.
+    '''
     This middleware changes session's cookie expiration time according to login_expires
     session variable'''
 
@@ -295,14 +295,18 @@ class RememberLoginMiddleware(object):
     def __call__(self, environ, start_response):
 
         def remember_login_start_response(status, headers, exc_info=None):
-            session = environ.get('beaker.session')
+            session = environ['beaker.session']
             userid = session.get('userid')
             login_expires = session.get('login_expires')
             if userid and login_expires is not None:
                 if login_expires is True:
+                    # no specific expiration, lasts for duration of "browser session"
                     session.cookie[session.key]['expires'] = ''
                 else:
+                    # set it to the given date
                     session._set_cookie_expires(login_expires)
+                # Replace the cookie header that SessionMiddleware set
+                # with one that has the new expires parameter value
                 cookie = session.cookie[session.key].output(header='')
                 for i in range(len(headers)):
                     header, contents = headers[i]
