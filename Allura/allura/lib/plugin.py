@@ -141,6 +141,8 @@ class AuthenticationProvider(object):
             self.session['userid'] = user._id
             if self.is_password_expired(user):
                 self.session['pwd-expired'] = True
+                from allura.model import AuditLog
+                AuditLog.log_user('Password expired', user=user)
             self.session.save()
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
@@ -297,6 +299,8 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     def disable_user(self, user):
         user.disabled = True
         session(user).flush(user)
+        from allura.model import AuditLog
+        AuditLog.log_user('Account disabled', user=user)
 
     def validate_password(self, user, password):
         return self._validate_password(user, password)

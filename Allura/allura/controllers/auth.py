@@ -370,6 +370,7 @@ class AuthController(BaseController):
         flash('Password changed')
         del session['pwd-expired']
         session.save()
+        M.AuditLog.log_user('Password reset (via expiration process)')
         if return_to and return_to != request.url:
             redirect(return_to)
         else:
