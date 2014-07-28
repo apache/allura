@@ -115,6 +115,7 @@ class EmailAddress(MappedClass):
     class __mongometa__:
         name = 'email_address'
         session = main_orm_session
+        indexes = ['nonce',]
         unique_indexes = [('email', 'claimed_by_user_id'),]
 
     _id = FieldProperty(S.ObjectId)
@@ -127,7 +128,7 @@ class EmailAddress(MappedClass):
         return User.query.get(_id=self.claimed_by_user_id, disabled=False)
 
     @classmethod
-    def upsert(cls, addr):
+    def create(cls, addr):
         addr = cls.canonical(addr)
         return cls(email=addr)
 
@@ -547,7 +548,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def by_email_address(cls, addr):
-        ea = EmailAddress.query.get(email=addr)
+        ea = EmailAddress.query.get(email=addr, confirmed=True)
         if ea is None:
             return None
         return ea.claimed_by_user()
@@ -574,31 +575,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
-        email_addr = EmailAddress.upsert(addr)
+        email_addr = EmailAddress.create(addr)
         email_addr.claimed_by_user_id = self._id
         if addr in self.email_addresses:
             return
         self.email_addresses.append(addr)
-
-    def claim_only_addresses(self, *addresses):
-        '''Claims the listed addresses and no others, setting the confirmed
-        attribute to True on all.
-        '''
-        self.email_addresses = [
-            EmailAddress.canonical(a) for a in addresses]
-        addresses = set(self.email_addresses)
-        for addr in EmailAddress.query.find(
-                dict(claimed_by_user_id=self._id)):
-            if addr.email in addresses:
-                if not addr.confirmed:
-                    addr.confirmed = True
-                addresses.remove(addr.email)
-            else:
-                addr.delete()
-        for a in addresses:
-            addr = EmailAddress.upsert(a)
-            addr.claimed_by_user_id = self._id
-            addr.confirmed = True
 
     @classmethod
     def register(cls, doc, make_project=True):

@@ -371,7 +371,7 @@ class TestUserStats(unittest.TestCase):
 
         with mock.patch('allura.lib.plugin.session'):
             self.user.set_password('testpassword')
-        addr = M.EmailAddress.upsert('rcopeland@geek.net')
+        addr = M.EmailAddress.create('rcopeland@geek.net')
         self.user.claim_address('rcopeland@geek.net')
 
         repo_dir = pkg_resources.resource_filename(

@@ -195,7 +195,7 @@ class TestGitCommit(TestController, unittest.TestCase):
 
         user = User.by_username('test-admin')
         user.set_password('testpassword')
-        M.EmailAddress.upsert('rcopeland@geek.net')
+        M.EmailAddress.create('rcopeland@geek.net')
         user.claim_address('rcopeland@geek.net')
         self.setup_with_tools()
 

@@ -55,15 +55,15 @@ def test_email_address():
                           claimed_by_user_id=c.user._id)
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() == c.user
-    addr2 = M.EmailAddress.upsert('test@domain.net')
-    addr3 = M.EmailAddress.upsert('test_admin@domain.net')
+    addr2 = M.EmailAddress.create('test@domain.net')
+    addr3 = M.EmailAddress.create('test_admin@domain.net')
 
     # Duplicate emails are allowed, until the email is confirmed
     assert addr3 is not addr
 
     assert addr2 is not addr
     assert addr2
-    addr4 = M.EmailAddress.upsert('test@DOMAIN.NET')
+    addr4 = M.EmailAddress.create('test@DOMAIN.NET')
     assert addr4 is not addr2
     with patch('allura.lib.app_globals.request', Request.blank('/')):
         addr.send_verification_link()

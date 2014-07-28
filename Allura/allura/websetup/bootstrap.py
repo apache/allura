@@ -212,6 +212,10 @@ def bootstrap(command, conf, vars):
         u_admin.email_addresses = ['test-admin@users.localhost']
         u_admin.set_password('foo')
         u_admin.claim_address('test-admin@users.localhost')
+        ThreadLocalORMSession.flush_all()
+
+        admin_email = M.EmailAddress.query.get(email='test-admin@users.localhost')
+        admin_email.confirmed = True
     else:
         u_admin = make_user('Admin 1', username='admin1')
         # Admin1 is almost root, with admin access for Users and Projects

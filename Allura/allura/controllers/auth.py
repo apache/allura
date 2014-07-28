@@ -179,7 +179,7 @@ class AuthController(BaseController):
         if not email:
             redirect('/')
 
-        email_record = M.EmailAddress.query.find({'email': email}).first()
+        email_record = M.EmailAddress.query.get(email=email, confirmed=True)
         user_record = M.User.by_email_address(email)
 
         if user_record and email_record.confirmed:
@@ -236,8 +236,6 @@ class AuthController(BaseController):
     @expose()
     def verify_addr(self, a):
         addr = M.EmailAddress.query.get(nonce=a)
-        # import pydevd
-        # pydevd.settrace('localhost', port=14000, stdoutToServer=True, stderrToServer=True)
 
         if addr:
             addr.confirmed = True
@@ -249,12 +247,14 @@ class AuthController(BaseController):
 
             users = [email.claimed_by_user() for email in claimed_by_others]
             for user in users:
+                log.info("Removed the email %s from user %s " % (addr.email, user.username))
                 user.email_addresses.remove(addr.email)
 
             M.EmailAddress.query.remove({
                 'email': addr.email,
                 'claimed_by_user_id': {'$ne': addr.claimed_by_user_id}
             })
+
             flash('Email address confirmed')
             M.AuditLog.log_user('Email address verified: %s', addr._id)
         else:
@@ -464,7 +464,7 @@ class PreferencesController(BaseController):
                     flash('Email address already claimed', 'error')
                 elif mail_util.isvalid(new_addr['addr']):
                     c.user.email_addresses.append(new_addr['addr'])
-                    em = M.EmailAddress.upsert(new_addr['addr'])
+                    em = M.EmailAddress.create(new_addr['addr'])
                     em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
                     M.AuditLog.log_user('New email address: %s', new_addr['addr'])
