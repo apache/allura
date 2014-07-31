@@ -108,6 +108,10 @@
           </table>
           <div class="grid-22">
             <p></p>
+            <label for="password">Current password:</label>
+            <input type="password" name="password">
+          </div>
+          <div class="grid-22">
             {{lib.submit_button('Save')}}
           </div>
           {{lib.csrf_token()}}
