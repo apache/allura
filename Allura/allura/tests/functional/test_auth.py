@@ -132,6 +132,7 @@ class TestAuth(TestController):
                 'new_addr.addr': 'test@example.com',
                 'new_addr.claim': 'Claim Address',
                 'primary_addr': 'test-admin@users.localhost',
+                'password': 'foo',
                 'preferences.email_format': 'plain'},
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
@@ -148,6 +149,7 @@ class TestAuth(TestController):
                 'addr-2.ord': '2',
                 'new_addr.addr': '',
                 'primary_addr': 'test-admin@users.localhost',
+                'password': 'foo',
                 'preferences.email_format': 'plain'},
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
@@ -161,6 +163,75 @@ class TestAuth(TestController):
                 'preferences.display_name': 'Admin',
                 'new_addr.addr': ''},
                 extra_environ=dict(username='test-admin'))
+
+    @td.with_user_project('test-admin')
+    def test_email_prefs_change_requires_password(self):
+        # Claim new email
+        new_email_params = {
+            'preferences.display_name': 'Test Admin',
+            'new_addr.addr': 'test@example.com',
+            'new_addr.claim': 'Claim Address',
+            'primary_addr': 'test-admin@users.localhost',
+        }
+        r = self.app.post('/auth/preferences/update', params=new_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to claim new email', self.webflash(r))
+        assert_not_in('test@example.com', r.follow())
+        new_email_params['password'] = 'bad pass'
+        r = self.app.post('/auth/preferences/update', params=new_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to claim new email', self.webflash(r))
+        assert_not_in('test@example.com', r.follow())
+        new_email_params['password'] = 'foo'  # valid password
+        r = self.app.post('/auth/preferences/update', params=new_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_not_in('You must provide your current password to claim new email', self.webflash(r))
+        assert_in('test@example.com', r.follow())
+
+        # Change primary address
+        change_primary_params = {
+            'preferences.display_name': 'Test Admin',
+            'new_addr.addr': '',
+            'primary_addr': 'test@example.com',
+        }
+        r = self.app.post('/auth/preferences/update', params=change_primary_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to change primary address', self.webflash(r))
+        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
+        change_primary_params['password'] = 'bad pass'
+        r = self.app.post('/auth/preferences/update', params=change_primary_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to change primary address', self.webflash(r))
+        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
+        change_primary_params['password'] = 'foo'  # valid password
+        r = self.app.post('/auth/preferences/update', params=change_primary_params,
+            extra_environ=dict(username='test-admin'))
+        assert_not_in('You must provide your current password to change primary address', self.webflash(r))
+        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test@example.com')
+
+        # Remove email
+        remove_email_params = {
+            'preferences.display_name': 'Test Admin',
+            'addr-1.ord': '1',
+            'addr-2.ord': '2',
+            'addr-2.delete': 'on',
+            'new_addr.addr': '',
+            'primary_addr': 'test-admin@users.localhost',
+        }
+        r = self.app.post('/auth/preferences/update', params=remove_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to delete an email', self.webflash(r))
+        assert_in('test@example.com', r.follow())
+        remove_email_params['password'] = 'bad pass'
+        r = self.app.post('/auth/preferences/update', params=remove_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_in('You must provide your current password to delete an email', self.webflash(r))
+        assert_in('test@example.com', r.follow())
+        remove_email_params['password'] = 'foo'  # vallid password
+        r = self.app.post('/auth/preferences/update', params=remove_email_params,
+            extra_environ=dict(username='test-admin'))
+        assert_not_in('You must provide your current password to delete an email', self.webflash(r))
+        assert_not_in('test@example.com', r.follow())
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):

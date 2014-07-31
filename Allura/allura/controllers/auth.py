@@ -413,6 +413,7 @@ class PreferencesController(BaseController):
             if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.", 'error')
                 redirect('.')
+            provider = plugin.AuthenticationProvider.get(request)
             old = c.user.get_pref('display_name')
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
@@ -420,6 +421,9 @@ class PreferencesController(BaseController):
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
+                    if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                        flash('You must provide your current password to delete an email', 'error')
+                        redirect('.')
                     if primary_addr == c.user.email_addresses[i]:
                         if select_new_primary_addr(c.user, ignore_emails=primary_addr) is None \
                                 and asbool(config.get('auth.require_email_addr', False)):
@@ -434,6 +438,9 @@ class PreferencesController(BaseController):
                     if obj:
                         obj.delete()
             if new_addr.get('claim') or new_addr.get('addr'):
+                if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                    flash('You must provide your current password to claim new email', 'error')
+                    redirect('.')
                 if M.EmailAddress.query.get(_id=new_addr['addr']):
                     flash('Email address already claimed', 'error')
                 elif mail_util.isvalid(new_addr['addr']):
@@ -449,6 +456,9 @@ class PreferencesController(BaseController):
                 primary_addr = select_new_primary_addr(c.user)
             if primary_addr:
                 if c.user.get_pref('email_address') != primary_addr:
+                    if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                        flash('You must provide your current password to change primary address', 'error')
+                        redirect('.')
                     M.AuditLog.log_user(
                         'Primary email changed: %s => %s',
                         c.user.get_pref('email_address'),
