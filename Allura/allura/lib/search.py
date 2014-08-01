@@ -175,7 +175,7 @@ def search_projects(q, field, rows=10, short_timeout=False, **kw):
         q = p.translate_query(q, fields)
     else:
         # construct query for a specific selected field
-        q = p.translate_query(u'%s:%s' % (field, q), fields)
+        q = p.translate_query(u'%s:"%s"' % (field, q), fields)
     fq = [u'type_s:Project']
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
