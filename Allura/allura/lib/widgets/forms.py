@@ -1109,3 +1109,11 @@ class SearchProjectsForm(ForgeForm):
                     },
                     show_errors=False),
             ])]
+
+    def context_for(self, field):
+        ctx = super(SearchProjectsForm, self).context_for(field)
+        if field.name is None and not ctx.get('value'):
+            # RowField does not pass context down to the children :(
+            render_ctx = ew_core.widget_context.render_context
+            ctx['value'] = {'q': render_ctx.get('q'), 'f': render_ctx.get('f')}
+        return ctx
