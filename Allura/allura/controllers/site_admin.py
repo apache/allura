@@ -34,6 +34,7 @@ from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
 from allura.lib.plugin import SiteAdminExtension
+from allura.lib import search
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.ext.admin.widgets import AuditLog
@@ -292,12 +293,23 @@ class SiteAdminController(object):
     @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
-    def search_projects(self, q=None, page=0, limit=None, **kw):
+    def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
         c.search_projects_form = W.search_projects_form
         c.page_list = W.page_list
         c.page_size = W.page_size
+        count = 0
+        projects = []
+        limit, page, start = g.handle_paging(limit, page, default=25)
+        if q:
+            match = search.search_projects(q, f, rows=limit, start=start)
+            if match:
+                count = match.hits
+                projects = match.docs
         return {
-            'count': 2,
+            'q': q,
+            'f': f,
+            'projects': projects,
+            'count': count,
             'page': page,
             'limit': limit,
         }

@@ -159,6 +159,27 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 
+def search_projects(q, field, rows=10, short_timeout=False, **kw):
+    """Performs SOLR search for a project.
+
+    Raises SearchError if SOLR returns an error.
+    """
+    # first, grab a project and get the fields that it indexes
+    from allura.model import Project
+    p = Project.query.find().first()
+    if p is None:
+        return  # if there are no projects, we won't find anything
+    fields = p.index()
+    if field == '__custom__':
+        # custom query -> query as is
+        q = p.translate_query(q, fields)
+    else:
+        # construct query for a specific selected field
+        q = p.translate_query(u'%s:%s' % (field, q), fields)
+    fq = [u'type_s:Project']
+    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
+
+
 def search_app(q='', fq=None, app=True, **kw):
     """Helper for app/project search.
 

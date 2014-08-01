@@ -26,6 +26,25 @@
     {{ c.search_projects_form.display() }}
   </div>
 
+  {% if projects %}
+    <table>
+      <tr>
+        <th>Short name</th>
+        <th>Full name</th>
+        <th>Registered</th>
+        <th>Deleted?</th>
+      </tr>
+    {% for p in projects %}
+      <tr>
+        <td><a href="{{ p['url_s'] }}">{{ p['shortname_s'] }}</a></td>
+        <td>{{ p['name_s'] }}</td>
+        <td>{{ p['registration_dt'] }}</td>
+        <td>{{ 'Yes' if p['deleted_b'] else 'No' }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
+
   <div class="grid-19">
     {{c.page_list.display(limit=limit, page=page, count=count)}}
     {{c.page_size.display(limit=limit, page=page, count=count)}}
