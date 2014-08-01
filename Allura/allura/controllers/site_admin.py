@@ -23,6 +23,7 @@ from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 import bson
 import tg
+from paste.deploy.converters import aslist
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pylons import request
@@ -291,13 +292,27 @@ class SiteAdminController(object):
             if match:
                 count = match.hits
                 projects = match.docs
+
+        def convert_fields(p):
+            # throw the type away (e.g. '_s' from 'url_s')
+            result = {}
+            for k,v in p.iteritems():
+                name = k.rsplit('_', 1)
+                if len(name) == 2:
+                    name = name[0]
+                else:
+                    name = k
+                result[name] = v
+            return result
+
         return {
             'q': q,
             'f': f,
-            'projects': projects,
+            'projects': map(convert_fields, projects),
             'count': count,
             'page': page,
             'limit': limit,
+            'additional_fields': aslist(config.get('search.project.additional_fields'), ','),
         }
 
 
