@@ -1090,16 +1090,19 @@ class SearchProjectsForm(ForgeForm):
 
     @property
     def fields(self):
+        add_fields = aslist(tg.config.get('search.project.additional_fields'), ',')
+        search_fields = [
+            ew.Option(py_value='shortname', label='shortname'),
+            ew.Option(py_value='name', label='full name'),
+        ]
+        search_fields.extend([ew.Option(py_value=f, label=f) for f in add_fields])
+        search_fields.append(ew.Option(py_value='__custom__', label='custom query'))
         return [
             ew.RowField(fields=[
                 ew.SingleSelectField(
                     name='f',
                     show_label=False,
-                    options=[
-                        ew.Option(py_value='shortname', label='shortname'),
-                        ew.Option(py_value='name', label='full name'),
-                        ew.Option(py_value='__custom__', label='custom query'),
-                    ]),
+                    options=search_fields),
                 ew.InputField(name='q', show_label=False, attrs={'style': 'width: 500px'}),
                 ew.SubmitButton(
                     show_label=False,

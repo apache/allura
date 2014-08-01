@@ -33,17 +33,23 @@
         <th>Full name</th>
         <th>Registered</th>
         <th>Deleted?</th>
+        {% for field in additional_fields %}
+        <th>{{ field }}</th>
+        {% endfor %}
         <th>Details</th>
       </tr>
     {% for p in projects %}
       <tr>
-        <td><a href="{{ p['url_s'] }}">{{ p['shortname_s'] }}</a></td>
-        <td>{{ p['name_s'] }}</td>
-        <td>{{ h.ago_string(p['registration_dt']) }}</td>
-        <td>{{ 'Yes' if p['deleted_b'] else 'No' }}</td>
+        <td><a href="{{ p['url'] }}">{{ p['shortname'] }}</a></td>
+        <td>{{ p['name'] }}</td>
+        <td>{{ h.ago_string(p['registration']) }}</td>
+        <td>{{ p['deleted'] }}</td>
+        {% for field in additional_fields %}
+        <td>{{ p[field] }}</td>
+        {% endfor %}
         <td>
-          <a href="{{ p['url_s'] + 'admin/groups/' }}">Members</a><br>
-          <a href="{{ p['url_s'] + 'admin/audit/' }}">Audit Trail</a>
+          <a href="{{ p['url'] + 'admin/groups/' }}">Members</a><br>
+          <a href="{{ p['url'] + 'admin/audit/' }}">Audit Trail</a>
         </td>
       </tr>
     {% endfor %}
