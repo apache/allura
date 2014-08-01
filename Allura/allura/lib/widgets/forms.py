@@ -1100,9 +1100,12 @@ class SearchProjectsForm(ForgeForm):
                         ew.Option(py_value='name', label='full name'),
                         ew.Option(py_value='__custom__', label='custom query'),
                     ]),
-                ew.InputField(name='q', show_label=False),
+                ew.InputField(name='q', show_label=False, attrs={'style': 'width: 500px'}),
                 ew.SubmitButton(
                     show_label=False,
-                    attrs={'value': 'Search'},
+                    attrs={
+                        'value': 'Search',
+                        'style': 'float:none; margin-top:3px;',
+                    },
                     show_errors=False),
             ])]
