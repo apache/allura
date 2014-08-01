@@ -18,13 +18,15 @@
 
 import json
 
-from mock import patch
+from mock import patch, MagicMock
 from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
+from tg import config
 
 from allura import model as M
 from allura.tests import TestController
+from allura.lib import helpers as h
 from allura.lib.decorators import task
 
 
@@ -205,6 +207,47 @@ class TestSiteAdmin(TestController):
         assert_in(u'Comment added', self.webflash(r))
         r = self.app.get('/nf/admin/users?username=test-user')
         assert_in(u'Comment by test-admin: I was hêre!', r)
+
+
+class TestProjectsSearch(TestController):
+
+    TEST_HIT = MagicMock(hits=1, docs=[{
+        'name_s': 'Test Project',
+        'is_nbhd_project_b': False,
+        'is_root_b': True,
+        'title': ['Project Test Project'],
+        'deleted_b': False,
+        'shortname_s': 'test',
+        'private_b': False,
+        'url_s': 'http://localhost:8080/p/test/',
+        'neighborhood_id_s': '53ccf6e6100d2b0741746c66',
+        'removal_changed_date_dt': '2014-07-21T11:18:00.087Z',
+        'registration_dt': '2014-07-21T11:18:00Z',
+        'type_s': 'Project',
+        '_version_': 1474236502200287232,
+        'neighborhood_name_s': 'Projects',
+        'id': 'allura/model/project/Project#53ccf6e8100d2b0741746e9f',
+    }])
+
+    @patch('allura.controllers.site_admin.search')
+    def test_default_fields(self, search):
+        search.search_projects.return_value = self.TEST_HIT
+        r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
+        options = [o['value'] for o in r.html.findAll('option')]
+        assert_equal(options, ['shortname', 'name', '__custom__'])
+        ths = [th.text for th in r.html.findAll('th')]
+        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?', 'Details'])
+
+    @patch('allura.controllers.site_admin.search')
+    def test_additional_fields(self, search):
+        search.search_projects.return_value = self.TEST_HIT
+        with h.push_config(config, **{'search.project.additional_fields': 'private, url'}):
+            r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
+        options = [o['value'] for o in r.html.findAll('option')]
+        assert_equal(options, ['shortname', 'name', 'private', 'url', '__custom__'])
+        ths = [th.text for th in r.html.findAll('th')]
+        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?',
+                           'private', 'url', 'Details'])
 
 
 @task
