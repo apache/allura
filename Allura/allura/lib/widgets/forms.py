@@ -1095,7 +1095,11 @@ class SearchProjectsForm(ForgeForm):
                 ew.SingleSelectField(
                     name='f',
                     show_label=False,
-                    options=['shortname']),
+                    options=[
+                        ew.Option(py_value='shortname', label='shortname'),
+                        ew.Option(py_value='name', label='full name'),
+                        ew.Option(py_value='__custom__', label='custom query'),
+                    ]),
                 ew.InputField(name='q', show_label=False),
                 ew.SubmitButton(
                     show_label=False,
