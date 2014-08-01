@@ -39,7 +39,7 @@
       <tr>
         <td><a href="{{ p['url_s'] }}">{{ p['shortname_s'] }}</a></td>
         <td>{{ p['name_s'] }}</td>
-        <td>{{ p['registration_dt'] }}</td>
+        <td>{{ h.ago_string(p['registration_dt']) }}</td>
         <td>{{ 'Yes' if p['deleted_b'] else 'No' }}</td>
         <td>
           <a href="{{ p['url_s'] + 'admin/groups/' }}">Members</a><br>
@@ -54,4 +54,13 @@
     {{c.page_list.display(limit=limit, page=page, count=count)}}
     {{c.page_size.display(limit=limit, page=page, count=count)}}
   </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  table th {
+    text-align: left;
+    padding: 5px 10px;
+  }
+</style>
 {% endblock %}
