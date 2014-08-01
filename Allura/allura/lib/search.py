@@ -159,7 +159,7 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 
-def search_projects(q, field, rows=10, short_timeout=False, **kw):
+def search_projects(q, field, **kw):
     """Performs SOLR search for a project.
 
     Raises SearchError if SOLR returns an error.
@@ -177,7 +177,7 @@ def search_projects(q, field, rows=10, short_timeout=False, **kw):
         # construct query for a specific selected field
         q = p.translate_query(u'%s:"%s"' % (field, q), fields)
     fq = [u'type_s:Project']
-    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
+    return search(q, fq=fq, ignore_errors=False, **kw)
 
 
 def search_app(q='', fq=None, app=True, **kw):

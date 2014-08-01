@@ -91,6 +91,19 @@ class TestSolr(unittest.TestCase):
         solr.search('bar', kw='kw')
         solr.query_server.search.assert_called_once_with('bar', kw='kw')
 
+    @mock.patch('allura.lib.search.search')
+    def test_search_projects(self, search):
+        from allura.lib.search import search_projects
+        fq = ['type_s:Project']
+        search_projects('test', 'shortname', rows=25)
+        search.assert_called_once_with(
+            'shortname_s:"test"', fq=fq, ignore_errors=False, rows=25)
+
+        search.reset_mock()
+        search_projects('shortname:test || shortname:test2', '__custom__')
+        search.assert_called_once_with(
+            'shortname_s:test || shortname_s:test2', fq=fq, ignore_errors=False)
+
 
 class TestSearchIndexable(unittest.TestCase):
 
