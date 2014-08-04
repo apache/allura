@@ -46,6 +46,7 @@ import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import memoize
+from allura.lib.search import SearchIndexable
 
 from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
@@ -212,7 +213,7 @@ class FieldPropertyDisplayName(FieldProperty):
         return display_name
 
 
-class User(MappedClass, ActivityNode, ActivityObject):
+class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
     class __mongometa__:
@@ -220,6 +221,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
         session = main_orm_session
         indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
+
+    type_s = 'User'
 
     _id = FieldProperty(S.ObjectId)
     sfx_userid = FieldProperty(S.Deprecated)
@@ -229,7 +232,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
     last_password_updated = FieldProperty(datetime)
     projects = FieldProperty(S.Deprecated)
     # full mount point: prefs dict
-    tool_preferences = FieldProperty({str: {str: None}})
+    tool_preferences = FieldProperty(S.Deprecated)
     tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
     disabled = FieldProperty(bool, if_missing=False)
 
@@ -281,6 +284,37 @@ class User(MappedClass, ActivityNode, ActivityObject):
         session_date=S.DateTime,
         session_ip=str,
         session_ua=str))
+
+    def index(self):
+        provider = plugin.AuthenticationProvider.get(None)  # no need in request here
+        localization = '%s/%s' % (
+            self.get_pref('localization')['country'],
+            self.get_pref('localization')['city'])
+        fields = dict(
+            id=self.index_id(),
+            title='User %s' % self.username,
+            type_s=self.type_s,
+            username_s=self.username,
+            email_addresses=self.email_addresses,
+            last_password_updated_dt=self.last_password_updated,
+            disabled_b=self.disabled,
+            results_per_page_i=self.get_pref('results_per_page'),
+            email_address_s=self.get_pref('email_address'),
+            email_format_s=self.get_pref('email_format'),
+            disable_user_messages_b=self.get_pref('disable_user_messages'),
+            display_name_s=self.get_pref('display_name'),
+            sex_s=self.get_pref('sex'),
+            birthday_dt=self.get_pref('birthday'),
+            localization_s=localization,
+            timezone_s=self.get_pref('timezone'),
+            socialnetworks=self.get_pref('socialnetworks'),
+            telnumbers=self.get_pref('telnumbers'),
+            skypeaccount_s=self.get_pref('skypeaccount'),
+            webpages=self.get_pref('webpages'),
+            skills=self.get_skills(),
+            last_access=self.last_access,
+        )
+        return dict(provider.index_user(self), **fields)
 
     def track_login(self, req):
         user_ip = req.headers.get('X_FORWARDED_FOR', req.remote_addr)

@@ -279,6 +279,10 @@ class AuthenticationProvider(object):
             return True
         return False
 
+    def index_user(self, user):
+        """Put here additional fields for user index in SOLR."""
+        return {}
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
@@ -369,6 +373,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             # but we're using naive UTC time everywhere
             d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
         return d
+
+    def index_user(self, user):
+        fields = super(LocalAuthenticationProvider, self).index_user(user)
+        return dict(user_registration_date_dt=self.user_registration_date(user), **fields)
 
 
 def ldap_conn(who=None, cred=None):
