@@ -57,6 +57,18 @@ def del_projects(project_solr_ids):
 
 
 @task
+def add_users(user_ids):
+    from allura.model import User
+    users = User.query.find(dict(_id={'$in': user_ids})).all()
+    __add_objects(users)
+
+
+@task
+def del_users(user_solr_ids):
+    __del_objects(user_solr_ids)
+
+
+@task
 def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     '''
     Add the referenced artifacts to SOLR and shortlinks.
