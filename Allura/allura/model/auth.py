@@ -290,12 +290,14 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         localization = '%s/%s' % (
             self.get_pref('localization')['country'],
             self.get_pref('localization')['city'])
+        socialnetworks = ' '.join(['%s: %s' % (n['socialnetwork'], n['accounturl'])
+                                   for n in self.get_pref('socialnetworks')])
         fields = dict(
             id=self.index_id(),
             title='User %s' % self.username,
             type_s=self.type_s,
             username_s=self.username,
-            email_addresses=self.email_addresses,
+            email_addresses_t=' '.join(self.email_addresses),
             last_password_updated_dt=self.last_password_updated,
             disabled_b=self.disabled,
             results_per_page_i=self.get_pref('results_per_page'),
@@ -304,15 +306,20 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             disable_user_messages_b=self.get_pref('disable_user_messages'),
             display_name_s=self.get_pref('display_name'),
             sex_s=self.get_pref('sex'),
-            birthday_dt=self.get_pref('birthday'),
+            birthdate_dt=self.get_pref('birthdate'),
             localization_s=localization,
             timezone_s=self.get_pref('timezone'),
-            socialnetworks=self.get_pref('socialnetworks'),
-            telnumbers=self.get_pref('telnumbers'),
+            socialnetworks_t=socialnetworks,
+            telnumbers_t=' '.join(self.get_pref('telnumbers')),
             skypeaccount_s=self.get_pref('skypeaccount'),
-            webpages=self.get_pref('webpages'),
-            skills=self.get_skills(),
-            last_access=self.last_access,
+            webpages_t=' '.join(self.get_pref('webpages')),
+            skills_t=' '.join([s['skill'].fullpath for s in self.get_skills()]),
+            last_access_login_date_dt=self.last_access['login_date'],
+            last_access_login_ip_s=self.last_access['login_ip'],
+            last_access_login_ua_t=self.last_access['login_ua'],
+            last_access_session_date_dt=self.last_access['session_date'],
+            last_access_session_ip_s=self.last_access['session_ip'],
+            last_access_session_ua_t=self.last_access['session_ua'],
         )
         return dict(provider.index_user(self), **fields)
 
