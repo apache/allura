@@ -62,7 +62,9 @@ class IndexerSessionExtension(ManagedSessionExtension):
 
     TASKS = {
         'allura.model.project.Project': {'add': index_tasks.add_projects,
-                                         'del': index_tasks.del_projects}
+                                         'del': index_tasks.del_projects},
+        'allura.model.auth.User': {'add': index_tasks.add_users,
+                                   'del': index_tasks.del_users},
     }
 
     def _objects_by_types(self, obj_list):
