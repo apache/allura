@@ -215,13 +215,20 @@ class Globals(MappedClass):
         d = dict(name=name, hits=0, closed=0)
         if not (fld_name and m_name):
             return d
-        mongo_query = {'custom_fields.%s' % fld_name: m_name}
-        r = Ticket.query.find(dict(
-            mongo_query, app_config_id=self.app_config_id, deleted=False))
-        tickets = [t for t in r if security.has_access(t, 'read')]
-        d['hits'] = len(tickets)
-        d['closed'] = sum(1 for t in tickets
-                          if t.status in self.set_of_closed_status_names)
+        mongo_query = {
+            'custom_fields.%s' % fld_name: m_name,
+            'app_config_id': self.app_config_id,
+            'deleted': False
+        }
+        d['hits'] = Ticket.query.find(dict(mongo_query, acl=[])).count()
+        d['closed'] = Ticket.query.find(dict(mongo_query, acl=[],
+                                             status={'$in': list(self.set_of_closed_status_names)})).count()
+
+        secured_tickets = Ticket.query.find(dict(mongo_query, acl={"$ne": []}))
+        if secured_tickets.count():
+            tickets = [t for t in secured_tickets if security.has_access(t, 'read')]
+            d['hits'] += len(tickets)
+            d['closed'] += sum(1 for t in tickets if t.status in self.set_of_closed_status_names)
         return d
 
     def invalidate_bin_counts(self):
