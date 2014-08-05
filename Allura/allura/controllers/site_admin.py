@@ -34,7 +34,7 @@ from allura.app import SitemapEntry
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
-from allura.lib.plugin import SiteAdminExtension
+from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider
 from allura.lib import search
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
@@ -306,6 +306,15 @@ class SiteAdminController(object):
             if match:
                 count = match.hits
                 projects = match.docs
+                pids = [bson.ObjectId(p['id'].split('#')[1]) for p in projects]
+                mongo_projects = {}
+                for p in M.Project.query.find({'_id': {'$in': pids}}):
+                    mongo_projects[str(p._id)] = p
+
+                for i in range(len(projects)):
+                    p = projects[i]
+                    _id = p['id'].split('#')[1]
+                    p['project'] = mongo_projects[_id]
 
         def convert_fields(p):
             # throw the type away (e.g. '_s' from 'url_s')
@@ -327,6 +336,7 @@ class SiteAdminController(object):
             'page': page,
             'limit': limit,
             'additional_fields': aslist(config.get('search.project.additional_fields'), ','),
+            'provider': ProjectRegistrationProvider.get(),
         }
 
 

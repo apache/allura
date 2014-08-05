@@ -48,8 +48,9 @@
         <td>{{ p[field] }}</td>
         {% endfor %}
         <td>
-          <a href="{{ p['url'] + 'admin/groups/' }}">Members</a><br>
-          <a href="{{ p['url'] + 'admin/audit/' }}">Audit Trail</a>
+          {% for url, label in provider.details_links(p['project']) %}
+            <a href="{{ url }}">{{ label }}</a><br>
+          {% endfor %}
         </td>
       </tr>
     {% endfor %}

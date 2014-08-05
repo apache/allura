@@ -854,6 +854,16 @@ class ProjectRegistrationProvider(object):
         '''
         return project._id.generation_time
 
+    def details_links(self, project):
+        '''Return list of pairs (url, label) with details
+        about the project.
+        Links will show up at admin project search page
+        '''
+        return [
+           (project.url() + 'admin/groups/', 'Members'),
+           (project.url() + 'admin/audit/', 'Audit Trail'),
+        ]
+
 
 class ThemeProvider(object):
 
