@@ -16,10 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import argparse
-from pprint import pprint
-
 import pymongo
 
 
@@ -55,5 +52,14 @@ if not opts.dry_run:
     project_data.ticket.update({
         'app_config_id': tool['_id'],
         'ticket_num': {'$in': ticket_nums}
-    }, {'$set': {'app_config_id': 'moved-to-apache'}},
-    multi=True)
+    }, {'$set': {'app_config_id': 'moved-to-apache'}}, multi=True)
+
+print 'Creating MovingTickets for tickets: %s' % ticket_nums
+
+if not opts.dry_run:
+    for num in ticket_nums:
+        project_data.moved_ticket.insert({
+            'app_config_id': tool['_id'],
+            'ticket_num': num,
+            'moved_to_url': 'https://forge-allura.apache.org/p/allura/tickets/%s' % num,
+        })
