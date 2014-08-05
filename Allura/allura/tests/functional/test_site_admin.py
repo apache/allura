@@ -22,6 +22,7 @@ from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from tg import config
+from bson import ObjectId
 
 from allura import model as M
 from allura.tests import TestController
@@ -201,6 +202,18 @@ class TestProjectsSearch(TestController):
         'neighborhood_name_s': 'Projects',
         'id': 'allura/model/project/Project#53ccf6e8100d2b0741746e9f',
     }])
+
+    def setUp(self):
+        super(TestProjectsSearch, self).setUp()
+        # Create project that matches TEST_HIT id
+        p = M.Project.query.get(_id=ObjectId('53ccf6e8100d2b0741746e9f'))
+        if not p:
+            M.Project(
+                _id=ObjectId('53ccf6e8100d2b0741746e9f'),
+                neighborhood_id=M.Neighborhood.query.get(url_prefix='/u/')._id,
+                shortname='test-project',
+            )
+            ThreadLocalORMSession().flush_all()
 
     @patch('allura.controllers.site_admin.search')
     def test_default_fields(self, search):
