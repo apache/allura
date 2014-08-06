@@ -153,6 +153,9 @@ class ForgeTrackerImporter(ToolImporter):
                         ticket_json['votes_down'],
                         assigned_to_id=owner._id,
                     )
+                    # add an attachment to the ticket
+                    ticket.add_multiple_attachments([File(a['url'])
+                                                    for a in ticket_json['attachments']])
                     # trigger the private property
                     ticket.private = ticket_json['private']
                     self.process_comments(

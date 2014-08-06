@@ -17,6 +17,8 @@
 
 from datetime import datetime
 from unittest import TestCase
+from cgi import FieldStorage
+from cStringIO import StringIO
 
 import mock
 from ming.odm import ThreadLocalORMSession
@@ -27,6 +29,7 @@ from allura.tests.decorators import with_tracker
 
 from allura import model as M
 from forgeimporters.forge import tracker
+from forgetracker import model as TM
 
 
 class TestTrackerImporter(TestCase):
@@ -55,6 +58,7 @@ class TestTrackerImporter(TestCase):
                 {
                     'reported_by': 'rb1',
                     'assigned_to': 'at1',
+                    'attachments': [],
                     'ticket_num': 1,
                     'description': 'd1',
                     'created_date': '2013-09-01',
@@ -72,6 +76,7 @@ class TestTrackerImporter(TestCase):
                     'reported_by': 'rb2',
                     'assigned_to': 'at2',
                     'ticket_num': 100,
+                    'attachments': [],
                     'description': 'd2',
                     'created_date': '2013-09-03',
                     'mod_date': '2013-09-04',
@@ -196,6 +201,25 @@ class TestTrackerImporter(TestCase):
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
 
+    def test_ticket_attach(self):
+        test_file1 = FieldStorage()
+        test_file1.name = 'test_file_1'
+        test_file1.filename = 'test_file_1.txt'
+        test_file1.type = 'text/plain'
+        test_file1.file = StringIO('test_file_1\n')
+        test_file2 = FieldStorage()
+        test_file2.name = 'test_file_2'
+        test_file2.filename = 'test_file_2.txt'
+        test_file2.type = 'text/plain'
+        test_file2.file = StringIO('test_file_2\n')
+        ticket = TM.Ticket(ticket_num=666)
+        ticket.add_multiple_attachments([test_file1, test_file2])
+        ThreadLocalORMSession.flush_all()
+        attaches = ticket.attachments
+        self.assertEqual(len(attaches), 2)
+        assert 'test_file_1.txt' in [attaches[0].filename, attaches[1].filename]
+        assert 'test_file_2.txt' in [attaches[0].filename, attaches[1].filename]
+                
     @mock.patch.object(tracker, 'ThreadLocalORMSession')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'h')
