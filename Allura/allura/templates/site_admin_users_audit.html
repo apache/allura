@@ -33,8 +33,11 @@
   </form>
   {% if audit_user and not audit_user.is_anonymous() %}
     <form action='/nf/admin/add_audit_trail_entry' method='POST'>
-      <div class='grid-7'>
-        <label for='comment'>Comment:</label><input name='comment'>
+      <div class='grid-19'>
+        <label for='comment'>Comment:</label>
+      </div>
+      <div class='grid-19'>
+        <textarea name="comment" cols="38" rows="5"></textarea>
       </div>
       <div class='grid-5'>
         <input type='hidden' name='username' value='{{ audit_user.username }}'>
