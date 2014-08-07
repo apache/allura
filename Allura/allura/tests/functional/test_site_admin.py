@@ -1,3 +1,4 @@
+# coding: utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -178,6 +179,32 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/users?username=test-user-2')
         assert_not_in('test activity user 1', r)
         assert_in('test activity user 2', r)
+
+    def test_add_audit_trail_entry_access(self):
+        self.app.get('/nf/admin/add_audit_log_entry', status=404)  # GET is not allowed
+        r = self.app.post('/nf/admin/add_audit_log_entry',
+                          extra_environ={'username': '*anonymous'},
+                          status=302)
+        assert_equal(r.location, 'http://localhost/auth/')
+
+    def test_add_comment_on_users_trail_page(self):
+        r = self.app.get('/nf/admin/users')
+        assert_not_in('Add comment', r)
+        r = self.app.get('/nf/admin/users?username=fake-user')
+        assert_not_in('Add comment', r)
+        r = self.app.get('/nf/admin/users?username=test-user')
+        assert_in('Add comment', r)
+
+    def test_add_comment(self):
+        r = self.app.get('/nf/admin/users?username=test-user')
+        assert_not_in(u'Comment by test-admin: I was hêre!', r)
+        form = r.forms[1]
+        assert_equal(form['username'].value, 'test-user')
+        form['comment'] = u'I was hêre!'
+        r = form.submit()
+        assert_in(u'Comment added', self.webflash(r))
+        r = self.app.get('/nf/admin/users?username=test-user')
+        assert_in(u'Comment by test-admin: I was hêre!', r)
 
 
 @task
