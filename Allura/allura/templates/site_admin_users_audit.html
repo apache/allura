@@ -18,6 +18,7 @@
 -#}
 
 {% extends 'allura:templates/site_admin.html' %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% block content %}
 <div class='grid-19'>
@@ -30,6 +31,18 @@
       <input type='submit' value='Show'>
     </div>
   </form>
+  {% if audit_user and not audit_user.is_anonymous() %}
+    <form action='/nf/admin/add_audit_trail_entry' method='POST'>
+      <div class='grid-7'>
+        <label for='comment'>Comment:</label><input name='comment'>
+      </div>
+      <div class='grid-5'>
+        <input type='hidden' name='username' value='{{ audit_user.username }}'>
+        <input type='submit' value='Add comment'>
+        {{lib.csrf_token()}}
+      </div>
+    </form>
+  {% endif %}
   {% if entries %}
     {{ c.widget.display(entries=entries, limit=limit, page=page, count=count) }}
   {% endif %}

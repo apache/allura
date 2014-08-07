@@ -915,6 +915,12 @@ class AuditLog(object):
         kwargs['project'] = None
         return cls.log(message, *args, **kwargs)
 
+    @classmethod
+    def comment_user(cls, message, *args, **kwargs):
+        by = kwargs.pop('by', c.user)
+        message = u'Comment by %s: %s' % (by.username, message)
+        return cls.log_user(message, *args, **kwargs)
+
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
     project_id=ForeignIdProperty('Project'),
     project=RelationProperty('Project'),

@@ -268,7 +268,21 @@ class SiteAdminController(object):
             limit=limit,
             page=page,
             count=count,
+            audit_user=user,
             username=username)
+
+    @expose()
+    @require_post()
+    def add_audit_trail_entry(self, **kw):
+        username = kw.get('username')
+        comment = kw.get('comment')
+        user = M.User.by_username(username)
+        if user and not user.is_anonymous() and comment:
+            M.AuditLog.comment_user(comment, by=c.user, user=user)
+            flash('Comment added', 'ok')
+        else:
+            flash('Can not add comment "%s" for user %s' % (comment, user))
+        redirect(request.referer)
 
 class TaskManagerController(object):
 
