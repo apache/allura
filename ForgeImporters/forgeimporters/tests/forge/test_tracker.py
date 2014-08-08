@@ -34,6 +34,7 @@ from forgetracker import model as TM
 
 class TestTrackerImporter(TestCase):
 
+    @mock.patch.object(tracker, 'File')
     @mock.patch.object(tracker.h, 'make_app_admin_only')
     @mock.patch.object(tracker, 'g')
     @mock.patch.object(tracker, 'c')
@@ -41,7 +42,7 @@ class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker, 'session')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'TM')
-    def test_import_tool(self, TM, M, session, tlos, c, g, mao):
+    def test_import_tool(self, TM, M, session, tlos, c, g, mao, File):
         importer = tracker.ForgeTrackerImporter()
         importer._load_json = mock.Mock(return_value={
             'tracker_config': {
@@ -58,7 +59,7 @@ class TestTrackerImporter(TestCase):
                 {
                     'reported_by': 'rb1',
                     'assigned_to': 'at1',
-                    'attachments': [],
+                    'attachments': [{'url': 'u1'}, {'url': 'u2'}],
                     'ticket_num': 1,
                     'description': 'd1',
                     'created_date': '2013-09-01',
@@ -76,7 +77,7 @@ class TestTrackerImporter(TestCase):
                     'reported_by': 'rb2',
                     'assigned_to': 'at2',
                     'ticket_num': 100,
-                    'attachments': [],
+                    'attachments': [{'url': 'u3'}, {'url': 'u4'}],
                     'description': 'd2',
                     'created_date': '2013-09-03',
                     'mod_date': '2013-09-04',
@@ -112,6 +113,7 @@ class TestTrackerImporter(TestCase):
         app.config.options.get = lambda *a: getattr(app.config.options, *a)
         app.url = 'foo'
         tickets = TM.Ticket.side_effect = [mock.Mock(), mock.Mock()]
+        File.side_effect = ['f1', 'f2', 'f3', 'f4']
 
         importer.import_tool(project, user,
                              mount_point='mount_point', mount_label='mount_label')
@@ -200,26 +202,18 @@ class TestTrackerImporter(TestCase):
             project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
+        self.assertEqual(File.call_args_list, [
+            mock.call('u1'),
+            mock.call('u2'),
+            mock.call('u3'),
+            mock.call('u4'),
+        ])
+        self.assertEqual(tickets[0].add_multiple_attachments.call_args_list, [
+            mock.call(['f1', 'f2'])])
+        self.assertEqual(tickets[1].add_multiple_attachments.call_args_list, [
+            mock.call(['f3', 'f4']),
+        ])
 
-    def test_ticket_attach(self):
-        test_file1 = FieldStorage()
-        test_file1.name = 'test_file_1'
-        test_file1.filename = 'test_file_1.txt'
-        test_file1.type = 'text/plain'
-        test_file1.file = StringIO('test_file_1\n')
-        test_file2 = FieldStorage()
-        test_file2.name = 'test_file_2'
-        test_file2.filename = 'test_file_2.txt'
-        test_file2.type = 'text/plain'
-        test_file2.file = StringIO('test_file_2\n')
-        ticket = TM.Ticket(ticket_num=666)
-        ticket.add_multiple_attachments([test_file1, test_file2])
-        ThreadLocalORMSession.flush_all()
-        attaches = ticket.attachments
-        self.assertEqual(len(attaches), 2)
-        assert 'test_file_1.txt' in [attaches[0].filename, attaches[1].filename]
-        assert 'test_file_2.txt' in [attaches[0].filename, attaches[1].filename]
-                
     @mock.patch.object(tracker, 'ThreadLocalORMSession')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'h')
