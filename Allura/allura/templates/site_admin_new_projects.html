@@ -38,7 +38,7 @@
   </div>
   {{ _paging() }}
   <div style="clear:both;"></div>
-  <table>
+  <table id="new_projects">
     <thead>
       <tr>
         <th class="narrow"></th>
@@ -84,9 +84,16 @@
     td {
         max-width: 120px;
     }
+    th.header {
+        background-repeat: no-repeat;
+        background-position: center right;
+        cursor: pointer; 
+    } 
 </style>
 {% endblock %}
 
 {% block extra_js %}
   <script type="text/javascript" src="{{g.forge_static('js/site_admin_new_projects.js')}}"></script>
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.tablesorter.js')}}"></script>
+  <script type="text/JavaScript">$(document).ready(function() {$("#new_projects").tablesorter();} );</script>
 {% endblock %}
