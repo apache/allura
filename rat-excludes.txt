@@ -26,6 +26,7 @@ Allura/allura/lib/widgets/resources/js/jquery.textarea.js
 Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
 Allura/allura/public/nf/js/jquery.flot.js
 Allura/allura/public/nf/js/jquery.maxlength.min.js
+Allura/allura/public/nf/js/jquery.tablesorter.js
 Allura/allura/public/nf/js/jquery.viewport.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/js/sylvester.js
@@ -43,4 +44,3 @@ ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
 ForgeImporters/forgeimporters/trac/tests/data/test-list.html
 ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
 ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
-Allura/allura/public/nf/js/jquery.tablesorter.js
