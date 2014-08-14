@@ -236,6 +236,7 @@ under the MIT license.  For details, see the individual files:
     allura/public/nf/js/jquery.viewport.js
     ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
     ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
+    Allura/allura/public/nf/js/jquery.tablesorter.js
 
 Blueprint, which is available under the MIT license.
 For details, see Allura/allura/public/nf/css/blueprint/

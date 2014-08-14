@@ -42,7 +42,7 @@
     <thead>
       <tr>
         <th class="narrow"></th>
-        <th class="narrow">Created</th>
+        <th>Created</th>
         <th>Shortname</th>
         <th>Name</th>
         <th>Short description</th>
@@ -85,15 +85,26 @@
         max-width: 120px;
     }
     th.header {
-        background-repeat: no-repeat;
-        background-position: center right;
+        background-image: url("{{g.forge_static('images/bg.gif')}}");
         cursor: pointer; 
-    } 
+        font-weight: bold; 
+        background-repeat: no-repeat; 
+        background-position: center left; 
+        padding-left: 20px; 
+    }
+    th.headerSortUp { 
+        background-image: url("{{g.forge_static('images/asc.gif')}}");
+        background-color: #6bb3fd; 
+    }
+    th.headerSortDown { 
+        background-image: url("{{g.forge_static('images/desc.gif')}}");
+        background-color: #6bb3fd; 
+    }   
 </style>
 {% endblock %}
 
 {% block extra_js %}
   <script type="text/javascript" src="{{g.forge_static('js/site_admin_new_projects.js')}}"></script>
   <script type="text/javascript" src="{{g.forge_static('js/jquery.tablesorter.js')}}"></script>
-  <script type="text/JavaScript">$(document).ready(function() {$("#new_projects").tablesorter();} );</script>
+  <script type="text/JavaScript">$(document).ready(function() {$("#new_projects").tablesorter({headers: {0: {sorter: false}}});} );</script>
 {% endblock %}

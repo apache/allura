@@ -43,3 +43,4 @@ ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
 ForgeImporters/forgeimporters/trac/tests/data/test-list.html
 ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
 ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
+Allura/allura/public/nf/js/jquery.tablesorter.js

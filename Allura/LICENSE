@@ -233,6 +233,7 @@ under the MIT license.  For details, see the individual files:
     allura/public/nf/js/jquery.flot.js
     allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js
+    allura/public/nf/js/jquery.tablesorter.js
 
 Blueprint, which is available under the MIT license.
 For details, see allura/public/nf/css/blueprint/
