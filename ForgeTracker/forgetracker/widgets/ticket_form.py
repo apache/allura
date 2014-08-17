@@ -17,6 +17,7 @@
 
 from pylons import tmpl_context as c
 from formencode import validators as fev
+from webhelpers.html.builder import literal
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -24,6 +25,7 @@ import ew.jinja2_ew as ew
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import helpers as h
+from allura.lib import validators as v
 
 
 class TicketCustomFields(ew.CompoundField):
@@ -76,8 +78,7 @@ class GenericTicketForm(ew.SimpleForm):
 
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display = "%s<div class='error'>%s</div>" % (display,
-                                                         ctx['errors'])
+            display += literal("<div class='error'>{0}</div>".format(ctx['errors']))
         return display
 
     def _add_current_value_to_user_field(self, field, user):
@@ -114,6 +115,7 @@ class GenericTicketForm(ew.SimpleForm):
             ffw.LabelEdit(label='Labels', name='labels',
                           className='ticket_form_tags'),
             ew.Checkbox(name='private', label='Mark as Private',
+                        validator=v.AnonymousValidator(),
                         attrs={'class': 'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={
                           'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
