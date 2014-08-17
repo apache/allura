@@ -818,9 +818,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ACE.allow(role._id, perm) for perm in perms]
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else
-            self.acl = _allow_all(role_developer, security.all_allowed(self, role_developer)) \
-                + _allow_all(role_creator, security.all_allowed(self, role_creator)) \
-                + [DENY_ALL]
+            acl = _allow_all(role_developer, security.all_allowed(self, role_developer))
+            if role_creator != ProjectRole.anonymous():
+                acl += _allow_all(role_creator, security.all_allowed(self, role_creator))
+            acl += [DENY_ALL]
+            self.acl = acl
         else:
             self.acl = []
     private = property(_get_private, _set_private)

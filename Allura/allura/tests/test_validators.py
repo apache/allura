@@ -97,6 +97,22 @@ class TestUserValidator(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Invalid username")
 
 
+class TestAnonymousValidator(unittest.TestCase):
+    val = v.AnonymousValidator
+
+    @patch('allura.lib.validators.c')
+    def test_valid(self, c):
+        c.user = M.User.by_username('root')
+        self.assertEqual(True, self.val.to_python(True))
+
+    @patch('allura.lib.validators.c')
+    def test_invalid(self, c):
+        c.user = M.User.anonymous()
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python(True)
+        self.assertEqual(str(cm.exception), "Log in to Mark as Private")
+
+
 class TestMountPointValidator(unittest.TestCase):
 
     @patch('allura.lib.validators.c')
