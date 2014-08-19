@@ -137,6 +137,11 @@ class Artifact(MappedClass, SearchIndexable):
         ``fields``.
 
         """
+        # Replace longest fields first to avoid problems when field names have
+        # the same suffixes, but different field types. E.g.:
+        # query 'shortname:test' with fields.keys() == ['name_t', 'shortname_s']
+        # will be translated to 'shortname_t:test', which makes no sense
+        fields = sorted(fields.keys(), key=len, reverse=True)
         for f in fields:
             if '_' in f:
                 base, typ = f.rsplit('_', 1)
