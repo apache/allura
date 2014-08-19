@@ -30,6 +30,7 @@ from datadiff import tools as dd
 from webob import Request
 from webob.exc import HTTPUnauthorized
 from ming.orm import ThreadLocalORMSession
+from jinja2 import Markup
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -312,6 +313,11 @@ def test_inject_user(context):
 def test_datetimeformat():
     from datetime import date
     assert h.datetimeformat(date(2013, 01, 01)) == '2013-01-01 00:00:00'
+
+
+def test_nl2br_jinja_filter():
+    assert_equals(h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz'),
+            Markup(u'foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
 
 
 def test_split_select_field_options():

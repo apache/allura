@@ -50,7 +50,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
-from jinja2.filters import contextfilter
+from jinja2.filters import contextfilter, escape
 from paste.deploy.converters import asbool, aslist
 
 from webhelpers import date, feedgenerator, html, number, misc, text
@@ -772,6 +772,11 @@ prefixes are used (Mebi, Gibi).
             if bytes < unit:
                 return '%.1f %s' % ((base * bytes / unit), prefix)
         return '%.1f %s' % ((base * bytes / unit), prefix)
+
+
+def nl2br_jinja_filter(value):
+    result = '<br>\n'.join(escape(line) for line in value.split('\n'))
+    return Markup(result)
 
 
 def log_if_changed(artifact, attr, new_val, message):

@@ -105,6 +105,7 @@ class ForgeConfig(AppConfig):
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
         jinja2_env.filters['filter'] = lambda s,t=None: filter(t and jinja2_env.tests[t], s)
         jinja2_env.filters['map'] = helpers.map_jinja_filter
+        jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
         config['pylons.app_globals'].jinja2_env = jinja2_env
         # Jinja's unable to request c's attributes without strict_c
