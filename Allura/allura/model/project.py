@@ -1041,7 +1041,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       # Not analyzed fields
                       private_b=_private,
                       neighborhood_id_s=str(self.neighborhood_id),
-                      url_s=h.absurl(self.url()),
+                      url_s=self.url(),
                       is_root_b=self.is_root,
                       is_nbhd_project_b=self.is_nbhd_project,
                       registration_dt=plugin.ProjectRegistrationProvider.get().registration_date(self),
