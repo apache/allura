@@ -37,7 +37,7 @@
           <td>{{ entry.url_str }}</td>
         </tr>
         <tr>
-          <td></td><td colspan="2">{{ entry.message }}</td>
+          <td></td><td colspan="2">{{ g.markdown.convert(entry.message)|safe }}</td>
         </tr>
         {% endfor %}
       </tbody>

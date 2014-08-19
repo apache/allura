@@ -28,6 +28,7 @@ from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound
+import HTMLParser
 
 from allura.app import SitemapEntry
 from allura.lib import helpers as h
@@ -278,11 +279,12 @@ class SiteAdminController(object):
         comment = kw.get('comment')
         user = M.User.by_username(username)
         if user and not user.is_anonymous() and comment:
-            M.AuditLog.comment_user(comment, by=c.user, user=user)
+            M.AuditLog.comment_user(c.user, comment, user=user)
             flash('Comment added', 'ok')
         else:
             flash('Can not add comment "%s" for user %s' % (comment, user))
         redirect(request.referer)
+
 
 class TaskManagerController(object):
 

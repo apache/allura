@@ -41,6 +41,7 @@ from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
+from ming.schema import ParticularScalar
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
@@ -863,6 +864,7 @@ class ProjectRole(MappedClass):
         return self.query.find(dict(project_id=project._id,
                                     user_id={'$ne': None}, roles=self._id)).all()
 
+
 audit_log = collection(
     'audit_log', main_doc_session,
     Field('_id', S.ObjectId()),
@@ -916,10 +918,10 @@ class AuditLog(object):
         return cls.log(message, *args, **kwargs)
 
     @classmethod
-    def comment_user(cls, message, *args, **kwargs):
-        by = kwargs.pop('by', c.user)
+    def comment_user(cls, by, message, *args, **kwargs):
         message = u'Comment by %s: %s' % (by.username, message)
         return cls.log_user(message, *args, **kwargs)
+
 
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
     project_id=ForeignIdProperty('Project'),
