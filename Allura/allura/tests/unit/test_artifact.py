@@ -23,7 +23,7 @@ from allura import model as M
 class TestArtifact(unittest.TestCase):
 
     def test_translate_query(self):
-        fields = ['foo_s', 'bar_ws']
-        query = 'foo:1 AND bar:2 AND foo_bar_baz:3'
+        fields = {'name_t': '', 'shortname_s': ''}
+        query = 'name:1 AND shortname:2 AND shortname_name_field:3'
         q = M.Artifact.translate_query(query, fields)
-        self.assertEqual(q, 'foo_s:1 AND bar_ws:2 AND foo_bar_baz:3')
+        self.assertEqual(q, 'name_t:1 AND shortname_s:2 AND shortname_name_field:3')
