@@ -1046,7 +1046,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       is_nbhd_project_b=self.is_nbhd_project,
                       registration_dt=plugin.ProjectRegistrationProvider.get().registration_date(self),
                       removal_changed_date_dt=self.removal_changed_date,
-                      name_s=self.name,
+                      name_t=self.name,
                       shortname_s=self.shortname,
                       neighborhood_name_s=self.neighborhood.name,
                       external_homepage_s=self.external_homepage,
