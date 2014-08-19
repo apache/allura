@@ -314,7 +314,9 @@ class SiteAdminController(object):
                 for i in range(len(projects)):
                     p = projects[i]
                     _id = p['id'].split('#')[1]
-                    p['project'] = mongo_projects[_id]
+                    p['project'] = mongo_projects.get(_id)
+                # Some projects can be deleted, but still have index in solr, should skip those
+                projects = [p for p in projects if p.get('project')]
 
         def convert_fields(p):
             # throw the type away (e.g. '_s' from 'url_s')
