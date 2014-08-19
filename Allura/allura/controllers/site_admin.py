@@ -28,7 +28,6 @@ from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound
-import HTMLParser
 
 from allura.app import SitemapEntry
 from allura.lib import helpers as h

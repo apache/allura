@@ -41,7 +41,6 @@ from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
-from ming.schema import ParticularScalar
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
