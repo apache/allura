@@ -183,18 +183,35 @@ class Shortlink(object):
                     matches = (
                         m for m in matches
                         if m.app_config.options.mount_point == d['app'])
-                matches = list(matches)
-                if matches:
-                    result[link] = matches[0]
-                else:
-                    result[link] = None
-                if len(matches) > 1:
-                    log.warn('Ambiguous link to %s', link)
-                    for m in matches:
-                        log.warn('... %r', m)
+                result[link] = cls._get_correct_match(link, list(matches))
             return result
         else:
             return {}
+
+    @classmethod
+    def _get_correct_match(cls, link, matches):
+        result = None
+        if len(matches) == 1:
+            result = matches[0]
+        elif len(matches) > 1 and getattr(c, 'app', None):
+            # use current app's link
+            for m in matches:
+                if m.app_config_id == c.app.config._id:
+                    result = m
+                    break
+            if not result:
+                cls.log_ambiguous_link('Can not remove ambiguity for link %s with c.app %s', matches, link, c.app)
+                result = matches[0]
+        elif len(matches) > 1 and not getattr(c, 'app', None):
+            cls.log_ambiguous_link('Ambiguous link to %s and c.app is not present to remove ambiguity', matches, link)
+            result = matches[0]
+        return result
+
+    @classmethod
+    def log_ambiguous_link(cls, msg, matches, *args):
+        log.warn(msg, *args)
+        for m in matches:
+            log.warn('... %r', m)
 
     @classmethod
     def _parse_link(cls, s):
