@@ -488,6 +488,50 @@ def test_macro_include():
     assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
 
 
+@td.with_wiki
+def test_toc_generation_for_included_page():
+    parent_text = u'''
+[TOC]
+
+#heading in original page
+
+Sample text
+
+#another in original page
+
+More sample text
+
+[[include ref=included]]
+'''
+    included_text = u'''
+#heading for included page
+
+Sample
+
+#another heading for included page
+
+More text
+'''
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    wiki = p_test.app_instance('wiki')
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        p = WM.Page.upsert(title='included')
+        p.text = included_text
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+
+        result = g.markdown.convert(parent_text)
+        assert_in(u'<li><a href="#heading-in-original-page">'
+                  u'heading in original page</a></li>', result)
+        assert_in(u'<li><a href="#another-in-original-page">'
+                  u'another in original page</a></li>', result)
+        assert_in(u'<li><a href="#heading-for-included-page">'
+                  u'heading for included page</a></li>', result)
+        assert_in(u'<li><a href="#another-heading-for-included-page">'
+                  u'another heading for included page</a></li>', result)
+
+
 def test_macro_nbhd_feeds():
     with h.push_context('--init--', 'wiki', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
