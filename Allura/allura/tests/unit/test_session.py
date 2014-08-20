@@ -20,9 +20,14 @@ import mock
 
 from unittest import TestCase
 
+import allura
 from allura.tests import decorators as td
-from allura.model.session import IndexerSessionExtension, BatchIndexer, \
-                                 substitute_extensions
+from allura.model.session import (
+    IndexerSessionExtension,
+    BatchIndexer,
+    ArtifactSessionExtension,
+    substitute_extensions,
+)
 
 
 def test_extensions_cm():
@@ -69,7 +74,16 @@ def test_extensions_cm_flush_raises():
     assert session._kwargs['extensions'] == []
 
 
-class TestIndexerSessionExtension(TestCase):
+class TestSessionExtension(TestCase):
+
+    def _mock_indexable(self, **kw):
+        m = mock.Mock(**kw)
+        m.__ming__ = mock.MagicMock()
+        m.index_id.return_value = id(m)
+        return m
+
+
+class TestIndexerSessionExtension(TestSessionExtension):
 
     def setUp(self):
         session = mock.Mock()
@@ -78,12 +92,6 @@ class TestIndexerSessionExtension(TestCase):
         self.tasks = {'add': mock.Mock(), 'del': mock.Mock()}
         self.extension.TASKS = mock.Mock()
         self.extension.TASKS.get.return_value = self.tasks
-
-    def _mock_indexable(self, **kw):
-        m = mock.Mock(**kw)
-        m.__ming__ = mock.MagicMock()
-        m.index_id.return_value = id(m)
-        return m
 
     def test_flush(self):
         added = [self._mock_indexable(_id=i) for i in (1, 2, 3)]
@@ -111,6 +119,35 @@ class TestIndexerSessionExtension(TestCase):
         self.extension.objects_modified = modified
         self.extension.after_flush()
         assert self.tasks['add'].post.call_count == 0
+
+
+class TestArtifactSessionExtension(TestSessionExtension):
+
+    def setUp(self):
+        session = mock.Mock(disable_index=False)
+        self.ExtensionClass = ArtifactSessionExtension
+        self.extension = self.ExtensionClass(session)
+
+    @mock.patch.object(allura.model.index.Shortlink, 'from_artifact')
+    @mock.patch.object(allura.model.index.ArtifactReference, 'from_artifact')
+    @mock.patch('allura.model.session.index_tasks')
+    def test_flush_skips_update(self, index_tasks, ref_fa, shortlink_fa):
+        modified = [self._mock_indexable(_id=i) for i in range(5)]
+        modified[1].should_update_index.return_value = False
+        modified[4].should_update_index.return_value = False
+        ref_fa.side_effect = lambda obj: mock.Mock(_id=obj._id)
+        self.extension.objects_modified = modified
+        self.extension.after_flush()
+        index_tasks.add_artifacts.post.assert_called_once_with([0, 2, 3])
+
+    @mock.patch('allura.model.session.index_tasks')
+    def test_flush_skips_task_if_all_objects_filtered_out(self, index_tasks):
+        modified = [self._mock_indexable(_id=i) for i in range(5)]
+        for m in modified:
+            m.should_update_index.return_value = False
+        self.extension.objects_modified = modified
+        self.extension.after_flush()
+        assert index_tasks.add_artifacts.post.call_count == 0
 
 
 class TestBatchIndexer(TestCase):

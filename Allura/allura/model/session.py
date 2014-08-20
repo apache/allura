@@ -30,6 +30,12 @@ from allura.tasks import index_tasks
 log = logging.getLogger(__name__)
 
 
+def _needs_update(o):
+    old = dict(state(o).original_document)
+    new = dict(state(o).document)
+    return o.should_update_index(old, new)
+
+
 class ManagedSessionExtension(SessionExtension):
 
     def __init__(self, session):
@@ -76,10 +82,6 @@ class IndexerSessionExtension(ManagedSessionExtension):
         task = tasks.get(action)
         if task:
             if action == 'add':
-                def _needs_update(o):
-                    old = dict(state(o).original_document)
-                    new = dict(state(o).document)
-                    return o.should_update_index(old, new)
                 arg = [o._id for o in obj_list if _needs_update(o)]
             else:
                 arg = [o.index_id() for o in obj_list]
@@ -119,7 +121,8 @@ class ArtifactSessionExtension(ManagedSessionExtension):
             try:
                 arefs = [
                     ArtifactReference.from_artifact(o)
-                    for o in self.objects_added + self.objects_modified]
+                    for o in self.objects_added + self.objects_modified
+                    if _needs_update(o)]
                 for obj in self.objects_added + self.objects_modified:
                     Shortlink.from_artifact(obj)
                 # Flush shortlinks
@@ -134,7 +137,7 @@ class ArtifactSessionExtension(ManagedSessionExtension):
                 g.zarkov_event('modify', extra=obj.index_id())
             for obj in self.objects_deleted:
                 g.zarkov_event('delete', extra=obj.index_id())
-        
+
         super(ArtifactSessionExtension, self).after_flush(obj)
 
     def update_index(self, objects_deleted, arefs):

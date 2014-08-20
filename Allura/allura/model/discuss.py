@@ -164,6 +164,16 @@ class Thread(Artifact, ActivityObject):
     first_post = RelationProperty('Post', via='first_post_id')
     ref = RelationProperty('ArtifactReference')
 
+    def should_update_index(self, old_doc, new_doc):
+        """Skip index update if only `num_views` has changed.
+
+        Value of `num_views` is updated whenever user loads thread page.
+        This generates a lot of unnecessary `add_artifacts` tasks.
+        """
+        old_doc.pop('num_views', None)
+        new_doc.pop('num_views', None)
+        return old_doc != new_doc
+
     def __json__(self, limit=None, page=None):
         return dict(
             _id=self._id,
