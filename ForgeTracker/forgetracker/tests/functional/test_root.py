@@ -3098,3 +3098,36 @@ def test_status_passthru():
     assert_items_equal(app.globals.set_of_closed_status_names, ['qux', 'baz'])
     assert_not_in('open_status_names', app.config.options)
     assert_not_in('closed_status_names', app.config.options)
+
+
+
+class TestArtifactLinks(TrackerTestController):
+
+    @td.with_tool('test', 'Tickets', 'features')
+    def test_ambiguous_shortlinks(self):
+        # Problem:
+        # Two 'ticket' tools in one projects. Both have ticket #1.
+        # When creating a link from within one of the tools to ticket #1 (e.g. [#1])
+        # you may end up linking to another tool's ticket #1.
+        # It depends on what shortlink was encountered first.
+        # This test ensures this does not happening.
+
+        project = M.Project.query.get(shortname='test')
+        bugs = project.app_instance('bugs')
+        features = project.app_instance('features')
+        self.new_ticket('/bugs/', summary='Ticket 1 in bugs', _milestone='1.0').follow()
+        self.new_ticket('/features/', summary='Ticket 1 in features', _milestone='1.0').follow()
+        ticket_bugs = tm.Ticket.query.get(summary='Ticket 1 in bugs')
+        ticket_features = tm.Ticket.query.get(summary='Ticket 1 in features')
+        assert_equal(ticket_bugs.ticket_num, 1)
+        assert_equal(ticket_bugs.app.config._id, bugs.config._id)
+        assert_equal(ticket_features.ticket_num, 1)
+        assert_equal(ticket_features.app.config._id, features.config._id)
+
+        c.app = bugs
+        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/bugs/1">[#1]</a></p></div>'
+        assert_equal(g.markdown.convert('[#1]'), link)
+
+        c.app = features
+        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/features/1">[#1]</a></p></div>'
+        assert_equal(g.markdown.convert('[#1]'), link)
