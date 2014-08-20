@@ -16,13 +16,20 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+
+'''
+This is for making redirects for tickets that we move from SourceForge
+to Apache, but could be generalized pretty easily to work for making
+any type of redirect (change SF/Apache specifics to commandline arguments)
+'''
+
 import argparse
 import pymongo
 
 
 def get_opts():
     parser = argparse.ArgumentParser(
-        description='Create a MovingTicket records for tickets that will be moved to Apache')
+        description='Create MovedTicket records for SourceForge tickets that will be moved to Apache')
     parser.add_argument('-n', help='Neighborhood', default='p')
     parser.add_argument('-p', help='Project', default='allura')
     parser.add_argument('-t', help='Tool mount point', default='tickets')
