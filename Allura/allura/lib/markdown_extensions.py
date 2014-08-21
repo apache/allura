@@ -412,6 +412,12 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, m):
         html = self.macro(m.group(2))
+        if m.group(2).startswith('include'):
+            # etree.fromstring parses html with newlines into empty div somehow
+            html = [l.strip() for l in html.splitlines() if l.strip()]
+            html = ''.join(html)
+            return markdown.util.etree.fromstring(html)
+
         placeholder = self.markdown.htmlStash.store(html)
         return placeholder
 
