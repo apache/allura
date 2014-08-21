@@ -40,7 +40,7 @@
 
     {% block edit_prefs_form %}
       {% if h.asbool(tg.config.get('auth.allow_edit_prefs', True)) %}
-      <form action="update" method="post">
+      <form action="update" method="post" name="update-email">
         <fieldset>
           <legend>General and Email Settings</legend>
           <label class="grid-4">Display Name</label>
@@ -98,7 +98,12 @@
               {% else %}
                 <td>Unknown addr obj {{a}}</td>
               {% endif %}
-              <td>{{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}</td>
+              <td>
+                <div class="addr-delete">
+                  {{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}
+                  {{lib.hidden_field('addr-%s.delete' % loop.index0, '')}}
+                </div>
+              </td>
             </tr>
             {% endfor %}
             <tr>
@@ -108,11 +113,10 @@
           </table>
           <div class="grid-22">
             <p></p>
-            <label for="password">Current password:</label>
-            <input type="password" name="password">
+            <input type="hidden" name="password">
           </div>
           <div class="grid-22">
-            {{lib.submit_button('Save')}}
+            {{lib.submit_button('Save', name='addr-save')}}
           </div>
           {{lib.csrf_token()}}
         </fieldset>
@@ -155,6 +159,18 @@
           </form>
         </fieldset>
       {% endif %}
+      {% do g.register_js('js/jquery.lightbox_me.js') %}
+      <form class="cur_password">
+        <h1><span class="log-in">Enter password</span></h1>
+        <p class="float">
+            <label for="password"><i class="icon-lock"></i>Current password:</label>
+            <input type="password" name="current_password" placeholder="Password">
+        </p>
+        <p class="clearfix">  
+            <input type="submit" name="enter_pass_submit" value="Ok">
+            <input type="button" name="cancel_lightbox" value="Cancel">
+        </p>
+      </form>
     {% endblock %}
   </div>
 {% endblock %}
@@ -181,5 +197,74 @@
     padding: 0;
     border: 0;
   }
+  .cur_password {
+    width: 250px;
+    margin: 60px auto 30px;
+    padding: 15px;
+    position: relative;
+    display:none;
+    background: #fffaf6;
+    border-radius: 4px;
+    color: #7e7975;
+    box-shadow:
+        0 2px 2px rgba(0,0,0,0.2),        
+        0 1px 5px rgba(0,0,0,0.2),        
+        0 0 0 12px rgba(255,255,255,0.4);
+  }
+  .cur_password h1 {
+    font-size: 15px;
+    font-weight: bold;
+    color: #bdb5aa;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #EBE6E2;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  }
 </style>
 {% endblock %}
+
+{% block extra_js %}
+   <script type="text/javascript">
+    $(function() {
+
+                $("input[name='enter_pass_submit']").click(function (e) {
+                  $("input[name='password']").val(
+                      $("input[name='current_password']").val()
+                    );
+                  $("form[name='update-email']").submit();
+                  e.preventDefault();
+                });
+
+                $("input[name='cancel_lightbox']").click(function(){
+                  $('.cur_password').trigger('close');
+                  return false;
+                });
+
+                function launch() {
+                     $('.cur_password').lightbox_me({
+                      centered: true, 
+                      onLoad: function() { 
+                        $('.cur_password').find('input:first').focus();
+                      }
+                  });
+                }
+
+                $("input[name='new_addr.claim'], input[name='addr-save']").click(function(e) {
+                  if ($("input[name='password']").val() == ''){
+                    e.preventDefault();
+                  }
+                  launch();
+                });
+
+                $('input:submit', ".addr-delete").click(function(e) {
+                  if ($("input[name='password']").val() == ''){
+                    e.preventDefault();
+                  }
+                  var attr_del = $(this).attr('name')
+                  $(document.getElementById(attr_del)).val("1");
+                  launch();
+                });
+
+            });
+   </script>
+ {% endblock %}

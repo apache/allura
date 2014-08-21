@@ -130,6 +130,13 @@
   <input type="text" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
 
+{% macro hidden_field(name, label, value='') %}
+  {% if label %}
+  <label for="{{name}}">{{label}}</label><br/>
+  {% endif %}
+  <input type="hidden" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
+{% endmacro %}
+
 {% macro radio_button(name, label, option, value=None) %}
   {% if label %}
     <label for="{{name}}">{{label}}</label><br/>
