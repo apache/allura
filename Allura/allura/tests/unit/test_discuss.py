@@ -1,21 +1,22 @@
-import unittest
-from mock import patch
+from nose.tools import assert_false, assert_true
 
 from allura import model as M
+from allura.tests.unit import WithDatabase
+from allura.tests.unit.patches import fake_app_patch
 
 
-class TestThread(unittest.TestCase):
+class TestThread(WithDatabase):
+    patches = [fake_app_patch]
 
-    @patch('allura.model.artifact.c')
-    def test_should_update_index(self, c):
+    def test_should_update_index(self):
         p = M.Thread()
-        self.assertFalse(p.should_update_index({}, {}))
+        assert_false(p.should_update_index({}, {}))
         old = {'num_views': 1}
         new = {'num_views': 2}
-        self.assertFalse(p.should_update_index(old, new))
+        assert_false(p.should_update_index(old, new))
         old = {'num_views': 1, 'a': 1}
         new = {'num_views': 2, 'a': 1}
-        self.assertFalse(p.should_update_index(old, new))
+        assert_false(p.should_update_index(old, new))
         old = {'num_views': 1, 'a': 1}
         new = {'num_views': 2, 'a': 2}
-        self.assertTrue(p.should_update_index(old, new))
+        assert_true(p.should_update_index(old, new))
