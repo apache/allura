@@ -62,7 +62,8 @@
 
   {% endif %}
   {% if c.user and c.user != c.user.anonymous() %}
-    {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+    {{c.subscribe_form.display(value=page_subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
+    {{c.wiki_subscribe_form.display(value=subscribed, action='wiki_subscribe', style='icon')}}
   {% endif %}
 	<a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
   <a href="../search" title="Search"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="Search"></b></a>
