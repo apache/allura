@@ -130,10 +130,14 @@
   <input type="text" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
 
-{% macro hidden_field(name, label, value='') %}
+{% macro password_field(name, label, value='') %}
   {% if label %}
   <label for="{{name}}">{{label}}</label><br/>
   {% endif %}
+  <input type="password" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
+{% endmacro %}
+
+{% macro hidden_field(name, value='') %}
   <input type="hidden" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
 
