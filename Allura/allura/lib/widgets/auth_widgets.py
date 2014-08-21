@@ -36,7 +36,9 @@ class LoginForm(ForgeForm):
     @property
     def fields(self):
         fields = [
-            ew.TextField(name='username', label='Username'),
+            ew.TextField(name='username', label='Username', attrs={
+                'autofocus': 'autofocus',
+            }),
             ew.PasswordField(name='password', label='Password'),
             ew.Checkbox(
                 name='rememberme',
