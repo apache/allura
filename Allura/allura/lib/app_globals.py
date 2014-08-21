@@ -166,7 +166,7 @@ class Globals(object):
         self.login_url = config.get('auth.login_url', '/auth/')
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
         self.login_fragment_url = config.get(
-            'auth.login_fragment_url', '/auth/login_fragment')
+            'auth.login_fragment_url', '/auth/login_fragment/')
 
         # Setup Gravatar
         self.gravatar = gravatar.url

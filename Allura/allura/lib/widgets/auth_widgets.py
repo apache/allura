@@ -49,7 +49,7 @@ class LoginForm(ForgeForm):
             fields.append(
                 ew.HTMLField(
                     name='link',
-                    text='<a href="forgotten_password" style="margin-left:162px">'
+                    text='<a href="/auth/forgotten_password" style="margin-left:162px" target="_top">'
                          'Forgot password?</a>'))
         return fields
 
