@@ -44,7 +44,7 @@ from allura.lib.widgets import (
     LoginForm,
     ForgottenPasswordForm,
     DisableAccountForm)
-from allura.lib.widgets import forms
+from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
 from allura.controllers import BaseController
 
@@ -392,6 +392,7 @@ class PreferencesController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura:templates/user_prefs.html')
     def index(self, **kw):
+        c.enter_password = ffw.Lightbox(name='enter_password')
         c.password_change_form = F.password_change_form
         c.upload_key_form = F.upload_key_form
         provider = plugin.AuthenticationProvider.get(request)
