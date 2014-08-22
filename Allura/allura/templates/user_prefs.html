@@ -161,16 +161,18 @@
         </fieldset>
       {% endif %}
       
-      <form class="cur_password">
-        <h1>Enter password</h1>
-        <p>
-          {{lib.password_field('current_password', 'Current password:')}}
-        </p>
-        <p>  
+      <form class="cur_password" style="display:none">
+        <div class="grid-13"> 
+          <p>{{lib.password_field('current_password', 'Current password:')}}</p>
+        </div>
+        <div class="grid-13">
+          <p>  
           <input type="submit" name="enter_pass_submit" value="Ok">
           <input type="button" name="cancel_lightbox" value="Cancel">
-        </p>
+          </p>
+        </div>
       </form>
+      {{c.enter_password.display(content='<h1>Enter password</h1>')}}
     {% endblock %}
   </div>
 {% endblock %}
@@ -197,84 +199,56 @@
     padding: 0;
     border: 0;
   }
-  .cur_password {
-    display:none;
-    width: 500px;
-    float: left;
-    overflow: hidden;
-    margin: 0 10px;
-    padding: 15px;
-
-    left: 50%;
-    margin-left: -311px;
-    z-index: 1002;
-    position: fixed;
-    top: 40px;
-    margin-top: 0px;
-    background: #636363;
-    border-radius: 4px;
-    color: #ffffff;
-    box-shadow:
-        0 1px 2px rgba(0,0,0,0.2),        
-        0 1px 5px rgba(0,0,0,0.2),        
-        0 0 0 5px rgba(0,0,0,0.4); 
-  }
-  .cur_password h1 {
-    font-size: 18px;
-    line-height: 36px;
-    font-weight: bold;
-    color: #ffffff;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #EBE6E2;
-  }
 </style>
 {% endblock %}
 
 {% block extra_js %}
   <script type="text/javascript">
       $(function() {
-          $("input[name='enter_pass_submit']").click(function (e) {
-            $("input[name='password']").val(
-                $("input[name='current_password']").val()
-              );
-            $("form[name='update-email']").submit();
+
+        function launch() {
+          var enter_password_popup = $('#lightbox_enter_password');
+          var enter_password_form = $('.cur_password');
+
+          enter_password_popup.append(enter_password_form.show());
+          enter_password_popup.lightbox_me({
+            onLoad: function() { 
+            $('.cur_password').find('input:first').focus();
+            }
+          });
+        };
+
+        $("input[name='enter_pass_submit']").click(function (e) {
+          $("input[name='password']").val(
+              $("input[name='current_password']").val()
+            );
+          $("form[name='update-email']").submit();
+          e.preventDefault();
+        });
+
+        $("input[name='cancel_lightbox']").click(function(){
+          $('.cur_password').trigger('close');
+          return false;
+        });
+
+        $("input[name='new_addr.claim'], input[name='addr-save']").click(function(e) {
+          if ($("input[name='password']").val() == ''){
             e.preventDefault();
-          });
-
-          $("input[name='cancel_lightbox']").click(function(){
-            $('.cur_password').trigger('close');
-            return false;
-          });
-
-          function launch() {
-               $('.cur_password').lightbox_me({
-                centered: true, 
-                onLoad: function() { 
-                  $('.cur_password').find('input:first').focus();
-                }
-            });
           }
-
-          $("input[name='new_addr.claim'], input[name='addr-save']").click(function(e) {
-            if ($("input[name='password']").val() == ''){
-              e.preventDefault();
-            }
-            if ($("input[name='new_addr.addr']").val().length != 0){
-              launch();
-            }
-          });
-
-          $('input:submit', ".addr-delete").click(function(e) {
-            if ($("input[name='password']").val() == ''){
-              e.preventDefault();
-            }
-            $('input:hidden', ".addr-delete").val("");
-            var attr_del = $(this).attr('name')
-            $(document.getElementById(attr_del)).val("1");
-            //$('#' + attr_del).val("1");
+          if ($("input[name='new_addr.addr']").val().length != 0){
             launch();
-          });
+          }
+        });
 
+        $('input:submit', ".addr-delete").click(function(e) {
+          if ($("input[name='password']").val() == ''){
+            e.preventDefault();
+          }
+          $('input:hidden', ".addr-delete").val("");
+          var attr_del = $(this).attr('name')
+          $(document.getElementById(attr_del)).val("1");
+          launch();
+        });
       });
   </script>
  {% endblock %}
