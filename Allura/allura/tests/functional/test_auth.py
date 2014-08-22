@@ -92,12 +92,12 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ua'], 'browser')
 
     def test_rememberme(self):
-        userid = M.User.query.get(username='test-user')._id
+        username = M.User.query.get(username='test-user').username
 
         # Login as test-user with remember me checkbox off
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo'))
-        assert_equal(r.session['userid'], userid)
+        assert_equal(r.session['username'], username)
         assert_equal(r.session['login_expires'], True)
 
         for header, contents in r.headerlist:
@@ -107,7 +107,7 @@ class TestAuth(TestController):
         # Login as test-user with remember me checkbox on
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo', rememberme='on'))
-        assert_equal(r.session['userid'], userid)
+        assert_equal(r.session['username'], username)
         assert_not_equal(r.session['login_expires'], True)
 
         for header, contents in r.headerlist:
@@ -937,6 +937,7 @@ To reset your password on %s, please visit the following URL:
         ap = AP.get()
         ap.forgotten_password_process = False
         ap.authenticate_request()._id = user._id
+        ap.by_username().username = user.username
         self.app.get('/auth/forgotten_password', status=404)
         self.app.post('/auth/set_new_password',
                       {'pw': 'foo', 'pw2': 'foo'}, status=404)

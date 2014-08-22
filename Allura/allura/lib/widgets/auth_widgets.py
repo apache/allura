@@ -58,8 +58,7 @@ class LoginForm(ForgeForm):
     @validator
     def validate(self, value, state=None):
         try:
-            value['username'] = plugin.AuthenticationProvider.get(
-                request).login()
+            value['username'] = plugin.AuthenticationProvider.get(request).login()
         except exc.HTTPUnauthorized:
             msg = 'Invalid login'
             raise Invalid(

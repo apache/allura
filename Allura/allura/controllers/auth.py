@@ -270,12 +270,21 @@ class AuthController(BaseController):
     @require_post()
     @validate(F.login_form, error_handler=index)
     def do_login(self, return_to=None, **kw):
+        location = '/'
+
+        if session.get('expired-username'):
+            if return_to and return_to not in plugin.AuthenticationProvider.pwd_expired_allowed_urls:
+                location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0], dict(return_to=return_to))
+            else:
+                location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0])
+
         if return_to and return_to != request.url:
             rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
             base_host = urlparse(config['base_url']).netloc
             if rt_host == base_host:
-                redirect(return_to)
-        redirect('/')
+                location = return_to
+
+        redirect(location)
 
     @expose(content_type='text/plain')
     def refresh_repo(self, *repo_path):
@@ -368,6 +377,7 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/pwd_expired.html')
     @without_trailing_slash
     def pwd_expired(self, **kw):
+        require_authenticated()
         c.form = F.password_change_form
         return {'return_to': kw.get('return_to')}
 
@@ -376,16 +386,22 @@ class AuthController(BaseController):
     @without_trailing_slash
     @validate(V.NullValidator(), error_handler=pwd_expired)
     def pwd_expired_change(self, **kw):
+        require_authenticated()
         return_to = kw.get('return_to')
         kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
-            ap.set_password(c.user, kw['oldpw'], kw['pw'])
+            expired_username = session.get('expired-username')
+            expired_user = M.User.query.get(username=expired_username) if expired_username else None
+            ap.set_password(expired_user or c.user, kw['oldpw'], kw['pw'])
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
             redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
         flash('Password changed')
-        del session['pwd-expired']
+        session.pop('pwd-expired', None)
+        session['username'] = session.get('expired-username')
+        session.pop('expired-username', None)
+
         session.save()
         h.auditlog_user('Password reset (via expiration process)')
         if return_to and return_to != request.url:

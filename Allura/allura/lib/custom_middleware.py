@@ -296,9 +296,9 @@ class RememberLoginMiddleware(object):
 
         def remember_login_start_response(status, headers, exc_info=None):
             session = environ['beaker.session']
-            userid = session.get('userid')
+            username = session.get('username')
             login_expires = session.get('login_expires')
-            if userid and login_expires is not None:
+            if username and login_expires is not None:
                 if login_expires is True:
                     # no specific expiration, lasts for duration of "browser session"
                     session.cookie[session.key]['expires'] = ''

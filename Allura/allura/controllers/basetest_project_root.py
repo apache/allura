@@ -126,7 +126,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         user = auth.by_username(environ.get('username', 'test-admin'))
         if not user:
             user = M.User.anonymous()
-        environ['beaker.session']['userid'] = user._id
+        environ['beaker.session']['username'] = user.username
         c.user = auth.authenticate_request()
         return WsgiDispatchController.__call__(self, environ, start_response)
 

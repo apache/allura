@@ -583,8 +583,10 @@ class TestNeighborhood(TestController):
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='root'))
-        flash_msg_cookie = urllib2.unquote(r.headers['Set-Cookie'])
-        assert 'Internal Error.' in flash_msg_cookie
+        cookies = r.headers.getall('Set-Cookie')
+        flash_msg_cookies = map(urllib2.unquote, cookies)
+
+        assert any('Internal Error' in cookie for cookie in flash_msg_cookies)
 
         proj = M.Project.query.get(
             shortname='myprivate1', neighborhood_id=neighborhood._id)

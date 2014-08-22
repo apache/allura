@@ -98,12 +98,15 @@ class AuthenticationProvider(object):
 
     def authenticate_request(self):
         from allura import model as M
-        user = M.User.query.get(_id=self.session.get('userid', None))
+        username = self.session.get('username') or self.session.get('expired-username')
+        user = M.User.query.get(username=username)
+
         if user is None:
             return M.User.anonymous()
         if user.disabled:
             self.logout()
             return M.User.anonymous()
+
         if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
             if self.request.environ['REQUEST_METHOD'] == 'GET':
                 return_to = self.request.environ['PATH_INFO']
@@ -138,11 +141,13 @@ class AuthenticationProvider(object):
         try:
             if user is None:
                 user = self._login()
-            self.session['userid'] = user._id
             if self.is_password_expired(user):
                 self.session['pwd-expired'] = True
-                from allura.model import AuditLog
+                self.session['expired-username'] = user.username
                 h.auditlog_user('Password expired', user=user)
+            else:
+                self.session['username'] = user.username
+
             if 'rememberme' in self.request.params:
                 remember_for = int(config.get('auth.remember_for', 365))
                 self.session['login_expires'] = datetime.utcnow() + timedelta(remember_for)
@@ -158,8 +163,8 @@ class AuthenticationProvider(object):
             raise
 
     def logout(self):
-        self.session['userid'] = None
         self.session['login_expires'] = None
+        self.session['username'] = None
         self.session['pwd-expired'] = False
         self.session.save()
 
@@ -305,7 +310,6 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     def disable_user(self, user):
         user.disabled = True
         session(user).flush(user)
-        from allura.model import AuditLog
         h.auditlog_user('Account disabled', user=user)
 
     def validate_password(self, user, password):
