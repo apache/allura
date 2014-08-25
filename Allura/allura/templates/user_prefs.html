@@ -113,12 +113,9 @@
             </tr>
           </table>
           <div class="grid-22">
-            <p></p>
-            <input type="hidden" name="password">
-          </div>
-          <div class="grid-22">
             {{lib.submit_button('Save', name='addr-save')}}
           </div>
+          {{lib.hidden_field('password', '')}}
           {{lib.csrf_token()}}
         </fieldset>
       </form>
@@ -235,7 +232,7 @@
           if ($("input[name='password']").val() == ''){
             e.preventDefault();
           }
-          if ($("input[name='new_addr.addr']").val().length != 0){
+          if ($(this).attr('name') == 'addr-save' || $("input[name='new_addr.addr']").val().length != 0) {
             launch();
           }
         });
