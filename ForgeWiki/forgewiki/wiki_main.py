@@ -521,7 +521,6 @@ class PageController(BaseController, FeedController):
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
-            tool_subscribed=tool_subscribed,
             page_subscribed=subscribed,
             subscribed=M.Mailbox.subscribed(),
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
