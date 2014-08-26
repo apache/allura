@@ -84,7 +84,7 @@
               {% set obj = c.user.address_object(a) %}
               {% if obj.confirmed %}
                 <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
-              {% else %} 
+              {% else %}
                 <td> <input type="radio" disabled="disabled"></td>
               {% endif %}
               <td>{{a}}</td>
@@ -119,6 +119,22 @@
           {{lib.csrf_token()}}
         </fieldset>
       </form>
+
+      <!-- popup -->
+      <form class="cur_password" style="display:none">
+        <div class="grid-13">
+          <p>{{lib.password_field('current_password', 'Current password:')}}</p>
+        </div>
+        <div class="grid-13">
+          <p>
+          <input type="submit" name="enter_pass_submit" value="Ok">
+          <input type="button" name="cancel_lightbox" value="Cancel">
+          </p>
+        </div>
+      </form>
+      {{c.enter_password.display(content='<h1>Enter password</h1>')}}
+      <!-- end popup -->
+
       {% endif %}  {# allow_edit_prefs #}
     {% endblock edit_prefs_form %}
 
@@ -157,19 +173,6 @@
           </form>
         </fieldset>
       {% endif %}
-      
-      <form class="cur_password" style="display:none">
-        <div class="grid-13"> 
-          <p>{{lib.password_field('current_password', 'Current password:')}}</p>
-        </div>
-        <div class="grid-13">
-          <p>  
-          <input type="submit" name="enter_pass_submit" value="Ok">
-          <input type="button" name="cancel_lightbox" value="Cancel">
-          </p>
-        </div>
-      </form>
-      {{c.enter_password.display(content='<h1>Enter password</h1>')}}
     {% endblock %}
   </div>
 {% endblock %}
@@ -209,7 +212,7 @@
 
           enter_password_popup.append(enter_password_form.show());
           enter_password_popup.lightbox_me({
-            onLoad: function() { 
+            onLoad: function() {
             $('.cur_password').find('input:first').focus();
             }
           });
