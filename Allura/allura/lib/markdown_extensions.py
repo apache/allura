@@ -278,6 +278,8 @@ class ForgeExtension(markdown.Extension):
             'macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
+        md.treeprocessors.add(
+            'macro_include', ForgeMacroIncludeTreeProcessor(md), '_end')
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
         # Rewrite all relative links that don't start with . to have a '../'
@@ -581,3 +583,43 @@ class ForgeMacroIncludePreprocessor(markdown.preprocessors.Preprocessor):
                     buf = []
                 result.append(line)
         return result
+
+
+class ForgeMacroIncludeTreeProcessor(markdown.treeprocessors.Treeprocessor):
+    '''Remove extra <p> in which included page is wrapped.
+
+    Because it adds extra space between parent page content and included page content,
+    which looks ugly.
+
+    Convert:
+    <p><div><div class="markdown_content">...</div></div></p>
+
+    To:
+    <div class="markdown_content">...</div>
+    '''
+
+    def _get_include(self, p):
+        children = p.getchildren()
+        if len(children) != 1 or children[0].tag != 'div':
+            return
+        children = children[0].getchildren()
+        if len(children) != 1 or children[0].tag != 'div':
+            return
+        if children[0].get('class') == 'markdown_content':
+            return children[0]
+
+    def run(self, root):
+        p_with_parent = [(tag, parent)
+                         for parent in root.getiterator()
+                         for tag in parent
+                         if tag.tag == 'p']
+        replace = []
+        for p, parent in p_with_parent:
+            include =  self._get_include(p)
+            if include:
+                idx = parent.getchildren().index(p)
+                replace.append((p, parent, idx, include))  # (what, parent, index in parent, replacement)
+        for what, parent, i, replacement in replace:
+            parent.remove(what)
+            parent.insert(i, replacement)
+        return root
