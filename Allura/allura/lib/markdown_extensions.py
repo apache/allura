@@ -25,6 +25,7 @@ import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
 import markdown
+from markdown.extensions.headerid import slugify as headerid_slugify
 
 from . import macro
 from . import helpers as h
@@ -39,6 +40,12 @@ PLAINTEXT_BLOCK_RE = re.compile(
 )
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
+
+
+def slugify(value, separator):
+    value = h.really_unicode(value)
+    separator = h.really_unicode(separator)
+    return headerid_slugify(value, separator)
 
 
 class CommitMessageExtension(markdown.Extension):
@@ -416,7 +423,13 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
             # etree.fromstring parses html with newlines into empty div somehow
             html = [l.strip() for l in html.splitlines() if l.strip()]
             html = ''.join(html)
-            return markdown.util.etree.fromstring(html)
+            try:
+                html = markdown.util.etree.fromstring(html)
+            except Exception:
+                # perhaps it is something like macro error which isn't parsable to html
+                # (e.g. "[[include: you don't have a read permission for...")
+                pass
+            return html
 
         placeholder = self.markdown.htmlStash.store(html)
         return placeholder
