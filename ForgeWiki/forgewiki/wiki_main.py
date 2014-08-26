@@ -513,16 +513,15 @@ class PageController(BaseController, FeedController):
             prev = None
         next = cur + 1
         hide_left_bar = not (c.app.show_left_bar)
-        tool_subscribed = M.Mailbox.subscribed()
-        if tool_subscribed:
-            subscribed = False
-        else:
-            subscribed = M.Mailbox.subscribed(artifact=self.page)
+        subscribed = M.Mailbox.subscribed()
+        subscribed_to_page = False
+        if not subscribed:
+            subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
-            page_subscribed=subscribed,
-            subscribed=M.Mailbox.subscribed(),
+            page_subscribed=subscribed_to_page,
+            subscribed=subscribed,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
             pagenum=pagenum, limit=limit, count=post_count)
 
