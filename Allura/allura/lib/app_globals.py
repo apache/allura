@@ -35,6 +35,7 @@ import traceback
 import activitystream
 import pkg_resources
 import markdown
+from markdown.extensions.toc import TocExtension
 import pygments
 import pygments.lexers
 import pygments.formatters
@@ -54,6 +55,7 @@ from allura import model as M
 from allura.lib.markdown_extensions import (
     ForgeExtension,
     CommitMessageExtension,
+    slugify,
 )
 from allura.eventslistener import PostEvent
 
@@ -443,11 +445,12 @@ class Globals(object):
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
+        toc = TocExtension(configs=[('slugify', slugify)])
         return ForgeMarkdown(
             # 'fenced_code'
             extensions=['codehilite',
                         ForgeExtension(
-                            **kwargs), 'tables', 'toc', 'nl2br'],
+                            **kwargs), 'tables', toc, 'nl2br'],
             output_format='html4')
 
     @property
