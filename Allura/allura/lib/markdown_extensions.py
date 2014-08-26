@@ -595,18 +595,19 @@ class ForgeMacroIncludeTreeProcessor(markdown.treeprocessors.Treeprocessor):
     <p><div><div class="markdown_content">...</div></div></p>
 
     To:
-    <div class="markdown_content">...</div>
+    <div><div class="markdown_content">...</div></div>
     '''
 
     def _get_include(self, p):
         children = p.getchildren()
         if len(children) != 1 or children[0].tag != 'div':
             return
-        children = children[0].getchildren()
+        parent = children[0]
+        children = parent.getchildren()
         if len(children) != 1 or children[0].tag != 'div':
             return
         if children[0].get('class') == 'markdown_content':
-            return children[0]
+            return parent
 
     def run(self, root):
         p_with_parent = [(tag, parent)
