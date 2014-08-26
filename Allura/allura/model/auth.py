@@ -580,6 +580,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if addr in self.email_addresses:
             return
         self.email_addresses.append(addr)
+        session(email_addr).flush(email_addr)
 
     @classmethod
     def register(cls, doc, make_project=True):
