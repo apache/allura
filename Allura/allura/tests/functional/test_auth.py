@@ -149,7 +149,8 @@ class TestAuth(TestController):
                           'new_addr.addr': email_address,
                           'new_addr.claim': 'Claim Address',
                           'primary_addr': 'test-admin@users.localhost',
-                          'preferences.email_format': 'plain'
+                          'preferences.email_format': 'plain',
+                          'password': 'foo',
                       },
                       extra_environ=dict(username='test-admin'))
 
@@ -160,7 +161,8 @@ class TestAuth(TestController):
                               'new_addr.addr': email_address,
                               'new_addr.claim': 'Claim Address',
                               'primary_addr': 'test-admin@users.localhost',
-                              'preferences.email_format': 'plain'
+                              'preferences.email_format': 'plain',
+                              'password': 'foo',
                           },
                           extra_environ=dict(username='test-admin'))
 
