@@ -82,10 +82,13 @@ class RemoveDuplicateTroves(ScriptTask):
 
     @classmethod
     def _find_duplicates(cls):
-        # agpl is present twice with different cat_id
-        # (update in creation command updated only one of duplicates),
-        # so code below will not catch it
-        dups = M.TroveCategory.query.find({'shortname': 'agpl'}).all()
+        dups = []
+        agpl = M.TroveCategory.query.find({'shortname': 'agpl'}).all()
+        if len(agpl) > 1:
+            # agpl is present twice with different cat_id
+            # (update in creation command updated only one of duplicates),
+            # so code below will not catch it
+            dups.extend(agpl)
         for cat in M.TroveCategory.query.find():
             if M.TroveCategory.query.find({
                 'shortname': cat.shortname,
