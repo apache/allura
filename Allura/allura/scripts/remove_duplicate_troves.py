@@ -31,6 +31,18 @@ log = logging.getLogger(__name__)
 
 
 class RemoveDuplicateTroves(ScriptTask):
+    
+    trove_types = [
+        'trove_root_database',
+        'trove_developmentstatus',
+        'trove_audience',
+        'trove_license',
+        'trove_os',
+        'trove_language',
+        'trove_topic',
+        'trove_natlanguage',
+        'trove_environment',
+    ]
 
     @classmethod
     def execute(cls, options):
@@ -49,19 +61,31 @@ class RemoveDuplicateTroves(ScriptTask):
             priority = [p[0] for p in priority]
             live, kill = priority[0], priority[1:]
             log.info('%s will live %s will die', live, kill)
-            if sum([len(projects_with_category[_id]) for _id in kill]) == 0:
-                # Duplicates are used nowhere
-                log.info('Removing categories %s', kill)
-                if not options.dry_run:
-                    M.TroveCategory.query.remove({'_id': {'$in': kill}})
-            else:
+            if sum([len(projects_with_category[_id]) for _id in kill]) > 0:
                 # Duplicates are used somewhere, need to reasign for all projects that use them
-                pass
+                projects = []
+                ids_to_kill = set(kill)
+                for p in [projects_with_category[_id] for _id in kill]:
+                    projects.extend(p)
+                for p in projects:
+                    for tt in cls.trove_types:
+                        _ids = ids_to_kill.intersection(getattr(p, tt))
+                        for _id in _ids:
+                            log.info('Removing %s from %s.%s and adding %s instead', _id, p.shortname, tt, live)
+                            if not options.dry_run:
+                                getattr(p, tt).remove(_id)
+                                getattr(p, tt).append(live)
+            log.info('Removing categories %s', kill)
+            if not options.dry_run:
+                M.TroveCategory.query.remove({'_id': {'$in': kill}})
             ThreadLocalORMSession.flush_all()
 
     @classmethod
     def _find_duplicates(cls):
-        dups = []
+        # agpl is present twice with different cat_id
+        # (update in creation command updated only one of duplicates),
+        # so code below will not catch it
+        dups = M.TroveCategory.query.find({'shortname': 'agpl'}).all()
         for cat in M.TroveCategory.query.find():
             if M.TroveCategory.query.find({
                 'shortname': cat.shortname,
