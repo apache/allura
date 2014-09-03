@@ -38,7 +38,7 @@ class CreateTroveCategoriesCommand(base.Command):
 
     # NOTE: order is important
     # To add new migration append it's name to following list,
-    # and cretate method m__<migration_name>
+    # and create method m__<migration_name>
     migrations = [
         'add_agpl_and_lppl',
         'sync',
@@ -58,12 +58,13 @@ class CreateTroveCategoriesCommand(base.Command):
         M.TroveCategory(**data)
 
     def update_trove_cat(self, trove_cat_id, attr_dict):
-        t = M.TroveCategory.query.get(trove_cat_id=trove_cat_id)
-        if not t:
+        ts = M.TroveCategory.query.find(dict(trove_cat_id=trove_cat_id))
+        if ts.count() < 1:
             sys.exit("Couldn't find TroveCategory with trove_cat_id=%s" %
                      trove_cat_id)
-        for k, v in attr_dict.iteritems():
-            setattr(t, k, v)
+        for t in ts:
+            for k, v in attr_dict.iteritems():
+                setattr(t, k, v)
 
     # patching to avoid a *lot* of event hooks firing, and taking a long long time
     @patch.object(M.project.TroveCategoryMapperExtension, 'after_insert', Mock())
