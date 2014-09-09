@@ -1,0 +1,27 @@
+<tr>
+  <th>Short name</th>
+  <th>Full name</th>
+  <th>Registered</th>
+  <th>Deleted?</th>
+  {% for field in additional_fields %}
+  <th>{{ field }}</th>
+  {% endfor %}
+  <th>Details</th>
+</tr>
+
+{% for p in objects %}
+<tr>
+  <td><a href="{{ p['url'] }}">{{ p['shortname'] }}</a></td>
+  <td>{{ p['name'] }}</td>
+  <td>{{ h.ago_string(p['registration']) }}</td>
+  <td>{{ p['deleted'] }}</td>
+  {% for field in additional_fields %}
+  <td>{{ p[field] }}</td>
+  {% endfor %}
+  <td>
+    {% for url, label in provider.details_links(p['object']) %}
+      <a href="{{ url }}">{{ label }}</a><br>
+    {% endfor %}
+  </td>
+</tr>
+{% endfor %}

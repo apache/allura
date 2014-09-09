@@ -290,41 +290,35 @@ class SiteAdminController(object):
             flash('Can not add comment "%s" for user %s' % (comment, user))
         redirect(request.referer)
 
-    @without_trailing_slash
-    @expose('jinja:allura:templates/site_admin_search_projects.html')
-    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
-                              limit=validators.Int(if_invalid=None),
-                              page=validators.Int(if_empty=0, if_invalid=0)))
-    def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
-        fields = [('shortname', 'shortname'), ('name', 'full name')]
-        fields.extend(aslist(tg.config.get('search.project.additional_fields'), ','))
-        c.search_form = W.admin_search_form(fields)
+    def _search(self, model, fields, add_fields, q=None, f=None, page=0, limit=None, **kw):
+        all_fields = fields + [(fld, fld) for fld in add_fields]
+        c.search_form = W.admin_search_form(all_fields)
         c.page_list = W.page_list
         c.page_size = W.page_size
         count = 0
-        projects = []
+        objects = []
         limit, page, start = g.handle_paging(limit, page, default=25)
         if q:
-            match = search.search_projects(q, f, rows=limit, start=start)
+            match = search.site_admin_search(model, q, f, rows=limit, start=start)
             if match:
                 count = match.hits
-                projects = match.docs
-                pids = [bson.ObjectId(p['id'].split('#')[1]) for p in projects]
-                mongo_projects = {}
-                for p in M.Project.query.find({'_id': {'$in': pids}}):
-                    mongo_projects[str(p._id)] = p
+                objects = match.docs
+                ids = [bson.ObjectId(obj['id'].split('#')[1]) for obj in objects]
+                mongo_objects = {}
+                for obj in model.query.find({'_id': {'$in': ids}}):
+                    mongo_objects[str(obj._id)] = obj
 
-                for i in range(len(projects)):
-                    p = projects[i]
-                    _id = p['id'].split('#')[1]
-                    p['project'] = mongo_projects.get(_id)
-                # Some projects can be deleted, but still have index in solr, should skip those
-                projects = [p for p in projects if p.get('project')]
+                for i in range(len(objects)):
+                    obj = objects[i]
+                    _id = obj['id'].split('#')[1]
+                    obj['object'] = mongo_objects.get(_id)
+                # Some objects can be deleted, but still have index in solr, should skip those
+                objects = [obj for obj in objects if obj.get('object')]
 
-        def convert_fields(p):
+        def convert_fields(obj):
             # throw the type away (e.g. '_s' from 'url_s')
             result = {}
-            for k,v in p.iteritems():
+            for k,v in obj.iteritems():
                 name = k.rsplit('_', 1)
                 if len(name) == 2:
                     name = name[0]
@@ -336,21 +330,39 @@ class SiteAdminController(object):
         return {
             'q': q,
             'f': f,
-            'projects': map(convert_fields, projects),
+            'objects': map(convert_fields, objects),
             'count': count,
             'page': page,
             'limit': limit,
-            'additional_fields': aslist(config.get('search.project.additional_fields'), ','),
-            'provider': ProjectRegistrationProvider.get(),
+            'fields': fields,
+            'additional_fields': add_fields,
+            'type_s': model.type_s,
         }
 
     @without_trailing_slash
-    @expose('jinja:allura:templates/site_admin_search_users.html')
+    @expose('jinja:allura:templates/site_admin_search.html')
+    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
+                              limit=validators.Int(if_invalid=None),
+                              page=validators.Int(if_empty=0, if_invalid=0)))
+    def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
+        fields = [('shortname', 'shortname'), ('name', 'full name')]
+        add_fields = aslist(tg.config.get('search.project.additional_fields'), ',')
+        r = self._search(M.Project, fields, add_fields, q, f, page, limit, **kw)
+        r['search_results_template'] = 'allura:templates/site_admin_search_projects_results.html'
+        r['provider'] = ProjectRegistrationProvider.get()
+        return r
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/site_admin_search.html')
     @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_users(self, q=None, f=None, page=0, limit=None, **kw):
-        return {}
+        fields = []
+        add_fields = aslist(tg.config.get('search.user.additional_fields'), ',')
+        r = self._search(M.User, fields, add_fields, q, f, page, limit, **kw)
+        r['search_results_template'] = 'allura:templates/site_admin_search_users_results.html'
+        return r
 
 
 class TaskManagerController(object):

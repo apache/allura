@@ -18,42 +18,17 @@
 -#}
 {% extends 'allura:templates/site_admin.html' %}
 
-{% block title %}Search Projects{% endblock %}
-{% block header %}Search Projects{% endblock %}
+{% block title %}Search {{ type_s }}s{% endblock %}
+{% block header %}Search {{ type_s }}s{% endblock %}
 
 {% block content %}
   <div class="grid-19">
     {{ c.search_form.display(q=q, f=f) }}
   </div>
 
-  {% if projects %}
+  {% if objects %}
     <table>
-      <tr>
-        <th>Short name</th>
-        <th>Full name</th>
-        <th>Registered</th>
-        <th>Deleted?</th>
-        {% for field in additional_fields %}
-        <th>{{ field }}</th>
-        {% endfor %}
-        <th>Details</th>
-      </tr>
-    {% for p in projects %}
-      <tr>
-        <td><a href="{{ p['url'] }}">{{ p['shortname'] }}</a></td>
-        <td>{{ p['name'] }}</td>
-        <td>{{ h.ago_string(p['registration']) }}</td>
-        <td>{{ p['deleted'] }}</td>
-        {% for field in additional_fields %}
-        <td>{{ p[field] }}</td>
-        {% endfor %}
-        <td>
-          {% for url, label in provider.details_links(p['project']) %}
-            <a href="{{ url }}">{{ label }}</a><br>
-          {% endfor %}
-        </td>
-      </tr>
-    {% endfor %}
+      {% include search_results_template %}
     </table>
   {% endif %}
 
