@@ -288,6 +288,16 @@ class AuthenticationProvider(object):
         """Put here additional fields for user index in SOLR."""
         return {}
 
+    def details_links(self, user):
+        '''Return list of pairs (url, label) with details
+        about the user.
+        Links will show up at admin user search page.
+        '''
+        return [
+           (user.url(), 'Public profile'),
+           ('/nf/admin/user/%s' % user.username, 'Details/Edit'),
+        ]
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
