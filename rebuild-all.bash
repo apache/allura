@@ -17,7 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-for APP in Allura* *Forge* NoWarnings
+for APP in Allura* *Forge*
 do
     echo "# setting up $APP dependencies"
     pushd $APP > /dev/null
