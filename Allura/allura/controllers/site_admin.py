@@ -87,6 +87,7 @@ class SiteAdminController(object):
             SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
             SitemapEntry('Users Audit Log', base_url + 'users', ui_icon=g.icons['admin']),
             SitemapEntry('Search Projects', base_url + 'search_projects', ui_icon=g.icons['search']),
+            SitemapEntry('Search Users', base_url + 'search_users', ui_icon=g.icons['search']),
         ]
         for ep_name in sorted(g.entry_points['site_admin']):
             g.entry_points['site_admin'][ep_name]().update_sidebar_menu(links)
@@ -340,6 +341,14 @@ class SiteAdminController(object):
             'additional_fields': aslist(config.get('search.project.additional_fields'), ','),
             'provider': ProjectRegistrationProvider.get(),
         }
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/site_admin_search_users.html')
+    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
+                              limit=validators.Int(if_invalid=None),
+                              page=validators.Int(if_empty=0, if_invalid=0)))
+    def search_users(self, q=None, f=None, page=0, limit=None, **kw):
+        return {}
 
 
 class TaskManagerController(object):
