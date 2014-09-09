@@ -358,7 +358,7 @@ class SiteAdminController(object):
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_users(self, q=None, f=None, page=0, limit=None, **kw):
-        fields = []
+        fields = [('username', 'username'), ('display_name', 'display name')]
         add_fields = aslist(tg.config.get('search.user.additional_fields'), ',')
         r = self._search(M.User, fields, add_fields, q, f, page, limit, **kw)
         r['search_results_template'] = 'allura:templates/site_admin_search_users_results.html'
