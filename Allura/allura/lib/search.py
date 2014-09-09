@@ -100,6 +100,24 @@ class SearchIndexable(object):
         doc['text'] = jinja2.Markup.escape(text).striptags()
         return doc
 
+    @classmethod
+    def translate_query(cls, q, fields):
+        """Return a translated Solr query (``q``), where generic field
+        identifiers are replaced by the 'strongly typed' versions defined in
+        ``fields``.
+
+        """
+        # Replace longest fields first to avoid problems when field names have
+        # the same suffixes, but different field types. E.g.:
+        # query 'shortname:test' with fields.keys() == ['name_t', 'shortname_s']
+        # will be translated to 'shortname_t:test', which makes no sense
+        fields = sorted(fields.keys(), key=len, reverse=True)
+        for f in fields:
+            if '_' in f:
+                base, typ = f.rsplit('_', 1)
+                q = q.replace(base + ':', f + ':')
+        return q
+
 
 class SearchError(SolrError):
     pass

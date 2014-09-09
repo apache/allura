@@ -252,11 +252,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     # transient properties
     notifications_disabled = False
 
-    @classmethod
-    def translate_query(cls, q, fields):
-        from .artifact import Artifact
-        return Artifact.translate_query(q, fields)
-
     @property
     def activity_name(self):
         return self.name
