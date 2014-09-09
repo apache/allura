@@ -1,7 +1,29 @@
 <tr>
+  <th>Username</th>
+  <th>Display name</th>
+  <th>Email</th>
+  <th>Registered</th>
+  <th>Disabled?</th>
+  {% for field in additional_fields %}
+  <th>{{ field }}</th>
+  {% endfor %}
+  <th>Details</th>
 </tr>
 
-{% for user in objects %}
+{% for u in objects %}
 <tr>
+  <td><a href="{{ u['url'] }}">{{ u['username'] }}</a></td>
+  <td>{{ u['display_name'] }}</td>
+  <td>{{ u['object'].get_pref('email_address') }}</td>
+  <td>{{ provider.user_registration_date(u['object']) }}</td>
+  <td>{{ u['disabled'] }}</td>
+  {% for field in additional_fields %}
+  <td>{{ u[field] }}</td>
+  {% endfor %}
+  <td>
+    {% for url, label in provider.details_links(u['object']) %}
+      <a href="{{ url }}">{{ label }}</a><br>
+    {% endfor %}
+  </td>
 </tr>
 {% endfor %}

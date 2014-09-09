@@ -293,6 +293,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         fields = dict(
             id=self.index_id(),
             title='User %s' % self.username,
+            url_s=self.url(),
             type_s=self.type_s,
             username_s=self.username,
             email_addresses_t=' '.join(self.email_addresses),
@@ -311,7 +312,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             telnumbers_t=' '.join(self.get_pref('telnumbers')),
             skypeaccount_s=self.get_pref('skypeaccount'),
             webpages_t=' '.join(self.get_pref('webpages')),
-            skills_t=' '.join([s['skill'].fullpath for s in self.get_skills()]),
+            skills_t=' '.join([s['skill'].fullpath for s in self.get_skills() if s.get('skill')]),
             last_access_login_date_dt=self.last_access['login_date'],
             last_access_login_ip_s=self.last_access['login_ip'],
             last_access_login_ua_t=self.last_access['login_ua'],

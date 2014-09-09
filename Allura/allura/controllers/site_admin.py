@@ -34,7 +34,7 @@ from allura.app import SitemapEntry
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
-from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider
+from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider, AuthenticationProvider
 from allura.lib import search
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
@@ -362,6 +362,7 @@ class SiteAdminController(object):
         add_fields = aslist(tg.config.get('search.user.additional_fields'), ',')
         r = self._search(M.User, fields, add_fields, q, f, page, limit, **kw)
         r['search_results_template'] = 'allura:templates/site_admin_search_users_results.html'
+        r['provider'] = AuthenticationProvider.get(request)
         return r
 
 
