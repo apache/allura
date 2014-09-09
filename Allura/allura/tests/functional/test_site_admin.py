@@ -233,10 +233,11 @@ class TestProjectsSearch(TestController):
     def setUp(self):
         super(TestProjectsSearch, self).setUp()
         # Create project that matches TEST_HIT id
-        p = M.Project.query.get(_id=ObjectId('53ccf6e8100d2b0741746e9f'))
+        _id = ObjectId('53ccf6e8100d2b0741746e9f')
+        p = M.Project.query.get(_id=_id)
         if not p:
             M.Project(
-                _id=ObjectId('53ccf6e8100d2b0741746e9f'),
+                _id=_id,
                 neighborhood_id=M.Neighborhood.query.get(url_prefix='/u/')._id,
                 shortname='test-project',
             )
@@ -261,6 +262,59 @@ class TestProjectsSearch(TestController):
         ths = [th.text for th in r.html.findAll('th')]
         assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?',
                            'private', 'url', 'Details'])
+
+
+class TestUsersSearch(TestController):
+
+    TEST_HIT = MagicMock(hits=1, docs=[{
+        '_version_': 1478773871277506560,
+        'disabled_b': False,
+        'display_name_t': 'Darth Vader',
+        'id': 'allura/model/auth/User#540efdf2100d2b1483155d39',
+        'last_access_login_date_dt': '2014-09-09T13:17:40.176Z',
+        'last_access_login_ip_s': '10.0.2.2',
+        'last_access_login_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
+        'last_access_session_date_dt': '2014-09-09T13:17:40.33Z',
+        'last_access_session_ip_s': '10.0.2.2',
+        'last_access_session_ua_t': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
+        'last_password_updated_dt': '2014-09-09T13:17:38.857Z',
+        'localization_s': 'None/None',
+        'sex_s': 'Unknown',
+        'title': ['User darth'],
+        'type_s': 'User',
+        'url_s': '/u/darth/',
+        'user_registration_date_dt': '2014-09-09T13:17:38Z',
+        'username_s': 'darth'}])
+
+    def setUp(self):
+        super(TestUsersSearch, self).setUp()
+        # Create user that matches TEST_HIT id
+        _id = ObjectId('540efdf2100d2b1483155d39')
+        u = M.User.query.get(_id=_id)
+        if not u:
+            M.User(_id=_id, username='darth')
+            ThreadLocalORMSession().flush_all()
+
+    @patch('allura.controllers.site_admin.search')
+    def test_default_fields(self, search):
+        search.site_admin_search.return_value = self.TEST_HIT
+        r = self.app.get('/nf/admin/search_users?q=fake&f=username')
+        options = [o['value'] for o in r.html.findAll('option')]
+        assert_equal(options, ['username', 'display_name', '__custom__'])
+        ths = [th.text for th in r.html.findAll('th')]
+        assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
+                           'Disabled?', 'Details'])
+
+    @patch('allura.controllers.site_admin.search')
+    def test_additional_fields(self, search):
+        search.site_admin_search.return_value = self.TEST_HIT
+        with h.push_config(config, **{'search.user.additional_fields': 'email_addresses, url'}):
+            r = self.app.get('/nf/admin/search_users?q=fake&f=username')
+        options = [o['value'] for o in r.html.findAll('option')]
+        assert_equal(options, ['username', 'display_name', 'email_addresses', 'url', '__custom__'])
+        ths = [th.text for th in r.html.findAll('th')]
+        assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
+                           'Disabled?', 'email_addresses', 'url', 'Details'])
 
 
 @task

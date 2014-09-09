@@ -94,7 +94,7 @@ class TestSolr(unittest.TestCase):
     @mock.patch('allura.lib.search.search')
     def test_site_admin_search(self, search):
         from allura.lib.search import site_admin_search
-        from allura.model import Project
+        from allura.model import Project, User
         fq = ['type_s:Project']
         site_admin_search(Project, 'test', 'shortname', rows=25)
         search.assert_called_once_with(
@@ -104,6 +104,17 @@ class TestSolr(unittest.TestCase):
         site_admin_search(Project, 'shortname:test || shortname:test2', '__custom__')
         search.assert_called_once_with(
             'shortname_s:test || shortname_s:test2', fq=fq, ignore_errors=False)
+
+        fq = ['type_s:User']
+        search.reset_mock()
+        site_admin_search(User, 'test-user', 'username', rows=25)
+        search.assert_called_once_with(
+            'username_s:"test-user"', fq=fq, ignore_errors=False, rows=25)
+
+        search.reset_mock()
+        site_admin_search(User, 'username:admin1 || username:root', '__custom__')
+        search.assert_called_once_with(
+            'username_s:admin1 || username_s:root', fq=fq, ignore_errors=False)
 
 
 class TestSearchIndexable(unittest.TestCase):
