@@ -1081,21 +1081,20 @@ class AwardGrantForm(ForgeForm):
         ]
 
 
-class SearchProjectsForm(ForgeForm):
+class AdminSearchForm(ForgeForm):
     defaults = dict(
         ForgeForm.defaults,
         action='',
         method='get',
         submit_text=None)
 
+    def __init__(self, fields, *args, **kw):
+        super(AdminSearchForm, self).__init__(*args, **kw)
+        self._fields = fields
+
     @property
     def fields(self):
-        add_fields = aslist(tg.config.get('search.project.additional_fields'), ',')
-        search_fields = [
-            ew.Option(py_value='shortname', label='shortname'),
-            ew.Option(py_value='name', label='full name'),
-        ]
-        search_fields.extend([ew.Option(py_value=f, label=f) for f in add_fields])
+        search_fields = [ew.Option(py_value=v, label=l) for v, l in self._fields]
         search_fields.append(ew.Option(py_value='__custom__', label='custom query'))
         return [
             ew.RowField(fields=[
@@ -1114,7 +1113,7 @@ class SearchProjectsForm(ForgeForm):
             ])]
 
     def context_for(self, field):
-        ctx = super(SearchProjectsForm, self).context_for(field)
+        ctx = super(AdminSearchForm, self).context_for(field)
         if field.name is None and not ctx.get('value'):
             # RowField does not pass context down to the children :(
             render_ctx = ew_core.widget_context.render_context
