@@ -180,8 +180,6 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
 def site_admin_search(model, q, field, **kw):
     """Performs SOLR search for a given model.
 
-    Probably you should not use it directly. Use one of the specific functions below.
-
     Raises SearchError if SOLR returns an error.
     """
     # first, grab a object and get the fields that it indexes
@@ -197,14 +195,6 @@ def site_admin_search(model, q, field, **kw):
         q = obj.translate_query(u'%s:"%s"' % (field, q), fields)
     fq = [u'type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)
-
-def search_projects(q, field, **kw):
-    from allura.model import Project
-    return site_admin_search(Project, q, field, **kw)
-
-def search_users(q, field, **kw):
-    from allura.model import User
-    return site_admin_search(User, q, field, **kw)
 
 
 def search_app(q='', fq=None, app=True, **kw):
