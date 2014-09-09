@@ -92,15 +92,16 @@ class TestSolr(unittest.TestCase):
         solr.query_server.search.assert_called_once_with('bar', kw='kw')
 
     @mock.patch('allura.lib.search.search')
-    def test_search_projects(self, search):
-        from allura.lib.search import search_projects
+    def test_site_admin_search(self, search):
+        from allura.lib.search import site_admin_search
+        from allura.model import Project
         fq = ['type_s:Project']
-        search_projects('test', 'shortname', rows=25)
+        site_admin_search(Project, 'test', 'shortname', rows=25)
         search.assert_called_once_with(
             'shortname_s:"test"', fq=fq, ignore_errors=False, rows=25)
 
         search.reset_mock()
-        search_projects('shortname:test || shortname:test2', '__custom__')
+        site_admin_search(Project, 'shortname:test || shortname:test2', '__custom__')
         search.assert_called_once_with(
             'shortname_s:test || shortname_s:test2', fq=fq, ignore_errors=False)
 

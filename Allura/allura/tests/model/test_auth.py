@@ -295,7 +295,7 @@ def test_user_index():
     assert_in('results_per_page_i', idx)
     assert_in('email_format_s', idx)
     assert_in('disable_user_messages_b', idx)
-    assert_equal(idx['display_name_s'], 'Test Admin')
+    assert_equal(idx['display_name_t'], 'Test Admin')
     assert_equal(idx['sex_s'], 'Unknown')
     assert_in('birthdate_dt', idx)
     assert_in('localization_s', idx)
