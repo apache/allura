@@ -302,7 +302,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             email_address_s=self.get_pref('email_address'),
             email_format_s=self.get_pref('email_format'),
             disable_user_messages_b=self.get_pref('disable_user_messages'),
-            display_name_s=self.get_pref('display_name'),
+            display_name_t=self.get_pref('display_name'),
             sex_s=self.get_pref('sex'),
             birthdate_dt=self.get_pref('birthdate'),
             localization_s=localization,
