@@ -182,7 +182,7 @@ def site_admin_search(model, q, field, **kw):
 
     Raises SearchError if SOLR returns an error.
     """
-    # first, grab a object and get the fields that it indexes
+    # first, grab an object and get the fields that it indexes
     obj = model.query.find().first()
     if obj is None:
         return  # if there are no objects, we won't find anything
