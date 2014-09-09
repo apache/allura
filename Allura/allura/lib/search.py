@@ -159,25 +159,34 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 
-def search_projects(q, field, **kw):
-    """Performs SOLR search for a project.
+def site_admin_search(model, q, field, **kw):
+    """Performs SOLR search for a given model.
+
+    Probably you should not use it directly. Use one of the specific functions below.
 
     Raises SearchError if SOLR returns an error.
     """
-    # first, grab a project and get the fields that it indexes
-    from allura.model import Project
-    p = Project.query.find().first()
-    if p is None:
-        return  # if there are no projects, we won't find anything
-    fields = p.index()
+    # first, grab a object and get the fields that it indexes
+    obj = model.query.find().first()
+    if obj is None:
+        return  # if there are no objects, we won't find anything
+    fields = obj.index()
     if field == '__custom__':
         # custom query -> query as is
-        q = p.translate_query(q, fields)
+        q = obj.translate_query(q, fields)
     else:
         # construct query for a specific selected field
-        q = p.translate_query(u'%s:"%s"' % (field, q), fields)
-    fq = [u'type_s:Project']
+        q = obj.translate_query(u'%s:"%s"' % (field, q), fields)
+    fq = [u'type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)
+
+def search_projects(q, field, **kw):
+    from allura.model import Project
+    return site_admin_search(Project, q, field, **kw)
+
+def search_users(q, field, **kw):
+    from allura.model import User
+    return site_admin_search(User, q, field, **kw)
 
 
 def search_app(q='', fq=None, app=True, **kw):
