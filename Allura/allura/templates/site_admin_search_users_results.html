@@ -15,7 +15,7 @@
   <td><a href="{{ u['url'] }}">{{ u['username'] }}</a></td>
   <td>{{ u['display_name'] }}</td>
   <td>{{ u['object'].get_pref('email_address') }}</td>
-  <td>{{ provider.user_registration_date(u['object']) }}</td>
+  <td>{{ h.ago(provider.user_registration_date(u['object']).replace(tzinfo=None)) }}</td>
   <td>{{ u['disabled'] }}</td>
   {% for field in additional_fields %}
   <td>{{ u[field] }}</td>
