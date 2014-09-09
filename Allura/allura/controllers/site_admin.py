@@ -54,7 +54,7 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     audit = AuditLog()
-    search_projects_form = forms.SearchProjectsForm()
+    admin_search_form = forms.AdminSearchForm
 
 
 class SiteAdminController(object):
@@ -296,7 +296,9 @@ class SiteAdminController(object):
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
-        c.search_projects_form = W.search_projects_form
+        fields = [('shortname', 'shortname'), ('name', 'full name')]
+        fields.extend(aslist(tg.config.get('search.project.additional_fields'), ','))
+        c.search_form = W.admin_search_form(fields)
         c.page_list = W.page_list
         c.page_size = W.page_size
         count = 0
