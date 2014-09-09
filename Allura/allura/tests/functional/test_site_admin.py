@@ -244,7 +244,7 @@ class TestProjectsSearch(TestController):
 
     @patch('allura.controllers.site_admin.search')
     def test_default_fields(self, search):
-        search.search_projects.return_value = self.TEST_HIT
+        search.site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
         options = [o['value'] for o in r.html.findAll('option')]
         assert_equal(options, ['shortname', 'name', '__custom__'])
@@ -253,7 +253,7 @@ class TestProjectsSearch(TestController):
 
     @patch('allura.controllers.site_admin.search')
     def test_additional_fields(self, search):
-        search.search_projects.return_value = self.TEST_HIT
+        search.site_admin_search.return_value = self.TEST_HIT
         with h.push_config(config, **{'search.project.additional_fields': 'private, url'}):
             r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
         options = [o['value'] for o in r.html.findAll('option')]
