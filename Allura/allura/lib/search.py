@@ -192,7 +192,7 @@ def site_admin_search(model, q, field, **kw):
         q = obj.translate_query(q, fields)
     else:
         # construct query for a specific selected field
-        q = obj.translate_query(u'%s:"%s"' % (field, q), fields)
+        q = obj.translate_query(u'%s:%s' % (field, q), fields)
     fq = [u'type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)
 
