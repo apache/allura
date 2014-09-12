@@ -17,6 +17,7 @@
 #       under the License.
 
 import json
+import datetime as dt
 
 from mock import patch, MagicMock
 from nose.tools import assert_equal, assert_in, assert_not_in
@@ -261,6 +262,40 @@ class TestProjectsSearch(TestController):
         ths = [th.text for th in r.html.findAll('th')]
         assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?',
                            'private', 'url', 'Details'])
+
+
+class TestUserDetails(TestController):
+
+    def test_404(self):
+        self.app.get('/nf/admin/user/does-not-exist/', status=404)
+
+    def test_general_info(self):
+        user = M.User.by_username('test-admin')
+        user.registration_date = lambda: dt.datetime(2014, 9, 1, 9, 9, 9)
+        user.last_access = {'login_date': dt.datetime(2014, 9, 2, 6, 6, 6),
+                            'login_ua': 'browser of the future 1.0',
+                            'login_ip': '8.8.8.8',
+                            'session_date': dt.datetime(2014, 9, 12, 6, 6, 6),
+                            'session_ua': 'browser of the future 1.1',
+                            'session_ip': '7.7.7.7'}
+        r = self.app.get('/nf/admin/user/test-admin/')
+        # general info
+        assert_in('Username: test-admin', r)
+        assert_in('Full name: Test Admin', r)
+        assert_in('Registered: 2014-09-01 09:09:09', r)
+        # session info
+        assert_in('Date: 2014-09-02 06:06:06', r)
+        assert_in('IP: 8.8.8.8', r)
+        assert_in('UA: browser of the future 1.0', r)
+        assert_in('Date: 2014-09-12 06:06:06', r)
+        assert_in('IP: 7.7.7.7', r)
+        assert_in('UA: browser of the future 1.1', r)
+        # list of projects
+        projects = r.html.findAll('fieldset')[-1]
+        projects = [e.getText() for e in projects.findAll('li')]
+        assert_in('Test 2', projects)
+        assert_in('Test Project', projects)
+        assert_in('Adobe project 1', projects)
 
 
 @task
