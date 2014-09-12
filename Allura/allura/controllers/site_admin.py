@@ -474,15 +474,41 @@ class StatsController(object):
 class AdminUserDetailsController(object):
 
     @expose('jinja:allura:templates/site_admin_user_details.html')
-    def _default(self, username):
+    def _default(self, username, limit=25, page=0):
         user = M.User.by_username(username)
         if not user:
             raise HTTPNotFound()
         projects = user.my_projects().all()
+        audit_log = self._audit_log(user, limit, page)
         return {
             'user': user,
             'projects': projects,
+            'audit_log': audit_log,
         }
+
+    def _audit_log(self, user, limit, page):
+        limit = int(limit)
+        page = int(page)
+        if user is None or user.is_anonymous():
+            return dict(
+                entries=[],
+                imit=limit,
+                page=page,
+                count=0)
+        q = M.AuditLog.for_user(user)
+        count = q.count()
+        q = q.sort('timestamp', -1)
+        q = q.skip(page * limit)
+        if count > limit:
+            q = q.limit(limit)
+        else:
+            limit = count
+        c.audit_log_widget = W.audit
+        return dict(
+            entries=q.all(),
+            limit=limit,
+            page=page,
+            count=count)
 
 
 class StatsSiteAdminExtension(SiteAdminExtension):

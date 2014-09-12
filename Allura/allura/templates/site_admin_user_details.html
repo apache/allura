@@ -59,6 +59,18 @@
   {% block extra_info %}
   {% endblock extra_info %}
 
+  {% block audit_log %}
+    <div class="grid-23">
+      {% set al = audit_log %}
+      <fieldset>
+        <legend>Audit log</legend>
+        {% if al['entries'] %}
+          {{ c.audit_log_widget.display(entries=al['entries'], limit=al['limit'], page=al['page'], count=al['count'], grid='22') }}
+        {% endif %}
+      </fieldset>
+    </div>
+  {% endblock audit_log %}
+
   {% block user_projects %}
     <div class="grid-23">
       <fieldset>
@@ -71,4 +83,14 @@
       </fieldset>
     </div>
   {% endblock user_projects %}
+{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.pad table {
+  width: 860px;
+  margin-left: 0;
+}
+</style>
 {% endblock %}
