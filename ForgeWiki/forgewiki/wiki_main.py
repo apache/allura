@@ -69,7 +69,6 @@ class W:
     attachment_list = ffw.AttachmentList()
     subscribe_form = SubscribeForm()
     page_subscribe_form = SubscribeForm(thing='page')
-    wiki_subscribe_form = SubscribeForm(thing='wiki')
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     search_results = SearchResults()
@@ -228,6 +227,14 @@ The wiki uses [Markdown](%s) syntax.
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                     small=pending_mod_count))
+        subscribed = M.Mailbox.subscribed()
+        subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
+        subscribe_title = '{}{}'.format(
+            subscribe_action.capitalize(),
+            '' if subscribed else ' to wiki')
+        subscribe_url = '{}subscribe?{}=True'.format(self.url, subscribe_action)
+        links += [SitemapEntry(''),
+                  SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
         if not admin_menu:
             links += [SitemapEntry(''),
                       SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
@@ -439,6 +446,15 @@ class RootController(BaseController, DispatchIndex, FeedController):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
+    @expose()
+    @validate(W.subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None):
+        if subscribe:
+            M.Mailbox.subscribe(type='direct')
+        elif unsubscribe:
+            M.Mailbox.unsubscribe()
+        redirect(request.referer)
+
 
 class PageController(BaseController, FeedController):
 
@@ -495,7 +511,6 @@ class PageController(BaseController, FeedController):
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
-        c.wiki_subscribe_form = W.wiki_subscribe_form
         post_count = self.page.discussion_thread.post_count
         limit, pagenum = h.paging_sanitizer(limit, page, post_count)
         page = self.get_version(version)
@@ -513,15 +528,11 @@ class PageController(BaseController, FeedController):
             prev = None
         next = cur + 1
         hide_left_bar = not (c.app.show_left_bar)
-        subscribed = M.Mailbox.subscribed()
-        subscribed_to_page = False
-        if not subscribed:
-            subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
+        subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
             page_subscribed=subscribed_to_page,
-            subscribed=subscribed,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
             pagenum=pagenum, limit=limit, count=post_count)
 
@@ -706,15 +717,6 @@ class PageController(BaseController, FeedController):
             self.page.subscribe(type='direct')
         elif unsubscribe:
             self.page.unsubscribe()
-        redirect(request.referer)
-
-    @expose()
-    @validate(W.subscribe_form)
-    def wiki_subscribe(self, subscribe=None, unsubscribe=None):
-        if subscribe:
-            M.Mailbox.subscribe(type='direct')
-        elif unsubscribe:
-            M.Mailbox.unsubscribe()
         redirect(request.referer)
 
 
