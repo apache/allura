@@ -86,7 +86,6 @@ class SiteAdminController(object):
             SitemapEntry('New Projects', base_url + 'new_projects', ui_icon=g.icons['admin']),
             SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
             SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
-            SitemapEntry('Users Audit Log', base_url + 'users', ui_icon=g.icons['admin']),
             SitemapEntry('Search Projects', base_url + 'search_projects', ui_icon=g.icons['search']),
             SitemapEntry('Search Users', base_url + 'search_users', ui_icon=g.icons['search']),
         ]
@@ -251,48 +250,6 @@ class SiteAdminController(object):
             shortname = ''
             mount_point = ''
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
-
-    @expose('jinja:allura:templates/site_admin_users_audit.html')
-    def users(self, username=None, limit=25, page=0, **kwargs):
-        user = M.User.by_username(username)
-        limit = int(limit)
-        page = int(page)
-        if user is None or user.is_anonymous():
-            return dict(
-                entries=[],
-                limit=limit,
-                page=page,
-                count=0,
-                username=username)
-        count = M.AuditLog.for_user(user).count()
-        q = M.AuditLog.for_user(user)
-        q = q.sort('timestamp', -1)
-        q = q.skip(page * limit)
-        if count > limit:
-            q = q.limit(limit)
-        else:
-            limit = count
-        c.widget = W.audit
-        return dict(
-            entries=q.all(),
-            limit=limit,
-            page=page,
-            count=count,
-            audit_user=user,
-            username=username)
-
-    @expose()
-    @require_post()
-    def add_audit_trail_entry(self, **kw):
-        username = kw.get('username')
-        comment = kw.get('comment')
-        user = M.User.by_username(username)
-        if user and not user.is_anonymous() and comment:
-            M.AuditLog.comment_user(c.user, comment, user=user)
-            flash('Comment added', 'ok')
-        else:
-            flash('Can not add comment "%s" for user %s' % (comment, user))
-        redirect(request.referer)
 
     def _search(self, model, fields, add_fields, q=None, f=None, page=0, limit=None, **kw):
         all_fields = fields + [(fld, fld) for fld in add_fields]
