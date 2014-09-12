@@ -745,3 +745,27 @@ class TestRootController(TestController):
     def test_user_browse_page(self):
         r = self.app.get('/wiki/browse_pages/')
         assert '<td>Test Admin (test-admin)</td>' in r
+
+    def test_subscribe(self):
+        user = M.User.query.get(username='test-user')
+        # user is not subscribed
+        assert not M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
+        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?subscribe=True'})
+        assert link is not None
+        # subscribe
+        self.app.get('/p/test/wiki/subscribe?subscribe=True',
+                     extra_environ={'username': str(user.username)}).follow()
+        # user is subscribed
+        assert M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
+        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?unsubscribe=True'})
+        assert link is not None
+        # unsubscribe
+        self.app.get('/p/test/wiki/subscribe?unsubscribe=True',
+                     extra_environ={'username': str(user.username)}).follow()
+        # user is not subscribed
+        assert not M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
+        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?subscribe=True'})
+        assert link is not None
