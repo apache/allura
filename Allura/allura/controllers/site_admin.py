@@ -476,7 +476,7 @@ class AdminUserDetailsController(object):
     @expose('jinja:allura:templates/site_admin_user_details.html')
     def _default(self, username, limit=25, page=0):
         user = M.User.by_username(username)
-        if not user:
+        if not user or user.is_anonymous():
             raise HTTPNotFound()
         projects = user.my_projects().all()
         audit_log = self._audit_log(user, limit, page)
@@ -509,6 +509,19 @@ class AdminUserDetailsController(object):
             limit=limit,
             page=page,
             count=count)
+
+    @expose()
+    @require_post()
+    def add_audit_trail_entry(self, **kw):
+        username = kw.get('username')
+        comment = kw.get('comment')
+        user = M.User.by_username(username)
+        if user and not user.is_anonymous() and comment:
+            M.AuditLog.comment_user(c.user, comment, user=user)
+            flash('Comment added', 'ok')
+        else:
+            flash('Can not add comment "%s" for user %s' % (comment, user))
+        redirect(request.referer)
 
 
 class StatsSiteAdminExtension(SiteAdminExtension):
