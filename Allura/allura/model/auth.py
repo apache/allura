@@ -692,8 +692,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def registration_date(self):
         p = plugin.AuthenticationProvider.get(request)
-        return p.user_registration_date(self)
-
+        d = p.user_registration_date(self)
+        # provider's user_registration_date returns aware datetime (in UTC)
+        # but we're using naive UTC time everywhere
+        d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
+        return d
 
 class OldProjectRole(MappedClass):
 
