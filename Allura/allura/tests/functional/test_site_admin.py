@@ -353,6 +353,40 @@ class TestUserDetails(TestController):
         assert_in('Test Project', projects)
         assert_in('Adobe project 1', projects)
 
+    @patch('allura.model.auth.request')
+    def test_audit_log(self, request):
+        request.url = 'http://host.domain/path/'
+        c.user = M.User.by_username('test-user-1')
+        h.auditlog_user('test activity user 1')
+        h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
+        r = self.app.get('/nf/admin/user/test-admin')
+        assert_in('Add comment', r)
+        assert_not_in('test activity', r)
+        r = self.app.get('/nf/admin/user/test-user-1')
+        assert_in('test activity user 1', r)
+        assert_not_in('test activity user 2', r)
+        r = self.app.get('/nf/admin/user/test-user-2')
+        assert_not_in('test activity user 1', r)
+        assert_in('test activity user 2', r)
+
+    def test_add_audit_trail_entry_access(self):
+        self.app.get('/nf/admin/user/add_audit_log_entry', status=404)  # GET is not allowed
+        r = self.app.post('/nf/admin/user/add_audit_log_entry',
+                          extra_environ={'username': '*anonymous'},
+                          status=302)
+        assert_equal(r.location, 'http://localhost/auth/')
+
+    def test_add_comment(self):
+        r = self.app.get('/nf/admin/user/test-user')
+        assert_not_in(u'Comment by test-admin: I was hêre!', r)
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user')
+        form['comment'] = u'I was hêre!'
+        r = form.submit()
+        assert_in(u'Comment added', self.webflash(r))
+        r = self.app.get('/nf/admin/user/test-user')
+        assert_in(u'Comment by test-admin: I was hêre!', r)
+
 
 @task
 def test_task(*args, **kw):
