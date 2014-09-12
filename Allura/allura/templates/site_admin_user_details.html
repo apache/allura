@@ -65,6 +65,19 @@
       {% set al = audit_log %}
       <fieldset>
         <legend>Audit log</legend>
+        <form action='/nf/admin/user/add_audit_trail_entry' method='POST'>
+          <div class='grid-22'>
+            <label for='comment'>Comment:</label>
+          </div>
+          <div class='grid-22'>
+            <textarea name="comment" cols="38" rows="5"></textarea>
+          </div>
+          <div class='grid-5'>
+            <input type='hidden' name='username' value='{{ user.username }}'>
+            <input type='submit' value='Add comment'>
+            {{lib.csrf_token()}}
+          </div>
+        </form>
         {% if al['entries'] %}
           {{ c.audit_log_widget.display(entries=al['entries'], limit=al['limit'], page=al['page'], count=al['count'], grid='22') }}
         {% endif %}
