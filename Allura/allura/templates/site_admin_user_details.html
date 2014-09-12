@@ -31,7 +31,7 @@
         <ul>
           <li>Username: {{ user.username }}</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
-          <li>Registered: {{ user.registration_date() }}</li>
+          <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date()) }})</li>
         </ul>
       </fieldset>
     </div>
@@ -43,13 +43,13 @@
         <legend>Session</legend>
         <h3>Last login</h3>
         <ul>
-          <li>Date: {{ user.last_access.login_date }}</li>
+          <li>Date: {{ user.last_access.login_date }} ({{ h.ago(user.last_access.login_date) }})</li>
           <li>IP: {{ user.last_access.login_ip }}</li>
           <li>UA: {{ user.last_access.login_ua }}</li>
         </ul>
         <h3>Last page access</h3>
         <ul>
-          <li>Date: {{ user.last_access.session_date }}</li>
+          <li>Date: {{ user.last_access.session_date }} ({{ h.ago(user.last_access.session_date) }})</li>
           <li>IP: {{ user.last_access.session_ip }}</li>
           <li>UA: {{ user.last_access.session_ua }}</li>
         </ul>
