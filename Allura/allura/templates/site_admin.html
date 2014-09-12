@@ -20,7 +20,7 @@
 {% from 'allura:templates/jinja_master/sidebar_menu.html' import sidebar_item with context %}
 
 {% set hide_left_bar=False %}
-{% if page == 'new_projects' %}
+{% if page in ['new_projects', 'user_details'] %}
   {% set hide_left_bar=True %}
 {% endif %}
 {% extends g.theme.master %}

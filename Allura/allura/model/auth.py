@@ -22,6 +22,7 @@ import logging
 import urllib
 import hmac
 import hashlib
+import calendar
 from urlparse import urlparse
 from email import header
 from hashlib import sha256
@@ -688,6 +689,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
             name=self.display_name,
             url=h.absurl(self.url()),
         )
+
+    def registration_date(self):
+        p = plugin.AuthenticationProvider.get(request)
+        return p.user_registration_date(self)
 
 
 class OldProjectRole(MappedClass):

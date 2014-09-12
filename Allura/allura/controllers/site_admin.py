@@ -62,6 +62,7 @@ class SiteAdminController(object):
     def __init__(self):
         self.task_manager = TaskManagerController()
         c.site_admin_sidebar_menu = self.sidebar_menu()
+        self.user = AdminUserDetailsController()
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
@@ -468,6 +469,20 @@ class StatsController(object):
             neighborhoods.append((n.name, project_count, configured_count))
         neighborhoods.sort(key=lambda n: n[0])
         return dict(neighborhoods=neighborhoods)
+
+
+class AdminUserDetailsController(object):
+
+    @expose('jinja:allura:templates/site_admin_user_details.html')
+    def _default(self, username):
+        user = M.User.by_username(username)
+        if not user:
+            raise HTTPNotFound()
+        projects = user.my_projects().all()
+        return {
+            'user': user,
+            'projects': projects,
+        }
 
 
 class StatsSiteAdminExtension(SiteAdminExtension):
