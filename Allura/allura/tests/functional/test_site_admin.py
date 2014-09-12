@@ -170,8 +170,8 @@ class TestSiteAdmin(TestController):
     def test_users(self, request):
         request.url = 'http://host.domain/path/'
         c.user = M.User.by_username('test-user-1')
-        M.AuditLog.log_user('test activity user 1')
-        M.AuditLog.log_user('test activity user 2', user=M.User.by_username('test-user-2'))
+        h.auditlog_user('test activity user 1')
+        h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
         r = self.app.get('/nf/admin/users')
         assert_not_in('test activity', r)
         r = self.app.get('/nf/admin/users?username=admin1')

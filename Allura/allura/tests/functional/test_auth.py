@@ -181,7 +181,7 @@ class TestAuth(TestController):
                      'test-admin@users.localhost')
 
         # add test@example
-        with td.audits('New email address: test@example.com'):
+        with td.audits('New email address: test@example.com', user=True):
             r = self.app.post('/auth/preferences/update', params={
                 'preferences.display_name': 'Test Admin',
                 'new_addr.addr': 'test@example.com',
@@ -196,7 +196,7 @@ class TestAuth(TestController):
         assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
 
         # remove test-admin@users.localhost
-        with td.audits('Email address deleted: test-admin@users.localhost'):
+        with td.audits('Email address deleted: test-admin@users.localhost', user=True):
             r = self.app.post('/auth/preferences/update', params={
                 'preferences.display_name': 'Test Admin',
                 'addr-1.ord': '1',
@@ -213,7 +213,7 @@ class TestAuth(TestController):
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('email_address'), None)
 
-        with td.audits('Display Name changed Test Admin => Admin'):
+        with td.audits('Display Name changed Test Admin => Admin', user=True):
             r = self.app.post('/auth/preferences/update', params={
                 'preferences.display_name': 'Admin',
                 'new_addr.addr': ''},
@@ -872,7 +872,7 @@ class TestPasswordReset(TestController):
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
-        with td.audits('Password recovery link sent to: test-admin@users.localhost'):
+        with td.audits('Password recovery link sent to: test-admin@users.localhost', user=True):
             r = self.app.post('/auth/password_recovery_hash', {'email': email.email})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
@@ -885,7 +885,7 @@ class TestPasswordReset(TestController):
         assert_in('New Password (again):', r)
         form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
-        with td.audits('Password changed \(through recovery process\)'):
+        with td.audits('Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
         user = M.User.query.get(username='test-admin')

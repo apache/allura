@@ -1190,3 +1190,17 @@ def unidiff(old, new):
         fromfile='old',
         tofile='new',
         lineterm=''))
+
+
+def auditlog_user(message, *args, **kwargs):
+    """
+    Create an audit log entry for a user, including the IP address
+
+    :param str message:
+    :param user: a :class:`allura.model.auth.User`
+    """
+    from allura import model as M
+    ip_address = request.headers.get('X-Remote-Addr', request.remote_addr)
+    message = 'IP Address: {}\n'.format(ip_address) + message
+    M.AuditLog.log_user(message, *args, **kwargs)
+

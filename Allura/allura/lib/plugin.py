@@ -142,7 +142,7 @@ class AuthenticationProvider(object):
             if self.is_password_expired(user):
                 self.session['pwd-expired'] = True
                 from allura.model import AuditLog
-                AuditLog.log_user('Password expired', user=user)
+                h.auditlog_user('Password expired', user=user)
             if 'rememberme' in self.request.params:
                 remember_for = int(config.get('auth.remember_for', 365))
                 self.session['login_expires'] = datetime.utcnow() + timedelta(remember_for)
@@ -306,7 +306,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         user.disabled = True
         session(user).flush(user)
         from allura.model import AuditLog
-        AuditLog.log_user('Account disabled', user=user)
+        h.auditlog_user('Account disabled', user=user)
 
     def validate_password(self, user, password):
         return self._validate_password(user, password)

@@ -154,18 +154,40 @@ class patch_middleware_config(object):
 
 
 @contextlib.contextmanager
-def audits(*messages):
+def audits(*messages, **kwargs):
+    """
+    Asserts all the messages exist in audit log
+
+    :param messages: regex strings
+    :param bool user: if this is a user log
+
+    """
     M.AuditLog.query.remove()
     yield
+    if kwargs.get('user'):
+        preamble = 'IP Address: .*\n'
+    else:
+        preamble = ''
     for message in messages:
         assert M.AuditLog.query.find(dict(
-            message=re.compile(message))).count(), 'Could not find "%s"' % message
+            message=re.compile(preamble + message))).count(), 'Could not find "%s"' % message
 
 
 @contextlib.contextmanager
-def out_audits(*messages):
+def out_audits(*messages, **kwargs):
+    """
+    Asserts none the messages exist in audit log.  "without audits"
+
+    :param messages: list of regex strings
+    :param bool user: if this is a user log
+
+    """
     M.AuditLog.query.remove()
     yield
+    if kwargs.get('user'):
+        preamble = 'IP Address: .*\n'
+    else:
+        preamble = ''
     for message in messages:
         assert not M.AuditLog.query.find(dict(
-            message=re.compile(message))).count(), 'Found unexpected: "%s"' % message
+            message=re.compile(preamble + message))).count(), 'Found unexpected: "%s"' % message
