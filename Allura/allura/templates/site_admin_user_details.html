@@ -29,7 +29,7 @@
       <fieldset>
         <legend>General</legend>
         <ul>
-          <li>Username: {{ user.username }}</li>
+          <li>Username: {{ user.username }} (<a href="{{ user.url() }}">Go to profile page</a>)</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
           <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date()) }})</li>
         </ul>
