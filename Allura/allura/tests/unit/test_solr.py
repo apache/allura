@@ -98,7 +98,7 @@ class TestSolr(unittest.TestCase):
         fq = ['type_s:Project']
         site_admin_search(Project, 'test', 'shortname', rows=25)
         search.assert_called_once_with(
-            'shortname_s:"test"', fq=fq, ignore_errors=False, rows=25)
+            'shortname_s:test', fq=fq, ignore_errors=False, rows=25)
 
         search.reset_mock()
         site_admin_search(Project, 'shortname:test || shortname:test2', '__custom__')
@@ -109,7 +109,7 @@ class TestSolr(unittest.TestCase):
         search.reset_mock()
         site_admin_search(User, 'test-user', 'username', rows=25)
         search.assert_called_once_with(
-            'username_s:"test-user"', fq=fq, ignore_errors=False, rows=25)
+            'username_s:test-user', fq=fq, ignore_errors=False, rows=25)
 
         search.reset_mock()
         site_admin_search(User, 'username:admin1 || username:root', '__custom__')
