@@ -93,7 +93,7 @@
                 {% if obj.confirmed %}
                   yes
                 {% else %}
-                  no (<a href="{{g.url('/auth/send_verification_link', a=a)}}">verify</a>)
+                  no (<a href="/auth/send_verification_link?a={{a}}">verify</a>)
                 {% endif %}
               </td>
               {% else %}
