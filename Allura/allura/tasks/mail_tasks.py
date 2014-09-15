@@ -88,6 +88,9 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     '''
     Send an email to the specified list of destinations with respect to the preferred email format specified by user.
     It is best for broadcast messages.
+
+    :param fromaddr: ObjectId or str(ObjectId) of user, or email address str
+
     '''
     from allura import model as M
     addrs_plain = []
@@ -95,7 +98,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     addrs_multi = []
     if fromaddr is None:
         fromaddr = g.noreply
-    elif '@' not in fromaddr:
+    elif not isinstance(fromaddr, basestring) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
@@ -164,11 +167,15 @@ def sendsimplemail(
     '''
     Send a single mail to the specified address.
     It is best for single user notifications.
+
+    :param fromaddr: ObjectId or str(ObjectId) of user, or email address str
+    :param toaddr: ObjectId or str(ObjectId) of user, or email address str
+
     '''
     from allura import model as M
     if fromaddr is None:
         fromaddr = g.noreply
-    elif '@' not in fromaddr:
+    elif not isinstance(fromaddr, basestring) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
@@ -177,8 +184,7 @@ def sendsimplemail(
         else:
             fromaddr = user.email_address_header()
 
-
-    if '@' not in toaddr:
+    if not isinstance(toaddr, basestring) or '@' not in toaddr:
         log.warning('Looking up user with toaddr: %s', toaddr)
         user = M.User.query.get(_id=ObjectId(toaddr), disabled=False)
         if not user:

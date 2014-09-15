@@ -388,6 +388,20 @@ class TestMailTasks(unittest.TestCase):
             assert_in('CC: someone@example.com', body)
             assert_in('someone@example.com', rcpts)
 
+    def test_fromaddr_objectid_not_str(self):
+        c.user = M.User.by_username('test-admin')
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendsimplemail(
+                fromaddr=c.user._id,
+                toaddr='test@mail.com',
+                text=u'This is a test',
+                reply_to=g.noreply,
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+
     @td.with_wiki
     def test_receive_email_ok(self):
         c.user = M.User.by_username('test-admin')
