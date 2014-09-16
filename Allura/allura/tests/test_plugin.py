@@ -19,6 +19,7 @@ import datetime as dt
 import calendar
 
 import tg
+from pylons import tmpl_context as c
 from webob import Request, exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -41,6 +42,7 @@ from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
+from allura.tests.decorators import audits
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
@@ -254,6 +256,21 @@ class TestLocalAuthenticationProvider(object):
         upd = self.provider.get_last_password_updated(user)
         assert_equal(upd, user.last_password_updated)
 
+    def test_enable_user(self):
+        user = Mock(disabled=True, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
+        c.user = Mock(username='test-admin')
+        with audits('Account enabled by test-admin', user=True):
+            self.provider.enable_user(user)
+            ThreadLocalORMSession.flush_all()
+        assert_equal(user.disabled, False)
+
+    def test_disable_user(self):
+        user = Mock(disabled=False, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
+        c.user = Mock(username='test-admin')
+        with audits('Account disabled by test-admin', user=True):
+            self.provider.disable_user(user)
+            ThreadLocalORMSession.flush_all()
+        assert_equal(user.disabled, True)
 
 class TestAuthenticationProvider(object):
 
