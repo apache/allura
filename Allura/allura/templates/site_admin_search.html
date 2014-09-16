@@ -16,12 +16,18 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+
+{% set page_num = page %}
+{% set page = 'search_results' %}
+
 {% extends 'allura:templates/site_admin.html' %}
 
 {% block title %}Search {{ type_s }}s{% endblock %}
 {% block header %}Search {{ type_s }}s{% endblock %}
 
 {% block content %}
+  <div class="grid-19"><p><a href="/nf/admin">Back to Site Admin Home</a></p></div>
+
   <div class="grid-19">
     {{ c.search_form.display(q=q, f=f) }}
   </div>
@@ -33,8 +39,8 @@
   {% endif %}
 
   <div class="grid-19">
-    {{c.page_list.display(limit=limit, page=page, count=count)}}
-    {{c.page_size.display(limit=limit, page=page, count=count)}}
+    {{c.page_list.display(limit=limit, page=page_num, count=count)}}
+    {{c.page_size.display(limit=limit, page=page_num, count=count)}}
   </div>
 {% endblock %}
 
