@@ -641,6 +641,17 @@ class Application(object):
         ET.SubElement(feature, 'name').text = self.config.options.mount_label
         ET.SubElement(feature, 'foaf:page', {'rdf:resource': h.absurl(self.url)})
 
+    def __json__(self):
+        """App's representation for JSON API.
+
+        Returns dict that will be included in project's API under tools key.
+        """
+        return {'name': self.config.tool_name,
+                'mount_point': self.config.options.mount_point,
+                'label': self.config.options.mount_label}
+
+
+
 
 class DefaultAdminController(BaseController):
 

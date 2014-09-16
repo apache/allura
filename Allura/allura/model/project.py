@@ -1090,8 +1090,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             preferred_support_url=self.support_page_url,
             developers=[u.__json__()
                         for u in self.users_with_role('Developer')],
-            tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
-                   for t in self.app_configs if h.has_access(t, 'read')],
+            tools=[self.app_instance(t) for t in self.app_configs if h.has_access(t, 'read')],
             labels=list(self.labels),
             categories={
                 n: [t.__json__(
