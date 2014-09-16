@@ -28,6 +28,7 @@ from bson import ObjectId
 
 from allura import model as M
 from allura.tests import TestController
+from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 
@@ -416,6 +417,63 @@ class TestUserDetails(TestController):
         r = form.submit()
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user').disabled, False)
+
+    def test_emails(self):
+        # add test@example.com
+        with td.audits('New email address: test@example.com', user=True):
+            r = self.app.post('/nf/admin/user/update_emails', params={
+                'username': 'test-user',
+                'new_addr.addr': 'test@example.com',
+                'new_addr.claim': 'Claim Address',
+                'primary_addr': 'test@example.com'},
+                extra_environ=dict(username='test-admin'))
+        r = self.app.get('/nf/admin/user/test-user')
+        assert_in('test@example.com', r)
+        em = M.EmailAddress.query.get(email='test@example.com')
+        assert_equal(em.confirmed, True)
+        user = M.User.query.get(username='test-user')
+        assert_equal(user.get_pref('email_address'), 'test@example.com')
+
+        # add test2@example.com
+        with td.audits('New email address: test2@example.com', user=True):
+            r = self.app.post('/nf/admin/user/update_emails', params={
+                'username': 'test-user',
+                'new_addr.addr': 'test2@example.com',
+                'new_addr.claim': 'Claim Address',
+                'primary_addr': 'test@example.com'},
+                extra_environ=dict(username='test-admin'))
+        r = self.app.get('/nf/admin/user/test-user')
+        assert_in('test2@example.com', r)
+        em = M.EmailAddress.query.get(email='test2@example.com')
+        assert_equal(em.confirmed, True)
+        user = M.User.query.get(username='test-user')
+        assert_equal(user.get_pref('email_address'), 'test@example.com')
+
+        # change primary: test -> test2
+        with td.audits('Primary email changed: test@example.com => test2@example.com', user=True):
+            r = self.app.post('/nf/admin/user/update_emails', params={
+                'username': 'test-user',
+                'new_addr.addr': '',
+                'primary_addr': 'test2@example.com'},
+                extra_environ=dict(username='test-admin'))
+        r = self.app.get('/nf/admin/user/test-user')
+        user = M.User.query.get(username='test-user')
+        assert_equal(user.get_pref('email_address'), 'test2@example.com')
+
+        # remove test2@example.com
+        with td.audits('Email address deleted: test2@example.com', user=True):
+            r = self.app.post('/nf/admin/user/update_emails', params={
+                'username': 'test-user',
+                'addr-1.ord': '1',
+                'addr-2.ord': '2',
+                'addr-2.delete': 'on',
+                'new_addr.addr': '',
+                'primary_addr': 'test2@example.com'},
+                extra_environ=dict(username='test-admin'))
+        r = self.app.get('/nf/admin/user/test-user')
+        user = M.User.query.get(username='test-user')
+        # test@example.com set as primary since test2@example.com is deleted
+        assert_equal(user.get_pref('email_address'), 'test@example.com')
 
 
 @task
