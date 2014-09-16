@@ -354,8 +354,9 @@ class TestUserDetails(TestController):
         assert_in('Adobe project 1', projects)
 
     @patch('allura.model.auth.request')
-    def test_audit_log(self, request):
-        request.url = 'http://host.domain/path/'
+    @patch('allura.lib.helpers.request')
+    def test_audit_log(self, req1, req2):
+        req1.url = req2.url = 'http://host.domain/path/'
         c.user = M.User.by_username('test-user-1')
         h.auditlog_user('test activity user 1')
         h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
@@ -379,7 +380,7 @@ class TestUserDetails(TestController):
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
         assert_not_in(u'Comment by test-admin: I was hêre!', r)
-        form = r.forms[0]
+        form = r.forms[1]
         assert_equal(form['username'].value, 'test-user')
         form['comment'] = u'I was hêre!'
         r = form.submit()
