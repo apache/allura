@@ -241,10 +241,7 @@ class AuthController(BaseController):
             flash('No such address', 'error')
         redirect(request.referer)
 
-    @expose()
-    def verify_addr(self, a):
-        addr = M.EmailAddress.query.get(nonce=a)
-
+    def _verify_addr(self, addr):
         if addr:
             addr.confirmed = True
             # Remove other non-confirmed emails claimed by other users
@@ -264,9 +261,14 @@ class AuthController(BaseController):
             })
 
             flash('Email address confirmed')
-            h.auditlog_user('Email address verified: %s', addr._id)
+            h.auditlog_user('Email address verified: %s', addr._id, user=addr.claimed_by_user())
         else:
             flash('Unknown verification link', 'error')
+
+    @expose()
+    def verify_addr(self, a):
+        addr = M.EmailAddress.query.get(nonce=a)
+        self._verify_addr(addr)
         redirect('/auth/preferences/')
 
     @expose()
@@ -462,7 +464,7 @@ class PreferencesController(BaseController):
                         # clear it now, a new one will get set below
                         user.set_pref('email_address', None)
                         primary_addr = None
-                h.auditlog_user('Email address deleted: %s', user.email_addresses[i])
+                h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
                 del user.email_addresses[i]
                 if obj:
                     obj.delete()
@@ -477,9 +479,12 @@ class PreferencesController(BaseController):
                 user.email_addresses.append(new_addr['addr'])
                 em = M.EmailAddress.create(new_addr['addr'])
                 em.claimed_by_user_id = user._id
-                em.send_verification_link()
-                h.auditlog_user('New email address: %s', new_addr['addr'])
-                flash('A verification email has been sent.  Please check your email and click to confirm.')
+                if not admin:
+                    em.send_verification_link()
+                    flash('A verification email has been sent.  Please check your email and click to confirm.')
+                else:
+                    AuthController()._verify_addr(em)
+                h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
             else:
                 flash('Email address %s is invalid' % new_addr['addr'], 'error')
         if not primary_addr and not user.get_pref('email_address') and user.email_addresses:
@@ -492,7 +497,8 @@ class PreferencesController(BaseController):
                 h.auditlog_user(
                     'Primary email changed: %s => %s',
                     user.get_pref('email_address'),
-                    primary_addr)
+                    primary_addr,
+                    user=user)
             user.set_pref('email_address', primary_addr)
 
     @h.vardec
