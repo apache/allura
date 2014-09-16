@@ -508,6 +508,20 @@ class AdminUserDetailsController(object):
             flash('Can not add comment "%s" for user %s' % (comment, user))
         redirect(request.referer)
 
+    @expose()
+    @require_post()
+    def set_status(self, username=None, status=None):
+        user = M.User.by_username(username)
+        if not user:
+            raise HTTPNotFound()
+        if status == 'enable' and user.disabled:
+            AuthenticationProvider.get(request).enable_user(user)
+            flash('User enabled')
+        elif status == 'disable' and not user.disabled:
+            AuthenticationProvider.get(request).disable_user(user)
+            flash('User disabled')
+        redirect(request.referer)
+
 
 class StatsSiteAdminExtension(SiteAdminExtension):
     controllers = {'stats': StatsController}

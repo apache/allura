@@ -28,11 +28,24 @@
     <div class="grid-23">
       <fieldset>
         <legend>General</legend>
+        <div class="grid-19">
         <ul>
           <li>Username: {{ user.username }} (<a href="{{ user.url() }}">Go to profile page</a>)</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
           <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date()) }})</li>
         </ul>
+        </div>
+
+        <div class="grid-3">
+        <form action='/nf/admin/user/set_status' method="POST">
+          <div class='grid-3'>
+            <label><input type="radio" name="status" value="enable"{% if not user.disabled %} checked="checked"{% endif %}>Enabled</label><br>
+            <label><input type="radio" name="status" value="disable"{% if user.disabled %} checked="checked"{% endif %}>Disabled</label>
+          </div>
+          <input type='hidden' name='username' value='{{ user.username }}'>
+          {{lib.csrf_token()}}
+        </form>
+        </div>
       </fieldset>
     </div>
   {% endblock general_info %}
@@ -107,4 +120,16 @@
   margin-left: 0;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+  // enabled/disabled change
+  $('input[name="status"]').change(function(e) {
+    $(this).parents('form').submit();
+  });
+});
+</script>
 {% endblock %}
