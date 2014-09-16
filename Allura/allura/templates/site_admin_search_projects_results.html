@@ -21,7 +21,7 @@
   <th>Full name</th>
   <th>Registered</th>
   <th>Deleted?</th>
-  {% for field in additional_fields %}
+  {% for field in additional_display_fields %}
   <th>{{ field }}</th>
   {% endfor %}
   <th>Details</th>
@@ -33,7 +33,7 @@
   <td>{{ p['name'] }}</td>
   <td>{{ h.ago_string(p['registration']) }}</td>
   <td>{{ p['deleted'] }}</td>
-  {% for field in additional_fields %}
+  {% for field in additional_display_fields %}
   <td>{{ p[field] }}</td>
   {% endfor %}
   <td>
