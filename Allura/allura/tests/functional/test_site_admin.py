@@ -390,33 +390,29 @@ class TestUserDetails(TestController):
         assert_in(u'Comment by test-admin: I was hêre!', r)
 
     def test_disable_user(self):
-        assert_equal(M.User.by_username('test-user').disabled, False)
-        r = self.app.get('/nf/admin/user/test-user')
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'enable')
         form['status'].value = 'disable'
         r = form.submit()
         assert_in(u'User disabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user').disabled, True)
-        # don't leave user disabled, it causes tests to hang somewhere
-        user = M.User.by_username('test-user')
-        user.disabled = False
-        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
 
     def test_enable_user(self):
-        user = M.User.by_username('test-user')
+        user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user').disabled, True)
-        r = self.app.get('/nf/admin/user/test-user')
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
+        r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'disable')
         form['status'].value = 'enable'
         r = form.submit()
         assert_in(u'User enabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
 
     def test_emails(self):
         # add test@example.com
