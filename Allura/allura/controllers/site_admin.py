@@ -34,7 +34,7 @@ from allura.app import SitemapEntry
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
-from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider
+from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider, AuthenticationProvider
 from allura.lib import search
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
@@ -478,6 +478,20 @@ class AdminUserDetailsController(object):
             flash('Comment added', 'ok')
         else:
             flash('Can not add comment "%s" for user %s' % (comment, user))
+        redirect(request.referer)
+
+    @expose()
+    @require_post()
+    def set_status(self, username=None, status=None):
+        user = M.User.by_username(username)
+        if not user:
+            raise HTTPNotFound()
+        if status == 'enable' and user.disabled:
+            AuthenticationProvider.get(request).enable_user(user)
+            flash('User enabled')
+        elif status == 'disable' and not user.disabled:
+            AuthenticationProvider.get(request).disable_user(user)
+            flash('User disabled')
         redirect(request.referer)
 
 
