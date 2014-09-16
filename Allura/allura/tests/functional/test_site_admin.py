@@ -388,6 +388,30 @@ class TestUserDetails(TestController):
         r = self.app.get('/nf/admin/user/test-user')
         assert_in(u'Comment by test-admin: I was hêre!', r)
 
+    def test_disable_user(self):
+        assert_equal(M.User.by_username('test-user').disabled, False)
+        r = self.app.get('/nf/admin/user/test-user')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['status'].value, 'enable')
+        form['status'].value = 'disable'
+        r = form.submit()
+        assert_in(u'User disabled', self.webflash(r))
+        assert_equal(M.User.by_username('test-user').disabled, True)
+
+    def test_enable_user(self):
+        user = M.User.by_username('test-user')
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user').disabled, True)
+        r = self.app.get('/nf/admin/user/test-user')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['status'].value, 'disable')
+        form['status'].value = 'enable'
+        r = form.submit()
+        assert_in(u'User enabled', self.webflash(r))
+        assert_equal(M.User.by_username('test-user').disabled, False)
 
 @task
 def test_task(*args, **kw):
