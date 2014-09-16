@@ -281,7 +281,7 @@ class TestUserDetails(TestController):
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
         assert_not_in(u'Comment by test-admin: I was hêre!', r)
-        form = r.forms[1]
+        form = r.forms[2]
         assert_equal(form['username'].value, 'test-user')
         form['comment'] = u'I was hêre!'
         r = form.submit()
