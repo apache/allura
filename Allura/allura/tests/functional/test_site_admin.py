@@ -299,6 +299,10 @@ class TestUserDetails(TestController):
         r = form.submit()
         assert_in(u'User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user').disabled, True)
+        # don't leave user disabled, it causes tests to hang somewhere
+        user = M.User.by_username('test-user')
+        user.disabled = False
+        ThreadLocalORMSession.flush_all()
 
     def test_enable_user(self):
         user = M.User.by_username('test-user')
@@ -313,6 +317,7 @@ class TestUserDetails(TestController):
         r = form.submit()
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user').disabled, False)
+
 
 @task
 def test_task(*args, **kw):
