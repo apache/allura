@@ -346,9 +346,11 @@ class SiteAdminController(object):
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
         fields = [('shortname', 'shortname'), ('name', 'full name')]
-        add_fields = aslist(tg.config.get('search.project.additional_fields'), ',')
+        add_fields = aslist(tg.config.get('search.project.additional_search_fields'), ',')
         r = self._search(M.Project, fields, add_fields, q, f, page, limit, **kw)
         r['search_results_template'] = 'allura:templates/site_admin_search_projects_results.html'
+        r['additional_display_fields'] = \
+            aslist(tg.config.get('search.project.additional_display_fields'), ',')
         r['provider'] = ProjectRegistrationProvider.get()
         return r
 
@@ -359,9 +361,11 @@ class SiteAdminController(object):
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_users(self, q=None, f=None, page=0, limit=None, **kw):
         fields = [('username', 'username'), ('display_name', 'display name')]
-        add_fields = aslist(tg.config.get('search.user.additional_fields'), ',')
+        add_fields = aslist(tg.config.get('search.user.additional_search_fields'), ',')
         r = self._search(M.User, fields, add_fields, q, f, page, limit, **kw)
         r['search_results_template'] = 'allura:templates/site_admin_search_users_results.html'
+        r['additional_display_fields'] = \
+            aslist(tg.config.get('search.user.additional_display_fields'), ',')
         r['provider'] = AuthenticationProvider.get(request)
         return r
 
