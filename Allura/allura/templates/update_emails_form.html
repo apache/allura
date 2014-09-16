@@ -16,53 +16,52 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-<form action="update_emails" method="post" name="update-email">
-  {% for a in c.user.email_addresses %}
-    <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
-  {% endfor %}
-  <table class="grid-22">
-    <tr>
-      <th>Primary?</th>
-      <th>Address</th>
-      <th>Confirmed</th>
-      <th></th>
-    </tr>
-    {% for a in c.user.email_addresses %}
-    <tr>
-      {% set obj = c.user.address_object(a) %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{% for a in user.email_addresses %}
+  <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
+{% endfor %}
+<table class="grid-22">
+  <tr>
+    <th>Primary?</th>
+    <th>Address</th>
+    <th>Confirmed</th>
+    <th></th>
+  </tr>
+  {% for a in user.email_addresses %}
+  <tr>
+    {% set obj = user.address_object(a) %}
+    {% if obj.confirmed %}
+      <td>{{lib.radio_button('primary_addr', None, a, user.preferences.email_address)}}</td>
+    {% else %}
+      <td> <input type="radio" disabled="disabled"></td>
+    {% endif %}
+    <td>{{a}}</td>
+    {% if obj %}
+    <td>
       {% if obj.confirmed %}
-        <td>{{lib.radio_button('primary_addr', None, a, c.user.preferences.email_address)}}</td>
+        yes
       {% else %}
-        <td> <input type="radio" disabled="disabled"></td>
+        no (<a href="/auth/send_verification_link?a={{a}}">verify</a>)
       {% endif %}
-      <td>{{a}}</td>
-      {% if obj %}
-      <td>
-        {% if obj.confirmed %}
-          yes
-        {% else %}
-          no (<a href="/auth/send_verification_link?a={{a}}">verify</a>)
-        {% endif %}
-      </td>
-      {% else %}
-        <td>Unknown addr obj {{a}}</td>
-      {% endif %}
-      <td>
-        <div class="addr-delete">
-          {{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}
-          {{lib.hidden_field('addr-%s.delete' % loop.index0, '')}}
-        </div>
-      </td>
-    </tr>
-    {% endfor %}
-    <tr>
-      <td colspan="2">{{lib.text_field('new_addr.addr', '')}}</td>
-      <td colspan="2">{{lib.submit_button('Claim New Address', name='new_addr.claim')}}</td>
-    </tr>
-  </table>
-  <div class="grid-22">
-    {{lib.submit_button('Save', name='addr-save')}}
-  </div>
-  {{lib.hidden_field('password', '')}}
-  {{lib.csrf_token()}}
-</form>
+    </td>
+    {% else %}
+      <td>Unknown addr obj {{a}}</td>
+    {% endif %}
+    <td>
+      <div class="addr-delete">
+        {{lib.submit_button('Delete', 'addr-%s.delete' % loop.index0)}}
+        {{lib.hidden_field('addr-%s.delete' % loop.index0, '')}}
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td colspan="2">{{lib.text_field('new_addr.addr', '')}}</td>
+    <td colspan="2">{{lib.submit_button('Claim New Address', name='new_addr.claim')}}</td>
+  </tr>
+</table>
+<div class="grid-22">
+  {{lib.submit_button('Save', name='addr-save')}}
+</div>
+{{lib.csrf_token()}}

@@ -49,6 +49,18 @@
     </div>
   {% endblock general_info %}
 
+  {% block emails %}
+    <div class="grid-23">
+      <fieldset>
+        <legend>Emails</legend>
+        <form action="update_emails" method="post">
+          {% include 'allura:templates/update_emails_form.html' %}
+          <input type='hidden' name='username' value='{{ user.username }}'>
+        </form>
+      </fieldset>
+    </div>
+  {% endblock emails %}
+
   {% block session_info %}
     <div class="grid-23">
       <fieldset>
