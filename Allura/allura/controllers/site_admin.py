@@ -515,7 +515,7 @@ class AdminUserDetailsController(object):
     @require_post()
     def set_status(self, username=None, status=None):
         user = M.User.by_username(username)
-        if not user:
+        if not user or user.is_anonymous():
             raise HTTPNotFound()
         if status == 'enable' and user.disabled:
             AuthenticationProvider.get(request).enable_user(user)
@@ -523,6 +523,16 @@ class AdminUserDetailsController(object):
         elif status == 'disable' and not user.disabled:
             AuthenticationProvider.get(request).disable_user(user)
             flash('User disabled')
+        redirect(request.referer)
+
+    @h.vardec
+    @expose()
+    @require_post()
+    def update_emails(self, username, **kw):
+        user = M.User.by_username(username)
+        if not user or user.is_anonymous():
+            raise HTTPNotFound()
+        allura.controllers.auth.PreferencesController()._update_emails(user, admin=True, **kw)
         redirect(request.referer)
 
 

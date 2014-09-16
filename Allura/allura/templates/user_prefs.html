@@ -66,7 +66,10 @@
 
         <fieldset>
           <legend>Email addresses</legend>
-          {% include 'allura:templates/update_emails_form.html' %}
+          <form action="update_emails" method="post" name="update-email">
+            {% include 'allura:templates/update_emails_form.html' %}
+            {{lib.hidden_field('password', '')}}
+          </form>
         </fieldset>
 
       <!-- popup -->
