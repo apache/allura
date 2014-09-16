@@ -20,7 +20,7 @@ import json
 import datetime as dt
 
 from mock import patch, MagicMock
-from nose.tools import assert_equal, assert_not_equal, assert_in, assert_not_in
+from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from tg import config
@@ -31,6 +31,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib.decorators import task
+from allura.lib.plugin import LocalAuthenticationProvider
 
 
 class TestSiteAdmin(TestController):
@@ -167,50 +168,6 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.body)['doc'] == 'test_task doc string'
-
-    @patch('allura.model.auth.request')
-    @patch('allura.lib.helpers.request')
-    def test_users(self, req1, req2):
-        req1.url = req2.url = 'http://host.domain/path/'
-        c.user = M.User.by_username('test-user-1')
-        h.auditlog_user('test activity user 1')
-        h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
-        r = self.app.get('/nf/admin/users')
-        assert_not_in('test activity', r)
-        r = self.app.get('/nf/admin/users?username=admin1')
-        assert_not_in('test activity', r)
-        r = self.app.get('/nf/admin/users?username=test-user-1')
-        assert_in('test activity user 1', r)
-        assert_not_in('test activity user 2', r)
-        r = self.app.get('/nf/admin/users?username=test-user-2')
-        assert_not_in('test activity user 1', r)
-        assert_in('test activity user 2', r)
-
-    def test_add_audit_trail_entry_access(self):
-        self.app.get('/nf/admin/add_audit_log_entry', status=404)  # GET is not allowed
-        r = self.app.post('/nf/admin/add_audit_log_entry',
-                          extra_environ={'username': '*anonymous'},
-                          status=302)
-        assert_equal(r.location, 'http://localhost/auth/')
-
-    def test_add_comment_on_users_trail_page(self):
-        r = self.app.get('/nf/admin/users')
-        assert_not_in('Add comment', r)
-        r = self.app.get('/nf/admin/users?username=fake-user')
-        assert_not_in('Add comment', r)
-        r = self.app.get('/nf/admin/users?username=test-user')
-        assert_in('Add comment', r)
-
-    def test_add_comment(self):
-        r = self.app.get('/nf/admin/users?username=test-user')
-        assert_not_in(u'Comment by test-admin: I was hêre!', r)
-        form = r.forms[1]
-        assert_equal(form['username'].value, 'test-user')
-        form['comment'] = u'I was hêre!'
-        r = form.submit()
-        assert_in(u'Comment added', self.webflash(r))
-        r = self.app.get('/nf/admin/users?username=test-user')
-        assert_in(u'Comment by test-admin: I was hêre!', r)
 
 
 class TestProjectsSearch(TestController):
@@ -390,29 +347,29 @@ class TestUserDetails(TestController):
         assert_in(u'Comment by test-admin: I was hêre!', r)
 
     def test_disable_user(self):
-        assert_equal(M.User.by_username('test-user').disabled, False)
-        r = self.app.get('/nf/admin/user/test-user')
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'enable')
         form['status'].value = 'disable'
         r = form.submit()
         assert_in(u'User disabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
 
     def test_enable_user(self):
-        user = M.User.by_username('test-user')
+        user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        assert_equal(M.User.by_username('test-user').disabled, True)
-        r = self.app.get('/nf/admin/user/test-user')
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
+        r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
-        assert_equal(form['username'].value, 'test-user')
+        assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'disable')
         form['status'].value = 'enable'
         r = form.submit()
         assert_in(u'User enabled', self.webflash(r))
-        assert_equal(M.User.by_username('test-user').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
 
     def test_emails(self):
         # add test@example.com
@@ -471,13 +428,12 @@ class TestUserDetails(TestController):
         # test@example.com set as primary since test2@example.com is deleted
         assert_equal(user.get_pref('email_address'), 'test@example.com')
 
-    def test_set_random_password(self):
-        old_pwd = M.User.by_username('test-user').password
+    @patch.object(LocalAuthenticationProvider, 'set_password')
+    def test_set_random_password(self, set_password):
         with td.audits('Set random password by test-admin', user=True):
             r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
         assert_in('Password is set', self.webflash(r))
-        new_pwd = M.User.by_username('test-user').password
-        assert_not_equal(old_pwd, new_pwd)
+        set_password.assert_called_once()
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
