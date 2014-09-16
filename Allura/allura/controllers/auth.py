@@ -432,73 +432,81 @@ class PreferencesController(BaseController):
         menu = provider.account_navigation()
         return dict(menu=menu)
 
+    def _update_emails(self, **kw):
+        addr = kw.pop('addr', None)
+        new_addr= kw.pop('new_addr', None)
+        primary_addr = kw.pop('primary_addr', None)
+        oid = kw.pop('oid', None)
+        new_oid = kw.pop('new_oid', None)
+        provider = plugin.AuthenticationProvider.get(request)
+        for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
+            obj = c.user.address_object(old_a)
+            if data.get('delete') or not obj:
+                if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                    flash('You must provide your current password to delete an email', 'error')
+                    return
+                if primary_addr == c.user.email_addresses[i]:
+                    if select_new_primary_addr(c.user, ignore_emails=primary_addr) is None \
+                            and asbool(config.get('auth.require_email_addr', False)):
+                        flash('You must have at least one verified email address.', 'error')
+                        return
+                    else:
+                        # clear it now, a new one will get set below
+                        c.user.set_pref('email_address', None)
+                        primary_addr = None
+                h.auditlog_user('Email address deleted: %s', c.user.email_addresses[i])
+                del c.user.email_addresses[i]
+                if obj:
+                    obj.delete()
+        if new_addr.get('claim') or new_addr.get('addr'):
+            if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                flash('You must provide your current password to claim new email', 'error')
+                return
+            if M.EmailAddress.query.get(email=new_addr['addr'], confirmed=True) \
+                    or M.EmailAddress.query.get(email=new_addr['addr'], claimed_by_user_id=c.user._id):
+                flash('Email address already claimed', 'error')
+            elif mail_util.isvalid(new_addr['addr']):
+                c.user.email_addresses.append(new_addr['addr'])
+                em = M.EmailAddress.create(new_addr['addr'])
+                em.claimed_by_user_id = c.user._id
+                em.send_verification_link()
+                h.auditlog_user('New email address: %s', new_addr['addr'])
+                flash('A verification email has been sent.  Please check your email and click to confirm.')
+            else:
+                flash('Email address %s is invalid' % new_addr['addr'], 'error')
+        if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
+            primary_addr = select_new_primary_addr(c.user)
+        if primary_addr:
+            if c.user.get_pref('email_address') != primary_addr:
+                if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
+                    flash('You must provide your current password to change primary address', 'error')
+                    return
+                h.auditlog_user(
+                    'Primary email changed: %s => %s',
+                    c.user.get_pref('email_address'),
+                    primary_addr)
+            c.user.set_pref('email_address', primary_addr)
+
     @h.vardec
     @expose()
     @require_post()
-    def update(self,
-               addr=None,
-               new_addr=None,
-               primary_addr=None,
-               oid=None,
-               new_oid=None,
-               preferences=None,
-               **kw):
+    def update_emails(self, **kw):
+        if asbool(config.get('auth.allow_edit_prefs', True)):
+            self._update_emails(**kw)
+        redirect('.')
+
+    @h.vardec
+    @expose()
+    @require_post()
+    def update(self, preferences=None, **kw):
         if asbool(config.get('auth.allow_edit_prefs', True)):
             if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.", 'error')
                 redirect('.')
-            provider = plugin.AuthenticationProvider.get(request)
             old = c.user.get_pref('display_name')
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
                 h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'])
-            for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
-                obj = c.user.address_object(old_a)
-                if data.get('delete') or not obj:
-                    if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
-                        flash('You must provide your current password to delete an email', 'error')
-                        redirect('.')
-                    if primary_addr == c.user.email_addresses[i]:
-                        if select_new_primary_addr(c.user, ignore_emails=primary_addr) is None \
-                                and asbool(config.get('auth.require_email_addr', False)):
-                            flash('You must have at least one verified email address.', 'error')
-                            redirect('.')
-                        else:
-                            # clear it now, a new one will get set below
-                            c.user.set_pref('email_address', None)
-                            primary_addr = None
-                    h.auditlog_user('Email address deleted: %s', c.user.email_addresses[i])
-                    del c.user.email_addresses[i]
-                    if obj:
-                        obj.delete()
-            if new_addr.get('claim') or new_addr.get('addr'):
-                if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
-                    flash('You must provide your current password to claim new email', 'error')
-                    redirect('.')
-                if M.EmailAddress.query.get(email=new_addr['addr'], confirmed=True) \
-                        or M.EmailAddress.query.get(email=new_addr['addr'], claimed_by_user_id=c.user._id):
-                    flash('Email address already claimed', 'error')
-                elif mail_util.isvalid(new_addr['addr']):
-                    c.user.email_addresses.append(new_addr['addr'])
-                    em = M.EmailAddress.create(new_addr['addr'])
-                    em.claimed_by_user_id = c.user._id
-                    em.send_verification_link()
-                    h.auditlog_user('New email address: %s', new_addr['addr'])
-                    flash('A verification email has been sent.  Please check your email and click to confirm.')
-                else:
-                    flash('Email address %s is invalid' % new_addr['addr'], 'error')
-            if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
-                primary_addr = select_new_primary_addr(c.user)
-            if primary_addr:
-                if c.user.get_pref('email_address') != primary_addr:
-                    if not kw.get('password') or not provider.validate_password(c.user, kw.get('password')):
-                        flash('You must provide your current password to change primary address', 'error')
-                        redirect('.')
-                    h.auditlog_user(
-                        'Primary email changed: %s => %s',
-                        c.user.get_pref('email_address'),
-                        primary_addr)
-                c.user.set_pref('email_address', primary_addr)
             for k, v in preferences.iteritems():
                 if k == 'results_per_page':
                     v = int(v)
