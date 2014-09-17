@@ -494,6 +494,18 @@ class AdminUserDetailsController(object):
             flash('User disabled')
         redirect(request.referer)
 
+    @expose()
+    @require_post()
+    def set_random_password(self, username=None):
+        user = M.User.by_username(username)
+        if not user or user.is_anonymous():
+            raise HTTPNotFound()
+        pwd = h.random_password()
+        AuthenticationProvider.get(request).set_password(user, None, pwd)
+        h.auditlog_user('Set random password by %s', c.user.username, user=user)
+        flash('Password is set', 'ok')
+        redirect(request.referer)
+
     @h.vardec
     @expose()
     @require_post()
