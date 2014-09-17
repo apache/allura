@@ -227,14 +227,15 @@ The wiki uses [Markdown](%s) syntax.
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                     small=pending_mod_count))
-        subscribed = M.Mailbox.subscribed()
-        subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
-        subscribe_title = '{}{}'.format(
-            subscribe_action.capitalize(),
-            '' if subscribed else ' to wiki')
-        subscribe_url = '{}subscribe?{}=True'.format(self.url, subscribe_action)
-        links += [SitemapEntry(''),
-                  SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
+        if not c.user.is_anonymous():
+            subscribed = M.Mailbox.subscribed()
+            subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
+            subscribe_title = '{}{}'.format(
+                subscribe_action.capitalize(),
+                '' if subscribed else ' to wiki')
+            subscribe_url = '{}subscribe?{}=True'.format(self.url, subscribe_action)
+            links += [SitemapEntry(''),
+                      SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
         if not admin_menu:
             links += [SitemapEntry(''),
                       SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
