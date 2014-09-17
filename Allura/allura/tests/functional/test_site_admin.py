@@ -20,7 +20,7 @@ import json
 import datetime as dt
 
 from mock import patch, MagicMock
-from nose.tools import assert_equal, assert_in, assert_not_in
+from nose.tools import assert_equal, assert_not_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from tg import config
@@ -470,6 +470,14 @@ class TestUserDetails(TestController):
         user = M.User.query.get(username='test-user')
         # test@example.com set as primary since test2@example.com is deleted
         assert_equal(user.get_pref('email_address'), 'test@example.com')
+
+    def test_set_random_password(self):
+        old_pwd = M.User.by_username('test-user').password
+        with td.audits('Set random password by test-admin', user=True):
+            r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
+        assert_in('Password is set', self.webflash(r))
+        new_pwd = M.User.by_username('test-user').password
+        assert_not_equal(old_pwd, new_pwd)
 
 
 @task
