@@ -26,6 +26,8 @@ import urllib2
 import re
 import json
 import logging
+import string
+import random
 import cPickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
@@ -348,6 +350,10 @@ def nonce(length=4):
 def cryptographic_nonce(length=40):
     hex_format = '%.2x' * length
     return hex_format % tuple(map(ord, os.urandom(length)))
+
+
+def random_password(length=20, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for x in range(length))
 
 
 def ago(start_time, show_date_after=7):
