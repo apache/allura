@@ -18,13 +18,14 @@
 import logging
 import warnings
 
+from collections import defaultdict
 from pylons import app_globals as g, tmpl_context as c
 from formencode import validators as fev
 import formencode
 import ew as ew_core
 import ew.jinja2_ew as ew
 from pytz import common_timezones, country_timezones, country_names
-from paste.deploy.converters import aslist, asint
+from paste.deploy.converters import aslist, asint, asbool
 import tg
 
 from allura.lib import validators as V
@@ -192,63 +193,90 @@ class PasswordChangeForm(PasswordChangeBase):
 
 
 class PersonalDataForm(ForgeForm):
+    _fields = None
 
-    class fields(ew_core.NameList):
-        sex = ew.SingleSelectField(
-            label='Gender',
-            options=[ew.Option(py_value=v, label=v, selected=False)
-                     for v in ['Male', 'Female', 'Unknown', 'Other']],
-            validator=formencode.All(
-                V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
-                fev.UnicodeString(not_empty=True)))
-        birthdate = ew.TextField(
-            label='Birth date',
-            validator=V.DateValidator(),
-            attrs=dict(value=None))
-        exp = _HTMLExplanation(
-            text="Use the format DD/MM/YYYY",
-            show_errors=False)
-        country = ew.SingleSelectField(
-            label='Country of residence',
-            validator=V.MapValidator(country_names, not_empty=False),
-            options=[
-                ew.Option(
-                    py_value=" ", label=" -- Unknown -- ", selected=False)] +
-            [ew.Option(py_value=c, label=n, selected=False)
-             for c, n in sorted(country_names.items(),
-                                key=lambda (k, v):v)],
-            attrs={'onchange': 'selectTimezone(this.value)'})
-        city = ew.TextField(
-            label='City of residence',
-            attrs=dict(value=None),
-            validator=fev.UnicodeString(not_empty=False))
-        timezone = ew.SingleSelectField(
-            label='Timezone',
-            attrs={'id': 'tz'},
-            validator=V.OneOfValidator(common_timezones, not_empty=False),
-            options=[
-                ew.Option(
-                    py_value=" ",
-                    label=" -- Unknown -- ")] +
-            [ew.Option(py_value=n, label=n)
-                  for n in sorted(common_timezones)])
+    @property
+    def birth_date_fields(self):
+        return [
+            ew.TextField(
+                name='birthdate',
+                label='Birth date',
+                validator=V.DateValidator(),
+                attrs=dict(value=None)),
+            _HTMLExplanation(
+                text="Use the format DD/MM/YYYY",
+                show_errors=False)
+        ]
+
+    @property
+    def fields(self):
+        # Since @property is readonly we can't modify field values in display() method
+        # Returns fields modified by display()
+        if self._fields:
+            return self._fields
+
+        list_of_fields = [
+            ew.SingleSelectField(
+                name='sex',
+                label='Gender',
+                options=[ew.Option(py_value=v, label=v, selected=False)
+                         for v in ['Male', 'Female', 'Unknown', 'Other']],
+                validator=formencode.All(
+                    V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
+                    fev.UnicodeString(not_empty=True))),
+            ew.SingleSelectField(
+                name='country',
+                label='Country of residence',
+                validator=V.MapValidator(country_names, not_empty=False),
+                options=[ew.Option(py_value=" ", label=" -- Unknown -- ", selected=False)] +
+                        [ew.Option(py_value=c, label=n, selected=False)
+                         for c, n in sorted(country_names.items(),
+                                            key=lambda (k, v): v)],
+                attrs={'onchange': 'selectTimezone(this.value)'}),
+            ew.TextField(
+                name='city',
+                label='City of residence',
+                attrs=dict(value=None),
+                validator=fev.UnicodeString(not_empty=False)),
+            ew.SingleSelectField(
+                name='timezone',
+                label='Timezone',
+                attrs={'id': 'tz'},
+                validator=V.OneOfValidator(common_timezones, not_empty=False),
+                options=[ew.Option(py_value=" ", label=" -- Unknown -- ")] +
+                        [ew.Option(py_value=n, label=n)
+                         for n in sorted(common_timezones)])
+        ]
+        if asbool(tg.config.get('auth.allow_birth_date', True)):
+            list_of_fields[1:1] = self.birth_date_fields
+
+        return list_of_fields
 
     def display(self, **kw):
         user = kw.get('user')
 
-        for opt in self.fields['sex'].options:
+        self._fields = self.fields
+
+        birthdate_field = filter(lambda x: x.name == 'birthdate', self._fields)
+
+        sex_field = filter(lambda x: x.name == 'sex', self._fields)[0]
+        country_field = filter(lambda x: x.name == 'country', self._fields)[0]
+        city_field = filter(lambda x: x.name == 'city', self._fields)[0]
+        timezone_field = filter(lambda x: x.name == 'timezone', self._fields)[0]
+
+        for opt in sex_field.options:
             if opt.label == user.sex:
                 opt.selected = True
             else:
                 opt.selected = False
 
-        if user.get_pref('birthdate'):
-            self.fields['birthdate'].attrs['value'] = \
-                user.get_pref('birthdate').strftime('%d/%m/%Y')
-        else:
-            self.fields['birthdate'].attrs['value'] = ''
+        if birthdate_field:
+            if user.get_pref('birthdate'):
+                birthdate_field[0].attrs['value'] = user.get_pref('birthdate').strftime('%d/%m/%Y')
+            else:
+                birthdate_field[0].attrs['value'] = ''
 
-        for opt in self.fields['country'].options:
+        for opt in country_field.options:
             if opt.label == user.localization.country:
                 opt.selected = True
             elif opt.py_value == " " and user.localization.country is None:
@@ -257,18 +285,17 @@ class PersonalDataForm(ForgeForm):
                 opt.selected = False
 
         if user.localization.city:
-            self.fields['city'].attrs['value'] = user.localization.city
+            city_field.attrs['value'] = user.localization.city
         else:
-            self.fields['city'].attrs['value'] = ''
+            city_field.attrs['value'] = ''
 
-        for opt in self.fields['timezone'].options:
+        for opt in timezone_field.options:
             if opt.label == user.timezone:
                 opt.selected = True
             elif opt.py_value == " " and user.timezone is None:
                 opt.selected = True
             else:
                 opt.selected = False
-
         return super(ForgeForm, self).display(**kw)
 
     def resources(self):
