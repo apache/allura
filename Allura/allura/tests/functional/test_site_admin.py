@@ -282,7 +282,7 @@ class TestUserDetails(TestController):
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
         assert_not_in(u'Comment by test-admin: I was hêre!', r)
-        form = r.forms[2]
+        form = r.forms[4]
         assert_equal(form['username'].value, 'test-user')
         form['comment'] = u'I was hêre!'
         r = form.submit()
@@ -379,6 +379,29 @@ class TestUserDetails(TestController):
         assert_in('Password is set', self.webflash(r))
         new_pwd = M.User.by_username('test-user').password
         assert_not_equal(old_pwd, new_pwd)
+
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_send_password_reset_link(self, gen_message_id, sendmail):
+        user = M.User.by_username('test-user')
+        user.set_pref('email_address', 'test-user@example.org')
+        M.EmailAddress(email='test-user@example.org', confirmed=True, claimed_by_user_id=user._id)
+        ThreadLocalORMSession.flush_all()
+        with td.audits('Password recovery link sent to: test-user@example.org', user=True):
+            r = self.app.post('/nf/admin/user/send_password_reset_link', params={'username': 'test-user'})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        text = '''Your username is test-user
+
+To reset your password on %s, please visit the following URL:
+
+%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
+        sendmail.post.assert_called_once_with(
+            toaddr='test-user@example.org',
+            fromaddr=config['forgemail.return_path'],
+            reply_to=config['forgemail.return_path'],
+            subject='Allura Password recovery',
+            message_id=gen_message_id(),
+            text=text)
 
 
 @task

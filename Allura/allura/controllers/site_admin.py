@@ -28,7 +28,7 @@ from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
-from webob.exc import HTTPNotFound
+from webob.exc import HTTPNotFound, HTTPFound
 
 from allura.app import SitemapEntry
 from allura.lib import helpers as h
@@ -504,6 +504,19 @@ class AdminUserDetailsController(object):
         AuthenticationProvider.get(request).set_password(user, None, pwd)
         h.auditlog_user('Set random password by %s', c.user.username, user=user)
         flash('Password is set', 'ok')
+        redirect(request.referer)
+
+    @expose()
+    @require_post()
+    def send_password_reset_link(self, username=None):
+        user = M.User.by_username(username)
+        if not user or user.is_anonymous():
+            raise HTTPNotFound()
+        email = user.get_pref('email_address')
+        try:
+            allura.controllers.auth.AuthController().password_recovery_hash(email)
+        except HTTPFound:
+            pass  # catch redirect to '/'
         redirect(request.referer)
 
     @h.vardec

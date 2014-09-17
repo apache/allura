@@ -27,7 +27,7 @@
     <div class="grid-23">
       <fieldset>
         <legend>General</legend>
-        <div class="grid-17">
+        <div class="grid-16">
         <ul>
           <li>Username: {{ user.username }} (<a href="{{ user.url() }}">Go to profile page</a>)</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
@@ -35,9 +35,9 @@
         </ul>
         </div>
 
-        <div class="grid-5">
+        <div class="grid-6">
         <form action='/nf/admin/user/set_status' method="POST">
-          <div class='grid-5'>
+          <div class='grid-6'>
             <label><input type="radio" name="status" value="enable"{% if not user.disabled %} checked="checked"{% endif %}>Enabled</label><br>
             <label><input type="radio" name="status" value="disable"{% if user.disabled %} checked="checked"{% endif %}>Disabled</label>
           </div>
@@ -46,10 +46,16 @@
         </form>
         </div>
 
-        <div class="grid-17">&nbsp;</div>
-        <div class="grid-5">
+        <div class="grid-16">&nbsp;</div>
+        <div class="grid-6">
           <form action='/nf/admin/user/set_random_password' method="POST">
             <input type="submit" value="Set random password">
+            <input type='hidden' name='username' value='{{ user.username }}'>
+            {{lib.csrf_token()}}
+          </form>
+
+          <form action='/nf/admin/user/send_password_reset_link' method="POST">
+            <input type="submit" value="Send password reset link">
             <input type='hidden' name='username' value='{{ user.username }}'>
             {{lib.csrf_token()}}
           </form>
