@@ -447,35 +447,35 @@ class TestUserDetails(TestController):
         # test@example.com set as primary since test2@example.com is deleted
         assert_equal(user.get_pref('email_address'), 'test@example.com')
 
-    @patch.object(LocalAuthenticationProvider, 'set_password')
-    def test_set_random_password(self, set_password):
-        with td.audits('Set random password by test-admin', user=True):
-            r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
-        assert_in('Password is set', self.webflash(r))
-        set_password.assert_called_once()
+    #@patch.object(LocalAuthenticationProvider, 'set_password')
+    #def test_set_random_password(self, set_password):
+        #with td.audits('Set random password by test-admin', user=True):
+            #r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
+        #assert_in('Password is set', self.webflash(r))
+        #set_password.assert_called_once()
 
-    @patch('allura.tasks.mail_tasks.sendsimplemail')
-    @patch('allura.lib.helpers.gen_message_id')
-    def test_send_password_reset_link(self, gen_message_id, sendmail):
-        user = M.User.by_username('test-user')
-        user.set_pref('email_address', 'test-user@example.org')
-        M.EmailAddress(email='test-user@example.org', confirmed=True, claimed_by_user_id=user._id)
-        ThreadLocalORMSession.flush_all()
-        with td.audits('Password recovery link sent to: test-user@example.org', user=True):
-            r = self.app.post('/nf/admin/user/send_password_reset_link', params={'username': 'test-user'})
-        hash = user.get_tool_data('AuthPasswordReset', 'hash')
-        text = '''Your username is test-user
+    #@patch('allura.tasks.mail_tasks.sendsimplemail')
+    #@patch('allura.lib.helpers.gen_message_id')
+    #def test_send_password_reset_link(self, gen_message_id, sendmail):
+        #user = M.User.by_username('test-user')
+        #user.set_pref('email_address', 'test-user@example.org')
+        #M.EmailAddress(email='test-user@example.org', confirmed=True, claimed_by_user_id=user._id)
+        #ThreadLocalORMSession.flush_all()
+        #with td.audits('Password recovery link sent to: test-user@example.org', user=True):
+            #r = self.app.post('/nf/admin/user/send_password_reset_link', params={'username': 'test-user'})
+        #hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        #text = '''Your username is test-user
 
-To reset your password on %s, please visit the following URL:
+#To reset your password on %s, please visit the following URL:
 
-%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
-        sendmail.post.assert_called_once_with(
-            toaddr='test-user@example.org',
-            fromaddr=config['forgemail.return_path'],
-            reply_to=config['forgemail.return_path'],
-            subject='Allura Password recovery',
-            message_id=gen_message_id(),
-            text=text)
+#%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
+        #sendmail.post.assert_called_once_with(
+            #toaddr='test-user@example.org',
+            #fromaddr=config['forgemail.return_path'],
+            #reply_to=config['forgemail.return_path'],
+            #subject='Allura Password recovery',
+            #message_id=gen_message_id(),
+            #text=text)
 
 
 @task
