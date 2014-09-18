@@ -26,9 +26,9 @@
 {% block header %}Search {{ type_s }}s{% endblock %}
 
 {% block content %}
-  <div class="grid-19"><p><a href="/nf/admin">Back to Site Admin Home</a></p></div>
+  <div class="grid-23"><p><a href="/nf/admin">Back to Site Admin Home</a></p></div>
 
-  <div class="grid-19">
+  <div class="grid-23">
     {{ c.search_form.display(q=q, f=f) }}
   </div>
 
@@ -38,7 +38,7 @@
     </table>
   {% endif %}
 
-  <div class="grid-19">
+  <div class="grid-23">
     {{c.page_list.display(limit=limit, page=page_num, count=count)}}
     {{c.page_size.display(limit=limit, page=page_num, count=count)}}
   </div>
@@ -46,7 +46,10 @@
 
 {% block extra_css %}
 <style>
-  table { clear: both; }
+  .pad table {
+    clear: both;
+    width: 900px;
+  }
   table th {
     text-align: left;
     padding: 5px 10px;
