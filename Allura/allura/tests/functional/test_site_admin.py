@@ -167,8 +167,9 @@ class TestSiteAdmin(TestController):
         assert json.loads(r.body)['doc'] == 'test_task doc string'
 
     @patch('allura.model.auth.request')
-    def test_users(self, request):
-        request.url = 'http://host.domain/path/'
+    @patch('allura.lib.helpers.request')
+    def test_users(self, req1, req2):
+        req1.url = req2.url = 'http://host.domain/path/'
         c.user = M.User.by_username('test-user-1')
         h.auditlog_user('test activity user 1')
         h.auditlog_user('test activity user 2', user=M.User.by_username('test-user-2'))
@@ -255,13 +256,13 @@ class TestProjectsSearch(TestController):
     @patch('allura.controllers.site_admin.search')
     def test_additional_fields(self, search):
         search.site_admin_search.return_value = self.TEST_HIT
-        with h.push_config(config, **{'search.project.additional_fields': 'private, url'}):
+        with h.push_config(config, **{'search.project.additional_search_fields': 'private, url',
+                                      'search.project.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_projects?q=fake&f=shortname')
         options = [o['value'] for o in r.html.findAll('option')]
         assert_equal(options, ['shortname', 'name', 'private', 'url', '__custom__'])
         ths = [th.text for th in r.html.findAll('th')]
-        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?',
-                           'private', 'url', 'Details'])
+        assert_equal(ths, ['Short name', 'Full name', 'Registered', 'Deleted?', 'url', 'Details'])
 
 
 class TestUsersSearch(TestController):
@@ -308,13 +309,14 @@ class TestUsersSearch(TestController):
     @patch('allura.controllers.site_admin.search')
     def test_additional_fields(self, search):
         search.site_admin_search.return_value = self.TEST_HIT
-        with h.push_config(config, **{'search.user.additional_fields': 'email_addresses, url'}):
+        with h.push_config(config, **{'search.user.additional_search_fields': 'email_addresses, url',
+                                      'search.user.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_users?q=fake&f=username')
         options = [o['value'] for o in r.html.findAll('option')]
         assert_equal(options, ['username', 'display_name', 'email_addresses', 'url', '__custom__'])
         ths = [th.text for th in r.html.findAll('th')]
         assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
-                           'Disabled?', 'email_addresses', 'url', 'Details'])
+                           'Disabled?', 'url', 'Details'])
 
 
 @task
