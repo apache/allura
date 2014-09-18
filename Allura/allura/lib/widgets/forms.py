@@ -1086,6 +1086,7 @@ class AdminSearchForm(ForgeForm):
         ForgeForm.defaults,
         action='',
         method='get',
+        style='wide',
         submit_text=None)
 
     def __init__(self, fields, *args, **kw):
@@ -1102,7 +1103,7 @@ class AdminSearchForm(ForgeForm):
                     name='f',
                     show_label=False,
                     options=search_fields),
-                ew.InputField(name='q', show_label=False, attrs={'style': 'width: 500px'}),
+                ew.InputField(name='q', show_label=False, attrs={'style': 'width: 600px'}),
                 ew.SubmitButton(
                     show_label=False,
                     attrs={
