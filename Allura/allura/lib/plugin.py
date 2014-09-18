@@ -280,6 +280,12 @@ class AuthenticationProvider(object):
     def get_primary_email_address(self, user_record):
         return user_record.get_pref('email_address') if user_record else None
 
+    def user_details(self, user):
+        '''Returns detailed information about user.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        '''
+        return {}
 
     def is_password_expired(self, user):
         days = asint(config.get('auth.pwdexpire.days', 0))
