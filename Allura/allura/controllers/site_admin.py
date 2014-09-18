@@ -468,11 +468,14 @@ class AdminUserDetailsController(object):
             raise HTTPNotFound()
         projects = user.my_projects().all()
         audit_log = self._audit_log(user, limit, page)
-        return {
+        info = {
             'user': user,
             'projects': projects,
             'audit_log': audit_log,
         }
+        p = AuthenticationProvider.get(request)
+        info.update(p.user_details(user))
+        return info
 
     def _audit_log(self, user, limit, page):
         limit = int(limit)
