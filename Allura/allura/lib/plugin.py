@@ -277,6 +277,13 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'get_last_password_updated'
 
+    def user_details(self, user):
+        '''Returns detailed information about user.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        '''
+        return {}
+
     def is_password_expired(self, user):
         days = asint(config.get('auth.pwdexpire.days', 0))
         before = asint(config.get('auth.pwdexpire.before', 0))
