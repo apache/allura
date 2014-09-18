@@ -577,10 +577,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
         addr = EmailAddress.canonical(email_address)
         email_addr = EmailAddress.create(addr)
         email_addr.claimed_by_user_id = self._id
-        if addr in self.email_addresses:
-            return
-        self.email_addresses.append(addr)
+        if addr not in self.email_addresses:
+            self.email_addresses.append(addr)
         session(email_addr).flush(email_addr)
+        return email_addr
 
     @classmethod
     def register(cls, doc, make_project=True):
