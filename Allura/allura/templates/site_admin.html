@@ -19,10 +19,6 @@
 
 {% from 'allura:templates/jinja_master/sidebar_menu.html' import sidebar_item with context %}
 
-{% set hide_left_bar=False %}
-{% if page in ['new_projects', 'search_results'] %}
-  {% set hide_left_bar=True %}
-{% endif %}
 {% extends g.theme.master %}
 
 {% block title %}Forge Site Admin{% endblock %}

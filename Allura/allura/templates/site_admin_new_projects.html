@@ -16,7 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% set page="new_projects" %}
+{% set page = "new_projects" %}
+{% set hide_left_bar = True %}
+
 {% extends 'allura:templates/site_admin.html' %}
 
 {% macro _paging() %}
@@ -86,20 +88,20 @@
     }
     th.header {
         background-image: url("{{g.forge_static('images/bg.gif')}}");
-        cursor: pointer; 
-        font-weight: bold; 
-        background-repeat: no-repeat; 
-        background-position: center left; 
-        padding-left: 20px; 
+        cursor: pointer;
+        font-weight: bold;
+        background-repeat: no-repeat;
+        background-position: center left;
+        padding-left: 20px;
     }
-    th.headerSortUp { 
+    th.headerSortUp {
         background-image: url("{{g.forge_static('images/asc.gif')}}");
-        background-color: #6bb3fd; 
+        background-color: #6bb3fd;
     }
-    th.headerSortDown { 
+    th.headerSortDown {
         background-image: url("{{g.forge_static('images/desc.gif')}}");
-        background-color: #6bb3fd; 
-    }   
+        background-color: #6bb3fd;
+    }
 </style>
 {% endblock %}
 
