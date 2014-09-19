@@ -36,7 +36,7 @@ from allura.lib import validators as v
 from allura.lib.decorators import require_post
 from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider, AuthenticationProvider
 from allura.lib import search
-from allura.lib.security import require_access
+from allura.lib.security import require_access, Credentials
 from allura.lib.widgets import form_fields as ffw
 from allura.ext.admin.widgets import AuditLog
 from allura.lib.widgets import forms
@@ -184,7 +184,10 @@ class SiteAdminController(object):
             'neighborhood_id': {'$ne': nb._id},
             'deleted': False,
             '_id': {'$lt': start, '$gt': end},
-        }).sort('_id', -1))
+        }).sort('_id', -1)).all()
+        # pre-populate roles cache, so we won't query mongo for roles for every project
+        # when getting admins with p.admins() in a template
+        Credentials.get().load_project_roles(*[p._id for p in projects])
         step = start_dt - end_dt
         params = request.params.copy()
         params['start-dt'] = (start_dt + step).strftime('%Y/%m/%d %H:%M:%S')
