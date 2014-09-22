@@ -23,7 +23,7 @@ test:
 	-[ ! -d $(VIRTUAL_ENV)/lib/python2.7/site-packages/pysvn-1.7.5-py2.7.egg-info ] && mkdir $(VIRTUAL_ENV)/lib/python2.7/site-packages/pysvn-1.7.5-py2.7.egg-info
 	# rebuild apps
 	./rebuild-all.bash
-	./run_tests
+	./run_tests -n 2 -m 4
 
 
 # Helpers for local development
