@@ -65,11 +65,24 @@ def test_email_address():
     assert addr2
     addr4 = M.EmailAddress.create('test@DOMAIN.NET')
     assert addr4 is not addr2
-    with patch('allura.lib.app_globals.request', Request.blank('/')):
-        addr.send_verification_link()
+
     assert addr is c.user.address_object('test_admin@domain.net')
     c.user.claim_address('test@DOMAIN.NET')
     assert 'test@domain.net' in c.user.email_addresses
+
+
+@with_setup(setUp)
+def test_email_address_send_verification_link():
+    addr = M.EmailAddress(email='test_admin@domain.net',
+                          claimed_by_user_id=c.user._id)
+
+    addr.send_verification_link()
+
+    with patch('allura.tasks.mail_tasks.smtp_client._client') as _client:
+        M.MonQTask.run_ready()
+    return_path, rcpts, body = _client.sendmail.call_args[0]
+    assert_equal(rcpts, ['test_admin@domain.net'])
+
 
 @td.with_user_project('test-admin')
 @with_setup(setUp)

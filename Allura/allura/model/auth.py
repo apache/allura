@@ -157,8 +157,8 @@ please visit the following URL:
         allura.tasks.mail_tasks.sendsimplemail.post(
             fromaddr=g.noreply,
             reply_to=g.noreply,
-            toaddr=self._id,
-            subject='%s - Email address verification' % config['site_name'],
+            toaddr=self.email,
+            subject=u'%s - Email address verification' % config['site_name'],
             message_id=h.gen_message_id(),
             text=text)
 
