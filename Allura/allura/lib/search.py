@@ -83,7 +83,7 @@ class SearchIndexable(object):
         Values passed as old_doc and new_doc are original and modified
         versions of same object, represented as dictionaries.
         """
-        return True
+        return old_doc != new_doc
 
     def solarize(self):
         doc = self.index()
