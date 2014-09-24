@@ -198,7 +198,7 @@ class AuthController(BaseController):
                                       hash_expiry=datetime.datetime.utcnow() +
                                       datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
-            log.info('Sending password recovery link to %s', email)
+            log.info('Sending password recovery link to %s', email_record.email)
             subject = '%s Password recovery' % config['site_name']
             text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
                 user=user_record,
@@ -207,7 +207,7 @@ class AuthController(BaseController):
             ))
 
             allura.tasks.mail_tasks.sendsimplemail.post(
-                toaddr=email,
+                toaddr=email_record.email,
                 fromaddr=config['forgemail.return_path'],
                 reply_to=config['forgemail.return_path'],
                 subject=subject,
