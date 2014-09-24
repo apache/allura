@@ -273,6 +273,10 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'get_last_password_updated'
 
+    def get_primary_email_address(self, user_record):
+        return user_record.get_pref('email_address')
+
+
     def is_password_expired(self, user):
         days = asint(config.get('auth.pwdexpire.days', 0))
         before = asint(config.get('auth.pwdexpire.before', 0))

@@ -179,10 +179,19 @@ class AuthController(BaseController):
         if not email:
             redirect('/')
 
-        email_record = M.EmailAddress.query.get(email=email, confirmed=True)
         user_record = M.User.by_email_address(email)
+        allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
-        if user_record and email_record.confirmed:
+        if not allow_non_primary_email_reset:
+            message = 'A password reset email has been sent, if the given email address is on record as a primary email address.'
+            email_record = M.EmailAddress.query.get(email=provider.get_primary_email_address(user_record=user_record),
+                                                    confirmed=True)
+        else:
+            message = 'A password reset email has been sent, if the given email address is on record in our system.'
+            email_record = M.EmailAddress.query.get(email=email, confirmed=True)
+
+
+        if user_record and email_record and email_record.confirmed:
             hash = h.nonce(42)
             user_record.set_tool_data('AuthPasswordReset',
                                       hash=hash,
@@ -204,9 +213,8 @@ class AuthController(BaseController):
                 subject=subject,
                 message_id=h.gen_message_id(),
                 text=text)
-
         h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
-        flash('A password reset email has been sent, if the given email address is on record in our system.')
+        flash(message)
         redirect('/')
 
     @expose()
