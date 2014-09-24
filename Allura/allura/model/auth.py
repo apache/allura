@@ -151,7 +151,7 @@ class EmailAddress(MappedClass):
 To verify the email address %s belongs to the user %s,
 please visit the following URL:
 
-    %s
+%s
 ''' % (self.email, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
