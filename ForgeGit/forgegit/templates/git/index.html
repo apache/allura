@@ -63,8 +63,7 @@ git init
 git add .
 git commit -a -m 'Initial commit'
 git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
-git push origin master
-git branch --set-upstream-to master origin/master  # so 'git pull' will work later</pre>
+git push -u origin master</pre>
     </div>
 
     <h2>Existing repository using Git</h2>
@@ -72,8 +71,7 @@ git branch --set-upstream-to master origin/master  # so 'git pull' will work lat
     <div class="codehilite">
       <pre>cd myproject
 git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
-git push origin master
-git branch --set-upstream-to master origin/master  # so 'git pull' will work later</pre>
+git push -u origin master</pre>
     </div>
     &nbsp;
     <div class="message info scm-ssh-key">
