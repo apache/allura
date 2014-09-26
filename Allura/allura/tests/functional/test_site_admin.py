@@ -301,7 +301,7 @@ class TestUserDetails(TestController):
         assert_in('Date: 2014-09-02 06:06:06', r)
         assert_in('IP: 8.8.8.8', r)
         assert_in('UA: browser of the future 1.0', r)
-        assert_in('Date: 2014-09-12 06:06:06', r)
+        assert_in('Date: 2014-09-12', r)
         assert_in('IP: 7.7.7.7', r)
         assert_in('UA: browser of the future 1.1', r)
         # list of projects
