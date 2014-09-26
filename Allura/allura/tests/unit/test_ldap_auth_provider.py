@@ -72,12 +72,33 @@ class TestLdapAuthenticationProvider(object):
         self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()])
         ldap.dn.escape_dn_chars = lambda x: x
 
-        dn = 'uid=%s,ou=users,dc=sf,dc=net' % params['username']
         self.provider._login()
+
+        dn = 'uid=%s,ou=users,dc=sf,dc=net' % params['username']
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.bind_s.called_once_with(dn, 'test-password')
         connection.unbind_s.assert_called_once()
+
+    @patch('allura.lib.plugin.ldap')
+    def test_login_autoregister(self, ldap):
+        # covers ldap get_pref too, via the display_name fetch
+        params = {
+            'username': 'abc32590wr38',
+            'password': 'test-password',
+        }
+        self.provider.request.method = 'POST'
+        self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()])
+        ldap.dn.escape_dn_chars = lambda x: x
+        dn = 'uid=%s,ou=users,dc=sf,dc=net' % params['username']
+        conn = ldap.initialize.return_value
+        conn.search_s.return_value = [(dn, {'cn': [u'åℒƒ'.encode('utf-8')]})]
+
+        self.provider._login()
+
+        user = M.User.query.get(username=params['username'])
+        assert user
+        assert_equal(user.display_name, u'åℒƒ')
 
     @patch('allura.lib.plugin.modlist')
     @patch('allura.lib.plugin.ldap')
