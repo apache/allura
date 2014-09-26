@@ -307,9 +307,9 @@ class TestUserDetails(TestController):
         # list of projects
         projects = r.html.findAll('fieldset')[-1]
         projects = [e.getText() for e in projects.findAll('li')]
-        assert_in('Test 2', projects)
-        assert_in('Test Project', projects)
-        assert_in('Adobe project 1', projects)
+        assert_in('Test 2&ndash;Admin', projects)
+        assert_in('Test Project&ndash;Admin', projects)
+        assert_in('Adobe project 1&ndash;Admin', projects)
 
     @patch('allura.model.auth.request')
     @patch('allura.lib.helpers.request')
