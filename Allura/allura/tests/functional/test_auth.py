@@ -839,6 +839,8 @@ class TestPreferences(TestController):
 
 class TestPasswordReset(TestController):
 
+    test_primary_email = 'testprimaryaddr@mail.com'
+
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_email_unconfirmed(self, gen_message_id, sendmail):
@@ -867,31 +869,36 @@ class TestPasswordReset(TestController):
     @patch('allura.lib.helpers.gen_message_id')
     def test_only_primary_email_reset_allowed(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
-        user.claim_address('aaa@aaa.com')
-        user.set_pref('email_address', 'aaa@aaa.com')
-        email = M.EmailAddress.query.find({'email': 'aaa@aaa.com'}).first()
+        user.claim_address(self.test_primary_email)
+        user.set_pref('email_address', self.test_primary_email)
+
+        email = M.EmailAddress.query.find({'email': self.test_primary_email}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
+
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'false'}):
-            self.app.post('/auth/password_recovery_hash', {'email': email.email})
+            self.app.post('/auth/password_recovery_hash', {'email': self.test_primary_email})
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
-
+            args, kwargs = sendmail.post.call_args
+            assert_equal(kwargs['toaddr'], self.test_primary_email)
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_non_primary_email_reset_allowed(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
         email1 = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
-        user.claim_address('aaa@aaa.com')
-        user.set_pref('email_address', 'aaa@aaa.com')
-        email = M.EmailAddress.query.find({'email': 'aaa@aaa.com'}).first()
+        user.claim_address(self.test_primary_email)
+        user.set_pref('email_address', self.test_primary_email)
+        email = M.EmailAddress.query.find({'email': self.test_primary_email}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'true'}):
             self.app.post('/auth/password_recovery_hash', {'email': email1.email})
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
+            args, kwargs = sendmail.post.call_args
+            assert_equal(kwargs['toaddr'], email1.email)
 
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')

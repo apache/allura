@@ -274,7 +274,7 @@ class AuthenticationProvider(object):
         raise NotImplementedError, 'get_last_password_updated'
 
     def get_primary_email_address(self, user_record):
-        return user_record.get_pref('email_address')
+        return user_record.get_pref('email_address') if user_record else None
 
 
     def is_password_expired(self, user):
