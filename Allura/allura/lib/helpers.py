@@ -1208,5 +1208,7 @@ def auditlog_user(message, *args, **kwargs):
     from allura import model as M
     ip_address = request.headers.get('X-Remote-Addr', request.remote_addr)
     message = 'IP Address: {}\n'.format(ip_address) + message
+    if kwargs.get('user') and kwargs['user'] != c.user:
+        message = 'Done by user: {}\n'.format(c.user.username) + message
     M.AuditLog.log_user(message, *args, **kwargs)
 

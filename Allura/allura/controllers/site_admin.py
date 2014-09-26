@@ -537,7 +537,7 @@ class AdminUserDetailsController(object):
             raise HTTPNotFound()
         pwd = h.random_password()
         AuthenticationProvider.get(request).set_password(user, None, pwd)
-        h.auditlog_user('Set random password by %s', c.user.username, user=user)
+        h.auditlog_user('Set random password', user=user)
         flash('Password is set', 'ok')
         redirect(request.referer)
 

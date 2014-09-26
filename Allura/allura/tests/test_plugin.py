@@ -259,7 +259,7 @@ class TestLocalAuthenticationProvider(object):
     def test_enable_user(self):
         user = Mock(disabled=True, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
         c.user = Mock(username='test-admin')
-        with audits('Account enabled by test-admin', user=True):
+        with audits('Account enabled', user=True, actor='test-admin'):
             self.provider.enable_user(user)
             ThreadLocalORMSession.flush_all()
         assert_equal(user.disabled, False)
@@ -267,7 +267,7 @@ class TestLocalAuthenticationProvider(object):
     def test_disable_user(self):
         user = Mock(disabled=False, __ming__=Mock(), is_anonymous=lambda: False, _id=ObjectId())
         c.user = Mock(username='test-admin')
-        with audits('Account disabled by test-admin', user=True):
+        with audits('Account disabled', user=True, actor='test-admin'):
             self.provider.disable_user(user)
             ThreadLocalORMSession.flush_all()
         assert_equal(user.disabled, True)
