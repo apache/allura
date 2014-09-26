@@ -560,7 +560,7 @@ class AdminUserDetailsController(object):
         user = M.User.by_username(username)
         if not user or user.is_anonymous():
             raise HTTPNotFound()
-        allura.controllers.auth.PreferencesController()._update_emails(user, admin=True, **kw)
+        allura.controllers.auth.PreferencesController()._update_emails(user, admin=True, form_params=kw)
         redirect(request.referer)
 
 

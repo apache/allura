@@ -434,7 +434,9 @@ class PreferencesController(BaseController):
         menu = provider.account_navigation()
         return dict(menu=menu, user=c.user)
 
-    def _update_emails(self, user, admin=False, **kw):
+    def _update_emails(self, user, admin=False, form_params={}):
+        # not using **kw in method signature, to ensure 'admin' can't be passed in via a form submit
+        kw = form_params
         addr = kw.pop('addr', None)
         new_addr= kw.pop('new_addr', None)
         primary_addr = kw.pop('primary_addr', None)
@@ -498,7 +500,7 @@ class PreferencesController(BaseController):
     @require_post()
     def update_emails(self, **kw):
         if asbool(config.get('auth.allow_edit_prefs', True)):
-            self._update_emails(c.user, **kw)
+            self._update_emails(c.user, form_params=kw)
         redirect('.')
 
     @h.vardec
