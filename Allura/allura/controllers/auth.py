@@ -183,7 +183,7 @@ class AuthController(BaseController):
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
         if not allow_non_primary_email_reset:
-            message = 'A password reset email has been sent, if the given email address is on record as a primary email address.'
+            message = 'If the given email address is on record, a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.query.get(email=provider.get_primary_email_address(user_record=user_record),
                                                     confirmed=True)
         else:
