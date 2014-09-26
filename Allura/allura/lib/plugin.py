@@ -527,7 +527,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if user is None:
             if asbool(config.get('auth.ldap.autoregister', True)):
                 log.debug('LdapAuth: authorized user {} needs a mongo record registered.  Creating...'.format(username))
-                user = M.User.register({'username': username})
+                user = M.User.register({'username': username,
+                                        'display_name': LdapUserPreferencesProvider()._get_pref(username, 'display_name'),
+                                        })
             else:
                 log.debug('LdapAuth: no user {} found in local mongo'.format(username))
                 raise exc.HTTPUnauthorized()
@@ -1233,21 +1235,25 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
     def get_pref(self, user, pref_name):
         from allura import model as M
         if pref_name in self.fields and user != M.User.anonymous():
-            con = ldap_conn()
-            try:
-                rs = con.search_s(ldap_user_dn(user.username), ldap.SCOPE_BASE)
-            except ldap.NO_SUCH_OBJECT:
-                rs = []
-            else:
-                con.unbind_s()
-            if not rs:
-                log.warning('LdapUserPref: No user record found for: {}'.format(user.username))
-                return ''
-            user_dn, user_attrs = rs[0]
-            ldap_attr = self.fields[pref_name]
-            return user_attrs[ldap_attr][0]  # assume single-valued list
+            self._get_pref(user.username, pref_name)
         else:
             return LocalUserPreferencesProvider().get_pref(user, pref_name)
+
+    def _get_pref(self, username, pref_name):
+        con = ldap_conn()
+        try:
+            rs = con.search_s(ldap_user_dn(username), ldap.SCOPE_BASE)
+        except ldap.NO_SUCH_OBJECT:
+            rs = []
+        else:
+            con.unbind_s()
+        if not rs:
+            log.warning('LdapUserPref: No user record found for: {}'.format(user.username))
+            return ''
+        user_dn, user_attrs = rs[0]
+        ldap_attr = self.fields[pref_name]
+        # assume single-valued list
+        return user_attrs[ldap_attr][0].decode('utf-8')
 
     def set_pref(self, user, pref_name, pref_value):
         if pref_name in self.fields:
