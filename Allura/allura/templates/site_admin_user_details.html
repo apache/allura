@@ -32,7 +32,7 @@
         <ul>
           <li>Username: {{ user.username }} (<a href="{{ user.url() }}">Go to profile page</a>)</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
-          <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date()) }})</li>
+          <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date(), show_date_after=None) }})</li>
         </ul>
         {% block extra_general_info %}{% endblock %}
         </div>
@@ -81,13 +81,13 @@
         <legend>Session</legend>
         <h3>Last login</h3>
         <ul>
-          <li>Date: {{ user.last_access.login_date }} ({{ h.ago(user.last_access.login_date) }})</li>
+          <li>Date: {{ user.last_access.login_date }} ({{ h.ago(user.last_access.login_date, show_date_after=None) }})</li>
           <li>IP: {{ user.last_access.login_ip }}</li>
           <li>UA: {{ user.last_access.login_ua }}</li>
         </ul>
         <h3>Last page access</h3>
         <ul>
-          <li>Date: {{ user.last_access.session_date }} ({{ h.ago(user.last_access.session_date) }})</li>
+          <li>Date: {{ user.last_access.session_date and user.last_access.session_date.date() }}</li>
           <li>IP: {{ user.last_access.session_ip }}</li>
           <li>UA: {{ user.last_access.session_ua }}</li>
         </ul>
