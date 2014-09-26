@@ -165,7 +165,9 @@ def audits(*messages, **kwargs):
     M.AuditLog.query.remove()
     yield
     if kwargs.get('user'):
-        preamble = 'IP Address: .*\n'
+        actor = kwargs.get('actor', '.*')
+        ip_addr = kwargs.get('ip_addr', '.*')
+        preamble = '(Done by user: {}\n)?IP Address: {}\n'.format(actor, ip_addr)
     else:
         preamble = ''
     for message in messages:
@@ -185,7 +187,9 @@ def out_audits(*messages, **kwargs):
     M.AuditLog.query.remove()
     yield
     if kwargs.get('user'):
-        preamble = 'IP Address: .*\n'
+        actor = kwargs.get('actor', '.*')
+        ip_addr = kwargs.get('ip_addr', '.*')
+        preamble = '(Done by user: {}\n)?IP Address: {}\n'.format(actor, ip_addr)
     else:
         preamble = ''
     for message in messages:

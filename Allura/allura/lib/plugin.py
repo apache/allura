@@ -335,18 +335,12 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     def disable_user(self, user):
         user.disabled = True
         session(user).flush(user)
-        suffix = u''
-        if user != c.user:
-            suffix = u' by %s' % c.user.username
-        h.auditlog_user(u'Account disabled' + suffix, user=user)
+        h.auditlog_user(u'Account disabled', user=user)
 
     def enable_user(self, user):
         user.disabled = False
         session(user).flush(user)
-        suffix = u''
-        if user != c.user:
-            suffix = u' by %s' % c.user.username
-        h.auditlog_user(u'Account enabled' + suffix, user=user)
+        h.auditlog_user(u'Account enabled', user=user)
 
     def validate_password(self, user, password):
         return self._validate_password(user, password)

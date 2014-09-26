@@ -430,7 +430,7 @@ class TestUserDetails(TestController):
 
     @patch.object(LocalAuthenticationProvider, 'set_password')
     def test_set_random_password(self, set_password):
-        with td.audits('Set random password by test-admin', user=True):
+        with td.audits('Set random password', user=True, actor='test-admin'):
             r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
         assert_in('Password is set', self.webflash(r))
         set_password.assert_called_once()
