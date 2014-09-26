@@ -24,6 +24,8 @@
 {% block header %}User Details{% endblock %}
 
 {% block content %}
+   <div class="grid-23"><p><a href="/nf/admin">Back to Site Admin Home</a></p></div>
+
   {% block general_info %}
     <div class="grid-23">
       <fieldset>
@@ -129,7 +131,10 @@
         <legend>Projects</legend>
         <ul>
           {% for p in projects %}
-            <li><a href="{{ p.url() }}">{{p.name}}</a></li>
+            <li><a href="{{ p.url() }}">{{p.name}}</a>
+                <span class="spacer">&ndash;</span>
+                <a href="{{ p.url() }}admin/">Admin</a>
+            </li>
           {% endfor %}
         </ul>
       </fieldset>
@@ -143,6 +148,9 @@
 .pad table {
   width: 860px;
   margin-left: 0;
+}
+li .spacer {
+   margin: 0 0.5em;
 }
 </style>
 {% endblock %}

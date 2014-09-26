@@ -308,7 +308,6 @@ class AuthenticationProvider(object):
         Links will show up at admin user search page.
         '''
         return [
-           (user.url(), 'Public profile'),
            ('/nf/admin/user/%s' % user.username, 'Details/Edit'),
         ]
 
