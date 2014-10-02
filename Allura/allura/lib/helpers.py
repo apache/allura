@@ -1210,5 +1210,5 @@ def auditlog_user(message, *args, **kwargs):
     message = 'IP Address: {}\n'.format(ip_address) + message
     if kwargs.get('user') and kwargs['user'] != c.user:
         message = 'Done by user: {}\n'.format(c.user.username) + message
-    M.AuditLog.log_user(message, *args, **kwargs)
+    return M.AuditLog.log_user(message, *args, **kwargs)
 
