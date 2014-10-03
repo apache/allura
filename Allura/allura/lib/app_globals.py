@@ -160,7 +160,6 @@ class Globals(object):
         else:  # pragma no cover
             log.warning('Solr config not set; using in-memory MockSOLR')
             self.solr = self.solr_short_timeout = MockSOLR()
-        self.use_queue = asbool(config.get('use_queue', False))
 
         # Load login/logout urls; only used for customized logins
         self.login_url = config.get('auth.login_url', '/auth/')
