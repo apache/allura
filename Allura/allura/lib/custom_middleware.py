@@ -151,7 +151,7 @@ class SSLMiddleware(object):
 
     'Verify the https/http schema is correct'
 
-    def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None):
+    def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None, force_ssl_logged_in=False):
         self.app = app
         if no_redirect_pattern:
             self._no_redirect_re = re.compile(no_redirect_pattern)
@@ -161,6 +161,7 @@ class SSLMiddleware(object):
             self._force_ssl_re = re.compile(force_ssl_pattern)
         else:
             self._force_ssl_re = re.compile('$$$')
+        self._force_ssl_logged_in = force_ssl_logged_in
 
     def __call__(self, environ, start_response):
         req = Request(environ)
@@ -174,13 +175,9 @@ class SSLMiddleware(object):
             resp = exc.HTTPNotFound()
         secure = req.url.startswith('https://')
         srv_path = req.url.split('://', 1)[-1]
-        # This SFUSER check is SourceForge-specific (to require all logged-in users to use https)
-        # BUT has the additional affect of not forcing SSL for regular Allura instances
-        # This is important for local development, at least.  When we remove SFUSER (perhaps by requiring SSL everywhere),
-        # we can use `no_redirect.pattern = .` for local development to work
-        # without SSL
-        force_ssl = req.cookies.get(
-            'SFUSER') or self._force_ssl_re.match(environ['PATH_INFO'])
+        # allura-loggedin is a non-secure cookie as a flag to know that the user has a session over on https
+        force_ssl = (self._force_ssl_logged_in and req.cookies.get('allura-loggedin')) \
+                    or self._force_ssl_re.match(environ['PATH_INFO'])
         if not secure and force_ssl:
             resp = exc.HTTPFound(location='https://' + srv_path)
         elif secure and not force_ssl:
