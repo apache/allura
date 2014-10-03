@@ -41,7 +41,7 @@ except ImportError:
     ldap = modlist = None
 import pkg_resources
 import tg
-from tg import config, request, redirect
+from tg import config, request, redirect, response
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from bson.tz_util import FixedOffset
@@ -157,6 +157,11 @@ class AuthenticationProvider(object):
             g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
             user.track_login(self.request)
+            # set a non-secure cookie with same expiration as session,
+            # so an http request can know if there is a related session on https
+            response.set_cookie('allura-loggedin', value='true',
+                                expires=None if self.session['login_expires'] is True else self.session['login_expires'],
+                                secure=False, httponly=True)
             return user
         except exc.HTTPUnauthorized:
             self.logout()
@@ -167,6 +172,7 @@ class AuthenticationProvider(object):
         self.session['username'] = None
         self.session['pwd-expired'] = False
         self.session.save()
+        response.delete_cookie('allura-loggedin')
 
     def validate_password(self, user, password):
         '''Check that provided password matches actual user password

@@ -20,10 +20,11 @@
 """Main Controller"""
 import logging
 
-from tg import expose, request, config
+from tg import expose, request, config, session
 from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
 from pylons import tmpl_context as c
+from paste.deploy.converters import asbool
 
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
@@ -89,6 +90,8 @@ class RootController(WsgiDispatchController):
                                     'Did you run `paster setup-app` to create the database?')
         if not c.user.is_anonymous():
             c.user.track_active(request)
+            if asbool(config.get('force_ssl.logged_in')):
+                session.secure = True
 
     def _cleanup_request(self):
         pass
