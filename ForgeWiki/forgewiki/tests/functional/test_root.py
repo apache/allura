@@ -53,11 +53,12 @@ class TestRootController(TestController):
         pass
 
     def test_root_index(self):
-        r = self.app.get('/wiki/tést/').follow()
-        assert 'tést' in r
+        page_url = h.urlquote(u'/wiki/tést/')
+        r = self.app.get(page_url).follow()
+        assert u'tést' in r
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
-        r = self.app.get('/wiki/tést/',
+        r = self.app.get(page_url,
                          extra_environ=dict(username='*anonymous')).follow()
         assert 'Create Page' not in r
 
@@ -74,13 +75,13 @@ class TestRootController(TestController):
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
-        response = self.app.get('/wiki/new_page?title=tést')
-        assert 'tést' in response
+        response = self.app.get('/wiki/new_page?title=' + h.urlquote(u'tést'))
+        assert u'tést' in response
 
     def test_root_new_search(self):
-        self.app.get('/wiki/tést/')
-        response = self.app.get('/wiki/search?q=tést')
-        assert 'Search wiki: tést' in response
+        self.app.get(h.urlquote(u'/wiki/tést/'))
+        response = self.app.get('/wiki/search?q=' + h.urlquote(u'tést'))
+        assert u'Search wiki: tést' in response
 
     def test_feed(self):
         for ext in ['', '.rss', '.atom']:
