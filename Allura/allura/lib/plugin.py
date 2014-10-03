@@ -430,6 +430,8 @@ def ldap_conn(who=None, cred=None):
 
 def ldap_user_dn(username):
     'return a Distinguished Name for a given username'
+    if not username:
+        raise ValueError('Empty username')
     return 'uid=%s,%s' % (
         ldap.dn.escape_dn_chars(username),
         config['auth.ldap.suffix'])
@@ -569,7 +571,11 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def _validate_password(self, username, password):
         '''by username'''
         try:
-            con = ldap_conn(ldap_user_dn(username), password)
+            ldap_user = ldap_user_dn(username)
+        except ValueError:
+            return False
+        try:
+            con = ldap_conn(ldap_user, password)
             con.unbind_s()
             return True
         except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM, ldap.NO_SUCH_OBJECT):
