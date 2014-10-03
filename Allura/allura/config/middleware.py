@@ -126,9 +126,12 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
                                " the zarkov.host setting in your ini file."
 
     app = tg.TGApp()
+
     for mw_ep in h.iter_entry_points('allura.middleware'):
         Middleware = mw_ep.load()
-        app = Middleware(app, config)
+        if getattr(Middleware, 'when', 'inner') == 'inner':
+            app = Middleware(app, config)
+
     # Required for pylons
     app = RoutesMiddleware(app, config['routes.map'])
     # Required for sessions
@@ -165,6 +168,12 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     #    streaming=true ensures they won't be cleaned up till
     #    the WSGI application's iterator is exhausted
     app = RegistryManager(app, streaming=True)
+
+    for mw_ep in h.iter_entry_points('allura.middleware'):
+        Middleware = mw_ep.load()
+        if getattr(Middleware, 'when', 'inner') == 'outer':
+            app = Middleware(app, config)
+
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') != 'task':
         # Converts exceptions to HTTP errors, shows traceback in debug mode
@@ -173,11 +182,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         app = tg.error.ErrorHandler(
             app, global_conf, **config['pylons.errorware'])
 
-        # Make sure that the wsgi.scheme is set appropriately when we
-        # have the funky HTTP_X_SFINC_SSL  environ var
-        if asbool(app_conf.get('auth.method', 'local') == 'sfx'):
-            app = set_scheme_middleware(app)
-
         # Redirect some status codes to /error/document
         if asbool(config['debug']):
             app = StatusCodeRedirect(app, base_config.handle_status_codes)
@@ -185,14 +189,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
             app = StatusCodeRedirect(
                 app, base_config.handle_status_codes + [500])
     return app
-
-
-def set_scheme_middleware(app):
-    def SchemeMiddleware(environ, start_response):
-        if asbool(environ.get('HTTP_X_SFINC_SSL', 'false')):
-            environ['wsgi.url_scheme'] = 'https'
-        return app(environ, start_response)
-    return SchemeMiddleware
 
 
 def allura_globals_middleware(app):

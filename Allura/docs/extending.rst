@@ -37,7 +37,9 @@ The available extension points for Allura are:
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
 * ``[allura.timers]`` functions which return a list or single :class:`timermiddleware.Timer` which will be included in stats.log timings
 * :mod:`allura.ext.user_profile`
-* ``[allura.middleware]`` classes, which are standard WSGI middleware.  They will recieve the ``app`` instance and a ``config`` dict as constructor parameters.  The middleware will be used for all requests.
+* ``[allura.middleware]`` classes, which are standard WSGI middleware.  They will receive the ``app`` instance and a ``config`` dict as constructor parameters.
+  The middleware will be used for all requests.  By default the middleware wraps the base app directly and other middleware wrap around it.
+  If your middleware needs to wrap around the other Allura middleware (except error handling), set ``when = 'outer'`` on your middleware.
 
 A listing of available 3rd-party extensions is at https://forge-allura.apache.org/p/allura/wiki/Extensions/
 
