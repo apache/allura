@@ -261,6 +261,13 @@ class NeighborhoodRestController(object):
             shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
         if not project:
             raise exc.HTTPNotFound, name
+
+        if project and name and name.startswith('u/'):
+            # make sure user-projects are associated with an enabled user
+            user = project.user_project_of
+            if not user or user.disabled:
+                raise exc.HTTPNotFound
+
         c.project = project
         return ProjectRestController(), remainder
 
