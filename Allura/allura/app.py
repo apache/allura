@@ -837,8 +837,7 @@ class DefaultAdminController(BaseController):
                 if (acl['permission'] == perm) and (str(acl['role_id']) not in group_ids) and acl['access'] != model.ACE.DENY:
                     del_group_ids.append(str(acl['role_id']))
 
-            get_role = lambda _id: model.ProjectRole.query.get(
-                _id=ObjectId(_id))
+            get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
             groups = map(get_role, group_ids)
             new_groups = map(get_role, new_group_ids)
             del_groups = map(get_role, del_group_ids)
@@ -846,10 +845,8 @@ class DefaultAdminController(BaseController):
             if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
-                    ', '.join(
-                        map(lambda role: role.name, groups + del_groups)),
-                    ', '.join(
-                        map(lambda role: role.name, groups + new_groups)),
+                    ', '.join(map(lambda role: role.name, filter(None, groups + del_groups))),
+                    ', '.join(map(lambda role: role.name, filter(None, groups + new_groups))),
                     self.app.config.options['mount_point']))
 
             role_ids = map(ObjectId, group_ids + new_group_ids)
