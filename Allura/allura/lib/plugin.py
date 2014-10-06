@@ -1269,7 +1269,7 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
         else:
             con.unbind_s()
         if not rs:
-            log.warning('LdapUserPref: No user record found for: {}'.format(user.username))
+            log.warning('LdapUserPref: No user record found for: {}'.format(username))
             return ''
         user_dn, user_attrs = rs[0]
         ldap_attr = self.fields[pref_name]
