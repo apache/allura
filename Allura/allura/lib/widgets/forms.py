@@ -755,6 +755,10 @@ class RegistrationForm(ForgeForm):
                 label='Displayed Name',
                 validator=fev.UnicodeString(not_empty=True)),
             username,
+            ew.TextField(
+                name='email',
+                label='Your e-mail',
+                validator=fev.Email()),
             ew.PasswordField(
                 name='pw',
                 label='New Password',
