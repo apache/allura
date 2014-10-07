@@ -277,7 +277,7 @@ class Notification(MappedClass):
             text=(self.text or '') + self.footer(toaddr))
 
     def send_direct(self, user_id):
-        user = User.query.get(_id=ObjectId(user_id), disabled=False)
+        user = User.query.get(_id=ObjectId(user_id), disabled=False, pending=False)
         artifact = self.ref.artifact
         log.debug('Sending direct notification %s to user %s',
                   self._id, user_id)
@@ -313,7 +313,7 @@ class Notification(MappedClass):
                     reply_to_address=None):
         if not notifications:
             return
-        user = User.query.get(_id=ObjectId(user_id), disabled=False)
+        user = User.query.get(_id=ObjectId(user_id), disabled=False, pending=False)
         if not user:
             log.debug("Skipping notification - enabled user %s not found " %
                       user_id)

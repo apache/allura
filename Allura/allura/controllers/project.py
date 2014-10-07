@@ -101,7 +101,7 @@ class NeighborhoodController(object):
                 shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
             # create user-project if it is missing
-            user = M.User.query.get(username=pname, disabled=False)
+            user = M.User.query.get(username=pname, disabled=False, pending=False)
             if user:
                 project = self.neighborhood.register_project(
                     plugin.AuthenticationProvider.get(
@@ -115,7 +115,7 @@ class NeighborhoodController(object):
         if project and self.prefix == 'u/':
             # make sure user-projects are associated with an enabled user
             user = project.user_project_of
-            if not user or user.disabled:
+            if not user or user.disabled or user.pending:
                 raise exc.HTTPNotFound
         if project.database_configured == False:
             if remainder == ('user_icon',):
@@ -455,6 +455,7 @@ class ProjectController(FeedController):
             '_id': {'$in': named_roles.userids_that_reach},
             'display_name': re.compile(r'(?i)%s' % re.escape(term)),
             'disabled': False,
+            'pending': False,
         }).sort('username').limit(10).all()
         return dict(
             users=[

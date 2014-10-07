@@ -103,7 +103,7 @@ class AuthenticationProvider(object):
 
         if user is None:
             return M.User.anonymous()
-        if user.disabled:
+        if user.disabled or user.pending:
             self.logout()
             return M.User.anonymous()
 
@@ -364,7 +364,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         un = un.replace(r'\_', '[-_]')
         un = un.replace(r'\-', '[-_]')
         rex = re.compile('^' + un + '$')
-        return M.User.query.get(username=rex, disabled=False)
+        return M.User.query.get(username=rex, disabled=False, pending=False)
 
     def set_password(self, user, old_password, new_password):
         if old_password is not None and not self.validate_password(user, old_password):
@@ -387,7 +387,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def user_by_project_shortname(self, shortname):
         from allura import model as M
-        return M.User.query.get(username=shortname, disabled=False)
+        return M.User.query.get(username=shortname, disabled=False, pending=False)
 
     def update_notifications(self, user):
         return ''
@@ -514,7 +514,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def by_username(self, username):
         from allura import model as M
-        return M.User.query.get(username=username, disabled=False)
+        return M.User.query.get(username=username, disabled=False, pending=False)
 
     def set_password(self, user, old_password, new_password):
         dn = ldap_user_dn(user.username)
@@ -551,7 +551,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             else:
                 log.debug('LdapAuth: no user {} found in local mongo'.format(username))
                 raise exc.HTTPUnauthorized()
-        elif user.disabled:
+        elif user.disabled or user.pending:
             log.debug('LdapAuth: user {} is disabled in Allura'.format(username))
             raise exc.HTTPUnauthorized()
         return user
