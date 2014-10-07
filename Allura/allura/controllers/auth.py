@@ -220,14 +220,18 @@ class AuthController(BaseController):
     @expose()
     @require_post()
     @validate(F.registration_form, error_handler=create_account)
-    def save_new(self, display_name=None, username=None, pw=None, **kw):
+    def save_new(self, display_name=None, username=None, pw=None, email=None, **kw):
         if not asbool(config.get('auth.allow_user_registration', True)):
             raise wexc.HTTPNotFound()
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,
-                 password=pw))
+                 password=pw,
+                 email_addresses=[email]))
         plugin.AuthenticationProvider.get(request).login(user)
+        em = M.EmailAddress.create(email)
+        em.claimed_by_user_id = user._id
+        em.send_verification_link()
         flash('User "%s" registered' % username)
         redirect('/')
 
