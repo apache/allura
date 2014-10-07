@@ -537,7 +537,8 @@ class TestAuth(TestController):
                               username='aaa',
                               pw='12345678',
                               pw2='12345678',
-                              display_name='Test Me'))
+                              display_name='Test Me',
+                              email='test@example.com'))
         r = r.follow()
         assert 'User "aaa" registered' in unentity(r.body)
         r = self.app.post('/auth/save_new',
@@ -545,12 +546,15 @@ class TestAuth(TestController):
                               username='aaa',
                               pw='12345678',
                               pw2='12345678',
-                              display_name='Test Me'))
+                              display_name='Test Me',
+                              email='test@example.com'))
         assert 'That username is already taken. Please choose another.' in r
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login',
                           params=dict(username='aaa', password='12345678'),
                           status=302)
+        user = M.User.query.get(username='aaa')
+        assert user.pending
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
@@ -582,7 +586,8 @@ class TestAuth(TestController):
             username='aaa',
             pw='12345678',
             pw2='12345678',
-            display_name='Test Me')).follow()
+            display_name='Test Me',
+            email='test@example.com')).follow()
         user = M.User.query.get(username='aaa')
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() == 0
