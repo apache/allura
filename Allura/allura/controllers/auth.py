@@ -227,7 +227,8 @@ class AuthController(BaseController):
             dict(username=username,
                  display_name=display_name,
                  password=pw,
-                 email_addresses=[email]))
+                 email_addresses=[email],
+                 pending=True))
         plugin.AuthenticationProvider.get(request).login(user)
         em = M.EmailAddress.create(email)
         em.claimed_by_user_id = user._id

@@ -234,6 +234,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     tool_preferences = FieldProperty(S.Deprecated)
     tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
     disabled = FieldProperty(bool, if_missing=False)
+    pending = FieldProperty(bool, if_missing=False)
 
     # Don't use these directly, use get/set_pref() instead
     preferences = FieldProperty(dict(
