@@ -869,7 +869,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         users = set()
         for role_name in role_names:
             for user in g.credentials.users_with_named_role(self.root_project._id, role_name):
-                users.add(user)
+                if not user.disabled:
+                    users.add(user)
         return list(users)
 
     def admins(self):

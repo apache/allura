@@ -20,6 +20,7 @@
 """
 Model tests for project
 """
+from nose import with_setup
 from nose.tools import assert_equals, assert_in
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -140,6 +141,7 @@ def test_set_ordinal_to_admin_tool():
         assert_equals(sm[-1].tool_name, 'admin')
 
 
+@with_setup(setUp)
 def test_users_and_roles():
     p = M.Project.query.get(shortname='test')
     sub = p.direct_subprojects[0]
@@ -148,7 +150,14 @@ def test_users_and_roles():
     assert p.users_with_role('Admin') == sub.users_with_role('Admin')
     assert p.users_with_role('Admin') == p.admins()
 
+    user = p.admins()[0]
+    user.disabled = True
+    ThreadLocalORMSession.flush_all()
+    assert p.users_with_role('Admin') == []
+    assert p.users_with_role('Admin') == p.admins()
 
+
+@with_setup(setUp)
 def test_project_disabled_users():
     p = M.Project.query.get(shortname='test')
     users = p.users()
