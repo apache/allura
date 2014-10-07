@@ -100,7 +100,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
         fromaddr = g.noreply
     elif not isinstance(fromaddr, basestring) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
-        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
+        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False, pending=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = g.noreply
@@ -112,7 +112,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
             addrs_plain.append(addr)
         else:
             try:
-                user = M.User.query.get(_id=ObjectId(addr), disabled=False)
+                user = M.User.query.get(_id=ObjectId(addr), disabled=False, pending=False)
                 if not user:
                     log.warning('Cannot find user with ID: %s', addr)
                     continue
@@ -177,7 +177,7 @@ def sendsimplemail(
         fromaddr = g.noreply
     elif not isinstance(fromaddr, basestring) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
-        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
+        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False, pending=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = g.noreply
@@ -186,7 +186,7 @@ def sendsimplemail(
 
     if not isinstance(toaddr, basestring) or '@' not in toaddr:
         log.warning('Looking up user with toaddr: %s', toaddr)
-        user = M.User.query.get(_id=ObjectId(toaddr), disabled=False)
+        user = M.User.query.get(_id=ObjectId(toaddr), disabled=False, pending=False)
         if not user:
             log.warning('Cannot find user with ID: %s', toaddr)
             toaddr = g.noreply
