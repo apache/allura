@@ -264,7 +264,6 @@ class AuthController(BaseController):
             user = addr.claimed_by_user()
             if user.pending:
                 user.pending = False
-                user.m.save()
         else:
             flash('Unknown verification link', 'error')
 
