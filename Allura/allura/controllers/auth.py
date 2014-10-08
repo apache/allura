@@ -261,9 +261,10 @@ class AuthController(BaseController):
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s',  addr.email, user=addr.claimed_by_user())
 
-            if addr.claimed_by_user.pending:
-                addr.claimed_by_user.pending = False
-                addr.claimed_by_user.m.save()
+            user = addr.claimed_by_user()
+            if user.pending:
+                user.pending = False
+                user.m.save()
         else:
             flash('Unknown verification link', 'error')
 

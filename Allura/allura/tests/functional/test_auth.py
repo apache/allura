@@ -550,11 +550,13 @@ class TestAuth(TestController):
                               email='test@example.com'))
         assert 'That username is already taken. Please choose another.' in r
         r = self.app.get('/auth/logout')
+        user = M.User.query.get(username='aaa')
+        assert user.pending
+        user.pending = False
+        session(user).flush(user)
         r = self.app.post('/auth/do_login',
                           params=dict(username='aaa', password='12345678'),
                           status=302)
-        user = M.User.query.get(username='aaa')
-        assert user.pending
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
@@ -589,6 +591,8 @@ class TestAuth(TestController):
             display_name='Test Me',
             email='test@example.com')).follow()
         user = M.User.query.get(username='aaa')
+        user.pending = False
+        session(user).flush(user)
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() == 0
         self.app.get('/p/test/admin/permissions',
