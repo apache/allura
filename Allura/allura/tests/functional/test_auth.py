@@ -532,31 +532,72 @@ class TestAuth(TestController):
         r = self.app.post('/auth/save_new',
                           params=dict(username='aaa', pw='123'))
         assert 'Enter a value 6 characters long or more' in r
-        r = self.app.post('/auth/save_new',
-                          params=dict(
-                              username='aaa',
-                              pw='12345678',
-                              pw2='12345678',
-                              display_name='Test Me',
-                              email='test@example.com'))
+        r = self.app.post(
+            '/auth/save_new',
+            params=dict(
+                username='aaa',
+                pw='12345678',
+                pw2='12345678',
+                display_name='Test Me'))
         r = r.follow()
         assert 'User "aaa" registered' in unentity(r.body)
-        r = self.app.post('/auth/save_new',
-                          params=dict(
-                              username='aaa',
-                              pw='12345678',
-                              pw2='12345678',
-                              display_name='Test Me',
-                              email='test@example.com'))
+        r = self.app.post(
+            '/auth/save_new',
+            params=dict(
+                username='aaa',
+                pw='12345678',
+                pw2='12345678',
+                display_name='Test Me'))
         assert 'That username is already taken. Please choose another.' in r
         r = self.app.get('/auth/logout')
-        user = M.User.query.get(username='aaa')
-        assert user.pending
-        user.pending = False
-        session(user).flush(user)
-        r = self.app.post('/auth/do_login',
-                          params=dict(username='aaa', password='12345678'),
-                          status=302)
+        r = self.app.post(
+            '/auth/do_login',
+            params=dict(username='aaa', password='12345678'),
+            status=302)
+
+    def test_create_account_require_email(self):
+        with h.push_config(config, **{'auth.require_email_addr': 'false'}):
+            self.app.post(
+                '/auth/save_new',
+                params=dict(
+                    username='aaa',
+                    pw='12345678',
+                    pw2='12345678',
+                    display_name='Test Me',
+                    email='test@example.com'))
+            user = M.User.query.get(username='aaa')
+            assert not user.pending
+        with h.push_config(config, **{'auth.require_email_addr': 'true'}):
+            self.app.post(
+                '/auth/save_new',
+                params=dict(
+                    username='bbb',
+                    pw='12345678',
+                    pw2='12345678',
+                    display_name='Test Me',
+                    email='test@example.com'))
+            user = M.User.query.get(username='bbb')
+            assert user.pending
+
+    def test_verify_email(self):
+        with h.push_config(config, **{'auth.require_email_addr': 'true'}):
+            r = self.app.post(
+                '/auth/save_new',
+                params=dict(
+                    username='aaa',
+                    pw='12345678',
+                    pw2='12345678',
+                    display_name='Test Me',
+                    email='test@example.com'))
+            r = r.follow()
+            user = M.User.query.get(username='aaa')
+            em = M.EmailAddress.query.get(email='test@example.com')
+            assert user._id == em.claimed_by_user_id
+            r = self.app.get('/auth/verify_addr', params=dict(a=em.nonce))
+            user = M.User.query.get(username='aaa')
+            em = M.EmailAddress.query.get(email='test@example.com')
+            assert not user.pending
+            assert em.confirmed
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
@@ -595,6 +636,7 @@ class TestAuth(TestController):
         session(user).flush(user)
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() == 0
+
         self.app.get('/p/test/admin/permissions',
                      extra_environ=dict(username='aaa'), status=403)
         assert M.ProjectRole.query.find(

@@ -227,12 +227,11 @@ class AuthController(BaseController):
             dict(username=username,
                  display_name=display_name,
                  password=pw,
-                 email_addresses=[email],
-                 pending=True))
+                 pending=asbool(config.get('auth.require_email_addr', False))))
         plugin.AuthenticationProvider.get(request).login(user)
-        em = M.EmailAddress.create(email)
-        em.claimed_by_user_id = user._id
-        em.send_verification_link()
+        if email is not None:
+            em = user.claim_address(email)
+            em.send_verification_link()
         flash('User "%s" registered' % username)
         redirect('/')
 
@@ -263,7 +262,7 @@ class AuthController(BaseController):
 
             user = addr.claimed_by_user()
             if user.pending:
-                user.pending = False
+                plugin.AuthenticationProvider.get(request).activate_user(user)
         else:
             flash('Unknown verification link', 'error')
 
