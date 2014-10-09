@@ -669,7 +669,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         '''
         Returns the personal user-project for the user
         '''
-        if self.disabled:
+        if self.disabled or self.pending:
             return None
 
         from allura import model as M
