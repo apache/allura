@@ -27,6 +27,7 @@ import ew.jinja2_ew as ew
 from pytz import common_timezones, country_timezones, country_names
 from paste.deploy.converters import aslist, asint, asbool
 import tg
+from tg import config
 
 from allura.lib import validators as V
 from allura.lib import helpers as h
@@ -749,16 +750,19 @@ class RegistrationForm(ForgeForm):
             'Usernames must include only letters, numbers, and dashes.'
             ' They must also start with a letter and be at least 3 characters'
             ' long.')
-        return [
+        fields = [
             ew.TextField(
                 name='display_name',
                 label='Displayed Name',
                 validator=fev.UnicodeString(not_empty=True)),
             username,
-            ew.TextField(
+        ]
+        if asbool(config.get('auth.require_email_addr', False)):
+            fields.append(ew.TextField(
                 name='email',
                 label='Your e-mail',
-                validator=fev.Email()),
+                validator=fev.Email(not_empty=True)))
+        fields += [
             ew.PasswordField(
                 name='pw',
                 label='New Password',
@@ -766,11 +770,12 @@ class RegistrationForm(ForgeForm):
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
                     max=asint(tg.config.get('auth.max_password_len', 30)))),
-             ew.PasswordField(
+            ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
                 validator=fev.UnicodeString(not_empty=True)),
         ]
+        return fields
 
     @ew_core.core.validator
     def to_python(self, value, state):
