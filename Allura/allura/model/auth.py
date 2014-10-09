@@ -315,6 +315,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             email_addresses_t=' '.join([e for e in self.email_addresses if e]),
             last_password_updated_dt=self.last_password_updated,
             disabled_b=self.disabled,
+            pending_b=self.pending,
             results_per_page_i=self.get_pref('results_per_page'),
             email_address_s=self.get_pref('email_address'),
             email_format_s=self.get_pref('email_format'),
