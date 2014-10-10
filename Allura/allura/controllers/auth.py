@@ -287,8 +287,7 @@ class AuthController(BaseController):
                 location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0], dict(return_to=return_to))
             else:
                 location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0])
-
-        if return_to and return_to != request.url:
+        elif return_to and return_to != request.url:
             rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
             base_host = urlparse(config['base_url']).netloc
             if rt_host == base_host:

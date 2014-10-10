@@ -1329,8 +1329,8 @@ class TestDisableAccount(TestController):
 
 class TestPasswordExpire(TestController):
 
-    def login(self, username='test-user', pwd='foo'):
-        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
+    def login(self, username='test-user', pwd='foo', query_string=''):
+        r = self.app.get('/auth/' + query_string, extra_environ={'username': '*anonymous'})
         f = r.forms[0]
         f['username'] = username
         f['password'] = pwd
@@ -1473,7 +1473,11 @@ class TestPasswordExpire(TestController):
         return_to = '/p/test/tickets/?milestone=1.0&page=2'
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
-            r = self.login()
+            r = self.login(query_string='?' + urlencode({'return_to': return_to}))
+            # don't go to the return_to yet
+            assert_equal(r.location, 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': return_to}))
+
+            # but if user tries to go directly there anyway, intercept and redirect back
             self.assert_redirects(where=return_to)
 
             r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
