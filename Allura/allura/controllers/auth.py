@@ -473,9 +473,32 @@ class PreferencesController(BaseController):
             if not admin and (not kw.get('password') or not provider.validate_password(user, kw.get('password'))):
                 flash('You must provide your current password to claim new email', 'error')
                 return
-            if M.EmailAddress.query.get(email=new_addr['addr'], confirmed=True) \
-                    or M.EmailAddress.query.get(email=new_addr['addr'], claimed_by_user_id=user._id):
-                flash('Email address already claimed', 'error')
+
+            claimed_email = M.EmailAddress.query.get(email=new_addr['addr'])
+            if claimed_email:
+                if claimed_email.confirmed and claimed_email.claimed_by_user_id != user._id:
+                    # Claimed and confirmed by someone else
+                    owner = M.User.query.get(_id=claimed_email.claimed_by_user_id)
+
+                    text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
+                        email=claimed_email,
+                        user=owner,
+                        config=config
+                    ))
+
+                    allura.tasks.mail_tasks.sendsimplemail.post(
+                        toaddr=claimed_email.email,
+                        fromaddr=config['forgemail.return_path'],
+                        reply_to=config['forgemail.return_path'],
+                        subject=u'%s - Email address claim attempt' % config['site_name'],
+                        message_id=h.gen_message_id(),
+                        text=text)
+                    # TODO: Need a better message
+                    flash('Email address already claimed :: EMAIL')
+                else:
+                    # Claimed by current user
+                    flash('Email address already claimed', 'error')
+
             elif mail_util.isvalid(new_addr['addr']):
                 user.email_addresses.append(new_addr['addr'])
                 em = M.EmailAddress.create(new_addr['addr'])

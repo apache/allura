@@ -169,6 +169,41 @@ class TestAuth(TestController):
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
 
     @td.with_user_project('test-admin')
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_user_added_claimed_address_by_other_user(self, gen_message_id, sendsimplemail):
+        email_address = 'test_abcd_123@domain.net'
+
+        # test-user claimed & confirmed email address
+        user = M.User.query.get(username='test-user')
+        user.claim_address(email_address)
+        email = M.EmailAddress.query.find(dict(email=email_address)).first()
+        email.confirmed = True
+        ThreadLocalORMSession.flush_all()
+
+        # Claiming the same email address by test-admin
+        admin = M.User.query.get(username='test-admin')
+        addresses_number = len(admin.email_addresses)
+        r = self.app.post('/auth/preferences/update_emails',
+                          params={
+                              'new_addr.addr': email_address,
+                              'new_addr.claim': 'Claim Address',
+                              'primary_addr': 'test-admin@users.localhost',
+                              'preferences.email_format': 'plain',
+                              'password': 'foo',
+                          },
+                          extra_environ=dict(username='test-admin'))
+
+        assert json.loads(self.webflash(r))['status'] == 'ok'
+        assert json.loads(self.webflash(r))['message'] == 'Email address already claimed :: EMAIL'
+        args, kwargs = sendsimplemail.post.call_args
+        assert kwargs['toaddr'] == email_address
+        assert kwargs['subject'] == u'Allura - Email address claim attempt'
+        assert "You tried to add %s to your Allura account, " \
+               "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
+        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number
+
+    @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
                          extra_environ=dict(username='test-admin'))
