@@ -168,7 +168,7 @@ class AuthController(BaseController):
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
         h.auditlog_user('Password changed (through recovery process)', user=user)
         flash('Password changed')
-        redirect('/auth/')
+        redirect('/auth/?return_to=/')  # otherwise the default return_to would be the forgotten_password referrer page
 
     @expose()
     @require_post()
