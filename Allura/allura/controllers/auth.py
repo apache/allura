@@ -233,7 +233,9 @@ class AuthController(BaseController):
         if require_email:
             em = user.claim_address(email)
             em.send_verification_link()
-        flash('User "%s" registered' % username)
+            flash('User "%s" registered. Verification link was sent to your email.' % username)
+        else:
+            flash('User "%s" registered' % username)
         redirect('/')
 
     @expose()
