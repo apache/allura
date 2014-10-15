@@ -454,6 +454,10 @@ class PreferencesController(BaseController):
                 if obj:
                     obj.delete()
         if new_addr.get('claim') or new_addr.get('addr'):
+            claimed_emails_limit = config.get('user_prefs.maximum_claimed_emails', None)
+            if claimed_emails_limit and len(user.email_addresses) >= int(claimed_emails_limit):
+                flash('You cannot claim more than %s email addresses.' % claimed_emails_limit, 'error')
+                return
             if not admin and (not kw.get('password') or not provider.validate_password(user, kw.get('password'))):
                 flash('You must provide your current password to claim new email', 'error')
                 return

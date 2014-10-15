@@ -203,7 +203,6 @@ class TestAuth(TestController):
 
         user1 = M.User.query.get(username='test-user-1')
         addresses_number = len(user1.email_addresses)
-        print M.EmailAddress.query.find(dict(email=email_address)).all()
         r = self.app.post('/auth/preferences/update_emails',
                           params={
                               'new_addr.addr': email_address,
@@ -220,6 +219,34 @@ class TestAuth(TestController):
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
         assert len(M.EmailAddress.query.find(dict(email=email_address)).all()) == 2
 
+    @td.with_user_project('test-admin')
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_user_added_claimed_address_by_other_user_not_confirmed(self, gen_message_id, sendsimplemail):
+        with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '1'}):
+            r = self.app.post('/auth/preferences/update_emails',
+                              params={
+                                  'new_addr.addr': 'test_abcd_1@domain.net',
+                                  'new_addr.claim': 'Claim Address',
+                                  'primary_addr': 'test-user-1@users.localhost',
+                                  'preferences.email_format': 'plain',
+                                  'password': 'foo',
+                              },
+                              extra_environ=dict(username='test-user-1'))
+            assert json.loads(self.webflash(r))['status'] == 'ok'
+
+            r = self.app.post('/auth/preferences/update_emails',
+                              params={
+                                  'new_addr.addr': 'test_abcd_2@domain.net',
+                                  'new_addr.claim': 'Claim Address',
+                                  'primary_addr': 'test-user-1@users.localhost',
+                                  'preferences.email_format': 'plain',
+                                  'password': 'foo',
+                              },
+                              extra_environ=dict(username='test-user-1'))
+
+            assert json.loads(self.webflash(r))['status'] == 'error'
+            assert json.loads(self.webflash(r))['message'] == 'You cannot claim more than 1 email addresses.'
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
