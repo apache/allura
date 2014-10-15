@@ -174,7 +174,15 @@ class TestAuth(TestController):
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
         assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  Please check your email and click to confirm.'
-        assert not sendsimplemail.post.called
+
+        args, kwargs = sendsimplemail.post.call_args
+
+        assert sendsimplemail.post.call_count == 1
+        assert kwargs['toaddr'] == email_address
+        assert kwargs['subject'] == u'%s - Email address claim attempt' % config['site_name']
+        assert "You tried to add %s to your Allura account, " \
+               "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
+
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
         assert len(M.EmailAddress.query.find(dict(email=email_address)).all()) == 2
 

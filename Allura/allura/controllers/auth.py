@@ -468,12 +468,27 @@ class PreferencesController(BaseController):
                 em = M.EmailAddress.create(new_addr['addr'])
                 em.claimed_by_user_id = user._id
 
-                if not any(email.confirmed for email in claimed_emails):
+                confirmed_emails = filter(lambda email: email.confirmed, claimed_emails)
+                if not confirmed_emails:
                     if not admin:
                         em.send_verification_link()
                     else:
                         AuthController()._verify_addr(em)
+                else:
+                    owner = M.User.query.get(_id=confirmed_emails[0].claimed_by_user_id)
+                    text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
+                        email=confirmed_emails[0],
+                        user=owner,
+                        config=config
+                    ))
 
+                    allura.tasks.mail_tasks.sendsimplemail.post(
+                        toaddr=confirmed_emails[0].email,
+                        fromaddr=config['forgemail.return_path'],
+                        reply_to=config['forgemail.return_path'],
+                        subject=u'%s - Email address claim attempt' % config['site_name'],
+                        message_id=h.gen_message_id(),
+                        text=text)
                 if not admin:
                     flash('A verification email has been sent.  Please check your email and click to confirm.')
 
