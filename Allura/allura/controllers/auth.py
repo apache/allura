@@ -223,13 +223,14 @@ class AuthController(BaseController):
     def save_new(self, display_name=None, username=None, pw=None, email=None, **kw):
         if not asbool(config.get('auth.allow_user_registration', True)):
             raise wexc.HTTPNotFound()
+        require_email = asbool(config.get('auth.require_email_addr', False))
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,
                  password=pw,
-                 pending=asbool(config.get('auth.require_email_addr', False))))
+                 pending=require_email))
         plugin.AuthenticationProvider.get(request).login(user)
-        if email is not None:
+        if require_email:
             em = user.claim_address(email)
             em.send_verification_link()
         flash('User "%s" registered' % username)
