@@ -229,12 +229,12 @@ class AuthController(BaseController):
                  display_name=display_name,
                  password=pw,
                  pending=require_email))
-        plugin.AuthenticationProvider.get(request).login(user)
         if require_email:
             em = user.claim_address(email)
             em.send_verification_link()
             flash('User "%s" registered. Verification link was sent to your email.' % username)
         else:
+            plugin.AuthenticationProvider.get(request).login(user)
             flash('User "%s" registered' % username)
         redirect('/')
 
