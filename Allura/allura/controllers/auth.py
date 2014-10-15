@@ -244,22 +244,6 @@ class AuthController(BaseController):
     def _verify_addr(self, addr):
         if addr:
             addr.confirmed = True
-            # Remove other non-confirmed emails claimed by other users
-            claimed_by_others = M.EmailAddress.query.find({
-                'email': addr.email,
-                'claimed_by_user_id': {"$ne": addr.claimed_by_user_id}
-            }).all()
-
-            users = [email.claimed_by_user() for email in claimed_by_others]
-            for user in users:
-                log.info("Removed the email %s from user %s " % (addr.email, user.username))
-                user.email_addresses.remove(addr.email)
-
-            M.EmailAddress.query.remove({
-                'email': addr.email,
-                'claimed_by_user_id': {'$ne': addr.claimed_by_user_id}
-            })
-
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s', addr.email, user=addr.claimed_by_user())
         else:
@@ -474,40 +458,25 @@ class PreferencesController(BaseController):
                 flash('You must provide your current password to claim new email', 'error')
                 return
 
-            claimed_email = M.EmailAddress.query.get(email=new_addr['addr'])
-            if claimed_email:
-                if claimed_email.confirmed and claimed_email.claimed_by_user_id != user._id:
-                    # Claimed and confirmed by someone else
-                    owner = M.User.query.get(_id=claimed_email.claimed_by_user_id)
+            claimed_emails = M.EmailAddress.query.find({'email': new_addr['addr']}).all()
 
-                    text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
-                        email=claimed_email,
-                        user=owner,
-                        config=config
-                    ))
-
-                    allura.tasks.mail_tasks.sendsimplemail.post(
-                        toaddr=claimed_email.email,
-                        fromaddr=config['forgemail.return_path'],
-                        reply_to=config['forgemail.return_path'],
-                        subject=u'%s - Email address claim attempt' % config['site_name'],
-                        message_id=h.gen_message_id(),
-                        text=text)
-                    # TODO: Need a better message
-                    flash('Email address already claimed :: EMAIL')
-                else:
-                    # Claimed by current user
-                    flash('Email address already claimed', 'error')
+            if any(email.claimed_by_user_id == user._id for email in claimed_emails):
+                flash('Email address already cla:imed', 'error')
 
             elif mail_util.isvalid(new_addr['addr']):
                 user.email_addresses.append(new_addr['addr'])
                 em = M.EmailAddress.create(new_addr['addr'])
                 em.claimed_by_user_id = user._id
+
+                if not any(email.confirmed for email in claimed_emails):
+                    if not admin:
+                        em.send_verification_link()
+                    else:
+                        AuthController()._verify_addr(em)
+
                 if not admin:
-                    em.send_verification_link()
                     flash('A verification email has been sent.  Please check your email and click to confirm.')
-                else:
-                    AuthController()._verify_addr(em)
+
                 h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
             else:
                 flash('Email address %s is invalid' % new_addr['addr'], 'error')

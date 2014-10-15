@@ -114,30 +114,6 @@ class TestAuth(TestController):
             if header == 'Set-cookie':
                 assert_in('expires', contents)
 
-    def test_claimed_duplicate_emails_by_different_users(self):
-        email_address = 'test-email@domain.com'
-
-        user1 = M.User.query.get(username='test-user-0')
-        user2 = M.User.query.get(username='test-user-1')
-
-        user1.claim_address(email_address)
-        user2.claim_address(email_address)
-
-        ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/send_verification_link',
-                          params=dict(a=email_address),
-                          extra_environ={'username': 'test-user-0'})
-        email1 = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
-        email2 = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user2._id)).first()
-
-        # User1 verifies claimed address. All other duplicates should be removed once it is confirmed
-        r = self.app.get('/auth/verify_addr', params=dict(a=email1.nonce))
-
-        assert email1.confirmed == True
-        assert M.EmailAddress.query.find(dict(email=email_address)).count() == 1
-        assert email_address in M.User.query.get(username='test-user-0').email_addresses
-        assert email_address not in M.User.query.get(username='test-user-1').email_addresses
-
     @td.with_user_project('test-admin')
     def test_user_can_not_claim_duplicate_emails(self):
         email_address = 'test_abcd_123@domain.net'
@@ -171,7 +147,7 @@ class TestAuth(TestController):
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_user_added_claimed_address_by_other_user(self, gen_message_id, sendsimplemail):
+    def test_user_added_claimed_address_by_other_user_confirmed(self, gen_message_id, sendsimplemail):
         email_address = 'test_abcd_123@domain.net'
 
         # test-user claimed & confirmed email address
@@ -182,6 +158,8 @@ class TestAuth(TestController):
         ThreadLocalORMSession.flush_all()
 
         # Claiming the same email address by test-admin
+        # the email should be added to the email_addresses list but notifications should not be sent
+
         admin = M.User.query.get(username='test-admin')
         addresses_number = len(admin.email_addresses)
         r = self.app.post('/auth/preferences/update_emails',
@@ -195,13 +173,45 @@ class TestAuth(TestController):
                           extra_environ=dict(username='test-admin'))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
-        assert json.loads(self.webflash(r))['message'] == 'Email address already claimed :: EMAIL'
-        args, kwargs = sendsimplemail.post.call_args
-        assert kwargs['toaddr'] == email_address
-        assert kwargs['subject'] == u'Allura - Email address claim attempt'
-        assert "You tried to add %s to your Allura account, " \
-               "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
-        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number
+        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  Please check your email and click to confirm.'
+        assert not sendsimplemail.post.called
+        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
+        assert len(M.EmailAddress.query.find(dict(email=email_address)).all()) == 2
+
+    @td.with_user_project('test-admin')
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_user_added_claimed_address_by_other_user_not_confirmed(self, gen_message_id, sendsimplemail):
+        email_address = 'test_abcd_1235@domain.net'
+
+        # test-user claimed email address
+        user = M.User.query.get(username='test-user')
+        user.claim_address(email_address)
+        email = M.EmailAddress.query.find(dict(email=email_address)).first()
+        email.confirmed = False
+        ThreadLocalORMSession.flush_all()
+        # Claiming the same email address by test-admin
+        # the email should be added to the email_addresses list but notifications should not be sent
+
+        user1 = M.User.query.get(username='test-user-1')
+        addresses_number = len(user1.email_addresses)
+        print M.EmailAddress.query.find(dict(email=email_address)).all()
+        r = self.app.post('/auth/preferences/update_emails',
+                          params={
+                              'new_addr.addr': email_address,
+                              'new_addr.claim': 'Claim Address',
+                              'primary_addr': 'test-user-1@users.localhost',
+                              'preferences.email_format': 'plain',
+                              'password': 'foo',
+                          },
+                          extra_environ=dict(username='test-user-1'))
+
+        assert json.loads(self.webflash(r))['status'] == 'ok'
+        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  Please check your email and click to confirm.'
+        assert sendsimplemail.post.called
+        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
+        assert len(M.EmailAddress.query.find(dict(email=email_address)).all()) == 2
+
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
