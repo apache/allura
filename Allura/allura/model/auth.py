@@ -15,26 +15,21 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import types
-import os
-import re
 import logging
 import urllib
-import hmac
-import hashlib
 import calendar
 from urlparse import urlparse
 from email import header
 from hashlib import sha256
-from pytz import timezone
 from datetime import timedelta, datetime, time
 
-import iso8601
+import os
+import re
+from pytz import timezone
 import pymongo
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-
 from ming import schema as S
 from ming import Field, collection
 from ming.orm import session, state
@@ -43,15 +38,16 @@ from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
 
+import types
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
-
 from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
+
 
 log = logging.getLogger(__name__)
 
@@ -117,8 +113,8 @@ class EmailAddress(MappedClass):
     class __mongometa__:
         name = 'email_address'
         session = main_orm_session
-        indexes = ['nonce',]
-        unique_indexes = [('email', 'claimed_by_user_id'),]
+        indexes = ['nonce', ]
+        unique_indexes = [('email', 'claimed_by_user_id'), ]
 
     _id = FieldProperty(S.ObjectId)
     email = FieldProperty(str)
@@ -165,7 +161,6 @@ please visit the following URL:
 
 
 class AuthGlobals(MappedClass):
-
     class __mongometa__:
         name = 'auth_globals'
         session = main_orm_session
@@ -369,8 +364,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         if self.can_send_user_message():
             return 0
         return self.sent_user_message_times[0] + \
-            timedelta(seconds=g.user_message_time_interval) - \
-            datetime.utcnow()
+               timedelta(seconds=g.user_message_time_interval) - \
+               datetime.utcnow()
 
     def send_user_message(self, user, subject, message, cc):
         """Send a user message (email) to ``user``.
@@ -408,6 +403,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def stats(self):
         if 'userstats' in g.entry_points['stats']:
             from forgeuserstats.model.stats import UserStats
+
             if self.stats_id:
                 return UserStats.query.get(_id=self.stats_id)
             return UserStats.create(self)
@@ -523,6 +519,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def get_skills(self):
         from allura.model.project import TroveCategory
+
         retval = []
         for el in self.skills:
             d = dict(
@@ -628,6 +625,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     @classmethod
     def register(cls, doc, make_project=True):
         from allura import model as M
+
         auth_provider = plugin.AuthenticationProvider.get(request)
         user = auth_provider.register_user(doc)
         if user and 'display_name' in doc:
@@ -643,6 +641,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     @LazyProperty
     def neighborhood(self):
         from allura import model as M
+
         return M.Neighborhood.query.get(name='Users')
 
     def private_project(self):
@@ -653,6 +652,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             return None
 
         from allura import model as M
+
         n = self.neighborhood
         auth_provider = plugin.AuthenticationProvider.get(request)
         project_shortname = auth_provider.user_project_shortname(self)
@@ -684,6 +684,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         # filter out projects to which the user belongs to no named groups (i.e., role['roles'] is empty)
         projects = [r['project_id'] for r in roles if r['roles']]
         from .project import Project
+
         return Project.query.find({'_id': {'$in': projects}, 'deleted': False}).sort('name', pymongo.ASCENDING)
 
     def my_projects_by_role_name(self, role_name):
@@ -699,6 +700,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             {'_id': {'$in': reaching_role_ids}, 'name': role_name})
         projects = [r['project_id'] for r in reaching_roles]
         from .project import Project
+
         return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
 
     def set_password(self, new_password):
@@ -740,8 +742,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
         return d
 
-class OldProjectRole(MappedClass):
 
+class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
         name = 'user'
@@ -749,7 +751,6 @@ class OldProjectRole(MappedClass):
 
 
 class ProjectRole(MappedClass):
-
     """
     Per-project roles, called "Groups" in the UI.
     This can be a proxy for a single user.  It can also inherit roles.
@@ -861,8 +862,8 @@ class ProjectRole(MappedClass):
     @property
     def user(self):
         if (self.user_id is None
-                and self.name
-                and self.name != '*anonymous'):
+            and self.name
+            and self.name != '*anonymous'):
             return None
         return User.query.get(_id=self.user_id)
 
@@ -905,7 +906,6 @@ audit_log = collection(
 
 
 class AuditLog(object):
-
     @property
     def timestamp_str(self):
         return self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
