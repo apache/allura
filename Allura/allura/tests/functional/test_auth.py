@@ -1,4 +1,4 @@
-#       Licensed to the Apache Software Foundation (ASF) under one
+# Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
 #       regarding copyright ownership.  The ASF licenses this file
@@ -17,14 +17,13 @@
 
 import calendar
 from datetime import datetime, time, timedelta
-import re
 import json
 from urlparse import urlparse, parse_qs
 from urllib import urlencode
-
-from ming.orm.ormsession import ThreadLocalORMSession, session
 from bson import ObjectId
-from pylons import tmpl_context as c
+
+import re
+from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
 from mock import patch
 import mock
@@ -54,7 +53,6 @@ def unentity(s):
 
 
 class TestAuth(TestController):
-
     def test_login(self):
         self.app.get('/auth/')
         r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
@@ -62,8 +60,7 @@ class TestAuth(TestController):
         r = self.app.post('/auth/send_verification_link', params=dict(a=email))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
-        assert json.loads(self.webflash(r))[
-            'status'] == 'error', self.webflash(r)
+        assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         ea = M.EmailAddress.query.find().first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
@@ -83,9 +80,12 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ip'], None)
         assert_equal(user.last_access['login_ua'], None)
 
-        self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='foo'),
-            headers={'X_FORWARDED_FOR': 'addr', 'User-Agent': 'browser'})
+        self.app.post('/auth/do_login',
+                      headers={'X_FORWARDED_FOR': 'addr', 'User-Agent': 'browser'},
+                      params=dict(
+                          username='test-user',
+                          password='foo'
+                      ))
         user = M.User.by_username('test-user')
         assert_not_equal(user.last_access['login_date'], None)
         assert_equal(user.last_access['login_ip'], 'addr')
@@ -173,7 +173,8 @@ class TestAuth(TestController):
                           extra_environ=dict(username='test-admin'))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
-        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  Please check your email and click to confirm.'
+        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  ' \
+                                                          'Please check your email and click to confirm.'
 
         args, kwargs = sendsimplemail.post.call_args
 
@@ -214,7 +215,8 @@ class TestAuth(TestController):
                           extra_environ=dict(username='test-user-1'))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
-        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  Please check your email and click to confirm.'
+        assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  ' \
+                                                          'Please check your email and click to confirm.'
         assert sendsimplemail.post.called
         assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
         assert len(M.EmailAddress.query.find(dict(email=email_address)).all()) == 2
@@ -260,13 +262,15 @@ class TestAuth(TestController):
 
         # add test@example
         with td.audits('New email address: test@example.com', user=True):
-            r = self.app.post('/auth/preferences/update_emails', params={
-                'new_addr.addr': 'test@example.com',
-                'new_addr.claim': 'Claim Address',
-                'primary_addr': 'test-admin@users.localhost',
-                'password': 'foo',
-                'preferences.email_format': 'plain'},
-                extra_environ=dict(username='test-admin'))
+            r = self.app.post('/auth/preferences/update_emails',
+                              extra_environ=dict(username='test-admin'),
+                              params={
+                                  'new_addr.addr': 'test@example.com',
+                                  'new_addr.claim': 'Claim Address',
+                                  'primary_addr': 'test-admin@users.localhost',
+                                  'password': 'foo',
+                                  'preferences.email_format': 'plain'
+                              })
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
         user = M.User.query.get(username='test-admin')
@@ -274,15 +278,17 @@ class TestAuth(TestController):
 
         # remove test-admin@users.localhost
         with td.audits('Email address deleted: test-admin@users.localhost', user=True):
-            r = self.app.post('/auth/preferences/update_emails', params={
-                'addr-1.ord': '1',
-                'addr-1.delete': 'on',
-                'addr-2.ord': '2',
-                'new_addr.addr': '',
-                'primary_addr': 'test-admin@users.localhost',
-                'password': 'foo',
-                'preferences.email_format': 'plain'},
-                extra_environ=dict(username='test-admin'))
+            r = self.app.post('/auth/preferences/update_emails',
+                              extra_environ=dict(username='test-admin'),
+                              params={
+                                  'addr-1.ord': '1',
+                                  'addr-1.delete': 'on',
+                                  'addr-2.ord': '2',
+                                  'new_addr.addr': '',
+                                  'primary_addr': 'test-admin@users.localhost',
+                                  'password': 'foo',
+                                  'preferences.email_format': 'plain'
+                              })
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified
@@ -290,9 +296,9 @@ class TestAuth(TestController):
         assert_equal(user.get_pref('email_address'), None)
 
         with td.audits('Display Name changed Test Admin => Admin', user=True):
-            r = self.app.post('/auth/preferences/update', params={
-                'preferences.display_name': 'Admin'},
-                extra_environ=dict(username='test-admin'))
+            r = self.app.post('/auth/preferences/update',
+                              params={'preferences.display_name': 'Admin'},
+                              extra_environ=dict(username='test-admin'))
 
     @td.with_user_project('test-admin')
     def test_email_prefs_change_requires_password(self):
@@ -302,18 +308,23 @@ class TestAuth(TestController):
             'new_addr.claim': 'Claim Address',
             'primary_addr': 'test-admin@users.localhost',
         }
-        r = self.app.post('/auth/preferences/update_emails', params=new_email_params,
-            extra_environ=dict(username='test-admin'))
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=new_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to claim new email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
         new_email_params['password'] = 'bad pass'
-        r = self.app.post('/auth/preferences/update_emails', params=new_email_params,
-            extra_environ=dict(username='test-admin'))
+
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=new_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to claim new email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
         new_email_params['password'] = 'foo'  # valid password
-        r = self.app.post('/auth/preferences/update_emails', params=new_email_params,
-            extra_environ=dict(username='test-admin'))
+
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=new_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to claim new email', self.webflash(r))
         assert_in('test@example.com', r.follow())
 
@@ -322,18 +333,23 @@ class TestAuth(TestController):
             'new_addr.addr': '',
             'primary_addr': 'test@example.com',
         }
-        r = self.app.post('/auth/preferences/update_emails', params=change_primary_params,
-            extra_environ=dict(username='test-admin'))
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=change_primary_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
         change_primary_params['password'] = 'bad pass'
-        r = self.app.post('/auth/preferences/update_emails', params=change_primary_params,
-            extra_environ=dict(username='test-admin'))
+
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=change_primary_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
         change_primary_params['password'] = 'foo'  # valid password
-        r = self.app.post('/auth/preferences/update_emails', params=change_primary_params,
-            extra_environ=dict(username='test-admin'))
+
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=change_primary_params,
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test@example.com')
 
@@ -345,18 +361,21 @@ class TestAuth(TestController):
             'new_addr.addr': '',
             'primary_addr': 'test-admin@users.localhost',
         }
-        r = self.app.post('/auth/preferences/update_emails', params=remove_email_params,
-            extra_environ=dict(username='test-admin'))
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=remove_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to delete an email', self.webflash(r))
         assert_in('test@example.com', r.follow())
         remove_email_params['password'] = 'bad pass'
-        r = self.app.post('/auth/preferences/update_emails', params=remove_email_params,
-            extra_environ=dict(username='test-admin'))
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=remove_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to delete an email', self.webflash(r))
         assert_in('test@example.com', r.follow())
         remove_email_params['password'] = 'foo'  # vallid password
-        r = self.app.post('/auth/preferences/update_emails', params=remove_email_params,
-            extra_environ=dict(username='test-admin'))
+        r = self.app.post('/auth/preferences/update_emails',
+                          params=remove_email_params,
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to delete an email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
 
@@ -453,50 +472,45 @@ class TestAuth(TestController):
         r = self.app.post('/auth/save_new',
                           params=dict(username='aaa', pw='123'))
         assert 'Enter a value 6 characters long or more' in r
-        r = self.app.post(
-            '/auth/save_new',
-            params=dict(
-                username='aaa',
-                pw='12345678',
-                pw2='12345678',
-                display_name='Test Me'))
+        r = self.app.post('/auth/save_new',
+                          params=dict(
+                              username='aaa',
+                              pw='12345678',
+                              pw2='12345678',
+                              display_name='Test Me'))
         r = r.follow()
         assert 'User "aaa" registered' in unentity(r.body)
-        r = self.app.post(
-            '/auth/save_new',
-            params=dict(
-                username='aaa',
-                pw='12345678',
-                pw2='12345678',
-                display_name='Test Me'))
+        r = self.app.post('/auth/save_new',
+                          params=dict(
+                              username='aaa',
+                              pw='12345678',
+                              pw2='12345678',
+                              display_name='Test Me'))
         assert 'That username is already taken. Please choose another.' in r
         r = self.app.get('/auth/logout')
-        r = self.app.post(
-            '/auth/do_login',
-            params=dict(username='aaa', password='12345678'),
-            status=302)
+        r = self.app.post('/auth/do_login',
+                          params=dict(username='aaa', password='12345678'),
+                          status=302)
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
             r = self.app.get('/')
-            assert not 'Register' in r
+            assert 'Register' not in r
 
     def test_create_account_disabled_form_gone(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
             r = self.app.get('/auth/create_account', status=404)
-            assert not 'Create an Account' in r
+            assert 'Create an Account' not in r
 
     def test_create_account_disabled_submit_fails(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
-            self.app.post(
-                '/auth/save_new',
-                params=dict(
-                    username='aaa',
-                    pw='12345678',
-                    pw2='12345678',
-                    display_name='Test Me'),
-                status=404,
-            )
+            self.app.post('/auth/save_new',
+                          params=dict(
+                              username='aaa',
+                              pw='12345678',
+                              pw2='12345678',
+                              display_name='Test Me'),
+                          status=404)
 
     def test_one_project_role(self):
         """Make sure when a user goes to a new project only one project role is created.
@@ -536,8 +550,7 @@ class TestAuth(TestController):
         r = self.app.get('/p/test/admin/',
                          extra_environ={'username': 'test-admin'})
         assert_equal(r.status_int, 302)
-        assert_equal(r.location,
-                     'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
+        assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
 
     def test_no_open_return_to(self):
         r = self.app.get('/auth/logout')
@@ -566,10 +579,10 @@ class TestAuth(TestController):
 
 
 class TestPreferences(TestController):
-
     @td.with_user_project('test-admin')
     def test_personal_data(self):
         from pytz import country_names
+
         setsex, setbirthdate, setcountry, setcity, settimezone = \
             ('Male', '19/08/1988', 'IT', 'Milan', 'Europe/Rome')
         self.app.get('/auth/user_info/')
@@ -638,9 +651,9 @@ class TestPreferences(TestController):
                       params=dict(socialnetwork=socialnetwork,
                                   accounturl=accounturl))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1 and \
-            user.socialnetworks[0].socialnetwork == socialnetwork and \
-            user.socialnetworks[0].accounturl == accounturl
+        assert len(user.socialnetworks) == 1 \
+               and user.socialnetworks[0].socialnetwork == socialnetwork \
+               and user.socialnetworks[0].accounturl == accounturl
 
         # Add second social network account
         socialnetwork2 = 'Twitter'
@@ -650,8 +663,8 @@ class TestPreferences(TestController):
                                   accounturl='@test'))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2 and \
-            ({'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks and
-             {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks)
+               ({'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks and
+                {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks)
 
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
@@ -659,40 +672,35 @@ class TestPreferences(TestController):
                                   account=accounturl))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
-            {'socialnetwork': socialnetwork2, 'accounturl':
-             accounturl2} in user.socialnetworks
+               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(accounturl=accounturl, socialnetwork=''))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
-            {'socialnetwork': socialnetwork2, 'accounturl':
-             accounturl2} in user.socialnetworks
+               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(accounturl=accounturl, socialnetwork='invalid'))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
-            {'socialnetwork': socialnetwork2, 'accounturl':
-             accounturl2} in user.socialnetworks
+               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add telephone number
         telnumber = '+3902123456'
         self.app.post('/auth/user_info/contacts/add_telnumber',
                       params=dict(newnumber=telnumber))
         user = M.User.query.get(username='test-admin')
-        assert (len(user.telnumbers)
-                == 1 and (user.telnumbers[0] == telnumber))
+        assert (len(user.telnumbers) == 1 and (user.telnumbers[0] == telnumber))
 
         # Add second telephone number
         telnumber2 = '+3902654321'
         self.app.post('/auth/user_info/contacts/add_telnumber',
                       params=dict(newnumber=telnumber2))
         user = M.User.query.get(username='test-admin')
-        assert (len(user.telnumbers)
-                == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
+        assert (len(user.telnumbers) == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
 
         # Remove first telephone number
         self.app.post('/auth/user_info/contacts/remove_telnumber',
@@ -712,8 +720,7 @@ class TestPreferences(TestController):
         self.app.post('/auth/user_info/contacts/add_webpage',
                       params=dict(newwebsite=website2))
         user = M.User.query.get(username='test-admin')
-        assert (len(user.webpages)
-                == 2 and website in user.webpages and website2 in user.webpages)
+        assert (len(user.webpages) == 2 and website in user.webpages and website2 in user.webpages)
 
         # Remove first website
         self.app.post('/auth/user_info/contacts/remove_webpage',
@@ -753,8 +760,9 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
                              start_time=starttime2, end_time=endtime2)
-        assert len(user.availability) == 2 and timeslot1dict in user.get_availability_timeslots() \
-            and timeslot2dict in user.get_availability_timeslots()
+        assert len(user.availability) == 2 \
+               and timeslot1dict in user.get_availability_timeslots() \
+               and timeslot2dict in user.get_availability_timeslots()
 
         # Remove availability timeslot
         r = self.app.post('/auth/user_info/availability/remove_timeslot',
@@ -763,8 +771,7 @@ class TestPreferences(TestController):
                               starttime=starttime.strftime('%H:%M'),
                               endtime=endtime.strftime('%H:%M')))
         user = M.User.query.get(username='test-admin')
-        assert len(
-            user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
+        assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
 
         # Add invalid availability timeslot
         r = self.app.post('/auth/user_info/availability/add_timeslot',
@@ -776,8 +783,7 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
                              start_time=starttime2, end_time=endtime2)
-        assert len(
-            user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
+        assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
 
     @td.with_user_project('test-admin')
     def test_inactivity(self):
@@ -793,8 +799,7 @@ class TestPreferences(TestController):
                               enddate=enddate.strftime('%d/%m/%Y')))
         user = M.User.query.get(username='test-admin')
         period1dict = dict(start_date=startdate, end_date=enddate)
-        assert len(
-            user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
+        assert len(user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
 
         # Add second inactivity period
         startdate2 = now + timedelta(days=24)
@@ -805,8 +810,9 @@ class TestPreferences(TestController):
                               enddate=enddate2.strftime('%d/%m/%Y')))
         user = M.User.query.get(username='test-admin')
         period2dict = dict(start_date=startdate2, end_date=enddate2)
-        assert len(user.inactiveperiod) == 2 and period1dict in user.get_inactive_periods() \
-            and period2dict in user.get_inactive_periods()
+        assert len(user.inactiveperiod) == 2 \
+               and period1dict in user.get_inactive_periods() \
+               and period2dict in user.get_inactive_periods()
 
         # Remove first inactivity period
         r = self.app.post(
@@ -815,8 +821,7 @@ class TestPreferences(TestController):
                 startdate=startdate.strftime('%d/%m/%Y'),
                 enddate=enddate.strftime('%d/%m/%Y')))
         user = M.User.query.get(username='test-admin')
-        assert len(
-            user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
+        assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
 
         # Add invalid inactivity period
         r = self.app.post('/auth/user_info/availability/add_inactive_period',
@@ -825,8 +830,7 @@ class TestPreferences(TestController):
                               enddate=enddate2.strftime('%d/%m/%Y')))
         user = M.User.query.get(username='test-admin')
         assert 'Please enter a valid date' in str(r)
-        assert len(
-            user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
+        assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
 
     @td.with_user_project('test-admin')
     def test_skills(self):
@@ -882,15 +886,12 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_user_message(self):
-        assert not M.User.query.get(
-            username='test-admin').get_pref('disable_user_messages')
+        assert not M.User.query.get(username='test-admin').get_pref('disable_user_messages')
         self.app.post('/auth/preferences/user_message')
-        assert M.User.query.get(
-            username='test-admin').get_pref('disable_user_messages')
+        assert M.User.query.get(username='test-admin').get_pref('disable_user_messages')
         self.app.post('/auth/preferences/user_message',
                       params={'allow_user_messages': 'on'})
-        assert not M.User.query.get(
-            username='test-admin').get_pref('disable_user_messages')
+        assert not M.User.query.get(username='test-admin').get_pref('disable_user_messages')
 
     @td.with_user_project('test-admin')
     def test_additional_page(self):
@@ -910,7 +911,6 @@ class TestPreferences(TestController):
 
 
 class TestPasswordReset(TestController):
-
     test_primary_email = 'testprimaryaddr@mail.com'
 
     @patch('allura.tasks.mail_tasks.sendmail')
@@ -971,7 +971,6 @@ class TestPasswordReset(TestController):
             assert hash is not None
             args, kwargs = sendmail.post.call_args
             assert_equal(kwargs['toaddr'], email1.email)
-
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -1056,7 +1055,6 @@ To reset your password on %s, please visit the following URL:
 
 
 class TestOAuth(TestController):
-
     def test_register_deregister_app(self):
         # register
         r = self.app.get('/auth/oauth/')
@@ -1109,7 +1107,6 @@ class TestOAuth(TestController):
         r = r.forms[0].submit('yes')
         assert r.location.startswith('http://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
-        #pin = r.html.find(text=re.compile('^PIN: ')).split()[1]
         req = Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': rtok,
@@ -1130,19 +1127,15 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        req = Request.from_request.return_value = {
-            'oauth_consumer_key': 'api_key'}
+        req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
         r = self.app.post('/rest/oauth/request_token', params={'key': 'value'})
         Request.from_request.assert_called_once_with(
             'POST', 'http://localhost/rest/oauth/request_token',
-            headers={'Host': 'localhost:80', 'Content-Type':
-                    'application/x-www-form-urlencoded; charset="utf-8"'},
+            headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
             parameters={'key': 'value'},
             query_string='')
-        Server().verify_request.assert_called_once_with(
-            req, consumer_token.consumer, None)
-        request_token = M.OAuthRequestToken.query.get(
-            consumer_token_id=consumer_token._id)
+        Server().verify_request.assert_called_once_with(req, consumer_token.consumer, None)
+        request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
         assert_is_not_none(request_token)
         assert_equal(r.body, request_token.to_string())
 
@@ -1165,10 +1158,8 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        req = Request.from_request.return_value = {
-            'oauth_consumer_key': 'api_key'}
-        self.app.post('/rest/oauth/request_token',
-                      params={'key': 'value'}, status=403)
+        req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
+        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=403)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -1184,14 +1175,12 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'})
         assert_in('ctok_desc', r.body)
         assert_in('api_key', r.body)
 
     def test_authorize_invalid(self):
-        self.app.post('/rest/oauth/authorize',
-                      params={'oauth_token': 'api_key'}, status=403)
+        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=403)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -1225,8 +1214,7 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize',
-                          params={'yes': '1', 'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
 
     def test_do_authorize_cb(self):
@@ -1243,10 +1231,8 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize',
-                          params={'yes': '1', 'oauth_token': 'api_key'})
-        assert r.location.startswith(
-            'http://my.domain.com/callback?oauth_token=api_key&oauth_verifier=')
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key&oauth_verifier=')
 
     def test_do_authorize_cb_params(self):
         user = M.User.by_username('test-admin')
@@ -1262,10 +1248,8 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize',
-                          params={'yes': '1', 'oauth_token': 'api_key'})
-        assert r.location.startswith(
-            'http://my.domain.com/callback?myparam=foo&oauth_token=api_key&oauth_verifier=')
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key&oauth_verifier=')
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_no_consumer(self, Request):
@@ -1369,7 +1353,6 @@ class TestOAuth(TestController):
 
 
 class TestDisableAccount(TestController):
-
     def test_not_authenticated(self):
         r = self.app.get(
             '/auth/disable/',
