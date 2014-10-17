@@ -326,3 +326,13 @@ def test_user_index():
     assert_in('last_access_session_ua_t', idx)
     # provided bby auth provider
     assert_in('user_registration_date_dt', idx)
+
+@with_setup(setUp)
+def test_user_index_none_values():
+    c.user.email_addresses = [None]
+    c.user.set_pref('telnumbers', [None])
+    c.user.set_pref('webpages', [None])
+    idx = c.user.index()
+    assert_equal(idx['email_addresses_t'], '')
+    assert_equal(idx['telnumbers_t'], '')
+    assert_equal(idx['webpages_t'], '')
