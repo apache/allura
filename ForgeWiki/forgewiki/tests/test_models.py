@@ -24,14 +24,10 @@ from forgewiki.model import Page
 
 class TestPageSnapshots(TestController):
 
-    # Note: test name starts with '_' makes nose don't pick it up automatically.
-    # This is done intentionally to avoid run this test on every commit.
-    # You can run it manually like this:
-    # nosetests forgewiki.tests.test_models:TestPageSnapshots._test_version_race
-    # You should check that threads does not throw `DuplicateKeyError`.
-    # It's hard to reproduce this mannually
     @td.with_wiki
-    def _test_version_race(self):
+    def test_version_race(self):
+        # threads must not throw DuplicateKeyError
+        # details https://sourceforge.net/p/allura/tickets/7647/
         import time
         import random
         from threading import Thread
