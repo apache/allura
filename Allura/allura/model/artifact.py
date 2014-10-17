@@ -471,7 +471,6 @@ class VersionedArtifact(Artifact):
 
     def commit(self, update_stats=True):
         '''Save off a snapshot of the artifact and increment the version #'''
-        self.version += 1
         try:
             ip_address = request.headers.get(
                 'X_FORWARDED_FOR', request.remote_addr)
@@ -483,18 +482,28 @@ class VersionedArtifact(Artifact):
             artifact_class='%s.%s' % (
                 self.__class__.__module__,
                 self.__class__.__name__),
-            version=self.version,
             author=dict(
                 id=c.user._id,
                 username=c.user.username,
                 display_name=c.user.get_pref('display_name'),
                 logged_ip=ip_address),
-            timestamp=datetime.utcnow(),
             data=state(self).clone())
-        ss = self.__mongometa__.history_class(**data)
-        session(ss).insert_now(ss, state(ss))
+        while True:
+            self.version += 1
+            data['version'] = self.version
+            data['timestamp'] = datetime.utcnow()
+            ss = self.__mongometa__.history_class(**data)
+            try:
+                session(ss).insert_now(ss, state(ss))
+            except pymongo.errors.DuplicateKeyError:
+                log.warning('Trying to create duplicate version %s of %s',
+                            self.version, self.__class__)
+                session(ss).expunge(ss)
+                continue
+            else:
+                break
         log.debug('Snapshot version %s of %s',
-                 self.version, self.__class__)
+                  self.version, self.__class__)
         if update_stats:
             if self.version > 1:
                 g.statsUpdater.modifiedArtifact(
