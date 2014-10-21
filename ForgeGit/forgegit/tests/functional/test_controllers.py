@@ -26,8 +26,10 @@ from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import tg
 import pkg_resources
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from ming.orm import ThreadLocalORMSession
 from mock import patch, PropertyMock
+from BeautifulSoup import BeautifulSoup
 
 from alluratest.controller import setup_global_objects
 from allura import model as M
@@ -805,3 +807,10 @@ class TestIncludeMacro(_TestCase):
         result = macro.include_file('src-git', 'README')
         assert_in('This is readme', result)
         assert_in('Another Line', result)
+
+    def test_include_file_line_nums(self):
+        '''Line numbers inside <pre> must be separated by newline'''
+        result = g.markdown.convert('[[include repo=src-git path=README]]')
+        result = BeautifulSoup(result).find('div', attrs={'class': 'linenodiv'})
+        result = result.find('pre')
+        assert_equal(result.getText(), '1\n2')
