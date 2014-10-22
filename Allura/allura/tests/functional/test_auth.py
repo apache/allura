@@ -224,7 +224,7 @@ class TestAuth(TestController):
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_user_added_claimed_address_by_other_user_not_confirmed(self, gen_message_id, sendsimplemail):
+    def test_user_cannot_claim_more_than_max_limit(self, gen_message_id, sendsimplemail):
         with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '1'}):
             r = self.app.post('/auth/preferences/update_emails',
                               params={
@@ -249,6 +249,39 @@ class TestAuth(TestController):
 
             assert json.loads(self.webflash(r))['status'] == 'error'
             assert json.loads(self.webflash(r))['message'] == 'You cannot claim more than 1 email addresses.'
+
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_verification_link_for_confirmed_email(self, gen_message_id, sendsimplemail):
+        email_address = 'test_abcd@domain.net'
+
+        # test-user claimed email address
+        user = M.User.query.get(username='test-user')
+        user.claim_address(email_address)
+        email = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email.confirmed = True
+
+        user1 = M.User.query.get(username='test-user-1')
+        user1.claim_address(email_address)
+        email = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
+        email.confirmed = False
+
+        ThreadLocalORMSession.flush_all()
+
+        r = self.app.post('/auth/send_verification_link',
+                          params=dict(a=email_address),
+                          extra_environ=dict(username='test-user-1'))
+
+        assert json.loads(self.webflash(r))['status'] == 'ok'
+        assert json.loads(self.webflash(r))['message'] == 'Verification link sent'
+
+        args, kwargs = sendsimplemail.post.call_args
+        assert sendsimplemail.post.call_count == 1
+        assert kwargs['toaddr'] == email_address
+        assert kwargs['subject'] == u'%s - Email address claim attempt' % config['site_name']
+        assert "You tried to add %s to your Allura account, " \
+               "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
+
 
     @td.with_user_project('test-admin')
     def test_prefs(self):

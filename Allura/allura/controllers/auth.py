@@ -234,8 +234,14 @@ class AuthController(BaseController):
     @expose()
     def send_verification_link(self, a):
         addr = M.EmailAddress.query.get(email=a, claimed_by_user_id=c.user._id)
+        confirmed_emails = M.EmailAddress.query.find(dict(email=a, confirmed=True)).all()
+        confirmed_emails = filter(lambda item: item != addr, confirmed_emails)
+
         if addr:
-            addr.send_verification_link()
+            if any(email.confirmed for email in confirmed_emails):
+                addr.send_claim_attempt()
+            else:
+                addr.send_verification_link()
             flash('Verification link sent')
         else:
             flash('No such address', 'error')
@@ -465,7 +471,7 @@ class PreferencesController(BaseController):
             claimed_emails = M.EmailAddress.query.find({'email': new_addr['addr']}).all()
 
             if any(email.claimed_by_user_id == user._id for email in claimed_emails):
-                flash('Email address already cla:imed', 'error')
+                flash('Email address already claimed', 'error')
 
             elif mail_util.isvalid(new_addr['addr']):
                 user.email_addresses.append(new_addr['addr'])
@@ -479,20 +485,8 @@ class PreferencesController(BaseController):
                     else:
                         AuthController()._verify_addr(em)
                 else:
-                    owner = M.User.query.get(_id=confirmed_emails[0].claimed_by_user_id)
-                    text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
-                        email=confirmed_emails[0],
-                        user=owner,
-                        config=config
-                    ))
+                    em.send_claim_attempt()
 
-                    allura.tasks.mail_tasks.sendsimplemail.post(
-                        toaddr=confirmed_emails[0].email,
-                        fromaddr=config['forgemail.return_path'],
-                        reply_to=config['forgemail.return_path'],
-                        subject=u'%s - Email address claim attempt' % config['site_name'],
-                        message_id=h.gen_message_id(),
-                        text=text)
                 if not admin:
                     flash('A verification email has been sent.  Please check your email and click to confirm.')
 

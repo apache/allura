@@ -141,6 +141,25 @@ class EmailAddress(MappedClass):
         else:
             return 'nobody@example.com'
 
+    def send_claim_attempt(self):
+        confirmed_email = self.query.find(dict(email=self.email, confirmed=True)).all()
+
+        if confirmed_email:
+            log.info('Sending claim attempt email to %s', self.email)
+            text = g.jinja2_env.get_template('allura:templates/mail/claimed_existing_email.txt').render(dict(
+                email=self,
+                user=confirmed_email[0].claimed_by_user(),
+                config=config
+            ))
+
+            allura.tasks.mail_tasks.sendsimplemail.post(
+                toaddr=self.email,
+                fromaddr=config['forgemail.return_path'],
+                reply_to=config['forgemail.return_path'],
+                subject=u'%s - Email address claim attempt' % config['site_name'],
+                message_id=h.gen_message_id(),
+                text=text)
+
     def send_verification_link(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()
         log.info('Sending verification link to %s', self.email)
