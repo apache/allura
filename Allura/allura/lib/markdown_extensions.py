@@ -424,6 +424,28 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
         html = BeautifulSoup(html)
         return len(html.findAll(tags)) > 0
 
+    def _etree_parsable(self, html):
+        '''Take html string and reformat it for parsing with etree.fromstring
+
+        etree.fromstring parses html with newlines into empty div somehow.
+
+        Also, preserve formatting inside <pre>'s.
+        '''
+        result = []
+        _inside_pre = False
+        for line in html.splitlines(True):
+            if '<pre>' in line:
+                _inside_pre = True
+            if '</pre>' in line:
+                _inside_pre = False
+
+            if _inside_pre:
+                result.append(line)
+            elif line.strip():
+                result.append(line.strip())
+
+        return ''.join(result)
+
     def handleMatch(self, m):
         html = self.macro(m.group(2))
         if m.group(2).startswith('include'):
@@ -441,16 +463,17 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
             #    can fall back to default approach.
 
             if self._contains_headers(html):
-                # etree.fromstring parses html with newlines into empty div somehow
-                html = [l.strip() for l in html.splitlines() if l.strip()]
-                html = ''.join(html)
+                html = self._etree_parsable(html)
                 try:
                     html = markdown.util.etree.fromstring(html)
                 except Exception:
-                    # perhaps it is something like macro error which isn't parsable to html
-                    # (e.g. "[[include: you don't have a read permission for...")
+                    # perhaps it is something like macro error which isn't
+                    # parsable to html (e.g. "[[include: you don't have a read
+                    # permission for...]]"). Thus it is ok to fall back to
+                    # "put-html-into-stash" approach
                     pass
-                return html
+                else:
+                    return html
 
         placeholder = self.markdown.htmlStash.store(html)
         return placeholder
