@@ -282,6 +282,33 @@ class TestAuth(TestController):
         assert "You tried to add %s to your Allura account, " \
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
+    def test_invalidate_verification_link_if_email_was_confirmed(self):
+        email_address = 'test_abcd@domain.net'
+
+        # test-user claimed email address
+        user = M.User.query.get(username='test-user')
+        user.claim_address(email_address)
+        email = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email.confirmed = False
+        ThreadLocalORMSession.flush_all()
+
+        self.app.post('/auth/send_verification_link',
+                          params=dict(a=email_address),
+                          extra_environ=dict(username='test-user'))
+
+
+        user1 = M.User.query.get(username='test-user-1')
+        user1.claim_address(email_address)
+        email1 = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user1._id)).first()
+        email1.confirmed = True
+        ThreadLocalORMSession.flush_all()
+        # Verify first email with the verification link
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username='test-user'))
+
+        assert json.loads(self.webflash(r))['status'] == 'error'
+        email = M.EmailAddress.query.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        assert not email.confirmed
+
 
     @td.with_user_project('test-admin')
     def test_prefs(self):

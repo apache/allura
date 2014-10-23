@@ -248,7 +248,10 @@ class AuthController(BaseController):
         redirect(request.referer)
 
     def _verify_addr(self, addr):
-        if addr:
+        confirmed_by_other = M.EmailAddress.query.find(dict(email=addr.email, confirmed=True)).all() if addr else []
+        confirmed_by_other = filter(lambda item: item != addr, confirmed_by_other)
+
+        if addr and not confirmed_by_other:
             addr.confirmed = True
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s', addr.email, user=addr.claimed_by_user())
