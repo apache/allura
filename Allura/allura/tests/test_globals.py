@@ -24,6 +24,7 @@ import allura
 import unittest
 import hashlib
 from mock import patch, Mock
+from BeautifulSoup import BeautifulSoup
 
 from bson import ObjectId
 from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
@@ -530,6 +531,72 @@ More text
                   u'heading for included page</a></li>', result)
         assert_in(u'<li><a href="#another-heading-for-included-page">'
                   u'another heading for included page</a></li>', result)
+
+
+@td.with_wiki
+def test_toc_generation_for_included_page_pre_without_headers():
+    '''Check that formatting inside <pre> tags is preserved
+    when TOC is present and included page does not contain headers.'''
+    parent_text = u'[TOC]\n\n# heading\n\n[[include ref=included]]'
+    included_text = u'''
+<pre>one
+two
+three</pre>
+
+Another pre:
+
+<pre>one two three
+four five six</pre>
+'''
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    wiki = p_test.app_instance('wiki')
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        p = WM.Page.upsert(title='included')
+        p.text = included_text
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+
+        result = g.markdown.convert(parent_text)
+        assert_in(u'<li><a href="#heading">heading</a></li>', result)
+        pre1, pre2 = BeautifulSoup(result).findAll('pre')
+        assert_equal(pre1.getText(), 'one\ntwo\nthree')
+        assert_equal(pre2.getText(), 'one two three\nfour five six')
+
+
+@td.with_wiki
+def test_toc_generation_for_included_page_pre_with_headers():
+    '''Check that formatting inside <pre> tags is preserved
+    when TOC is present and included page contains headers.'''
+    parent_text = u'[TOC]\n\n# heading\n\n[[include ref=included]]'
+    included_text = u'''
+#heading for included page
+
+<pre>one
+two
+three</pre>
+
+Another pre:
+
+<pre>one two three
+four five six</pre>
+'''
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    wiki = p_test.app_instance('wiki')
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        p = WM.Page.upsert(title='included')
+        p.text = included_text
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+
+        result = g.markdown.convert(parent_text)
+        assert_in(u'<li><a href="#heading">heading</a></li>', result)
+        assert_in(u'<li><a href="#heading-for-included-page">'
+                  u'heading for included page</a></li>', result)
+        pre1, pre2 = BeautifulSoup(result).findAll('pre')
+        assert_equal(pre1.getText(), 'one\ntwo\nthree')
+        assert_equal(pre2.getText(), 'one two three\nfour five six')
 
 
 def test_macro_nbhd_feeds():
