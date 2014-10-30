@@ -534,6 +534,7 @@ More text
 
 
 @td.with_wiki
+@with_setup(setUp)
 def test_toc_generation_for_included_page_pre_without_headers():
     '''Check that formatting inside <pre> tags is preserved
     when TOC is present and included page does not contain headers.'''
@@ -565,6 +566,7 @@ four five six</pre>
 
 
 @td.with_wiki
+@with_setup(setUp)
 def test_toc_generation_for_included_page_pre_with_headers():
     '''Check that formatting inside <pre> tags is preserved
     when TOC is present and included page contains headers.'''
