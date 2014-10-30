@@ -101,6 +101,7 @@ class CommitMessageExtension(markdown.Extension):
         # Put a class around markdown content for custom css
         md.postprocessors['add_custom_class'] = AddCustomClass()
         md.postprocessors['mark_safe'] = MarkAsSafe()
+        md.postprocessors['newlines_inside_pre'] = ReplaceNewlinesInsidePre()
 
     def reset(self):
         self.forge_link_tree_processor.reset()
@@ -289,6 +290,7 @@ class ForgeExtension(markdown.Extension):
         # Put a class around markdown content for custom css
         md.postprocessors['add_custom_class'] = AddCustomClass()
         md.postprocessors['mark_safe'] = MarkAsSafe()
+        md.postprocessors['newlines_inside_pre'] = ReplaceNewlinesInsidePre()
 
     def reset(self):
         self.forge_link_tree_processor.reset()
@@ -432,18 +434,15 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
         Also, preserve formatting inside <pre>'s.
         '''
         result = []
-        _inside_pre = False
-        for line in html.splitlines(True):
-            if '<pre>' in line:
-                _inside_pre = True
-            if '</pre>' in line:
-                _inside_pre = False
-
-            if _inside_pre:
-                result.append(line)
-            elif line.strip():
-                result.append(line.strip())
-
+        html = BeautifulSoup(html)
+        pres = html.findAll('pre')
+        for pre in pres:
+            #if pre.parent and pre.parent.get('class') == 'codehilite':
+                #continue
+            no_nl = unicode(pre).replace('\n', '#ALLURA-NEWLINE-INSIDE-PRE#')
+            no_nl = no_nl.replace('<pre>', '').replace('</pre>', '')
+            pre.string = h.html.literal(no_nl)
+        result = [line.strip() for line in unicode(html).splitlines() if line.strip()]
         return ''.join(result)
 
     def handleMatch(self, m):
@@ -576,6 +575,11 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
         stream = html5lib.filters.alphabeticalattributes.Filter(walker(parsed))
         out = ''.join(serializer.serialize(stream))
         return out
+
+
+class ReplaceNewlinesInsidePre(markdown.postprocessors.Postprocessor):
+    def run(self, text):
+        return text.replace('#ALLURA-NEWLINE-INSIDE-PRE#', '\n')
 
 
 class AutolinkPattern(markdown.inlinepatterns.Pattern):
