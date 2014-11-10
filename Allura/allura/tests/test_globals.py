@@ -23,7 +23,7 @@ import os
 import allura
 import unittest
 import hashlib
-from mock import patch
+from mock import patch, Mock
 
 from bson import ObjectId
 from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
@@ -726,3 +726,51 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
+
+
+
+class TestHandlePaging(unittest.TestCase):
+
+    def setUp(self):
+        prefs = {}
+        c.user = Mock()
+        def get_pref(name):
+            return prefs.get(name)
+        def set_pref(name, value):
+            prefs[name] = value
+        c.user.get_pref = get_pref
+        c.user.set_pref = set_pref
+
+    def test_with_limit(self):
+        self.assertEqual(g.handle_paging(10, 0), (10, 0, 0))
+        self.assertEqual(g.handle_paging(10, 2), (10, 2, 20))
+        # handle paging must not mess up user preferences
+        self.assertEqual(c.user.get_pref('results_per_page'), None)
+
+    def test_without_limit(self):
+        # default limit = 50
+        self.assertEqual(g.handle_paging(None, 0), (50, 0, 0))
+        self.assertEqual(g.handle_paging(None, 2), (50, 2, 100))
+        # handle paging must not mess up user preferences
+        self.assertEqual(c.user.get_pref('results_per_page'), None)
+
+        # user has page size preference
+        c.user.set_pref('results_per_page', 100)
+        self.assertEqual(g.handle_paging(None, 0), (100, 0, 0))
+        self.assertEqual(g.handle_paging(None, 2), (100, 2, 200))
+        # handle paging must not mess up user preferences
+        self.assertEqual(c.user.get_pref('results_per_page'), 100)
+
+    def test_without_limit_with_default(self):
+        # default limit is not used when explicitly provided
+        self.assertEqual(g.handle_paging(None, 0, 30), (30, 0, 0))
+        self.assertEqual(g.handle_paging(None, 2, 30), (30, 2, 60))
+        # handle paging must not mess up user preferences
+        self.assertEqual(c.user.get_pref('results_per_page'), None)
+
+        # user has page size preference, which is not affected by default
+        c.user.set_pref('results_per_page', 25)
+        self.assertEqual(g.handle_paging(None, 0, 30), (25, 0, 0))
+        self.assertEqual(g.handle_paging(None, 2, 30), (25, 2, 50))
+        # handle paging must not mess up user preferences
+        self.assertEqual(c.user.get_pref('results_per_page'), 25)
