@@ -191,23 +191,31 @@ class TestRestDiscussion(TestTrackerApiBase):
 
 class TestRestSearch(TestTrackerApiBase):
 
+    @property
+    def ticket(self):
+        return TM.Ticket(
+            ticket_num=5,
+            summary='our test ticket',
+            status='open',
+            labels=['tiny', 'minor'])
+
     @patch('forgetracker.model.Ticket.paged_search')
     def test_no_criteria(self, paged_search):
-        paged_search.return_value = dict(tickets=[
-            TM.Ticket(ticket_num=5, summary='our test ticket'),
-        ])
+        paged_search.return_value = dict(tickets=[self.ticket])
         r = self.api_get('/rest/p/test/bugs/search')
         assert_equal(r.status_int, 200)
-        assert_equal(r.json, {'tickets': [
-            {'summary': 'our test ticket', 'ticket_num': 5},
-        ]})
+        assert_equal(r.json['tickets'][0]['summary'], 'our test ticket')
+        assert_equal(r.json['tickets'][0]['ticket_num'], 5)
+        assert_equal(r.json['tickets'][0]['status'], 'open')
+        assert_equal(r.json['tickets'][0]['labels'], ['tiny', 'minor'])
+        assert 'description' not in r.json
+        assert 'discussion_thread' not in r.json
 
     @patch('forgetracker.model.Ticket.paged_search')
     def test_some_criteria(self, paged_search):
         q = 'labels:testing && status:open'
-        paged_search.return_value = dict(tickets=[
-            TM.Ticket(ticket_num=5, summary='our test ticket'),
-        ],
+        paged_search.return_value = dict(
+            tickets=[self.ticket],
             sort='status',
             limit=2,
             count=1,
@@ -217,9 +225,14 @@ class TestRestSearch(TestTrackerApiBase):
         r = self.api_get('/rest/p/test/bugs/search',
                          q=q, sort='status', limit='2')
         assert_equal(r.status_int, 200)
-        assert_equal(r.json, {'limit': 2, 'q': q, 'sort': 'status', 'count': 1,
-                              'page': 0, 'tickets': [
-                                  {'summary': 'our test ticket',
-                                   'ticket_num': 5},
-                              ]
-                              })
+        assert_equal(r.json['limit'], 2)
+        assert_equal(r.json['q'], q)
+        assert_equal(r.json['sort'], 'status')
+        assert_equal(r.json['count'], 1)
+        assert_equal(r.json['page'], 0)
+        assert_equal(r.json['tickets'][0]['summary'], 'our test ticket')
+        assert_equal(r.json['tickets'][0]['ticket_num'], 5)
+        assert_equal(r.json['tickets'][0]['status'], 'open')
+        assert_equal(r.json['tickets'][0]['labels'], ['tiny', 'minor'])
+        assert 'description' not in r.json
+        assert 'discussion_thread' not in r.json

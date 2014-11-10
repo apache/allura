@@ -1717,10 +1717,16 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):
+        def _convert_ticket(t):
+            t = t.__json__()
+            # just pop out all the heavy stuff
+            for field in ['description', 'discussion_thread']:
+                t.pop(field, None)
+            return t
+
         results = TM.Ticket.paged_search(
             c.app.config, c.user, q, limit, page, sort, show_deleted=False)
-        results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
-                              for t in results['tickets']]
+        results['tickets'] = map(_convert_ticket, results['tickets'])
         return results
 
     @expose()
