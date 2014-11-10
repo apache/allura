@@ -28,7 +28,7 @@
 
   {% block general_info %}
     <div class="grid-23">
-      <fieldset>
+      <fieldset class="preferences">
         <legend>General</legend>
         <div class="grid-16">
         <ul>
@@ -67,7 +67,7 @@
 
   {% block emails %}
     <div class="grid-23">
-      <fieldset>
+      <fieldset class="preferences">
         <legend>Emails</legend>
         <form action="update_emails" method="post">
           {% include 'allura:templates/update_emails_form.html' %}
@@ -79,7 +79,7 @@
 
   {% block session_info %}
     <div class="grid-23">
-      <fieldset>
+      <fieldset class="preferences">
         <legend>Session</legend>
         <h3>Last login</h3>
         <ul>
@@ -103,7 +103,7 @@
   {% block audit_log %}
     <div class="grid-23">
       {% set al = audit_log %}
-      <fieldset>
+      <fieldset class="preferences">
         <legend>Audit log</legend>
         <form action='/nf/admin/user/add_audit_trail_entry' method='POST'>
           <div class='grid-22'>
@@ -127,7 +127,7 @@
 
   {% block user_projects %}
     <div class="grid-23">
-      <fieldset>
+      <fieldset class="preferences">
         <legend>Projects</legend>
         <ul>
           {% for p in projects %}

@@ -29,7 +29,7 @@
   <div class="grid-23">
     <h2>Preferences</h2>
     {% block info %}
-    <fieldset>
+    <fieldset class="preferences">
       <legend>Username: {{ c.user.username }}</legend>
       <p><a href="{{ c.user.private_project().url() }}">My profile and my projects</a></p>
       <p><a href="{{ c.user.private_project().url() }}admin/overview">Set avatar icon</a></p>
@@ -41,7 +41,7 @@
 
     {% block edit_prefs_form %}
       {% if h.asbool(tg.config.get('auth.allow_edit_prefs', True)) %}
-        <fieldset>
+        <fieldset class="preferences">
           <legend>General Settings</legend>
           <form action="update" method="POST">
             <label class="grid-4">Display Name</label>
@@ -64,7 +64,7 @@
           </form>
         </fieldset>
 
-        <fieldset>
+        <fieldset class="preferences">
           <legend>Email addresses</legend>
           <form action="update_emails" method="post" name="update-email">
             {% include 'allura:templates/update_emails_form.html' %}
@@ -93,7 +93,7 @@
 
     {% block password_change_form %}
       {% if h.asbool(tg.config.get('auth.allow_password_change', True)) %}
-        <fieldset>
+        <fieldset class="preferences">
           <legend>Change Password</legend>
           {{ c.password_change_form.display() }}
         </fieldset>
@@ -102,7 +102,7 @@
 
     {% block upload_key_form %}
       {% if h.asbool(tg.config.get('auth.allow_upload_ssh_key', False)) %}
-        <fieldset>
+        <fieldset class="preferences">
           <legend>Upload ssh public key</legend>
           {{ c.upload_key_form.display() }}
         </fieldset>
@@ -111,7 +111,7 @@
 
     {% block user_messages_form %}
       {% if h.asbool(tg.config.get('auth.allow_user_messages_config', True)) %}
-        <fieldset>
+        <fieldset class="preferences">
           <legend>User Messages</legend>
           <form method="POST" action="user_message">
           <div class="grid-10">

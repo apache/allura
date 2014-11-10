@@ -3498,7 +3498,7 @@ ul.dropdown ul li a:hover {
 }
 .strikethrough { text-decoration: line-through; }
 
-fieldset {
+fieldset.preferences {
   margin-bottom: 2em;
   border: 1px solid silver;
   padding: 8px;
@@ -3506,7 +3506,7 @@ fieldset {
   -moz-border-radius: 4px;
   border-radius: 4px;
 }
-legend {
+fieldset.preferences legend {
   margin: .2em;
   padding: .2em;
   font-size: 1.5em;
