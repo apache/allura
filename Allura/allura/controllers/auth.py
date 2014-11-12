@@ -260,10 +260,9 @@ class AuthController(BaseController):
 
         if addr and not confirmed_by_other:
             addr.confirmed = True
+            user = addr.claimed_by_user(include_pending=True)
             flash('Email address confirmed')
-            h.auditlog_user('Email address verified: %s',  addr.email, user=addr.claimed_by_user())
-
-            user = addr.claimed_by_user()
+            h.auditlog_user('Email address verified: %s',  addr.email, user=user)
             if user.pending:
                 plugin.AuthenticationProvider.get(request).activate_user(user)
         else:

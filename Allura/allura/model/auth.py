@@ -122,8 +122,13 @@ class EmailAddress(MappedClass):
     confirmed = FieldProperty(bool, if_missing=False)
     nonce = FieldProperty(str)
 
-    def claimed_by_user(self):
-        return User.query.get(_id=self.claimed_by_user_id, disabled=False)
+    def claimed_by_user(self, include_pending=False):
+        q = {'_id': self.claimed_by_user_id,
+             'disabled': False,
+             'pending': False}
+        if include_pending:
+            q.pop('pending', None)
+        return User.query.get(**q)
 
     @classmethod
     def create(cls, addr):
@@ -168,7 +173,9 @@ To verify the email address %s belongs to the user %s,
 please visit the following URL:
 
 %s
-''' % (self.email, self.claimed_by_user().username, g.url('/auth/verify_addr', a=self.nonce))
+''' % (self.email,
+       self.claimed_by_user(include_pending=True).username,
+       g.url('/auth/verify_addr', a=self.nonce))
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
             fromaddr=g.noreply,
