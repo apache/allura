@@ -569,7 +569,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 log.debug('LdapAuth: no user {} found in local mongo'.format(username))
                 raise exc.HTTPUnauthorized()
         elif user.disabled or user.pending:
-            log.debug('LdapAuth: user {} is disabled in Allura'.format(username))
+            log.debug('LdapAuth: user {} is disabled or pending in Allura'.format(username))
             raise exc.HTTPUnauthorized()
         return user
 
