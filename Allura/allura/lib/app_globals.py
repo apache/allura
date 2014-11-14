@@ -387,19 +387,9 @@ class Globals(object):
         return (limit, page, start)
 
     def manage_paging_preference(self, limit, default=50):
-        if limit:
+        if not limit:
             if c.user in (None, M.User.anonymous()):
-                session['results_per_page'] = int(limit)
-                session.save()
-            else:
-                c.user.set_pref('results_per_page', int(limit))
-        else:
-            if c.user in (None, M.User.anonymous()):
-                try:
-                    limit = session['results_per_page']
-                # TypeError if no session registered for thread
-                except (KeyError, TypeError):
-                    limit = default
+                limit = default
             else:
                 limit = c.user.get_pref('results_per_page') or default
         return limit
