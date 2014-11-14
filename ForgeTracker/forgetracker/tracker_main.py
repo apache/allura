@@ -1287,8 +1287,8 @@ class TicketController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/ticket.html')
     @validate(dict(
         page=validators.Int(if_empty=0, if_invalid=0),
-        limit=validators.Int(if_empty=10, if_invalid=10)))
-    def index(self, page=0, limit=10, deleted=False, **kw):
+        limit=validators.Int(if_empty=None, if_invalid=None)))
+    def index(self, page=0, limit=None, deleted=False, **kw):
         ticket_visible = self.ticket and not self.ticket.deleted
         if ticket_visible or has_access(self.ticket, 'delete'):
             c.ticket_form = W.ticket_form
@@ -1303,6 +1303,7 @@ class TicketController(BaseController, FeedController):
             else:
                 subscribed = M.Mailbox.subscribed(artifact=self.ticket)
             post_count = self.ticket.discussion_thread.post_count
+            limit, page, _ = g.handle_paging(limit, page)
             limit, page = h.paging_sanitizer(limit, page, post_count)
             voting_enabled = self.ticket.app.config.options.get('EnableVoting')
             return dict(ticket=self.ticket, globals=c.app.globals,

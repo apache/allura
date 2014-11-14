@@ -504,8 +504,8 @@ class PageController(BaseController, FeedController):
     @expose('jinja:forgewiki:templates/wiki/page_view.html')
     @validate(dict(version=validators.Int(if_empty=None, if_invalid=None),
                    page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=25, if_invalid=25)))
-    def index(self, version=None, page=0, limit=25, **kw):
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
+    def index(self, version=None, page=0, limit=None, **kw):
         if not self.page:
             redirect(c.app.url + h.urlquote(self.title) + '/edit')
         c.confirmation = W.confirmation
@@ -513,7 +513,8 @@ class PageController(BaseController, FeedController):
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
         post_count = self.page.discussion_thread.post_count
-        limit, pagenum = h.paging_sanitizer(limit, page, post_count)
+        limit, pagenum, _ = g.handle_paging(limit, page)
+        limit, pagenum = h.paging_sanitizer(limit, pagenum, post_count)
         page = self.get_version(version)
         if page is None:
             if version:

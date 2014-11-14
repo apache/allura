@@ -25,6 +25,7 @@ import pymongo
 from tg import config, expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
 import formencode
@@ -213,13 +214,14 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=25, if_invalid=25)))
-    def index(self, page=0, limit=10, **kw):
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
+    def index(self, page=0, limit=None, **kw):
         query_filter = dict(app_config_id=c.app.config._id)
         if not has_access(c.app, 'write')():
             query_filter['state'] = 'published'
         q = BM.BlogPost.query.find(query_filter)
         post_count = q.count()
+        limit, page, _ = g.handle_paging(limit, page)
         limit, page = h.paging_sanitizer(limit, page, post_count)
         posts = q.sort('timestamp', pymongo.DESCENDING) \
                  .skip(page * limit).limit(limit)
@@ -295,14 +297,15 @@ class PostController(BaseController, FeedController):
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=25, if_invalid=25)))
-    def index(self, page=0, limit=25, **kw):
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
+    def index(self, page=0, limit=None, **kw):
         if self.post.state == 'draft':
             require_access(self.post, 'write')
         c.form = W.view_post_form
         c.subscribe_form = W.subscribe_form
         c.thread = W.thread
         post_count = self.post.discussion_thread.post_count
+        limit, page, _ = g.handle_paging(limit, page)
         limit, page = h.paging_sanitizer(limit, page, post_count)
         version = kw.pop('version', None)
         post = self._get_version(version)
