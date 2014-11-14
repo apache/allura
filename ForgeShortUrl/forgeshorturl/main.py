@@ -132,8 +132,8 @@ class RootController(BaseController):
 
     @expose('jinja:forgeshorturl:templates/index.html')
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=100, if_invalid=100)))
-    def index(self, page=0, limit=100, **kw):
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
+    def index(self, page=0, limit=None, **kw):
         c.page_list = W.page_list
         c.page_size = W.page_size
         limit, pagenum, start = g.handle_paging(limit, page, default=100)
