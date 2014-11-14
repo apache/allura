@@ -307,8 +307,8 @@ class RootRestController(BaseController):
         return ForumRestController(unquote(forum)), remainder
 
     @expose('json:')
-    def index(self, limit=100, page=0, **kw):
-        limit, page, start = g.handle_paging(int(limit), int(page))
+    def index(self, limit=None, page=0, **kw):
+        limit, page, start = g.handle_paging(limit, int(page))
         forums = model.Forum.query.find(dict(
             app_config_id=c.app.config._id,
             parent_id=None, deleted=False)
@@ -377,8 +377,8 @@ class ForumRestController(BaseController):
         require_access(self.forum, 'read')
 
     @expose('json:')
-    def index(self, limit=100, page=0, **kw):
-        limit, page, start = g.handle_paging(int(limit), int(page))
+    def index(self, limit=None, page=0, **kw):
+        limit, page, start = g.handle_paging(limit, int(page))
         topics = model.Forum.thread_class().query.find(
             dict(discussion_id=self.forum._id))
         topics = topics.sort([('flags', pymongo.DESCENDING),
@@ -423,8 +423,8 @@ class ForumTopicRestController(BaseController):
         require_access(self.forum, 'read')
 
     @expose('json:')
-    def index(self, limit=100, page=0, **kw):
-        limit, page, start = g.handle_paging(int(limit), int(page))
+    def index(self, limit=None, page=0, **kw):
+        limit, page, start = g.handle_paging(limit, int(page))
         json_data = {}
         json_data['topic'] = self.topic.__json__(limit=limit, page=page)
         json_data['count'] = self.topic.query_posts(status='ok').count()

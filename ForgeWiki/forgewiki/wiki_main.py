@@ -409,7 +409,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=25, if_invalid=25)))
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
     def browse_tags(self, sort='alpha', page=0, limit=None, **kw):
         'list of all labels in the wiki'
         c.page_list = W.page_list
