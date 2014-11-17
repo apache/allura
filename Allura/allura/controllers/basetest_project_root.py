@@ -127,6 +127,9 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         if not user:
             user = M.User.anonymous()
         environ['beaker.session']['username'] = user.username
+        # save and persist, so that a creation time is set
+        environ['beaker.session'].save()
+        environ['beaker.session'].persist()
         c.user = auth.authenticate_request()
         return WsgiDispatchController.__call__(self, environ, start_response)
 

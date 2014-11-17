@@ -229,6 +229,7 @@ class AuthController(BaseController):
                  display_name=display_name,
                  password=pw,
                  pending=require_email))
+        user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # else the first password set causes this session to be invalidated
         if require_email:
             em = user.claim_address(email)
             em.send_verification_link()
@@ -406,6 +407,7 @@ class AuthController(BaseController):
             expired_username = session.get('expired-username')
             expired_user = M.User.query.get(username=expired_username) if expired_username else None
             ap.set_password(expired_user or c.user, kw['oldpw'], kw['pw'])
+            expired_user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
             redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
@@ -554,6 +556,7 @@ class PreferencesController(BaseController):
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
+            c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
             redirect('.')

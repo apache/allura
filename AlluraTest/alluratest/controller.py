@@ -125,7 +125,6 @@ def setup_unit_test():
     REGISTRY.register(url, lambda: None)
     REGISTRY.register(request, Request.blank('/'))
     REGISTRY.register(response, Response())
-    REGISTRY.register(session, beaker.session.SessionObject({}))
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     c.model_cache = None
     ThreadLocalORMSession.close_all()

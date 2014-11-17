@@ -106,6 +106,13 @@ class AuthenticationProvider(object):
         if user.disabled or user.pending:
             self.logout()
             return M.User.anonymous()
+        if not user.is_anonymous() and \
+                        self.get_last_password_updated(user) > datetime.utcfromtimestamp(self.session.created) and \
+                        user.get_tool_data('allura', 'pwd_reset_preserve_session') != self.session.id:
+            log.debug('Session logged out: due to user %s pwd change %s > %s', user.username,
+                      self.get_last_password_updated(user), datetime.utcfromtimestamp(self.session.created))
+            self.logout()
+            return M.User.anonymous()
 
         if self.session.get('pwd-expired') and request.path not in self.pwd_expired_allowed_urls:
             if self.request.environ['REQUEST_METHOD'] == 'GET':
@@ -130,7 +137,7 @@ class AuthenticationProvider(object):
 
     def _login(self):
         '''
-        Authorize a user, usually using self.request.params['username'] and ['password']
+        Authorize a user, usually using ``self.request.params['username']`` and ``['password']``
 
         :rtype: :class:`User <allura.model.auth.User>`
         :raises: HTTPUnauthorized if user not found, or credentials are not valid
@@ -168,10 +175,7 @@ class AuthenticationProvider(object):
             raise
 
     def logout(self):
-        self.session['login_expires'] = None
-        self.session['username'] = None
-        self.session['pwd-expired'] = False
-        self.session.save()
+        self.session.invalidate()
         response.delete_cookie('allura-loggedin')
 
     def validate_password(self, user, password):
@@ -204,6 +208,9 @@ class AuthenticationProvider(object):
     def set_password(self, user, old_password, new_password):
         '''
         Set a user's password.
+
+        A provider implementing this method should store the timestamp of this change, either on ``user.last_password_updated`` or
+        somewhere else that a custom ``get_last_password_updated`` method uses.
 
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: None
