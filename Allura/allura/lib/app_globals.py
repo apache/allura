@@ -380,13 +380,13 @@ class Globals(object):
     def credentials(self):
         return Credentials.get()
 
-    def handle_paging(self, limit, page, default=50):
+    def handle_paging(self, limit, page, default=25):
         limit = self.manage_paging_preference(limit, default)
         page = max(int(page), 0)
         start = page * int(limit)
         return (limit, page, start)
 
-    def manage_paging_preference(self, limit, default=50):
+    def manage_paging_preference(self, limit, default=25):
         if not limit:
             if c.user in (None, M.User.anonymous()):
                 limit = default
