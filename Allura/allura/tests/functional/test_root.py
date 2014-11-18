@@ -166,3 +166,17 @@ class TestRootController(TestController):
             assert_equal(arg.undecorated,
                          NeighborhoodController.index.undecorated)
             set_transaction_name.assert_called_with('foo')
+
+
+class TestRootWithSSLPattern(TestController):
+    def setUp(self):
+        with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):
+            super(TestRootWithSSLPattern, self).setUp()
+
+    def test_no_weird_ssl_redirect_for_error_document(self):
+        # test a 404, same functionality as a 500 from an error
+        r = self.app.get('/auth/asdfasdf',
+                         extra_environ={'wsgi.url_scheme': 'https'},
+                         status=404)
+        assert '302 Found' not in r.body, r.body
+        assert '/error/document' not in r.body, r.body

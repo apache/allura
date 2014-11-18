@@ -168,21 +168,26 @@ class SSLMiddleware(object):
         if self._no_redirect_re.match(environ['PATH_INFO']):
             return req.get_response(self.app)(environ, start_response)
         resp = None
+
         try:
             request_uri = req.url
             request_uri.decode('ascii')
         except UnicodeError:
             resp = exc.HTTPNotFound()
+
         secure = req.url.startswith('https://')
         srv_path = req.url.split('://', 1)[-1]
         # allura-loggedin is a non-secure cookie as a flag to know that the user has a session over on https
         force_ssl = (self._force_ssl_logged_in and req.cookies.get('allura-loggedin')) \
                     or self._force_ssl_re.match(environ['PATH_INFO'])
-        if not secure and force_ssl:
+        if req.environ.get('pylons.original_request'):
+            # if an error occurs, then /error/document is fetched (denoted by pylons.original_request)
+            # and we don't want to do any redirects within that sub-request
+            pass
+        elif not secure and force_ssl:
             resp = exc.HTTPFound(location='https://' + srv_path)
         elif secure and not force_ssl:
             resp = exc.HTTPFound(location='http://' + srv_path)
-
         if not resp:
             resp = self.app
         return resp(environ, start_response)
