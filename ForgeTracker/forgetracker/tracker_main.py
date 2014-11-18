@@ -641,7 +641,7 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/index.html')
     @validate(dict(deleted=validators.StringBool(if_empty=False),
                    filter=V.JsonConverter(if_empty={})))
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', deleted=False, filter=None, **kw):
+    def index(self, limit=None, columns=None, page=0, sort='ticket_num desc', deleted=False, filter=None, **kw):
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]
@@ -652,7 +652,7 @@ class RootController(BaseController, FeedController):
                                                  c.app.globals.not_closed_mongo_query,
                                                  c.app.globals.not_closed_query,
                                                  filter,
-                                                 sort=sort, limit=int(limit), page=page,
+                                                 sort=sort, limit=limit, page=page,
                                                  deleted={'$in': show_deleted},
                                                  show_deleted=deleted, **kw)
 
