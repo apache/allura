@@ -169,11 +169,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     #    the WSGI application's iterator is exhausted
     app = RegistryManager(app, streaming=True)
 
-    for mw_ep in h.iter_entry_points('allura.middleware'):
-        Middleware = mw_ep.load()
-        if getattr(Middleware, 'when', 'inner') == 'outer':
-            app = Middleware(app, config)
-
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') != 'task':
         # Converts exceptions to HTTP errors, shows traceback in debug mode
@@ -188,6 +183,12 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         else:
             app = StatusCodeRedirect(
                 app, base_config.handle_status_codes + [500])
+
+    for mw_ep in h.iter_entry_points('allura.middleware'):
+        Middleware = mw_ep.load()
+        if getattr(Middleware, 'when', 'inner') == 'outer':
+            app = Middleware(app, config)
+
     return app
 
 
