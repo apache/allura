@@ -1444,7 +1444,7 @@ class TestFunctionalController(TrackerTestController):
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/feed.rss')
         post = M.Post.query.find().first()
-        assert '/p/test/bugs/1/?limit=50#' + post.slug in r
+        assert '/p/test/bugs/1/?limit=25#' + post.slug in r
         r = self.app.get('/bugs/1/')
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
@@ -2042,7 +2042,7 @@ class TestFunctionalController(TrackerTestController):
             'app_config_id': ac_id,
             'ticket_num': 1}).first()
         post = ticket.discussion_thread.last_post
-        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        ticket_link = '/p/test2/bugs2/1/?limit=25#' + post.slug
         msg = 'Ticket moved from /p/test/bugs/1/'
         assert_equal(post.text, msg)
         # auto comment content and link to it should be in a ticket's feed
@@ -2075,7 +2075,7 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(comments_cnt, 2)  # moved auto comment + new comment
         post = ticket.discussion_thread.last_post
         # content and link to the ticket should be in a tracker's feed
-        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        ticket_link = '/p/test2/bugs2/1/?limit=25#' + post.slug
         r = self.app.get('/p/test2/bugs2/feed')
         assert post_content in r, r
         assert ticket_link in r, r

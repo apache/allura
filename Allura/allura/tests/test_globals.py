@@ -748,9 +748,9 @@ class TestHandlePaging(unittest.TestCase):
         self.assertEqual(c.user.get_pref('results_per_page'), None)
 
     def test_without_limit(self):
-        # default limit = 50
-        self.assertEqual(g.handle_paging(None, 0), (50, 0, 0))
-        self.assertEqual(g.handle_paging(None, 2), (50, 2, 100))
+        # default limit = 25
+        self.assertEqual(g.handle_paging(None, 0), (25, 0, 0))
+        self.assertEqual(g.handle_paging(None, 2), (25, 2, 50))
         # handle paging must not mess up user preferences
         self.assertEqual(c.user.get_pref('results_per_page'), None)
 
