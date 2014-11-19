@@ -485,7 +485,7 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')
         link = '<a href="%s">[%s]</a>' % (post.thread.url()
-                                          + '?limit=50#' + post.slug, post.shorthand_id())
+                                          + '?limit=25#' + post.slug, post.shorthand_id())
         assert link in r, link
 
     def test_thread(self):
