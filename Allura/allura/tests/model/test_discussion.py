@@ -365,7 +365,7 @@ def test_post_url_paginated():
 
     # with default paging limit
     for _p in p:
-        url = t.url() + '?limit=50#' + _p.slug
+        url = t.url() + '?limit=25#' + _p.slug
         assert _p.url_paginated() == url, _p.url_paginated()
 
     # with user paging limit
@@ -387,7 +387,7 @@ def test_post_url_paginated_with_artifact():
     page = Page.upsert(title='Test Page')
     thread = page.discussion_thread
     comment = thread.post('Comment')
-    url = page.url() + '?limit=50#' + comment.slug
+    url = page.url() + '?limit=25#' + comment.slug
     assert_equals(comment.url_paginated(), url)
 
 
