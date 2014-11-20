@@ -562,7 +562,10 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if ldap is None:
             raise Exception('The python-ldap package needs to be installed.  Run `pip install python-ldap` in your allura environment.')
         from allura import model as M
-        username = self.request.params['username']
+        try:
+            username = str(self.request.params['username'])
+        except UnicodeEncodeError:
+            raise exc.HTTPBadRequest('Unicode is not allowed in usernames')
         if not self._validate_password(username, self.request.params['password']):
             raise exc.HTTPUnauthorized()
         user = M.User.query.get(username=username)
@@ -586,6 +589,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def _validate_password(self, username, password):
         '''by username'''
+        password = h.really_unicode(password).encode('utf-8')
         try:
             ldap_user = ldap_user_dn(username)
         except ValueError:

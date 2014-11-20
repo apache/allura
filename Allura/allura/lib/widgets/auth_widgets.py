@@ -66,6 +66,12 @@ class LoginForm(ForgeForm):
                 dict(username=value['username'], rememberme=value.get('rememberme'),
                      return_to=value.get('return_to')),
                 None)
+        except exc.HTTPBadRequest as e:
+            raise Invalid(
+                e.message,
+                dict(username=value['username'], rememberme=value.get('rememberme'),
+                     return_to=value.get('return_to')),
+                None)
         return value
 
 
