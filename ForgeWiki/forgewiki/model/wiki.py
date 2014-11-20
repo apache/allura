@@ -93,6 +93,11 @@ class PageHistory(Snapshot):
         return g.markdown_wiki.convert(self.data.text)
 
     @property
+    def markdown_text(self):
+        """A markdown source of the page text"""
+        return self.data.text
+
+    @property
     def email_address(self):
         return self.original().email_address
 
@@ -225,6 +230,11 @@ class Page(VersionedArtifact, ActivityObject):
     def html_text(self):
         """A markdown processed version of the page text"""
         return g.markdown_wiki.cached_convert(self, 'text')
+
+    @property
+    def markdown_text(self):
+        """A markdown source of the page text"""
+        return self.text
 
     def authors(self):
         """All the users that have edited this page"""

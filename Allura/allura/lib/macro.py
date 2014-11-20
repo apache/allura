@@ -392,10 +392,13 @@ def include(ref=None, repo=None, **kw):
         return '[[include %s (already included)]' % ref
     else:
         included.add(artifact)
-    return getattr(artifact, 'text', '')
+    text = getattr(artifact, 'markdown_text', '')
+    text = jinja2.Markup(text)
+    return text
     #sb = Include()
     #g.resource_manager.register(sb)
-    #response = sb.display(artifact=artifact, attrs=kw)
+    #kw['markdown'] = '1'  # allow markdown processing inside wrapping div
+    #response = sb.display(text=text, attrs=kw)
     #return response
 
 

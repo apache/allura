@@ -85,8 +85,13 @@ class BlogPostSnapshot(M.Snapshot):
 
     @property
     def html_text(self):
-        """A markdown processed version of the page text"""
+        """A markdown processed version of the post text"""
         return g.markdown_wiki.convert(self.data.text)
+
+    @property
+    def markdown_text(self):
+        """A markdown source of the post text"""
+        return self.data.text
 
     @property
     def email_address(self):
@@ -151,6 +156,11 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     @property
     def html_text(self):
         return g.markdown.cached_convert(self, 'text')
+
+    @property
+    def markdown_text(self):
+        """A markdown source of the post text"""
+        return self.text
 
     @property
     def html_text_preview(self):
