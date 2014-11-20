@@ -255,7 +255,7 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors.add('plain_text_block',
                              PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add(
-            'macro_include', ForgeMacroIncludePreprocessor(md), '_end')
+            'macro_include', ForgeMacroIncludePreprocessor(md, ext=self), '_end')
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
@@ -538,27 +538,30 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
 
 
 class ForgeMacroIncludePreprocessor(markdown.preprocessors.Preprocessor):
-
-    '''Join include statements to prevent extra <br>'s inserted by nl2br extension.
-
-    Converts:
-    [[include ref=some_ref]]
-    [[include ref=some_other_ref]]
-
-    To:
-    [[include ref=some_ref]][[include ref=some_other_ref]]
+    '''Join markdown source of included pages into parent page to enable TOC
+    extension to find all headers.
     '''
-    pattern = re.compile(r'^\s*\[\[include ref=[^\]]*\]\]\s*$', re.IGNORECASE)
+
+    pattern = re.compile(r'\[\[(include ref=[^\]]*)\]\]', re.IGNORECASE)
+
+    def __init__(self, *args, **kwargs):
+        self.ext = kwargs.pop('ext')
+        markdown.preprocessors.Preprocessor.__init__(self, *args, **kwargs)
+        self.macro = macro.parse(self.ext._macro_context)
 
     def run(self, lines):
-        buf = []
+        return self._expand_markdown(lines)
+
+    def _expand_markdown(self, lines):
         result = []
         for line in lines:
-            if self.pattern.match(line):
-                buf.append(line)
+            new_line = self.pattern.sub(
+                lambda m: self.macro(m.group(1)),
+                line)
+            if new_line != line and '[[include' in new_line:
+                # included markdown could contain includes itself
+                new_line = self._expand_markdown(new_line.splitlines())
+                result.extend(new_line)
             else:
-                if buf:
-                    result.append(''.join(buf))
-                    buf = []
-                result.append(line)
+                result.append(new_line)
         return result

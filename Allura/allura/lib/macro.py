@@ -392,10 +392,11 @@ def include(ref=None, repo=None, **kw):
         return '[[include %s (already included)]' % ref
     else:
         included.add(artifact)
-    sb = Include()
-    g.resource_manager.register(sb)
-    response = sb.display(artifact=artifact, attrs=kw)
-    return response
+    return getattr(artifact, 'text', '')
+    #sb = Include()
+    #g.resource_manager.register(sb)
+    #response = sb.display(artifact=artifact, attrs=kw)
+    #return response
 
 
 @macro()
