@@ -260,7 +260,7 @@ def test_macro_include_no_extra_br():
     wiki = p_test.app_instance('wiki')
     with h.push_context(p_test._id, app_config_id=wiki.config._id):
         p = WM.Page.upsert(title='Include_1')
-        p.text = 'included page 1'
+        p.text = '# page 1 title\nincluded page 1 line 1\nincluded page 1 line 2\nincluded page 1 line 3'
         p.commit()
         p = WM.Page.upsert(title='Include_2')
         p.text = 'included page 2'
@@ -275,7 +275,8 @@ def test_macro_include_no_extra_br():
     expected_html = '''
 <div class="markdown_content">
 <p>
-<div><div class="markdown_content"><p>included page 1</p></div></div>
+<div><div class="markdown_content"><h1 id="page-1-title">page 1 title</h1>
+<p>included page 1 line 1<br />included page 1 line 2<br />included page 1 line 3</p></div></div>
 <div><div class="markdown_content"><p>included page 2</p></div></div>
 <div><div class="markdown_content"><p>included page 3</p></div></div>
 </p>
