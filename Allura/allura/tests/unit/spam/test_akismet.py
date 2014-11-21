@@ -41,8 +41,6 @@ class TestAkismet(unittest.TestCase):
         self.fake_user = mock.Mock(display_name=u'Søme User',
                                    email_addresses=['user@domain'])
         self.fake_headers = dict(
-            REMOTE_ADDR='fallback ip',
-            X_FORWARDED_FOR='some ip',
             USER_AGENT='some browser',
             REFERER='some url')
         self.content = u'spåm text'
@@ -57,6 +55,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_check(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.service.comment_check.side_effect({'side_effect': ''})
         self.akismet.check(self.content)
@@ -68,6 +67,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_check_with_explicit_content_type(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.check(self.content, content_type='some content type')
         self.expected_data['comment_type'] = 'some content type'
@@ -79,6 +79,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_check_with_artifact(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.check(self.content, artifact=self.fake_artifact)
         expected_data = self.expected_data
@@ -91,6 +92,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_check_with_user(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.check(self.content, user=self.fake_user)
         expected_data = self.expected_data
@@ -104,6 +106,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_check_with_implicit_user(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = self.fake_user
         self.akismet.check(self.content)
         expected_data = self.expected_data
@@ -115,21 +118,9 @@ class TestAkismet(unittest.TestCase):
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
     @mock.patch('allura.lib.spam.akismetfilter.request')
-    def test_check_with_fallback_ip(self, request, c):
-        self.expected_data['user_ip'] = 'fallback ip'
-        self.fake_headers.pop('X_FORWARDED_FOR')
-        request.headers = self.fake_headers
-        request.remote_addr = self.fake_headers['REMOTE_ADDR']
-        c.user = None
-        self.akismet.check(self.content)
-        self.akismet.service.comment_check.assert_called_once_with(
-            self.content,
-            data=self.expected_data, build_data=False)
-
-    @mock.patch('allura.lib.spam.akismetfilter.c')
-    @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_submit_spam(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.submit_spam(self.content)
         self.akismet.service.submit_spam.assert_called_once_with(
@@ -139,6 +130,7 @@ class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.request')
     def test_submit_ham(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.akismet.submit_ham(self.content)
         self.akismet.service.submit_ham.assert_called_once_with(

@@ -42,6 +42,7 @@ import types
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
+from allura.lib import utils
 from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session, main_doc_session
@@ -347,7 +348,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return dict(provider.index_user(self), **fields)
 
     def track_login(self, req):
-        user_ip = req.headers.get('X_FORWARDED_FOR', req.remote_addr)
+        user_ip = utils.ip_address(req)
         user_agent = req.headers.get('User-Agent')
         self.last_access['login_date'] = datetime.utcnow()
         self.last_access['login_ip'] = user_ip
@@ -355,7 +356,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session(self).flush(self)
 
     def track_active(self, req):
-        user_ip = req.headers.get('X_FORWARDED_FOR', req.remote_addr)
+        user_ip = utils.ip_address(req)
         user_agent = req.headers.get('User-Agent')
         now = datetime.utcnow()
         last_date = self.last_access['session_date']

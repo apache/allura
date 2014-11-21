@@ -31,6 +31,7 @@ from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
 from allura.lib import security
+from allura.lib import utils
 
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session
@@ -472,9 +473,7 @@ class VersionedArtifact(Artifact):
     def commit(self, update_stats=True):
         '''Save off a snapshot of the artifact and increment the version #'''
         try:
-            ip_address = request.headers.get(
-                'X_FORWARDED_FOR', request.remote_addr)
-            ip_address = ip_address.split(',')[0].strip()
+            ip_address = utils.ip_address(request)
         except:
             ip_address = '0.0.0.0'
         data = dict(

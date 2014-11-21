@@ -59,9 +59,12 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
-# Reimport to make available to templates
 from allura.lib import AsciiDammit
+from allura.lib import utils
+
+# import to make available to templates, don't delete:
 from .security import has_access
+
 
 log = logging.getLogger(__name__)
 
@@ -657,13 +660,7 @@ class log_action(object):
                 result['username'] = '*system'
             try:
                 result['url'] = request.url
-                ip_address = request.headers.get(
-                    'X_FORWARDED_FOR', request.remote_addr)
-                if ip_address is not None:
-                    ip_address = ip_address.split(',')[0].strip()
-                    result['ip_address'] = ip_address
-                else:
-                    result['ip_address'] = '0.0.0.0'
+                result['ip_address'] = utils.ip_address(request)
             except TypeError:
                 pass
             return result
@@ -1206,7 +1203,7 @@ def auditlog_user(message, *args, **kwargs):
     :param user: a :class:`allura.model.auth.User`
     """
     from allura import model as M
-    ip_address = request.headers.get('X-Remote-Addr', request.remote_addr)
+    ip_address = utils.ip_address(request)
     message = 'IP Address: {}\n'.format(ip_address) + message
     if kwargs.get('user') and kwargs['user'] != c.user:
         message = 'Done by user: {}\n'.format(c.user.username) + message

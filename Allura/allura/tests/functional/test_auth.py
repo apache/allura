@@ -81,7 +81,8 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ua'], None)
 
         self.app.post('/auth/do_login',
-                      headers={'X_FORWARDED_FOR': 'addr', 'User-Agent': 'browser'},
+                      headers={'User-Agent': 'browser'},
+                      extra_environ={'REMOTE_ADDR': 'addr'},
                       params=dict(
                           username='test-user',
                           password='foo'

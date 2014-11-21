@@ -25,11 +25,11 @@ from urllib import unquote
 from decorator import decorator
 from tg.decorators import before_validate
 from tg import request, redirect
-
 from webob import exc
-
 from pylons import tmpl_context as c
+
 from allura.lib import helpers as h
+from allura.lib import utils
 
 
 def task(*args, **kw):
@@ -161,9 +161,7 @@ class log_action(object):  # pragma no cover
         '''
         extra = self._extra_proto.copy()
         # Save the client IP address
-        client_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
-        client_ip = client_ip.split(',')[0].strip()
-        extra.update(client_ip=client_ip)
+        extra.update(client_ip=utils.ip_address(request))
         # Save the user info
         user = getattr(request, 'user', None)
         if user:

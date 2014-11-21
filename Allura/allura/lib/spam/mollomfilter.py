@@ -21,6 +21,7 @@ from pylons import request
 from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.lib.spam import SpamFilter
 
 try:
@@ -75,8 +76,7 @@ class MollomSpamFilter(SpamFilter):
             kw['authorName'] = user.display_name or user.username
             kw['authorMail'] = user.email_addresses[
                 0] if user.email_addresses else ''
-        user_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
-        kw['authorIP'] = user_ip.split(',')[0].strip()
+        kw['authorIP'] = utils.ip_address(request)
         # kw will be urlencoded, need to utf8-encode
         for k, v in kw.items():
             kw[k] = h.really_unicode(v).encode('utf8')

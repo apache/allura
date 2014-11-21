@@ -21,17 +21,18 @@ import time
 import unittest
 from os import path
 
-import pylons
 from webob import Request
 from mock import Mock, patch
 from nose.tools import assert_equal
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
+from tg import config
 
 from alluratest.controller import setup_unit_test
 
 from allura import model as M
 from allura.lib import utils
+from allura.lib import helpers as h
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
@@ -96,7 +97,6 @@ class TestAntispam(unittest.TestCase):
 
     def setUp(self):
         setup_unit_test()
-        pylons.request.remote_addr = '127.0.0.1'
         self.a = utils.AntiSpam()
 
     def test_generate_fields(self):
@@ -105,12 +105,6 @@ class TestAntispam(unittest.TestCase):
         assert 'name="spinner"' in fields, fields
         assert ('class="%s"' % self.a.honey_class) in fields, fields
 
-    def test_valid_submit(self):
-        form = dict(a='1', b='2')
-        r = Request.blank('/', POST=self._encrypt_form(**form))
-        validated = utils.AntiSpam.validate_request(r)
-        assert dict(a='1', b='2') == validated, validated
-
     def test_invalid_old(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form))
@@ -118,6 +112,13 @@ class TestAntispam(unittest.TestCase):
             ValueError,
             utils.AntiSpam.validate_request,
             r, now=time.time() + 24 * 60 * 60 + 1)
+
+    def test_valid_submit(self):
+        form = dict(a='1', b='2')
+        r = Request.blank('/', POST=self._encrypt_form(**form),
+                          environ={'remote_addr': '127.0.0.1'})
+        validated = utils.AntiSpam.validate_request(r)
+        assert dict(a='1', b='2') == validated, validated
 
     def test_invalid_future(self):
         form = dict(a='1', b='2')
@@ -253,3 +254,27 @@ class TestHTMLSanitizer(unittest.TestCase):
         p = utils.ForgeHTMLSanitizer('<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         assert_equal(
             self.simple_tag_list(p), ['div', 'iframe', 'div'])
+
+
+def test_ip_address():
+    req = Mock()
+    req.remote_addr = '1.2.3.4'
+    req.headers = {}
+    assert_equal(utils.ip_address(req),
+                 '1.2.3.4')
+
+def test_ip_address_header():
+    req = Mock()
+    req.remote_addr = '1.2.3.4'
+    req.headers = {'X_FORWARDED_FOR': '5.6.7.8'}
+    with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
+        assert_equal(utils.ip_address(req),
+                     '5.6.7.8')
+
+def test_ip_address_header_not_set():
+    req = Mock()
+    req.remote_addr = '1.2.3.4'
+    req.headers = {}
+    with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
+        assert_equal(utils.ip_address(req),
+                     '1.2.3.4')

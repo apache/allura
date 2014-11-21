@@ -21,6 +21,7 @@ from pylons import request
 from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.lib.spam import SpamFilter
 
 try:
@@ -66,8 +67,7 @@ class AkismetSpamFilter(SpamFilter):
             kw['comment_author'] = user.display_name or user.username
             kw['comment_author_email'] = user.email_addresses[
                 0] if user.email_addresses else ''
-        user_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
-        kw['user_ip'] = user_ip.split(',')[0].strip()
+        kw['user_ip'] = utils.ip_address(request)
         kw['user_agent'] = request.headers.get('USER_AGENT')
         kw['referrer'] = request.headers.get('REFERER')
         # kw will be urlencoded, need to utf8-encode

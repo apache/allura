@@ -44,8 +44,6 @@ class TestMollom(unittest.TestCase):
         self.fake_user = mock.Mock(display_name=u'Søme User',
                                    email_addresses=['user@domain'])
         self.fake_headers = dict(
-            REMOTE_ADDR='fallback ip',
-            X_FORWARDED_FOR='some ip',
             USER_AGENT='some browser',
             REFERER='some url')
         self.content = u'spåm text'
@@ -59,6 +57,7 @@ class TestMollom(unittest.TestCase):
     @mock.patch('allura.lib.spam.mollomfilter.request')
     def test_check(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.mollom.check(self.content, artifact=self.artifact)
         self.mollom.service.checkContent.assert_called_once_with(
@@ -68,6 +67,7 @@ class TestMollom(unittest.TestCase):
     @mock.patch('allura.lib.spam.mollomfilter.request')
     def test_check_with_user(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = None
         self.mollom.check(self.content, user=self.fake_user,
                           artifact=self.artifact)
@@ -81,23 +81,12 @@ class TestMollom(unittest.TestCase):
     @mock.patch('allura.lib.spam.mollomfilter.request')
     def test_check_with_implicit_user(self, request, c):
         request.headers = self.fake_headers
+        request.remote_addr = 'some ip'
         c.user = self.fake_user
         self.mollom.check(self.content, artifact=self.artifact)
         expected_data = self.expected_data
         expected_data.update(authorName=u'Søme User'.encode('utf8'),
                              authorMail='user@domain')
-        self.mollom.service.checkContent.assert_called_once_with(
-            **self.expected_data)
-
-    @mock.patch('allura.lib.spam.mollomfilter.c')
-    @mock.patch('allura.lib.spam.mollomfilter.request')
-    def test_check_with_fallback_ip(self, request, c):
-        self.expected_data['authorIP'] = 'fallback ip'
-        self.fake_headers.pop('X_FORWARDED_FOR')
-        request.headers = self.fake_headers
-        request.remote_addr = self.fake_headers['REMOTE_ADDR']
-        c.user = None
-        self.mollom.check(self.content, artifact=self.artifact)
         self.mollom.service.checkContent.assert_called_once_with(
             **self.expected_data)
 

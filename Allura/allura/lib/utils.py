@@ -336,9 +336,7 @@ class AntiSpam(object):
         if timestamp is None:
             timestamp = self.timestamp
         try:
-            client_ip = self.request.headers.get(
-                'X_FORWARDED_FOR', self.request.remote_addr)
-            client_ip = client_ip.split(',')[0].strip()
+            client_ip = ip_address(self.request)
         except (TypeError, AttributeError), err:
             client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
@@ -552,3 +550,9 @@ class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
                 self.allowed_elements.append('iframe')
         return super(ForgeHTMLSanitizer, self).sanitize_token(token)
 
+
+def ip_address(request):
+    ip = request.remote_addr
+    if tg.config.get('ip_address_header'):
+        ip = request.headers.get(tg.config['ip_address_header']) or ip
+    return ip
