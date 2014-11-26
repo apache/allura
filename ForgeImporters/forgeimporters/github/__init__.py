@@ -50,7 +50,7 @@ class GitHubProjectNameValidator(fev.FancyValidator):
         if not re.match(r'^[a-zA-Z0-9-_.]+$', project_name):
             raise fev.Invalid(self.message('invalid', state), value, state)
 
-        if not GitHubProjectExtractor(full_project_name).check_readable():
+        if not GitHubProjectExtractor(full_project_name, user=c.user).check_readable():
             raise fev.Invalid(self.message('unavailable', state), value, state)
         return project_name
 
@@ -107,7 +107,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return resp
 
     def check_readable(self):
-        resp = requests.head(self.get_page_url('project_info'))
+        resp = requests.head(self.add_token(self.get_page_url('project_info')))
         return resp.status_code == 200
 
     def get_next_page_url(self, link):
