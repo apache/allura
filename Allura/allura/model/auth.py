@@ -617,10 +617,13 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     @classmethod
     def by_email_address(cls, addr):
-        ea = EmailAddress.query.get(email=addr, confirmed=True)
-        if ea is None:
-            return None
-        return ea.claimed_by_user()
+        addrs = EmailAddress.query.find(dict(email=addr, confirmed=True))
+        users = [ea.claimed_by_user() for ea in addrs]
+        users = [u for u in users if u is not None]
+        if len(users) > 1:
+            log.warn('Multiple active users matching confirmed email %s %s. '
+                     'Using first one', [u.username for u in users], addr)
+        return users[0] if len(users) > 0 else None
 
     @classmethod
     def by_username(cls, name):

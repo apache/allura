@@ -153,6 +153,35 @@ def test_user_project_does_not_create_on_demand_for_anonymous_user():
 
 
 @with_setup(setUp)
+@patch('allura.model.auth.log')
+def test_user_by_email_address(log):
+    u1 = M.User.register(dict(username='abc1'), make_project=False)
+    u2 = M.User.register(dict(username='abc2'), make_project=False)
+    addr1 = M.EmailAddress(email='abc123@abc.me', confirmed=True,
+                           claimed_by_user_id=u1._id)
+    addr2 = M.EmailAddress(email='abc123@abc.me', confirmed=True,
+                           claimed_by_user_id=u2._id)
+
+    # both users are disabled
+    u1.disabled, u2.disabled = True, True
+    ThreadLocalORMSession.flush_all()
+    assert_equal(M.User.by_email_address('abc123@abc.me'), None)
+    assert_equal(log.warn.call_count, 0)
+
+    # only u2 is active
+    u1.disabled, u2.disabled = True, False
+    ThreadLocalORMSession.flush_all()
+    assert_equal(M.User.by_email_address('abc123@abc.me'), u2)
+    assert_equal(log.warn.call_count, 0)
+
+    # both are active
+    u1.disabled, u2.disabled = False, False
+    ThreadLocalORMSession.flush_all()
+    assert_in(M.User.by_email_address('abc123@abc.me'), [u1, u2])
+    assert_equal(log.warn.call_count, 1)
+
+
+@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
