@@ -52,3 +52,9 @@ class TestGitHubOAuthMixin(TestController, TestCase):
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
         req.head.return_value.headers = {'X-OAuth-Scopes': 'write:repo_hook, user'}
         self.assertTrue(self.mix.oauth_has_access('write:repo_hook'))
+
+    @patch('forgeimporters.github.OAuth2Session')
+    def test_oauth_callback_complete(self, oauth):
+        with patch.object(self.mix, 'oauth_callback_complete') as _mock:
+            self.mix.oauth_callback()
+            _mock.assert_called_once()

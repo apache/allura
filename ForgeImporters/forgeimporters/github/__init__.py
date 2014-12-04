@@ -214,7 +214,13 @@ class GitHubOAuthMixin(object):
         )
         c.user.set_tool_data('GitHubProjectImport',
                              token=token['access_token'])
+        self.oauth_callback_complete()
         redirect(session.get('github.oauth.redirect', '/'))
+
+    def oauth_callback_complete(self):
+        """Subclasses can implement this to perform additional actions when
+        token is retrieved"""
+        pass
 
     def oauth_has_access(self, scope):
         if not scope:
