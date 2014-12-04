@@ -181,7 +181,7 @@ class GitHubOAuthMixin(object):
 
     '''Support for github oauth web application flow.'''
 
-    def oauth_begin(self):
+    def oauth_begin(self, scope=None):
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
@@ -189,7 +189,7 @@ class GitHubOAuthMixin(object):
         if c.user.get_tool_data('GitHubProjectImport', 'token'):
             return  # token already exists, nothing to do
         redirect_uri = request.url.rstrip('/') + '/oauth_callback'
-        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
         auth_url, state = oauth.authorization_url(
             'https://github.com/login/oauth/authorize')
         # Used in callback to prevent CSRF
