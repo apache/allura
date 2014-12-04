@@ -215,3 +215,15 @@ class GitHubOAuthMixin(object):
         c.user.set_tool_data('GitHubProjectImport',
                              token=token['access_token'])
         redirect(session.get('github.oauth.redirect', '/'))
+
+    def oauth_has_access(self, scope):
+        if not scope:
+            return False
+        token = c.user.get_tool_data('GitHubProjectImport', 'token')
+        if not token:
+            return False
+        url = 'https://api.github.com/?access_token={}'.format(token)
+        r = requests.head(url)
+        scopes = r.headers.get('X-OAuth-Scopes', '')
+        scopes = [s.strip() for s in scopes.split(',')]
+        return scope in scopes
