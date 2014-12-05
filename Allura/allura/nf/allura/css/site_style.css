@@ -431,6 +431,7 @@ blockquote {
 #site-header a, #site-footer a {
   color: #555555;
   margin-left: 1em;
+  text-decoration: underline;
 }
 #site-header a:visited, #site-footer a:visited {
   color: #555555;
