@@ -65,10 +65,10 @@ class TestGitHubProjectExtractor(TestCase):
             response = StringIO(json.dumps(self.PROJECT_INFO))
         elif url.endswith('/issues?state=closed'):
             response = StringIO(json.dumps(self.CLOSED_ISSUES_LIST))
-        elif url.endswith('/issues?state=opened'):
+        elif url.endswith('/issues?state=open'):
             response = StringIO(json.dumps(self.OPENED_ISSUES_LIST))
-            headers = {'Link': '</issues?state=opened&page=2>; rel="next"'}
-        elif url.endswith('/issues?state=opened&page=2'):
+            headers = {'Link': '</issues?state=open&page=2>; rel="next"'}
+        elif url.endswith('/issues?state=open&page=2'):
             response = StringIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2))
         elif url.endswith('/comments'):
             response = StringIO(json.dumps(self.ISSUE_COMMENTS))

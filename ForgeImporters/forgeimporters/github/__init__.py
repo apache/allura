@@ -61,7 +61,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         'issues': 'https://api.github.com/repos/{project_name}/issues',
         'wiki_url': 'https://github.com/{project_name}.wiki',
     }
-    POSSIBLE_STATES = ('opened', 'closed')
+    POSSIBLE_STATES = ('open', 'closed')
     SUPPORTED_ISSUE_EVENTS = ('closed', 'reopened', 'assigned')
     NEXT_PAGE_URL_RE = re.compile(r'<([^>]*)>; rel="next"')
 
