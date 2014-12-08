@@ -16,6 +16,14 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+
+{#
+Each macro is wrapped with an 'if' clause so that a custom theme may extend this file and override individual macros
+http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
+#}
+
+
+{%  if not header %}
 {%- macro header(login_url, logout_url) %}
 <header id="site-header">
     <div class="wrapper">
@@ -34,7 +42,9 @@
     </div>
 </header>
 {%- endmacro %}
+{% endif %}
 
+{% if not footer %}
 {%- macro footer(year, path_to_static='') %}
 <footer id="site-footer">
   <nav>
@@ -42,11 +52,15 @@
   </nav>
 </footer>
 {%- endmacro %}
+{% endif %}
 
+{% if not custom_js %}
 {%- macro custom_js(path_to_static) %}
 
 {%- endmacro %}
+{% endif %}
 
+{% if not custom_tracking_js %}
 {%- macro custom_tracking_js(accounts, user, project) %}
     {# This should be overridden in your custom theme (e.g., sftheme) to implement custom tracking code. #}
     var _gaq = _gaq || [];
@@ -76,11 +90,15 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
 {%- endmacro %}
+{% endif %}
 
+{% if not extra_header %}
 {%- macro extra_header(path_to_static) %}
 
 {%- endmacro %}
+{% endif %}
 
+{% if not breadcrumbs %}
 {%- macro breadcrumbs(project, app) %}
     <nav id="breadcrumbs">
         <ul>
@@ -98,7 +116,9 @@
         </ul>
     </nav>
 {%- endmacro %}
+{% endif %}
 
+{% if not project_header_right %}
 {%- macro project_header_right(project, app) %}
   {% if project.neighborhood.icon %}
     <a href="{{project.neighborhood.url()}}"><img src="{{project.neighborhood.url()}}/icon" class="neighborhood_icon"
@@ -115,7 +135,9 @@
       </div>
   {% endif %}
 {%- endmacro %}
+{% endif %}
 
+{% if not login_overlay %}
 {%- macro login_overlay() %}
     {% do g.register_js('js/jquery.lightbox_me.js') %}
     {% do g.register_js('js/login_overlay.js') %}
@@ -124,7 +146,9 @@
         <iframe src="{{g.login_fragment_url}}"></iframe>
     </div>
 {%- endmacro %}
+{% endif %}
 
+{% if not site_notification %}
 {%- macro site_notification() %}
     {% set note = g.theme.get_site_notification() %}
     {% if note %}
@@ -136,3 +160,4 @@
         </div>
     {% endif %}
 {%- endmacro %}
+{% endif %}
