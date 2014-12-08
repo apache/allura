@@ -539,9 +539,7 @@ class Globals(object):
         self.resource_manager.register(ew.JSScript(text, **kw))
 
     def theme_href(self, href):
-        theme_name = config.get('theme', 'allura')
-        return self.resource_manager.absurl(
-            'theme/%s/%s' % (theme_name, href))
+        return self.theme.href(href)
 
     def forge_static(self, resource):
         base = config['static.url_base']
