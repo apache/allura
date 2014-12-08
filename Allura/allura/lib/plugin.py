@@ -963,6 +963,8 @@ class ThemeProvider(object):
     own jinja templates.  Use the standard templates as a reference, you should
     provide matching macros and block names.
 
+    For more information, see https://forge-allura.apache.org/p/allura/wiki/Themes%20in%20Allura/
+
     :var icons: a dictionary of sized icons for each tool
     '''
 
@@ -990,6 +992,17 @@ class ThemeProvider(object):
             pkg_resources.resource_filename(
                 'allura',
                 os.path.join('nf', name)))
+
+    def href(self, href, theme_name=None):
+        '''
+        Build a full URL for a given resource path
+        :param href: a path like ``css/site_style.css``
+        :param theme_name: defaults to current theme
+        :return: a full URL
+        '''
+        if theme_name is None:
+            theme_name = config.get('theme', 'allura')
+        return g.resource_manager.absurl('theme/%s/%s' % (theme_name, href))
 
     @LazyProperty
     def personal_data_form(self):
