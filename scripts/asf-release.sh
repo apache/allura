@@ -46,7 +46,7 @@ scripts/changelog.py asf_release_$PREV_VERSION HEAD $VERSION > .changelog.tmp
 echo >> .changelog.tmp
 cat CHANGES >> .changelog.tmp
 mv -f .changelog.tmp CHANGES
-prompt DUMMY "Changelog updated; press enter when ready to commit" "enter"
+prompt DUMMY "CHANGES file populated, please edit it to summarize, write upgrade notes etc.  Press enter when ready to commit" "enter"
 git add CHANGES
 git commit -m "CHANGES updated for ASF release $VERSION"
 
@@ -57,7 +57,7 @@ fi
 prompt KEY "PGP Key to sign with" "$DEFAULT_KEY"
 FINGERPRINT=`gpg --fingerprint $KEY | grep fingerprint | cut -d' ' -f 17-20 | sed -e 's/ //g'`
 
-prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin"
+prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin (see scripts/src-license-check to create RAT report)"
 
 git tag $RELEASE_TAG
 COMMIT_SHA=`git rev-parse $RELEASE_TAG`

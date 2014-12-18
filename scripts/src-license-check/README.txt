@@ -11,14 +11,17 @@ details, head to http://ant.apache.org/.
 
 2. Download and unpack Apache Rat. Apache Rat is a release audit tool (hence
 the name) used by Apache Software Foundation projects. It can be obtained from
-http://creadur.apache.org/rat/download_rat.cgi. After unpacking downloaded zip
+http://creadur.apache.org/rat/download_rat.cgi  After unpacking downloaded zip
 or tarball, you should have a directory with several .jar files and a lib/
 directory.
 
-3. Make the directory with buildfile (build.xml file) your working directory.
+3. Make this directory with the Ant buildfile (build.xml file) your working directory.
 Then execute `ant -lib [path to Apache Rat lib/ directory]`, for example:
 
-ant -lib ../../../apache-rat-0.8/lib/
+ant -lib ../../../apache-rat-0.11
 
 The buildfile will be parsed by Apache Ant and after a couple of seconds, you
 should be presented with a file list along with potential licensing issues.
+
+You should run this on a clean checkout / release of Allura, to avoid reporting
+on local files.
