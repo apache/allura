@@ -17,6 +17,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+
+echo "This will prep a release, it'll make a local commit and tag but not push them.  You should have PGP keys set up and ready"
+
 function prompt() {
     ivar="$1"
     prompt_str="$2: "
@@ -71,17 +74,18 @@ SHA1_CHECKSUM=`cd $RELEASE_DIR ; shasum -a1 $RELEASE_FILENAME` ; echo "$SHA1_CHE
 SHA512_CHECKSUM=`cd $RELEASE_DIR ; shasum -a512 $RELEASE_FILENAME` ; echo "$SHA512_CHECKSUM" > $RELEASE_FILE.sha512
 
 echo "Release is ready at: $RELEASE_DIR"
-echo "Once confirmed, push the CHANGES commit and release tag with:"
+echo "Once confirmed, push the CHANGES commit with:"
 echo "    git push"
-echo "    git push --tags"
-echo "Then upload the files and signatures, and post the following:"
+echo "Then upload the files and signatures to https://dist.apache.org/repos/dist/dev/allura/ (SVN repo)"
+echo "And post the following:"
 echo "-------------------------------------------------------------"
 echo "Subject: [VOTE] Release of Apache Allura $VERSION"
 echo "-------------------------------------------------------------"
 cat <<EOF
 Hello,
 
-This is a call for a vote on Apache Allura $VERSION.
+This is a call for a vote on Apache Allura $VERSION.  Please use this thread for votes, and
+the [DISCUSS] thread for any discussion.
 
 Source tarball, signature and checksums are available at:
   https://dist.apache.org/repos/dist/dev/allura/
@@ -99,13 +103,14 @@ The release has been signed with key ($KEY):
 
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
-  Tag:    asf_release_$VERSION
-  Browse: https://git-wip-us.apache.org/repos/asf?p=allura.git;a=shortlog;h=refs/tags/asf_release_$VERSION
+  Tag:    asf_release_$VERSION (pending successful vote)
+  Browse: https://forge-allura.apache.org/p/allura/git/ci/$COMMIT_SHA/log/?path=
 
-The RAT report is available at:
+The RAT license report is available at:
   $RAT_LOG_PASTEBIN_URL
 
-Vote will be open for at least 72 hours ($CLOSE_DATE 12PM IST).
+Vote will be open for at least 72 hours ($CLOSE_DATE 12PM IST).  Votes from Allura PMC members are binding,
+but we welcome all community members to vote as well.
 
 [ ] +1 approve
 [ ] +0 no opinion
@@ -114,3 +119,6 @@ Vote will be open for at least 72 hours ($CLOSE_DATE 12PM IST).
 Thanks & Regards
 EOF
 echo "-------------------------------------------------------------"
+echo "Also start at '[DISCUSS] Releasing Apache Allura $VERSION' thread.  (Note slightly different title so gmail doesn't combine threads)"
+echo "After a successful vote (just in case you have to redo the release), you can push the tag:"
+echo "    git push --tags"
