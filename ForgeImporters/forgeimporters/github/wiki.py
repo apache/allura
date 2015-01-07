@@ -136,7 +136,11 @@ class GitHubWikiImporter(ToolImporter):
         project_name = "%s/%s" % (user_name, project_name)
         extractor = GitHubProjectExtractor(project_name, user=user)
         wiki_avail = extractor.has_wiki()
-        if not wiki_avail:
+        # has_wiki only indicates that wiki is enabled, but it does not mean
+        # that it has any pages, so we should check if wiki repo actually
+        # exists
+        wiki_url = extractor.get_page_url('wiki_url')
+        if not wiki_avail or not self.has_wiki_repo(wiki_url):
             return
 
         self.github_wiki_url = extractor.get_page_url(
@@ -158,7 +162,6 @@ class GitHubWikiImporter(ToolImporter):
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=self.app):
                 try:
-                    wiki_url = extractor.get_page_url('wiki_url')
                     self.import_pages(wiki_url, history=with_history)
                 except git.GitCommandError:
                     log.error(
@@ -253,6 +256,15 @@ class GitHubWikiImporter(ToolImporter):
     def _convert_page_name(self, name):
         """Convert '-' and '/' into spaces in page name to match github behavior"""
         return name.replace('-', ' ').replace('/', ' ')
+
+    def has_wiki_repo(self, wiki_url):
+        wiki_path = mkdtemp()
+        try:
+            wiki = git.Repo.clone_from(wiki_url, to_path=wiki_path, bare=True)
+        except git.GitCommandError:
+            return False
+        rmtree(wiki_path)
+        return True
 
     def import_pages(self, wiki_url, history=None):
         wiki_path = mkdtemp()

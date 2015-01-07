@@ -21,6 +21,7 @@ from unittest import TestCase
 from nose.tools import assert_equal
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
+import git
 
 from IPython.testing.decorators import module_not_available, skipif
 from allura import model as M
@@ -50,7 +51,9 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.g')
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, tlorms, M):
-        with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'), patch('forgeimporters.github.wiki.c'):
+        with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'),\
+             patch('forgeimporters.github.wiki.GitHubWikiImporter.has_wiki_repo', return_value=True),\
+             patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
             p = self._make_project(gh_proj_name='myproject')
             u = Mock(name='c.user')
@@ -521,6 +524,22 @@ some text and **[Tips n' Tricks]**
         source = u'*[[this checklist|Troubleshooting]]*'
         result = u'<p><strong>[[this checklist|Troubleshooting]]</strong></p>'
         assert_equal(f(source, 't.textile').strip(), result)
+
+    @patch('forgeimporters.github.wiki.mkdtemp', autospec=True)
+    @patch('forgeimporters.github.wiki.rmtree', autospec=True)
+    @patch('forgeimporters.github.wiki.git.Repo', autospec=True)
+    def test_has_wiki_repo(self, repo, rmtree, mkdtemp):
+        mkdtemp.return_value = 'fake path'
+        i = GitHubWikiImporter()
+        assert_equal(i.has_wiki_repo('fake url'), True)
+        repo.clone_from.assert_called_once_with(
+            'fake url', to_path='fake path', bare=True)
+        rmtree.assert_called_once_with('fake path')
+
+        def raise_error(*args, **kw):
+            raise git.GitCommandError('bam', 'bam', 'bam')
+        repo.clone_from.side_effect = raise_error
+        assert_equal(i.has_wiki_repo('fake url'), False)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
