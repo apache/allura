@@ -127,15 +127,13 @@ class TestLdapAuthenticationProvider(object):
         connection.unbind_s.assert_called_once()
 
     @patch('allura.lib.plugin.ldap')
-    def test_set_password_sets_last_updated(self, ldap):
+    @patch('allura.lib.plugin.datetime', autospec=True)
+    def test_set_password_sets_last_updated(self, dt_mock, ldap):
         user = Mock()
         user.__ming__ = Mock()
         user.last_password_updated = None
-        now1 = datetime.utcnow()
         self.provider.set_password(user, None, 'new')
-        now2 = datetime.utcnow()
-        assert_true(user.last_password_updated > now1)
-        assert_true(user.last_password_updated < now2)
+        assert_equal(user.last_password_updated, dt_mock.utcnow.return_value)
 
     def test_get_last_password_updated_not_set(self):
         user = Mock()
