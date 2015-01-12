@@ -347,7 +347,9 @@ class TestUserDetails(TestController):
         assert_in(u'Comment by test-admin: I was hêre!', r)
 
     def test_disable_user(self):
+        # user was not pending
         assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert_equal(form['username'].value, 'test-user-3')
@@ -356,12 +358,32 @@ class TestUserDetails(TestController):
         r = form.submit()
         assert_in(u'User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+
+        # user was pending
+        user = M.User.by_username('test-user-3')
+        user.disabled = False
+        user.pending = True
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
+        r = self.app.get('/nf/admin/user/test-user-3')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user-3')
+        assert_equal(form['status'].value, 'pending')
+        form['status'].value = 'disable'
+        r = form.submit()
+        assert_in(u'User disabled', self.webflash(r))
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
 
     def test_enable_user(self):
+        # user was not pending
         user = M.User.by_username('test-user-3')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
         assert_equal(M.User.by_username('test-user-3').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
         r = self.app.get('/nf/admin/user/test-user-3')
         form = r.forms[0]
         assert_equal(form['username'].value, 'test-user-3')
@@ -370,6 +392,75 @@ class TestUserDetails(TestController):
         r = form.submit()
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+
+        # user was pending
+        user = M.User.by_username('test-user-3')
+        user.disabled = False
+        user.pending = True
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
+        r = self.app.get('/nf/admin/user/test-user-3')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user-3')
+        assert_equal(form['status'].value, 'pending')
+        form['status'].value = 'enable'
+        r = form.submit()
+        assert_in(u'User enabled', self.webflash(r))
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+
+        # user was pending and disabled
+        user = M.User.by_username('test-user-3')
+        user.disabled = True
+        user.pending = True
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
+        r = self.app.get('/nf/admin/user/test-user-3')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user-3')
+        assert_equal(form['status'].value, 'disable')
+        form['status'].value = 'enable'
+        r = form.submit()
+        assert_in(u'User enabled', self.webflash(r))
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+
+    def test_set_pending(self):
+        # user was disabled
+        user = M.User.by_username('test-user-3')
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, True)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+        r = self.app.get('/nf/admin/user/test-user-3')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user-3')
+        assert_equal(form['status'].value, 'disable')
+        form['status'].value = 'pending'
+        r = form.submit()
+        assert_in(u'Set user status to pending', self.webflash(r))
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
+
+        # user was enabled
+        user = M.User.by_username('test-user-3')
+        user.pending = False
+        user.disabled = False
+        ThreadLocalORMSession.flush_all()
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, False)
+        r = self.app.get('/nf/admin/user/test-user-3')
+        form = r.forms[0]
+        assert_equal(form['username'].value, 'test-user-3')
+        assert_equal(form['status'].value, 'enable')
+        form['status'].value = 'pending'
+        r = form.submit()
+        assert_in(u'Set user status to pending', self.webflash(r))
+        assert_equal(M.User.by_username('test-user-3').disabled, False)
+        assert_equal(M.User.by_username('test-user-3').pending, True)
 
     def test_emails(self):
         # add test@example.com

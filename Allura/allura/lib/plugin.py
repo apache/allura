@@ -197,6 +197,10 @@ class AuthenticationProvider(object):
         '''Activate user after registration'''
         raise NotImplementedError, 'activate_user'
 
+    def deactivate_user(self, user):
+        '''Deactivate user (== registation not confirmed)'''
+        raise NotImplementedError, 'deactivate_user'
+
     def by_username(self, username):
         '''
         Find a user by username.
@@ -365,6 +369,11 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         user.pending = False
         session(user).flush(user)
         h.auditlog_user('Account activated', user=user)
+
+    def deactivate_user(self, user):
+        user.pending = True
+        session(user).flush(user)
+        h.auditlog_user('Account deactivated', user=user)
 
     def validate_password(self, user, password):
         return self._validate_password(user, password)
@@ -623,6 +632,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def activate_user(self, user):
         return LocalAuthenticationProvider(None).activate_user(user)
+
+    def deactivate_user(self, user):
+        return LocalAuthenticationProvider(None).deactivate_user(user)
 
     def get_last_password_updated(self, user):
         return LocalAuthenticationProvider(None).get_last_password_updated(user)

@@ -521,12 +521,17 @@ class AdminUserDetailsController(object):
         user = M.User.by_username(username)
         if not user or user.is_anonymous():
             raise HTTPNotFound()
-        if status == 'enable' and user.disabled:
+        if status == 'enable' and (user.disabled or user.pending):
+            AuthenticationProvider.get(request).activate_user(user)
             AuthenticationProvider.get(request).enable_user(user)
             flash('User enabled')
         elif status == 'disable' and not user.disabled:
             AuthenticationProvider.get(request).disable_user(user)
             flash('User disabled')
+        elif status == 'pending':
+            AuthenticationProvider.get(request).deactivate_user(user)
+            AuthenticationProvider.get(request).enable_user(user)
+            flash('Set user status to pending')
         redirect(request.referer)
 
     @expose()
