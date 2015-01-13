@@ -72,6 +72,21 @@ def test_email_address():
 
 
 @with_setup(setUp)
+def test_email_address_lookup_helpers():
+    addr = M.EmailAddress.create('TEST@DOMAIN.NET')
+    ThreadLocalORMSession.flush_all()
+    assert_equal(addr.email, 'TEST@domain.net')
+
+    assert_equal(M.EmailAddress.get(email='TEST@DOMAIN.NET'), addr)
+    assert_equal(M.EmailAddress.get(email='TEST@domain.net'), addr)
+    assert_equal(M.EmailAddress.get(email='test@domain.net'), None)
+
+    assert_equal(M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all(), [addr])
+    assert_equal(M.EmailAddress.find(dict(email='TEST@domain.net')).all(), [addr])
+    assert_equal(M.EmailAddress.find(dict(email='test@domain.net')).all(), [])
+
+
+@with_setup(setUp)
 def test_email_address_send_verification_link():
     addr = M.EmailAddress(email='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)

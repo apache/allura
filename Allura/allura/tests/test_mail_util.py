@@ -190,19 +190,19 @@ class TestIdentifySender(object):
     @mock.patch('allura.model.EmailAddress')
     def test_arg(self, EA):
         EA.canonical = lambda e: e
-        EA.query.get.side_effect = [
+        EA.get.side_effect = [
             mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', None, None), 'user')
-        EA.query.get.assert_called_once_with(email='arg', confirmed=True)
+        EA.get.assert_called_once_with(email='arg', confirmed=True)
 
     @mock.patch('allura.model.EmailAddress')
     def test_header(self, EA):
         EA.canonical = lambda e: e
-        EA.query.get.side_effect = [
+        EA.get.side_effect = [
             None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(
             identify_sender(None, 'arg', {'From': 'from'}, None), 'user')
-        assert_equal(EA.query.get.call_args_list,
+        assert_equal(EA.get.call_args_list,
                      [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
     @mock.patch('allura.model.User')
@@ -210,20 +210,20 @@ class TestIdentifySender(object):
     def test_no_header(self, EA, User):
         anon = User.anonymous()
         EA.canonical = lambda e: e
-        EA.query.get.side_effect = [
+        EA.get.side_effect = [
             None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', {}, None), anon)
-        assert_equal(EA.query.get.call_args_list, [mock.call(email='arg', confirmed=True)])
+        assert_equal(EA.get.call_args_list, [mock.call(email='arg', confirmed=True)])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
     def test_no_match(self, EA, User):
         anon = User.anonymous()
         EA.canonical = lambda e: e
-        EA.query.get.side_effect = [None, None]
+        EA.get.side_effect = [None, None]
         assert_equal(
             identify_sender(None, 'arg', {'From': 'from'}, None), anon)
-        assert_equal(EA.query.get.call_args_list,
+        assert_equal(EA.get.call_args_list,
                      [mock.call(email='arg', confirmed=True), mock.call(email='from')])
 
 
