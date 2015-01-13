@@ -123,6 +123,22 @@ class EmailAddress(MappedClass):
     confirmed = FieldProperty(bool, if_missing=False)
     nonce = FieldProperty(str)
 
+    @classmethod
+    def get(cls, **kw):
+        '''Equivalent to Ming's query.get but calls self.canonical on address
+        before lookup. You should always use this instead of query.get'''
+        if 'email' in kw:
+            kw['email'] = cls.canonical(kw['email'])
+        return cls.query.get(**kw)
+
+    @classmethod
+    def find(cls, q):
+        '''Equivalent to Ming's query.find but calls self.canonical on address
+        before lookup. You should always use this instead of query.find'''
+        if 'email' in q:
+            q['email'] = cls.canonical(q['email'])
+        return cls.query.find(q)
+
     def claimed_by_user(self, include_pending=False):
         q = {'_id': self.claimed_by_user_id,
              'disabled': False,
@@ -148,7 +164,7 @@ class EmailAddress(MappedClass):
             return 'nobody@example.com'
 
     def send_claim_attempt(self):
-        confirmed_email = self.query.find(dict(email=self.email, confirmed=True)).all()
+        confirmed_email = self.find(dict(email=self.email, confirmed=True)).all()
 
         if confirmed_email:
             log.info('Sending claim attempt email to %s', self.email)
@@ -617,7 +633,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     @classmethod
     def by_email_address(cls, addr):
-        addrs = EmailAddress.query.find(dict(email=addr, confirmed=True))
+        addrs = EmailAddress.find(dict(email=addr, confirmed=True))
         users = [ea.claimed_by_user() for ea in addrs]
         users = [u for u in users if u is not None]
         if len(users) > 1:
@@ -643,7 +659,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         state(self).soil()
 
     def address_object(self, addr):
-        return EmailAddress.query.get(email=addr, claimed_by_user_id=self._id)
+        return EmailAddress.get(email=addr, claimed_by_user_id=self._id)
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
