@@ -489,8 +489,8 @@ class PreferencesController(BaseController):
                 flash('Email address already claimed', 'error')
 
             elif mail_util.isvalid(new_addr['addr']):
-                user.email_addresses.append(new_addr['addr'])
                 em = M.EmailAddress.create(new_addr['addr'])
+                user.email_addresses.append(em.email)
                 em.claimed_by_user_id = user._id
 
                 confirmed_emails = filter(lambda email: email.confirmed, claimed_emails)
