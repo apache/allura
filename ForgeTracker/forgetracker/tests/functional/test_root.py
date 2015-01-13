@@ -506,6 +506,29 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(ticket1.custom_fields._major, True)
         assert_equal(ticket2.custom_fields._major, False)
 
+    def test_mass_edit_select_options_split(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_type',
+                     label='Type',
+                     type='select',
+                     options='Bug "Feature Request"')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+        )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        r = self.app.get('/p/test/bugs/edit/')
+        opts = r.html.find('select', attrs={'name': '_type'})
+        opts = opts.findAll('option')
+        assert_equal(opts[0].get('value'), u'')
+        assert_equal(opts[0].getText(), u'no change')
+        assert_equal(opts[1].get('value'), u'Bug')
+        assert_equal(opts[1].getText(), u'Bug')
+        assert_equal(opts[2].get('value'), u'Feature Request')
+        assert_equal(opts[2].getText(), u'Feature Request')
+
     def test_mass_edit_private_field(self):
         kw = {'private': True}
         self.new_ticket(summary='First', **kw)
