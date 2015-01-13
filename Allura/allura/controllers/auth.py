@@ -184,11 +184,11 @@ class AuthController(BaseController):
 
         if not allow_non_primary_email_reset:
             message = 'If the given email address is on record, a password reset email has been sent to the account\'s primary email address.'
-            email_record = M.EmailAddress.query.get(email=provider.get_primary_email_address(user_record=user_record),
+            email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
                                                     confirmed=True)
         else:
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
-            email_record = M.EmailAddress.query.get(email=email, confirmed=True)
+            email_record = M.EmailAddress.get(email=email, confirmed=True)
 
 
         if user_record and email_record and email_record.confirmed:
@@ -241,8 +241,8 @@ class AuthController(BaseController):
 
     @expose()
     def send_verification_link(self, a):
-        addr = M.EmailAddress.query.get(email=a, claimed_by_user_id=c.user._id)
-        confirmed_emails = M.EmailAddress.query.find(dict(email=a, confirmed=True)).all()
+        addr = M.EmailAddress.get(email=a, claimed_by_user_id=c.user._id)
+        confirmed_emails = M.EmailAddress.find(dict(email=a, confirmed=True)).all()
         confirmed_emails = filter(lambda item: item != addr, confirmed_emails)
 
         if addr:
@@ -256,7 +256,7 @@ class AuthController(BaseController):
         redirect(request.referer)
 
     def _verify_addr(self, addr):
-        confirmed_by_other = M.EmailAddress.query.find(dict(email=addr.email, confirmed=True)).all() if addr else []
+        confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
         confirmed_by_other = filter(lambda item: item != addr, confirmed_by_other)
 
         if addr and not confirmed_by_other:
@@ -271,7 +271,7 @@ class AuthController(BaseController):
 
     @expose()
     def verify_addr(self, a):
-        addr = M.EmailAddress.query.get(nonce=a)
+        addr = M.EmailAddress.get(nonce=a)
         self._verify_addr(addr)
         redirect('/auth/preferences/')
 
@@ -483,7 +483,7 @@ class PreferencesController(BaseController):
                 flash('You must provide your current password to claim new email', 'error')
                 return
 
-            claimed_emails = M.EmailAddress.query.find({'email': new_addr['addr']}).all()
+            claimed_emails = M.EmailAddress.find({'email': new_addr['addr']}).all()
 
             if any(email.claimed_by_user_id == user._id for email in claimed_emails):
                 flash('Email address already claimed', 'error')

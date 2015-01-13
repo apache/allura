@@ -116,7 +116,7 @@ def main(options):
             ThreadLocalORMSession.close_all()
 
     log.info('%s %s EmailAddress documents' %
-            (preamble, M.EmailAddress.query.find().count()))
+            (preamble, M.EmailAddress.find().count()))
     log.info('%s email addresses from %s User documents' %
             (preamble, M.User.query.find().count()))
     log.info('%s monitoring_email addresses from %s Forum documents' %

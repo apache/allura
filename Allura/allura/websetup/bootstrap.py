@@ -214,7 +214,7 @@ def bootstrap(command, conf, vars):
         u_admin.claim_address('test-admin@users.localhost')
         ThreadLocalORMSession.flush_all()
 
-        admin_email = M.EmailAddress.query.get(email='test-admin@users.localhost')
+        admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
         admin_email.confirmed = True
     else:
         u_admin = make_user('Admin 1', username='admin1')

@@ -373,7 +373,7 @@ class TestUserStats(unittest.TestCase):
             self.user.set_password('testpassword')
         self.user.claim_address('rcopeland@geek.net')
 
-        addr = M.EmailAddress.query.get(email='rcopeland@geek.net')
+        addr = M.EmailAddress.get(email='rcopeland@geek.net')
         addr.confirmed = True
 
         repo_dir = pkg_resources.resource_filename(
