@@ -132,12 +132,14 @@ class EmailAddress(MappedClass):
         return cls.query.get(**kw)
 
     @classmethod
-    def find(cls, q):
+    def find(cls, q=None):
         '''Equivalent to Ming's query.find but calls self.canonical on address
         before lookup. You should always use this instead of query.find'''
-        if 'email' in q:
-            q['email'] = cls.canonical(q['email'])
-        return cls.query.find(q)
+        if q:
+            if 'email' in q:
+                q['email'] = cls.canonical(q['email'])
+            return cls.query.find(q)
+        return cls.query.find()
 
     def claimed_by_user(self, include_pending=False):
         q = {'_id': self.claimed_by_user_id,
