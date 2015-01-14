@@ -549,3 +549,18 @@ class TestIterEntryPoints(TestCase):
                                 'Ambiguous \[allura\] entry points detected. '
                                 'Multiple entry points with name "myapp".',
                                 list, h.iter_entry_points('allura'))
+
+def test_get_user_status():
+    user = {'pending': False, 'disabled': False}
+    assert_equals(h.get_user_status(user), 'enabled')
+
+    user = {'pending': True, 'disabled': True}
+    assert_equals(h.get_user_status(user), 'disabled')
+    user = {'pending': False, 'disabled': True}
+    assert_equals(h.get_user_status(user), 'disabled')
+
+    user = {'pending': True, 'disabled': False}
+    assert_equals(h.get_user_status(user), 'pending')
+
+    user = M.User.by_username('test-admin')
+    assert_equals(h.get_user_status(user), 'enabled')

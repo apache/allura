@@ -229,6 +229,7 @@ class TestUsersSearch(TestController):
     TEST_HIT = MagicMock(hits=1, docs=[{
         '_version_': 1478773871277506560,
         'disabled_b': False,
+        'pending_b': False,
         'display_name_t': 'Darth Vader',
         'id': 'allura/model/auth/User#540efdf2100d2b1483155d39',
         'last_access_login_date_dt': '2014-09-09T13:17:40.176Z',
@@ -263,7 +264,7 @@ class TestUsersSearch(TestController):
         assert_equal(options, ['username', 'display_name', '__custom__'])
         ths = [th.text for th in r.html.findAll('th')]
         assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
-                           'Disabled?', 'Details'])
+                           'Status', 'Details'])
 
     @patch('allura.controllers.site_admin.search')
     def test_additional_fields(self, search):
@@ -275,7 +276,7 @@ class TestUsersSearch(TestController):
         assert_equal(options, ['username', 'display_name', 'email_addresses', 'url', '__custom__'])
         ths = [th.text for th in r.html.findAll('th')]
         assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
-                           'Disabled?', 'url', 'Details'])
+                           'Status', 'url', 'Details'])
 
 
 class TestUserDetails(TestController):
