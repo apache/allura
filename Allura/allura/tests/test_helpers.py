@@ -551,16 +551,14 @@ class TestIterEntryPoints(TestCase):
                                 list, h.iter_entry_points('allura'))
 
 def test_get_user_status():
-    user = {'pending': False, 'disabled': False}
-    assert_equals(h.get_user_status(user), 'enabled')
-
-    user = {'pending': True, 'disabled': True}
-    assert_equals(h.get_user_status(user), 'disabled')
-    user = {'pending': False, 'disabled': True}
-    assert_equals(h.get_user_status(user), 'disabled')
-
-    user = {'pending': True, 'disabled': False}
-    assert_equals(h.get_user_status(user), 'pending')
-
     user = M.User.by_username('test-admin')
     assert_equals(h.get_user_status(user), 'enabled')
+
+    user = Mock(disabled=True, pending=False)
+    assert_equals(h.get_user_status(user), 'disabled')
+
+    user = Mock(disabled=False, pending=True)
+    assert_equals(h.get_user_status(user), 'pending')
+
+    user = Mock(disabled=True, pending=True)  # not an expected combination
+    assert_equals(h.get_user_status(user), 'disabled')

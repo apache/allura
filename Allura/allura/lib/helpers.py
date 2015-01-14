@@ -1214,15 +1214,10 @@ def get_user_status(user):
     '''
     Get user status based on disabled and pending attrs
 
-    :param user: a dict or :class:`allura.model.auth.User`
+    :param user: a :class:`allura.model.auth.User`
     '''
-    from allura import model as M
-    if isinstance(user, M.User):
-        disabled = user.disabled
-        pending = user.pending
-    else:
-        disabled = user['disabled']
-        pending = user['pending']
+    disabled = user.disabled
+    pending = user.pending
 
     if not disabled and not pending:
         return 'enabled'
