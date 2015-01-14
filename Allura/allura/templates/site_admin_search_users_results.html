@@ -21,7 +21,7 @@
   <th>Display name</th>
   <th>Email</th>
   <th>Registered</th>
-  <th>Disabled?</th>
+  <th>Status</th>
   {% for field in additional_display_fields %}
   <th>{{ field }}</th>
   {% endfor %}
@@ -34,7 +34,7 @@
   <td>{{ u['display_name'] }}</td>
   <td>{{ u['object'].get_pref('email_address') }}</td>
   <td>{{ h.ago(provider.user_registration_date(u['object']).replace(tzinfo=None)) }}</td>
-  <td>{{ u['disabled'] }}</td>
+  <td>{{ u['status'] }}</td>
   {% for field in additional_display_fields %}
   <td>{{ u[field] }}</td>
   {% endfor %}

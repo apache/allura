@@ -325,6 +325,7 @@ class SiteAdminController(object):
         fields = [('username', 'username'), ('display_name', 'display name')]
         add_fields = aslist(tg.config.get('search.user.additional_search_fields'), ',')
         r = self._search(M.User, fields, add_fields, q, f, page, limit, **kw)
+        r['objects'] = [dict(u, status=h.get_user_status(u)) for u in r['objects']]
         r['search_results_template'] = 'allura:templates/site_admin_search_users_results.html'
         r['additional_display_fields'] = \
             aslist(tg.config.get('search.user.additional_display_fields'), ',')
@@ -471,6 +472,7 @@ class AdminUserDetailsController(object):
         audit_log = self._audit_log(user, limit, page)
         info = {
             'user': user,
+            'status': h.get_user_status(user),
             'projects': projects,
             'audit_log': audit_log,
         }

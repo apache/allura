@@ -1209,3 +1209,24 @@ def auditlog_user(message, *args, **kwargs):
         message = 'Done by user: {}\n'.format(c.user.username) + message
     return M.AuditLog.log_user(message, *args, **kwargs)
 
+
+def get_user_status(user):
+    '''
+    Get user status based on disabled and pending attrs
+
+    :param user: a dict or :class:`allura.model.auth.User`
+    '''
+    from allura import model as M
+    if isinstance(user, M.User):
+        disabled = user.disabled
+        pending = user.pending
+    else:
+        disabled = user['disabled']
+        pending = user['pending']
+
+    if not disabled and not pending:
+        return 'enabled'
+    elif disabled:
+        return 'disabled'
+    elif pending:
+        return 'pending'

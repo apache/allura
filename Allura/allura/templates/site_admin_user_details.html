@@ -42,9 +42,9 @@
         <div class="grid-6">
         <form action='/nf/admin/user/set_status' method="POST">
           <div class='grid-6'>
-            <label><input type="radio" name="status" value="enable"{% if not user.disabled and not user.pending %} checked="checked"{% endif %}>Enabled</label><br>
-            <label><input type="radio" name="status" value="disable"{% if user.disabled %} checked="checked"{% endif %}>Disabled</label><br>
-            <label><input type="radio" name="status" value="pending"{% if user.pending and not user.disabled %} checked="checked"{% endif %}>Pending</label>
+            <label><input type="radio" name="status" value="enable"{% if status == 'enabled' %} checked="checked"{% endif %}>Enabled</label><br>
+            <label><input type="radio" name="status" value="disable"{% if status == 'disabled' %} checked="checked"{% endif %}>Disabled</label><br>
+            <label><input type="radio" name="status" value="pending"{% if status == 'pending' %} checked="checked"{% endif %}>Pending</label>
           </div>
           <input type='hidden' name='username' value='{{ user.username }}'>
           {{lib.csrf_token()}}
