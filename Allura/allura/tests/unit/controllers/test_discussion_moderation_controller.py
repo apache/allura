@@ -16,7 +16,7 @@
 #       under the License.
 
 from nose.tools import assert_equal
-from mock import Mock
+from mock import Mock, patch
 from ming.orm import ThreadLocalORMSession
 
 from allura.tests.unit import WithDatabase
@@ -42,7 +42,12 @@ class TestWhenModerating(WithDatabase):
 
     def test_that_it_can_approve(self):
         mod_date = self.get_post().mod_date
-        self.moderate_post(approve=True)
+
+        with patch('allura.model.discuss.Thread.post_to_feed') as mock_post_to_feed:
+            self.moderate_post(approve=True)
+            assert mock_post_to_feed.called
+            assert mock_post_to_feed.call_count == 1
+
         post = self.get_post()
         assert_equal(post.status, 'ok')
         assert_equal(post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S"),

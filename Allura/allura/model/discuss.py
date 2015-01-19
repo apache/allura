@@ -246,7 +246,7 @@ class Thread(Artifact, ActivityObject):
         return self.ref.artifact
 
     def post_to_feed(self, post):
-        if self.ref and post.status == 'ok':
+        if post.status == 'ok':
             link = None
             if self.app.tool_label.lower() == 'tickets':
                 link = post.url_paginated()
