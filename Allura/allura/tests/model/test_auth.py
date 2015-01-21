@@ -80,10 +80,12 @@ def test_email_address_lookup_helpers():
     assert_equal(M.EmailAddress.get(email='TEST@DOMAIN.NET'), addr)
     assert_equal(M.EmailAddress.get(email='TEST@domain.net'), addr)
     assert_equal(M.EmailAddress.get(email='test@domain.net'), None)
+    assert_equal(M.EmailAddress.get(email=None), None)
 
     assert_equal(M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all(), [addr])
     assert_equal(M.EmailAddress.find(dict(email='TEST@domain.net')).all(), [addr])
     assert_equal(M.EmailAddress.find(dict(email='test@domain.net')).all(), [])
+    assert_equal(M.EmailAddress.find(dict(email=None)).all(), [])
 
 
 @with_setup(setUp)

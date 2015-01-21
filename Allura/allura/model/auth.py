@@ -127,7 +127,7 @@ class EmailAddress(MappedClass):
     def get(cls, **kw):
         '''Equivalent to Ming's query.get but calls self.canonical on address
         before lookup. You should always use this instead of query.get'''
-        if 'email' in kw:
+        if kw.get('email'):
             kw['email'] = cls.canonical(kw['email'])
         return cls.query.get(**kw)
 
@@ -136,7 +136,7 @@ class EmailAddress(MappedClass):
         '''Equivalent to Ming's query.find but calls self.canonical on address
         before lookup. You should always use this instead of query.find'''
         if q:
-            if 'email' in q:
+            if q.get('email'):
                 q['email'] = cls.canonical(q['email'])
             return cls.query.find(q)
         return cls.query.find()
