@@ -201,7 +201,7 @@ class WebhooksLookup(BaseController):
         webhooks = [ep.load() for ep in webhooks]
         return webhooks
 
-    @with_trailing_slash
+    @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/webhooks_list.html')
     def index(self):
         webhooks = self._webhooks

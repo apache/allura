@@ -18,9 +18,9 @@
 -#}
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / Create {{webhook.type}} webhook{% endblock %}
+{% block title %}{{c.project.name}} / {{action|capitalize}} {{sender.type}} webhook{% endblock %}
 
-{% block header %}Create {{webhook.type}} webhook{% endblock %}
+{% block header %}{{action|capitalize}} {{sender.type}} webhook{% endblock %}
 
 {% block extra_css %}
   <style type="text/css">
@@ -64,7 +64,7 @@
 {%- endmacro %}
 
 {% block content %}
-<form action="create" method="post" enctype="multipart/form-data">
+<form action="{{action}}" method="post" enctype="multipart/form-data">
   <div>
     <label for="url">url</label>
     <input name="url" value="{{ c.form_values['url'] }}">
@@ -89,7 +89,10 @@
 
   {% block additional_fields %}{% endblock %}
 
-  <input type="submit" value="Create">
+  <input type="submit" value="{{action|capitalize}}">
+  {% if c.form_values['webhook'] %}
+    <input type="hidden" name="webhook" value="{{c.form_values['webhook']}}">
+  {% endif %}
   {{lib.csrf_token()}}
 </form>
 {% endblock %}
