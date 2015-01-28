@@ -21,7 +21,7 @@ import hmac
 import hashlib
 
 import requests
-from tg import expose, validate, redirect
+from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c
 from formencode import validators as fev, schema, Invalid
@@ -87,7 +87,7 @@ class WebhookEditForm(WebhookCreateForm):
 
 class WebhookControllerMeta(type):
     def __call__(cls, sender, *args, **kw):
-        """Decorate the `create` post handler with a validator that references
+        """Decorate post handlers with a validator that references
         the appropriate webhook sender for this controller.
         """
         if hasattr(cls, 'create'):
@@ -136,6 +136,7 @@ class WebhookController(BaseController):
         session(wh).flush(wh)
         M.AuditLog.log('add webhook %s %s %s',
                        wh.type, wh.hook_url, wh.app_config.url())
+        flash('Created successfully', 'ok')
         redirect(c.project.url() + 'admin/webhooks/')
 
     @expose()
@@ -154,7 +155,21 @@ class WebhookController(BaseController):
         M.AuditLog.log('edit webhook %s\n%s => %s\n%s => %s\n%s',
             webhook.type, old_url, url, old_app, app.url(),
             'secret changed' if old_secret != secret else '')
+        flash('Edited successfully', 'ok')
         redirect(c.project.url() + 'admin/webhooks/')
+
+    @expose('json:')
+    @require_post()
+    def delete(self, webhook):
+        form = self.edit_form(self.sender)
+        try:
+            wh = form.fields['webhook'].to_python(webhook)
+        except Invalid:
+            raise exc.HTTPNotFound()
+        wh.delete()
+        M.AuditLog.log('delete webhook %s %s %s',
+                       wh.type, wh.hook_url, wh.app_config.url())
+        return {'status': 'ok'}
 
     @without_trailing_slash
     @expose('jinja:allura:templates/webhooks/create_form.html')

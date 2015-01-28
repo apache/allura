@@ -27,17 +27,20 @@
     <p><a href="{{c.app.url}}webhooks/{{ hook.type }}">Create</a></p>
     {% if configured_hooks[hook.type] %}
       <table>
-        {% for h in configured_hooks[hook.type] %}
+        {% for wh in configured_hooks[hook.type] %}
         <tr>
           <td>
-            <a href="{{ h.url() }}">{{ h.hook_url }}</a>
+            <a href="{{ wh.url() }}">{{ wh.hook_url }}</a>
           </td>
           <td>
-            <a href="{{ h.app_config.url() }}">{{ h.app_config.options.mount_label }}</a>
+            <a href="{{ wh.app_config.url() }}">{{ wh.app_config.options.mount_label }}</a>
           </td>
-          <td>{{ h.secret or '' }}</td>
+          <td>{{ wh.secret or '' }}</td>
           <td>
-            <a href="#" title="Delete">
+            <a href="{{c.app.url}}webhooks/{{hook.type}}/delete"
+               class="delete-link"
+               data-id="{{h.really_unicode(wh._id)}}"
+               title="Delete">
               <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b>
             </a>
           </td>
@@ -46,4 +49,26 @@
       </table>
     {% endif %}
   {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+$(function() {
+  $('.delete-link').click(function(e) {
+    e.preventDefault();
+    var id = $(this).attr('data-id');
+    var csrf = $.cookie('_session_id');
+    var data = {'webhook': id, '_session_id': csrf};
+    var url = $(this).attr('href');
+    var $tr = $(this).parents('tr')
+    $.post(url, data, function(data) {
+      if (data['status'] == 'ok') {
+        $tr.remove();
+      } else {
+        console.log(data);
+      }
+    });
+  });
+});
+</script>
 {% endblock %}
