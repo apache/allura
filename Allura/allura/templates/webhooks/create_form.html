@@ -81,6 +81,11 @@
     </select>
     {{ error('app') }}
   </div>
+  <div>
+    <label for="secret">secret (leave empty to autogenerate)</label>
+    <input name="secret" value="{{ c.form_values['secret'] }}">
+    {{ error('secret') }}
+  </div>
 
   {% block additional_fields %}{% endblock %}
 

@@ -35,6 +35,7 @@
           <td>
             <a href="{{ h.app_config.url() }}">{{ h.app_config.options.mount_label }}</a>
           </td>
+          <td>{{ h.secret or '' }}</td>
           <td>
             <a href="#" title="Delete">
               <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b>

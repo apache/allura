@@ -17,6 +17,8 @@
 
 import logging
 import json
+import hmac
+import hashlib
 
 import requests
 from bson import ObjectId
@@ -45,6 +47,7 @@ class WebhookCreateForm(schema.Schema):
             [unicode(ac._id) for ac in self.triggered_by]))
 
     url = fev.URL(not_empty=True)
+    secret = fev.UnicodeString()
 
 
 class WebhookControllerMeta(type):
@@ -76,10 +79,13 @@ class WebhookController(BaseController):
 
     @expose()
     @require_post()
-    def create(self, url, app):
+    def create(self, url, app, secret=None):
+        if not secret:
+            secret = h.cryptographic_nonce(20)
         # TODO: catch DuplicateKeyError
         wh = M.Webhook(
             hook_url=url,
+            secret=secret,
             app_config_id=ObjectId(app),
             type=self.webhook.type)
         session(wh).flush(wh)
@@ -90,8 +96,15 @@ class WebhookController(BaseController):
 def send_webhook(webhook_id, payload):
     webhook = M.Webhook.query.get(_id=webhook_id)
     url = webhook.hook_url
-    headers = {'content-type': 'application/json'}
     json_payload = json.dumps(payload, cls=DateJSONEncoder)
+    signature = hmac.new(
+        webhook.secret.encode('utf-8'),
+        json_payload.encode('utf-8'),
+        hashlib.sha1)
+    signature = 'sha1=' + signature.hexdigest()
+    headers = {'content-type': 'application/json',
+               'User-Agent': 'Allura Webhook (https://allura.apache.org/)',
+               'X-Allura-Signature': signature}
     # TODO: catch
     # TODO: configurable timeout
     r = requests.post(url, data=json_payload, headers=headers, timeout=30)

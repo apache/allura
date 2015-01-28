@@ -27,6 +27,7 @@ class Webhook(Artifact):
 
     type = FieldProperty(str)
     hook_url = FieldProperty(str)
+    secret = FieldProperty(str)
 
     def url(self):
         return '{}{}/{}/{}'.format(
