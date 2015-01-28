@@ -89,6 +89,8 @@ class WebhookController(BaseController):
             app_config_id=ObjectId(app),
             type=self.webhook.type)
         session(wh).flush(wh)
+        M.AuditLog.log('add webhook %s %s %s',
+                       wh.type, wh.hook_url, wh.app_config.url())
         redirect(c.project.url() + 'admin/webhooks/')
 
 
