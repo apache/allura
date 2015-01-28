@@ -32,6 +32,7 @@ import collections
 
 import tg
 import pylons
+import json
 import webob.multidict
 from formencode import Invalid
 from tg.decorators import before_validate
@@ -592,3 +593,10 @@ class EmptyCursor(ODMCursor):
 
     def sort(self, *args, **kw):
         return self
+
+
+class DateJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return json.JSONEncoder.default(self, obj)

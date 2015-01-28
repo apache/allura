@@ -135,6 +135,9 @@ setup(
     tools = allura.ext.user_profile.user_main:ToolsSection
     social = allura.ext.user_profile.user_main:SocialSection
 
+    [allura.webhooks]
+    repo-push = allura.webhooks:RepoPushWebhookSender
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand

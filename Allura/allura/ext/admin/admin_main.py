@@ -30,6 +30,7 @@ from webob import exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.odm import session
+from ming.utils import LazyProperty
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
@@ -147,6 +148,7 @@ class AdminApp(Application):
                     SitemapEntry('Categorization', admin_url + 'trove')
                 ]
         links.append(SitemapEntry('Tools', admin_url + 'tools'))
+        links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
         if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
@@ -191,6 +193,32 @@ class AdminExtensionLookup(object):
         raise exc.HTTPNotFound, name
 
 
+class WebhooksLookup(BaseController):
+
+    @LazyProperty
+    def _webhooks(self):
+        webhooks = h.iter_entry_points('allura.webhooks')
+        webhooks = [ep.load() for ep in webhooks]
+        return webhooks
+
+    @with_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/webhooks_list.html')
+    def index(self):
+        webhooks = self._webhooks
+        configured_hooks = {}
+        for hook in webhooks:
+            configured_hooks[hook.type] = M.Webhook.find(hook.type, c.project)
+        return {'webhooks': webhooks,
+                'configured_hooks': configured_hooks}
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        for hook in self._webhooks:
+            if hook.type == name and hook.controller:
+                return hook.controller(hook), remainder
+        raise exc.HTTPNotFound, name
+
+
 class ProjectAdminController(BaseController):
     def _check_security(self):
         require_access(c.project, 'admin')
@@ -200,6 +228,7 @@ class ProjectAdminController(BaseController):
         self.groups = GroupsController()
         self.audit = AuditController()
         self.ext = AdminExtensionLookup()
+        self.webhooks = WebhooksLookup()
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')

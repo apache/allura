@@ -34,6 +34,7 @@ from .repository import MergeRequest, GitLikeTree
 from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask
+from .webhook import Webhook
 
 from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL, MarkdownCache
 from .session import main_doc_session, main_orm_session

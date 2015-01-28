@@ -146,6 +146,8 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             g.director.create_activity(actor, 'committed', new,
                                        related_nodes=[repo.app_config.project],
                                        tags=['commit', repo.tool.lower()])
+        from allura.webhooks import RepoPushWebhookSender
+        RepoPushWebhookSender().send(commit_ids=commit_ids)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)
