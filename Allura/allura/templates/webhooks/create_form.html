@@ -64,6 +64,7 @@
 {%- endmacro %}
 
 {% block content %}
+{{ error('_the_form') }}
 <form action="{{action}}" method="post" enctype="multipart/form-data">
   <div>
     <label for="url">url</label>
