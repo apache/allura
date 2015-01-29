@@ -27,6 +27,7 @@ from email.mime.multipart import MIMEMultipart
 import pkg_resources
 from pylons import tmpl_context as c
 from nose.tools import assert_equal, assert_in
+import feedparser
 
 from allura import model as M
 from allura.tasks import mail_tasks
@@ -631,6 +632,69 @@ class TestForum(TestController):
         self.check_announcement_table(r, 'AAAA')
         r = self.app.get('/discussion/testforum/childforum/')
         self.check_announcement_table(r, 'AAAA')
+
+    def test_post_to_feed(self):
+        # Create a new topic
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find(
+            'form', {'action': '/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key(
+                    'value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'XYZ'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
+        url = thread.request.url
+
+        # Check that the newly created topic is the most recent in the rss feed
+        f = self.app.get('/discussion/feed.rss').body
+        f = feedparser.parse(f)
+        newest_entry = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
+        assert newest_entry == 'XYZ'
+
+        # Reply to the newly created thread.
+        thread = self.app.get(url)
+        t = thread.html.find(
+            'div', {'class': 'row reply_post_form'}).find('form')
+        rep_url = t.get('action')
+        params = dict()
+        inputs = t.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key(
+                    'value') and field['value'] or ''
+        params[t.find('textarea')['name']] = 'bbb'
+        self.app.post(str(rep_url), params=params)
+
+        # Check that reply matches the newest in the rss feed
+        f = self.app.get('/discussion/feed.rss').body
+        f = feedparser.parse(f)
+        newest_reply = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
+        assert newest_reply == 'bbb'
+
+    def test_post_to_feed(self):
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find(
+            'form', {'action': '/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key(
+                    'value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'XYZ'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
+        self.app.post('/discussion/save_new_topic', params=params)
+
+        f = self.app.get('/discussion/feed.rss').body
+        f = feedparser.parse(f)
+        newest_entry = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
+        assert newest_entry == 'XYZ'
 
     def test_thread_sticky(self):
         r = self.app.get('/discussion/create_topic/')

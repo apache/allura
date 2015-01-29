@@ -131,7 +131,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]
-        thd.post(subject, text)
+        p = thd.post(subject, text)
+        thd.post_to_feed(p)
         flash('Message posted')
         redirect(thd.url())
 
