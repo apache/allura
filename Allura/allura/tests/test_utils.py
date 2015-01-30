@@ -17,8 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import json
 import time
 import unittest
+import datetime as dt
 from os import path
 
 from webob import Request
@@ -295,3 +297,10 @@ def test_empty_cursor():
     assert_raises(ValueError, cursor.one)
     assert_raises(StopIteration, cursor.next)
     assert_raises(StopIteration, cursor._next_impl)
+
+
+def test_DateJSONEncoder():
+    data = {'message': u'Hi!',
+            'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
+    result = json.dumps(data, cls=utils.DateJSONEncoder)
+    assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')

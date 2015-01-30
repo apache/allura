@@ -236,7 +236,7 @@ def send_webhook(webhook_id, payload):
     # TODO: catch
     # TODO: configurable timeout
     r = requests.post(url, data=json_payload, headers=headers, timeout=30)
-    if r.status_code >= 200 and r.status_code <= 300:
+    if r.status_code >= 200 and r.status_code < 300:
         log.info('Webhook successfully sent: %s %s %s',
                  webhook.type, webhook.hook_url, webhook.app_config.url())
     else:

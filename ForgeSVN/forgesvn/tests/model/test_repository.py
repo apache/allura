@@ -38,6 +38,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.model.repo_refresh import send_notifications
 from allura.lib import helpers as h
+from allura.webhooks import RepoPushWebhookSender
 from allura.tests.model.test_repo import RepoImplTestBase
 
 from forgesvn import model as SM
@@ -568,6 +569,30 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             repo2.refresh()
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
+
+    def test_webhook_payload(self):
+        sender = RepoPushWebhookSender()
+        cids = list(self.repo.all_commit_ids())[:2]
+        payload = sender.get_payload(commit_ids=cids)
+        expected_payload = {
+            'url': 'http://localhost/p/test/src/',
+            'count': 2,
+            'revisions': [
+                {'author': u'coldmind',
+                 'author_email': u'',
+                 'author_url': None,
+                 'date': datetime(2013, 11, 8, 13, 38, 11, 152000),
+                 'id': u'{}:6'.format(self.repo._id),
+                 'shortlink': '[r6]',
+                 'summary': ''},
+                {'author': u'rick446',
+                 'author_email': u'',
+                 'author_url': None,
+                 'date': datetime(2010, 11, 18, 20, 14, 21, 515000),
+                 'id': u'{}:5'.format(self.repo._id),
+                 'shortlink': '[r5]',
+                 'summary': u'Copied a => b'}]}
+        assert_equal(payload, expected_payload)
 
 
 class TestSVNRev(unittest.TestCase):

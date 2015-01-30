@@ -39,6 +39,7 @@ from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
 from allura.model.repo_refresh import send_notifications
+from allura.webhooks import RepoPushWebhookSender
 from forgegit import model as GM
 from forgegit.tests import with_git
 from forgewiki import model as WM
@@ -518,6 +519,30 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             assert_equal(
                 self.repo.clone_url('https', 'user'),
                 'https://user@foo.com/')
+
+    def test_webhook_payload(self):
+        sender = RepoPushWebhookSender()
+        cids = list(self.repo.all_commit_ids())[:2]
+        payload = sender.get_payload(commit_ids=cids)
+        expected_payload = {
+            'url': 'http://localhost/p/test/src-git/',
+            'count': 2,
+            'revisions': [
+                {'author': u'Cory Johns',
+                 'author_email': u'cjohns@slashdotmedia.com',
+                 'author_url': None,
+                 'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
+                 'id': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+                 'shortlink': u'[5c4724]',
+                 'summary': u'Not repo root'},
+                {'author': u'Rick Copeland',
+                 'author_email': u'rcopeland@geek.net',
+                 'author_url': None,
+                 'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                 'id': u'1e146e67985dcd71c74de79613719bef7bddca4a',
+                 'shortlink': u'[1e146e]',
+                 'summary': u'Change README'}]}
+        assert_equal(payload, expected_payload)
 
 
 class TestGitImplementation(unittest.TestCase):
