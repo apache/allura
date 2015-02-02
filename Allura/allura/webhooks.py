@@ -22,7 +22,7 @@ import hashlib
 
 import requests
 from bson import ObjectId
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c
 from formencode import validators as fev, schema, Invalid
@@ -125,7 +125,7 @@ class WebhookController(BaseController):
 
     def __init__(self, sender):
         super(WebhookController, self).__init__()
-        self.sender = sender
+        self.sender = sender()
 
     def gen_secret(self):
         return h.cryptographic_nonce(20)
@@ -169,11 +169,15 @@ class WebhookController(BaseController):
     @expose()
     @require_post()
     def create(self, url, app, secret):
-        wh = M.Webhook(type=self.sender.type)
-        self.update_webhook(wh, url, app, secret)
-        M.AuditLog.log('add webhook %s %s %s',
-                       wh.type, wh.hook_url, wh.app_config.url())
-        flash('Created successfully', 'ok')
+        if self.sender.enforce_limit(app):
+            wh = M.Webhook(type=self.sender.type)
+            self.update_webhook(wh, url, app, secret)
+            M.AuditLog.log('add webhook %s %s %s',
+                           wh.type, wh.hook_url, wh.app_config.url())
+            flash('Created successfully', 'ok')
+        else:
+            flash('You have exceeded the maximum number of projects '
+                  'you are allowed to create for this project/app', 'error')
         redirect(c.project.url() + 'admin/webhooks/')
 
     @expose()
@@ -277,6 +281,19 @@ class WebhookSender(object):
                     send_webhook.post(webhook._id, payload)
                 else:
                     log.warn('Webhook fires too often: %s. Skipping', webhook)
+
+    def enforce_limit(self, app_config):
+        '''
+        Checks if limit of webhooks created for given project/app is reached.
+        Returns False if limit is reached, True otherwise.
+        '''
+        _type = self.type.replace('-', '_')
+        limits = json.loads(config.get('webhook.%s.max_hooks' % _type, '{}'))
+        count = M.Webhook.query.find(dict(
+            app_config_id=app_config._id,
+            type=self.type,
+        )).count()
+        return count < limits.get(app_config.tool_name.lower(), 3)
 
 
 class RepoPushWebhookSender(WebhookSender):

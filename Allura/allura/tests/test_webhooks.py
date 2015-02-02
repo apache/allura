@@ -202,6 +202,25 @@ class TestWebhookController(TestController):
             '"repo-push" webhook already exists for Git http://httpbin.org/post')
         assert_equal(M.Webhook.query.find().count(), 1)
 
+    def test_create_limit_reached(self):
+        assert_equal(M.Webhook.query.find().count(), 0)
+        limit = json.dumps({'git': 1})
+        with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
+            data = {'url': u'http://httpbin.org/post',
+                    'app': unicode(self.git.config._id),
+                    'secret': ''}
+            r = self.create_webhook(data).follow().follow(status=200)
+            assert_equal(M.Webhook.query.find().count(), 1)
+
+            r = self.app.post(self.url + '/repo-push/create', data)
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(
+                wf['message'],
+                'You have exceeded the maximum number of projects '
+                'you are allowed to create for this project/app')
+            assert_equal(M.Webhook.query.find().count(), 1)
+
     def test_create_validation(self):
         assert_equal(M.Webhook.query.find().count(), 0)
         r = self.app.post(
@@ -467,6 +486,29 @@ class TestRepoPushWebhookSender(TestWebhookBase):
             'revisions': ['1', '2', '3'],
         }
         assert_equal(result, expected_result)
+
+    def test_enforce_limit(self):
+        def add_webhooks(suffix, n):
+            for i in range(n):
+                webhook = M.Webhook(
+                    type='repo-push',
+                    app_config_id=self.git.config._id,
+                    hook_url='http://httpbin.org/{}/{}'.format(suffix, i),
+                    secret='secret')
+                session(webhook).flush(webhook)
+
+        sender = RepoPushWebhookSender()
+        # default
+        assert_equal(sender.enforce_limit(self.git.config), True)
+        add_webhooks('one', 3)
+        assert_equal(sender.enforce_limit(self.git.config), False)
+
+        # config
+        limit = json.dumps({'git': 5})
+        with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
+            assert_equal(sender.enforce_limit(self.git.config), True)
+            add_webhooks('two', 3)
+            assert_equal(sender.enforce_limit(self.git.config), False)
 
 
 class TestModels(TestWebhookBase):
