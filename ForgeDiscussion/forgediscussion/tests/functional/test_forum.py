@@ -40,7 +40,6 @@ log = logging.getLogger(__name__)
 
 
 class TestForumEmail(TestController):
-
     def setUp(self):
         TestController.setUp(self)
         c.user = M.User.by_username('test-admin')
@@ -127,7 +126,6 @@ class TestForumEmail(TestController):
 
 
 class TestForumAsync(TestController):
-
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/discussion/')
@@ -269,7 +267,6 @@ class TestForumAsync(TestController):
 
 
 class TestForum(TestController):
-
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/discussion/')
@@ -289,6 +286,33 @@ class TestForum(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'childforum' in r
+
+    @staticmethod
+    def fill_thread_reply(r):
+        form = r.forms['edit_post']
+        for field in form.fields.values():
+            field = field[0]
+            if field.id is None:
+                continue
+            if 'text' in field.id:
+                form[field.name] = 'Test_Reply'
+        return form
+
+    @staticmethod
+    def fill_new_topic_form(r):
+        form = r.forms['create_new_topic']
+        for field in form.fields.values():
+            field = field[0]
+            if field.id is None:
+                continue
+            if 'subject' in field.id:
+                form[field.name] = 'Test_Subject'
+            if 'forum' in field.id:
+                form[field.name] = 'testforum'
+            if 'text' in field.id:
+                form[field.name] = 'Test_Description'
+        return form
+
 
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
@@ -559,8 +583,7 @@ class TestForum(TestController):
                     'value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})
-               ['name']] = 'Post subject'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'Post subject'
         thread = self.app.post(
             '/discussion/save_new_topic', params=params).follow()
         assert M.Notification.query.find(
@@ -636,65 +659,26 @@ class TestForum(TestController):
     def test_post_to_feed(self):
         # Create a new topic
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
-        params[f.find('textarea')['name']] = 'XYZ'
-        params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
-        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
+        form = self.fill_new_topic_form(r)
+        thread = form.submit().follow()
         url = thread.request.url
 
         # Check that the newly created topic is the most recent in the rss feed
         f = self.app.get('/discussion/feed.rss').body
         f = feedparser.parse(f)
         newest_entry = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
-        assert newest_entry == 'XYZ'
+        assert newest_entry == 'Test_Description'
 
         # Reply to the newly created thread.
         thread = self.app.get(url)
-        t = thread.html.find(
-            'div', {'class': 'row reply_post_form'}).find('form')
-        rep_url = t.get('action')
-        params = dict()
-        inputs = t.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
-        params[t.find('textarea')['name']] = 'bbb'
-        self.app.post(str(rep_url), params=params)
+        form = self.fill_thread_reply(thread)
+        form.submit()
 
         # Check that reply matches the newest in the rss feed
         f = self.app.get('/discussion/feed.rss').body
         f = feedparser.parse(f)
         newest_reply = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
-        assert newest_reply == 'bbb'
-
-    def test_post_to_feed(self):
-        r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
-        params[f.find('textarea')['name']] = 'XYZ'
-        params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
-        self.app.post('/discussion/save_new_topic', params=params)
-
-        f = self.app.get('/discussion/feed.rss').body
-        f = feedparser.parse(f)
-        newest_entry = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
-        assert newest_entry == 'XYZ'
+        assert newest_reply == 'Test_Reply'
 
     def test_thread_sticky(self):
         r = self.app.get('/discussion/create_topic/')
@@ -884,7 +868,6 @@ class TestForum(TestController):
 
 
 class TestForumStats(TestController):
-
     def test_stats(self):
         self.app.get('/discussion/stats', status=200)
 

@@ -18,7 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div>
-  <form method="post" action="{{action}}"
+  <form id="edit_{{ action[-4:] }}" method="post" action="{{action}}"
         enctype="multipart/form-data">
     {% if show_subject %}
     <input name="{{ widget.context_for(widget.fields.subject)['rendered_name'] }}" style="width:97%"
