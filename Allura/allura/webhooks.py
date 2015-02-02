@@ -19,6 +19,9 @@ import logging
 import json
 import hmac
 import hashlib
+import time
+import socket
+import ssl
 
 import requests
 from bson import ObjectId
@@ -29,6 +32,7 @@ from formencode import validators as fev, schema, Invalid
 from ming.odm import session
 from webob import exc
 from pymongo.errors import DuplicateKeyError
+from paste.deploy.converters import asint, aslist
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
@@ -224,32 +228,81 @@ class WebhookController(BaseController):
                 'form': form}
 
 
+class SendWebhookHelper(object):
+
+    def __init__(self, webhook, payload):
+        self.webhook = webhook
+        self.payload = payload
+
+    @property
+    def timeout(self):
+        return asint(config.get('webhook.timeout', 30))
+
+    @property
+    def retries(self):
+        t = aslist(config.get('webhook.retry', [60, 120, 240]))
+        return map(int, t)
+
+    def sign(self, json_payload):
+        signature = hmac.new(
+            self.webhook.secret.encode('utf-8'),
+            json_payload.encode('utf-8'),
+            hashlib.sha1)
+        return 'sha1=' + signature.hexdigest()
+
+    def log_msg(self, msg, response=None):
+        message = '{}: {} {} {}'.format(
+            msg,
+            self.webhook.type,
+            self.webhook.hook_url,
+            self.webhook.app_config.url())
+        if response:
+            message = '{} {} {}'.format(
+                message,
+                response.status_code,
+                response.reason)
+        return message
+
+    def send(self):
+        json_payload = json.dumps(self.payload, cls=DateJSONEncoder)
+        signature = self.sign(json_payload)
+        headers = {'content-type': 'application/json',
+                   'User-Agent': 'Allura Webhook (https://allura.apache.org/)',
+                   'X-Allura-Signature': signature}
+        ok = self._send(self.webhook.hook_url, json_payload, headers)
+        if not ok:
+            log.info('Retrying webhook in: %s', self.retries)
+            for t in self.retries:
+                log.info('Retrying webhook in %s seconds', t)
+                time.sleep(t)
+                ok = self._send(self.webhook.hook_url, json_payload, headers)
+                if ok:
+                    return
+
+    def _send(self, url, data, headers):
+        try:
+            r = requests.post(
+                    url,
+                    data=data,
+                    headers=headers,
+                    timeout=self.timeout)
+        except (requests.exceptions.RequestException,
+                socket.timeout,
+                ssl.SSLError):
+            log.exception(self.log_msg('Webhook send error'))
+            return False
+        if r.status_code >= 200 and r.status_code < 300:
+            log.info(self.log_msg('Webhook successfully sent'))
+            return True
+        else:
+            log.error(self.log_msg('Webhook send error', response=r))
+            return False
+
+
 @task()
 def send_webhook(webhook_id, payload):
     webhook = M.Webhook.query.get(_id=webhook_id)
-    url = webhook.hook_url
-    json_payload = json.dumps(payload, cls=DateJSONEncoder)
-    signature = hmac.new(
-        webhook.secret.encode('utf-8'),
-        json_payload.encode('utf-8'),
-        hashlib.sha1)
-    signature = 'sha1=' + signature.hexdigest()
-    headers = {'content-type': 'application/json',
-               'User-Agent': 'Allura Webhook (https://allura.apache.org/)',
-               'X-Allura-Signature': signature}
-    # TODO: catch
-    # TODO: configurable timeout
-    r = requests.post(url, data=json_payload, headers=headers, timeout=30)
-    if r.status_code >= 200 and r.status_code < 300:
-        log.info('Webhook successfully sent: %s %s %s',
-                 webhook.type, webhook.hook_url, webhook.app_config.url())
-    else:
-        # TODO: retry
-        # TODO: configurable retries
-        log.error('Webhook send error: %s %s %s %s %s',
-                  webhook.type, webhook.hook_url,
-                  webhook.app_config.url(),
-                  r.status_code, r.reason)
+    SendWebhookHelper(webhook, payload).send()
 
 
 class WebhookSender(object):

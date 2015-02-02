@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import datetime as dt
 
-from mock import Mock, patch
+from mock import Mock, patch, call
 from nose.tools import (
     assert_raises,
     assert_equal,
@@ -17,13 +17,13 @@ from tg import config
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.utils import DateJSONEncoder
 from allura.webhooks import (
     MingOneOf,
     WebhookValidator,
     WebhookController,
     send_webhook,
     RepoPushWebhookSender,
+    SendWebhookHelper,
 )
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, TestController
@@ -400,45 +400,103 @@ class TestWebhookController(TestController):
         return [link(tds[0]), link(tds[1]), text(tds[2]), delete_btn(tds[3])]
 
 
-class TestTasks(TestWebhookBase):
+class TestSendWebhookHelper(TestWebhookBase):
 
-    @patch('allura.webhooks.requests', autospec=True)
-    @patch('allura.webhooks.log', autospec=True)
-    def test_send_webhook(self, log, requests):
-        requests.post.return_value = Mock(status_code=200)
-        payload = {'some': ['data']}
-        json_payload = json.dumps(payload, cls=DateJSONEncoder)
-        send_webhook(self.wh._id, payload)
+    def setUp(self, *args, **kw):
+        super(TestSendWebhookHelper, self).setUp(*args, **kw)
+        self.payload = {'some': ['data', 23]}
+        self.h = SendWebhookHelper(self.wh, self.payload)
+
+    def test_timeout(self):
+        assert_equal(self.h.timeout, 30)
+        with h.push_config(config, **{'webhook.timeout': 10}):
+            assert_equal(self.h.timeout, 10)
+
+    def test_retries(self):
+        assert_equal(self.h.retries, [60, 120, 240])
+        with h.push_config(config, **{'webhook.retry': '1 2 3 4 5 6'}):
+            assert_equal(self.h.retries, [1, 2, 3, 4, 5, 6])
+
+    def test_sign(self):
+        json_payload = json.dumps(self.payload)
         signature = hmac.new(
             self.wh.secret.encode('utf-8'),
             json_payload.encode('utf-8'),
             hashlib.sha1)
         signature = 'sha1=' + signature.hexdigest()
-        headers = {'content-type': 'application/json',
-                   'User-Agent': 'Allura Webhook (https://allura.apache.org/)',
-                   'X-Allura-Signature': signature}
-        requests.post.assert_called_once_with(
-            self.wh.hook_url,
-            data=json_payload,
-            headers=headers,
-            timeout=30)
-        log.info.assert_called_once_with(
-            'Webhook successfully sent: %s %s %s',
-            self.wh.type, self.wh.hook_url, self.wh.app_config.url())
+        assert_equal(self.h.sign(json_payload), signature)
+
+    def test_log_msg(self):
+        assert_equal(
+            self.h.log_msg('OK'),
+            'OK: repo-push http://httpbin.org/post /adobe/adobe-1/src/')
+        assert_equal(
+            self.h.log_msg('Error', response=Mock(status_code=500, reason='that is why')),
+            'Error: repo-push http://httpbin.org/post /adobe/adobe-1/src/ 500 that is why')
+
+    @patch('allura.webhooks.SendWebhookHelper', autospec=True)
+    def test_send_webhook_task(self, swh):
+        send_webhook(self.wh._id, self.payload)
+        swh.assert_called_once_with(self.wh, self.payload)
 
     @patch('allura.webhooks.requests', autospec=True)
     @patch('allura.webhooks.log', autospec=True)
-    def test_send_webhook_error(self, log, requests):
+    def test_send(self, log, requests):
+        requests.post.return_value = Mock(status_code=200)
+        self.h.sign = Mock(return_value='sha1=abc')
+        self.h.send()
+        headers = {'content-type': 'application/json',
+                   'User-Agent': 'Allura Webhook (https://allura.apache.org/)',
+                   'X-Allura-Signature': 'sha1=abc'}
+        requests.post.assert_called_once_with(
+            self.wh.hook_url,
+            data=json.dumps(self.payload),
+            headers=headers,
+            timeout=30)
+        log.info.assert_called_once_with(
+            'Webhook successfully sent: %s %s %s' % (
+                self.wh.type, self.wh.hook_url, self.wh.app_config.url()))
+
+    @patch('allura.webhooks.time', autospec=True)
+    @patch('allura.webhooks.requests', autospec=True)
+    @patch('allura.webhooks.log', autospec=True)
+    def test_send_error_response_status(self, log, requests, time):
         requests.post.return_value = Mock(status_code=500)
-        send_webhook(self.wh._id, {})
-        assert_equal(requests.post.call_count, 1)
-        assert_equal(log.info.call_count, 0)
-        log.error.assert_called_once_with(
-            'Webhook send error: %s %s %s %s %s',
-            self.wh.type, self.wh.hook_url,
-            self.wh.app_config.url(),
-            requests.post.return_value.status_code,
-            requests.post.return_value.reason)
+        self.h.send()
+        assert_equal(requests.post.call_count, 4)  # initial call + 3 retries
+        assert_equal(time.sleep.call_args_list,
+                     [call(60), call(120), call(240)])
+        assert_equal(log.info.call_args_list, [
+            call('Retrying webhook in: %s', [60, 120, 240]),
+            call('Retrying webhook in %s seconds', 60),
+            call('Retrying webhook in %s seconds', 120),
+            call('Retrying webhook in %s seconds', 240)])
+        assert_equal(log.error.call_count, 4)
+        log.error.assert_called_with(
+            'Webhook send error: %s %s %s %s %s' % (
+                self.wh.type, self.wh.hook_url,
+                self.wh.app_config.url(),
+                requests.post.return_value.status_code,
+                requests.post.return_value.reason))
+
+    @patch('allura.webhooks.time', autospec=True)
+    @patch('allura.webhooks.requests', autospec=True)
+    @patch('allura.webhooks.log', autospec=True)
+    def test_send_error_no_retries(self, log, requests, time):
+        requests.post.return_value = Mock(status_code=500)
+        with h.push_config(config, **{'webhook.retry': ''}):
+            self.h.send()
+            assert_equal(requests.post.call_count, 1)
+            assert_equal(time.call_count, 0)
+            log.info.assert_called_once_with('Retrying webhook in: %s', [])
+            assert_equal(log.error.call_count, 1)
+            log.error.assert_called_with(
+                'Webhook send error: %s %s %s %s %s' % (
+                    self.wh.type, self.wh.hook_url,
+                    self.wh.app_config.url(),
+                    requests.post.return_value.status_code,
+                    requests.post.return_value.reason))
+
 
 class TestRepoPushWebhookSender(TestWebhookBase):
 
