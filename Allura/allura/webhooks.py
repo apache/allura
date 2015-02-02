@@ -272,7 +272,11 @@ class WebhookSender(object):
         if webhooks:
             payload = self.get_payload(**kw)
             for webhook in webhooks:
-                send_webhook.post(webhook._id, payload)
+                if webhook.enforce_limit():
+                    webhook.update_limit()
+                    send_webhook.post(webhook._id, payload)
+                else:
+                    log.warn('Webhook fires too often: %s. Skipping', webhook)
 
 
 class RepoPushWebhookSender(WebhookSender):

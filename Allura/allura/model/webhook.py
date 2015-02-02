@@ -15,7 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.odm import FieldProperty
+import datetime as dt
+
+from ming.odm import FieldProperty, session
+from paste.deploy.converters import asint
+from tg import config
+
 from allura.model import Artifact
 
 
@@ -28,6 +33,7 @@ class Webhook(Artifact):
     type = FieldProperty(str)
     hook_url = FieldProperty(str)
     secret = FieldProperty(str)
+    last_sent = FieldProperty(dt.datetime, if_missing=None)
 
     def url(self):
         return '{}{}/{}/{}'.format(
@@ -41,3 +47,18 @@ class Webhook(Artifact):
         ac_ids = [ac._id for ac in project.app_configs]
         hooks = cls.query.find(dict(type=type, app_config_id={'$in': ac_ids}))
         return hooks.all()
+
+    def enforce_limit(self):
+        '''Returns False if limit is reached, otherwise True'''
+        if self.last_sent is None:
+            return True
+        now = dt.datetime.utcnow()
+        config_type = self.type.replace('-', '_')
+        limit = asint(config.get('webhook.%s.limit' % config_type, 30))
+        if (now - self.last_sent) > dt.timedelta(seconds=limit):
+            return True
+        return False
+
+    def update_limit(self):
+        self.last_sent = dt.datetime.utcnow()
+        session(self).flush(self)

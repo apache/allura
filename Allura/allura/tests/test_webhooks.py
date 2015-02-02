@@ -1,6 +1,7 @@
 import json
 import hmac
 import hashlib
+import datetime as dt
 
 from mock import Mock, patch
 from nose.tools import (
@@ -12,6 +13,7 @@ from nose.tools import (
 from formencode import Invalid
 from ming.odm import session
 from pylons import tmpl_context as c
+from tg import config
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -431,6 +433,18 @@ class TestRepoPushWebhookSender(TestWebhookBase):
             self.wh._id,
             sender.get_payload.return_value)
 
+    @patch('allura.webhooks.log', autospec=True)
+    @patch('allura.webhooks.send_webhook', autospec=True)
+    def test_send_limit_reached(self, send_webhook, log):
+        sender = RepoPushWebhookSender()
+        sender.get_payload = Mock()
+        self.wh.enforce_limit = Mock(return_value=False)
+        with h.push_config(c, app=self.git):
+            sender.send(arg1=1, arg2=2)
+        assert_equal(send_webhook.post.call_count, 0)
+        log.warn.assert_called_once_with(
+            'Webhook fires too often: %s. Skipping', self.wh)
+
     @patch('allura.webhooks.send_webhook', autospec=True)
     def test_send_no_configured_webhooks(self, send_webhook):
         self.wh.delete()
@@ -467,3 +481,27 @@ class TestModels(TestWebhookBase):
     def test_webhook_url(self):
         assert_equal(self.wh.url(),
             '/adobe/adobe-1/admin/webhooks/repo-push/{}'.format(self.wh._id))
+
+    def test_webhook_enforce_limit(self):
+        self.wh.last_sent = None
+        assert_equal(self.wh.enforce_limit(), True)
+        # default value
+        self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=31)
+        assert_equal(self.wh.enforce_limit(), True)
+        self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=15)
+        assert_equal(self.wh.enforce_limit(), False)
+        # value from config
+        with h.push_config(config, **{'webhook.repo_push.limit': 100}):
+            self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=101)
+            assert_equal(self.wh.enforce_limit(), True)
+            self.wh.last_sent = dt.datetime.utcnow() - dt.timedelta(seconds=35)
+            assert_equal(self.wh.enforce_limit(), False)
+
+    @patch('allura.model.webhook.dt', autospec=True)
+    def test_update_limit(self, dt_mock):
+        _now = dt.datetime(2015, 02, 02, 13, 39)
+        dt_mock.datetime.utcnow.return_value = _now
+        assert_equal(self.wh.last_sent, None)
+        self.wh.update_limit()
+        session(self.wh).expunge(self.wh)
+        assert_equal(M.Webhook.query.get(_id=self.wh._id).last_sent, _now)
