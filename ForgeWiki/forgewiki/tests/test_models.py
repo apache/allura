@@ -30,18 +30,24 @@ class TestPageSnapshots(TestController):
         # details https://sourceforge.net/p/allura/tickets/7647/
         import time
         import random
-        from threading import Thread
+        from threading import Thread, Lock
 
         page = Page.upsert('test-page')
         page.commit()
 
+        lock = Lock()
         def run(n):
             setup_global_objects()
             for i in range(10):
                 page = Page.query.get(title='test-page')
                 page.text = 'Test Page %s.%s' % (n, i)
                 time.sleep(random.random())
-                page.commit()
+                # tests use mim (mongo-in-memory), which isn't thread-safe
+                lock.acquire()
+                try:
+                    page.commit()
+                finally:
+                    lock.release()
 
         t1 = Thread(target=lambda: run(1))
         t2 = Thread(target=lambda: run(2))
