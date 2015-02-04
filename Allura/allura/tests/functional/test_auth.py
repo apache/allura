@@ -324,6 +324,90 @@ class TestAuth(TestController):
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         assert not email.confirmed
 
+    @staticmethod
+    def _create_password_reset_hash():
+        """ Generates a password reset token for a given user.
+
+        :return: User object
+        :rtype: User
+        """
+        # test-user claimed email address
+        user = M.User.by_username('test-admin')
+        user.set_tool_data('AuthPasswordReset',
+                           hash="generated_hash_value",
+                           hash_expiry="04-08-2020")
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        session(user).flush(user)
+
+        hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+        assert_equal(hash, 'generated_hash_value')
+        assert_equal(hash_expiry, '04-08-2020')
+        return user
+
+    def test_token_generator(self):
+        """ Generates new token invalidation tests.
+
+        The tests cover: changing, claiming, updating, removing email addresses.
+        :returns: email_change_invalidates_token
+        """
+        _params = [{'new_addr.addr': 'test_abcd@domain.net',  # Change primary address
+                    'primary_addr': 'test@example.com', },
+                   {'new_addr.addr': 'test@example.com',  # Claim new address
+                    'new_addr.claim': 'Claim Address',
+                    'primary_addr': 'test-admin@users.localhost',
+                    'password': 'foo',
+                    'preferences.email_format': 'plain'},
+                   {'addr-1.ord': '1',  # remove test-admin@users.localhost
+                    'addr-1.delete': 'on',
+                    'addr-2.ord': '2',
+                    'new_addr.addr': '',
+                    'primary_addr': 'test-admin@users.localhost',
+                    'password': 'foo',
+                    'preferences.email_format': 'plain'},
+                   {'addr-1.ord': '1',  # Remove email
+                    'addr-2.ord': '2',
+                    'addr-2.delete': 'on',
+                    'new_addr.addr': '',
+                    'primary_addr': 'test-admin@users.localhost'}]
+
+        for param in _params:
+            yield self.email_change_invalidates_token, param
+
+    def email_change_invalidates_token(self, change_params):
+        user = self._create_password_reset_hash()
+        session(user).flush(user)
+
+        self.app.post('/auth/preferences/update_emails',
+                      extra_environ=dict(username='test-admin'),
+                      params=change_params)
+
+        u = M.User.by_username('test-admin')
+        print(u.get_tool_data('AuthPasswordReset', 'hash'))
+        assert_equal(u.get_tool_data('AuthPasswordReset', 'hash'), '')
+        assert_equal(u.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
+
+    @td.with_user_project('test-admin')
+    def test_change_password(self):
+        # Get and assert user with password reset token.
+        user = self._create_password_reset_hash()
+        old_pass = user.get_pref('password')
+
+        # Change password
+        self.app.post('/auth/preferences/change_password',
+                      extra_environ=dict(username='test-admin'),
+                      params={
+                          'oldpw': 'foo',
+                          'pw': 'asdfasdf',
+                          'pw2': 'asdfasdf',
+                      })
+
+        # Confirm password was changed.
+        assert_not_equal(old_pass, user.get_pref('password'))
+
+        # Confirm any existing tokens were reset.
+        assert_equal(user.get_tool_data('AuthPasswordReset', 'hash'), '')
+        assert_equal(user.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
+
     @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
@@ -1618,6 +1702,39 @@ class TestPasswordExpire(TestController):
             # and can't log in with old password
             r = self.login(pwd='foo')
             assert_in('Invalid login', r)
+
+    def test_expired_pwd_change_invalidates_token(self):
+        self.set_expire_for_user()
+        with h.push_config(config, **{'auth.pwdexpire.days': 90}):
+            r = self.login()
+            assert_true(self.expired(r))
+            self.assert_redirects()
+            user = M.User.by_username('test-user')
+            user.set_tool_data('AuthPasswordReset',
+                          hash="generated_hash_value",
+                          hash_expiry="04-08-2020")
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            assert_equal(hash, 'generated_hash_value')
+            assert_equal(hash_expiry, '04-08-2020')
+            session(user).flush(user)
+
+            # Change expired password
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
+            f = r.forms[0]
+            f['oldpw'] = 'foo'
+            f['pw'] = 'qwerty'
+            f['pw2'] = 'qwerty'
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
+            assert_equal(r.location, 'http://localhost/')
+
+            user = M.User.by_username('test-user')
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+
+            assert_equal(hash, '')
+            assert_equal(hash_expiry, '')
+
 
     def check_validation(self, oldpw, pw, pw2):
         user = M.User.by_username('test-user')

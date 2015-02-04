@@ -165,7 +165,7 @@ class AuthController(BaseController):
             raise wexc.HTTPNotFound()
         user = self._validate_hash(hash)
         user.set_password(pw)
-        user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
+        user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
         h.auditlog_user('Password changed (through recovery process)', user=user)
         flash('Password changed')
         redirect('/auth/?return_to=/')  # otherwise the default return_to would be the forgotten_password referrer page
@@ -409,6 +409,8 @@ class AuthController(BaseController):
             expired_user = M.User.query.get(username=expired_username) if expired_username else None
             ap.set_password(expired_user or c.user, kw['oldpw'], kw['pw'])
             expired_user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
+            expired_user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
+
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
             redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
@@ -471,11 +473,13 @@ class PreferencesController(BaseController):
                         # clear it now, a new one will get set below
                         user.set_pref('email_address', None)
                         primary_addr = None
+                        user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
                 del user.email_addresses[i]
                 if obj:
                     obj.delete()
         if new_addr.get('claim') or new_addr.get('addr'):
+            user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
             claimed_emails_limit = config.get('user_prefs.maximum_claimed_emails', None)
             if claimed_emails_limit and len(user.email_addresses) >= int(claimed_emails_limit):
                 flash('You cannot claim more than %s email addresses.' % claimed_emails_limit, 'error')
@@ -505,6 +509,7 @@ class PreferencesController(BaseController):
                         em.send_claim_attempt()
 
                     if not admin:
+                        user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                         flash('A verification email has been sent.  Please check your email and click to confirm.')
 
                     h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
@@ -525,6 +530,7 @@ class PreferencesController(BaseController):
                     primary_addr,
                     user=user)
             user.set_pref('email_address', primary_addr)
+            user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
 
     @h.vardec
     @expose()
@@ -561,6 +567,8 @@ class PreferencesController(BaseController):
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
             c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
+            c.user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
+
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
             redirect('.')
