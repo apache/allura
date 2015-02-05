@@ -185,19 +185,19 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'validate_password'
 
-    def disable_user(self, user):
+    def disable_user(self, user, **kw):
         '''Disable user account'''
         raise NotImplementedError, 'disable_user'
 
-    def enable_user(self, user):
+    def enable_user(self, user, **kw):
         '''Enable user account'''
         raise NotImplementedError, 'enable_user'
 
-    def activate_user(self, user):
+    def activate_user(self, user, **kw):
         '''Activate user after registration'''
         raise NotImplementedError, 'activate_user'
 
-    def deactivate_user(self, user):
+    def deactivate_user(self, user, **kw):
         '''Deactivate user (== registation not confirmed)'''
         raise NotImplementedError, 'deactivate_user'
 
@@ -355,25 +355,29 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             raise exc.HTTPUnauthorized()
         return user
 
-    def disable_user(self, user):
+    def disable_user(self, user, **kw):
         user.disabled = True
         session(user).flush(user)
-        h.auditlog_user(u'Account disabled', user=user)
+        if kw.get('audit', True):
+            h.auditlog_user(u'Account disabled', user=user)
 
-    def enable_user(self, user):
+    def enable_user(self, user, **kw):
         user.disabled = False
         session(user).flush(user)
-        h.auditlog_user(u'Account enabled', user=user)
+        if kw.get('audit', True):
+            h.auditlog_user(u'Account enabled', user=user)
 
-    def activate_user(self, user):
+    def activate_user(self, user, **kw):
         user.pending = False
         session(user).flush(user)
-        h.auditlog_user('Account activated', user=user)
+        if kw.get('audit', True):
+            h.auditlog_user('Account activated', user=user)
 
-    def deactivate_user(self, user):
+    def deactivate_user(self, user, **kw):
         user.pending = True
         session(user).flush(user)
-        h.auditlog_user('Account deactivated', user=user)
+        if kw.get('audit', True):
+            h.auditlog_user('Account changed to pending', user=user)
 
     def validate_password(self, user, password):
         return self._validate_password(user, password)
@@ -624,17 +628,17 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def update_notifications(self, user):
         return LocalAuthenticationProvider(None).update_notifications(user)
 
-    def disable_user(self, user):
-        return LocalAuthenticationProvider(None).disable_user(user)
+    def disable_user(self, user, **kw):
+        return LocalAuthenticationProvider(None).disable_user(user, **kw)
 
-    def enable_user(self, user):
-        return LocalAuthenticationProvider(None).enable_user(user)
+    def enable_user(self, user, **kw):
+        return LocalAuthenticationProvider(None).enable_user(user, **kw)
 
-    def activate_user(self, user):
-        return LocalAuthenticationProvider(None).activate_user(user)
+    def activate_user(self, user, **kw):
+        return LocalAuthenticationProvider(None).activate_user(user, **kw)
 
-    def deactivate_user(self, user):
-        return LocalAuthenticationProvider(None).deactivate_user(user)
+    def deactivate_user(self, user, **kw):
+        return LocalAuthenticationProvider(None).deactivate_user(user, **kw)
 
     def get_last_password_updated(self, user):
         return LocalAuthenticationProvider(None).get_last_password_updated(user)
