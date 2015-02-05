@@ -24,6 +24,7 @@ from tg import expose, request, config, session
 from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from paste.deploy.converters import asbool
 
 from allura.app import SitemapEntry
@@ -75,7 +76,7 @@ class RootController(WsgiDispatchController):
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
-        n = M.Neighborhood.query.get(url_prefix=n_url_prefix)
+        n = g.neighborhood_cache.get(n_url_prefix)
         if n and not n.url_prefix.startswith('//'):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
