@@ -356,7 +356,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'enable')
         form['status'].value = 'disable'
-        r = form.submit()
+        with td.audits('Account disabled', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, True)
         assert_equal(M.User.by_username('test-user-3').pending, False)
@@ -373,7 +375,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'pending')
         form['status'].value = 'disable'
-        r = form.submit()
+        with td.audits('Account disabled', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, True)
         assert_equal(M.User.by_username('test-user-3').pending, True)
@@ -390,7 +394,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'disable')
         form['status'].value = 'enable'
-        r = form.submit()
+        with td.audits('Account enabled', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
@@ -407,7 +413,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'pending')
         form['status'].value = 'enable'
-        r = form.submit()
+        with td.audits('Account enabled', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
@@ -424,7 +432,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'disable')
         form['status'].value = 'enable'
-        r = form.submit()
+        with td.audits('Account enabled', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
@@ -441,7 +451,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'disable')
         form['status'].value = 'pending'
-        r = form.submit()
+        with td.audits('Account changed to pending', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'Set user status to pending', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, True)
@@ -458,7 +470,9 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'enable')
         form['status'].value = 'pending'
-        r = form.submit()
+        with td.audits('Account changed to pending', user=True):
+            r = form.submit()
+            assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in(u'Set user status to pending', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, True)
