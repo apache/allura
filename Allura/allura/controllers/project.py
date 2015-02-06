@@ -129,8 +129,6 @@ class NeighborhoodController(object):
         c.project = project
         if project is None or (project.deleted and not has_access(c.project, 'update')()):
             raise exc.HTTPNotFound, pname
-        if project.neighborhood.name != self.neighborhood_name:
-            redirect(project.url())
         return ProjectController(), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
