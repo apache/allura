@@ -87,7 +87,7 @@ class LabelEdit(ew.InputField):
                       if ((value !== default_value) && (!exists) && value !== '') {
                           $('input.label_edit').addTag(value);
                       }
-                      $('input[type=submit]', this).attr('disabled', 'disabled');
+                      $('input[type=submit]', this).prop('disabled', true);
                   }
                 }, 1);
             });

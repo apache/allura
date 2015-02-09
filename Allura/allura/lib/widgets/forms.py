@@ -891,12 +891,12 @@ table.table_class select.add_opt {width: 5em; margin:0; padding: 0;}
                 var inp_name = cb_name.substr(0, cb_name.length-4);
                 var inp_el = $('div[class="'+inp_name+'-inp"]');
 
-                if ($(this).attr('checked')) {
+                if ($(this).prop('checked')) {
                   inp_el.hide();
                 }
 
                 $(element).click(function(e) {
-                  if ($(this).attr('checked')) {
+                  if ($(this).prop('checked')) {
                     inp_el.hide();
                   } else {
                     inp_el.show();
@@ -1003,11 +1003,11 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     }
                 });
                 $scms.change(function(){
-                    if ( $(this).attr('checked') ) {
+                    if ( $(this).prop('checked') ) {
                         var on = this;
                         $scms.each(function(){
                             if ( this !== on ) {
-                                $(this).removeAttr('checked');
+                                $(this).prop('checked', false);
                             }
                         });
                     }

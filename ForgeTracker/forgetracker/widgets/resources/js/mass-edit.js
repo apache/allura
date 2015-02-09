@@ -29,10 +29,10 @@ $(function(){
     $('#assigned_to').val('');
     $('#select_all').click(function(){
         if(this.checked){
-            $('tbody.ticket-list input[type=checkbox]').attr('checked', 'checked');
+            $('tbody.ticket-list input[type=checkbox]').prop('checked', true);
         }
         else{
-            $('tbody.ticket-list input[type=checkbox]').removeAttr('checked');
+            $('tbody.ticket-list input[type=checkbox]').prop('checked', false);
         }
     });
     $form.submit(function(){

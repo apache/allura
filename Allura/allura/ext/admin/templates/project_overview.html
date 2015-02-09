@@ -50,10 +50,10 @@
       var $moved_to_url = $('input[name=moved_to_url]');
       var update_url = function(check_cb, url_input){
         if(check_cb.is(':checked')){
-          url_input.attr('disabled', false);
+          url_input.prop('disabled', false);
         }
         else{
-          url_input.attr('disabled', true);
+          url_input.prop('disabled', true);
           url_input.val('');
         }
       };
@@ -92,13 +92,13 @@
             $('#metadata_form').submit();
           }
           else{
-            $removal_original.attr('checked', true);
+            $removal_original.prop('checked', true);
           }
         }
         {% if not allow_project_undelete %}
         else if($(this).val()!=='deleted' && currently_deleted){
           alert('You may not undelete a project that has already been deleted.');
-          $removal_original.attr('checked', true);
+          $removal_original.prop('checked', true);
         }
         {% else %}
         else if($(this).val()!=='deleted' && currently_deleted){
@@ -107,7 +107,7 @@
             $('#metadata_form').submit();
           }
           else{
-            $removal_original.attr('checked', true);
+            $removal_original.prop('checked', true);
           }
         }
         {% endif %}

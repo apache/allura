@@ -139,8 +139,8 @@
         return false;
       });
       $(':radio.default-milestone').click(function(){
-          $(':radio.default-milestone').attr("checked", false);
-          $(this).attr("checked", true);
+          $(':radio.default-milestone').prop("checked", false);
+          $(this).prop("checked", true);
       });
       $('a.cancel_edit').click(function(){
         $('td.view', $form).show();

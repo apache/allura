@@ -66,8 +66,8 @@
             // page can contain more that one milestone field,
             // so we should touch only radio buttons corresponding to given field
             var parent_table = $(this).closest('table');
-            $(":radio.default-milestone", parent_table).attr("checked", false);
-            $(this).attr("checked", true);
+            $(":radio.default-milestone", parent_table).prop("checked", false);
+            $(this).prop("checked", true);
         });
     });
 </script>
