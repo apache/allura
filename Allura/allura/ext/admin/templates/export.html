@@ -27,7 +27,7 @@
   <script type="text/javascript">
     $(function() {
       $('#check-all').click(function() {
-        $(':checkbox[name="tools"]').attr('checked', $(this).attr('checked') || null);
+        $(':checkbox[name="tools"]').prop('checked', $(this).prop('checked'));
       });
     });
   </script>

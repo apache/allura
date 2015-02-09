@@ -21,7 +21,7 @@
 
     function ico_active() {
       $('.ticket-filter').each(function() {
-        if ($(this).find('select option').attr('selected')) {
+        if ($(this).find('select option').prop('selected')) {
           $(this).parent().css('color', 'green');
         } else {
           $(this).parent().css('color', '');

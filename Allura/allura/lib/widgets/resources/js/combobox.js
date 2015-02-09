@@ -131,7 +131,7 @@
                 }
               });
 
-      input.data('autocomplete')._renderItem = function(ul, item) {
+      input.autocomplete('instance')._renderItem = function(ul, item) {
         return $('<li>')
           .data('item.autocomplete', item)
           .append('<a>' + item.label + '</a>')

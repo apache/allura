@@ -160,7 +160,7 @@ class TicketForm(GenericTicketForm):
                 evt.preventDefault();
             });
             $('form').submit(function() {
-                $('input[type=submit]', this).attr('disabled', 'disabled');
+                $('input[type=submit]', this).prop('disabled', true);
             });
             $('div.reply.discussion-post a.markdown_preview').click(function(){
                 var arrow = $(this).closest('.discussion-post').find('span.arw');
