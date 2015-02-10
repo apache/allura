@@ -1,3 +1,4 @@
+# coding: utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -97,6 +98,13 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree.is_blob('README') == True
         assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
+
+        assert_equal(self.rev.authored_user, None)
+        assert_equal(self.rev.committed_user, None)
+        assert_equal(
+            sorted(self.rev.webhook_info.keys()),
+            sorted(['id', 'url', 'timestamp', 'message', 'author',
+                    'committer', 'added', 'removed', 'modified', 'copied']))
 
 
 class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
@@ -575,24 +583,53 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         cids = list(self.repo.all_commit_ids())[:2]
         payload = sender.get_payload(commit_ids=cids)
         expected_payload = {
-            'url': 'http://localhost/p/test/src/',
-            'count': 2,
-            'revisions': [
-                {'author': u'coldmind',
-                 'author_email': u'',
-                 'author_url': None,
-                 'date': datetime(2013, 11, 8, 13, 38, 11, 152000),
-                 'id': u'{}:6'.format(self.repo._id),
-                 'shortlink': '[r6]',
-                 'summary': ''},
-                {'author': u'rick446',
-                 'author_email': u'',
-                 'author_url': None,
-                 'date': datetime(2010, 11, 18, 20, 14, 21, 515000),
-                 'id': u'{}:5'.format(self.repo._id),
-                 'shortlink': '[r5]',
-                 'summary': u'Copied a => b'}]}
-        assert_equal(payload, expected_payload)
+            'size': 2,
+            'commits': [{
+                'id': u'{}:6'.format(self.repo._id),
+                'url': u'http://localhost/p/test/src/6/',
+                'timestamp': datetime(2013, 11, 8, 13, 38, 11, 152000),
+                'message': u'',
+                'author': {'name': u'coldmind',
+                           'email': u'',
+                           'username': u''},
+                'committer': {'name': u'coldmind',
+                              'email': u'',
+                              'username': u''},
+                'added': [u'/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
+                'removed': [],
+                'modified': [],
+                'copied': []
+            }, {
+                'id': u'{}:5'.format(self.repo._id),
+                'url': u'http://localhost/p/test/src/5/',
+                'timestamp': datetime(2010, 11, 18, 20, 14, 21, 515000),
+                'message': u'Copied a => b',
+                'author': {'name': u'rick446',
+                           'email': u'',
+                           'username': u''},
+                'committer': {'name': u'rick446',
+                              'email': u'',
+                              'username': u''},
+                'added': [u'/b'],
+                'removed': [],
+                'modified': [],
+                'copied': []
+            }],
+            'repository': {
+                'name': u'SVN',
+                'full_name': u'/p/test/src/',
+                'url': u'http://localhost/p/test/src/',
+            },
+        }
+
+        def _diff(one, two):
+            from difflib import Differ
+            from pprint import pformat
+            one, two = pformat(one), pformat(two)
+            diff = Differ().compare(one.splitlines(), two.splitlines())
+            print '\n'.join(diff)
+
+        assert payload == expected_payload, _diff(expected_payload, payload)
 
 
 class TestSVNRev(unittest.TestCase):

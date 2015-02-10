@@ -356,9 +356,14 @@ class RepoPushWebhookSender(WebhookSender):
 
     def get_payload(self, commit_ids, **kw):
         app = kw.get('app') or c.app
+        commits = [app.repo.commit(ci).webhook_info for ci in commit_ids]
         payload = {
-            'url': h.absurl(app.url),
-            'count': len(commit_ids),
-            'revisions': [app.repo.commit(ci).info for ci in commit_ids],
+            'size': len(commits),
+            'commits': commits,
+            'repository': {
+                'name': app.config.options.mount_label,
+                'full_name': app.url,
+                'url': h.absurl(app.url),
+            },
         }
         return payload

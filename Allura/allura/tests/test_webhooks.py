@@ -541,14 +541,18 @@ class TestRepoPushWebhookSender(TestWebhookBase):
     def test_get_payload(self):
         sender = RepoPushWebhookSender()
         _ci = list(range(1, 4))
-        _se = [Mock(info=str(x)) for x in _ci]
+        _se = [Mock(webhook_info=str(x)) for x in _ci]
         with patch.object(self.git.repo, 'commit', autospec=True, side_effect=_se):
             with h.push_config(c, app=self.git):
                 result = sender.get_payload(commit_ids=_ci)
         expected_result = {
-            'url': 'http://localhost/adobe/adobe-1/src/',
-            'count': 3,
-            'revisions': ['1', '2', '3'],
+            'size': 3,
+            'commits': ['1', '2', '3'],
+            'repository': {
+                'full_name': u'/adobe/adobe-1/src/',
+                'name': u'Git',
+                'url': u'http://localhost/adobe/adobe-1/src/',
+            },
         }
         assert_equal(result, expected_result)
 

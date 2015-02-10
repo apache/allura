@@ -939,14 +939,22 @@ class Commit(RepoObject, ActivityObject):
         self.repo = repo
 
     @LazyProperty
+    def authored_user(self):
+        return User.by_email_address(self.authored.email)
+
+    @LazyProperty
+    def committed_user(self):
+        return User.by_email_address(self.committed.email)
+
+    @LazyProperty
     def author_url(self):
-        u = User.by_email_address(self.authored.email)
+        u = self.authored_user
         if u:
             return u.url()
 
     @LazyProperty
     def committer_url(self):
-        u = User.by_email_address(self.committed.email)
+        u = self.committed_user
         if u:
             return u.url()
 
@@ -1221,6 +1229,29 @@ class Commit(RepoObject, ActivityObject):
             shortlink=self.shorthand_id(),
             summary=self.summary
         )
+
+    @LazyProperty
+    def webhook_info(self):
+        return {
+            'id': self._id,
+            'url': h.absurl(self.url()),
+            'timestamp': self.authored.date,
+            'message': self.summary,
+            'author': {
+                'name': self.authored.name,
+                'email': self.authored.email,
+                'username': self.authored_user.username if self.authored_user else u'',
+            },
+            'committer': {
+                'name': self.committed.name,
+                'email': self.committed.email,
+                'username': self.committed_user.username if self.committed_user else u'',
+            },
+            'added': self.diffs.added,
+            'removed': self.diffs.removed,
+            'modified': self.diffs.changed,
+            'copied': self.diffs.copied,
+        }
 
 
 class Tree(RepoObject):

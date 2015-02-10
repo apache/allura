@@ -113,6 +113,20 @@ class TestNewGit(unittest.TestCase):
                 '/p/test/src-git/ci/'
                 '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
+        assert_equal(self.rev.authored_user, None)
+        assert_equal(self.rev.committed_user, None)
+        user = M.User.upsert('rick')
+        email = user.claim_address('rcopeland@geek.net')
+        email.confirmed = True
+        session(email).flush(email)
+        rev = self.repo.commit(self.rev._id)  # to update cached values of LazyProperty
+        assert_equal(rev.authored_user, user)
+        assert_equal(rev.committed_user, user)
+        assert_equal(
+            sorted(rev.webhook_info.keys()),
+            sorted(['id', 'url', 'timestamp', 'message', 'author',
+                    'committer', 'added', 'removed', 'modified', 'copied']))
+
 
 class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
@@ -521,28 +535,66 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 'https://user@foo.com/')
 
     def test_webhook_payload(self):
+        user = M.User.upsert('cory')
+        email = user.claim_address('cjohns@slashdotmedia.com')
+        email.confirmed = True
+        session(email).flush(email)
+        user = M.User.upsert('rick')
+        email = user.claim_address('rcopeland@geek.net')
+        email.confirmed = True
+        session(email).flush(email)
+
         sender = RepoPushWebhookSender()
         cids = list(self.repo.all_commit_ids())[:2]
         payload = sender.get_payload(commit_ids=cids)
         expected_payload = {
-            'url': 'http://localhost/p/test/src-git/',
-            'count': 2,
-            'revisions': [
-                {'author': u'Cory Johns',
-                 'author_email': u'cjohns@slashdotmedia.com',
-                 'author_url': None,
-                 'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
-                 'id': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-                 'shortlink': u'[5c4724]',
-                 'summary': u'Not repo root'},
-                {'author': u'Rick Copeland',
-                 'author_email': u'rcopeland@geek.net',
-                 'author_url': None,
-                 'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                 'id': u'1e146e67985dcd71c74de79613719bef7bddca4a',
-                 'shortlink': u'[1e146e]',
-                 'summary': u'Change README'}]}
-        assert_equal(payload, expected_payload)
+            'size': 2,
+            'commits': [{
+                'id': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+                'url': u'http://localhost/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/',
+                'timestamp': datetime.datetime(2013, 3, 28, 18, 54, 16),
+                'message': u'Not repo root',
+                'author': {'name': u'Cory Johns',
+                           'email': u'cjohns@slashdotmedia.com',
+                           'username': 'cory'},
+                'committer': {'name': u'Cory Johns',
+                              'email': u'cjohns@slashdotmedia.com',
+                              'username': 'cory'},
+                'added': [u'bad'],
+                'removed': [],
+                'modified': [],
+                'copied': []
+            }, {
+                'id': u'1e146e67985dcd71c74de79613719bef7bddca4a',
+                'url': u'http://localhost/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                'timestamp': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                'message': u'Change README',
+                'author': {'name': u'Rick Copeland',
+                           'email': u'rcopeland@geek.net',
+                           'username': 'rick'},
+                'committer': {'name': u'Rick Copeland',
+                              'email': u'rcopeland@geek.net',
+                              'username': 'rick'},
+                'added': [],
+                'removed': [],
+                'modified': [u'README'],
+                'copied': []
+            }],
+            'repository': {
+                'name': u'Git',
+                'full_name': u'/p/test/src-git/',
+                'url': u'http://localhost/p/test/src-git/',
+            },
+        }
+
+        def _diff(one, two):
+            from difflib import Differ
+            from pprint import pformat
+            one, two = pformat(one), pformat(two)
+            diff = Differ().compare(one.splitlines(), two.splitlines())
+            print '\n'.join(diff)
+
+        assert payload == expected_payload, _diff(expected_payload, payload)
 
 
 class TestGitImplementation(unittest.TestCase):
