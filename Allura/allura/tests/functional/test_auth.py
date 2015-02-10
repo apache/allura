@@ -74,6 +74,21 @@ class TestAuth(TestController):
             username='test-usera', password='foo'))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    def test_logout(self):
+        environ = {'disable_auth_magic': "True"}
+        r = self.app.get('/auth/', extra_environ=environ)
+        f = r.forms[0]
+        f['username'] = 'test-user'
+        f['password'] = 'foo'
+        r = f.submit().follow(extra_environ=environ)
+        logged_in_session = r.session['_id']
+        assert r.html.nav('a')[-1].string == "Log Out"
+
+        r = self.app.get('/auth/logout', extra_environ=environ).follow(extra_environ=environ)
+        logged_out_session = r.session['_id']
+        assert logged_in_session is not logged_out_session
+        assert r.html.nav('a')[-1].string == 'Log In'
+
     def test_track_login(self):
         user = M.User.by_username('test-user')
         assert_equal(user.last_access['login_date'], None)
@@ -296,7 +311,6 @@ class TestAuth(TestController):
         self.app.post('/auth/send_verification_link',
                           params=dict(a=email_address),
                           extra_environ=dict(username='test-user'))
-
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
@@ -1503,7 +1517,6 @@ class TestDisableAccount(TestController):
 
 
 class TestPasswordExpire(TestController):
-
     def login(self, username='test-user', pwd='foo', query_string=''):
         r = self.app.get('/auth/' + query_string, extra_environ={'username': '*anonymous'})
         f = r.forms[0]

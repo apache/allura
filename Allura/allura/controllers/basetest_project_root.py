@@ -41,7 +41,6 @@ log = logging.getLogger(__name__)
 
 
 class BasetestProjectRootController(WsgiDispatchController, ProjectController):
-
     '''Root controller for testing -- it behaves just like a
     ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -119,23 +118,32 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         return app.root, remainder
 
     def __call__(self, environ, start_response):
+        """ Called from a turbo gears 'app' instance.
+
+
+        :param environ: Extra environment variables.
+        Example: self.app.get('/auth/', extra_environ={'disable_auth_magic': "True"})
+        """
         c.app = None
         c.project = M.Project.query.get(
             shortname='test', neighborhood_id=self.p_nbhd._id)
-        auth = plugin.AuthenticationProvider.get(request)
-        user = auth.by_username(environ.get('username', 'test-admin'))
-        if not user:
-            user = M.User.anonymous()
-        environ['beaker.session']['username'] = user.username
-        # save and persist, so that a creation time is set
-        environ['beaker.session'].save()
-        environ['beaker.session'].persist()
-        c.user = auth.authenticate_request()
+        if 'disable_auth_magic' in environ:
+            auth = plugin.AuthenticationProvider.get(request)
+            c.user = auth.authenticate_request()
+        else:
+            auth = plugin.AuthenticationProvider.get(request)
+            user = auth.by_username(environ.get('username', 'test-admin'))
+            if not user:
+                user = M.User.anonymous()
+            environ['beaker.session']['username'] = user.username
+            # save and persist, so that a creation time is set
+            environ['beaker.session'].save()
+            environ['beaker.session'].persist()
+            c.user = auth.authenticate_request()
         return WsgiDispatchController.__call__(self, environ, start_response)
 
 
 class DispatchTest(object):
-
     @expose()
     def _lookup(self, *args):
         if args:
@@ -145,7 +153,6 @@ class DispatchTest(object):
 
 
 class NamedController(object):
-
     def __init__(self, name):
         self.name = name
 
@@ -159,7 +166,6 @@ class NamedController(object):
 
 
 class SecurityTests(object):
-
     @expose()
     def _lookup(self, name, *args):
         name = unquote(name)
@@ -169,7 +175,6 @@ class SecurityTests(object):
 
 
 class SecurityTest(object):
-
     def __init__(self):
         from forgewiki import model as WM
         c.app = c.project.app_instance('wiki')

@@ -176,6 +176,7 @@ class AuthenticationProvider(object):
 
     def logout(self):
         self.session.invalidate()
+        self.session.save()
         response.delete_cookie('allura-loggedin')
 
     def validate_password(self, user, password):
