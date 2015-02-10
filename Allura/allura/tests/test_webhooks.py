@@ -430,9 +430,14 @@ class TestSendWebhookHelper(TestWebhookBase):
         assert_equal(
             self.h.log_msg('OK'),
             'OK: repo-push http://httpbin.org/post /adobe/adobe-1/src/')
+        response = Mock(
+            status_code=500,
+            text='that is why',
+            headers={'Content-Type': 'application/json'})
         assert_equal(
-            self.h.log_msg('Error', response=Mock(status_code=500, reason='that is why')),
-            'Error: repo-push http://httpbin.org/post /adobe/adobe-1/src/ 500 that is why')
+            self.h.log_msg('Error', response=response),
+            "Error: repo-push http://httpbin.org/post /adobe/adobe-1/src/ 500 "
+            "that is why {'Content-Type': 'application/json'}")
 
     @patch('allura.webhooks.SendWebhookHelper', autospec=True)
     def test_send_webhook_task(self, swh):
@@ -473,11 +478,12 @@ class TestSendWebhookHelper(TestWebhookBase):
             call('Retrying webhook in %s seconds', 240)])
         assert_equal(log.error.call_count, 4)
         log.error.assert_called_with(
-            'Webhook send error: %s %s %s %s %s' % (
+            'Webhook send error: %s %s %s %s %s %s' % (
                 self.wh.type, self.wh.hook_url,
                 self.wh.app_config.url(),
                 requests.post.return_value.status_code,
-                requests.post.return_value.reason))
+                requests.post.return_value.text,
+                requests.post.return_value.headers))
 
     @patch('allura.webhooks.time', autospec=True)
     @patch('allura.webhooks.requests', autospec=True)
@@ -491,11 +497,12 @@ class TestSendWebhookHelper(TestWebhookBase):
             log.info.assert_called_once_with('Retrying webhook in: %s', [])
             assert_equal(log.error.call_count, 1)
             log.error.assert_called_with(
-                'Webhook send error: %s %s %s %s %s' % (
+                'Webhook send error: %s %s %s %s %s %s' % (
                     self.wh.type, self.wh.hook_url,
                     self.wh.app_config.url(),
                     requests.post.return_value.status_code,
-                    requests.post.return_value.reason))
+                    requests.post.return_value.text,
+                    requests.post.return_value.headers))
 
 
 class TestRepoPushWebhookSender(TestWebhookBase):

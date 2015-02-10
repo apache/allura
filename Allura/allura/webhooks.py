@@ -256,11 +256,12 @@ class SendWebhookHelper(object):
             self.webhook.type,
             self.webhook.hook_url,
             self.webhook.app_config.url())
-        if response:
-            message = '{} {} {}'.format(
+        if response is not None:
+            message = '{} {} {} {}'.format(
                 message,
                 response.status_code,
-                response.reason)
+                response.text,
+                response.headers)
         return message
 
     def send(self):
