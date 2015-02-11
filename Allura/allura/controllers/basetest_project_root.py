@@ -25,6 +25,7 @@ from pylons import tmpl_context as c
 from pylons import request
 from webob import exc
 from tg import expose
+from paste.deploy.converters import asbool
 
 from allura.lib.base import WsgiDispatchController
 from allura.lib.security import require, require_authenticated, require_access, has_access
@@ -118,7 +119,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         return app.root, remainder
 
     def __call__(self, environ, start_response):
-        """ Called from a turbo gears 'app' instance.
+        """ Called from a WebTest 'app' instance.
 
 
         :param environ: Extra environment variables.
@@ -127,11 +128,10 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.app = None
         c.project = M.Project.query.get(
             shortname='test', neighborhood_id=self.p_nbhd._id)
-        if 'disable_auth_magic' in environ:
-            auth = plugin.AuthenticationProvider.get(request)
+        auth = plugin.AuthenticationProvider.get(request)
+        if asbool(environ.get('disable_auth_magic')):
             c.user = auth.authenticate_request()
         else:
-            auth = plugin.AuthenticationProvider.get(request)
             user = auth.by_username(environ.get('username', 'test-admin'))
             if not user:
                 user = M.User.anonymous()

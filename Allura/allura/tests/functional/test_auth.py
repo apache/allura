@@ -75,19 +75,19 @@ class TestAuth(TestController):
         assert 'Invalid login' in str(r), r.showbrowser()
 
     def test_logout(self):
-        environ = {'disable_auth_magic': "True"}
-        r = self.app.get('/auth/', extra_environ=environ)
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+        r = self.app.get('/auth/')
         f = r.forms[0]
         f['username'] = 'test-user'
         f['password'] = 'foo'
-        r = f.submit().follow(extra_environ=environ)
+        r = f.submit().follow()
         logged_in_session = r.session['_id']
-        assert r.html.nav('a')[-1].string == "Log Out"
+        assert_equal(r.html.nav('a')[-1].string, "Log Out")
 
-        r = self.app.get('/auth/logout', extra_environ=environ).follow(extra_environ=environ)
+        r = self.app.get('/auth/logout').follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
-        assert r.html.nav('a')[-1].string == 'Log In'
+        assert_equal(r.html.nav('a')[-1].string, 'Log In')
 
     def test_track_login(self):
         user = M.User.by_username('test-user')
