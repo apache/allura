@@ -18,7 +18,6 @@ from tg import config
 from allura import model as M
 from allura.lib import helpers as h
 from allura.webhooks import (
-    MingOneOf,
     WebhookValidator,
     WebhookController,
     send_webhook,
@@ -58,28 +57,12 @@ class TestWebhookBase(object):
 
 class TestValidators(TestWebhookBase):
 
-    def test_ming_one_of(self):
-        ids = [ac._id for ac in M.AppConfig.query.find().all()[:2]]
-        v = MingOneOf(cls=M.AppConfig, ids=ids, not_empty=True)
-        with assert_raises(Invalid) as cm:
-            v.to_python(None)
-        assert_equal(cm.exception.msg, u'Please enter a value')
-        with assert_raises(Invalid) as cm:
-            v.to_python('invalid id')
-        assert_equal(cm.exception.msg,
-            u'Object must be one of: %s, not invalid id' % ids)
-        assert_equal(v.to_python(ids[0]), M.AppConfig.query.get(_id=ids[0]))
-        assert_equal(v.to_python(ids[1]), M.AppConfig.query.get(_id=ids[1]))
-        assert_equal(v.to_python(unicode(ids[0])),
-                     M.AppConfig.query.get(_id=ids[0]))
-        assert_equal(v.to_python(unicode(ids[1])),
-                     M.AppConfig.query.get(_id=ids[1]))
-
+    @with_git2
     def test_webhook_validator(self):
         sender = Mock(type='repo-push')
-        ids = [ac._id for ac in M.AppConfig.query.find().all()[:3]]
-        ids, invalid_id = ids[:2], ids[2]
-        v = WebhookValidator(sender=sender, ac_ids=ids, not_empty=True)
+        app = self.git
+        invalid_app = self.project.app_instance('src2')
+        v = WebhookValidator(sender=sender, app=app, not_empty=True)
         with assert_raises(Invalid) as cm:
             v.to_python(None)
         assert_equal(cm.exception.msg, u'Please enter a value')
@@ -88,21 +71,23 @@ class TestValidators(TestWebhookBase):
         assert_equal(cm.exception.msg, u'Invalid webhook')
 
         wh = M.Webhook(type='invalid type',
-                       app_config_id=invalid_id,
-                       hook_url='http://httpbin.org/post',
+                       app_config_id=invalid_app.config._id,
+                       hook_url='http://hooks.slack.com',
                        secret='secret')
         session(wh).flush(wh)
+        # invalid type
         with assert_raises(Invalid) as cm:
             v.to_python(wh._id)
         assert_equal(cm.exception.msg, u'Invalid webhook')
 
         wh.type = 'repo-push'
         session(wh).flush(wh)
+        # invalild app
         with assert_raises(Invalid) as cm:
             v.to_python(wh._id)
         assert_equal(cm.exception.msg, u'Invalid webhook')
 
-        wh.app_config_id = ids[0]
+        wh.app_config_id = app.config._id
         session(wh).flush(wh)
         assert_equal(v.to_python(wh._id), wh)
         assert_equal(v.to_python(unicode(wh._id)), wh)
@@ -118,8 +103,7 @@ class TestWebhookController(TestController):
             p.start()
         self.project = M.Project.query.get(shortname=test_project_with_repo)
         self.git = self.project.app_instance('src')
-        self.git2 = self.project.app_instance('src2')
-        self.url = str(self.project.url() + 'admin/webhooks')
+        self.url = str(self.git.admin_url + 'webhooks')
 
     def tearDown(self):
         super(TestWebhookController, self).tearDown()
@@ -127,7 +111,6 @@ class TestWebhookController(TestController):
             p.stop()
 
     @with_git
-    @with_git2
     def setup_with_tools(self):
         pass
 
@@ -139,8 +122,9 @@ class TestWebhookController(TestController):
             autospec=True)
         return [gen_secret]
 
-    def create_webhook(self, data):
-        r = self.app.post(self.url + '/repo-push/create', data)
+    def create_webhook(self, data, url=None):
+        url = url or self.url
+        r = self.app.post(url + '/repo-push/create', data)
         wf = json.loads(self.webflash(r))
         assert_equal(wf['status'], 'ok')
         assert_equal(wf['message'], 'Created successfully')
@@ -151,8 +135,7 @@ class TestWebhookController(TestController):
         if field == '_the_form':
             error = form.findPrevious('div', attrs={'class': 'error'})
         else:
-            widget = 'select' if field == 'app' else 'input'
-            error = form.find(widget, attrs={'name': field})
+            error = form.find('input', attrs={'name': field})
             error = error.findNext('div', attrs={'class': 'error'})
         if error:
             assert_in(h.escape(msg), error.getText())
@@ -169,7 +152,7 @@ class TestWebhookController(TestController):
                          status=302)
         assert_equal(r.location,
             'http://localhost/auth/'
-            '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fwebhooks%2Frepo-push%2F')
+            '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fsrc%2Fwebhooks%2Frepo-push%2F')
 
     def test_invalid_hook_type(self):
         self.app.get(self.url + '/invalid-hook-type/', status=404)
@@ -180,12 +163,11 @@ class TestWebhookController(TestController):
         assert_in('<h1>repo-push</h1>', r)
         assert_not_in('http://httpbin.org/post', r)
         data = {'url': u'http://httpbin.org/post',
-                'app': unicode(self.git.config._id),
                 'secret': ''}
         msg = 'add webhook repo-push {} {}'.format(
             data['url'], self.git.config.url())
         with td.audits(msg):
-            r = self.create_webhook(data).follow().follow(status=200)
+            r = self.create_webhook(data).follow()
         assert_in('http://httpbin.org/post', r)
 
         hooks = M.Webhook.query.find().all()
@@ -207,9 +189,8 @@ class TestWebhookController(TestController):
         limit = json.dumps({'git': 1})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
             data = {'url': u'http://httpbin.org/post',
-                    'app': unicode(self.git.config._id),
                     'secret': ''}
-            r = self.create_webhook(data).follow().follow(status=200)
+            r = self.create_webhook(data).follow()
             assert_equal(M.Webhook.query.find().count(), 1)
 
             r = self.app.post(self.url + '/repo-push/create', data)
@@ -217,7 +198,7 @@ class TestWebhookController(TestController):
             assert_equal(wf['status'], 'error')
             assert_equal(
                 wf['message'],
-                'You have exceeded the maximum number of projects '
+                'You have exceeded the maximum number of webhooks '
                 'you are allowed to create for this project/app')
             assert_equal(M.Webhook.query.find().count(), 1)
 
@@ -226,43 +207,33 @@ class TestWebhookController(TestController):
         r = self.app.post(
             self.url + '/repo-push/create', {}, status=404)
 
-        data = {'url': '', 'app': '', 'secret': ''}
+        data = {'url': '', 'secret': ''}
         r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, 'url', 'Please enter a value')
-        self.find_error(r, 'app', 'Please enter a value')
 
-        data = {'url': 'qwer', 'app': '123', 'secret': 'qwe'}
+        data = {'url': 'qwer', 'secret': 'qwe'}
         r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, 'url',
             'You must provide a full domain name (like qwer.com)')
-        self.find_error(r, 'app', 'Object must be one of: ')
-        self.find_error(r, 'app', '%s' % self.git.config._id)
-        self.find_error(r, 'app', '%s' % self.git2.config._id)
 
     def test_edit(self):
         data1 = {'url': u'http://httpbin.org/post',
-                 'app': unicode(self.git.config._id),
                  'secret': u'secret'}
         data2 = {'url': u'http://example.com/hook',
-                 'app': unicode(self.git2.config._id),
                  'secret': u'secret2'}
-        self.create_webhook(data1).follow().follow(status=200)
-        self.create_webhook(data2).follow().follow(status=200)
+        self.create_webhook(data1).follow()
+        self.create_webhook(data2).follow()
         assert_equal(M.Webhook.query.find().count(), 2)
         wh1 = M.Webhook.query.get(hook_url=data1['url'])
         r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
         form = r.forms[0]
         assert_equal(form['url'].value, data1['url'])
-        assert_equal(form['app'].value, data1['app'])
         assert_equal(form['secret'].value, data1['secret'])
         assert_equal(form['webhook'].value, unicode(wh1._id))
         form['url'] = 'http://host.org/hook'
-        form['app'] = unicode(self.git2.config._id)
         form['secret'] = 'new secret'
-        msg = 'edit webhook repo-push\n{} => {}\n{} => {}\n{}'.format(
-            data1['url'], form['url'].value,
-            self.git.config.url(), self.git2.config.url(),
-            'secret changed')
+        msg = 'edit webhook repo-push\n{} => {}\n{}'.format(
+            data1['url'], form['url'].value, 'secret changed')
         with td.audits(msg):
             r = form.submit()
         wf = json.loads(self.webflash(r))
@@ -271,7 +242,7 @@ class TestWebhookController(TestController):
         assert_equal(M.Webhook.query.find().count(), 2)
         wh1 = M.Webhook.query.get(_id=wh1._id)
         assert_equal(wh1.hook_url, 'http://host.org/hook')
-        assert_equal(wh1.app_config_id, self.git2.config._id)
+        assert_equal(wh1.app_config_id, self.git.config._id)
         assert_equal(wh1.secret, 'new secret')
         assert_equal(wh1.type, 'repo-push')
 
@@ -279,10 +250,9 @@ class TestWebhookController(TestController):
         r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
         form = r.forms[0]
         form['url'] = data2['url']
-        form['app'] = data2['app']
         r = form.submit()
         self.find_error(r, '_the_form',
-            u'"repo-push" webhook already exists for Git2 http://example.com/hook',
+            u'"repo-push" webhook already exists for Git http://example.com/hook',
             form_type='edit')
 
     def test_edit_validation(self):
@@ -295,9 +265,8 @@ class TestWebhookController(TestController):
         self.app.get(self.url + '/repo-push/%s' % invalid._id, status=404)
 
         data = {'url': u'http://httpbin.org/post',
-                'app': unicode(self.git.config._id),
                 'secret': u'secret'}
-        self.create_webhook(data).follow().follow(status=200)
+        self.create_webhook(data).follow()
         wh = M.Webhook.query.get(hook_url=data['url'], type='repo-push')
 
         # invalid id in hidden field, just in case
@@ -307,25 +276,19 @@ class TestWebhookController(TestController):
         self.app.post(self.url + '/repo-push/edit', data, status=404)
 
         # empty values
-        data = {'url': '', 'app': '', 'secret': '', 'webhook': str(wh._id)}
+        data = {'url': '', 'secret': '', 'webhook': str(wh._id)}
         r = self.app.post(self.url + '/repo-push/edit', data)
         self.find_error(r, 'url', 'Please enter a value', 'edit')
-        self.find_error(r, 'app', 'Please enter a value', 'edit')
 
-        data = {'url': 'qwe', 'app': '123', 'secret': 'qwe',
-                'webhook': str(wh._id)}
+        data = {'url': 'qwe', 'secret': 'qwe', 'webhook': str(wh._id)}
         r = self.app.post(self.url + '/repo-push/edit', data)
         self.find_error(r, 'url',
             'You must provide a full domain name (like qwe.com)', 'edit')
-        self.find_error(r, 'app', 'Object must be one of:', 'edit')
-        self.find_error(r, 'app', '%s' % self.git.config._id, 'edit')
-        self.find_error(r, 'app', '%s' % self.git2.config._id, 'edit')
 
     def test_delete(self):
         data = {'url': u'http://httpbin.org/post',
-                'app': unicode(self.git.config._id),
                 'secret': u'secret'}
-        self.create_webhook(data).follow().follow(status=200)
+        self.create_webhook(data).follow()
         assert_equal(M.Webhook.query.find().count(), 1)
         wh = M.Webhook.query.get(hook_url=data['url'])
         data = {'webhook': unicode(wh._id)}
@@ -352,15 +315,19 @@ class TestWebhookController(TestController):
         self.app.post(self.url + '/repo-push/delete', data, status=404)
         assert_equal(M.Webhook.query.find().count(), 1)
 
+    @with_git2
     def test_list_webhooks(self):
+        git2 = self.project.app_instance('src2')
+        url2 = str(git2.admin_url + 'webhooks')
         data1 = {'url': u'http://httpbin.org/post',
-                 'app': unicode(self.git.config._id),
                  'secret': 'secret'}
         data2 = {'url': u'http://another-host.org/',
-                 'app': unicode(self.git2.config._id),
                  'secret': 'secret2'}
-        self.create_webhook(data1).follow().follow(status=200)
-        self.create_webhook(data2).follow().follow(status=200)
+        data3 = {'url': u'http://another-app.org/',
+                 'secret': 'secret3'}
+        self.create_webhook(data1).follow()
+        self.create_webhook(data2).follow()
+        self.create_webhook(data3, url=url2).follow()
         wh1 = M.Webhook.query.get(hook_url=data1['url'])
         wh2 = M.Webhook.query.get(hook_url=data2['url'])
 
@@ -370,22 +337,23 @@ class TestWebhookController(TestController):
         assert_equal(len(rows), 2)
         rows = sorted([self._format_row(row) for row in rows])
         expected_rows = sorted([
-            [{'href': self.url + '/repo-push/' + str(wh1._id),
-              'text': wh1.hook_url},
-             {'href': self.git.url,
-              'text': self.git.config.options.mount_label},
+            [{'text': wh1.hook_url},
              {'text': wh1.secret},
+             {'href': self.url + '/repo-push/' + str(wh1._id),
+              'text': u'Edit'},
              {'href': self.url + '/repo-push/delete',
               'data-id': str(wh1._id)}],
-            [{'href': self.url + '/repo-push/' + str(wh2._id),
-              'text': wh2.hook_url},
-             {'href': self.git2.url,
-              'text': self.git2.config.options.mount_label},
+            [{'text': wh2.hook_url},
              {'text': wh2.secret},
+             {'href': self.url + '/repo-push/' + str(wh2._id),
+              'text': u'Edit'},
              {'href': self.url + '/repo-push/delete',
               'data-id': str(wh2._id)}],
         ])
         assert_equal(rows, expected_rows)
+        # make sure webhooks for another app is not visible
+        assert_not_in(u'http://another-app.org/', r)
+        assert_not_in(u'secret3', r)
 
     def _format_row(self, row):
         def link(td):
@@ -397,7 +365,7 @@ class TestWebhookController(TestController):
             a = td.find('a')
             return {'href': a.get('href'), 'data-id': a.get('data-id')}
         tds = row.findAll('td')
-        return [link(tds[0]), link(tds[1]), text(tds[2]), delete_btn(tds[3])]
+        return [text(tds[0]), text(tds[1]), link(tds[2]), delete_btn(tds[3])]
 
 
 class TestSendWebhookHelper(TestWebhookBase):
@@ -568,30 +536,23 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 
         sender = RepoPushWebhookSender()
         # default
-        assert_equal(sender.enforce_limit(self.git.config), True)
+        assert_equal(sender.enforce_limit(self.git), True)
         add_webhooks('one', 3)
-        assert_equal(sender.enforce_limit(self.git.config), False)
+        assert_equal(sender.enforce_limit(self.git), False)
 
         # config
         limit = json.dumps({'git': 5})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
-            assert_equal(sender.enforce_limit(self.git.config), True)
+            assert_equal(sender.enforce_limit(self.git), True)
             add_webhooks('two', 3)
-            assert_equal(sender.enforce_limit(self.git.config), False)
+            assert_equal(sender.enforce_limit(self.git), False)
 
 
 class TestModels(TestWebhookBase):
 
-    def test_webhook_find(self):
-        p = M.Project.query.get(shortname='test')
-        assert_equal(M.Webhook.find('smth', p), [])
-        assert_equal(M.Webhook.find('repo-push', p), [])
-        assert_equal(M.Webhook.find('smth', self.project), [])
-        assert_equal(M.Webhook.find('repo-push', self.project), [self.wh])
-
     def test_webhook_url(self):
         assert_equal(self.wh.url(),
-            '/adobe/adobe-1/admin/webhooks/repo-push/{}'.format(self.wh._id))
+            '/adobe/adobe-1/admin/src/webhooks/repo-push/{}'.format(self.wh._id))
 
     def test_webhook_enforce_limit(self):
         self.wh.last_sent = None
