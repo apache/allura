@@ -29,10 +29,9 @@
       <table>
         {% for wh in configured_hooks[hook.type] %}
         <tr>
-          <td>
-            <a href="{{ wh.url() }}">{{ wh.hook_url }}</a>
-          </td>
+          <td title="{{wh.hook_url}}">{{ wh.hook_url|truncate(40, True) }}</td>
           <td>{{ wh.secret or '' }}</td>
+          <td><a href="{{wh.url()}}">Edit</a></td>
           <td>
             <a href="{{admin_url}}/{{hook.type}}/delete"
                class="delete-link"
