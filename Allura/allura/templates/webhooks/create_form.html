@@ -72,17 +72,6 @@
     {{ error('url') }}
   </div>
   <div>
-    <label for="app">app</label>
-    <select name="app">
-      {% for ac in form.triggered_by %}
-        <option value="{{ac._id}}"{% if h.really_unicode(ac._id) == c.form_values['app'] %} selected{% endif %}>
-          {{ ac.options.mount_label }}
-        </option>
-      {% endfor %}
-    </select>
-    {{ error('app') }}
-  </div>
-  <div>
     <label for="secret">secret (leave empty to autogenerate)</label>
     <input name="secret" value="{{ c.form_values['secret'] }}">
     {{ error('secret') }}

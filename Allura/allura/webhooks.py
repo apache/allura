@@ -45,23 +45,9 @@ from allura import model as M
 log = logging.getLogger(__name__)
 
 
-class MingOneOf(av.Ming):
-    def __init__(self, ids, **kw):
-        self.ids = ids
-        super(MingOneOf, self).__init__(**kw)
-
-    def _to_python(self, value, state):
-        result = super(MingOneOf, self)._to_python(value, state)
-        if result and result._id in self.ids:
-            return result
-        raise Invalid(
-            u'Object must be one of: {}, not {}'.format(self.ids, value),
-            value, state)
-
-
 class WebhookValidator(fev.FancyValidator):
-    def __init__(self, sender, ac_ids, **kw):
-        self.ac_ids = ac_ids
+    def __init__(self, sender, app, **kw):
+        self.app = app
         self.sender = sender
         super(WebhookValidator, self).__init__(**kw)
 
@@ -76,50 +62,39 @@ class WebhookValidator(fev.FancyValidator):
                 wh = M.Webhook.query.get(_id=ObjectId(value))
             except:
                 pass
-        if wh and wh.type == self.sender.type and wh.app_config_id in self.ac_ids:
+        if wh and wh.type == self.sender.type and wh.app_config_id == self.app.config._id:
             return wh
         raise Invalid(u'Invalid webhook', value, state)
 
 
 class WebhookCreateForm(schema.Schema):
-    def __init__(self, sender):
-        super(WebhookCreateForm, self).__init__()
-        self.triggered_by = [ac for ac in c.project.app_configs
-                             if ac.tool_name.lower() in sender.triggered_by]
-        self.add_field('app', MingOneOf(
-            cls=M.AppConfig,
-            ids=[ac._id for ac in self.triggered_by],
-            not_empty=True))
-
     url = fev.URL(not_empty=True)
     secret = fev.UnicodeString()
 
 
 class WebhookEditForm(WebhookCreateForm):
-    def __init__(self, sender):
-        super(WebhookEditForm, self).__init__(sender)
+    def __init__(self, sender, app):
+        super(WebhookEditForm, self).__init__()
         self.add_field('webhook', WebhookValidator(
-            sender=sender,
-            ac_ids=[ac._id for ac in self.triggered_by],
-            not_empty=True))
+            sender=sender, app=app, not_empty=True))
 
 
 class WebhookControllerMeta(type):
-    def __call__(cls, sender, *args, **kw):
+    def __call__(cls, sender, app, *args, **kw):
         """Decorate post handlers with a validator that references
         the appropriate webhook sender for this controller.
         """
         if hasattr(cls, 'create'):
             cls.create = validate(
-                cls.create_form(sender),
+                cls.create_form(),
                 error_handler=cls.index.__func__,
             )(cls.create)
         if hasattr(cls, 'edit'):
             cls.edit = validate(
-                cls.edit_form(sender),
+                cls.edit_form(sender, app),
                 error_handler=cls._default.__func__,
             )(cls.edit)
-        return type.__call__(cls, sender, *args, **kw)
+        return type.__call__(cls, sender, app, *args, **kw)
 
 
 class WebhookController(BaseController):
@@ -127,80 +102,71 @@ class WebhookController(BaseController):
     create_form = WebhookCreateForm
     edit_form = WebhookEditForm
 
-    def __init__(self, sender):
+    def __init__(self, sender, app):
         super(WebhookController, self).__init__()
         self.sender = sender()
+        self.app = app
 
     def gen_secret(self):
         return h.cryptographic_nonce(20)
 
-    def update_webhook(self, wh, url, ac, secret=None):
+    def update_webhook(self, wh, url, secret=None):
         if not secret:
             secret = self.gen_secret()
         wh.hook_url = url
-        wh.app_config_id = ac._id
         wh.secret = secret
         try:
             session(wh).flush(wh)
         except DuplicateKeyError:
             session(wh).expunge(wh)
             msg = u'_the_form: "{}" webhook already exists for {} {}'.format(
-                wh.type, ac.options.mount_label, url)
+                wh.type, self.app.config.options.mount_label, url)
             raise Invalid(msg, None, None)
-
-    def form_app_id(self, app):
-        if app and isinstance(app, M.AppConfig):
-            _app = unicode(app._id)
-        elif app:
-            _app = unicode(app)
-        else:
-            _app = None
-        return _app
 
     @with_trailing_slash
     @expose('jinja:allura:templates/webhooks/create_form.html')
     def index(self, **kw):
         if not c.form_values and kw:
             # Executes if update_webhook raises an error
-            _app = self.form_app_id(kw.get('app'))
             c.form_values = {'url': kw.get('url'),
-                             'app': _app,
                              'secret': kw.get('secret')}
         return {'sender': self.sender,
                 'action': 'create',
-                'form': self.create_form(self.sender)}
+                'form': self.create_form()}
 
     @expose()
     @require_post()
-    def create(self, url, app, secret):
-        if self.sender.enforce_limit(app):
-            wh = M.Webhook(type=self.sender.type)
-            self.update_webhook(wh, url, app, secret)
+    def create(self, url, secret):
+        if self.sender.enforce_limit(self.app):
+            webhook = M.Webhook(
+                type=self.sender.type,
+                app_config_id=self.app.config._id)
+            self.update_webhook(webhook, url, secret)
             M.AuditLog.log('add webhook %s %s %s',
-                           wh.type, wh.hook_url, wh.app_config.url())
+                           webhook.type, webhook.hook_url,
+                           webhook.app_config.url())
             flash('Created successfully', 'ok')
         else:
-            flash('You have exceeded the maximum number of projects '
+            flash('You have exceeded the maximum number of webhooks '
                   'you are allowed to create for this project/app', 'error')
-        redirect(c.project.url() + 'admin/webhooks/')
+        redirect(self.app.admin_url + 'webhooks')
 
     @expose()
     @require_post()
-    def edit(self, webhook, url, app, secret):
+    def edit(self, webhook, url, secret):
         old_url = webhook.hook_url
-        old_app = webhook.app_config.url()
         old_secret = webhook.secret
-        self.update_webhook(webhook, url, app, secret)
-        M.AuditLog.log('edit webhook %s\n%s => %s\n%s => %s\n%s',
-            webhook.type, old_url, url, old_app, app.url(),
-            'secret changed' if old_secret != secret else '')
+        self.update_webhook(webhook, url, secret)
+        M.AuditLog.log('edit webhook %s\n%s => %s\n%s',
+                       webhook.type, old_url, url,
+                       'secret changed' if old_secret != secret else '')
         flash('Edited successfully', 'ok')
-        redirect(c.project.url() + 'admin/webhooks/')
+        redirect(self.app.admin_url + 'webhooks')
 
     @expose('json:')
     @require_post()
     def delete(self, webhook):
-        form = self.edit_form(self.sender)
+        form = self.edit_form(self.sender, self.app)
         try:
             wh = form.fields['webhook'].to_python(webhook)
         except Invalid:
@@ -213,14 +179,12 @@ class WebhookController(BaseController):
     @without_trailing_slash
     @expose('jinja:allura:templates/webhooks/create_form.html')
     def _default(self, webhook, **kw):
-        form = self.edit_form(self.sender)
+        form = self.edit_form(self.sender, self.app)
         try:
             wh = form.fields['webhook'].to_python(webhook)
         except Invalid:
             raise exc.HTTPNotFound()
-        _app = self.form_app_id(kw.get('app')) or unicode(wh.app_config._id)
         c.form_values = {'url': kw.get('url') or wh.hook_url,
-                         'app': _app,
                          'secret': kw.get('secret') or wh.secret,
                          'webhook': unicode(wh._id)}
         return {'sender': self.sender,
@@ -336,7 +300,7 @@ class WebhookSender(object):
                 else:
                     log.warn('Webhook fires too often: %s. Skipping', webhook)
 
-    def enforce_limit(self, app_config):
+    def enforce_limit(self, app):
         '''
         Checks if limit of webhooks created for given project/app is reached.
         Returns False if limit is reached, True otherwise.
@@ -344,10 +308,10 @@ class WebhookSender(object):
         _type = self.type.replace('-', '_')
         limits = json.loads(config.get('webhook.%s.max_hooks' % _type, '{}'))
         count = M.Webhook.query.find(dict(
-            app_config_id=app_config._id,
+            app_config_id=app.config._id,
             type=self.type,
         )).count()
-        return count < limits.get(app_config.tool_name.lower(), 3)
+        return count < limits.get(app.config.tool_name.lower(), 3)
 
 
 class RepoPushWebhookSender(WebhookSender):

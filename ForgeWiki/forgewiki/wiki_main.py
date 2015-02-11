@@ -801,9 +801,6 @@ class PageRestController(BaseController):
 
 class WikiAdminController(DefaultAdminController):
 
-    def __init__(self, app):
-        self.app = app
-
     def _check_security(self):
         require_access(self.app, 'configure')
 

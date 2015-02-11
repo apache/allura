@@ -220,9 +220,6 @@ class RepositoryApp(Application):
 
 class RepoAdminController(DefaultAdminController):
 
-    def __init__(self, app):
-        self.app = app
-
     @LazyProperty
     def repo(self):
         return self.app.repo

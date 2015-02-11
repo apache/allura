@@ -198,9 +198,6 @@ class ShortURLAdminController(DefaultAdminController):
         )
     )
 
-    def __init__(self, app):
-        self.app = app
-
     @expose()
     def index(self, **kw):
         redirect(c.project.url() + 'admin/tools')

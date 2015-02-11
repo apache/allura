@@ -24,7 +24,7 @@
 {% block content %}
   {% for hook in webhooks %}
     <h1>{{ hook.type }}</h1>
-    <p><a href="{{c.app.url}}webhooks/{{ hook.type }}">Create</a></p>
+    <p><a href="{{admin_url}}/{{hook.type}}">Create</a></p>
     {% if configured_hooks[hook.type] %}
       <table>
         {% for wh in configured_hooks[hook.type] %}
@@ -32,12 +32,9 @@
           <td>
             <a href="{{ wh.url() }}">{{ wh.hook_url }}</a>
           </td>
-          <td>
-            <a href="{{ wh.app_config.url() }}">{{ wh.app_config.options.mount_label }}</a>
-          </td>
           <td>{{ wh.secret or '' }}</td>
           <td>
-            <a href="{{c.app.url}}webhooks/{{hook.type}}/delete"
+            <a href="{{admin_url}}/{{hook.type}}/delete"
                class="delete-link"
                data-id="{{h.really_unicode(wh._id)}}"
                title="Delete">

@@ -30,6 +30,7 @@ from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 from bson.errors import InvalidId
 from formencode import validators as V
+from webob import exc
 
 from ming.orm import session
 from ming.utils import LazyProperty
@@ -40,6 +41,7 @@ from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
+from allura import model as M
 
 log = logging.getLogger(__name__)
 
@@ -281,6 +283,12 @@ class Application(object):
 
         """
         return self.config.url(project=self.project)
+
+    @LazyProperty
+    def admin_url(self):
+        return '{}{}/{}/'.format(
+            c.project.url(), 'admin',
+            self.config.options.mount_point)
 
     @property
     def email_address(self):
@@ -524,16 +532,28 @@ class Application(object):
         """
         return ""
 
+    @LazyProperty
+    def _webhooks(self):
+        """A list of webhooks that can be triggered by this app.
+
+        :return: a list of :class:`WebhookSender <allura.webhooks.WebhookSender>`
+        """
+        tool_name = self.config.tool_name.lower()
+        webhooks = [w for w in g.entry_points['webhooks'].itervalues()
+                    if tool_name in w.triggered_by]
+        return webhooks
+
     def admin_menu(self, force_options=False):
         """Return the admin menu for this Application.
 
-        Default implementation will return a menu with up to 3 links:
+        Default implementation will return a menu with up to 4 links:
 
             - 'Permissions', if the current user has admin access to the
                 project in which this Application is installed
             - 'Options', if this Application has custom options, or
                 ``force_options`` is True
             - 'Label', for editing this Application's label
+            - 'Webhooks', if this Application can trigger any webhooks
 
         Subclasses should override this method to provide additional admin
         menu items.
@@ -554,6 +574,8 @@ class Application(object):
                 SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         links.append(
             SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
+        if len(self._webhooks) > 0:
+            links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
         return links
 
     def handle_message(self, topic, message):
@@ -672,7 +694,9 @@ class DefaultAdminController(BaseController):
         """Instantiate this controller for an :class:`app <Application>`.
 
         """
+        super(DefaultAdminController, self).__init__()
         self.app = app
+        self.webhooks = WebhooksLookup(app)
 
     @expose()
     def index(self, **kw):
@@ -858,3 +882,33 @@ class DefaultAdminController(BaseController):
                 if (ace.permission == perm) and (ace.access == model.ACE.DENY):
                     self.app.config.acl.append(ace)
         redirect(request.referer)
+
+
+class WebhooksLookup(BaseController):
+
+    def __init__(self, app):
+        super(WebhooksLookup, self).__init__()
+        self.app = app
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/app_admin_webhooks_list.html')
+    def index(self):
+        webhooks = self.app._webhooks
+        if len(webhooks) == 0:
+            raise exc.HTTPNotFound()
+        configured_hooks = {}
+        for hook in webhooks:
+            configured_hooks[hook.type] = M.Webhook.query.find({
+                'type': hook.type,
+                'app_config_id': self.app.config._id}
+            ).all()
+        return {'webhooks': webhooks,
+                'configured_hooks': configured_hooks,
+                'admin_url': self.app.admin_url + 'webhooks'}
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        for hook in self.app._webhooks:
+            if hook.type == name and hook.controller:
+                return hook.controller(hook, self.app), remainder
+        raise exc.HTTPNotFound, name

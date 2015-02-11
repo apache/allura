@@ -395,9 +395,6 @@ class PostController(BaseController, FeedController):
 
 class BlogAdminController(DefaultAdminController):
 
-    def __init__(self, app):
-        self.app = app
-
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/admin_options.html')
     def options(self):

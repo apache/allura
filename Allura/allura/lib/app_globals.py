@@ -284,6 +284,7 @@ class Globals(object):
             # macro eps are used solely for ensuring that external macros are
             # imported (after load, the ep itself is not used)
             macros=_cache_eps('allura.macros'),
+            webhooks=_cache_eps('allura.webhooks'),
         )
 
         # Neighborhood cache

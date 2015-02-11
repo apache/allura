@@ -1528,8 +1528,8 @@ NONALNUM_RE = re.compile(r'\W+')
 class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
-        self.app = app
-        self.bins = BinController(app=app)
+        super(TrackerAdminController, self).__init__(app)
+        self.bins = BinController(app=self.app)
         # if self.app.globals and self.app.globals.milestone_names is None:
         #     self.app.globals.milestone_names = ''
 
