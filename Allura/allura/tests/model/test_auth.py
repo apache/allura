@@ -74,6 +74,7 @@ def test_email_address():
 @with_setup(setUp)
 def test_email_address_lookup_helpers():
     addr = M.EmailAddress.create('TEST@DOMAIN.NET')
+    nobody = M.EmailAddress.create('nobody@example.com')
     ThreadLocalORMSession.flush_all()
     assert_equal(addr.email, 'TEST@domain.net')
 
@@ -81,12 +82,28 @@ def test_email_address_lookup_helpers():
     assert_equal(M.EmailAddress.get(email='TEST@domain.net'), addr)
     assert_equal(M.EmailAddress.get(email='test@domain.net'), None)
     assert_equal(M.EmailAddress.get(email=None), None)
+    assert_equal(M.EmailAddress.get(email='nobody@example.com'), nobody)
+    # invalid email returns None, but not nobody@example.com as before
+    assert_equal(M.EmailAddress.get(email='invalid'), None)
 
     assert_equal(M.EmailAddress.find(dict(email='TEST@DOMAIN.NET')).all(), [addr])
     assert_equal(M.EmailAddress.find(dict(email='TEST@domain.net')).all(), [addr])
     assert_equal(M.EmailAddress.find(dict(email='test@domain.net')).all(), [])
     assert_equal(M.EmailAddress.find(dict(email=None)).all(), [])
+    assert_equal(M.EmailAddress.find(dict(email='nobody@example.com')).all(), [nobody])
+    # invalid email returns empty query, but not nobody@example.com as before
+    assert_equal(M.EmailAddress.find(dict(email='invalid')).all(), [])
 
+
+@with_setup(setUp)
+def test_email_address_canonical():
+    assert_equal(M.EmailAddress.canonical('nobody@EXAMPLE.COM'),
+                 'nobody@example.com')
+    assert_equal(M.EmailAddress.canonical('nobody@example.com'),
+                 'nobody@example.com')
+    assert_equal(M.EmailAddress.canonical('I Am Nobody <nobody@example.com>'),
+                 'nobody@example.com')
+    assert_equal(M.EmailAddress.canonical('invalid'), None)
 
 @with_setup(setUp)
 def test_email_address_send_verification_link():
@@ -178,7 +195,6 @@ def test_user_by_email_address(log):
                            claimed_by_user_id=u1._id)
     addr2 = M.EmailAddress(email='abc123@abc.me', confirmed=True,
                            claimed_by_user_id=u2._id)
-
     # both users are disabled
     u1.disabled, u2.disabled = True, True
     ThreadLocalORMSession.flush_all()
@@ -196,6 +212,14 @@ def test_user_by_email_address(log):
     ThreadLocalORMSession.flush_all()
     assert_in(M.User.by_email_address('abc123@abc.me'), [u1, u2])
     assert_equal(log.warn.call_count, 1)
+
+    # invalid email returns None, but not user which claimed
+    # nobody@example.com as before
+    nobody = M.EmailAddress(email='nobody@example.com', confirmed=True,
+                            claimed_by_user_id=u1._id)
+    ThreadLocalORMSession.flush_all()
+    assert_equal(M.User.by_email_address('nobody@example.com'), u1)
+    assert_equal(M.User.by_email_address('invalid'), None)
 
 
 @with_setup(setUp)
