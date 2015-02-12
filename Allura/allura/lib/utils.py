@@ -48,6 +48,7 @@ import html5lib.sanitizer
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
+from ming.odm.odmsession import ODMCursor
 
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
@@ -556,3 +557,38 @@ def ip_address(request):
     if tg.config.get('ip_address_header'):
         ip = request.headers.get(tg.config['ip_address_header']) or ip
     return ip
+
+
+class EmptyCursor(ODMCursor):
+    """Ming cursor with no results"""
+
+    def __init__(self, *args, **kw):
+        pass
+
+    @property
+    def extensions(self):
+        return []
+
+    def count(self):
+        return 0
+
+    def _next_impl(self):
+        raise StopIteration
+
+    def next(self):
+        raise StopIteration
+
+    def options(self, **kw):
+        return self
+
+    def limit(self, limit):
+        return self
+
+    def skip(self, skip):
+        return self
+
+    def hint(self, index_or_name):
+        return self
+
+    def sort(self, *args, **kw):
+        return self

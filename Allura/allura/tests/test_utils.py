@@ -23,7 +23,7 @@ from os import path
 
 from webob import Request
 from mock import Mock, patch
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 from tg import config
@@ -278,3 +278,20 @@ def test_ip_address_header_not_set():
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
         assert_equal(utils.ip_address(req),
                      '1.2.3.4')
+
+
+def test_empty_cursor():
+    """EmptyCursors conforms to specification of Ming's ODMCursor"""
+    cursor = utils.EmptyCursor()
+    assert_equal(cursor.count(), 0)
+    assert_equal(cursor.first(), None)
+    assert_equal(cursor.all(), [])
+    assert_equal(cursor.limit(10), cursor)
+    assert_equal(cursor.skip(10), cursor)
+    assert_equal(cursor.sort('name', 1), cursor)
+    assert_equal(cursor.hint('index'), cursor)
+    assert_equal(cursor.extensions, [])
+    assert_equal(cursor.options(arg1='val1', arg2='val2'), cursor)
+    assert_raises(ValueError, cursor.one)
+    assert_raises(StopIteration, cursor.next)
+    assert_raises(StopIteration, cursor._next_impl)
