@@ -232,7 +232,8 @@ class AuthController(BaseController):
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # else the first password set causes this session to be invalidated
         if require_email:
             em = user.claim_address(email)
-            em.send_verification_link()
+            if em:
+                em.send_verification_link()
             flash('User "%s" registered. Verification link was sent to your email.' % username)
         else:
             plugin.AuthenticationProvider.get(request).login(user)
@@ -490,22 +491,25 @@ class PreferencesController(BaseController):
 
             elif mail_util.isvalid(new_addr['addr']):
                 em = M.EmailAddress.create(new_addr['addr'])
-                user.email_addresses.append(em.email)
-                em.claimed_by_user_id = user._id
+                if em:
+                    user.email_addresses.append(em.email)
+                    em.claimed_by_user_id = user._id
 
-                confirmed_emails = filter(lambda email: email.confirmed, claimed_emails)
-                if not confirmed_emails:
-                    if not admin:
-                        em.send_verification_link()
+                    confirmed_emails = filter(lambda email: email.confirmed, claimed_emails)
+                    if not confirmed_emails:
+                        if not admin:
+                            em.send_verification_link()
+                        else:
+                            AuthController()._verify_addr(em)
                     else:
-                        AuthController()._verify_addr(em)
+                        em.send_claim_attempt()
+
+                    if not admin:
+                        flash('A verification email has been sent.  Please check your email and click to confirm.')
+
+                    h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
                 else:
-                    em.send_claim_attempt()
-
-                if not admin:
-                    flash('A verification email has been sent.  Please check your email and click to confirm.')
-
-                h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
+                    flash('Email address %s is invalid' % new_addr['addr'], 'error')
             else:
                 flash('Email address %s is invalid' % new_addr['addr'], 'error')
         if not primary_addr and not user.get_pref('email_address') and user.email_addresses:

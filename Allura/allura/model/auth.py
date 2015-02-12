@@ -128,7 +128,11 @@ class EmailAddress(MappedClass):
         '''Equivalent to Ming's query.get but calls self.canonical on address
         before lookup. You should always use this instead of query.get'''
         if kw.get('email'):
-            kw['email'] = cls.canonical(kw['email'])
+            email = cls.canonical(kw['email'])
+            if email is not None:
+                kw['email'] = email
+            else:
+                return None
         return cls.query.get(**kw)
 
     @classmethod
@@ -137,7 +141,11 @@ class EmailAddress(MappedClass):
         before lookup. You should always use this instead of query.find'''
         if q:
             if q.get('email'):
-                q['email'] = cls.canonical(q['email'])
+                email = cls.canonical(q['email'])
+                if email is not None:
+                    q['email'] = email
+                else:
+                    return utils.EmptyCursor()
             return cls.query.find(q)
         return cls.query.find()
 
@@ -152,7 +160,8 @@ class EmailAddress(MappedClass):
     @classmethod
     def create(cls, addr):
         addr = cls.canonical(addr)
-        return cls(email=addr)
+        if addr is not None:
+            return cls(email=addr)
 
     @classmethod
     def canonical(cls, addr):
@@ -163,7 +172,7 @@ class EmailAddress(MappedClass):
             user, domain = addr.split('@')
             return '%s@%s' % (user, domain.lower())
         else:
-            return 'nobody@example.com'
+            return None
 
     def send_claim_attempt(self):
         confirmed_email = self.find(dict(email=self.email, confirmed=True)).all()
@@ -666,11 +675,12 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
         email_addr = EmailAddress.create(addr)
-        email_addr.claimed_by_user_id = self._id
-        if addr not in self.email_addresses:
-            self.email_addresses.append(addr)
-        session(email_addr).flush(email_addr)
-        return email_addr
+        if email_addr:
+            email_addr.claimed_by_user_id = self._id
+            if addr not in self.email_addresses:
+                self.email_addresses.append(addr)
+            session(email_addr).flush(email_addr)
+            return email_addr
 
     @classmethod
     def register(cls, doc, make_project=True):
