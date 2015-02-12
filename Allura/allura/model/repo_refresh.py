@@ -142,7 +142,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             if user is not None:
                 g.statsUpdater.newCommit(new, repo.app_config.project, user)
             actor = user or TransientActor(
-                    activity_name=new.committed.name or new.committed.emai)
+                    activity_name=new.committed.name or new.committed.email)
             g.director.create_activity(actor, 'committed', new,
                                        related_nodes=[repo.app_config.project],
                                        tags=['commit', repo.tool.lower()])
