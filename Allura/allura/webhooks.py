@@ -334,17 +334,24 @@ class RepoPushWebhookSender(WebhookSender):
             if len(parents) > 0:
                 # Merge commit will have multiple parents. As far as I can tell
                 # the last one will be the branch head before merge
-                return parents[-1]
+                return self._convert_id(parents[-1])
         return u''
 
     def _after(self, repo, commit_ids):
         if len(commit_ids) > 0:
-            return commit_ids[0]
+            return self._convert_id(commit_ids[0])
         return u''
+
+    def _convert_id(self, _id):
+        if ':' in _id:
+            _id = u'r' + _id.rsplit(':', 1)[1]
+        return _id
 
     def get_payload(self, commit_ids, **kw):
         app = kw.get('app') or c.app
         commits = [app.repo.commit(ci).webhook_info for ci in commit_ids]
+        for ci in commits:
+            ci['id'] = self._convert_id(ci['id'])
         before = self._before(app.repo, commit_ids)
         after = self._after(app.repo, commit_ids)
         payload = {
