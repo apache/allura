@@ -136,7 +136,9 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     if not all_commits and not new_clone:
         commits_by_branches = {}
         commits_by_tags = {}
-        current_branches = []
+        # svn has no branches, so we need __default__ as a fallback to collect
+        # all commits into
+        current_branches = ['__default__']
         current_tags = []
         for commit in commit_ids:
             new = repo.commit(commit)
@@ -168,7 +170,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
         from allura.webhooks import RepoPushWebhookSender
         params = []
         for b, commits in commits_by_branches.iteritems():
-            ref = u'refs/heads/{}'.format(b)
+            ref = u'refs/heads/{}'.format(b) if b != '__default__' else None
             params.append(dict(commit_ids=commits, ref=ref))
         for t, commits in commits_by_tags.iteritems():
             ref = u'refs/tags/{}'.format(t)
