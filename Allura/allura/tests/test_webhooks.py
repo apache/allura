@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import datetime as dt
 
-from mock import Mock, patch, call
+from mock import Mock, MagicMock, patch, call
 from nose.tools import (
     assert_raises,
     assert_equal,
@@ -480,7 +480,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         sender = RepoPushWebhookSender()
         sender.get_payload = Mock()
         with h.push_config(c, app=self.git):
-            sender.send(arg1=1, arg2=2)
+            sender.send(dict(arg1=1, arg2=2))
         send_webhook.post.assert_called_once_with(
             self.wh._id,
             sender.get_payload.return_value)
@@ -492,7 +492,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         sender.get_payload = Mock()
         self.wh.enforce_limit = Mock(return_value=False)
         with h.push_config(c, app=self.git):
-            sender.send(arg1=1, arg2=2)
+            sender.send(dict(arg1=1, arg2=2))
         assert_equal(send_webhook.post.call_count, 0)
         log.warn.assert_called_once_with(
             'Webhook fires too often: %s. Skipping', self.wh)
@@ -503,19 +503,21 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         session(self.wh).flush(self.wh)
         sender = RepoPushWebhookSender()
         with h.push_config(c, app=self.git):
-            sender.send(arg1=1, arg2=2)
+            sender.send(dict(arg1=1, arg2=2))
         assert_equal(send_webhook.post.call_count, 0)
 
     def test_get_payload(self):
         sender = RepoPushWebhookSender()
-        _ci = list(range(1, 4))
-        _se = [Mock(webhook_info=str(x)) for x in _ci]
-        with patch.object(self.git.repo, 'commit', autospec=True, side_effect=_se):
+        _ci = lambda x: MagicMock(webhook_info={'id': str(x)}, parent_ids=['0'])
+        with patch.object(self.git.repo, 'commit', new=_ci):
             with h.push_config(c, app=self.git):
-                result = sender.get_payload(commit_ids=_ci)
+                result = sender.get_payload(commit_ids=['1', '2', '3'], ref='ref')
         expected_result = {
             'size': 3,
-            'commits': ['1', '2', '3'],
+            'commits': [{'id': '1'}, {'id': '2'}, {'id': '3'}],
+            'ref': u'ref',
+            'after': u'1',
+            'before': u'0',
             'repository': {
                 'full_name': u'/adobe/adobe-1/src/',
                 'name': u'Git',

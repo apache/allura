@@ -31,6 +31,7 @@ from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal
 from testfixtures import TempDirectory
+from datadiff.tools import assert_equals
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
@@ -546,9 +547,12 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
         sender = RepoPushWebhookSender()
         cids = list(self.repo.all_commit_ids())[:2]
-        payload = sender.get_payload(commit_ids=cids)
+        payload = sender.get_payload(commit_ids=cids, ref='refs/heads/zz')
         expected_payload = {
             'size': 2,
+            'ref': u'refs/heads/zz',
+            'after': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+            'before': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
             'commits': [{
                 'id': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
                 'url': u'http://localhost/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/',
@@ -586,15 +590,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 'url': u'http://localhost/p/test/src-git/',
             },
         }
-
-        def _diff(one, two):
-            from difflib import Differ
-            from pprint import pformat
-            one, two = pformat(one), pformat(two)
-            diff = Differ().compare(one.splitlines(), two.splitlines())
-            print '\n'.join(diff)
-
-        assert payload == expected_payload, _diff(expected_payload, payload)
+        assert_equals(payload, expected_payload)
 
 
 class TestGitImplementation(unittest.TestCase):
