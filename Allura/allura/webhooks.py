@@ -36,7 +36,6 @@ from paste.deploy.converters import asint, aslist
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
-from allura.lib import validators as av
 from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
@@ -318,16 +317,37 @@ class RepoPushWebhookSender(WebhookSender):
     type = 'repo-push'
     triggered_by = ['git', 'hg', 'svn']
 
+    def _before(self, repo, commit_ids):
+        if len(commit_ids) > 0:
+            ci = commit_ids[-1]
+            parents = repo.commit(ci).parent_ids
+            if len(parents) > 0:
+                # Merge commit will have multiple parents. As far as I can tell
+                # the last one will be the branch head before merge
+                return parents[-1]
+        return u''
+
+    def _after(self, repo, commit_ids):
+        if len(commit_ids) > 0:
+            return commit_ids[0]
+        return u''
+
     def get_payload(self, commit_ids, **kw):
         app = kw.get('app') or c.app
         commits = [app.repo.commit(ci).webhook_info for ci in commit_ids]
+        before = self._before(app.repo, commit_ids)
+        after = self._after(app.repo, commit_ids)
         payload = {
             'size': len(commits),
             'commits': commits,
+            'before': before,
+            'after': after,
             'repository': {
                 'name': app.config.options.mount_label,
                 'full_name': app.url,
                 'url': h.absurl(app.url),
             },
         }
+        if kw.get('ref'):
+            payload['ref'] = kw['ref']
         return payload

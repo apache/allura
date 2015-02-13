@@ -134,6 +134,10 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
                 log.info('Compute last commit info %d: %s', (i + 1), ci._id)
 
     if not all_commits and not new_clone:
+        commits_by_branches = {}
+        commits_by_tags = {}
+        current_branches = []
+        current_tags = []
         for commit in commit_ids:
             new = repo.commit(commit)
             user = User.by_email_address(new.committed.email)
@@ -146,8 +150,28 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             g.director.create_activity(actor, 'committed', new,
                                        related_nodes=[repo.app_config.project],
                                        tags=['commit', repo.tool.lower()])
+
+            branches, tags = repo.symbolics_for_commit(new)
+            if branches:
+                current_branches = branches
+            if tags:
+                current_tags = tags
+            for b in current_branches:
+                if b not in commits_by_branches.keys():
+                    commits_by_branches[b] = []
+                commits_by_branches[b].append(commit)
+            for t in current_tags:
+                if t not in commits_by_tags.keys():
+                    commits_by_tags[t] = []
+                commits_by_tags[t].append(commit)
+
         from allura.webhooks import RepoPushWebhookSender
-        RepoPushWebhookSender().send(commit_ids=commit_ids)
+        for b, commits in commits_by_branches.iteritems():
+            ref = u'refs/heads/{}'.format(b)
+            RepoPushWebhookSender().send(commit_ids=commits, ref=ref)
+        for t, commits in commits_by_tags.iteritems():
+            ref = u'refs/tags/{}'.format(t)
+            RepoPushWebhookSender().send(commit_ids=commits, ref=ref)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)
