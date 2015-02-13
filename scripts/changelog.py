@@ -66,7 +66,7 @@ def print_changelog(version, summaries):
         'date': datetime.utcnow().strftime('%B %Y'),
     })
     for ticket in sorted(summaries.keys()):
-        print " * [#{0}] {1}".format(ticket, summaries[ticket])
+        print " * [#{0}] {1}".format(ticket, summaries[ticket].encode('utf-8'))
 
 if __name__ == '__main__':
     main()
