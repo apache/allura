@@ -287,7 +287,7 @@ class Application(object):
     @LazyProperty
     def admin_url(self):
         return '{}{}/{}/'.format(
-            c.project.url(), 'admin',
+            self.project.url(), 'admin',
             self.config.options.mount_point)
 
     @property

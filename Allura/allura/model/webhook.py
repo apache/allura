@@ -36,10 +36,9 @@ class Webhook(Artifact):
     last_sent = FieldProperty(dt.datetime, if_missing=None)
 
     def url(self):
-        return '{}{}/{}/webhooks/{}/{}'.format(
-            self.app_config.project.url(), 'admin',
-            self.app_config.options.mount_point,
-            self.type, self._id)
+        app = self.app_config.load()
+        app = app(self.app_config.project, self.app_config)
+        return '{}webhooks/{}/{}'.format(app.admin_url, self.type, self._id)
 
     def enforce_limit(self):
         '''Returns False if limit is reached, otherwise True'''
