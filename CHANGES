@@ -1,3 +1,25 @@
+Version 1.2.1  (February 2015)
+
+Bug Fixes & Minor Improvements
+
+ * [#5726] RSS feed for discussion stopped 12/13/2012? [ss2637]
+ * [#6248] long lines in markdown lists get truncated on the right [ss4073]
+ * [#7772] Type text is splitted in more lines if separated by spaces in bulk edit
+ * [#7813] Handle uppercase in email address all the time
+ * [#7815] KeyError: 'name'
+ * [#7808] Check for wiki presence before importing it
+ * [#7831] Logout issue
+ Administration:
+ * [#7816] Show/manage user's pending status
+ * [#7821] More accurate audit logs when changing user's status
+ Performance:
+ * [#7824] Cache neighborhood record
+ For developers:
+ * [#7516] Timing may case test_set_password_sets_last_updated to fail
+ * [#7795] test_version_race fails occassionally
+ * [#7819] New email address lookup helpers fail on None
+
+
 Version 1.2.0  (December 2014)
 
 Upgrade Instructions
