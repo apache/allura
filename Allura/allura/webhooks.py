@@ -284,18 +284,28 @@ class WebhookSender(object):
         """Return a dict with webhook payload"""
         raise NotImplementedError('get_payload')
 
-    def send(self, **kw):
-        """Post a task that will send webhook payload"""
+    def send(self, params_or_list):
+        """Post a task that will send webhook payload
+
+        :param:`params_or_list` - dict with keyword parameters to be passed to
+        :meth:`get_payload` or a list of such dicts. If it's a list for each
+        element appropriate payload will be submitted, but limit will be
+        enforced only once for each webhook.
+        """
+        if not isinstance(params_or_list, list):
+            params_or_list = [params_or_list]
         webhooks = M.Webhook.query.find(dict(
             app_config_id=c.app.config._id,
             type=self.type,
         )).all()
         if webhooks:
-            payload = self.get_payload(**kw)
+            payloads = [self.get_payload(**params)
+                        for params in params_or_list]
             for webhook in webhooks:
                 if webhook.enforce_limit():
                     webhook.update_limit()
-                    send_webhook.post(webhook._id, payload)
+                    for payload in payloads:
+                        send_webhook.post(webhook._id, payload)
                 else:
                     log.warn('Webhook fires too often: %s. Skipping', webhook)
 

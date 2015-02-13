@@ -166,12 +166,15 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
                 commits_by_tags[t].append(commit)
 
         from allura.webhooks import RepoPushWebhookSender
+        params = []
         for b, commits in commits_by_branches.iteritems():
             ref = u'refs/heads/{}'.format(b)
-            RepoPushWebhookSender().send(commit_ids=commits, ref=ref)
+            params.append(dict(commit_ids=commits, ref=ref))
         for t, commits in commits_by_tags.iteritems():
             ref = u'refs/tags/{}'.format(t)
-            RepoPushWebhookSender().send(commit_ids=commits, ref=ref)
+            params.append(dict(commit_ids=commits, ref=ref))
+        if params:
+            RepoPushWebhookSender().send(params)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)
