@@ -16,7 +16,7 @@
        under the License.
 
 Why not improve existing tools like Trac, Redmine or Bugzilla?
----------------------------------------------------------------------
+--------------------------------------------------------------
 
 One word.  Scalability.
 
@@ -34,7 +34,7 @@ so we did take a long look at Roundup, which is a very well designed
 system build from the ground up around the idea of e-mail integration.
 
 If you were so inspired by Roundup, why not just use it?
----------------------------------------------------------------------
+--------------------------------------------------------
 
 We liked the flexible schema system provided by Roundup's HyperTable layer,
 but thought that native MongoDB bindings were both cleaner, faster, and
@@ -45,7 +45,7 @@ backend, but our main goal is to make usable, high performance system,
 not to maximize the number of backend storages systems supported.
 
 Why create all the apps as plugins?
----------------------------------------------------------------------
+-----------------------------------
 
 We know that some projects are going to want more locked down
 access controls in their bug trackers, or more workflow based
@@ -58,7 +58,7 @@ integration points makes it possible to serve everybody in one
 way or another.
 
 Why not just allow web-based extensions?
----------------------------------------------------------------------
+----------------------------------------
 
 We talked about this quite a bit, and decided that we could write local
 native tools more quickly and easily, and that we could build a

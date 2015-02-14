@@ -18,7 +18,7 @@
 .. _scm_hosting_ssh:
 
 Configuring Git/SVN/Hg to use Allura auth via LDAP and ssh
-============================================================
+==========================================================
 
 The following instructions will use a chroot, a custom FUSE driver, and LDAP.
 Once completed, an ssh-based configuration of Git, SVN, or Hg that has repos in
@@ -35,7 +35,7 @@ support for schroot and debootstrap.  We will use a chroot jail to allow users t
 access their repositories via ssh.
 
 Install a chroot environment
--------------------------------------------
+----------------------------
 
 These instructions are based on the documentation in `Debootstrap Chroot`_.  and `OpenLDAPServer`_.
 
@@ -92,7 +92,7 @@ Test that the chroot is installed by entering it:
     (scm) # logout
 
 Configure OpenLDAP in the Chroot
---------------------------------------------------------------
+--------------------------------
 
 Copy the ldap-setup script into the chroot environment:
 
@@ -127,7 +127,7 @@ In particular, you will need to answer the following questions (substitute your 
 * PAM profiles to enable: **2**
 
 Update the chroot ssh configuration
--------------------------------------------------
+-----------------------------------
 
 Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port directive:
 
@@ -137,7 +137,7 @@ Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port d
     Port 8022
 
 Setup the Custom FUSE Driver
--------------------------------------
+----------------------------
 
 Copy the accessfs script into the chroot environment:
 
@@ -179,7 +179,7 @@ Start the SSH daemon:
     (scm) # /etc/init.d/ssh start
 
 Configure Allura to Use the LDAP Server
-------------------------------------------------
+---------------------------------------
 
 Set the following values in your .ini file:
 

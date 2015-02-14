@@ -66,6 +66,10 @@ In order to use the virtual environment, you'll need to activate it:
 
 You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your `~/.bashrc` file.
 
+## Creating the log directory
+    (env-allura)~$ sudo mkdir -p /var/log/allura
+    (env-allura)~$ sudo chown $(whoami) /var/log/allura
+
 ## Installing the Allura code and dependencies
 
 Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.  If you don't have the source code yet, run:
@@ -109,8 +113,7 @@ We have a custom config ready for use.
     (env-allura)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
 
     (env-allura)~/src$ cd solr-4.2.1/example/
-    (env-allura)~/src/apache-solr-4.2.1/example/$ mkdir ~/logs/
-    (env-allura)~/src/apache-solr-4.2.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
+    (env-allura)~/src/apache-solr-4.2.1/example/$ nohup java -jar start.jar > /var/log/allura/solr.log &
 
 
 ### Create code repo directories
@@ -130,7 +133,7 @@ If you want to set up remote access to the repositories, see <http://forge-allur
 Allura uses a background task service called "taskd" to do async tasks like sending emails, and indexing data into solr, etc.  Let's get it running
 
     (env-allura)~$ cd ~/src/allura/Allura
-    (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
+    (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log 2>&1 &
 
 ### The application server
 
@@ -140,7 +143,7 @@ In order to initialize the Allura database, you'll need to run the following:
 
 This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  Once this is done, you can start the application server:
 
-    (env-allura)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
+    (env-allura)~/src/allura/Allura$ nohup paster serve --reload development.ini  > /var/log/allura/allura.log 2>&1 &
 
 ## Next Steps
 

@@ -16,10 +16,10 @@
        under the License.
 
 Guide to SCM tools in Allura
-=====================================================================
+============================
 
 Overview
----------------------------------------------------------------------
+--------
 
 The interface API and most of the controller and view structure of
 code repository type apps is defined in the base classes in the
@@ -33,7 +33,7 @@ packages:
 
 
 Application and Implementation
----------------------------------------------------------------------
+------------------------------
 
 The `Application` structure for SCM apps follows the normal pattern for
 Allura applications, though they should inherit from
@@ -52,7 +52,7 @@ thin wrappers around the underlying SCM tool (see `Indexless`_, below).
 
 
 Controller / View Dispatch
----------------------------------------------------------------------
+--------------------------
 
 All of the SCM apps use the base controllers in `allura.controllers.repository`
 with only minimal customization through subclassing (primarily to
@@ -99,7 +99,7 @@ commit that touched each file or directory within the given directory.
 
 
 Last Commit Logic
----------------------------------------------------------------------
+-----------------
 
 Determining which commit was the last to touch a given set of files or
 directories can be complicated, depending on the specific SCM tool.
@@ -133,7 +133,7 @@ The overall logic for generating this data for Git and Mercurial is as follows:
 
 
 Indexless
----------------------------------------------------------------------
+---------
 
 Currently, there are model classes which encapsulate SCM metadata
 (such as commits, file system structure, etc) in a generic (agnostic to

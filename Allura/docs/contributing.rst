@@ -59,9 +59,9 @@ Allura services:
 
 Logging
 -------
-The logs for Allura services can be found in ``/var/log/`` (Vagrant setup) or
-``~/logs/`` (manual setup). The most important of these is ``allura.log``, as
-it will contain log messages for all Allura application code.
+The logs for Allura services can be found in ``/var/log/allura/``.
+The most important of these is ``allura.log``, as it will contain log messages
+for all Allura application code.
 
 Technology Stack
 ----------------

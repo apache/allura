@@ -16,13 +16,13 @@
        under the License.
 
 Guide to the Allura task and event system
-====================================================================
+=========================================
 
 Our event system is driven by a MongoDB-based queuing system, most of which you
 can ignore, because we've simplified it down to two ideas: *tasks* and *event handlers*.
 
 Glossary
-----------------------------------
+--------
 
 Before we get into the details perhaps a few definitions are in order:
 
@@ -33,7 +33,7 @@ Before we get into the details perhaps a few definitions are in order:
   fan out to multiple callables.
 
 Tasks
--------------------------------------------------------------
+-----
 
 The `MonQTask` class is central to the Allura asynchronous processing system.
 Simply put, a `MonQTask` is a document in MongoDB that contains a context
@@ -64,7 +64,7 @@ well::
 .. _events:
 
 Events
--------------------
+------
 
 Events provide fanout capability for messages, letting several functions get
 called in response to the same 'event.'  To note a function as an event handler,
@@ -87,7 +87,7 @@ the topic name (above, this would be 'project_updated') is always the first
 parameter passed to the event handler.
 
 Running the Task Daemon
-----------------------------------------------------------------
+-----------------------
 
 In order to actually run the asynchronous tasks, we have written a paster command
 `taskd`.  This creates a configurable number of worker processes that watch for

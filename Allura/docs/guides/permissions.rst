@@ -16,10 +16,10 @@
        under the License.
 
 Guide to Users, Groups and Permissions in Allura
-=====================================================================
+================================================
 
 User/Group model
----------------------------------------------------------------------
+----------------
 
 In the allura system `users` can be assigned to various `groups` or
 roles on a per-project basis.
@@ -30,7 +30,7 @@ be assigned a list of `permissions` like `edit`,
 set of permissions, for their artifacts.
 
 Individual artifacts and ACL's
----------------------------------------------------------------------
+------------------------------
 
 You may want to assign a permission
 to particular people or roles for a specific `Artifact` such as
@@ -39,7 +39,7 @@ an additive ACL field on every `Artifact` instance.  It is not exposed
 via the UI currently.
 
 Permission hierarchy
---------------------------------------------------------------------
+--------------------
 
 Projects and subprojects can define user groups, but for any particular
 subproject the set of groups the user belongs to is additive.  This follows
@@ -48,7 +48,7 @@ can *allow* additional access, but can't *restrict* it beyond
 what permissions are allowed by a higher level project.
 
 Permission predicates
----------------------------------------------------------------------
+---------------------
 
 Predicates are simple functions, several of which are defined in Allura
 itself, and which can be added by any tool, which return true if

@@ -18,7 +18,7 @@
 .. _scm_hosting:
 
 Git and Subversion Hosting Installation
-==========================================================
+=======================================
 
 Allura can manage and display Git and SVN repositories, but it doesn't
 automatically run the git and svn services for you.  Here we'll describe how
@@ -33,7 +33,7 @@ an Ubuntu system, but should be similar on other systems.
     works with no additional configuration.
 
 Git
---------------
+---
 
 We'll cover the basics to get you going.  For additional options and details,
 see http://git-scm.com/docs/git-http-backend and http://git-scm.com/book/en/Git-on-the-Server
@@ -78,14 +78,14 @@ when they browse the code repo web pages.  The exact values to use will depend o
 hostnames and port numbers you are using.
 
 Read-only `git://`
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 If you want to run a separate readonly git service, using the git protocol instead of http,
 run: :program:`git daemon --reuseaddr --export-all --base-path=/srv/git /srv/git`  It can
 be accessed at :code:`git://localhost/p/test/git`
 
 
 Subversion
---------------
+----------
 
 These instructions will cover the recommended easiest way to run Subversion with Allura.
 For an overview of other options, see http://svnbook.red-bean.com/en/1.8/svn.serverconfig.choosing.html
@@ -173,7 +173,7 @@ Then Apache SVN will serve repositories for all Allura projects and subprojects.
 .. _auth_apache:
 
 Configuring Auth with Apache
------------------------------------------------
+----------------------------
 
 This is the easiest way to integrate authentication and authorization for SCM access with Allura.  It uses
 mod_python and the handler in :file:`scripts/ApacheAccessHandler.py` to query Allura directly
@@ -231,6 +231,6 @@ message.
 
 
 Advanced Alternative
------------------------------------------------
+--------------------
 
 An advanced alternative for SCM hosting using :ref:`SSH, LDAP, and a FUSE driver <scm_hosting_ssh>` is available.

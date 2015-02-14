@@ -16,7 +16,7 @@
        under the License.
 
 Installation
-=================
+============
 
 Install
 -------
@@ -43,11 +43,24 @@ emails sent to that address will be added as comments on the ticket.  To set up 
 
 .. code-block:: shell-session
 
-    (env-allura)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
+    (env-allura)~/src/forge/Allura$ nohup paster smtp_server development.ini > /var/log/allura/smtp.log &
 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.
 To change the port number, edit `development.ini` and change `forgemail.port` to the appropriate port number for your environment.
+
+SMTP in development
+^^^^^^^^^^^^^^^^^^^
+
+The following command can be used for quick and easy monitoring of smtp during development.
+Just be sure the port matches the `smtp_port` from your `development.ini` (8826 by default).
+
+.. code-block:: shell-session
+
+    (env-allura)~/src/forge/Allura$ python -m smtpd -n -c DebuggingServer localhost:8826
+
+This will create a new debugging server that discards messages and prints them to stdout.
+
 
 Using LDAP
 ^^^^^^^^^^
@@ -72,7 +85,7 @@ Note: if you want users to register new accounts into your LDAP system via Allur
 off :samp:`autoregister` and turn on :samp:`allow_user_registration`
 
 Enabling RabbitMQ
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the INSTALL, run these commands
 to install rabbitmq and set it up:
@@ -92,4 +105,4 @@ If your `paster taskd` process is still running, restart it:
 .. code-block:: shell-session
 
     (env-allura)~/src/forge/Allura$ pkill -f taskd
-    (env-allura)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
+    (env-allura)~/src/forge/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log &

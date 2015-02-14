@@ -21,7 +21,7 @@
    contain the root `toctree` directive.
 
 Introduction
-=====================================================================
+============
 
 .. toctree::
    :maxdepth: 2
@@ -29,7 +29,7 @@ Introduction
    intro
 
 Running Allura
-=====================================================================
+==============
 
 .. toctree::
    :maxdepth: 2
@@ -39,7 +39,7 @@ Running Allura
    scm_host
 
 Using Allura
-=====================================================================
+============
 
 .. toctree::
    :maxdepth: 2
@@ -47,7 +47,7 @@ Using Allura
    using
 
 Extending Allura
-=====================================================================
+================
 
 .. toctree::
    :maxdepth: 3
@@ -62,7 +62,7 @@ Extending Allura
     * `Adding Custom CSS <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-5-adding-custom-css/>`_
 
 Developing Allura
-=====================================================================
+=================
 
 .. toctree::
    :maxdepth: 3
@@ -78,7 +78,7 @@ Developing Allura
 
 
 API Documentation
-==================
+=================
 
 .. toctree::
    :maxdepth: 2
@@ -87,7 +87,7 @@ API Documentation
    api/*
 
 Background Info
-=====================================================================
+===============
 .. toctree::
    :maxdepth: 1
 
@@ -95,7 +95,7 @@ Background Info
    online
 
 Indices and tables
-=====================================================================
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`

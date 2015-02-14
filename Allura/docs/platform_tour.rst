@@ -16,10 +16,10 @@
        under the License.
 
 Platform Tour
-=================
+=============
 
 Introduction
----------------
+------------
 
 Allura is implemented as a collection of tool applications on top of a
 robust and open platform.  Some of the services provided by the platform include:
@@ -54,7 +54,7 @@ Discussion
   The forum also handles attachments to posts either via the web interface or via email.
 
 The Context Object
----------------------------------------------------
+------------------
 
 The Pylons "context" object `c` has several properties which are automatically
 set for each request:
@@ -94,7 +94,7 @@ if you need to change the context for some situation:
 
 
 Artifacts
--------------
+---------
 
 We've mentioned artifacts a couple of times now without definition.  An artifact,
 as used in Allura, is some object that a tool needs to store in the
@@ -140,7 +140,7 @@ the methods of the `allura.model.artifact.Artifact` class::
             return self.shortname
 
 Platform services provided for artifacts
----------------------------------------------------
+----------------------------------------
 
 Whenever you create, modify, or delete an artifact, the platform does a couple of
 things for you:
@@ -162,7 +162,7 @@ They both have many tickets in them.  To distinguish, use the tracker mount poin
 within the reference.  For example [features:#3] or [bugs:#3]
 
 Asynchronous Processing
------------------------------------------
+-----------------------
 
 Much of the actual functionality of Allura comes from code that runs
 *outside* the context of a web request, in the `taskd` server (invoked by
@@ -196,7 +196,7 @@ Event
 
 
 Email Integration
------------------------------------------
+-----------------
 
 The Allura platform provides easy-to-use email integration.  Forge email addresses
 are of the form

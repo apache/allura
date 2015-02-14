@@ -16,10 +16,10 @@
        under the License.
 
 Guide to email integration in the Allura
-=====================================================================
+========================================
 
 Email routing
----------------------------------------------------------------------
+-------------
 
 routing mechanism will be a dotted path from the project to
 the application/tool to the specific artifact within that app that is
@@ -49,7 +49,7 @@ messages, to go into amqp with the same routing information, and turn into
 "messages" just like e-mail.
 
 Email Content Handling
----------------------------------------------------------------------
+----------------------
 
 On Allura message bodies should be composed as markdown.
 Multi-part mime encoded messages should be sent include plain text

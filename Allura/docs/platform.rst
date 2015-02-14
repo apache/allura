@@ -16,7 +16,7 @@
        under the License.
 
 Platform Architecture overview
-===================================
+==============================
 
 I'm told that the reason you build a platform is to "reduce the marginal cost
 of developing applications."  Sounds good.   Well, actually it sounds a bit
@@ -25,7 +25,7 @@ tools faster, easier, and more fun, which I guess is the "reduce the marginal
 cost" thing.
 
 Platform building blocks
----------------------------------------------------------------------
+------------------------
 
 Before we get into the details of how to extend the Allura platform, perhaps
 it would be smart to explain some of the big pieces and why they are there.
@@ -78,7 +78,7 @@ working with the RabbitMQ based AMQP bus a LOT easer.
 
 
 Application Tools
----------------------------------------------------------------------
+-----------------
 
 Writing a tool for Allura is as simple as defining a few controllers
 to handle particular URL's, templates to render pages, and defining the schemas
@@ -98,7 +98,7 @@ When you write Allura tools, you'll get lots of stuff for free:
 * Access to a real-time event publishing system
 
 What's in a tool?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 The most basic app tool consists of a few things:
 
@@ -111,7 +111,7 @@ The most basic app tool consists of a few things:
 * Event publisher (optional)
 
 Users/groups and Permissions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to facilitate more open processes, where more users can contribute
 -- while still protecting data -- documents can easily be "versioned", and
