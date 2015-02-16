@@ -485,6 +485,18 @@ class TestRepoPushWebhookSender(TestWebhookBase):
             self.wh._id,
             sender.get_payload.return_value)
 
+    @patch('allura.webhooks.send_webhook', autospec=True)
+    def test_send_with_list(self, send_webhook):
+        sender = RepoPushWebhookSender()
+        sender.get_payload = Mock(side_effect=[1, 2])
+        self.wh.enforce_limit = Mock(return_value=True)
+        with h.push_config(c, app=self.git):
+            sender.send([dict(arg1=1, arg2=2), dict(arg1=3, arg2=4)])
+        assert_equal(send_webhook.post.call_count, 2)
+        assert_equal(send_webhook.post.call_args_list,
+                     [call(self.wh._id, 1), call(self.wh._id, 2)])
+        assert_equal(self.wh.enforce_limit.call_count, 1)
+
     @patch('allura.webhooks.log', autospec=True)
     @patch('allura.webhooks.send_webhook', autospec=True)
     def test_send_limit_reached(self, send_webhook, log):
@@ -548,6 +560,24 @@ class TestRepoPushWebhookSender(TestWebhookBase):
             assert_equal(sender.enforce_limit(self.git), True)
             add_webhooks('two', 3)
             assert_equal(sender.enforce_limit(self.git), False)
+
+    def test_before(self):
+        sender = RepoPushWebhookSender()
+        with patch.object(self.git.repo, 'commit', autospec=True) as _ci:
+            assert_equal(sender._before(self.git.repo, ['3', '2', '1']), '')
+            _ci.return_value.parent_ids = ['0']
+            assert_equal(sender._before(self.git.repo, ['3', '2', '1']), '0')
+
+    def test_after(self):
+        sender = RepoPushWebhookSender()
+        assert_equal(sender._after([]), '')
+        assert_equal(sender._after(['3', '2', '1']), '3')
+
+    def test_convert_id(self):
+        sender = RepoPushWebhookSender()
+        assert_equal(sender._convert_id(''), '')
+        assert_equal(sender._convert_id('a433fa9'), 'a433fa9')
+        assert_equal(sender._convert_id('a433fa9:13'), 'r13')
 
 
 class TestModels(TestWebhookBase):

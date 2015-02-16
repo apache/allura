@@ -337,7 +337,7 @@ class RepoPushWebhookSender(WebhookSender):
                 return self._convert_id(parents[-1])
         return u''
 
-    def _after(self, repo, commit_ids):
+    def _after(self, commit_ids):
         if len(commit_ids) > 0:
             return self._convert_id(commit_ids[0])
         return u''
@@ -353,7 +353,7 @@ class RepoPushWebhookSender(WebhookSender):
         for ci in commits:
             ci['id'] = self._convert_id(ci['id'])
         before = self._before(app.repo, commit_ids)
-        after = self._after(app.repo, commit_ids)
+        after = self._after(commit_ids)
         payload = {
             'size': len(commits),
             'commits': commits,

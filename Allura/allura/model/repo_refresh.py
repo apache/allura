@@ -134,12 +134,6 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
                 log.info('Compute last commit info %d: %s', (i + 1), ci._id)
 
     if not all_commits and not new_clone:
-        commits_by_branches = {}
-        commits_by_tags = {}
-        # svn has no branches, so we need __default__ as a fallback to collect
-        # all commits into
-        current_branches = ['__default__']
-        current_tags = []
         for commit in commit_ids:
             new = repo.commit(commit)
             user = User.by_email_address(new.committed.email)
@@ -153,26 +147,13 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
                                        related_nodes=[repo.app_config.project],
                                        tags=['commit', repo.tool.lower()])
 
-            branches, tags = repo.symbolics_for_commit(new)
-            if branches:
-                current_branches = branches
-            if tags:
-                current_tags = tags
-            for b in current_branches:
-                if b not in commits_by_branches.keys():
-                    commits_by_branches[b] = []
-                commits_by_branches[b].append(commit)
-            for t in current_tags:
-                if t not in commits_by_tags.keys():
-                    commits_by_tags[t] = []
-                commits_by_tags[t].append(commit)
-
         from allura.webhooks import RepoPushWebhookSender
+        by_branches, by_tags = _group_commits(repo, commit_ids)
         params = []
-        for b, commits in commits_by_branches.iteritems():
+        for b, commits in by_branches.iteritems():
             ref = u'refs/heads/{}'.format(b) if b != '__default__' else None
             params.append(dict(commit_ids=commits, ref=ref))
-        for t, commits in commits_by_tags.iteritems():
+        for t, commits in by_tags.iteritems():
             ref = u'refs/tags/{}'.format(t)
             params.append(dict(commit_ids=commits, ref=ref))
         if params:
@@ -646,3 +627,28 @@ def _update_tree_cache(tree_ids, cache):
     cached_ids = set(cache.instance_ids(Tree))
     new_ids = current_ids - cached_ids
     cache.batch_load(Tree, {'_id': {'$in': list(new_ids)}})
+
+
+def _group_commits(repo, commit_ids):
+    by_branches = {}
+    by_tags = {}
+    # svn has no branches, so we need __default__ as a fallback to collect
+    # all commits into
+    current_branches = ['__default__']
+    current_tags = []
+    for commit in commit_ids:
+        ci = repo.commit(commit)
+        branches, tags = repo.symbolics_for_commit(ci)
+        if branches:
+            current_branches = branches
+        if tags:
+            current_tags = tags
+        for b in current_branches:
+            if b not in by_branches.keys():
+                by_branches[b] = []
+            by_branches[b].append(commit)
+        for t in current_tags:
+            if t not in by_tags.keys():
+                by_tags[t] = []
+            by_tags[t].append(commit)
+    return by_branches, by_tags

@@ -19,13 +19,18 @@ import datetime
 import unittest
 from mock import patch, Mock, MagicMock
 from nose.tools import assert_equal
+from datadiff import tools as dd
 
 from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.controllers.repository import topo_sort
 from allura.model.repository import zipdir, prefix_paths_union
-from allura.model.repo_refresh import CommitRunDoc, CommitRunBuilder
+from allura.model.repo_refresh import (
+    CommitRunDoc,
+    CommitRunBuilder,
+    _group_commits,
+)
 from alluratest.controller import setup_unit_test
 
 
@@ -315,3 +320,38 @@ class TestPrefixPathsUnion(unittest.TestCase):
         a = set(['a1', 'a2', 'a3'])
         b = set(['b1', 'a2/foo', 'b3/foo'])
         self.assertItemsEqual(prefix_paths_union(a, b), ['a2'])
+
+
+class TestGroupCommits(object):
+
+    def setUp(self):
+        self.repo = Mock()
+        self.repo.symbolics_for_commit.return_value = ([], [])
+
+    def test_no_branches(self):
+        b, t = _group_commits(self.repo, ['3', '2', '1'])
+        dd.assert_equal(b, {'__default__': ['3', '2', '1']})
+        dd.assert_equal(t, {})
+
+    def test_branches_and_tags(self):
+        self.repo.symbolics_for_commit.side_effect = [
+            (['master'], ['v1.1']),
+            ([], []),
+            ([], []),
+        ]
+        b, t = _group_commits(self.repo, ['3', '2', '1'])
+        dd.assert_equal(b, {'master': ['3', '2', '1']})
+        dd.assert_equal(t, {'v1.1': ['3', '2', '1']})
+
+    def test_multiple_branches(self):
+        self.repo.symbolics_for_commit.side_effect = [
+            (['master'], ['v1.1']),
+            ([], ['v1.0']),
+            (['test1', 'test2'], []),
+        ]
+        b, t = _group_commits(self.repo, ['3', '2', '1'])
+        dd.assert_equal(b, {'master': ['3', '2'],
+                            'test1': ['1'],
+                            'test2': ['1']})
+        dd.assert_equal(t, {'v1.1': ['3'],
+                            'v1.0': ['2', '1']})
