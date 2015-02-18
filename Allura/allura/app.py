@@ -81,7 +81,7 @@ class SitemapEntry(object):
     """
 
     def __init__(self, label, url=None, children=None, className=None,
-                 ui_icon=None, small=None, tool_name=None, matching_urls=None):
+                 ui_icon=None, small=None, tool_name=None, matching_urls=None, extra_html_attrs=None):
         """Create a new SitemapEntry.
 
         """
@@ -95,6 +95,7 @@ class SitemapEntry(object):
         self.children = children or []
         self.tool_name = tool_name
         self.matching_urls = matching_urls or []
+        self.extra_html_attrs = extra_html_attrs or {}
 
     def __getitem__(self, x):
         """Automatically expand the list of sitemap child entries with the

@@ -656,9 +656,11 @@ class TestFunctionalController(TrackerTestController):
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
         assert 'Create Ticket' in index_view
-        # No 'Create Ticket' button for user without 'create' perm
+
+        # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        assert 'Create Ticket' not in r
+        create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
+        assert_equal(create_button['class'], 'sidebar-disabled')
 
     def test_render_markdown_syntax(self):
         r = self.app.get('/bugs/markdown_syntax')

@@ -1952,7 +1952,16 @@ nav .ico {
 #sidebar li > a:last-child {
   border-bottom: none !important;
 }
-
+a.sidebar-disabled {
+    opacity: 0.4;
+}
+a.sidebar-disabled:focus:hover{
+        pointer-events: none;
+}
+a.sidebar-disabled:hover,
+a.sidebar-disabled:focus {
+    cursor: not-allowed;
+}
 .pad {
   margin: 14px 0 10px 0 !important;
   min-height: 600px;
