@@ -235,9 +235,8 @@ class TestForumAsync(TestController):
                           upload_files=[('file_info', 'test.asdfasdtxt',
                                          'This is a textfile')])
         r = self.app.post(url + 'attach',
-                          upload_files=[(
-                              'file_info', 'test1.txt', 'This is a textfile'),
-                              ('file_info', 'test2.txt', 'This is a textfile')])
+                          upload_files=[('file_info', 'test1.txt', 'This is a textfile'),
+                                        ('file_info', 'test2.txt', 'This is a textfile')])
         r = self.app.get(url)
         assert "test1.txt" in r
         assert "test2.txt" in r
@@ -373,11 +372,9 @@ class TestForum(TestController):
                 if field.has_key('name'):
                     params[field['name']] = field.has_key(
                         'value') and field['value'] or ''
-            params[f.find('textarea')['name']
-                   ] = '1st post in Zero Posts thread'
+            params[f.find('textarea')['name']] = '1st post in Zero Posts thread'
             params[f.find('select')['name']] = 'testforum'
-            params[f.find('input', {'style': 'width: 90%'})
-                   ['name']] = 'Test Zero Posts'
+            params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Zero Posts'
             r = self.app.post('/discussion/save_new_topic', params=params,
                               extra_environ=dict(username='*anonymous'),
                               status=302)
@@ -404,27 +401,23 @@ class TestForum(TestController):
         _post_pending()
         r = self.app.get('/discussion/testforum/moderate?status=pending')
         post_id = r.html.find('input', {'name': 'post-0._id'})['value']
-        r = self.app.post('/discussion/testforum/moderate/save_'
-                          'moderation', params={
-                              'post-0._id': post_id,
-                              'post-0.checked': 'on',
-                              'delete': 'Delete Marked'})
+        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+            'post-0._id': post_id,
+            'post-0.checked': 'on',
+            'delete': 'Delete Marked'})
         _check()
 
     def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'This is a *test thread*'
         params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})
-               ['name']] = 'Test Thread'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
         r = self.app.post('/discussion/save_new_topic', params=params)
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
@@ -445,12 +438,10 @@ class TestForum(TestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})
-               ['name']] = "this is <h2> o'clock"
+        params[f.find('input', {'style': 'width: 90%'})['name']] = "this is <h2> o'clock"
         r = self.app.post('/discussion/save_new_topic', params=params)
         n = M.Notification.query.find(
             dict(subject="[test:discussion] this is <h2> o'clock")).first()
@@ -476,18 +467,15 @@ class TestForum(TestController):
         spam_checker.check.return_value = True
         self._set_anon_allowed()
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
-        params[f.find('input', {'style': 'width: 90%'})
-               ['name']] = 'Test Thread'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
         thread = self.app.post('/discussion/save_new_topic', params=params,
                                extra_environ=dict(username='*anonymous')).follow()
 
@@ -521,25 +509,21 @@ class TestForum(TestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
-        thread = self.app.post(
-            '/discussion/save_new_topic', params=params).follow()
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         url = thread.request.url
 
         # test reply to post
-        f = thread.html.find(
-            'div', {'class': 'row reply_post_form'}).find('form')
+        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -555,15 +539,13 @@ class TestForum(TestController):
         # test edit post
         thread_url = thread.request.url
         r = thread
-        reply_form = r.html.find(
-            'div', {'class': 'edit_post_form reply'}).find('form')
+        reply_form = r.html.find('div', {'class': 'edit_post_form reply'}).find('form')
         post_link = str(reply_form['action'])
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         r = self.app.get(thread_url)
@@ -573,19 +555,16 @@ class TestForum(TestController):
 
     def test_subscription_controls(self):
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Post subject'
-        thread = self.app.post(
-            '/discussion/save_new_topic', params=params).follow()
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         assert M.Notification.query.find(
             dict(subject='[test:discussion] Post subject')).count() == 1
         r = self.app.get('/discussion/testforum/')
@@ -595,19 +574,16 @@ class TestForum(TestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name') and 'subscription' not in field['name']:
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         self.app.post(str(subscribe_url), params=params)
         self.app.get('/discussion/general/subscribe_to_forum?subscribe=True')
-        f = thread.html.find(
-            'div', {'class': 'row reply_post_form'}).find('form')
+        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Reply 2'
         self.app.post(str(rep_url), params=params)
         assert M.Notification.query.find(
@@ -627,14 +603,12 @@ class TestForum(TestController):
 
     def test_thread_announcement(self):
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
@@ -682,14 +656,12 @@ class TestForum(TestController):
 
     def test_thread_sticky(self):
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -698,14 +670,12 @@ class TestForum(TestController):
         tid1 = url1.rstrip('/').rsplit('/', 1)[-1]
 
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic2'
@@ -745,20 +715,18 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/')
         rows = self.get_table_rows(r, 'forum_threads')
         assert_equal(len(rows), 2)
-        #assert 'topic2' in str(rows[0])
-        #assert 'topic1' in str(rows[1])
+        # assert 'topic2' in str(rows[0])
+        # assert 'topic1' in str(rows[1])
 
     def test_move_thread(self):
         # make the topic
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -773,8 +741,7 @@ class TestForum(TestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -800,19 +767,16 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
-        thread = self.app.post(
-            '/discussion/save_new_topic', params=params).follow()
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         thread_sidebarmenu = str(thread.html.find('div', {'id': 'sidebar'}))
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
 
@@ -825,14 +789,12 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find(
-            'form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -862,8 +824,7 @@ class TestForum(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert u'téstforum'.encode('utf-8') in r
-        r = self.app.get(
-            u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
+        r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
         assert u'<option value="téstforum" selected>Tést Forum</option>' in r
 
 
@@ -876,24 +837,27 @@ class TestForumStats(TestController):
     def test_stats_data(self, aggregate):
         # partial data, some days are implicit 0
         aggregate.return_value = {'result': [
-            {"_id": {
-                "year": 2013,
-                "month": 1,
-                "day": 2},
-             "posts": 3
-             },
-            {"_id": {
-                "year": 2013,
-                "month": 1,
-                "day": 3},
-             "posts": 5
-             },
-            {"_id": {
-                "year": 2013,
-                "month": 1,
-                "day": 5},
-             "posts": 2
-             },
+            {
+                "_id": {
+                    "year": 2013,
+                    "month": 1,
+                    "day": 2},
+                "posts": 3
+            },
+            {
+                "_id": {
+                    "year": 2013,
+                    "month": 1,
+                    "day": 3},
+                "posts": 5
+            },
+            {
+                "_id": {
+                    "year": 2013,
+                    "month": 1,
+                    "day": 5},
+                "posts": 2
+            },
         ]}
         r = self.app.get(
             '/discussion/stats_data?begin=2013-01-01&end=2013-01-06')

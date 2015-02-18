@@ -309,8 +309,8 @@ class TestAuth(TestController):
         ThreadLocalORMSession.flush_all()
 
         self.app.post('/auth/send_verification_link',
-                          params=dict(a=email_address),
-                          extra_environ=dict(username='test-user'))
+                      params=dict(a=email_address),
+                      extra_environ=dict(username='test-user'))
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
@@ -323,7 +323,6 @@ class TestAuth(TestController):
         assert json.loads(self.webflash(r))['status'] == 'error'
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         assert not email.confirmed
-
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
@@ -777,9 +776,9 @@ class TestPreferences(TestController):
                       params=dict(socialnetwork=socialnetwork,
                                   accounturl=accounturl))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1 \
-               and user.socialnetworks[0].socialnetwork == socialnetwork \
-               and user.socialnetworks[0].accounturl == accounturl
+        assert len(user.socialnetworks) == 1
+        assert_equal(user.socialnetworks[0].socialnetwork, socialnetwork)
+        assert_equal(user.socialnetworks[0].accounturl, accounturl)
 
         # Add second social network account
         socialnetwork2 = 'Twitter'
@@ -788,31 +787,31 @@ class TestPreferences(TestController):
                       params=dict(socialnetwork=socialnetwork2,
                                   accounturl='@test'))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 2 and \
-               ({'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks and
-                {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks)
+        assert len(user.socialnetworks) == 2
+        assert_in({'socialnetwork': socialnetwork, 'accounturl': accounturl}, user.socialnetworks)
+        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
                       params=dict(socialnetwork=socialnetwork,
                                   account=accounturl))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1 and \
-               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 1
+        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(accounturl=accounturl, socialnetwork=''))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1 and \
-               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 1
+        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(accounturl=accounturl, socialnetwork='invalid'))
         user = M.User.query.get(username='test-admin')
-        assert len(user.socialnetworks) == 1 and \
-               {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
+        assert len(user.socialnetworks) == 1
+        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Add telephone number
         telnumber = '+3902123456'
@@ -886,9 +885,9 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
                              start_time=starttime2, end_time=endtime2)
-        assert len(user.availability) == 2 \
-               and timeslot1dict in user.get_availability_timeslots() \
-               and timeslot2dict in user.get_availability_timeslots()
+        assert len(user.availability) == 2
+        assert_in(timeslot1dict, user.get_availability_timeslots())
+        assert_in(timeslot2dict, user.get_availability_timeslots())
 
         # Remove availability timeslot
         r = self.app.post('/auth/user_info/availability/remove_timeslot',
@@ -936,9 +935,9 @@ class TestPreferences(TestController):
                               enddate=enddate2.strftime('%d/%m/%Y')))
         user = M.User.query.get(username='test-admin')
         period2dict = dict(start_date=startdate2, end_date=enddate2)
-        assert len(user.inactiveperiod) == 2 \
-               and period1dict in user.get_inactive_periods() \
-               and period2dict in user.get_inactive_periods()
+        assert len(user.inactiveperiod) == 2
+        assert_in(period1dict, user.get_inactive_periods())
+        assert_in(period2dict, user.get_inactive_periods())
 
         # Remove first inactivity period
         r = self.app.post(

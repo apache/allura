@@ -1,3 +1,20 @@
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
+
 import json
 import hmac
 import hashlib
@@ -37,7 +54,6 @@ with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 
 class TestWebhookBase(object):
-
     def setUp(self):
         setup_basic_test()
         self.patches = self.monkey_patch()
@@ -69,7 +85,6 @@ class TestWebhookBase(object):
 
 
 class TestValidators(TestWebhookBase):
-
     @with_git2
     def test_webhook_validator(self):
         sender = Mock(type='repo-push')
@@ -107,7 +122,6 @@ class TestValidators(TestWebhookBase):
 
 
 class TestWebhookController(TestController):
-
     def setUp(self):
         super(TestWebhookController, self).setUp()
         self.patches = self.monkey_patch()
@@ -167,8 +181,8 @@ class TestWebhookController(TestController):
                          extra_environ={'username': '*anonymous'},
                          status=302)
         assert_equal(r.location,
-            'http://localhost/auth/'
-            '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fsrc%2Fwebhooks%2Frepo-push%2F')
+                     'http://localhost/auth/'
+                     '?return_to=%2Fadobe%2Fadobe-1%2Fadmin%2Fsrc%2Fwebhooks%2Frepo-push%2F')
 
     def test_invalid_hook_type(self):
         self.app.get(self.url + '/invalid-hook-type/', status=404)
@@ -197,7 +211,7 @@ class TestWebhookController(TestController):
         with td.out_audits(msg):
             r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, '_the_form',
-            '"repo-push" webhook already exists for Git http://httpbin.org/post')
+                        '"repo-push" webhook already exists for Git http://httpbin.org/post')
         assert_equal(M.Webhook.query.find().count(), 1)
 
     def test_create_limit_reached(self):
@@ -230,7 +244,7 @@ class TestWebhookController(TestController):
         data = {'url': 'qwer', 'secret': 'qwe'}
         r = self.app.post(self.url + '/repo-push/create', data)
         self.find_error(r, 'url',
-            'You must provide a full domain name (like qwer.com)')
+                        'You must provide a full domain name (like qwer.com)')
 
     def test_edit(self):
         data1 = {'url': u'http://httpbin.org/post',
@@ -268,8 +282,8 @@ class TestWebhookController(TestController):
         form['url'] = data2['url']
         r = form.submit()
         self.find_error(r, '_the_form',
-            u'"repo-push" webhook already exists for Git http://example.com/hook',
-            form_type='edit')
+                        u'"repo-push" webhook already exists for Git http://example.com/hook',
+                        form_type='edit')
 
     def test_edit_validation(self):
         invalid = M.Webhook(
@@ -299,7 +313,7 @@ class TestWebhookController(TestController):
         data = {'url': 'qwe', 'secret': 'qwe', 'webhook': str(wh._id)}
         r = self.app.post(self.url + '/repo-push/edit', data)
         self.find_error(r, 'url',
-            'You must provide a full domain name (like qwe.com)', 'edit')
+                        'You must provide a full domain name (like qwe.com)', 'edit')
 
     def test_delete(self):
         data = {'url': u'http://httpbin.org/post',
@@ -375,17 +389,19 @@ class TestWebhookController(TestController):
         def link(td):
             a = td.find('a')
             return {'href': a.get('href'), 'text': a.getText()}
+
         def text(td):
             return {'text': td.getText()}
+
         def delete_btn(td):
             a = td.find('a')
             return {'href': a.get('href'), 'data-id': a.get('data-id')}
+
         tds = row.findAll('td')
         return [text(tds[0]), text(tds[1]), link(tds[2]), delete_btn(tds[3])]
 
 
 class TestSendWebhookHelper(TestWebhookBase):
-
     def setUp(self, *args, **kw):
         super(TestSendWebhookHelper, self).setUp(*args, **kw)
         self.payload = {'some': ['data', 23]}
@@ -490,7 +506,6 @@ class TestSendWebhookHelper(TestWebhookBase):
 
 
 class TestRepoPushWebhookSender(TestWebhookBase):
-
     @patch('allura.webhooks.send_webhook', autospec=True)
     def test_send(self, send_webhook):
         sender = RepoPushWebhookSender()
@@ -597,10 +612,9 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 
 
 class TestModels(TestWebhookBase):
-
     def test_webhook_url(self):
         assert_equal(self.wh.url(),
-            '/adobe/adobe-1/admin/src/webhooks/repo-push/{}'.format(self.wh._id))
+                     '/adobe/adobe-1/admin/src/webhooks/repo-push/{}'.format(self.wh._id))
 
     def test_webhook_enforce_limit(self):
         self.wh.last_sent = None

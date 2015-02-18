@@ -25,7 +25,6 @@ from allura.model import Artifact
 
 
 class Webhook(Artifact):
-
     class __mongometa__:
         name = 'webhook'
         unique_indexes = [('app_config_id', 'type', 'hook_url')]

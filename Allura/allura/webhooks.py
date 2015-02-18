@@ -192,7 +192,6 @@ class WebhookController(BaseController):
 
 
 class SendWebhookHelper(object):
-
     def __init__(self, webhook, payload):
         self.webhook = webhook
         self.payload = payload
@@ -246,10 +245,10 @@ class SendWebhookHelper(object):
     def _send(self, url, data, headers):
         try:
             r = requests.post(
-                    url,
-                    data=data,
-                    headers=headers,
-                    timeout=self.timeout)
+                url,
+                data=data,
+                headers=headers,
+                timeout=self.timeout)
         except (requests.exceptions.RequestException,
                 socket.timeout,
                 ssl.SSLError):

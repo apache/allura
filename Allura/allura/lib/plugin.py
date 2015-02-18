@@ -107,8 +107,8 @@ class AuthenticationProvider(object):
             self.logout()
             return M.User.anonymous()
         if not user.is_anonymous() and \
-                        self.get_last_password_updated(user) > datetime.utcfromtimestamp(self.session.created) and \
-                        user.get_tool_data('allura', 'pwd_reset_preserve_session') != self.session.id:
+                self.get_last_password_updated(user) > datetime.utcfromtimestamp(self.session.created) and \
+                user.get_tool_data('allura', 'pwd_reset_preserve_session') != self.session.id:
             log.debug('Session logged out: due to user %s pwd change %s > %s', user.username,
                       self.get_last_password_updated(user), datetime.utcfromtimestamp(self.session.created))
             self.logout()
@@ -133,7 +133,7 @@ class AuthenticationProvider(object):
         :param user_doc: a dict with 'username' and 'display_name'.  Optionally 'password' and others
         :rtype: :class:`User <allura.model.auth.User>`
         '''
-        raise NotImplementedError, 'register_user'
+        raise NotImplementedError('register_user')
 
     def _login(self):
         '''
@@ -142,7 +142,7 @@ class AuthenticationProvider(object):
         :rtype: :class:`User <allura.model.auth.User>`
         :raises: HTTPUnauthorized if user not found, or credentials are not valid
         '''
-        raise NotImplementedError, '_login'
+        raise NotImplementedError('_login')
 
     def login(self, user=None):
         try:
@@ -184,23 +184,23 @@ class AuthenticationProvider(object):
 
         :rtype: bool
         '''
-        raise NotImplementedError, 'validate_password'
+        raise NotImplementedError('validate_password')
 
     def disable_user(self, user, **kw):
         '''Disable user account'''
-        raise NotImplementedError, 'disable_user'
+        raise NotImplementedError('disable_user')
 
     def enable_user(self, user, **kw):
         '''Enable user account'''
-        raise NotImplementedError, 'enable_user'
+        raise NotImplementedError('enable_user')
 
     def activate_user(self, user, **kw):
         '''Activate user after registration'''
-        raise NotImplementedError, 'activate_user'
+        raise NotImplementedError('activate_user')
 
     def deactivate_user(self, user, **kw):
         '''Deactivate user (== registation not confirmed)'''
-        raise NotImplementedError, 'deactivate_user'
+        raise NotImplementedError('deactivate_user')
 
     def by_username(self, username):
         '''
@@ -208,20 +208,20 @@ class AuthenticationProvider(object):
 
         :rtype: :class:`User <allura.model.auth.User>` or None
         '''
-        raise NotImplementedError, 'by_username'
+        raise NotImplementedError('by_username')
 
     def set_password(self, user, old_password, new_password):
         '''
         Set a user's password.
 
-        A provider implementing this method should store the timestamp of this change, either on ``user.last_password_updated`` or
-        somewhere else that a custom ``get_last_password_updated`` method uses.
+        A provider implementing this method should store the timestamp of this change, either
+        on ``user.last_password_updated`` or somewhere else that a custom ``get_last_password_updated`` method uses.
 
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: None
         :raises: HTTPUnauthorized if old_password is not valid
         '''
-        raise NotImplementedError, 'set_password'
+        raise NotImplementedError('set_password')
 
     def upload_sshkey(self, username, pubkey):
         '''
@@ -230,7 +230,7 @@ class AuthenticationProvider(object):
         :rtype: None
         :raises: AssertionError with user message, upon any error
         '''
-        raise NotImplementedError, 'upload_sshkey'
+        raise NotImplementedError('upload_sshkey')
 
     def account_navigation(self):
         return [
@@ -269,17 +269,17 @@ class AuthenticationProvider(object):
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: str
         '''
-        raise NotImplementedError, 'user_project_shortname'
+        raise NotImplementedError('user_project_shortname')
 
     def user_by_project_shortname(self, shortname):
         '''
         :param str: shortname
         :rtype: user: a :class:`User <allura.model.auth.User>`
         '''
-        raise NotImplementedError, 'user_by_project_shortname'
+        raise NotImplementedError('user_by_project_shortname')
 
     def update_notifications(self, user):
-        raise NotImplementedError, 'update_notifications'
+        raise NotImplementedError('update_notifications')
 
     def user_registration_date(self, user):
         '''
@@ -288,7 +288,7 @@ class AuthenticationProvider(object):
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: :class:`datetime <datetime.datetime>`
         '''
-        raise NotImplementedError, 'user_registration_date'
+        raise NotImplementedError('user_registration_date')
 
     def get_last_password_updated(self, user):
         '''
@@ -297,7 +297,7 @@ class AuthenticationProvider(object):
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: :class:`datetime <datetime.datetime>`
         '''
-        raise NotImplementedError, 'get_last_password_updated'
+        raise NotImplementedError('get_last_password_updated')
 
     def get_primary_email_address(self, user_record):
         return user_record.get_pref('email_address') if user_record else None
@@ -330,7 +330,7 @@ class AuthenticationProvider(object):
         Links will show up at admin user search page.
         '''
         return [
-           ('/nf/admin/user/%s' % user.username, 'Details/Edit'),
+            ('/nf/admin/user/%s' % user.username, 'Details/Edit'),
         ]
 
 
@@ -479,7 +479,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 raise Exception('You should not have both "auth.ldap.autoregister" and '
                                 '"auth.allow_user_registration" set to true')
             else:
-                log.debug('LdapAuth: autoregister is true, so only creating the mongo record (no creating ldap record)')
+                log.debug('LdapAuth: autoregister is true, so only creating the mongo '
+                          'record (not creating ldap record)')
                 return result
 
         # full registration into LDAP
@@ -521,7 +522,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def upload_sshkey(self, username, pubkey):
         if not asbool(config.get('auth.ldap.use_schroot', True)):
-            raise NotImplementedError, 'SSH keys are not supported'
+            raise NotImplementedError('SSH keys are not supported')
 
         argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
             config['auth.ldap.schroot_name'], username)).split() + [pubkey]
@@ -574,7 +575,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def _login(self):
         if ldap is None:
-            raise Exception('The python-ldap package needs to be installed.  Run `pip install python-ldap` in your allura environment.')
+            raise Exception('The python-ldap package needs to be installed.  '
+                            'Run `pip install python-ldap` in your allura environment.')
         from allura import model as M
         try:
             username = str(self.request.params['username'])
@@ -585,7 +587,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         user = M.User.query.get(username=username)
         if user is None:
             if asbool(config.get('auth.ldap.autoregister', True)):
-                log.debug('LdapAuth: authorized user {} needs a mongo record registered.  Creating...'.format(username))
+                log.debug('LdapAuth: authorized user {} needs a mongo record registered.  '
+                          'Creating...'.format(username))
                 user = M.User.register({'username': username,
                                         'display_name': LdapUserPreferencesProvider()._get_pref(username, 'display_name'),
                                         })
@@ -751,7 +754,7 @@ class ProjectRegistrationProvider(object):
         from allura import model as M
 
         # Check for private project rights
-        if neighborhood.features['private_projects'] == False and private_project:
+        if neighborhood.features['private_projects'] is False and private_project:
             raise ValueError(
                 "You can't create private projects for %s neighborhood" %
                 neighborhood.name)
@@ -957,8 +960,8 @@ class ProjectRegistrationProvider(object):
         Links will show up at admin project search page
         '''
         return [
-           (project.url() + 'admin/groups/', 'Members'),
-           (project.url() + 'admin/audit/', 'Audit Trail'),
+            (project.url() + 'admin/groups/', 'Members'),
+            (project.url() + 'admin/audit/', 'Audit Trail'),
         ]
 
 
@@ -1242,7 +1245,7 @@ class UserPreferencesProvider(object):
         :return: pref_value
         :raises: AttributeError if pref_name not found
         '''
-        raise NotImplementedError, 'get_pref'
+        raise NotImplementedError('get_pref')
 
     def set_pref(self, user, pref_name, pref_value):
         '''
@@ -1250,7 +1253,7 @@ class UserPreferencesProvider(object):
         :param str pref_name:
         :param pref_value:
         '''
-        raise NotImplementedError, 'set_pref'
+        raise NotImplementedError('set_pref')
 
     def additional_urls(self):
         '''

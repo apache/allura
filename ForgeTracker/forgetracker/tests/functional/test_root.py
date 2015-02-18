@@ -47,7 +47,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 
 class TrackerTestController(TestController):
-
     def setUp(self):
         super(TrackerTestController, self).setUp()
         self.setup_with_tools()
@@ -81,7 +80,6 @@ class TrackerTestController(TestController):
 
 
 class TestMilestones(TrackerTestController):
-
     def test_milestone_list(self):
         r = self.app.get('/bugs/milestones')
         assert '1.0' in r, r.showbrowser()
@@ -192,8 +190,7 @@ class TestMilestones(TrackerTestController):
         }
         r = self.app.post('/bugs/update_milestones', d)
         assert 'error' in self.webflash(r)
-        assert app.globals.milestone_fields[0][
-            'milestones'][1]['name'] == '2.0'
+        assert app.globals.milestone_fields[0]['milestones'][1]['name'] == '2.0'
 
     def test_default_milestone(self):
         self.new_ticket(summary='bar', _milestone='1.0', status='closed')
@@ -230,7 +227,6 @@ def post_install_update_ticket_permission(app):
 
 
 class TestSubprojectTrackerController(TrackerTestController):
-
     @td.with_tool('test/sub1', 'Tickets', 'tickets')
     def test_index_page_ticket_visibility(self):
         """Test that non-admin users can see tickets created by admins."""
@@ -265,7 +261,6 @@ class TestSubprojectTrackerController(TrackerTestController):
 
 
 class TestFunctionalController(TrackerTestController):
-
     def test_bad_ticket_number(self):
         self.app.get('/bugs/input.project_user_select', status=404)
 
@@ -351,28 +346,26 @@ class TestFunctionalController(TrackerTestController):
         ticket_view = self.new_ticket(summary='First Ticket').follow()
         ticket_view = self.new_ticket(summary='Second Ticket').follow()
         M.MonQTask.run_ready()
-        first_ticket = tm.Ticket.query.find({
-            'summary': 'First Ticket'}).first()
-        second_ticket = tm.Ticket.query.find({
-            'summary': 'Second Ticket'}).first()
+        first_ticket = tm.Ticket.query.find({'summary': 'First Ticket'}).first()
+        second_ticket = tm.Ticket.query.find({'summary': 'Second Ticket'}).first()
         r = self.app.get('/p/test/bugs/edit/?q=ticket')
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': [first_ticket._id],
-                      '_milestone': '2.0',
-                      })
+            '__search': '',
+            '__ticket_ids': [first_ticket._id],
+            '_milestone': '2.0',
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' in r
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' not in r
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          first_ticket._id,
-                          second_ticket._id),
-                      '_milestone': '1.0',
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                first_ticket._id,
+                second_ticket._id),
+            '_milestone': '1.0',
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' in r
@@ -380,12 +373,12 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' not in r
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          first_ticket._id,
-                          second_ticket._id),
-                      'status': 'accepted',
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                first_ticket._id,
+                second_ticket._id),
+            'status': 'accepted',
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
@@ -401,13 +394,13 @@ class TestFunctionalController(TrackerTestController):
         ticket2 = tm.Ticket.query.get(summary='Ticket2')
         ticket3 = tm.Ticket.query.get(summary='Ticket3')
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,
-                          ticket3._id),
-                      'labels': 'tag2, tag3',
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,
+                ticket3._id),
+            'labels': 'tag2, tag3',
+        })
         M.MonQTask.run_ready()
 
         ticket1 = tm.Ticket.query.get(summary='Ticket1')
@@ -434,20 +427,18 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='Second Custom')
         M.MonQTask.run_ready()
 
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First Custom'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second Custom'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second Custom'}).first()
         ticket2.custom_fields._major = None
         ticket2.commit()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'status': 'accepted',
-                      '_major': 'False'
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'status': 'accepted',
+            '_major': 'False'
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Major</strong>: True --&gt; False</li>' in r
@@ -461,48 +452,44 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(ticket2.custom_fields._major, False)
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'status': 'accepted',
-                      '_major': 'True'
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'status': 'accepted',
+            '_major': 'True'
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First Custom'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second Custom'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second Custom'}).first()
         assert_equal(ticket1.custom_fields._major, True)
         assert_equal(ticket2.custom_fields._major, True)
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket2._id,),
-                      '_major': 'False'
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket2._id,),
+            '_major': 'False'
+        })
         M.MonQTask.run_ready()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
         assert_equal(ticket2.custom_fields._major, False)
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'status': 'accepted',
-                      '_major': ''
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'status': 'accepted',
+            '_major': ''
+        })
         M.MonQTask.run_ready()
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First Custom'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second Custom'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second Custom'}).first()
         assert_equal(ticket1.custom_fields._major, True)
         assert_equal(ticket2.custom_fields._major, False)
 
@@ -534,61 +521,53 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='First', **kw)
         self.new_ticket(summary='Second')
         M.MonQTask.run_ready()
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'private': False
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'private': False
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Private</strong>: Yes --&gt; No</li>' in r
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Private</strong>: No --&gt; Yes</li>' not in r
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
         assert_equal(ticket1.private, False)
         assert_equal(ticket2.private, False)
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'private': True
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'private': True
+        })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Private</strong>: No --&gt; Yes</li>' in r
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Private</strong>: No --&gt; Yes</li>' in r
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
         assert_equal(ticket1.private, True)
         assert_equal(ticket2.private, True)
 
         ticket2.private = False
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          ticket1._id,
-                          ticket2._id,),
-                      'private': ''
-                      })
+            '__search': '',
+            '__ticket_ids': (
+                ticket1._id,
+                ticket2._id,),
+            'private': ''
+        })
         M.MonQTask.run_ready()
-        ticket1 = tm.Ticket.query.find({
-            'summary': 'First'}).first()
-        ticket2 = tm.Ticket.query.find({
-            'summary': 'Second'}).first()
+        ticket1 = tm.Ticket.query.find({'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({'summary': 'Second'}).first()
         assert_equal(ticket1.private, True)
         assert_equal(ticket2.private, False)
 
@@ -597,8 +576,7 @@ class TestFunctionalController(TrackerTestController):
         assert_true('<label class="simple">Private:</label> No' in ticket_view)
         ticket_view = self.new_ticket(summary='Private Ticket',
                                       private=True).follow()
-        assert_true(
-            '<label class="simple">Private:</label> Yes' in ticket_view)
+        assert_true('<label class="simple">Private:</label> Yes' in ticket_view)
         M.MonQTask.run_ready()
         # Creator sees private ticket on list page...
         index_response = self.app.get('/p/test/bugs/')
@@ -645,8 +623,7 @@ class TestFunctionalController(TrackerTestController):
             'ticket_form.private': 'on',
         })
         response = self.app.get('/bugs/1/')
-        assert_true(
-            '<li><strong>private</strong>: No --&gt; Yes</li>' in response)
+        assert_true('<li><strong>private</strong>: No --&gt; Yes</li>' in response)
 
     @td.with_tool('test', 'Tickets', 'doc-bugs')
     def test_two_trackers(self):
@@ -722,8 +699,7 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
         assert_true(u'greén' in response)
-        assert_true(
-            '<li><strong>labels</strong>:  --&gt; yellow, greén</li>' in response)
+        assert_true('<li><strong>labels</strong>:  --&gt; yellow, greén</li>' in response)
         self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz',
             'description': 'bbb',
@@ -735,8 +711,7 @@ class TestFunctionalController(TrackerTestController):
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        assert_true(
-            '<li><strong>labels</strong>: yellow, greén --&gt; yellow</li>' in response)
+        assert_true('<li><strong>labels</strong>: yellow, greén --&gt; yellow</li>' in response)
         self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz',
             'description': 'bbb',
@@ -747,8 +722,7 @@ class TestFunctionalController(TrackerTestController):
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
-        assert_true(
-            '<li><strong>labels</strong>: yellow --&gt; </li>' in response)
+        assert_true('<li><strong>labels</strong>: yellow --&gt; </li>' in response)
 
     def test_new_attachment(self):
         file_name = 'test_root.py'
@@ -788,14 +762,12 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1))
-        post_link = str(
-            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get('/bugs/1/', dict(page=1))
@@ -812,8 +784,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
-        download = self.app.get(
-            str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
+        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
         assert_equal(download.body, file_data)
 
     def test_two_attachments(self):
@@ -922,10 +893,8 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert response.html.find('input', {'name': 'ticket_form.summary'})
-        assert response.html.find(
-            'select', {'name': 'ticket_form.assigned_to'})
-        assert response.html.find(
-            'textarea', {'name': 'ticket_form.description'})
+        assert response.html.find('select', {'name': 'ticket_form.assigned_to'})
+        assert response.html.find('textarea', {'name': 'ticket_form.description'})
         assert response.html.find('select', {'name': 'ticket_form.status'})
         assert response.html.find('select', {'name': 'ticket_form._milestone'})
         assert response.html.find('input', {'name': 'ticket_form.labels'})
@@ -935,15 +904,13 @@ class TestFunctionalController(TrackerTestController):
         summary = 'test default assignment'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(
-            response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
 
     def test_assign_ticket(self):
         summary = 'test assign ticket'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
-        assert 'nobody' in str(
-            response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
+        assert 'nobody' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
         response = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz',
             'description': 'bbb',
@@ -954,7 +921,7 @@ class TestFunctionalController(TrackerTestController):
             'comment': ''
         }).follow()
         assert 'test-admin' in str(response.html.find('div',
-                                   {'class': 'grid-5 ticket-assigned-to'}))
+                                                      {'class': 'grid-5 ticket-assigned-to'}))
         assert '<li><strong>summary</strong>: test assign ticket --&gt; zzz' in response
         assert '<li><strong>status</strong>: open --&gt; ccc' in response
 
@@ -975,8 +942,7 @@ class TestFunctionalController(TrackerTestController):
         kw = {'custom_fields._priority': 'normal',
               'custom_fields._category': 'helloworld',
               'custom_fields._code_review': 'test-admin'}
-        ticket_view = self.new_ticket(
-            summary='test custom fields', **kw).follow()
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         assert 'Priority:' in ticket_view
         assert 'normal' in ticket_view
         assert 'Test Admin' in ticket_view
@@ -996,8 +962,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/new/')
         assert '<option value="test select">test select</option>' in r
         kw = {'custom_fields._testselect': 'test select'}
-        ticket_view = self.new_ticket(
-            summary='test select custom fields', **kw).follow()
+        ticket_view = self.new_ticket(summary='test select custom fields', **kw).follow()
         assert '<option selected value="test select">test select</option>' in ticket_view
 
     def test_select_custom_field_unicode(self):
@@ -1044,8 +1009,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/admin/bugs/set_custom_fields',
                           params=variable_encode(params))
         kw = {'custom_fields._number': ''}
-        ticket_view = self.new_ticket(
-            summary='test custom fields', **kw).follow()
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         assert '<strong>Number</strong>:  --&gt;' not in ticket_view
         ticket_view = self.app.post('/bugs/1/update_ticket', params={
             'summary': 'zzz',
@@ -1170,10 +1134,10 @@ class TestFunctionalController(TrackerTestController):
         form['ticket_form.custom_fields._priority'] = 'urgent'
         form['ticket_form.custom_fields._category'] = 'bugs'
         error_form = form.submit()
-        assert_equal(
-            error_form.forms[1]['ticket_form.custom_fields._priority'].value, 'urgent')
-        assert_equal(
-            error_form.forms[1]['ticket_form.custom_fields._category'].value, 'bugs')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value,
+                     'urgent')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value,
+                     'bugs')
         # Test edit ticket form
         self.new_ticket(summary='Test ticket')
         response = self.app.get('/bugs/1/')
@@ -1185,10 +1149,10 @@ class TestFunctionalController(TrackerTestController):
         form['ticket_form.custom_fields._priority'] = 'urgent'
         form['ticket_form.custom_fields._category'] = 'bugs'
         error_form = form.submit()
-        assert_equal(
-            error_form.forms[1]['ticket_form.custom_fields._priority'].value, 'urgent')
-        assert_equal(
-            error_form.forms[1]['ticket_form.custom_fields._category'].value, 'bugs')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value,
+                     'urgent')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value,
+                     'bugs')
 
     def test_new_ticket_validation(self):
         summary = 'ticket summary'
@@ -1203,15 +1167,12 @@ class TestFunctionalController(TrackerTestController):
         assert error_message
         assert (error_message.string == 'You must provide a Title' or
                 error_message.string == 'Missing value')
-        assert error_message.findPreviousSibling(
-            'input').get('name') == 'ticket_form.summary'
+        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = summary
         success = error_form.forms[1].submit().follow().html
-        assert success.findAll('form')[1].get(
-            'action') == '/p/test/bugs/1/update_ticket_from_widget'
-        assert success.find('input', {'name': 'ticket_form.summary'})[
-            'value'] == summary
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.find('input', {'name': 'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):
         old_summary = 'edit ticket test'
@@ -1219,8 +1180,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary=old_summary)
         response = self.app.get('/bugs/1/')
         # check that existing form is valid
-        assert response.html.find(
-            'input', {'name': 'ticket_form.summary'})['value'] == old_summary
+        assert response.html.find('input', {'name': 'ticket_form.summary'})['value'] == old_summary
         assert not response.html.find('div', {'class': 'error'})
         form = response.forms[1]
         # try submitting with no summary set and check for error message
@@ -1229,17 +1189,14 @@ class TestFunctionalController(TrackerTestController):
         error_message = error_form.html.find('div', {'class': 'error'})
         assert error_message
         assert error_message.string == 'You must provide a Title'
-        assert error_message.findPreviousSibling(
-            'input').get('name') == 'ticket_form.summary'
+        assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = new_summary
         r = error_form.forms[1].submit()
         assert r.status_int == 302, r.showbrowser()
         success = r.follow().html
-        assert success.findAll('form')[1].get(
-            'action') == '/p/test/bugs/1/update_ticket_from_widget'
-        assert success.find('input', {'name': 'ticket_form.summary'})[
-            'value'] == new_summary
+        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.find('input', {'name': 'ticket_form.summary'})['value'] == new_summary
 
     def test_home(self):
         self.new_ticket(summary='test first ticket')
@@ -1284,7 +1241,7 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         for ext in ['', '.rss', '.atom']:
             assert '<title>test first ticket</title>' in \
-                self.app.get('/p/test/bugs/search_feed%s?q=test' % ext)
+                   self.app.get('/p/test/bugs/search_feed%s?q=test' % ext)
 
     def test_search_current_user(self):
         self.new_ticket(summary='test first ticket')
@@ -1361,8 +1318,7 @@ class TestFunctionalController(TrackerTestController):
             'old_summary': '',
             'sort': ''}).follow()
         r = self.app.get('/bugs/')
-        assert sidebar_contains(
-            r, 'This will be truncated because it is too long to show in the sidebar ...')
+        assert sidebar_contains(r, 'This will be truncated because it is too long to show in the sidebar ...')
 
     def test_edit_saved_search(self):
         r = self.app.get('/admin/bugs/bins/')
@@ -1392,15 +1348,13 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1))
         assert_true(post_content in r)
-        assert_true(
-            len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1)
+        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1)
 
         new_summary = 'old ticket'
         for f in ticket_view.html.findAll('form'):
@@ -1410,15 +1364,13 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1))
         assert_true(summary + ' --&gt; ' + new_summary in r)
-        assert_true(
-            len(r.html.findAll(attrs={'class': 'discussion-post'})) == 2)
+        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 2)
 
     def test_discussion_paging(self):
         summary = 'test discussion paging'
@@ -1431,8 +1383,7 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1460,8 +1411,7 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1469,15 +1419,13 @@ class TestFunctionalController(TrackerTestController):
         post = M.Post.query.find().first()
         assert '/p/test/bugs/1/?limit=25#' + post.slug in r
         r = self.app.get('/bugs/1/')
-        post_link = str(
-            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         post_form = r.html.find('form', {'action': post_link + 'reply'})
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
@@ -1497,11 +1445,10 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/?sort=summary+asc')
-        ticket_rows = response.html.find(
-            'table', {'class': 'ticket-list'}).find('tbody')
+        ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
-        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed&sort=snippet_s+asc&limit=25&filter=&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
@@ -1519,14 +1466,12 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        response = self.app.get(
-            '/p/test/bugs/milestone/1.0/?sort=ticket_num+asc')
-        ticket_rows = response.html.find(
-            'table', {'class': 'ticket-list'}).find('tbody')
+        response = self.app.get('/p/test/bugs/milestone/1.0/?sort=ticket_num+asc')
+        ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
         assert_in('test third ticket', str(ticket_rows))
-        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=_milestone%3A1.0&sort=ticket_num_i+asc&limit=25&filter=&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
@@ -1538,18 +1483,16 @@ class TestFunctionalController(TrackerTestController):
     def test_bulk_edit_search(self):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='open')
-        self.new_ticket(summary='test third ticket',
-                        status='closed', _milestone='1.0')
+        self.new_ticket(summary='test third ticket', status='closed', _milestone='1.0')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=status%3Aopen')
-        ticket_rows = response.html.find(
-            'table', {'class': 'ticket-list'}).find('tbody')
+        ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
-        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=status%3Aopen&limit=25&filter=%7B%7D&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
@@ -1579,16 +1522,14 @@ class TestFunctionalController(TrackerTestController):
             open_status_names='aa bb',
             closed_status_names='cc',
         )
-        self.app.post(
-            '/admin/bugs/set_custom_fields',
-            params=variable_encode(params))
+        self.app.post('/admin/bugs/set_custom_fields',
+                      params=variable_encode(params))
         self.new_ticket(summary='test new milestone', _milestone='2.0',
                         **{'custom_fields._releases': '1.0-beta'})
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        email = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         assert_in('**Releases:** 1.0-beta', email.kwargs.text)
         assert_in('**Milestone:** 2.0', email.kwargs.text)
 
@@ -1611,22 +1552,20 @@ class TestFunctionalController(TrackerTestController):
         second_ticket.subscribe(user=second_user)
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': (
-                          first_ticket._id,
-                          second_ticket._id,
-                          third_ticket._id),
-                      'status': 'accepted',
-                      '_milestone': '2.0',
-                      'assigned_to': 'test-admin'})
+            '__search': '',
+            '__ticket_ids': (
+                first_ticket._id,
+                second_ticket._id,
+                third_ticket._id),
+            'status': 'accepted',
+            '_milestone': '2.0',
+            'assigned_to': 'test-admin'})
         M.MonQTask.run_ready()
 
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 3)
         for email in emails:
-            assert_equal(email.kwargs.subject,
-                         '[test:bugs] Mass edit changes by Test Admin')
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
         first_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': str(first_user._id)
@@ -1692,17 +1631,15 @@ class TestFunctionalController(TrackerTestController):
         ticket = tm.Ticket.query.get(summary='test first ticket')
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': [ticket._id],
-                      'status': 'accepted'})
+            '__search': '',
+            '__ticket_ids': [ticket._id],
+            'status': 'accepted'})
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         # one for admin and one for monitoring email
         assert_equal(len(emails), 2)
         for email in emails:
-            assert_equal(email.kwargs.subject,
-                         '[test:bugs] Mass edit changes by Test Admin')
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
         admin = M.User.by_username('test-admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
@@ -1726,27 +1663,23 @@ class TestFunctionalController(TrackerTestController):
             'TicketMonitoringEmail': 'monitoring@email.com',
             'TicketMonitoringType': 'AllPublicTicketChanges',
         })
-        self.new_ticket(summary='test first ticket',
-                        status='open', _milestone='2.0')
-        self.new_ticket(summary='test second ticket',
-                        status='open', private=True)
+        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
+        self.new_ticket(summary='test second ticket', status='open', private=True)
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         tickets = tm.Ticket.query.find(dict(status='open')).all()
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': [t._id for t in tickets],
-                      'status': 'accepted'})
+            '__search': '',
+            '__ticket_ids': [t._id for t in tickets],
+            'status': 'accepted'})
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         # one for admin and one for monitoring email
         assert_equal(len(emails), 2)
         for email in emails:
-            assert_equal(email.kwargs.subject,
-                         '[test:bugs] Mass edit changes by Test Admin')
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
         admin = M.User.by_username('test-admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
@@ -1771,26 +1704,22 @@ class TestFunctionalController(TrackerTestController):
             'TicketMonitoringEmail': 'monitoring@email.com',
             'TicketMonitoringType': 'AllPublicTicketChanges',
         })
-        self.new_ticket(summary='test first ticket',
-                        status='open', private=True)
-        self.new_ticket(summary='test second ticket',
-                        status='open', private=True)
+        self.new_ticket(summary='test first ticket', status='open', private=True)
+        self.new_ticket(summary='test second ticket', status='open', private=True)
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         tickets = tm.Ticket.query.find(dict(status='open')).all()
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
-                      '__search': '',
-                      '__ticket_ids': [t._id for t in tickets],
-                      'status': 'accepted'})
+            '__search': '',
+            '__ticket_ids': [t._id for t in tickets],
+            'status': 'accepted'})
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 1)  # only admin email sent
         for email in emails:
-            assert_equal(email.kwargs.subject,
-                         '[test:bugs] Mass edit changes by Test Admin')
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
         admin = M.User.by_username('test-admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
@@ -1864,22 +1793,19 @@ class TestFunctionalController(TrackerTestController):
 
         # invalid vote
         r = self.app.post('/bugs/1/vote', dict(vote='invalid'))
-        expected_resp = json.dumps(
-            dict(status='error', votes_up=0, votes_down=0, votes_percent=0))
+        expected_resp = json.dumps(dict(status='error', votes_up=0, votes_down=0, votes_percent=0))
         assert r.response.content == expected_resp
 
         # vote up
         r = self.app.post('/bugs/1/vote', dict(vote='u'))
-        expected_resp = json.dumps(
-            dict(status='ok', votes_up=1, votes_down=0, votes_percent=100))
+        expected_resp = json.dumps(dict(status='ok', votes_up=1, votes_down=0, votes_percent=100))
         assert r.response.content == expected_resp
 
         # vote down by another user
         r = self.app.post('/bugs/1/vote', dict(vote='d'),
                           extra_environ=dict(username='test-user-0'))
 
-        expected_resp = json.dumps(
-            dict(status='ok', votes_up=1, votes_down=1, votes_percent=50))
+        expected_resp = json.dumps(dict(status='ok', votes_up=1, votes_down=1, votes_percent=50))
         assert r.response.content == expected_resp
 
         # make sure that on the page we see the same result
@@ -1953,8 +1879,7 @@ class TestFunctionalController(TrackerTestController):
         assert 'Private ticket title' in r
         assert '<label class="simple">Private:</label> Yes' in r, 'Ticket is not private'
         # ... and can't see 'Edit' link
-        assert r.html.find('a', {'class': 'edit_ticket'}
-                           ) is None, "Found 'Edit' link"
+        assert r.html.find('a', {'class': 'edit_ticket'}) is None, "Found 'Edit' link"
         # ... and can't actually edit it
         self.app.post('/bugs/1/update_ticket', {'summary': 'should fail'},
                       extra_environ=env, status=403)
@@ -2031,8 +1956,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1/move')
         trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
         trackers = set([t.text for t in trackers])
-        expected = set(
-            ['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
         assert trackers == expected, trackers
 
         p = M.Project.query.get(shortname='test2')
@@ -2040,8 +1964,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(tracker.config._id)}).follow()
         assert_equal(r.request.path, '/p/test2/bugs2/1/')
-        summary = r.html.findAll(
-            'h2', {'class': 'dark title'})[0].contents[0].strip()
+        summary = r.html.findAll('h2', {'class': 'dark title'})[0].contents[0].strip()
         assert_equal(summary, '#1 test')
         ac_id = tracker.config._id
         ticket = tm.Ticket.query.find({
@@ -2087,8 +2010,7 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
@@ -2218,8 +2140,7 @@ class TestFunctionalController(TrackerTestController):
                       upload_files=[upload])
         # attach a txt file to the comment
         r = self.app.get('/p/test/bugs/1/')
-        post_link = str(
-            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'test')])
         # move ticket
@@ -2231,10 +2152,8 @@ class TestFunctionalController(TrackerTestController):
         attachs = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
         ta = str(attachs[1])  # ticket's attachments
         ca = str(attachs[2])  # comment's attachments
-        assert_in(
-            '<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
-        assert_in(
-            '<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
+        assert_in('<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
+        assert_in('<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
         p = M.Post.query.find().sort('timestamp', 1).first()
         assert_in(
             '<a href="/p/test2/bugs2/_discuss/thread/%s/%s/attachment/test.txt"' %
@@ -2288,14 +2207,12 @@ class TestFunctionalController(TrackerTestController):
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+                params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1))
-        post_link = str(
-            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', 'test attach')])
         r = self.app.get('/p/test/bugs/1/')
@@ -2305,12 +2222,10 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(r['ticket']['discussion_thread_url'],
                      'http://localhost/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
-        assert_equal(
-            r['ticket']['discussion_thread'][
-                'posts'][0]['attachments'][0]['url'],
-            'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
-        assert_equal(r['ticket']['discussion_thread']['posts']
-                     [0]['attachments'][0]['bytes'], 11)
+        assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'],
+                     'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
+        assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'],
+                     11)
 
         file_name = 'test_root.py'
         file_data = file(__file__).read()
@@ -2359,8 +2274,8 @@ class TestFunctionalController(TrackerTestController):
         assert query_filter_choices.call_count == 1
         assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed'
 
-class TestMilestoneAdmin(TrackerTestController):
 
+class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
         params['open_status_names'] = 'aa bb'
         params['closed_status_names'] = 'cc'
@@ -2453,7 +2368,7 @@ class TestMilestoneAdmin(TrackerTestController):
             dict(label='releases', milestones=[
                 dict(name='1.1', old_name='1.0')])
         ])
-        assert 'releases'in r
+        assert 'releases' in r
         assert '1.0' not in r
         assert '1.1' in r
         assert tm.Ticket.query.find({
@@ -2470,7 +2385,6 @@ def post_install_hook(app):
 
 
 class TestEmailMonitoring(TrackerTestController):
-
     def __init__(self):
         super(TestEmailMonitoring, self).__init__()
         self.test_email = 'mailinglist@example.com'
@@ -2573,8 +2487,7 @@ class TestEmailMonitoring(TrackerTestController):
         p.notifications_disabled = True
         self._set_options()
         with patch.object(M.Project.query, 'get') as get:
-            get.side_effect = lambda * \
-                a, **k: None if 'bugs' in k.get('shortname', '') else p
+            get.side_effect = lambda *a, **k: None if 'bugs' in k.get('shortname', '') else p
             self.new_ticket(summary='test')
         assert send_simple.call_count == 0, send_simple.call_count
 
@@ -2586,14 +2499,13 @@ class TestEmailMonitoring(TrackerTestController):
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert 'Sent from localhost because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in email_tasks[
-            0].kwargs['text']
-        assert 'a project admin can change settings at http://localhost/p/test/admin/bugs/options' in email_tasks[
-            0].kwargs['text']
+        assert 'Sent from localhost because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in \
+               email_tasks[0].kwargs['text']
+        assert 'a project admin can change settings at http://localhost/p/test/admin/bugs/options' in \
+               email_tasks[0].kwargs['text']
 
 
 class TestCustomUserField(TrackerTestController):
-
     def setUp(self):
         super(TestCustomUserField, self).setUp()
         params = dict(
@@ -2609,8 +2521,7 @@ class TestCustomUserField(TrackerTestController):
 
     def test_blank_user(self):
         kw = {'custom_fields._code_review': ''}
-        ticket_view = self.new_ticket(
-            summary='test custom fields', **kw).follow()
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
         assert ticket_view.html.findAll('label', 'simple',
                                         text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
@@ -2633,8 +2544,7 @@ class TestCustomUserField(TrackerTestController):
 
     def test_project_member(self):
         kw = {'custom_fields._code_review': 'test-admin'}
-        ticket_view = self.new_ticket(
-            summary='test custom fields', **kw).follow()
+        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
         assert ticket_view.html.findAll('label', 'simple',
                                         text='Code Review:')[1].parent.parent.text == 'Code Review:Test Admin'
@@ -2654,8 +2564,7 @@ class TestCustomUserField(TrackerTestController):
         # Populate ProjectUserCombo's select with option we want.
         # This is a workaround for tests,
         # in real enviroment this is populated via ajax.
-        f['ticket_form.custom_fields._code_review'].options = [
-            ('test-admin', False)]
+        f['ticket_form.custom_fields._code_review'].options = [('test-admin', False)]
         f['ticket_form.custom_fields._code_review'] = 'test-admin'
         r = f.submit().follow()
         assert '<li><strong>Code Review</strong>: Test Admin' in r
@@ -2669,7 +2578,6 @@ class TestCustomUserField(TrackerTestController):
 
 
 class TestHelpTextOptions(TrackerTestController):
-
     def _set_options(self, new_txt='', search_txt=''):
         r = self.app.post('/admin/bugs/set_options', params={
             'TicketHelpNew': new_txt,
@@ -2705,7 +2613,6 @@ class TestHelpTextOptions(TrackerTestController):
 
 
 class test_show_default_fields(TrackerTestController):
-
     def test_show_default_fields(self):
         r = self.app.get('/admin/bugs/fields')
         assert '<td>Ticket Number</td> <td><input type="checkbox" name="ticket_num" checked ></td>' in r
@@ -2741,7 +2648,6 @@ class test_show_default_fields(TrackerTestController):
 
 
 class TestBulkMove(TrackerTestController):
-
     def setUp(self):
         super(TestBulkMove, self).setUp()
         self.new_ticket(summary='A New Hope')
@@ -2776,11 +2682,9 @@ class TestBulkMove(TrackerTestController):
         r = self.app.get('/bugs/move/')
         trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
         trackers = set([t.text for t in trackers])
-        expected = set(
-            ['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
         assert_equal(trackers, expected)
-        move_btn = r.html.find(
-            'input', attrs={'type': 'submit', 'value': 'Move'})
+        move_btn = r.html.find('input', attrs={'type': 'submit', 'value': 'Move'})
         assert move_btn is not None
 
     @td.with_tool('test2', 'Tickets', 'bugs')
@@ -2803,20 +2707,17 @@ class TestBulkMove(TrackerTestController):
         ac_id = tracker.config._id
         original_ac_id = original_tracker.config._id
         moved_tickets = tm.Ticket.query.find({'app_config_id': ac_id}).all()
-        original_tickets = tm.Ticket.query.find(
-            {'app_config_id': original_ac_id}).all()
+        original_tickets = tm.Ticket.query.find({'app_config_id': original_ac_id}).all()
         assert_equal(len(moved_tickets), 2)
         assert_equal(len(original_tickets), 1)
         for ticket in moved_tickets:
             assert_equal(ticket.discussion_thread.app_config_id, ac_id)
-            assert_equal(
-                ticket.discussion_thread.discussion.app_config_id, ac_id)
+            assert_equal(ticket.discussion_thread.discussion.app_config_id, ac_id)
             post = ticket.discussion_thread.last_post
             assert_in('Ticket moved from /p/test/bugs/', post.text)
         for t in original_tickets:
             assert_equal(t.discussion_thread.app_config_id, original_ac_id)
-            assert_equal(t.discussion_thread.discussion.app_config_id,
-                         original_ac_id)
+            assert_equal(t.discussion_thread.discussion.app_config_id, original_ac_id)
             assert t.discussion_thread.last_post is None
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
@@ -2840,8 +2741,7 @@ class TestBulkMove(TrackerTestController):
             '__search': '',
         })
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 3)
         for email in emails:
             assert_equal(email.kwargs.subject,
@@ -2904,8 +2804,7 @@ class TestBulkMove(TrackerTestController):
             '__search': '',
         })
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 2)
         for email in emails:
             assert_equal(email.kwargs.subject,
@@ -2945,8 +2844,7 @@ class TestBulkMove(TrackerTestController):
             'TicketMonitoringType': 'AllPublicTicketChanges',
         })
         self.new_ticket(summary='test first ticket', status='open')
-        self.new_ticket(summary='test second ticket',
-                        status='open', private=True)
+        self.new_ticket(summary='test second ticket', status='open', private=True)
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -2962,8 +2860,7 @@ class TestBulkMove(TrackerTestController):
             '__search': '',
         })
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         # one for admin and one for monitoring email
         assert_equal(len(emails), 2)
         for email in emails:
@@ -2994,10 +2891,8 @@ class TestBulkMove(TrackerTestController):
             'TicketMonitoringEmail': 'monitoring@email.com',
             'TicketMonitoringType': 'AllPublicTicketChanges',
         })
-        self.new_ticket(summary='test first ticket',
-                        status='open', private=True)
-        self.new_ticket(summary='test second ticket',
-                        status='open', private=True)
+        self.new_ticket(summary='test first ticket', status='open', private=True)
+        self.new_ticket(summary='test second ticket', status='open', private=True)
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -3013,8 +2908,7 @@ class TestBulkMove(TrackerTestController):
             '__search': '',
         })
         M.MonQTask.run_ready()
-        emails = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 1)  # only admin email sent
         for email in emails:
             assert_equal(email.kwargs.subject,
@@ -3038,21 +2932,18 @@ def sidebar_contains(response, text):
 
 
 class TestStats(TrackerTestController):
-
     def test_stats(self):
         r = self.app.get('/bugs/stats/', status=200)
         assert_in('# tickets: 0', r.body)
 
 
 class TestNotificationEmailGrouping(TrackerTestController):
-
     def test_new_ticket_message_id(self):
         self.new_ticket(summary='Test Ticket')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        email = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
         assert_equal(email.kwargs.message_id, ticket.message_id())
         assert_equal(email.kwargs.in_reply_to, None)
@@ -3076,8 +2967,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         # Check that comment notification refers ticket's message id
-        email = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
         top_level_comment = ticket.discussion_thread.posts[0]
         top_level_comment_msg_id = ticket.url() + top_level_comment._id
@@ -3098,11 +2988,9 @@ class TestNotificationEmailGrouping(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         # Check that reply notification refers top-level comment's message id
-        email = M.MonQTask.query.find(
-            dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
         ticket = tm.Ticket.query.get(ticket_num=1)
-        reply = [
-            post for post in ticket.discussion_thread.posts if post.text == reply_text][0]
+        reply = [post for post in ticket.discussion_thread.posts if post.text == reply_text][0]
         assert_equal(email.kwargs.message_id, ticket.url() + reply._id)
         assert_equal(email.kwargs.in_reply_to, top_level_comment_msg_id)
         assert_equal(email.kwargs.references,
@@ -3123,9 +3011,7 @@ def test_status_passthru():
     assert_not_in('closed_status_names', app.config.options)
 
 
-
 class TestArtifactLinks(TrackerTestController):
-
     @td.with_tool('test', 'Tickets', 'features')
     def test_ambiguous_shortlinks(self):
         # Problem:
