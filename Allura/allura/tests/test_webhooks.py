@@ -40,6 +40,9 @@ class TestWebhookBase(object):
 
     def setUp(self):
         setup_basic_test()
+        self.patches = self.monkey_patch()
+        for p in self.patches:
+            p.start()
         self.setup_with_tools()
         self.project = M.Project.query.get(shortname=test_project_with_repo)
         self.git = self.project.app_instance('src')
@@ -50,9 +53,19 @@ class TestWebhookBase(object):
             secret='secret')
         session(self.wh).flush(self.wh)
 
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+
     @with_git
     def setup_with_tools(self):
         pass
+
+    def monkey_patch(self):
+        # we don't need actual repo here, and this avoids test conflicts when
+        # running in parallel
+        repo_init = patch.object(M.Repository, 'init', autospec=True)
+        return [repo_init]
 
 
 class TestValidators(TestWebhookBase):
@@ -97,10 +110,10 @@ class TestWebhookController(TestController):
 
     def setUp(self):
         super(TestWebhookController, self).setUp()
-        self.setup_with_tools()
         self.patches = self.monkey_patch()
         for p in self.patches:
             p.start()
+        self.setup_with_tools()
         self.project = M.Project.query.get(shortname=test_project_with_repo)
         self.git = self.project.app_instance('src')
         self.url = str(self.git.admin_url + 'webhooks')
@@ -120,7 +133,10 @@ class TestWebhookController(TestController):
             'gen_secret',
             return_value='super-secret',
             autospec=True)
-        return [gen_secret]
+        # we don't need actual repo here, and this avoids test conflicts when
+        # running in parallel
+        repo_init = patch.object(M.Repository, 'init', autospec=True)
+        return [gen_secret, repo_init]
 
     def create_webhook(self, data, url=None):
         url = url or self.url
