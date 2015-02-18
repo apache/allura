@@ -441,6 +441,19 @@ class MergeRequestController(object):
             self.req.status = status
         redirect('.')
 
+    @expose()
+    @require_post()
+    def merge(self):
+        require_access(c.app, 'write')
+        if self.req.status != 'open' or not self.req.can_merge():
+            raise exc.HTTPNotFound
+        ok = self.req.merge()
+        if ok:
+            flash('Merged successfully', 'ok')
+        else:
+            flash('Merge failed. Please, merge manually', 'error')
+        redirect(self.req.url())
+
 
 class RefsController(object):
 

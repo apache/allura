@@ -44,6 +44,25 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
     <div>{{g.markdown.convert(req.description)}}</div>
 
+    {% if req.status == 'open' and c.app.forkable and h.has_access(c.app, 'write')() %}
+      {% set can_merge = req.can_merge() %}
+      <div class="grid-19">
+        <form action="merge" method="POST">
+          {{ lib.csrf_token() }}
+          <input type="submit" value="Merge"{% if not can_merge %}disabled="disabled"{% endif %}>
+          {% if can_merge %}
+            <div class="merge-ok">
+              Merge request has no conflicts. You can merge automatically.
+            </div>
+          {% else %}
+            <div class="merge-conflicts">
+              Merge request has conflicts. Follow manual instructions below to merge.
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    {% endif %}
+
     {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
 
     <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
@@ -86,4 +105,11 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
         limit=limit,
         count=count)}}
   </div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  .merge-ok { color: green; }
+  .merge-conflicts { color: red; }
+</style>
 {% endblock %}

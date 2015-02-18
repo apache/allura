@@ -805,6 +805,30 @@ class MergeRequest(VersionedArtifact, ActivityObject):
                 self.request_number, self.project.name, self.app.repo.name))
         return result
 
+    def can_merge(self):
+        if not self.app.forkable:
+            return False
+        try:
+            result = self.app.repo.can_merge(self)
+        except:
+            log.exception(
+                "Can't determine if merge request %s can be merged",
+                self.url())
+            return False
+        return result
+
+    def merge(self):
+        if not self.app.forkable:
+            return False
+        try:
+            self.app.repo.merge(self)
+        except:
+            log.exception("Can't merge merge request %s", self.url())
+            return False
+        self.status = 'merged'
+        session(self).flush(self)
+        return True
+
 
 # Basic commit information
 # One of these for each commit in the physical repo on disk. The _id is the
