@@ -20,6 +20,7 @@ import logging
 import traceback
 
 from pylons import tmpl_context as c, app_globals as g
+from ming.odm import session
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
@@ -152,3 +153,17 @@ def tarball(revision, path):
         log.warn(
             'Skipped creation of snapshot: %s:%s because revision is not specified' %
             (c.project.shortname, c.app.config.options.mount_point))
+
+
+@task
+def merge(merge_request_id):
+    from allura import model as M
+    log = logging.getLogger(__name__)
+    mr = M.MergeRequest.query.get(_id=merge_request_id)
+    try:
+        mr.app.repo.merge(mr)
+    except:
+        log.exception("Can't merge merge request %s", mr.url())
+        return
+    mr.status = 'merged'
+    session(mr).flush(mr)

@@ -33,6 +33,19 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
 
 {% block content %}
+  <div class="grid-19">
+    <div id="task_status">
+      {% if status == 'complete' %}
+        <h2 class="complete">Merged</h2>
+      {% else %}
+        <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
+        <h2 class="busy ready">Merging...</h2>
+        <h2 class="complete">Merged</h2>
+        <h2 class="fail">Something went wrong. Please, merge manually</h2>
+      {% endif %}
+    </div>
+  </div>
+
   {% if req.downstream_repo %}
     <p>
       <a href="{{req.creator_url}}">{{req.creator_name}}</a>
@@ -49,7 +62,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       <div class="grid-19">
         <form action="merge" method="POST">
           {{ lib.csrf_token() }}
-          <input type="submit" value="Merge"{% if not can_merge %}disabled="disabled"{% endif %}>
+          <input type="submit" value="Merge"{% if not can_merge or status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
           {% if can_merge %}
             <div class="merge-ok">
               Merge request has no conflicts. You can merge automatically.
@@ -68,14 +81,16 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
 
     {% if h.has_access(c.app, 'write')() %}
-       <div class="grid-19">To merge the commits, please execute the following commands in your working
-         copy: </div>
-       <div class="grid-19"><textarea
-          style="width:80%; height:60px;"
-          readonly
-          >{{ c.app.repo.merge_command(req) | safe }}</textarea></div>
-      {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
-       <br style="clear:both">
+      <div class="grid-19">
+        To merge the commits, please execute the following commands in your working copy:
+      </div>
+      <div class="grid-19">
+        <textarea style="width:80%; height:60px;" readonly>{{ c.app.repo.merge_command(req) | safe }}</textarea>
+      </div>
+      {% if status not in ('ready', 'busy') %}
+        {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
+        <br style="clear:both">
+      {% endif %}
     {% endif %}
   {% else %}
     <p>
@@ -83,12 +98,10 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       <a href="{{req.creator_url}}">{{req.creator_name}}</a>
       is deleted
     </p>
-
     <div>{{g.markdown.convert(req.description)}}</div>
-
     {% if h.has_access(c.app, 'write')() %}
       {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
-       <br style="clear:both">
+      <br style="clear:both">
     {% endif %}
   {% endif %}
 
@@ -111,5 +124,50 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 <style type="text/css">
   .merge-ok { color: green; }
   .merge-conflicts { color: red; }
+
+  #task_status { margin: 0 10px; }
+  #task_status h2 { display: none; }
+  #task_status .{{ status }} { display: inline-block; }
+  #task_status h2.complete { color: #C6D880; }
+  #task_status h2.busy, #task_status h2.busy { color: #003565; }
+  #task_status h2.fail { color: #f33; }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script type="text/javascript">
+$(function() {
+    {% if status in ('ready', 'busy') %}
+        $('.spinner').show();
+        var delay = 500;
+        function check_status() {
+          $.get("{{request.path.rstrip('/') + '/merge_task_status'}}", function(data) {
+                if (data.status === 'complete') {
+                    $('.spinner').hide();
+                    $('#task_status h2').hide();
+                    $('#task_status h2.complete').show();
+                    location.reload();
+                } else {
+                    if (data.status === 'ready' || data.status === 'busy') {
+                        // keep waiting
+                        $('#task_status h2').hide();
+                        $('#task_status h2.busy').show();
+                    } else {
+                        // something went wrong
+                        $('.spinner').hide();
+                        $('#task_status h2').hide();
+                        $('#task_status h2.fail').show();
+                    }
+                    if (delay < 60000){
+                        delay = delay * 2;
+                    }
+                    window.setTimeout(check_status, delay);
+                }
+            });
+        }
+        window.setTimeout(check_status, delay);
+    {% endif %}
+});
+</script>
 {% endblock %}

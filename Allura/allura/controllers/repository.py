@@ -366,6 +366,7 @@ class MergeRequestController(object):
         return dict(
             downstream_app=downstream_app,
             req=self.req,
+            status=self.req.merge_task_status(),
             page=page,
             limit=limit,
             count=self.req.discussion_thread.post_count)
@@ -447,12 +448,12 @@ class MergeRequestController(object):
         require_access(c.app, 'write')
         if self.req.status != 'open' or not self.req.can_merge():
             raise exc.HTTPNotFound
-        ok = self.req.merge()
-        if ok:
-            flash('Merged successfully', 'ok')
-        else:
-            flash('Merge failed. Please, merge manually', 'error')
+        self.req.merge()
         redirect(self.req.url())
+
+    @expose('json:')
+    def merge_task_status(self):
+        return {'status': self.req.merge_task_status()}
 
 
 class RefsController(object):
