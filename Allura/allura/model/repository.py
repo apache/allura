@@ -23,7 +23,7 @@ import string
 import re
 from subprocess import Popen, PIPE
 from hashlib import sha1
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict, OrderedDict
 from urlparse import urljoin
@@ -818,16 +818,21 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return result
 
     def merge(self):
-        if not self.app.forkable:
-            return False
-        try:
-            self.app.repo.merge(self)
-        except:
-            log.exception("Can't merge merge request %s", self.url())
-            return False
-        self.status = 'merged'
-        session(self).flush(self)
-        return True
+        in_progress = self.merge_task_status() in ['ready', 'busy']
+        if self.app.forkable and not in_progress:
+            from allura.tasks import repo_tasks
+            repo_tasks.merge.post(self._id)
+
+    def merge_task_status(self):
+        task = MonQTask.query.find({
+            'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
+            'task_name': 'allura.tasks.repo_tasks.merge',
+            'args': [self._id],
+            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)}, # constrain on index further
+        }).sort('_id', -1).limit(1).first()
+        if task:
+            return task.state
+        return None
 
 
 # Basic commit information
