@@ -713,3 +713,41 @@ class TestModelCache(unittest.TestCase):
         session.assert_called_once_with(tree1)
         session.return_value.flush.assert_called_once_with(tree1)
         session.return_value.expunge.assert_called_once_with(tree1)
+
+
+class TestMergeRequest(object):
+
+    def setUp(self):
+        setup_basic_test()
+        setup_global_objects()
+        self.mr = M.MergeRequest(app_config=mock.Mock(_id=ObjectId()))
+        self.mr.app = mock.Mock(forkable=True)
+
+    def test_can_merge(self):
+        assert_equal(self.mr.can_merge(),
+                     self.mr.app.repo.can_merge.return_value)
+        self.mr.app.repo.can_merge.assert_called_once_with(self.mr)
+
+        self.mr.app.reset_mock()
+        self.mr.app.forkable = False
+        assert_equal(self.mr.can_merge(), False)
+        assert_equal(self.mr.app.repo.can_merge.called, False)
+
+    @mock.patch('allura.tasks.repo_tasks.merge', autospec=True)
+    def test_merge(self, merge_task):
+        self.mr.merge_task_status = lambda: None
+        self.mr.merge()
+        merge_task.post.assert_called_once_with(self.mr._id)
+
+        merge_task.reset_mock()
+        self.mr.merge_task_status = lambda: 'ready'
+        self.mr.merge()
+        assert_equal(merge_task.post.called, False)
+
+    def test_merge_task_status(self):
+        from allura.tasks import repo_tasks
+        assert_equal(self.mr.merge_task_status(), None)
+        repo_tasks.merge.post(self.mr._id)
+        assert_equal(self.mr.merge_task_status(), 'ready')
+        M.MonQTask.run_ready()
+        assert_equal(self.mr.merge_task_status(), 'complete')
