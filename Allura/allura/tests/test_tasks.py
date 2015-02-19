@@ -64,6 +64,17 @@ class TestRepoTasks(unittest.TestCase):
         assert_equal(post_event.call_args[0][2], None)
         # ignore args[3] which is a traceback string
 
+    @mock.patch('allura.tasks.repo_tasks.session', autospec=True)
+    @mock.patch.object(M, 'MergeRequest', autospec=True)
+    def test_merge(self, MR, session):
+        mr = mock.Mock(_id='_id')
+        MR.query.get.return_value = mr
+        repo_tasks.merge(mr._id)
+        mr.app.repo.merge.assert_called_once_with(mr)
+        assert_equal(mr.status, 'merged')
+        session.assert_called_once_with(mr)
+        session.return_value.flush.assert_called_once_with(mr)
+
 
 class TestEventTasks(unittest.TestCase):
 

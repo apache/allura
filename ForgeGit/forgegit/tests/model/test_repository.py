@@ -592,6 +592,52 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         }
         assert_equals(payload, expected_payload)
 
+    def test_can_merge(self):
+        mr = mock.Mock(downstream_repo_url='downstream-url',
+                       source_branch='source-branch',
+                       target_branch='target-branch',
+                       downstream=mock.Mock(commit_id='cid'))
+        git = mock.Mock()
+        git.merge_tree.return_value = 'clean merge'
+        self.repo._impl._git.git = git
+        assert_equal(self.repo.can_merge(mr), True)
+        git.fetch.assert_called_once_with('downstream-url', 'source-branch')
+        git.merge_base.assert_called_once_with('cid', 'target-branch')
+        git.merge_tree.assert_called_once_with(
+            git.merge_base.return_value,
+            'target-branch',
+            'cid')
+        git.merge_tree.return_value = '+<<<<<<<'
+        assert_equal(self.repo.can_merge(mr), False)
+
+    @mock.patch('forgegit.model.git_repo.tempfile', autospec=True)
+    @mock.patch('forgegit.model.git_repo.git', autospec=True)
+    @mock.patch('forgegit.model.git_repo.GitImplementation', autospec=True)
+    @mock.patch('forgegit.model.git_repo.shutil', autospec=True)
+    def test_merge(self, shutil, GitImplementation, git, tempfile):
+        mr = mock.Mock(downstream_repo_url='downstream-url',
+                       source_branch='source-branch',
+                       target_branch='target-branch',
+                       downstream=mock.Mock(commit_id='cid'))
+        _git = mock.Mock()
+        self.repo._impl._git.git = _git
+        self.repo.merge(mr)
+        git.Repo.clone_from.assert_called_once_with(
+            self.repo.clone_url('rw'),
+            to_path=tempfile.mkdtemp.return_value,
+            bare=False)
+        tmp_repo = GitImplementation.return_value._git
+        assert_equal(
+            tmp_repo.git.fetch.call_args_list,
+            [mock.call('origin', 'target-branch'),
+             mock.call('downstream-url', 'source-branch')])
+        tmp_repo.git.checkout.assert_called_once_with('target-branch')
+        tmp_repo.git.merge.assert_called_once_with('cid')
+        tmp_repo.git.push.assert_called_once_with('origin', 'target-branch')
+        shutil.rmtree.assert_called_once_with(
+            tempfile.mkdtemp.return_value,
+            ignore_errors=True)
+
 
 class TestGitImplementation(unittest.TestCase):
 
