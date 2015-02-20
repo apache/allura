@@ -28,6 +28,7 @@ from bson import ObjectId
 from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c
+from pylons import response
 from formencode import validators as fev, schema, Invalid
 from ming.odm import session
 from webob import exc
@@ -198,6 +199,66 @@ class WebhookRestController(BaseController):
         self.app = app
         self.create_form = WebhookController.create_form
         self.edit_form = WebhookController.edit_form
+
+    def _error(self, e):
+        error = getattr(e, 'error_dict', None)
+        if error:
+            _error = {}
+            for k, v in error.iteritems():
+                _error[k] = unicode(v)
+            return _error
+        error = getattr(e, 'msg', None)
+        if not error:
+            error = getattr(e, 'message', '')
+        return error
+
+    def update_webhook(self, wh, url, secret=None):
+        controller = WebhookController(self.sender.__class__, self.app)
+        controller.update_webhook(wh, url, secret)
+
+    @expose('json:')
+    @require_post()
+    def index(self, **kw):
+        response.content_type = 'application/json'
+        try:
+            params = {'secret': kw.pop('secret', ''),
+                      'url': kw.pop('url', None)}
+            valid = self.create_form().to_python(params)
+        except Exception as e:
+            response.status_int = 400
+            return {'result': 'error', 'error': self._error(e)}
+        if self.sender.enforce_limit(self.app):
+            webhook = M.Webhook(
+                type=self.sender.type,
+                app_config_id=self.app.config._id)
+            try:
+                self.update_webhook(webhook, valid['url'], valid['secret'])
+            except Invalid as e:
+                response.status_int = 400
+                return {'result': 'error', 'error': self._error(e)}
+            M.AuditLog.log('add webhook %s %s %s',
+                           webhook.type, webhook.hook_url,
+                           webhook.app_config.url())
+            response.status_int = 201
+            return {'result': 'ok', 'webhook': webhook.__json__()}
+        else:
+            limits = {
+                'max': M.Webhook.max_hooks(
+                    self.sender.type,
+                    self.app.config.tool_name),
+                'used': M.Webhook.query.find({
+                    'type': self.sender.type,
+                    'app_config_id': self.app.config._id,
+                }).count(),
+            }
+            resp = {
+                'result': 'error',
+                'error': 'You have exceeded the maximum number of webhooks '
+                         'you are allowed to create for this project/app',
+                'limits': limits,
+            }
+            response.status_int = 400
+            return resp
 
     @expose('json:')
     def _default(self, webhook, **kw):
