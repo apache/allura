@@ -721,20 +721,23 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = self.webhooks[0]
         r = self.api_get('{}/repo-push/{}'.format(self.url, webhook._id))
         expected = {
-            '_id': unicode(webhook._id),
-            'url': 'http://localhost/rest/adobe/adobe-1/admin'
-                   '/src/webhooks/repo-push/{}'.format(webhook._id),
-            'type': 'repo-push',
-            'hook_url': 'http://httpbin.org/post/0',
-            'mod_date': unicode(webhook.mod_date),
+            u'result': u'ok',
+            u'webhook': {
+                '_id': unicode(webhook._id),
+                'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                       '/src/webhooks/repo-push/{}'.format(webhook._id),
+                'type': 'repo-push',
+                'hook_url': 'http://httpbin.org/post/0',
+                'mod_date': unicode(webhook.mod_date),
+            },
         }
         dd.assert_equal(r.json, expected)
 
     def test_create_validation(self):
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
-        r = self.api_get(self.url + '/repo-push', {}, status=405)
+        r = self.api_get(self.url + '/repo-push', status=405)
 
-        r = self.api_post(self.url + '/repo-push', {}, status=400)
+        r = self.api_post(self.url + '/repo-push', status=400)
         expected = {
             u'result': u'error',
             u'error': {u'url': u'Please enter a value'},
@@ -742,7 +745,7 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(r.json, expected)
 
         data = {'url': 'qwer', 'secret': 'qwe'}
-        r = self.app.post(self.url + '/repo-push', data, status=400)
+        r = self.api_post(self.url + '/repo-push', status=400, **data)
         expected = {
             u'result': u'error',
             u'error': {
@@ -757,17 +760,24 @@ class TestWebhookRestController(TestRestApiBase):
         data = {u'url': u'http://hook.slack.com/abcd'}
         limit = json.dumps({'git': 10})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
-            r = self.app.post(self.url + '/repo-push', data, status=201)
+            msg = 'add webhook repo-push {} {}'.format(
+                data['url'], self.git.config.url())
+            with td.audits(msg):
+                r = self.api_post(self.url + '/repo-push', status=201, **data)
         webhook = M.Webhook.query.get(hook_url=data['url'])
         assert_equal(webhook.secret, 'super-secret')  # secret generated
-        assert_equal(r.json['result'], 'ok')
-        assert_equal(r.json['webhook']['_id'], unicode(webhook._id))
-        assert_equal(r.json['webhook']['type'], 'repo-push')
-        assert_equal(r.json['webhook']['hook_url'], data['url'])
-        assert_equal(
-            r.json['webhook']['url'],
-            u'http://localhost/rest/adobe/adobe-1/admin'
-            u'/src/webhooks/repo-push/{}'.format(webhook._id))
+        expected = {
+            u'result': u'ok',
+            u'webhook': {
+                '_id': unicode(webhook._id),
+                'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                       '/src/webhooks/repo-push/{}'.format(webhook._id),
+                'type': 'repo-push',
+                'hook_url': data['url'],
+                'mod_date': unicode(webhook.mod_date),
+            },
+        }
+        dd.assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks) + 1)
 
     def test_create_duplicates(self):
@@ -775,7 +785,7 @@ class TestWebhookRestController(TestRestApiBase):
         data = {u'url': self.webhooks[0].hook_url}
         limit = json.dumps({'git': 10})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
-            r = self.app.post(self.url + '/repo-push', data, status=400)
+            r = self.api_post(self.url + '/repo-push', status=400, **data)
         expected = {u'result': u'error',
                     u'error': u'_the_form: "repo-push" webhook already '
                               u'exists for Git http://httpbin.org/post/0'}
@@ -785,7 +795,7 @@ class TestWebhookRestController(TestRestApiBase):
     def test_create_limit_reached(self):
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
         data = {u'url': u'http://hook.slack.com/abcd'}
-        r = self.app.post(self.url + '/repo-push', data, status=400)
+        r = self.api_post(self.url + '/repo-push', status=400, **data)
         expected = {
             u'result': u'error',
             u'limits': {u'max': 3, u'used': 3},
@@ -793,3 +803,78 @@ class TestWebhookRestController(TestRestApiBase):
                       u'you are allowed to create for this project/app'}
         assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
+
+    def test_edit_validation(self):
+        webhook = self.webhooks[0]
+        url = u'{}/repo-push/{}'.format(self.url, webhook._id)
+        data = {'url': 'qwe', 'secret': 'qwe'}
+        r = self.api_post(url, status=400, **data)
+        expected = {
+            u'result': u'error',
+            u'error': {
+                u'url': u'You must provide a full domain name (like qwe.com)'
+            },
+        }
+        assert_equal(r.json, expected)
+
+    def test_edit(self):
+        webhook = self.webhooks[0]
+        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        # change only url
+        data = {'url': 'http://hook.slack.com/abcd'}
+        msg = ('edit webhook repo-push\n'
+               'http://httpbin.org/post/0 => http://hook.slack.com/abcd\n')
+        with td.audits(msg):
+            r = self.api_post(url, status=200, **data)
+        webhook = M.Webhook.query.get(_id=webhook._id)
+        assert_equal(webhook.hook_url, data['url'])
+        assert_equal(webhook.secret, 'secret-0')
+        expected = {
+            u'result': u'ok',
+            u'webhook': {
+                '_id': unicode(webhook._id),
+                'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                       '/src/webhooks/repo-push/{}'.format(webhook._id),
+                'type': 'repo-push',
+                'hook_url': data['url'],
+                'mod_date': unicode(webhook.mod_date),
+            },
+        }
+        dd.assert_equal(r.json, expected)
+
+        # change only secret
+        data = {'secret': 'new-secret'}
+        msg = ('edit webhook repo-push\n'
+               'http://hook.slack.com/abcd => http://hook.slack.com/abcd\n'
+               'secret changed')
+        with td.audits(msg):
+            r = self.api_post(url, status=200, **data)
+        webhook = M.Webhook.query.get(_id=webhook._id)
+        assert_equal(webhook.hook_url, 'http://hook.slack.com/abcd')
+        assert_equal(webhook.secret, 'new-secret')
+        expected = {
+            u'result': u'ok',
+            u'webhook': {
+                '_id': unicode(webhook._id),
+                'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                       '/src/webhooks/repo-push/{}'.format(webhook._id),
+                'type': 'repo-push',
+                'hook_url': 'http://hook.slack.com/abcd',
+                'mod_date': unicode(webhook.mod_date),
+            },
+        }
+        dd.assert_equal(r.json, expected)
+
+    def test_edit_duplicates(self):
+        webhook = self.webhooks[0]
+        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        # change only url
+        data = {'url': 'http://httpbin.org/post/1'}
+        r = self.api_post(url, status=400, **data)
+        expected = {u'result': u'error',
+                    u'error': u'_the_form: "repo-push" webhook already '
+                              u'exists for Git http://httpbin.org/post/1'}
+        assert_equal(r.json, expected)
+        webhook = M.Webhook.query.get(_id=webhook._id)
+        assert_equal(webhook.hook_url, 'http://httpbin.org/post/0')
+        assert_equal(webhook.secret, 'secret-0')
