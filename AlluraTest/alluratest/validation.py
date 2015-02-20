@@ -315,3 +315,10 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'post', val_params)
         return resp
+
+    def delete(self, *args, **kw):
+        val_params, kw = self._get_validation_params(kw)
+        resp = super(ValidatingTestApp, self).delete(*args, **kw)
+        if not self.validate_skip and not val_params['validate_skip']:
+            self._validate(resp, 'delete', val_params)
+        return resp

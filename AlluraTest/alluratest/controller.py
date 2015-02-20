@@ -209,7 +209,7 @@ class TestRestApiBase(TestController):
 
         return self._token_cache[username]
 
-    def _api_getpost(self, method, path, wrap_args=None, user='test-admin', status=None, **params):
+    def _api_call(self, method, path, wrap_args=None, user='test-admin', status=None, **params):
         '''
         If you need to use one of the method kwargs as a URL parameter,
         pass params={...} as a dict instead of **kwargs
@@ -224,7 +224,7 @@ class TestRestApiBase(TestController):
 
         params['access_token'] = self.token(user).api_key
 
-        fn = self.app.post if method == 'POST' else self.app.get
+        fn = getattr(self.app, method.lower())
 
         response = fn(
             str(path),
@@ -236,7 +236,10 @@ class TestRestApiBase(TestController):
             return response
 
     def api_get(self, path, wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_getpost('GET', path, wrap_args, user, status, **params)
+        return self._api_call('GET', path, wrap_args, user, status, **params)
 
     def api_post(self, path, wrap_args=None, user='test-admin', status=None, **params):
-        return self._api_getpost('POST', path, wrap_args, user, status, **params)
+        return self._api_call('POST', path, wrap_args, user, status, **params)
+
+    def api_delete(self, path, wrap_args=None, user='test-admin', status=None, **params):
+        return self._api_call('DELETE', path, wrap_args, user, status, **params)
