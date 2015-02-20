@@ -713,3 +713,20 @@ class TestWebhookRestController(TestRestApiBase):
             'limits': {'repo-push': {'max': 3, 'used': 3}},
         }
         dd.assert_equal(r.json, expected)
+
+    def test_webhook_GET_404(self):
+        r = self.api_get(self.url + '/repo-push/invalid')
+        assert_equal(r.status_int, 404)
+
+    def test_webhook_GET(self):
+        webhook = self.webhooks[0]
+        r = self.api_get('{}/repo-push/{}'.format(self.url, webhook._id))
+        expected = {
+            '_id': unicode(webhook._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(webhook._id),
+            'type': 'repo-push',
+            'hook_url': 'http://httpbin.org/post/0',
+            'mod_date': unicode(webhook.mod_date),
+        }
+        dd.assert_equal(r.json, expected)

@@ -191,6 +191,24 @@ class WebhookController(BaseController):
                 'form': form}
 
 
+class WebhookRestController(BaseController):
+    def __init__(self, sender, app):
+        super(WebhookRestController, self).__init__()
+        self.sender = sender()
+        self.app = app
+        self.create_form = WebhookController.create_form
+        self.edit_form = WebhookController.edit_form
+
+    @expose('json:')
+    def _default(self, webhook, **kw):
+        form = self.edit_form(self.sender, self.app)
+        try:
+            wh = form.fields['webhook'].to_python(webhook)
+        except Invalid:
+            raise exc.HTTPNotFound()
+        return wh.__json__()
+
+
 class SendWebhookHelper(object):
     def __init__(self, webhook, payload):
         self.webhook = webhook
@@ -278,6 +296,7 @@ class WebhookSender(object):
     type = None
     triggered_by = []
     controller = WebhookController
+    api_controller = WebhookRestController
 
     def get_payload(self, **kw):
         """Return a dict with webhook payload"""
