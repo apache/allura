@@ -22,6 +22,7 @@ from paste.deploy.converters import asint
 from tg import config
 
 from allura.model import Artifact
+from allura.lib import helpers as h
 
 
 class Webhook(Artifact):
@@ -53,3 +54,12 @@ class Webhook(Artifact):
     def update_limit(self):
         self.last_sent = dt.datetime.utcnow()
         session(self).flush(self)
+
+    def __json__(self):
+        return {
+            '_id': unicode(self._id),
+            'url': h.absurl(u'/rest' + self.url()),
+            'type': unicode(self.type),
+            'hook_url': unicode(self.hook_url),
+            'mod_date': self.mod_date,
+        }
