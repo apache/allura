@@ -313,13 +313,12 @@ class WebhookSender(object):
         Checks if limit of webhooks created for given project/app is reached.
         Returns False if limit is reached, True otherwise.
         '''
-        _type = self.type.replace('-', '_')
-        limits = json.loads(config.get('webhook.%s.max_hooks' % _type, '{}'))
         count = M.Webhook.query.find(dict(
             app_config_id=app.config._id,
             type=self.type,
         )).count()
-        return count < limits.get(app.config.tool_name.lower(), 3)
+        limit = M.Webhook.max_hooks(self.type, app.config.tool_name)
+        return count < limit
 
 
 class RepoPushWebhookSender(WebhookSender):

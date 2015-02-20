@@ -22,6 +22,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from tg import expose, redirect, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from webob import exc
 from bson import ObjectId
 
 from ming.utils import LazyProperty
@@ -297,4 +298,14 @@ class RestWebhooksLookup(BaseController):
             'type': {'$in': [wh.type for wh in webhooks]},
             'app_config_id': self.app.config._id}
         ).sort('_id', 1).all()
-        return {'webhooks': [hook.__json__() for hook in configured_hooks]}
+        limits = {
+            wh.type: {
+                'max': M.Webhook.max_hooks(wh.type, self.app.config.tool_name),
+                'used': M.Webhook.query.find({
+                    'type': wh.type,
+                    'app_config_id': self.app.config._id,
+                }).count(),
+            } for wh in webhooks
+        }
+        return {'webhooks': [hook.__json__() for hook in configured_hooks],
+                'limits': limits}
