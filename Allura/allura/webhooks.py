@@ -28,7 +28,7 @@ from bson import ObjectId
 from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c
-from pylons import response
+from pylons import response, request
 from formencode import validators as fev, schema, Invalid
 from ming.odm import session
 from webob import exc
@@ -240,7 +240,10 @@ class WebhookRestController(BaseController):
                            webhook.type, webhook.hook_url,
                            webhook.app_config.url())
             response.status_int = 201
-            return {'result': 'ok', 'webhook': webhook.__json__()}
+            # refetch updated values (e.g. mod_date)
+            session(webhook).expunge(webhook)
+            webhook = M.Webhook.query.get(_id=webhook._id)
+            return {'result': 'ok', 'webhook': webhook}
         else:
             limits = {
                 'max': M.Webhook.max_hooks(
@@ -267,7 +270,36 @@ class WebhookRestController(BaseController):
             wh = form.fields['webhook'].to_python(webhook)
         except Invalid:
             raise exc.HTTPNotFound()
-        return wh.__json__()
+        if request.method == 'POST':
+            return self._edit(wh, form, **kw)
+        else:
+            return {'result': 'ok', 'webhook': wh}
+
+    def _edit(self, webhook, form, **kw):
+        old_secret = webhook.secret
+        old_url = webhook.hook_url
+        try:
+            params = {'secret': kw.pop('secret', old_secret),
+                      'url': kw.pop('url', old_url),
+                      'webhook': unicode(webhook._id)}
+            valid = form.to_python(params)
+        except Exception as e:
+            response.status_int = 400
+            return {'result': 'error', 'error': self._error(e)}
+        try:
+            self.update_webhook(webhook, valid['url'], valid['secret'])
+        except Invalid as e:
+            response.status_int = 400
+            return {'result': 'error', 'error': self._error(e)}
+        M.AuditLog.log(
+            'edit webhook %s\n%s => %s\n%s',
+            webhook.type, old_url, valid['url'],
+            'secret changed' if old_secret != valid['secret'] else '')
+        # refetch updated values (e.g. mod_date)
+        session(webhook).expunge(webhook)
+        webhook = M.Webhook.query.get(_id=webhook._id)
+        return {'result': 'ok',
+                'webhook': webhook}
 
 
 class SendWebhookHelper(object):
