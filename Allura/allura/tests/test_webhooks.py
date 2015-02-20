@@ -27,6 +27,7 @@ from nose.tools import (
     assert_not_in,
     assert_in,
 )
+from datadiff import tools as dd
 from formencode import Invalid
 from ming.odm import session
 from pylons import tmpl_context as c
@@ -42,7 +43,11 @@ from allura.webhooks import (
     SendWebhookHelper,
 )
 from allura.tests import decorators as td
-from alluratest.controller import setup_basic_test, TestController
+from alluratest.controller import (
+    setup_basic_test,
+    TestController,
+    TestRestApiBase,
+)
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and
@@ -639,3 +644,68 @@ class TestModels(TestWebhookBase):
         self.wh.update_limit()
         session(self.wh).expunge(self.wh)
         assert_equal(M.Webhook.query.get(_id=self.wh._id).last_sent, _now)
+
+    def test_json(self):
+        expected = {
+            '_id': unicode(self.wh._id),
+            'url': u'http://localhost/rest/adobe/adobe-1/admin'
+                   u'/src/webhooks/repo-push/{}'.format(self.wh._id),
+            'type': u'repo-push',
+            'hook_url': u'http://httpbin.org/post',
+            'mod_date': self.wh.mod_date,
+        }
+        dd.assert_equal(self.wh.__json__(), expected)
+
+
+
+class TestWebhookRestController(TestRestApiBase):
+    def setUp(self):
+        super(TestWebhookRestController, self).setUp()
+        self.patches = self.monkey_patch()
+        for p in self.patches:
+            p.start()
+        self.setup_with_tools()
+        self.project = M.Project.query.get(shortname=test_project_with_repo)
+        self.git = self.project.app_instance('src')
+        self.url = str('/rest' + self.git.admin_url + 'webhooks')
+        self.webhooks = []
+        for i in range(3):
+            webhook = M.Webhook(
+                type='repo-push',
+                app_config_id=self.git.config._id,
+                hook_url='http://httpbin.org/post/{}'.format(i),
+                secret='secret-{}'.format(i))
+            session(webhook).flush(webhook)
+            self.webhooks.append(webhook)
+
+    def tearDown(self):
+        super(TestWebhookRestController, self).tearDown()
+        for p in self.patches:
+            p.stop()
+
+    @with_git
+    def setup_with_tools(self):
+        pass
+
+    def monkey_patch(self):
+        gen_secret = patch.object(
+            WebhookController,
+            'gen_secret',
+            return_value='super-secret',
+            autospec=True)
+        # we don't need actual repo here, and this avoids test conflicts when
+        # running in parallel
+        repo_init = patch.object(M.Repository, 'init', autospec=True)
+        return [gen_secret, repo_init]
+
+    def test_webhooks_list(self):
+        r = self.api_get(self.url)
+        webhooks = [{
+            '_id': unicode(wh._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(wh._id),
+            'type': 'repo-push',
+            'hook_url': 'http://httpbin.org/post/{}'.format(n),
+            'mod_date': unicode(wh.mod_date),
+        } for n, wh in enumerate(self.webhooks)]
+        dd.assert_equal(r.json, {'webhooks': webhooks})

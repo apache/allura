@@ -293,4 +293,8 @@ class RestWebhooksLookup(BaseController):
         webhooks = self.app._webhooks
         if len(webhooks) == 0:
             raise exc.HTTPNotFound()
-        return {'test': 'works'}
+        configured_hooks = M.Webhook.query.find({
+            'type': {'$in': [wh.type for wh in webhooks]},
+            'app_config_id': self.app.config._id}
+        ).sort('_id', 1).all()
+        return {'webhooks': [hook.__json__() for hook in configured_hooks]}
