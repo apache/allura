@@ -309,3 +309,10 @@ class RestWebhooksLookup(BaseController):
         }
         return {'webhooks': [hook.__json__() for hook in configured_hooks],
                 'limits': limits}
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        for hook in self.app._webhooks:
+            if hook.type == name and hook.api_controller:
+                return hook.api_controller(hook, self.app), remainder
+        raise exc.HTTPNotFound, name
