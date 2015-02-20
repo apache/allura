@@ -211,6 +211,10 @@ class Application(object):
     :cvar Controller api_root: Serves API access at
         /rest/<neighborhood>/<project>/<app>/. Default is None - subclasses
         should override to expose API access to the Application.
+    :cvar Controller admin_api_root: Serves Admin API access at
+        /rest/<neighborhood>/<project>/admin/<app>/. Default is None -
+        subclasses should override to expose Admin API access to the
+        Application.
     :ivar Controller admin: Serves admin functions at
         /<neighborhood>/<project>/<admin>/<app>/. Default is a
         :class:`DefaultAdminController` instance.
@@ -227,6 +231,7 @@ class Application(object):
     script_name = None
     root = None  # root controller
     api_root = None
+    admin_api_root = None
     permissions = []
     permissions_desc = {
         'unmoderated_post': 'Post comments without moderation.',

@@ -28,6 +28,7 @@ from ming.utils import LazyProperty
 
 import allura.tasks
 from allura import version
+from allura.controllers.base import BaseController
 from allura.lib import helpers as h
 from allura import model as M
 from allura.lib import security
@@ -75,6 +76,7 @@ class RepositoryApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.admin = RepoAdminController(self)
+        self.admin_api_root = RepoAdminRestController(self)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -274,3 +276,21 @@ class RepoAdminController(DefaultAdminController):
         else:
             flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
         redirect(c.project.url() + 'admin/tools')
+
+
+class RepoAdminRestController(BaseController):
+    def __init__(self, app):
+        self.app = app
+        self.webhooks = RestWebhooksLookup(app)
+
+
+class RestWebhooksLookup(BaseController):
+    def __init__(self, app):
+        self.app = app
+
+    @expose('json:')
+    def index(self, **kw):
+        webhooks = self.app._webhooks
+        if len(webhooks) == 0:
+            raise exc.HTTPNotFound()
+        return {'test': 'works'}

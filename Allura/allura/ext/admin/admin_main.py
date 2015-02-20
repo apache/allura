@@ -884,6 +884,13 @@ class ProjectAdminRestController(BaseController):
                     % (tool, mount_point, mount_label)
         }
 
+    @expose()
+    def _lookup(self, name, *remainder):
+        app = c.project.app_instance(name)
+        if app is None or app.admin_api_root is None:
+            raise exc.HTTPNotFound, name
+        return app.admin_api_root, remainder
+
 
 class PermissionsController(BaseController):
     def _check_security(self):
