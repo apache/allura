@@ -26,7 +26,7 @@ from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 from pylons import tmpl_context as c
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_equal, assert_in, assert_not_in
 import feedparser
 
 from allura import model as M
@@ -760,12 +760,14 @@ class TestForum(TestController):
 
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
-        sidebarmenu = str(r.html.find('div', {'id': 'sidebar'}))
-        assert '<a href="/p/test/discussion/create_topic/"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
-        assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
+        sidebar = r.html.find('div', {'id': 'sidebar'})
+        sidebar_menu = str(sidebar)
+        sidebar_links = [i['href'] for i in sidebar.findAll('a')]
+        assert_in("/p/test/discussion/create_topic/", sidebar_links)
+        assert_in("/p/test/discussion/new_forum", sidebar_links)
+        assert_in('<h3 class="">Help</h3>', sidebar_menu)
+        assert_in("/p/test/discussion/markdown_syntax", sidebar_links)
+        assert_not_in("flag_as_spam", sidebar_links)
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
@@ -778,16 +780,18 @@ class TestForum(TestController):
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic', params=params).follow()
         thread_sidebarmenu = str(thread.html.find('div', {'id': 'sidebar'}))
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' in thread_sidebarmenu
+        assert_in("flag_as_spam", thread_sidebarmenu)
 
     def test_sidebar_menu_anon(self):
         r = self.app.get('/discussion/')
-        sidebarmenu = str(r.html.find('div', {'id': 'sidebar'}))
-        assert '<a href="/p/test/discussion/create_topic/"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
-        assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
-        assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
+        sidebar = r.html.find('div', {'id': 'sidebar'})
+        sidebar_menu = str(sidebar)
+        sidebar_links = [i['href'] for i in sidebar.findAll('a')]
+        assert_in("/p/test/discussion/create_topic/", sidebar_links)
+        assert_in("/p/test/discussion/new_forum", sidebar_links)
+        assert_in('<h3 class="">Help</h3>', sidebar_menu)
+        assert_in("/p/test/discussion/markdown_syntax", sidebar_links)
+        assert_not_in("flag_as_spam", sidebar_menu)
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
@@ -800,8 +804,8 @@ class TestForum(TestController):
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic',
                                params=params).follow(extra_environ=dict(username='*anonymous'))
-        thread_sidebarmenu = str(thread.html.find('div', {'id': 'sidebar'}))
-        assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in thread_sidebarmenu
+        thread_sidebar_menu = str(thread.html.find('div', {'id': 'sidebar'}))
+        assert_not_in("flag_as_spam", thread_sidebar_menu)
 
     def test_feed(self):
         for ext in ['', '.rss', '.atom']:
