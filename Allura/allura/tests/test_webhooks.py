@@ -708,4 +708,8 @@ class TestWebhookRestController(TestRestApiBase):
             'hook_url': 'http://httpbin.org/post/{}'.format(n),
             'mod_date': unicode(wh.mod_date),
         } for n, wh in enumerate(self.webhooks)]
-        dd.assert_equal(r.json, {'webhooks': webhooks})
+        expected = {
+            'webhooks': webhooks,
+            'limits': {'repo-push': {'max': 3, 'used': 3}},
+        }
+        dd.assert_equal(r.json, expected)

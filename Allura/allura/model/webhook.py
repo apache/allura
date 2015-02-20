@@ -16,6 +16,7 @@
 #       under the License.
 
 import datetime as dt
+import json
 
 from ming.odm import FieldProperty, session
 from paste.deploy.converters import asint
@@ -54,6 +55,12 @@ class Webhook(Artifact):
     def update_limit(self):
         self.last_sent = dt.datetime.utcnow()
         session(self).flush(self)
+
+    @classmethod
+    def max_hooks(self, type, tool_name):
+        type = type.replace('-', '_')
+        limits = json.loads(config.get('webhook.%s.max_hooks' % type, '{}'))
+        return limits.get(tool_name.lower(), 3)
 
     def __json__(self):
         return {
