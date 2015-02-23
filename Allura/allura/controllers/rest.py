@@ -47,7 +47,12 @@ class RestController(object):
 
     def _authenticate_request(self):
         'Based on request.params or oauth, authenticate the request'
-        if 'oauth_token' in request.params or 'access_token' in request.params:
+        headers_auth = 'Authorization' in request.headers
+        params_auth = 'oauth_token' in request.params
+        params_auth = params_auth or 'access_token' in request.params
+        log.error(headers_auth)
+        log.error(request.headers)
+        if headers_auth or params_auth:
             return self.oauth._authenticate()
         else:
             return None
@@ -104,15 +109,21 @@ class OAuthNegotiator(object):
         return result
 
     def _authenticate(self):
-        if 'access_token' in request.params:
+        bearer_token_prefix = 'OAuth BearerToken access_token='
+        auth = request.headers.get('Authorization')
+        log.error(auth)
+        if auth and auth.startswith(bearer_token_prefix):
+            access_token = auth[len(bearer_token_prefix):]
+        else:
+            access_token = request.params.get('access_token')
+        if access_token:
             # handle bearer tokens
             # skip https check if auth invoked from tests
             testing = request.environ.get('paste.testing', False)
             if not testing and request.scheme != 'https':
                 request.environ['pylons.status_code_redirect'] = True
                 raise exc.HTTPForbidden
-            access_token = M.OAuthAccessToken.query.get(
-                api_key=request.params['access_token'])
+            access_token = M.OAuthAccessToken.query.get(api_key=access_token)
             if not (access_token and access_token.is_bearer):
                 request.environ['pylons.status_code_redirect'] = True
                 raise exc.HTTPForbidden
