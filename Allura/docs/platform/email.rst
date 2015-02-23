@@ -15,8 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
-Guide to email integration in the Allura
-========================================
+*****
+Email
+*****
+
 
 Email routing
 -------------

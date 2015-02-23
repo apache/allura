@@ -409,9 +409,9 @@ class WebhookSender(object):
         """Post a task that will send webhook payload
 
         :param params_or_list: dict with keyword parameters to be passed to
-        :meth:`get_payload` or a list of such dicts. If it's a list for each
-        element appropriate payload will be submitted, but limit will be
-        enforced only once for each webhook.
+            :meth:`get_payload` or a list of such dicts. If it's a list for each
+            element appropriate payload will be submitted, but limit will be
+            enforced only once for each webhook.
         """
         if not isinstance(params_or_list, list):
             params_or_list = [params_or_list]

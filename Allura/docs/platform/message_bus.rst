@@ -15,6 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+***********
+Message Bus
+***********
+
 Guide to the Allura task and event system
 =========================================
 

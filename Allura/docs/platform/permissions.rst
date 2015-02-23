@@ -15,6 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+***********
+Permissions
+***********
+
 Guide to Users, Groups and Permissions in Allura
 ================================================
 

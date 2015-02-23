@@ -15,6 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+*********
+Extending
+*********
+
 Extension APIs and Entry Points
 ===============================
 

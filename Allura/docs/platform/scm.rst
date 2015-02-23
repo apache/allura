@@ -15,11 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
-Guide to SCM tools in Allura
-============================
+*******************
+SCM tools in Allura
+*******************
 
-Overview
---------
 
 The interface API and most of the controller and view structure of
 code repository type apps is defined in the base classes in the

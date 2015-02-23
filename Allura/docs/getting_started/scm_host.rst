@@ -17,8 +17,13 @@
 
 .. _scm_hosting:
 
+**************
+SCM Host Setup
+**************
+
+
 Git and Subversion Hosting Installation
-=======================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Allura can manage and display Git and SVN repositories, but it doesn't
 automatically run the git and svn services for you.  Here we'll describe how

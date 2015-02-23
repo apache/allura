@@ -15,8 +15,14 @@
        specific language governing permissions and limitations
        under the License.
 
+************
+Using Allura
+************
+
+
 We don't have much end-user help for Allura yet.  SourceForge projects use Allura,
 though, so their support documentation may be useful to anyone using Allura:
+
 
 Configuring your project
 ------------------------

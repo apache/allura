@@ -690,14 +690,15 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return roles
 
     def install_apps(self, apps_params):
-        '''
-        Install many apps at once. Better than doing individually if you expect
+        """ Install many apps at once.
+
+        Better than doing individually if you expect
         default name conflicts (e.g. "code" for both git & svn), by using the
         tool_label value.
 
-        :param list apps_params: list of dicts, where each dict is the args used
-        in install_app()
-        '''
+        :param list apps_params: list of dicts, where each dict is the args used in install_app()
+        """
+
         # determine all the mount points
         mount_points = dict()
         for app_params in apps_params:

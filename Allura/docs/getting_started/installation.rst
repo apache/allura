@@ -15,11 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+************
 Installation
-============
+************
 
-Install
--------
 
 Our step-by-step setup instructions are in our INSTALL.markdown file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown  You should be able to get Allura up and running in well under an hour by following those instructions.
 
@@ -41,9 +40,9 @@ Enabling inbound email
 Allura can listen for email messages and update tools and artifacts.  For example, every ticket has an email address, and
 emails sent to that address will be added as comments on the ticket.  To set up the SMTP listener, run:
 
-.. code-block:: shell-session
+.. code-block:: bash
 
-    (env-allura)~/src/forge/Allura$ nohup paster smtp_server development.ini > /var/log/allura/smtp.log &
+    nohup paster smtp_server development.ini > /var/log/allura/smtp.log &
 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.
@@ -55,9 +54,9 @@ SMTP in development
 The following command can be used for quick and easy monitoring of smtp during development.
 Just be sure the port matches the `smtp_port` from your `development.ini` (8826 by default).
 
-.. code-block:: shell-session
+.. code-block:: bash
 
-    (env-allura)~/src/forge/Allura$ python -m smtpd -n -c DebuggingServer localhost:8826
+    python -m smtpd -n -c DebuggingServer localhost:8826
 
 This will create a new debugging server that discards messages and prints them to stdout.
 
@@ -90,19 +89,19 @@ Enabling RabbitMQ
 For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the INSTALL, run these commands
 to install rabbitmq and set it up:
 
-.. code-block:: shell-session
+.. code-block:: bash
 
-    (env-allura)~$ sudo aptitude install rabbitmq-server
-    (env-allura)~$ sudo rabbitmqctl add_user testuser testpw
-    (env-allura)~$ sudo rabbitmqctl add_vhost testvhost
-    (env-allura)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
-    (env-allura)~$ pip install amqplib==0.6.1 kombu==1.0.4
+    sudo aptitude install rabbitmq-server
+    sudo rabbitmqctl add_user testuser testpw
+    sudo rabbitmqctl add_vhost testvhost
+    sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
+    pip install amqplib==0.6.1 kombu==1.0.4
 
 Then edit Allura/development.ini and change `amqp.enabled = false` to `amqp.enabled = true` and uncomment the other `amqp` settings.
 
 If your `paster taskd` process is still running, restart it:
 
-.. code-block:: shell-session
+.. code-block:: bash
 
-    (env-allura)~/src/forge/Allura$ pkill -f taskd
-    (env-allura)~/src/forge/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log &
+    pkill -f taskd
+    nohup paster taskd development.ini > /var/log/allura/taskd.log &

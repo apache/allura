@@ -15,8 +15,17 @@
        specific language governing permissions and limitations
        under the License.
 
-Online References
-=================
+***************************
+Writing an Allura-based app
+***************************
+
+External links
+    * `Getting Started <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-1-getting-started/>`_
+    * `Forms, Artifacts, and Testing <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-2-creating-our-first-paste/>`_
+    * `Adding a Custom Icon <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-3-adding-a-custom-icon/>`_
+    * `Adding a Sidebar Menu <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/adding-a-sidebar-menu/>`_
+    * `Adding Custom CSS <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-5-adding-custom-css/>`_
+
 
 Generated API docs, useful for browsing through the code, viewing inheritance, etc:
 
@@ -25,30 +34,3 @@ Generated API docs, useful for browsing through the code, viewing inheritance, e
 Our project page, including tickets, discussion forums, etc.:
 
 * https://allura.apache.org/
-
-
-Much of the current forge was inspired by Roundup
--------------------------------------------------
-
-http://roundup.sourceforge.net/index.html
-
-After we told ESR about roundup, he posted some interesting ideas about how to "federate" roundup entities "namespaces" that are ultimately just url-prefixes per project:
-
-http://esr.ibiblio.org/?p=1359
-
-Message based system needed
----------------------------
-
-http://ejohn.org/blog/google-groups-is-dead/
-
-
-Potential pitfalls for groupware development
---------------------------------------------
-
-http://research.microsoft.com/en-us/um/people/jgrudin/past/papers/cacm94/cacm94.html
-
-AMQP Online References
-----------------------
-
-http://blogs.digitar.com/jjww/2009/01/rabbits-and-warrens/
-http://www.igvita.com/2009/10/08/advanced-messaging-routing-with-amqp/

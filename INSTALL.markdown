@@ -126,7 +126,7 @@ The default configuration stores repos in `/srv`, so we need to create those dir
 
 If you don't have `sudo` permission or just want to store them somewhere else, change the `/srv` paths in `development.ini`
 
-If you want to set up remote access to the repositories, see <http://forge-allura.apache.org/docs/scm_host.html>
+If you want to set up remote access to the repositories, see <http://forge-allura.apache.org/docs/getting_started/scm_host.html>
 
 ### Allura task processing
 
@@ -159,7 +159,7 @@ register a new project in your own forge, visit /p/add_project
 ## Extra
 
 * Read more documentation: <http://forge-allura.apache.org/docs/>
-    * Including how to enable extra features: <http://forge-allura.apache.org/docs/installation.html>
+    * Including how to enable extra features: <http://forge-allura.apache.org/docs/getting_started/installation.html>
 * Ask questions and discuss Allura on the <http://mail-archives.apache.org/mod_mbox/allura-dev/>
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://forge-allura.apache.org/p/allura/tickets/new/> (login required)

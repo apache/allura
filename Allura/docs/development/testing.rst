@@ -15,6 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+*****************
+Testing in Allura
+*****************
+
 Writing Tests for Allura Tools
 ==============================
 

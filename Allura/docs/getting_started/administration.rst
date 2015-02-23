@@ -15,8 +15,9 @@
        specific language governing permissions and limitations
        under the License.
 
+**************
 Administration
-=================
+**************
 
 Commands, Scripts, and Tasks
 ----------------------------
@@ -32,22 +33,22 @@ shell.
 Commands can be discovered and run via the `paster` command when you are in the
 'Allura' directory that has your .ini file.  For example::
 
-    (env-allura) Allura$ paster help
+     paster help
     ... all commands listed here ...
 
-    (env-allura) Allura$ paster create-neighborhood --help
+     paster create-neighborhood --help
     ... specific command help ...
 
-    (env-allura) Allura$ paster create-neighborhood development.ini myneighborhood myuser ...
+     paster create-neighborhood development.ini myneighborhood myuser ...
 
 
 Scripts are in the `scripts/` directory and run via `paster script`.  An extra
 `--` is required to separate script arguments from paster arguments.  Example::
 
-    (env-allura) Allura$ paster script development.ini ../scripts/create-allura-sitemap.py -- --help
+     paster script development.ini ../scripts/create-allura-sitemap.py -- --help
     ... help output ...
 
-    (env-allura) Allura$ paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
+     paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
 
 TODO:   explain important scripts, commands
 

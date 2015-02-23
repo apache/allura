@@ -15,11 +15,12 @@
        specific language governing permissions and limitations
        under the License.
 
+*************
 Platform Tour
-=============
+*************
 
 Introduction
-------------
+^^^^^^^^^^^^
 
 Allura is implemented as a collection of tool applications on top of a
 robust and open platform.  Some of the services provided by the platform include:

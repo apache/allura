@@ -15,14 +15,18 @@
        specific language governing permissions and limitations
        under the License.
 
-Platform Architecture overview
-==============================
+*****************
+Platform Overview
+*****************
+
+
 
 I'm told that the reason you build a platform is to "reduce the marginal cost
 of developing applications."  Sounds good.   Well, actually it sounds a bit
 dry.  But it's about right, we want to make creating new online development
 tools faster, easier, and more fun, which I guess is the "reduce the marginal
 cost" thing.
+
 
 Platform building blocks
 ------------------------
@@ -39,7 +43,7 @@ wanted to extend it from just email messages to include scm commits, and we
 added a message bus (RabbitMQ which we'll talk about in a second), to make
 it fast.
 
-.. image:: _static/images/messages.png
+.. image:: ../_static/images/messages.png
    :alt: Message Architecture
 
 We were also impressed by the flexibility of Roundup's Hypertable system in
@@ -84,7 +88,7 @@ Writing a tool for Allura is as simple as defining a few controllers
 to handle particular URL's, templates to render pages, and defining the schemas
 of any Allura document types that your tool requires.
 
-.. image:: _static/images/tools.png
+.. image:: ../_static/images/tools.png
    :alt: App Tools
    :align: right
 
@@ -116,3 +120,18 @@ Users/groups and Permissions
 In order to facilitate more open processes, where more users can contribute
 -- while still protecting data -- documents can easily be "versioned", and
 the platform provides tools to manage versioned documents for you.
+
+
+
+Why create all the tools as plugins?
+------------------------------------
+
+We know that some projects are going to want more locked down
+access controls in their bug trackers, or more workflow based
+processes.  These things are inevitable, and we really do want
+to support them, but at the same time they are going to conflict
+with the way many other projects want to work.
+
+Building a plugin (tool in Allura terms) system, and standard
+integration points makes it possible to serve everybody in one
+way or another.

@@ -37,6 +37,8 @@
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+import os
+
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig']
 
@@ -99,21 +101,30 @@ exclude_trees = ['_build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# A list of document names that are present, but not currently included in the toctree.
+unused_docs = 'getting_started/scm_host_ssh.rst'
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
 # -- Options for HTML output ---------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  Major themes that come with
-# Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'nature'
+# on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not on_rtd:  # only import and set the theme if we're building docs locally
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+# otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {
-    'sidebarwidth': 280,  # default 230 (px)
-}
+# html_theme_options = {
+#     'sidebarwidth': 280,  # default 230 (px)
+# }
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

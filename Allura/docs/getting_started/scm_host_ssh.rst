@@ -15,7 +15,13 @@
        specific language governing permissions and limitations
        under the License.
 
+:orphan:
+
 .. _scm_hosting_ssh:
+
+***************
+SCM Hosting-SSH
+***************
 
 Configuring Git/SVN/Hg to use Allura auth via LDAP and ssh
 ==========================================================

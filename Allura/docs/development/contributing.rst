@@ -15,6 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
+************
+Contributing
+************
+
 Contributing to Allura
 ======================
 For developers interested in hacking on Allura or its components, this guide
@@ -53,7 +57,7 @@ External services:
 Allura services:
 
 * Web server - the Allura web application
-* :doc:`Taskd <guides/message_bus>` - background task daemon
+* :doc:`Taskd <../platform/message_bus>` - background task daemon
 * Inbound email handler - processes email sent to the Allura instance (e.g.,
   a reply to a ticket notification email)
 
@@ -111,7 +115,7 @@ Code Organization
 The core Allura platform code is in the ``Allura/`` directory in the top-level of the
 repo. The ``Forge*/`` directories contain Allura "tools" - plugins that extend the
 core platform. For an overview of the platform and services it provides, read
-the :doc:`Platform Tour <platform_tour>` documentation. If you're interested in
+the :doc:`Platform Tour <../platform/platform_tour>` documentation. If you're interested in
 developing a new Allura plugin, you may find this `blog series <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/>`_
 helpful.
 
@@ -191,7 +195,7 @@ To learn more about the ``nose`` test runner, consult the `documentation
 
 When writing code for Allura, don't forget that you'll need to also create
 tests that cover behaviour that you've added or changed. You may find this
-:doc:`short guide <tutorials/testing>` helpful.
+:doc:`short guide <../development/testing>` helpful.
 
 
 Submitting a Merge Request

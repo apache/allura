@@ -79,3 +79,4 @@ WebTest==1.4.0
 testfixtures==3.0.0
 q==2.3
 WebError==0.10.3
+sphinx-rtd-theme==0.1.6
