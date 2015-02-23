@@ -878,3 +878,19 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = M.Webhook.query.get(_id=webhook._id)
         assert_equal(webhook.hook_url, 'http://httpbin.org/post/0')
         assert_equal(webhook.secret, 'secret-0')
+
+    def test_delete_validation(self):
+        url = '{}/repo-push/invalid'.format(self.url)
+        self.api_delete(url, status=404)
+
+    def test_delete(self):
+        assert_equal(M.Webhook.query.find().count(), 3)
+        webhook = self.webhooks[0]
+        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        msg = 'delete webhook repo-push {} {}'.format(
+            webhook.hook_url, self.git.config.url())
+        with td.audits(msg):
+            r = self.api_delete(url, status=200)
+        dd.assert_equal(r.json, {u'result': u'ok'})
+        assert_equal(M.Webhook.query.find().count(), 2)
+        assert_equal(M.Webhook.query.get(_id=webhook._id), None)
