@@ -39,6 +39,7 @@ class TestRestHome(TestRestApiBase):
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
     def test_bearer_token_non_bearer(self, request, OAuthAccessToken):
+        request.headers = {}
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
@@ -51,6 +52,7 @@ class TestRestHome(TestRestApiBase):
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
     def test_bearer_token_invalid(self, request, OAuthAccessToken):
+        request.headers = {}
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
@@ -80,7 +82,64 @@ class TestRestHome(TestRestApiBase):
             is_bearer=True,
         )
         ThreadLocalODMSession.flush_all()
+        request.headers = {}
         request.params = {'access_token': access_token.api_key}
+        request.scheme = 'https'
+        r = self.api_post('/rest/p/test/wiki', access_token='foo')
+        assert_equal(r.status_int, 200)
+
+    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
+    @mock.patch('allura.controllers.rest.request')
+    def test_bearer_token_non_bearer_via_headers(self, request, OAuthAccessToken):
+        request.headers = {
+            'Authorization': 'OAuth BearerToken access_token=foo'
+        }
+        request.scheme = 'https'
+        self._patch_token(OAuthAccessToken)
+        access_token = OAuthAccessToken.query.get.return_value
+        access_token.is_bearer = False
+        r = self.api_post('/rest/p/test/wiki', access_token='foo')
+        assert_equal(r.status_int, 403)
+        OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
+
+    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
+    @mock.patch('allura.controllers.rest.request')
+    def test_bearer_token_invalid_via_headers(self, request, OAuthAccessToken):
+        request.headers = {
+            'Authorization': 'OAuth BearerToken access_token=foo'
+        }
+        request.scheme = 'https'
+        self._patch_token(OAuthAccessToken)
+        OAuthAccessToken.query.get.return_value = None
+        r = self.api_post('/rest/p/test/wiki', access_token='foo')
+        assert_equal(r.status_int, 403)
+
+    @mock.patch('allura.controllers.rest.request')
+    @td.with_wiki
+    def test_bearer_token_valid_via_headers(self, request):
+        user = M.User.by_username('test-admin')
+        consumer_token = M.OAuthConsumerToken(
+            name='foo',
+            description='foo app',
+        )
+        request_token = M.OAuthRequestToken(
+            consumer_token_id=consumer_token._id,
+            user_id=user._id,
+            callback='manual',
+            validation_pin=h.nonce(20),
+            is_bearer=True,
+        )
+        access_token = M.OAuthAccessToken(
+            consumer_token_id=consumer_token._id,
+            request_token_id=request_token._id,
+            user_id=user._id,
+            is_bearer=True,
+        )
+        ThreadLocalODMSession.flush_all()
+        token = access_token.api_key
+        request.headers = {
+            'Authorization': 'OAuth BearerToken access_token={}'.format(token)
+        }
         request.scheme = 'https'
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 200)
