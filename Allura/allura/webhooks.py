@@ -287,7 +287,7 @@ class WebhookSender(object):
     def send(self, params_or_list):
         """Post a task that will send webhook payload
 
-        :param:`params_or_list` - dict with keyword parameters to be passed to
+        :param params_or_list: dict with keyword parameters to be passed to
         :meth:`get_payload` or a list of such dicts. If it's a list for each
         element appropriate payload will be submitted, but limit will be
         enforced only once for each webhook.
