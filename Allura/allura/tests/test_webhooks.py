@@ -894,3 +894,17 @@ class TestWebhookRestController(TestRestApiBase):
         dd.assert_equal(r.json, {u'result': u'ok'})
         assert_equal(M.Webhook.query.find().count(), 2)
         assert_equal(M.Webhook.query.get(_id=webhook._id), None)
+
+    def test_permissions(self):
+        self.api_get(self.url, user='test-user', status=403)
+        self.api_get(self.url, user='*anonymous', status=401)
+        url = self.url + '/repo-push/'
+        self.api_post(url, user='test-user', status=403)
+        self.api_post(url, user='*anonymous', status=401)
+        url = self.url + '/repo-push/' + str(self.webhooks[0]._id)
+        self.api_get(url, user='test-user', status=403)
+        self.api_get(url, user='*anonymous', status=401)
+        self.api_post(url, user='test-user', status=403)
+        self.api_post(url, user='*anonymous', status=401)
+        self.api_delete(url, user='test-user', status=403)
+        self.api_delete(url, user='*anonymous', status=401)
