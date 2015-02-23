@@ -885,7 +885,10 @@ class ProjectAdminRestController(BaseController):
         }
 
     @expose()
-    def _lookup(self, name, *remainder):
+    def _lookup(self, *args):
+        if len(args) == 0:
+            raise exc.HTTPNotFound, args
+        name, remainder = args[0], args[1:]
         app = c.project.app_instance(name)
         if app is None or app.admin_api_root is None:
             raise exc.HTTPNotFound, name

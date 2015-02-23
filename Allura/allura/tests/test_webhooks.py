@@ -868,16 +868,12 @@ class TestWebhookRestController(TestRestApiBase):
     def test_edit_duplicates(self):
         webhook = self.webhooks[0]
         url = '{}/repo-push/{}'.format(self.url, webhook._id)
-        # change only url
         data = {'url': 'http://httpbin.org/post/1'}
         r = self.api_post(url, status=400, **data)
         expected = {u'result': u'error',
                     u'error': u'_the_form: "repo-push" webhook already '
                               u'exists for Git http://httpbin.org/post/1'}
         assert_equal(r.json, expected)
-        webhook = M.Webhook.query.get(_id=webhook._id)
-        assert_equal(webhook.hook_url, 'http://httpbin.org/post/0')
-        assert_equal(webhook.secret, 'secret-0')
 
     def test_delete_validation(self):
         url = '{}/repo-push/invalid'.format(self.url)
