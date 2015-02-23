@@ -272,6 +272,8 @@ class WebhookRestController(BaseController):
             raise exc.HTTPNotFound()
         if request.method == 'POST':
             return self._edit(wh, form, **kw)
+        elif request.method == 'DELETE':
+            return self._delete(wh)
         else:
             return {'result': 'ok', 'webhook': wh}
 
@@ -300,6 +302,15 @@ class WebhookRestController(BaseController):
         webhook = M.Webhook.query.get(_id=webhook._id)
         return {'result': 'ok',
                 'webhook': webhook}
+
+    def _delete(self, webhook):
+        webhook.delete()
+        M.AuditLog.log(
+            'delete webhook %s %s %s',
+            webhook.type,
+            webhook.hook_url,
+            webhook.app_config.url())
+        return {'result': 'ok'}
 
 
 class SendWebhookHelper(object):
