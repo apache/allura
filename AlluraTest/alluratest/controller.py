@@ -222,13 +222,17 @@ class TestRestApiBase(TestController):
             status = [200, 201, 301, 302, 400, 403, 404]
         params = variabledecode.variable_encode(params, add_repetitions=False)
 
-        params['access_token'] = self.token(user).api_key
+        token = self.token(user).api_key
+        headers = {
+            'Authorization': 'OAuth BearerToken access_token={}'.format(token)
+        }
 
         fn = getattr(self.app, method.lower())
 
         response = fn(
             str(path),
             params=params,
+            headers=headers,
             status=status)
         if response.status_int in [301, 302]:
             return response.follow()
