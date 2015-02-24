@@ -231,15 +231,13 @@ class TestLocalAuthenticationProvider(object):
         self.provider.set_password(user, 'old', 'new')
         user._encode_password.assert_callued_once_with('new')
 
-    def test_set_password_sets_last_updated(self):
+    @patch('allura.lib.plugin.datetime', autospec=True)
+    def test_set_password_sets_last_updated(self, dt_mock):
         user = Mock()
         user.__ming__ = Mock()
         user.last_password_updated = None
-        now1 = dt.datetime.utcnow()
         self.provider.set_password(user, None, 'new')
-        now2 = dt.datetime.utcnow()
-        assert_true(user.last_password_updated > now1)
-        assert_true(user.last_password_updated < now2)
+        assert_equal(user.last_password_updated, dt_mock.utcnow.return_value)
 
     def test_get_last_password_updated_not_set(self):
         user = Mock()
