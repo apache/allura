@@ -18,12 +18,6 @@
 */
 
 (function($) {
-    // Setup label help text
-    $('label[title]').each(function(){
-        var $this = $(this);
-        $this.append('<a href="#" class="help_icon"><b data-icon="h" class="ico ico-help"></b></a>');
-        $this.tooltip({showURL: false});
-    });
     // Setup title-pane widgets
     $('.title-pane .title').click(function(e) {
         e.preventDefault();
