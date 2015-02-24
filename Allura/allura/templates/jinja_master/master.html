@@ -49,11 +49,9 @@
     {% for blob in g.resource_manager.emit('head_css') %}
       {{ blob }}
     {% endfor %}
-    {% if c.project %}
     {% for blob in g.resource_manager.emit('head_js') %}
       {{ blob }}
     {% endfor %}
-    {% endif %}
 
     {% if c.project and c.project.neighborhood.css %}
       <style type="text/css">
