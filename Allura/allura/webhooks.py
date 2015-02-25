@@ -243,7 +243,7 @@ class WebhookRestController(BaseController):
             # refetch updated values (e.g. mod_date)
             session(webhook).expunge(webhook)
             webhook = M.Webhook.query.get(_id=webhook._id)
-            return {'result': 'ok', 'webhook': webhook}
+            return webhook.__json__()
         else:
             limits = {
                 'max': M.Webhook.max_hooks(
@@ -275,7 +275,7 @@ class WebhookRestController(BaseController):
         elif request.method == 'DELETE':
             return self._delete(wh)
         else:
-            return {'result': 'ok', 'webhook': wh}
+            return wh.__json__()
 
     def _edit(self, webhook, form, **kw):
         old_secret = webhook.secret
@@ -300,8 +300,7 @@ class WebhookRestController(BaseController):
         # refetch updated values (e.g. mod_date)
         session(webhook).expunge(webhook)
         webhook = M.Webhook.query.get(_id=webhook._id)
-        return {'result': 'ok',
-                'webhook': webhook}
+        return webhook.__json__()
 
     def _delete(self, webhook):
         webhook.delete()

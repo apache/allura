@@ -721,16 +721,14 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = self.webhooks[0]
         r = self.api_get('{}/repo-push/{}'.format(self.url, webhook._id))
         expected = {
-            u'result': u'ok',
-            u'webhook': {
-                '_id': unicode(webhook._id),
-                'url': 'http://localhost/rest/adobe/adobe-1/admin'
-                       '/src/webhooks/repo-push/{}'.format(webhook._id),
-                'type': 'repo-push',
-                'hook_url': 'http://httpbin.org/post/0',
-                'mod_date': unicode(webhook.mod_date),
-            },
+            '_id': unicode(webhook._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(webhook._id),
+            'type': 'repo-push',
+            'hook_url': 'http://httpbin.org/post/0',
+            'mod_date': unicode(webhook.mod_date),
         }
+        dd.assert_equal(r.status_int, 200)
         dd.assert_equal(r.json, expected)
 
     def test_create_validation(self):
@@ -767,15 +765,12 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = M.Webhook.query.get(hook_url=data['url'])
         assert_equal(webhook.secret, 'super-secret')  # secret generated
         expected = {
-            u'result': u'ok',
-            u'webhook': {
-                '_id': unicode(webhook._id),
-                'url': 'http://localhost/rest/adobe/adobe-1/admin'
-                       '/src/webhooks/repo-push/{}'.format(webhook._id),
-                'type': 'repo-push',
-                'hook_url': data['url'],
-                'mod_date': unicode(webhook.mod_date),
-            },
+            '_id': unicode(webhook._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(webhook._id),
+            'type': 'repo-push',
+            'hook_url': data['url'],
+            'mod_date': unicode(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks) + 1)
@@ -830,15 +825,12 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, data['url'])
         assert_equal(webhook.secret, 'secret-0')
         expected = {
-            u'result': u'ok',
-            u'webhook': {
-                '_id': unicode(webhook._id),
-                'url': 'http://localhost/rest/adobe/adobe-1/admin'
-                       '/src/webhooks/repo-push/{}'.format(webhook._id),
-                'type': 'repo-push',
-                'hook_url': data['url'],
-                'mod_date': unicode(webhook.mod_date),
-            },
+            '_id': unicode(webhook._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(webhook._id),
+            'type': 'repo-push',
+            'hook_url': data['url'],
+            'mod_date': unicode(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 
@@ -853,15 +845,12 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, 'http://hook.slack.com/abcd')
         assert_equal(webhook.secret, 'new-secret')
         expected = {
-            u'result': u'ok',
-            u'webhook': {
-                '_id': unicode(webhook._id),
-                'url': 'http://localhost/rest/adobe/adobe-1/admin'
-                       '/src/webhooks/repo-push/{}'.format(webhook._id),
-                'type': 'repo-push',
-                'hook_url': 'http://hook.slack.com/abcd',
-                'mod_date': unicode(webhook.mod_date),
-            },
+            '_id': unicode(webhook._id),
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(webhook._id),
+            'type': 'repo-push',
+            'hook_url': 'http://hook.slack.com/abcd',
+            'mod_date': unicode(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 
