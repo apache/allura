@@ -728,6 +728,12 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
 
+    @patch.dict('allura.lib.app_globals.config', {})
+    def test_all_expected_keys_exist_in_cache(self):
+        self.md.cached_convert(self.post, 'text')
+        required_keys = ['fix7528', 'html', 'md5', 'render_time']
+        keys = sorted(self.post.text_cache.keys())
+        self.assertEqual(required_keys, keys)
 
 
 class TestHandlePaging(unittest.TestCase):

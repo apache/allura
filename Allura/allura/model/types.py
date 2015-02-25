@@ -27,6 +27,7 @@ class MarkdownCache(S.Object):
         super(MarkdownCache, self).__init__(
             fields=dict(
                 md5=S.String(),
+                fix7528=S.Bool,
                 html=S.String(),
                 render_time=S.Float()),
             **kw)
