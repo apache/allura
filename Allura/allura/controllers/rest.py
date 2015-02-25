@@ -50,8 +50,6 @@ class RestController(object):
         headers_auth = 'Authorization' in request.headers
         params_auth = 'oauth_token' in request.params
         params_auth = params_auth or 'access_token' in request.params
-        log.error(headers_auth)
-        log.error(request.headers)
         if headers_auth or params_auth:
             return self.oauth._authenticate()
         else:
@@ -111,7 +109,6 @@ class OAuthNegotiator(object):
     def _authenticate(self):
         bearer_token_prefix = 'OAuth BearerToken access_token='
         auth = request.headers.get('Authorization')
-        log.error(auth)
         if auth and auth.startswith(bearer_token_prefix):
             access_token = auth[len(bearer_token_prefix):]
         else:
