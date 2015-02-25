@@ -224,7 +224,7 @@ class TestRestApiBase(TestController):
 
         token = self.token(user).api_key
         headers = {
-            'Authorization': 'OAuth BearerToken access_token={}'.format(token)
+            'Authorization': 'Bearer {}'.format(token)
         }
 
         fn = getattr(self.app, method.lower())

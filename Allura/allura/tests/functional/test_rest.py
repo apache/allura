@@ -92,7 +92,7 @@ class TestRestHome(TestRestApiBase):
     @mock.patch('allura.controllers.rest.request')
     def test_bearer_token_non_bearer_via_headers(self, request, OAuthAccessToken):
         request.headers = {
-            'Authorization': 'OAuth BearerToken access_token=foo'
+            'Authorization': 'Bearer foo'
         }
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
@@ -106,7 +106,7 @@ class TestRestHome(TestRestApiBase):
     @mock.patch('allura.controllers.rest.request')
     def test_bearer_token_invalid_via_headers(self, request, OAuthAccessToken):
         request.headers = {
-            'Authorization': 'OAuth BearerToken access_token=foo'
+            'Authorization': 'Bearer foo'
         }
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
@@ -138,7 +138,7 @@ class TestRestHome(TestRestApiBase):
         ThreadLocalODMSession.flush_all()
         token = access_token.api_key
         request.headers = {
-            'Authorization': 'OAuth BearerToken access_token={}'.format(token)
+            'Authorization': 'Bearer {}'.format(token)
         }
         request.scheme = 'https'
         r = self.api_post('/rest/p/test/wiki', access_token='foo')

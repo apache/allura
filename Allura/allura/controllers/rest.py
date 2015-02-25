@@ -107,7 +107,7 @@ class OAuthNegotiator(object):
         return result
 
     def _authenticate(self):
-        bearer_token_prefix = 'OAuth BearerToken access_token='
+        bearer_token_prefix = 'Bearer '
         auth = request.headers.get('Authorization')
         if auth and auth.startswith(bearer_token_prefix):
             access_token = auth[len(bearer_token_prefix):]
