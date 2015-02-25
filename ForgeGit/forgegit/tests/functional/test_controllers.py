@@ -542,6 +542,11 @@ class TestFork(_TestCase):
         assert 'git merge {}'.format(c_id) in merge_instructions
         assert_in('less than 1 minute ago', r.html.findAll('p')[0].getText())
 
+    def test_merge_request_detail_noslash(self):
+        self._request_merge()
+        r = self.app.get('/p/test/src-git/merge-requests/1', status=302)
+        assert_equal(r.location, 'http://localhost/p/test/src-git/merge-requests/1/')
+
     def test_merge_request_with_deleted_repo(self):
         self._request_merge()
         h.set_context('test2', 'code', neighborhood='Projects')

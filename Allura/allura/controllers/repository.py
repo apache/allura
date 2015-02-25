@@ -354,6 +354,7 @@ class MergeRequestController(object):
         if self.req is None:
             raise exc.HTTPNotFound
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/repo/merge_request.html')
     def index(self, page=0, limit=250, **kw):
         c.thread = self.thread_widget
