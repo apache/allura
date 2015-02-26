@@ -160,10 +160,6 @@ def merge(merge_request_id):
     from allura import model as M
     log = logging.getLogger(__name__)
     mr = M.MergeRequest.query.get(_id=merge_request_id)
-    try:
-        mr.app.repo.merge(mr)
-    except:
-        log.exception("Can't merge merge request %s", mr.url())
-        return
+    mr.app.repo.merge(mr)
     mr.status = 'merged'
     session(mr).flush(mr)
