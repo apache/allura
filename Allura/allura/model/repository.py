@@ -775,10 +775,16 @@ class MergeRequest(VersionedArtifact, ActivityObject):
                 commit = rev._id
             else:
                 commit = self.app.repo.head
-            return list(c.app.repo.log(
-                self.downstream.commit_id,
-                exclude=commit,
-                id_only=False))
+            try:
+                return list(c.app.repo.log(
+                    self.downstream.commit_id,
+                    exclude=commit,
+                    id_only=False))
+            except Exception:
+                log.exception(
+                    "Can't get commits for merge request",
+                    self.url())
+                return []
 
     @classmethod
     def upsert(cls, **kw):
