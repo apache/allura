@@ -118,13 +118,6 @@ class RefreshRepo(ScriptTask):
                                 M.repository.LastCommitDoc.m.remove(
                                     dict(commit_ids={'$in': ci_ids_chunk}))
 
-                            i = M.repository.DiffInfoDoc.m.find(
-                                {"_id": {"$in": ci_ids_chunk}}).count()
-                            if i:
-                                log.info("Deleting %i DiffInfoDoc docs...", i)
-                                M.repository.DiffInfoDoc.m.remove(
-                                    {"_id": {"$in": ci_ids_chunk}})
-
                             i = M.repository.CommitRunDoc.m.find(
                                 {"commit_ids": {"$in": ci_ids_chunk}}).count()
                             if i:

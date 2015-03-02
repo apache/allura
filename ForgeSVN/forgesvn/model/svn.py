@@ -76,9 +76,6 @@ class Repository(M.Repository):
                                        'checkout_url'),
                                    dest_path=self.suggested_clone_dest_path()))
 
-    def compute_diffs(self):
-        return
-
     def latest(self, branch=None):
         if self._impl is None:
             return None
@@ -366,7 +363,7 @@ class SVNImplementation(M.RepositoryImplementation):
             oid for oid in oids if oid not in seen_oids]
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
-        from allura.model.repository import CommitDoc, DiffInfoDoc
+        from allura.model.repository import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)
         if ci_doc and lazy:
             return False
@@ -408,48 +405,6 @@ class SVNImplementation(M.RepositoryImplementation):
             except DuplicateKeyError:
                 if lazy:
                     return False
-        # Save diff info
-        di = DiffInfoDoc.make(dict(_id=ci_doc._id, differences=[]))
-        for path in log_entry.changed_paths:
-            if path.action in ('A', 'M', 'R'):
-                try:
-                    rhs_info = self._svn.info2(
-                        self._url + h.really_unicode(path.path),
-                        revision=self._revision(ci_doc._id),
-                        recurse=False)[0][1]
-                    rhs_id = self._obj_oid(ci_doc._id, rhs_info)
-                except pysvn.ClientError, e:
-                    # pysvn will sometimes misreport deleted files (D) as
-                    # something else (like A), causing info2() to raise a
-                    # ClientError since the file doesn't exist in this
-                    # revision. Set lrhs_id = None to treat like a deleted file
-                    log.info('This error was handled gracefully and logged '
-                             'for informational purposes only:\n' + str(e))
-                    rhs_id = None
-            else:
-                rhs_id = None
-            if ci_doc.parent_ids and path.action in ('D', 'M', 'R'):
-                try:
-                    lhs_info = self._svn.info2(
-                        self._url + h.really_unicode(path.path),
-                        revision=self._revision(ci_doc.parent_ids[0]),
-                        recurse=False)[0][1]
-                    lhs_id = self._obj_oid(ci_doc._id, lhs_info)
-                except pysvn.ClientError, e:
-                    # pysvn will sometimes report new files as 'M'odified,
-                    # causing info2() to raise ClientError since the file
-                    # doesn't exist in the parent revision. Set lhs_id = None
-                    # to treat like a newly added file.
-                    log.info('This error was handled gracefully and logged '
-                             'for informational purposes only:\n' + str(e))
-                    lhs_id = None
-            else:
-                lhs_id = None
-            di.differences.append(dict(
-                name=h.really_unicode(path.path),
-                lhs_id=lhs_id,
-                rhs_id=rhs_id))
-        di.m.save()
         return True
 
     def compute_tree_new(self, commit, tree_path='/'):
