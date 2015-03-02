@@ -1052,8 +1052,6 @@ class TestCommit(_TestWithRepo):
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
         self.repo._impl.open_blob = self._unique_blobs()
         M.repo_refresh.refresh_commit_trees(self.ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
-        # self.ci.compute_diffs()
         assert_equal(self.ci.diffs.added,
                      ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
@@ -1064,7 +1062,6 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['foo']
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
                 == ci.diffs.changed
@@ -1080,7 +1077,6 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['foo']
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
         assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
@@ -1104,7 +1100,6 @@ class TestCommit(_TestWithRepo):
 
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
         M.repo_refresh.refresh_commit_trees(self.ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
         assert_equal(self.ci.diffs.added,
                      ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
@@ -1122,7 +1117,6 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['foo']
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
         assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
@@ -1138,7 +1132,6 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['bar']
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
-        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert_equal(ci.diffs.added, [])
         assert_equal(ci.diffs.changed, [])
         assert_equal(ci.diffs.removed, ['b/a/a'])

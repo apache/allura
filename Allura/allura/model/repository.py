@@ -858,15 +858,6 @@ TreesDoc = collection(
     Field('_id', str),
     Field('tree_ids', [str]))
 
-# Information about which things were added/removed in  commit
-# DiffInfoDoc._id = CommitDoc._id
-DiffInfoDoc = collection(
-    'repo_diffinfo', main_doc_session,
-    Field('_id', str),
-    Field(
-        'differences',
-        [dict(name=str, lhs_id=str, rhs_id=str)]))
-
 # List of commit runs (a run is a linear series of single-parent commits)
 # CommitRunDoc.commit_ids = [ CommitDoc._id, ... ]
 CommitRunDoc = collection(

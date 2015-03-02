@@ -20,7 +20,7 @@ import sys
 from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
-from allura.model.repository import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
+from allura.model.repository import CommitDoc, TreeDoc, TreesDoc
 from allura.model.repository import LastCommitDoc, CommitRunDoc
 from allura.model.repo_refresh import refresh_repo
 
@@ -35,7 +35,6 @@ def main():
     CommitDoc.m.remove({})
     TreeDoc.m.remove({})
     TreesDoc.m.remove({})
-    DiffInfoDoc.m.remove({})
     LastCommitDoc.m.remove({})
     CommitRunDoc.m.remove({})
 
