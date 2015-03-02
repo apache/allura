@@ -229,7 +229,6 @@ under the MIT license.  For details, see the individual files:
     allura/lib/widgets/resources/js/jquery.colorPicker.js
     allura/lib/widgets/resources/js/jquery.tagsinput.js
     allura/lib/widgets/resources/js/jquery.textarea.js
-    allura/lib/widgets/resources/js/jquery.tools.min.js
     allura/public/nf/js/jquery.flot.js
     allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js
