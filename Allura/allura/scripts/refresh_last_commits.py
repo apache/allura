@@ -70,8 +70,6 @@ class RefreshLastCommits(ScriptTask):
                             'project(s) being refreshed before doing the refresh.')
         parser.add_argument('--dry-run', action='store_true', dest='dry_run',
                             default=False, help='Log names of projects that would have their ')
-        parser.add_argument('--diffs', action='store_true', dest='diffs',
-                            default=False, help='Refresh / clean diffs as well as LCDs')
         parser.add_argument('--limit', action='store', type=int, dest='limit',
                             default=False, help='Limit of how many commits to process')
         return parser
@@ -118,7 +116,7 @@ class RefreshLastCommits(ScriptTask):
                         ci_ids = list(
                             reversed(list(c.app.repo.all_commit_ids())))
                         if options.clean:
-                            cls._clean(ci_ids, options.diffs)
+                            cls._clean(ci_ids)
 
                         log.info('Refreshing all last commits in %r',
                                  c.app.repo)
@@ -138,16 +136,6 @@ class RefreshLastCommits(ScriptTask):
     def refresh_repo_lcds(cls, commit_ids, options):
         tree_cache = {}
         timings = []
-        if options.diffs:
-            print 'Processing diffs'
-            for i, commit_id in enumerate(commit_ids):
-                commit = M.repository.Commit.query.get(_id=commit_id)
-                with time(timings):
-                    M.repo_refresh.compute_diffs(
-                        c.app.repo._id, tree_cache, commit)
-                if i % 1000 == 0:
-                    cls._print_stats(i, timings, 1000)
-
         model_cache = M.repository.ModelCache(
             max_instances={M.repository.LastCommit: 4000},
             max_queries={M.repository.LastCommit: 4000},
@@ -171,15 +159,7 @@ class RefreshLastCommits(ScriptTask):
         ThreadLocalORMSession.flush_all()
 
     @classmethod
-    def _clean(cls, commit_ids, clean_diffs):
-        if clean_diffs:
-            # delete DiffInfoDocs
-            i = M.repository.DiffInfoDoc.m.find(
-                dict(_id={'$in': commit_ids})).count()
-            log.info("Deleting %i DiffInfoDoc docs for %i commits...",
-                     i, len(commit_ids))
-            M.repository.DiffInfoDoc.m.remove(dict(_id={'$in': commit_ids}))
-
+    def _clean(cls, commit_ids):
         # delete LastCommitDocs
         i = M.repository.LastCommitDoc.m.find(
             dict(commit_id={'$in': commit_ids})).count()

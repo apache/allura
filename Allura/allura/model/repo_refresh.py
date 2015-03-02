@@ -31,7 +31,7 @@ from ming.orm import mapper, session, ThreadLocalORMSession
 
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.model.repository import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
+from allura.model.repository import CommitDoc, TreeDoc, TreesDoc
 from allura.model.repository import CommitRunDoc
 from allura.model.repository import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
@@ -110,18 +110,9 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
 
     # Compute diffs
     cache = {}
-    # For some SCMs, we don't want to pre-compute the diffs because that
+    # For some SCMs, we don't want to pre-compute the LCDs because that
     # would be too expensive, so we skip them here and do them on-demand
     # with caching.
-    if repo._refresh_precompute:
-        for i, oid in enumerate(commit_ids):
-            cid = CommitDoc.m.find(dict(_id=oid), validate=False).next()
-            ci = mapper(Commit).create(cid, dict(instrument=False))
-            ci.set_context(repo)
-            compute_diffs(repo._id, cache, ci)
-            if (i + 1) % 100 == 0:
-                log.info('Compute diffs %d: %s', (i + 1), ci._id)
-
     if repo._refresh_precompute:
         model_cache = ModelCache()
         lcid_cache = {}
@@ -366,68 +357,6 @@ def unknown_commit_ids(all_commit_ids):
         known_commit_ids = set(ci._id for ci in q)
         result += [oid for oid in chunk if oid not in known_commit_ids]
     return result
-
-
-def compute_diffs(repo_id, tree_cache, rhs_ci):
-    '''compute simple differences between a commit and its first parent'''
-    if rhs_ci.tree_id is None:
-        return tree_cache
-
-    def _update_cache(lhs_tree_ids, rhs_tree_ids):
-        # crazy cache logic that I'm not certain I understand
-        new_tree_ids = [
-            tid for tid in chain(lhs_tree_ids, rhs_tree_ids)
-            if tid not in tree_cache]
-        tree_index = dict(
-            (t._id, t) for t in TreeDoc.m.find(dict(_id={'$in': new_tree_ids}), validate=False))
-        tree_index.update(tree_cache)
-        rhs_tree_ids_set = set(rhs_tree_ids)
-        tree_cache.clear()
-        tree_cache.update(
-            (id, t) for id, t in tree_index.iteritems() if id in rhs_tree_ids_set)
-        return tree_index
-
-    empty_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
-    commit_info = get_commit_info(rhs_ci)
-    differences = []
-    rhs_treesdoc = TreesDoc.m.get(_id=rhs_ci._id)
-    if not rhs_treesdoc:
-        # FIXME: These sometimes don't exist for unknown reasons; they should
-        # be auto-gen'ed
-        log.error('Missing TreesDoc: %s', rhs_ci)
-        return tree_cache
-    for lhs_cid in rhs_ci.parent_ids:
-        lhs_ci = CommitDoc.m.get(_id=lhs_cid)
-        if lhs_ci is None:
-            log.error(
-                'Commit ID referenced as parent but not found: %s parent of %s', lhs_cid, rhs_ci)
-            continue
-        lhs_treesdoc = TreesDoc.m.get(_id=lhs_cid)
-        if not lhs_treesdoc:
-            # FIXME: These sometimes don't exist for unknown reasons; they
-            # should be auto-gen'ed
-            log.error('Missing TreesDoc: %s', rhs_ci)
-            continue
-        tree_index = _update_cache(
-            lhs_treesdoc.tree_ids, rhs_treesdoc.tree_ids)
-        rhs_tree = tree_index[rhs_ci.tree_id]
-        lhs_tree = tree_index.get(lhs_ci.tree_id, empty_tree)
-        for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
-            differences.append(
-                dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
-    if not rhs_ci.parent_ids:
-        # no parents, so everything in rhs is new
-        tree_index = _update_cache([], rhs_treesdoc.tree_ids)
-        rhs_tree = tree_index[rhs_ci.tree_id]
-        for name, lhs_id, rhs_id in _diff_trees(empty_tree, rhs_tree, tree_index):
-            differences.append(
-                dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
-    # Build the diffinfo
-    di = DiffInfoDoc(dict(
-        _id=rhs_ci._id,
-        differences=differences))
-    di.m.save()
-    return tree_cache
 
 
 def send_notifications(repo, commit_ids):
