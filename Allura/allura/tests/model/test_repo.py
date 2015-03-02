@@ -136,7 +136,16 @@ class TestLastCommit(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
         self.repo = mock.Mock(
-            'repo', _commits=OrderedDict(), _last_commit=None)
+            name='repo',
+            _commits=OrderedDict(),
+            _last_commit=None,
+            spec=M.Repository)
+        self.repo.paged_diffs.return_value = {
+            'added': [],
+            'removed': [],
+            'changed': [],
+            'total': 0,
+        }
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
         self.repo.rev_to_commit_id = lambda rev: rev
         self.repo.log = self._log
