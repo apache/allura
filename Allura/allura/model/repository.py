@@ -313,6 +313,14 @@ class RepositoryImplementation(object):
         """
         raise NotImplemented('get_changes')
 
+    def paged_diffs(self, commit_id, start=0, end=None):
+        """
+        Returns files touched by the commit, grouped by status (added, removed,
+        and changed) and the total number of such files.  Paginates according
+        to :param start: and :param end:.
+        """
+        raise NotImplemented('paged_diffs')
+
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
@@ -484,6 +492,9 @@ class Repository(Artifact, ActivityObject):
 
     def set_default_branch(self, name):
         return self._impl.set_default_branch(name)
+
+    def paged_diffs(self, commit_id, start=0, end=None):
+        return self._impl.paged_diffs(commit_id, start, end)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -1104,25 +1115,14 @@ class Commit(RepoObject, ActivityObject):
         return self.paged_diffs()
 
     def paged_diffs(self, start=0, end=None):
-        di = DiffInfoDoc.m.get(_id=self._id)
-        if di is None:
-            return Object(added=[], removed=[], changed=[], copied=[], total=0)
-        added = []
-        removed = []
-        changed = []
-        copied = []
-        for change in di.differences[start:end]:
-            if change.rhs_id is None:
-                removed.append(change.name)
-            elif change.lhs_id is None:
-                added.append(change.name)
-            else:
-                changed.append(change.name)
-        copied = self._diffs_copied(added, removed)
+        diffs = self.repo.paged_diffs(self._id, start, end)
+        diffs['copied'] = self._diffs_copied(diffs['added'], diffs['removed'])
         return Object(
-            added=added, removed=removed,
-            changed=changed, copied=copied,
-            total=len(di.differences))
+            added=diffs['added'],
+            removed=diffs['removed'],
+            changed=diffs['changed'],
+            copied=diffs['copied'],
+            total=diffs['total'])
 
     def _diffs_copied(self, added, removed):
         '''Return list with file renames diffs.

@@ -600,6 +600,31 @@ class GitImplementation(M.RepositoryImplementation):
             pretty='format:',
             max_count=1).splitlines()[1:]
 
+    def paged_diffs(self, commit_id, start, end):
+        added, removed, changed = [], [], []
+        files = self._git.git.diff_tree(
+            '--no-commit-id',
+            '--name-status',
+            '--no-renames',
+            '-r',
+            commit_id)
+        files = files.splitlines()
+        total = len(files)
+        for f in files[start:end]:
+            status, name = f.split('\t', 1)
+            if status == 'A':
+                added.append(name)
+            elif status == 'D':
+                removed.append(name)
+            elif status == 'M':
+                changed.append(name)
+        return {
+            'added': added,
+            'removed': removed,
+            'changed': changed,
+            'total': total,
+        }
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE = 4096
