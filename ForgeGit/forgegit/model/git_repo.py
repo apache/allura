@@ -600,7 +600,7 @@ class GitImplementation(M.RepositoryImplementation):
             pretty='format:',
             max_count=1).splitlines()[1:]
 
-    def paged_diffs(self, commit_id, start, end):
+    def paged_diffs(self, commit_id, start=0, end=None):
         added, removed, changed = [], [], []
         files = self._git.git.diff_tree(
             '--no-commit-id',
