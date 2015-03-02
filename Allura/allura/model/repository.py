@@ -1237,7 +1237,7 @@ class Commit(RepoObject, ActivityObject):
             ['foo/bar', 'foo/bar/baz', 'foo/bar/baz/qux.txt']
         '''
         paths = set()
-        for path in self.paged_diffs(self._id)['added']:
+        for path in self.paged_diffs()['added']:
             paths.add(path.strip('/'))
         return paths
 
