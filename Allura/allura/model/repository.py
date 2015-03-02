@@ -1235,7 +1235,7 @@ class Commit(RepoObject, ActivityObject):
         Leading and trailing slashes are removed, and
         the list is complete, meaning that if a directory
         with subdirectories is added, all of the child
-        paths are included (this relies on the DiffInfoDoc
+        paths are included (this relies on the :meth paged_diffs:
         being complete).
 
         Example:
@@ -1245,13 +1245,10 @@ class Commit(RepoObject, ActivityObject):
             the file /foo/bar/baz/qux.txt, this would return:
             ['foo/bar', 'foo/bar/baz', 'foo/bar/baz/qux.txt']
         '''
-        diff_info = DiffInfoDoc.m.get(_id=self._id)
-        diffs = set()
-        if diff_info:
-            for d in diff_info.differences:
-                if d.lhs_id is None:
-                    diffs.add(d.name.strip('/'))
-        return diffs
+        paths = set()
+        for path in self.paged_diffs(self._id)['added']:
+            paths.add(path.strip('/'))
+        return paths
 
     @LazyProperty
     def info(self):
