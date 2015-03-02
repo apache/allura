@@ -93,13 +93,13 @@ class RepositoryImplementation(object):
         raise NotImplementedError('init')
 
     def clone_from(self, source_url):  # pragma no cover
-        raise NotImplemented('clone_from')
+        raise NotImplementedError('clone_from')
 
     def commit(self, revision):  # pragma no cover
-        raise NotImplemented('commit')
+        raise NotImplementedError('commit')
 
     def all_commit_ids(self):  # pragma no cover
-        raise NotImplemented('all_commit_ids')
+        raise NotImplementedError('all_commit_ids')
 
     def new_commits(self, all_commits=False):  # pragma no cover
         '''Return a list of native commits in topological order (heads first).
@@ -107,21 +107,21 @@ class RepositoryImplementation(object):
         "commit" is a repo-native object, NOT a Commit object.
         If all_commits is False, only return commits not already indexed.
         '''
-        raise NotImplemented('new_commits')
+        raise NotImplementedError('new_commits')
 
     def commit_parents(self, commit):  # pragma no cover
         '''Return a list of native commits for the parents of the given (native)
         commit'''
-        raise NotImplemented('commit_parents')
+        raise NotImplementedError('commit_parents')
 
     def refresh_commit_info(self, oid, lazy=True):  # pragma no cover
         '''Refresh the data in the commit with id oid'''
-        raise NotImplemented('refresh_commit_info')
+        raise NotImplementedError('refresh_commit_info')
 
     def _setup_hooks(self, source_path=None):  # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo.  Optionally provide a path from which to copy existing hooks.'''
-        raise NotImplemented('_setup_hooks')
+        raise NotImplementedError('_setup_hooks')
 
     # pragma no cover
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
@@ -144,31 +144,31 @@ class RepositoryImplementation(object):
         If id_only is True, returns only the commit ID (which can be faster),
         otherwise it returns detailed information about each commit.
         """
-        raise NotImplemented('log')
+        raise NotImplementedError('log')
 
     def compute_tree_new(self, commit, path='/'):  # pragma no cover
         '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
-        raise NotImplemented('compute_tree')
+        raise NotImplementedError('compute_tree')
 
     def open_blob(self, blob):  # pragma no cover
         '''Return a file-like object that contains the contents of the blob'''
-        raise NotImplemented('open_blob')
+        raise NotImplementedError('open_blob')
 
     def blob_size(self, blob):
         '''Return a blob size in bytes'''
-        raise NotImplemented('blob_size')
+        raise NotImplementedError('blob_size')
 
     def tarball(self, revision, path=None):
         '''Create a tarball for the revision'''
-        raise NotImplemented('tarball')
+        raise NotImplementedError('tarball')
 
     def is_empty(self):
         '''Determine if the repository is empty by checking the filesystem'''
-        raise NotImplemented('is_empty')
+        raise NotImplementedError('is_empty')
 
     def is_file(self, path, rev=None):
         '''Determine if the repository is a file by checking the filesystem'''
-        raise NotImplemented('is_file')
+        raise NotImplementedError('is_file')
 
     @classmethod
     def shorthand_for_commit(cls, oid):
@@ -176,7 +176,7 @@ class RepositoryImplementation(object):
 
     def symbolics_for_commit(self, commit):
         '''Return symbolic branch and tag names for a commit.'''
-        raise NotImplemented('symbolics_for_commit')
+        raise NotImplementedError('symbolics_for_commit')
 
     def url_for_commit(self, commit, url_type='ci'):
         'return an URL, given either a commit or object id'
@@ -218,19 +218,19 @@ class RepositoryImplementation(object):
 
     @property
     def head(self):
-        raise NotImplemented('head')
+        raise NotImplementedError('head')
 
     @property
     def heads(self):
-        raise NotImplemented('heads')
+        raise NotImplementedError('heads')
 
     @property
     def branches(self):
-        raise NotImplemented('branches')
+        raise NotImplementedError('branches')
 
     @property
     def tags(self):
-        raise NotImplemented('tags')
+        raise NotImplementedError('tags')
 
     def last_commit_ids(self, commit, paths):
         '''
@@ -311,7 +311,7 @@ class RepositoryImplementation(object):
         """
         Return the list of files changed by a given commit.
         """
-        raise NotImplemented('get_changes')
+        raise NotImplementedError('get_changes')
 
     def paged_diffs(self, commit_id, start=0, end=None):
         """
@@ -319,7 +319,7 @@ class RepositoryImplementation(object):
         and changed) and the total number of such files.  Paginates according
         to :param start: and :param end:.
         """
-        raise NotImplemented('paged_diffs')
+        raise NotImplementedError('paged_diffs')
 
 
 class Repository(Artifact, ActivityObject):
@@ -677,7 +677,7 @@ class Repository(Artifact, ActivityObject):
         self._impl.tarball(revision, path)
 
     def rev_to_commit_id(self, rev):
-        raise NotImplemented('rev_to_commit_id')
+        raise NotImplementedError('rev_to_commit_id')
 
     def set_status(self, status):
         '''
