@@ -610,11 +610,14 @@ class GitImplementation(M.RepositoryImplementation):
             # show tree entry itself as well as subtrees (Commit.added_paths
             # relies on this)
             '-t',
+            '-z',  # don't escape filenames and use \x00 as fields delimiter
             commit_id)
-        files = files.splitlines()
-        total = len(files)
-        for f in files[start:end]:
-            status, name = f.split('\t', 1)
+        files = files.split('\x00')[:-1]
+        # files = ['A', 'filename', 'D', 'another filename', ...]
+        total = len(files) / 2
+        for i in range(1, len(files), 2):
+            status = files[i-1]
+            name = h.really_unicode(files[i])
             if status == 'A':
                 added.append(name)
             elif status == 'D':
