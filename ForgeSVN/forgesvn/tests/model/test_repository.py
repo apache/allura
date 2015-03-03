@@ -774,7 +774,6 @@ class _TestWithRepo(_Test):
         self.repo._impl.all_commit_ids = lambda *a, **kw: []
         self.repo._impl.commit().symbolic_ids = None
         ThreadLocalORMSession.flush_all()
-        # ThreadLocalORMSession.close_all()
 
 
 class _TestWithRepoAndCommit(_TestWithRepo):
@@ -1048,41 +1047,6 @@ class TestCommit(_TestWithRepo):
         from cStringIO import StringIO
         return lambda blob: StringIO(str(blobs[blob.path()]))
 
-    def test_compute_diffs(self):
-        self.repo._impl.commit = mock.Mock(return_value=self.ci)
-        self.repo._impl.open_blob = self._unique_blobs()
-        M.repo_refresh.refresh_commit_trees(self.ci, {})
-        assert_equal(self.ci.diffs.added,
-                     ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
-        assert (self.ci.diffs.copied
-                == self.ci.diffs.changed
-                == self.ci.diffs.removed
-                == [])
-        ci, isnew = self._make_commit('bar')
-        ci.parent_ids = ['foo']
-        self._make_log(ci)
-        M.repo_refresh.refresh_commit_trees(ci, {})
-        assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
-        assert (ci.diffs.copied
-                == ci.diffs.changed
-                == ci.diffs.added
-                == [])
-        ci, isnew = self._make_commit(
-            'baz',
-            b=dict(
-                a=dict(
-                    a='',
-                    b='',),
-                b=''))
-        ci.parent_ids = ['foo']
-        self._make_log(ci)
-        M.repo_refresh.refresh_commit_trees(ci, {})
-        assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
-        assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
-        assert (ci.diffs.copied
-                == ci.diffs.changed
-                == [])
-
     def test_diffs_file_renames(self):
         def open_blob(blob):
             blobs = {
@@ -1099,6 +1063,12 @@ class TestCommit(_TestWithRepo):
         self.repo._impl.open_blob = open_blob
 
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
+        self.repo._impl.paged_diffs.return_value = {
+            'added': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
+            'changed': [],
+            'removed': [],
+            'total': 5,
+        }
         M.repo_refresh.refresh_commit_trees(self.ci, {})
         assert_equal(self.ci.diffs.added,
                      ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
@@ -1116,6 +1086,12 @@ class TestCommit(_TestWithRepo):
                 b=''))
         ci.parent_ids = ['foo']
         self._make_log(ci)
+        self.repo._impl.paged_diffs.return_value = {
+            'added': ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'],
+            'changed': [],
+            'removed': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
+            'total': 10,
+        }
         M.repo_refresh.refresh_commit_trees(ci, {})
         assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
         assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
@@ -1131,6 +1107,12 @@ class TestCommit(_TestWithRepo):
                 c=''))
         ci.parent_ids = ['bar']
         self._make_log(ci)
+        self.repo._impl.paged_diffs.return_value = {
+            'added': ['b/c', 'b/a/z'],
+            'changed': [],
+            'removed': ['b/a/b', 'b/b', 'b/a/a'],
+            'total': 10,
+        }
         M.repo_refresh.refresh_commit_trees(ci, {})
         assert_equal(ci.diffs.added, [])
         assert_equal(ci.diffs.changed, [])
@@ -1188,3 +1170,71 @@ class TestRename(unittest.TestCase):
             changed_path, '/test/path2/file.txt')
         assert_equal({'path': '/test/path2/file.txt',
                      'copyfrom_path': '/test/path/file.txt'}, result)
+
+
+class TestDirectRepoAccess(object):
+
+    def setUp(self):
+        setup_basic_test()
+        self.setup_with_tools()
+
+    @with_svn
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/')
+        self.repo = SM.Repository(
+            name='testsvn',
+            fs_path=repo_dir,
+            url_path='/test/',
+            tool='svn',
+            status='creating')
+        self.repo.refresh()
+        self.rev = self.repo.commit('HEAD')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_paged_diffs(self):
+        diffs = self.rev.diffs
+        expected = {
+            'added': [u'ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
+            'removed': [],
+            'changed': [],
+            'copied': [],
+            'total': 1,
+        }
+        assert_equals(diffs, expected)
+
+        _id = self.repo._impl._oid(2)
+        diffs = self.repo.commit(_id).diffs
+        expected = {
+            'added': [u'a/b/c/hello.txt', u'a/b/c', u'a/b', u'a'],
+            'removed': [],
+            'changed': [],
+            'copied': [],
+            'total': 4,
+        }
+        assert_equals(diffs, expected)
+
+        _id = self.repo._impl._oid(3)
+        diffs = self.repo.commit(_id).diffs
+        expected = {
+            'added': [],
+            'removed': [],
+            'changed': [u'README'],
+            'copied': [],
+            'total': 1,
+        }
+        assert_equals(diffs, expected)
+
+        _id = self.repo._impl._oid(4)
+        diffs = self.repo.commit(_id).diffs
+        expected = {
+            'added': [],
+            'removed': ['a/b/c/hello.txt'],
+            'changed': [],
+            'copied': [],
+            'total': 1,
+        }
+        assert_equals(diffs, expected)
