@@ -566,7 +566,10 @@ class GitImplementation(M.RepositoryImplementation):
             '--no-commit-id',
             '--name-status',
             '--no-renames',
-            '-r',
+            '--root',
+            # show tree entry itself as well as subtrees (Commit.added_paths
+            # relies on this)
+            '-t',
             commit_id)
         files = files.splitlines()
         total = len(files)
