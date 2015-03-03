@@ -647,6 +647,51 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tempfile.mkdtemp.return_value,
             ignore_errors=True)
 
+    @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
+    def test_paged_diffs(self):
+        # setup
+        h.set_context('test', 'src-weird', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        repo = GM.Repository(
+            name='weird-chars.git',
+            fs_path=repo_dir,
+            url_path='/src-weird/',
+            tool='git',
+            status='creating')
+        repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+        # spaces and unicode filenames
+        diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7')
+        expected = {
+            'added': [u'with space.txt', u'привіт.txt'],
+            'removed': [],
+            'changed': [],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+
+        diffs = repo.paged_diffs('f3de6a0e7601cdde326054a1cc708afdc1dbe70b')
+        expected = {
+            'added': [],
+            'removed': [],
+            'changed': [u'привіт.txt'],
+            'total': 1,
+        }
+        assert_equals(diffs, expected)
+
+        # initial commit is special, but must work too
+        diffs = repo.paged_diffs('afaa6d93eb5661fb04f8e10e9ba1039b7441a6c7')
+        expected = {
+            'added': [u'README.md'],
+            'removed': [],
+            'changed': [],
+            'total': 1,
+        }
+        assert_equals(diffs, expected)
+
 
 class TestGitImplementation(unittest.TestCase):
 
