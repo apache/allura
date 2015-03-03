@@ -780,5 +780,29 @@ class SVNImplementation(M.RepositoryImplementation):
     def tags(self):
         return []
 
+    def paged_diffs(self, commit_id, start=0, end=None):
+        added, removed, changed, total = [], [], [], 0
+        rev = self._revision(commit_id)
+        prev_rev = self._revision(self._oid(rev.number - 1))
+        summary = self._svn.diff_summarize(
+            self._url,
+            prev_rev,
+            self._url,
+            rev)
+        total = len(summary)
+        for s in summary:
+            if s.summarize_kind == pysvn.diff_summarize_kind.added:
+                added.append(h.really_unicode(s.path))
+            elif s.summarize_kind == pysvn.diff_summarize_kind.delete:
+                removed.append(h.really_unicode(s.path))
+            elif s.summarize_kind == pysvn.diff_summarize_kind.modified:
+                changed.append(h.really_unicode(s.path))
+        return {
+            'added': added,
+            'removed': removed,
+            'changed': changed,
+            'total': total,
+        }
+
 
 Mapper.compile_all()
