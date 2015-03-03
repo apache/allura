@@ -201,7 +201,7 @@ Email Integration
 
 The Allura platform provides easy-to-use email integration.  Forge email addresses
 are of the form
-<topic>@<mount_point>[.<subproject>]*.<subproject>.projects.sourceforge.net.
+:samp:`<topic>@<mount_point>[.<subproject>].<project>.mysite.com`.
 When a message is received on such an email address, the address is parsed and
 the sending user is identified (if possible).  Based on the parsed address, the
 pylons context attributes `c.project` and `c.app` are set, and the application is

@@ -104,7 +104,7 @@ Finding Something to Work On
 ----------------------------
 Tickets that are relatively simple and good for new contributors have a
 "bitesize" label, and can be found here:
-https://sourceforge.net/p/allura/tickets/search/?q=labels%3Abitesize
+https://forge-allura.apache.org/p/allura/tickets/search/?q=labels%3Abitesize+AND+status%3Aopen
 
 Find one that looks good, and leave a comment on the ticket or mailing list
 to let us know you're working on it. If you get stuck, remember that we're
