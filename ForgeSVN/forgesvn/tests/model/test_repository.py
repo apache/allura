@@ -61,12 +61,9 @@ class TestNewRepo(unittest.TestCase):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
-        self.repo = SM.Repository(
-            name='testsvn',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
+        c.app.repo.name = 'testsvn'
+        c.app.repo.fs_path = repo_dir
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
@@ -118,25 +115,23 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
     def setup_with_tools(self):
         setup_global_objects()
-        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
-        self.repo = SM.Repository(
-            name='testsvn',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
-        self.repo.refresh()
-        self.svn_tags = SM.Repository(
-            name='testsvn-trunk-tags-branches',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
-        self.svn_tags.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        with h.push_context('test', 'src', neighborhood='Projects'):
+            c.app.repo.name = 'testsvn'
+            c.app.repo.fs_path = repo_dir
+            self.repo = c.app.repo
+            self.repo.refresh()
+            ThreadLocalORMSession.flush_all()
+            ThreadLocalORMSession.close_all()
+        with h.push_context('test', 'svn-tags', neighborhood='Projects'):
+            c.app.repo.name = 'testsvn-trunk-tags-branches'
+            c.app.repo.fs_path = repo_dir
+            self.svn_tags = c.app.repo
+            self.svn_tags.refresh()
+            ThreadLocalORMSession.flush_all()
+            ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src', neighborhood='Projects')
 
     def test_init(self):
         repo = SM.Repository(
@@ -640,12 +635,9 @@ class TestSVNRev(unittest.TestCase):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
-        self.repo = SM.Repository(
-            name='testsvn',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
+        c.app.repo.name = 'testsvn'
+        c.app.repo.fs_path = repo_dir
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit(1)
         ThreadLocalORMSession.flush_all()
@@ -1145,12 +1137,9 @@ class TestRename(unittest.TestCase):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
-        self.repo = SM.Repository(
-            name='testsvn-rename',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
+        c.app.repo.name = 'testsvn-rename'
+        c.app.repo.fs_path = repo_dir
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
@@ -1185,12 +1174,9 @@ class TestDirectRepoAccess(object):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
-        self.repo = SM.Repository(
-            name='testsvn',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='svn',
-            status='creating')
+        c.app.repo.name = 'testsvn'
+        c.app.repo.fs_path = repo_dir
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
