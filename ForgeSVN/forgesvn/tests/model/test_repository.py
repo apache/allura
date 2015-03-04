@@ -373,7 +373,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         actual = entry.paged_diffs(start=1, end=3)
         self.assertEqual(expected, actual)
 
-        empty = M.repository.Commit().paged_diffs()
+        fake_id = self.repo._impl._oid(100)
+        empty = M.repository.Commit(_id=fake_id, repo=self.repo).paged_diffs()
         self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
@@ -1198,7 +1199,7 @@ class TestDirectRepoAccess(object):
     def test_paged_diffs(self):
         diffs = self.rev.diffs
         expected = {
-            'added': [u'ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
+            'added': [u'/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
             'removed': [],
             'changed': [],
             'copied': [],
@@ -1209,7 +1210,7 @@ class TestDirectRepoAccess(object):
         _id = self.repo._impl._oid(2)
         diffs = self.repo.commit(_id).diffs
         expected = {
-            'added': [u'a/b/c/hello.txt', u'a/b/c', u'a/b', u'a'],
+            'added': [u'/a', u'/a/b', u'/a/b/c', u'/a/b/c/hello.txt'],
             'removed': [],
             'changed': [],
             'copied': [],
@@ -1222,7 +1223,7 @@ class TestDirectRepoAccess(object):
         expected = {
             'added': [],
             'removed': [],
-            'changed': [u'README'],
+            'changed': [u'/README'],
             'copied': [],
             'total': 1,
         }
@@ -1232,7 +1233,7 @@ class TestDirectRepoAccess(object):
         diffs = self.repo.commit(_id).diffs
         expected = {
             'added': [],
-            'removed': ['a/b/c/hello.txt'],
+            'removed': ['/a/b/c/hello.txt'],
             'changed': [],
             'copied': [],
             'total': 1,
