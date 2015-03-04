@@ -781,28 +781,27 @@ class SVNImplementation(M.RepositoryImplementation):
         return []
 
     def paged_diffs(self, commit_id, start=0, end=None):
-        added, removed, changed, total = [], [], [], 0
+        result = {'added': [], 'removed': [], 'changed': [], 'total': 0}
         rev = self._revision(commit_id)
-        prev_rev = self._revision(self._oid(rev.number - 1))
-        summary = self._svn.diff_summarize(
-            self._url,
-            prev_rev,
-            self._url,
-            rev)
-        total = len(summary)
-        for s in summary:
-            if s.summarize_kind == pysvn.diff_summarize_kind.added:
-                added.append(h.really_unicode(s.path))
-            elif s.summarize_kind == pysvn.diff_summarize_kind.delete:
-                removed.append(h.really_unicode(s.path))
-            elif s.summarize_kind == pysvn.diff_summarize_kind.modified:
-                changed.append(h.really_unicode(s.path))
-        return {
-            'added': added,
-            'removed': removed,
-            'changed': changed,
-            'total': total,
-        }
-
+        try:
+            log_info = self._svn.log(
+                self._url,
+                revision_start=rev,
+                revision_end=rev,
+                discover_changed_paths=True)
+        except pysvn.ClientError:
+            return result
+        if len(log_info) == 0:
+            return result
+        paths = log_info[0].changed_paths
+        result['total'] = len(paths)
+        for p in paths[start:end]:
+            if p['action'] == 'A':
+                result['added'].append(h.really_unicode(p.path))
+            elif p['action'] == 'D':
+                result['removed'].append(h.really_unicode(p.path))
+            elif p['action'] == 'M':
+                result['changed'].append(h.really_unicode(p.path))
+        return result
 
 Mapper.compile_all()
