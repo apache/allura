@@ -62,12 +62,6 @@ class TestNewGit(unittest.TestCase):
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
-        # self.repo = GM.Repository(
-        #     name='testgit.git',
-        #     fs_path=repo_dir,
-        #     url_path = '/test/',
-        #     tool = 'git',
-        #     status = 'creating')
         self.repo.refresh()
         self.rev = self.repo.commit('master')
         ThreadLocalORMSession.flush_all()
@@ -141,12 +135,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.Repository(
-            name='testgit.git',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='git',
-            status='creating')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testgit.git'
+        self.repo = c.app.repo
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -526,10 +517,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_clone_url(self):
         assert_equal(
             self.repo.clone_url('rw', 'nobody'),
-            'ssh://nobody@localhost:8022/scm-repo/test/testgit')
+            'ssh://nobody@localhost:8022/scm-repo/p/test/testgit')
         assert_equal(
             self.repo.clone_url('https', 'nobody'),
-            'https://nobody@localhost:8022/scm-repo/test/testgit')
+            'https://nobody@localhost:8022/scm-repo/p/test/testgit')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
             assert_equal(
                 self.repo.clone_url('https', 'user'),
@@ -760,12 +751,9 @@ class TestGitCommit(unittest.TestCase):
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.Repository(
-            name='testgit.git',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='git',
-            status='creating')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testgit.git'
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
@@ -839,12 +827,9 @@ class TestGitHtmlView(unittest.TestCase):
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.Repository(
-            name='testmime.git',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='git',
-            status='creating')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testmime.git'
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
@@ -873,12 +858,9 @@ class TestGitRename(unittest.TestCase):
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
-        self.repo = GM.Repository(
-            name='testrename.git',
-            fs_path=repo_dir,
-            url_path='/test/',
-            tool='git',
-            status='creating')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testrename.git'
+        self.repo = c.app.repo
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
