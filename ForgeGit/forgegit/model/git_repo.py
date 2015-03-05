@@ -631,6 +631,14 @@ class GitImplementation(M.RepositoryImplementation):
             'total': total,
         }
 
+    def merge_base(self, mr):
+        # We don't need to fetch latest commits from target branch here,
+        # because merge base will always be a commit that both repos have
+        # seen
+        return self._git.git.merge_base(
+            mr.downstream.commit_id,
+            mr.target_branch)
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE = 4096

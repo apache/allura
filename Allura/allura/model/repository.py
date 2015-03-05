@@ -321,6 +321,10 @@ class RepositoryImplementation(object):
         """
         raise NotImplementedError('paged_diffs')
 
+    def merge_base(self, mr):
+        """Given MergeRequest :param mr: find common ancestor for the merge"""
+        raise NotImplementedError('merge_base')
+
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
@@ -715,6 +719,10 @@ class Repository(Artifact, ActivityObject):
             self.set_default_branch(branch_name)
         return branch_name
 
+    def merge_base(self, mr):
+        """Given MergeRequest :param mr: find common ancestor for the merge"""
+        return self._impl.merge_base(mr)
+
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses = ['open', 'merged', 'rejected']
@@ -782,21 +790,11 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
     def _commits(self):
         with self.push_downstream_context():
-            rev = self.app.repo.latest(branch=self.target_branch)
-            if rev:
-                commit = rev._id
-            else:
-                commit = self.app.repo.head
-            try:
-                return list(c.app.repo.log(
-                    self.downstream.commit_id,
-                    exclude=commit,
-                    id_only=False))
-            except Exception:
-                log.exception(
-                    "Can't get commits for merge request",
-                    self.url())
-                return []
+            base = c.app.repo.merge_base(self)
+            return list(c.app.repo.log(
+                self.downstream.commit_id,
+                exclude=base,
+                id_only=False))
 
     @classmethod
     def upsert(cls, **kw):
