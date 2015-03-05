@@ -56,13 +56,21 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% if req.downstream_repo %}
     <p>
       <a href="{{req.creator_url}}">{{req.creator_name}}</a>
-      asked you to merge {{h.text.plural(req.commits|count, 'commit', 'commits')}}
+      asked you to merge {{h.text.plural(commits|count, 'commit', 'commits')}}
       from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
       to {{ req.target_branch }},
       {{lib.abbr_date(req.mod_date)}}
     </p>
 
     <div>{{g.markdown.convert(req.description)}}</div>
+
+    {% if error %}
+      <div class='grid-19 error'>
+        Can't find commits to merge. Please checkout
+        <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+        and follow the instructions to merge manually.
+      </div>
+    {% endif %}
 
     {% if req.merge_allowed(c.user) %}
       <div class="grid-19">
@@ -82,7 +90,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       </div>
     {% endif %}
 
-    {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
+    {{ c.log_widget.display(value=commits, app=downstream_app) }}
 
     <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
 
