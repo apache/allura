@@ -632,12 +632,9 @@ class GitImplementation(M.RepositoryImplementation):
         }
 
     def merge_base(self, mr):
-        # We don't need to fetch latest commits from target branch here,
-        # because merge base will always be a commit that both repos have
-        # seen
-        return self._git.git.merge_base(
-            mr.downstream.commit_id,
-            mr.target_branch)
+        g = self._git.git
+        g.fetch(mr.app.repo.full_fs_path, mr.target_branch)
+        return g.merge_base(mr.downstream.commit_id, 'FETCH_HEAD')
 
 
 class _OpenedGitBlob(object):
