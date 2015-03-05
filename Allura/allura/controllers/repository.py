@@ -363,7 +363,7 @@ class MergeRequestController(object):
         c.mr_dispose_form = self.mr_dispose_form
         with self.req.push_downstream_context():
             downstream_app = c.app
-        return dict(
+        result = dict(
             downstream_app=downstream_app,
             req=self.req,
             can_merge=self.req.can_merge(),
@@ -372,6 +372,12 @@ class MergeRequestController(object):
             page=page,
             limit=limit,
             count=self.req.discussion_thread.post_count)
+        try:
+            result['commits'] = self.req.commits
+        except:
+            result['commits'] = []
+            result['error'] = True
+        return result
 
     @property
     def mr_widget_edit(self):
