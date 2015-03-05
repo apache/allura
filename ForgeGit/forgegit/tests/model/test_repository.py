@@ -685,6 +685,17 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         }
         assert_equals(diffs, expected)
 
+    def test_merge_base(self):
+        mr = M.MergeRequest(
+            downstream={
+                'commit_id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+            },
+            source_branch='zz',
+            target_branch='master',
+        )
+        res = self.repo.merge_base(mr)
+        assert_equal(res, '1e146e67985dcd71c74de79613719bef7bddca4a')
+
 
 class TestGitImplementation(unittest.TestCase):
 

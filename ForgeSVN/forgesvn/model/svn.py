@@ -91,6 +91,10 @@ class Repository(M.Repository):
     def rev_to_commit_id(self, rev):
         return self._impl.rev_parse(rev)
 
+    def merge_base(self, mr):
+        rev = self.latest(branch=mr.target_branch)
+        return rev._id if rev else self.head
+
 
 class SVNCalledProcessError(Exception):
 
