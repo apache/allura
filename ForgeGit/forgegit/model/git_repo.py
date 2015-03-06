@@ -123,7 +123,15 @@ class Repository(M.Repository):
         tmp_repo.git.fetch('origin', mr.target_branch)
         tmp_repo.git.checkout(mr.target_branch)
         tmp_repo.git.fetch(mr.downstream_repo.full_fs_path, mr.source_branch)
-        tmp_repo.git.merge(mr.downstream.commit_id)
+        author = h.really_unicode(c.user.display_name or c.user.username)
+        tmp_repo.git.config('user.name', author)
+        tmp_repo.git.config('user.email', '')
+        msg = u'Merge {} branch {} into {}\n\n{}'.format(
+            mr.downstream_repo.url(),
+            mr.source_branch,
+            mr.target_branch,
+            h.absurl(mr.url()))
+        tmp_repo.git.merge(mr.downstream.commit_id, '-m', msg)
         tmp_repo.git.push('origin', mr.target_branch)
         shutil.rmtree(tmp_path, ignore_errors=True)
 

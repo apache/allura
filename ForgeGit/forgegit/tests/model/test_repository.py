@@ -615,9 +615,12 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     @mock.patch('forgegit.model.git_repo.GitImplementation', autospec=True)
     @mock.patch('forgegit.model.git_repo.shutil', autospec=True)
     def test_merge(self, shutil, GitImplementation, git, tempfile):
-        mr = mock.Mock(downstream_repo=Object(full_fs_path='downstream-url'),
+        mr = mock.Mock(downstream_repo=mock.Mock(
+                           full_fs_path='downstream-url',
+                           url=lambda: 'downstream-repo-url'),
                        source_branch='source-branch',
                        target_branch='target-branch',
+                       url=lambda: '/merge-request/1/',
                        downstream=mock.Mock(commit_id='cid'))
         _git = mock.Mock()
         self.repo._impl._git.git = _git
@@ -632,7 +635,13 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             [mock.call('origin', 'target-branch'),
              mock.call('downstream-url', 'source-branch')])
         tmp_repo.git.checkout.assert_called_once_with('target-branch')
-        tmp_repo.git.merge.assert_called_once_with('cid')
+        assert_equal(
+            tmp_repo.git.config.call_args_list,
+            [mock.call('user.name', 'Test Admin'),
+             mock.call('user.email', '')])
+        msg = u'Merge downstream-repo-url branch source-branch into target-branch'
+        msg += u'\n\nhttp://localhost/merge-request/1/'
+        tmp_repo.git.merge.assert_called_once_with('cid', '-m', msg)
         tmp_repo.git.push.assert_called_once_with('origin', 'target-branch')
         shutil.rmtree.assert_called_once_with(
             tempfile.mkdtemp.return_value,
