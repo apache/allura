@@ -103,7 +103,7 @@ class Repository(M.Repository):
         g = self._impl._git.git
         # http://stackoverflow.com/a/6283843
         # fetch source branch
-        g.fetch(mr.downstream_repo_url, mr.source_branch)
+        g.fetch(mr.downstream_repo.full_fs_path, mr.source_branch)
         # find merge base
         merge_base = g.merge_base(mr.downstream.commit_id, mr.target_branch)
         # print out merge result, but don't actually touch anything
@@ -116,13 +116,13 @@ class Repository(M.Repository):
         # can't merge in bare repo, so need to clone
         tmp_path = tempfile.mkdtemp()
         tmp_repo = git.Repo.clone_from(
-            self.clone_url('rw'),
+            self.full_fs_path,
             to_path=tmp_path,
             bare=False)
         tmp_repo = GitImplementation(Object(full_fs_path=tmp_path))._git
         tmp_repo.git.fetch('origin', mr.target_branch)
         tmp_repo.git.checkout(mr.target_branch)
-        tmp_repo.git.fetch(mr.downstream_repo_url, mr.source_branch)
+        tmp_repo.git.fetch(mr.downstream_repo.full_fs_path, mr.source_branch)
         tmp_repo.git.merge(mr.downstream.commit_id)
         tmp_repo.git.push('origin', mr.target_branch)
         shutil.rmtree(tmp_path, ignore_errors=True)

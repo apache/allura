@@ -593,7 +593,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert_equals(payload, expected_payload)
 
     def test_can_merge(self):
-        mr = mock.Mock(downstream_repo_url='downstream-url',
+        mr = mock.Mock(downstream_repo=Object(full_fs_path='downstream-url'),
                        source_branch='source-branch',
                        target_branch='target-branch',
                        downstream=mock.Mock(commit_id='cid'))
@@ -615,7 +615,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     @mock.patch('forgegit.model.git_repo.GitImplementation', autospec=True)
     @mock.patch('forgegit.model.git_repo.shutil', autospec=True)
     def test_merge(self, shutil, GitImplementation, git, tempfile):
-        mr = mock.Mock(downstream_repo_url='downstream-url',
+        mr = mock.Mock(downstream_repo=Object(full_fs_path='downstream-url'),
                        source_branch='source-branch',
                        target_branch='target-branch',
                        downstream=mock.Mock(commit_id='cid'))
@@ -623,7 +623,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.repo._impl._git.git = _git
         self.repo.merge(mr)
         git.Repo.clone_from.assert_called_once_with(
-            self.repo.clone_url('rw'),
+            self.repo.full_fs_path,
             to_path=tempfile.mkdtemp.return_value,
             bare=False)
         tmp_repo = GitImplementation.return_value._git
