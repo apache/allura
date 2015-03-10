@@ -169,7 +169,7 @@ class EmailAddress(MappedClass):
         if mo:
             addr = mo.group(1)
         if '@' in addr:
-            user, domain = addr.split('@')
+            user, domain = addr.strip().split('@')
             return '%s@%s' % (user, domain.lower())
         else:
             return None
