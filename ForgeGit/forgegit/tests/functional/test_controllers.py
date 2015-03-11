@@ -663,7 +663,7 @@ class TestFork(_TestCase):
 </div>
 """.strip())
 
-        r = self.app.get('/p/test/src-git/merge-requests')
+        r = self.app.get('/p/test/src-git/merge-requests').follow()
         assert '<a href="1/">changed summary</a>' in r
 
 

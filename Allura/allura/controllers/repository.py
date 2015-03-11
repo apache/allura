@@ -324,6 +324,7 @@ class RepoRestController(RepoRootController):
 class MergeRequestsController(object):
     mr_filter = SCMMergeRequestFilterWidget()
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/repo/merge_requests.html')
     @validate(mr_filter)
     def index(self, status=None, **kw):
