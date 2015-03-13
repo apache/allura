@@ -17,6 +17,8 @@
 
 import logging
 
+from ming.orm import session
+
 from allura.scripts import ScriptTask
 from allura import model as M
 from allura.lib.utils import chunked_find
@@ -37,6 +39,14 @@ class TrimEmails(ScriptTask):
                 if u.preferences.email_address is not None:
                     u.preferences.email_address = M.EmailAddress.canonical(
                         u.preferences.email_address)
+                session(u).flush(u)
+        for chunk in chunked_find(M.EmailAddress, {}):
+            for a in chunk:
+                log.info('Trimming email address entry %s', a.email)
+                a.email = M.EmailAddress.canonical(a.email)
+                session(a).flush(a)
+        M.main_orm_session.flush()
+        M.main_orm_session.clear()
         log.info('Finished trimming emails')
 
 
