@@ -167,7 +167,7 @@ Asynchronous Processing
 
 Much of the actual functionality of Allura comes from code that runs
 *outside* the context of a web request, in the `taskd` server (invoked by
-running `paster taskd development.ini`.  Asynchronous processing is performed
+running :command:`paster taskd development.ini`).  Asynchronous processing is performed
 by two types of functions, *tasks* and *events*, differentiated as follows:
 
 Task

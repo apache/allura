@@ -59,6 +59,8 @@ class TaskdCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--only', dest='only', type='string', default=None,
                       help='only handle tasks of the given name(s) (can be comma-separated list)')
+    parser.add_option('--nocapture', dest='nocapture', action="store_true", default=False,
+                      help='Do not capture stdout and redirect it to logging.  Useful for development with pdb.set_trace()')
 
     def command(self):
         setproctitle('taskd')
@@ -153,6 +155,7 @@ class TaskdCommand(base.Command):
                                               base_url=tg.config['base_url'].rstrip(
                                                   '/') + request_path,
                                               environ={'task': self.task,
+                                                       'nocapture': self.options.nocapture,
                                                        })
                             list(wsgi_app(r.environ, start_response))
                             self.task = None

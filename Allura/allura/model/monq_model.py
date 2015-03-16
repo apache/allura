@@ -32,7 +32,7 @@ from ming import schema as S
 from ming.orm import session, FieldProperty
 from ming.orm.declarative import MappedClass
 
-from allura.lib.helpers import log_output
+from allura.lib.helpers import log_output, null_contextmanager
 from .session import task_orm_session
 
 log = logging.getLogger(__name__)
@@ -237,7 +237,7 @@ class MonQTask(MappedClass):
             task()
         return i
 
-    def __call__(self, restore_context=True):
+    def __call__(self, restore_context=True, nocapture=False):
         '''Call the task function with its context.  If restore_context is True,
         c.project/app/user will be restored to the values they had before this
         function was called.
@@ -261,7 +261,7 @@ class MonQTask(MappedClass):
                 if app_config:
                     c.app = c.project.app_instance(app_config)
             c.user = M.User.query.get(_id=self.context.user_id)
-            with log_output(log):
+            with null_contextmanager() if nocapture else log_output(log):
                 self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
