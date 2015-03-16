@@ -778,6 +778,8 @@ class SVNImplementation(M.RepositoryImplementation):
                 revision_end=rev,
                 discover_changed_paths=True)
         except pysvn.ClientError:
+            log.info('Error getting paged_diffs log of %s on %s',
+                     commit_id, self._url, exc_info=True)
             return result
         if len(log_info) == 0:
             return result
@@ -788,7 +790,12 @@ class SVNImplementation(M.RepositoryImplementation):
                 result['added'].append(h.really_unicode(p.path))
             elif p['action'] == 'D':
                 result['removed'].append(h.really_unicode(p.path))
-            elif p['action'] == 'M':
+            elif p['action'] in ['M', 'R']:
+                # 'R' means 'Replaced', i.e.
+                # svn rm aaa.txt
+                # echo "Completely new aaa!" > aaa.txt
+                # svn add aaa.txt
+                # svn commit -m "Replace aaa.txt"
                 result['changed'].append(h.really_unicode(p.path))
         return result
 
