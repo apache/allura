@@ -223,7 +223,7 @@ class ProjectExtractor(object):
         :param page: A file-like object return from :meth:`urlopen`
 
         """
-        return BeautifulSoup(page)
+        return BeautifulSoup(page, convertEntities=BeautifulSoup.HTML_ENTITIES)
 
 
 class ProjectImporter(BaseController):

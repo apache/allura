@@ -56,7 +56,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
         self.urlopen.assert_called_once_with(
             'http://code.google.com/p/my-project/')
-        self.soup.assert_called_once_with(self.urlopen.return_value)
+        self.soup.assert_called_once_with(self.urlopen.return_value, convertEntities=self.soup.HTML_ENTITIES)
         self.assertEqual(extractor.page, self.soup.return_value)
 
     def test_get_page(self):
