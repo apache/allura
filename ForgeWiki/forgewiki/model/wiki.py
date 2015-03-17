@@ -234,7 +234,11 @@ class Page(VersionedArtifact, ActivityObject):
                 t[user.username] = user.id
             return t.values()
         user_ids = uniq([r.author for r in self.history().all()])
-        return User.query.find({'_id': {'$in': user_ids}}).all()
+        return User.query.find({
+            '_id': {'$in': user_ids},
+            'disabled': False,
+            'pending': False
+        }).all()
 
     def delete(self):
         Shortlink.query.remove(dict(ref_id=self.index_id()))
