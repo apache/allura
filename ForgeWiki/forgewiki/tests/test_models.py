@@ -15,9 +15,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from pylons import tmpl_context as c
+from ming.orm import session
+
 from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects
+from allura import model as M
+from allura.lib import helpers as h
+
 
 from forgewiki.model import Page
 
@@ -59,3 +65,32 @@ class TestPageSnapshots(TestController):
         page = Page.query.get(title='test-page')
         # 10 changes by each thread + initial upsert
         assert page.history().count() == 21, page.history().count()
+
+
+class TestPage(TestController):
+
+    @td.with_wiki
+    def test_authors(self):
+        user = M.User.by_username('test-user')
+        admin = M.User.by_username('test-admin')
+        with h.push_config(c, user=admin):
+            page = Page.upsert('test-admin')
+            page.text = 'admin'
+            page.commit()
+
+        with h.push_config(c, user=user):
+            page.text = 'user'
+            page.commit()
+
+        authors = page.authors()
+        assert len(authors) == 2
+        assert user in authors
+        assert admin in authors
+
+        user.disabled = True
+        session(user).flush(user)
+
+        authors = page.authors()
+        assert len(authors) == 1
+        assert user not in authors
+        assert admin in authors
