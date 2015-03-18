@@ -829,6 +829,7 @@ class UserAvailabilityController(BaseController):
 
 
 class SubscriptionsController(BaseController):
+    """ Gives users the ability to manage subscriptions to tools. """
 
     def _check_security(self):
         require_authenticated()
@@ -836,21 +837,25 @@ class SubscriptionsController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura:templates/user_subs.html')
     def index(self, **kw):
+        """ The subscription selection page in user preferences.
+
+        Builds up a list of dictionaries, each containing subscription
+        information about a tool.
+        """
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
+
         subscriptions = []
-        mailboxes = M.Mailbox.query.find(
-            dict(user_id=c.user._id, is_flash=False))
-        mailboxes = list(mailboxes.ming_cursor)
-        project_collection = M.Project.query.mapper.collection
-        app_collection = M.AppConfig.query.mapper.collection
+        mailboxes = list(M.Mailbox.query.find(
+            dict(user_id=c.user._id, is_flash=False)))
         projects = dict(
-            (p._id, p) for p in project_collection.m.find(dict(
+            (p._id, p) for p in M.Project.query.find(dict(
                 _id={'$in': [mb.project_id for mb in mailboxes]})))
         app_index = dict(
-            (ac._id, ac) for ac in app_collection.m.find(dict(
+            (ac._id, ac) for ac in M.AppConfig.query.find(dict(
                 _id={'$in': [mb.app_config_id for mb in mailboxes]})))
 
+        # Add the tools that are already subscribed to by the user.
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)
             app_config = app_index.get(mb.app_config_id, None)
@@ -859,8 +864,11 @@ class SubscriptionsController(BaseController):
                 continue
             if app_config is None:
                 continue
+
             subscriptions.append(dict(
                 subscription_id=mb._id,
+                project_id=project._id,
+                app_config_id=mb.app_config_id,
                 project_name=project.name,
                 mount_point=app_config.options['mount_point'],
                 artifact_title=dict(
@@ -871,24 +879,38 @@ class SubscriptionsController(BaseController):
                 artifact=mb.artifact_index_id,
                 subscribed=True))
 
+        # Dictionary of all projects projects accessible based on a users credentials (user_roles).
         my_projects = dict((p._id, p) for p in c.user.my_projects())
-        my_tools = app_collection.m.find(dict(
+
+        # Dictionary containing all tools (subscribed and un-subscribed).
+        my_tools = M.AppConfig.query.find(dict(
             project_id={'$in': my_projects.keys()}))
+
+        # Dictionary containing all the currently subscribed tools for a given user.
+        my_tools_subscriptions = dict(
+            (mb.app_config_id, mb) for mb in M.Mailbox.query.find(dict(
+                user_id=c.user._id,
+                project_id={'$in': projects.keys()},
+                app_config_id={'$in': app_index.keys()},
+                artifact_index_id=None)))
+
+        # Add the remaining tools that are eligible for subscription.
         for tool in my_tools:
-            p_id = tool.project_id
-            subscribed = M.Mailbox.subscribed(
-                project_id=p_id, app_config_id=tool._id)
-            if not subscribed:
-                subscriptions.append(dict(
-                    tool_id=tool._id,
-                    project_id=p_id,
-                    project_name=my_projects[p_id].name,
-                    mount_point=tool.options['mount_point'],
-                    artifact_title='No subscription',
-                    topic=None,
-                    type=None,
-                    frequency=None,
-                    artifact=None))
+            if tool['_id'] in my_tools_subscriptions:
+                continue  # We have already subscribed to this tool.
+
+            subscriptions.append(
+                dict(tool_id=tool._id,
+                     user_id=c.user._id,
+                     project_id=tool.project_id,
+                     project_name=my_projects[tool.project_id].name,
+                     mount_point=tool.options['mount_point'],
+                     artifact_title='No subscription',
+                     topic=None,
+                     type=None,
+                     frequency=None,
+                     artifact=None))
+
         subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
