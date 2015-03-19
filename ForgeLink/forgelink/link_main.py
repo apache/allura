@@ -23,11 +23,12 @@ import json
 from tg import expose, redirect, flash, jsonify
 from pylons import tmpl_context as c
 from pylons import request
+from formencode import validators as fev
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.security import require_access
+from allura.lib.security import require_access, has_access
 from allura.lib.utils import permanent_redirect
 from allura import model as M
 from allura.controllers import BaseController
@@ -127,6 +128,22 @@ class LinkAdminController(DefaultAdminController):
     def index(self, **kw):
         flash('External link URL updated.')
         redirect(c.project.url() + 'admin/tools')
+
+    @expose('jinja:forgelink:templates/app_admin_options.html')
+    def options(self):
+        return dict(
+            app=self.app,
+            allow_config=has_access(self.app, 'configure')())
+
+    @expose('json:')
+    def set_url(self, **kw):
+        validator = fev.URL(not_empty=True, add_http=True)
+        try:
+            url = validator.to_python(kw.get('url'))
+        except fev.Invalid as e:
+            return {'status': 'error', 'errors': {'url': e.msg}}
+        self.app.config.options['url'] = url
+        return {'status': 'ok'}
 
 
 class RootRestController(BaseController):
