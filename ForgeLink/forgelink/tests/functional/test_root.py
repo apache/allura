@@ -15,6 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from nose.tools import assert_equal
+
+from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -58,3 +61,47 @@ class TestRootController(TestController):
         response = self.app.get('/link/help')
         # HACK: support for remote redirects is limited in follow()
         assert 'http://www.google.de/search?q=help' in response
+
+    @td.with_link
+    def test_set_url_validation(self):
+        r = self.app.post('/p/test/admin/link/set_url', {})
+        expected = {'status': 'error',
+                    'errors': {'url': u'Please enter a value'}}
+        assert_equal(r.json, expected)
+
+        r = self.app.post('/p/test/admin/link/set_url', {'url': ''})
+        expected = {'status': 'error',
+                    'errors': {'url': u'Please enter a value'}}
+        assert_equal(r.json, expected)
+
+        r = self.app.post('/p/test/admin/link/set_url', {'url': 'bad url'})
+        expected = {'status': 'error',
+                    'errors': {'url': u'That is not a valid URL'}}
+        assert_equal(r.json, expected)
+
+        p = M.Project.query.get(shortname='test')
+        link = p.app_instance('link')
+        assert_equal(link.config.options.get('url'), None)
+
+    @td.with_link
+    def test_set_url(self):
+        data = {'url': 'http://example.com'}  # http
+        r = self.app.post('/p/test/admin/link/set_url', data)
+        assert_equal(r.json, {'status': 'ok'})
+        p = M.Project.query.get(shortname='test')
+        link = p.app_instance('link')
+        assert_equal(link.config.options.get('url'), 'http://example.com')
+
+        data = {'url': 'https://google.com'}  # https
+        r = self.app.post('/p/test/admin/link/set_url', data)
+        assert_equal(r.json, {'status': 'ok'})
+        p = M.Project.query.get(shortname='test')
+        link = p.app_instance('link')
+        assert_equal(link.config.options.get('url'), 'https://google.com')
+
+        data = {'url': 'lmgtfy.com'}  # http is added if not provided
+        r = self.app.post('/p/test/admin/link/set_url', data)
+        assert_equal(r.json, {'status': 'ok'})
+        p = M.Project.query.get(shortname='test')
+        link = p.app_instance('link')
+        assert_equal(link.config.options.get('url'), 'http://lmgtfy.com')
