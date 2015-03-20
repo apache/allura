@@ -21,6 +21,7 @@ import shutil
 import string
 import logging
 import subprocess
+import time
 from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
@@ -226,7 +227,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 source_url.startswith('file://')):
             return False
         # check for svn version 1.7 or later
-        stdout, stderr = self.check_call(['svn', '--version'])
+        stdout, stderr, returncode = self.check_call(['svn', '--version'])
         pattern = r'version (?P<maj>\d+)\.(?P<min>\d+)'
         m = re.search(pattern, stdout)
         return m and (int(m.group('maj')) * 10 + int(m.group('min'))) >= 17
@@ -237,7 +238,7 @@ class SVNImplementation(M.RepositoryImplementation):
         if p.returncode != 0:
             self._repo.set_status('ready')
             raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
-        return stdout, stderr
+        return stdout, stderr, p.returncode
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
@@ -276,10 +277,25 @@ class SVNImplementation(M.RepositoryImplementation):
                  'initialize', self._url, source_url])
             clear_hook('pre-revprop-change')
         else:
+            # retry logic
+            max_fail = 60
+            fail_count = 0
+            returncode = -1
             set_hook('pre-revprop-change')
-            self.check_call(['svnsync', 'init', self._url, source_url])
-            self.check_call(
-                ['svnsync', '--non-interactive', 'sync', self._url])
+            while returncode != 0 && fail_count < max_fail:
+                stdout, stderr, returncode = self.check_call(['svnsync', 'init', self._url, source_url])
+                # Sleep for 10s and bump the fail counter if svnsync didn't run clean
+                if returncode != 0:
+                    time.sleep(10)
+                    fail_count++
+            # Reset the return code to non-zero for next command interation, but reuse the fail counter
+            returncode = -1
+            while returncode != 0 && fail_count < max_fail:
+                stdout, stderr, returncode = self.check_call(
+                    ['svnsync', '--non-interactive', 'sync', self._url])
+                if returncode != 0:
+                    time.sleep(10)
+                    fail_count++
             clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
