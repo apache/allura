@@ -31,7 +31,7 @@ from shutil import rmtree
 
 import tg
 import pysvn
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
 
@@ -232,10 +232,10 @@ class SVNImplementation(M.RepositoryImplementation):
         m = re.search(pattern, stdout)
         return m and (int(m.group('maj')) * 10 + int(m.group('min'))) >= 17
 
-    def check_call(self, cmd):
+    def check_call(self, cmd, fail_on_error=True):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate(input='p\n')
-        if p.returncode != 0:
+        if p.returncode != 0 and fail_on_error:
             self._repo.set_status('ready')
             raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
         return stdout, stderr, p.returncode
@@ -277,25 +277,21 @@ class SVNImplementation(M.RepositoryImplementation):
                  'initialize', self._url, source_url])
             clear_hook('pre-revprop-change')
         else:
-            # retry logic
-            max_fail = 60
-            fail_count = 0
-            returncode = -1
+            def retry_cmd(cmd, fail_count=0):
+                max_fail = asint(tg.config.get('scm.import.retry_count', 50))
+                returncode = -1
+                while returncode != 0 and fail_count < max_fail:
+                    stdout, stderr, returncode = self.check_call(cmd, fail_on_error=False)
+                    if returncode != 0:
+                        fail_count += 1
+                        log.info('Attempt %s.  Error running %s Details:\n%s', fail_count, cmd, stderr)
+                        time.sleep(asint(tg.config.get('scm.import.retry_sleep_secs', 5)))
+                    if fail_count == max_fail:
+                        raise SVNCalledProcessError(cmd, returncode, stdout, stderr)
+                return fail_count
             set_hook('pre-revprop-change')
-            while returncode != 0 and fail_count < max_fail:
-                stdout, stderr, returncode = self.check_call(['svnsync', 'init', self._url, source_url])
-                # Sleep for 10s and bump the fail counter if svnsync didn't run clean
-                if returncode != 0:
-                    time.sleep(10)
-                    fail_count += 1
-            # Reset the return code to non-zero for next command interation, but reuse the fail counter
-            returncode = -1
-            while returncode != 0 and fail_count < max_fail:
-                stdout, stderr, returncode = self.check_call(
-                    ['svnsync', '--non-interactive', 'sync', self._url])
-                if returncode != 0:
-                    time.sleep(10)
-                    fail_count += 1
+            fail_count = retry_cmd(['svnsync', 'init', self._url, source_url])
+            fail_count = retry_cmd(['svnsync', '--non-interactive', 'sync', self._url], fail_count=fail_count)
             clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
