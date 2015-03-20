@@ -195,7 +195,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             source_url = combo[0]
             tg.config = {'scm.svn.hotcopy': combo[1]}
             stdout = combo[2]
-            obj.check_call.return_value = stdout, ''
+            obj.check_call.return_value = stdout, '', 0
             expected = (source_url.startswith('file://') and
                         tg.config['scm.svn.hotcopy'] and
                         stdout != 'version 1.6')
