@@ -282,20 +282,20 @@ class SVNImplementation(M.RepositoryImplementation):
             fail_count = 0
             returncode = -1
             set_hook('pre-revprop-change')
-            while returncode != 0 && fail_count < max_fail:
+            while returncode != 0 and fail_count < max_fail:
                 stdout, stderr, returncode = self.check_call(['svnsync', 'init', self._url, source_url])
                 # Sleep for 10s and bump the fail counter if svnsync didn't run clean
                 if returncode != 0:
                     time.sleep(10)
-                    fail_count++
+                    fail_count += 1
             # Reset the return code to non-zero for next command interation, but reuse the fail counter
             returncode = -1
-            while returncode != 0 && fail_count < max_fail:
+            while returncode != 0 and fail_count < max_fail:
                 stdout, stderr, returncode = self.check_call(
                     ['svnsync', '--non-interactive', 'sync', self._url])
                 if returncode != 0:
                     time.sleep(10)
-                    fail_count++
+                    fail_count += 1
             clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
