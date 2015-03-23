@@ -615,7 +615,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
     @memoize
-    def icon_url(self):
+    def icon_url(self, gravatar_default_url=None):
         icon_url = None
         try:
             private_project = self.private_project()
@@ -626,7 +626,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         if private_project and private_project.icon:
             icon_url = self.url() + 'user_icon'
         elif self.preferences.email_address:
-            icon_url = g.gravatar(self.preferences.email_address)
+            gravatar_args = {}
+            if gravatar_default_url:
+                gravatar_args['d'] = gravatar_default_url
+            icon_url = g.gravatar(self.preferences.email_address, **gravatar_args)
         return icon_url
 
     @classmethod
