@@ -61,7 +61,6 @@ from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
-from allura.lib.async import Connection, MockAMQ
 from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.lib.zarkov_helpers import ZarkovClient
 
@@ -338,21 +337,6 @@ class Globals(object):
                 def get_timeline(self, *a, **kw):
                     return []
             return NullActivityStreamDirector()
-
-    @LazyProperty
-    def amq_conn(self):
-        if asbool(config.get('amqp.enabled', 'true')):
-            if asbool(config.get('amqp.mock')):
-                return MockAMQ(self)
-            else:
-                return Connection(
-                    hostname=config.get('amqp.hostname', 'localhost'),
-                    port=asint(config.get('amqp.port', 5672)),
-                    userid=config.get('amqp.userid', 'testuser'),
-                    password=config.get('amqp.password', 'testpw'),
-                    vhost=config.get('amqp.vhost', 'testvhost'))
-        else:
-            return None
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
@@ -634,7 +618,3 @@ class Icon(object):
     def __init__(self, char, css):
         self.char = char
         self.css = css
-
-
-def connect_amqp(config):
-    return

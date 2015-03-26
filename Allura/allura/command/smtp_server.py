@@ -33,7 +33,7 @@ class SMTPServerCommand(base.Command):
     min_args = 1
     max_args = 1
     usage = '<ini file>'
-    summary = 'Handle incoming emails, routing them to RabbitMQ'
+    summary = 'Handle incoming emails, routing them to taskd'
     parser = command.Command.standard_parser(verbose=True)
     parser.add_option('-c', '--context', dest='context',
                       help=('The context of the message (path to the project'

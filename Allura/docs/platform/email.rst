@@ -46,9 +46,6 @@ If you were working with the bug tracker directly on the TurboGears project::
 
     bug.142@turbogears.sf.net
 
-The Allura platform allows you to setup other message types, such as commit
-messages, to go into amqp with the same routing information, and turn into
-"messages" just like e-mail.
 
 Email Content Handling
 ----------------------

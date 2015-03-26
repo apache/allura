@@ -114,12 +114,6 @@ class TaskdCommand(base.Command):
                     'Unexpected http response from taskd request: %s.  Headers: %s',
                     status, headers)
 
-        def waitfunc_amqp():
-            try:
-                return pylons.app_globals.amq_conn.queue.get(timeout=poll_interval)
-            except Queue.Empty:
-                return None
-
         def waitfunc_noq():
             time.sleep(poll_interval)
 
@@ -131,14 +125,9 @@ class TaskdCommand(base.Command):
                     raise StopIteration
             return waitfunc_checks_running
 
-        if pylons.app_globals.amq_conn:
-            waitfunc = waitfunc_amqp
-        else:
-            waitfunc = waitfunc_noq
+        waitfunc = waitfunc_noq
         waitfunc = check_running(waitfunc)
         while self.keep_running:
-            if pylons.app_globals.amq_conn:
-                pylons.app_globals.amq_conn.reset()
             try:
                 while self.keep_running:
                     self.task = M.MonQTask.get(

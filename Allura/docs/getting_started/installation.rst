@@ -82,26 +82,3 @@ Allura records will be automatically created the first time they log in.
 
 Note: if you want users to register new accounts into your LDAP system via Allura, you should turn
 off :samp:`autoregister` and turn on :samp:`allow_user_registration`
-
-Enabling RabbitMQ
-^^^^^^^^^^^^^^^^^
-
-For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the INSTALL, run these commands
-to install rabbitmq and set it up:
-
-.. code-block:: bash
-
-    sudo aptitude install rabbitmq-server
-    sudo rabbitmqctl add_user testuser testpw
-    sudo rabbitmqctl add_vhost testvhost
-    sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
-    pip install amqplib==0.6.1 kombu==1.0.4
-
-Then edit Allura/development.ini and change `amqp.enabled = false` to `amqp.enabled = true` and uncomment the other `amqp` settings.
-
-If your `paster taskd` process is still running, restart it:
-
-.. code-block:: bash
-
-    pkill -f taskd
-    nohup paster taskd development.ini > /var/log/allura/taskd.log &

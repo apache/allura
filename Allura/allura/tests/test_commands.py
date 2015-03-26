@@ -39,7 +39,6 @@ class EmptyClass(object):
 
 def setUp(self):
     """Method called by nose before running each test"""
-    # setup_basic_test(app_name='main_with_amqp')
     setup_basic_test()
     setup_global_objects()
 
