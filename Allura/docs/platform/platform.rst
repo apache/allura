@@ -40,8 +40,7 @@ complex requirements for data storage and extensibility.  So, we needed a
 
 We were very impressed by the general message architecture of Roundup, but we
 wanted to extend it from just email messages to include scm commits, and we
-added a message bus (RabbitMQ which we'll talk about in a second), to make
-it fast.
+added a message bus, to make it fast.
 
 .. image:: ../_static/images/messages.png
    :alt: Message Architecture
@@ -73,12 +72,6 @@ Not only that but Rick Copeland had built a couple of custom Object
 *Non*-Relational Mappers (ONRMs?) before, including one for MongoDB,
 and he whipped up Ming, which backed on MongoDB and gave us exactly
 what we needed.
-
-As I mentioned before we also needed a fast, flexible message bus and queuing
-system. RabbitMQ was (lightning) fast, (shockingly) flexible, but not super
-easy to use. Fortunately we didn't have to roll our own wrapper here, as
-the Python community already whipped up Carrot, and Celery, which made
-working with the RabbitMQ based AMQP bus a LOT easer.
 
 
 Application Tools

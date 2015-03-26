@@ -169,11 +169,6 @@ class MonQTask(MappedClass):
             context=context,
             time_queue=datetime.utcnow() + timedelta(seconds=delay))
         session(obj).flush(obj)
-        try:
-            if g.amq_conn:
-                g.amq_conn.queue.put('')
-        except:
-            log.warning('Error putting to amq_conn', exc_info=True)
         return obj
 
     @classmethod
