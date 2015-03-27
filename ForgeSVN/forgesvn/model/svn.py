@@ -781,7 +781,13 @@ class SVNImplementation(M.RepositoryImplementation):
         return []
 
     def paged_diffs(self, commit_id, start=0, end=None):
-        result = {'added': [], 'removed': [], 'changed': [], 'total': 0}
+        result = {
+            'added': [],
+            'removed': [],
+            'changed': [],
+            'copied': [],
+            'total': 0,
+        }
         rev = self._revision(commit_id)
         try:
             log_info = self._svn.log(
@@ -798,7 +804,14 @@ class SVNImplementation(M.RepositoryImplementation):
         paths = log_info[0].changed_paths
         result['total'] = len(paths)
         for p in paths[start:end]:
-            if p['action'] == 'A':
+            if p['copyfrom_path'] is not None:
+                result['copied'].append({
+                    'new': h.really_unicode(p.path),
+                    'old': h.really_unicode(p.copyfrom_path),
+                    'ratio': 1,
+                    'diff': '',
+                })
+            elif p['action'] == 'A':
                 result['added'].append(h.really_unicode(p.path))
             elif p['action'] == 'D':
                 result['removed'].append(h.really_unicode(p.path))
