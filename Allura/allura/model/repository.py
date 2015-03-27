@@ -1107,7 +1107,10 @@ class Commit(RepoObject, ActivityObject):
 
     def paged_diffs(self, start=0, end=None):
         diffs = self.repo.paged_diffs(self._id, start, end)
-        diffs['copied'] = self._diffs_copied(diffs['added'], diffs['removed'])
+        if not diffs.get('copied'):
+            diffs['copied'] = []
+        copied = self._diffs_copied(diffs['added'], diffs['removed'])
+        diffs['copied'].extend(copied)
         return Object(
             added=diffs['added'],
             removed=diffs['removed'],

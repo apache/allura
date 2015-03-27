@@ -148,7 +148,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                   <span class="empty-diff">File was removed.</span>
                 {% elif type == 'copied' %}
                   {% if file.ratio == 1 %}
-                    <span class="empty-diff">File was renamed.</span>
+                    <span class="empty-diff">File was copied or renamed.</span>
                   {% else %}
                     {{g.highlight(file.diff, lexer='diff')}}
                   {% endif %}
