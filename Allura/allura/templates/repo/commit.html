@@ -113,7 +113,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {{c.page_list.display(page=page, limit=limit, count=count)}}
 <table>
   <tbody>
-    {% for type, file in artifacts %}
+    {% for type, file, _ in artifacts %}
     <tr>
         <td>{{ type }}</td>
         <td><a href="#diff-{{loop.index}}">
@@ -128,13 +128,17 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
   </tbody>
 </table>
 
-{% for type, file in artifacts %}
+{% for type, file, obj_type in artifacts %}
         <div class="inline-diff">
             <h6>
             {% if type in ('added', 'changed') %}
-                <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
-                <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?diff={{prev[0]._id if prev else ''}}">Diff</a>
-                <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?barediff={{prev[0]._id if prev else ''}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                {% if obj_type == 'tree' %}
+                    <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
+                {% else %}
+                    <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
+                    <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?diff={{prev[0]._id if prev else ''}}">Diff</a>
+                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?barediff={{prev[0]._id if prev else ''}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                {% endif %}
             {% elif type == 'removed' %}
                 <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
             {% elif type == 'copied' %}
@@ -152,6 +156,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                   {% else %}
                     {{g.highlight(file.diff, lexer='diff')}}
                   {% endif %}
+                {% elif obj_type == 'tree' %}
+                    <span class="empty-diff">Directory.</span>
                 {% else %}
                     <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                     <script type="text/javascript">

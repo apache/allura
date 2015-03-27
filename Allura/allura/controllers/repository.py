@@ -538,9 +538,9 @@ class CommitBrowser(BaseController):
                                              default=self.DEFAULT_PAGE_LIMIT)
         diffs = self._commit.paged_diffs(start=start, end=start + limit)
         result['artifacts'] = [
-            (t, f) for t in ('added', 'removed', 'changed', 'copied')
-            for f in diffs[t]
-            if t == 'removed' or tree.get_blob_by_path(f)]
+            (t, f, 'blob' if tree.get_blob_by_path(f) else 'tree')
+            for t in ('added', 'removed', 'changed', 'copied')
+            for f in diffs[t]]
         count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))
         return result
