@@ -405,12 +405,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
-        # Copies are currently only detected as 'add'
         entry = self.repo.commit(self.repo.log(5, id_only=True).next())
-        self.assertEqual(
-            entry.diffs, dict(
-                copied=[], changed=[],
-                removed=[], added=['/b'], total=1))
+        assert_equals(dict(entry.diffs), dict(
+                copied=[{'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1}],
+                changed=[], removed=[], added=[], total=1))
 
     def test_commit(self):
         entry = self.repo.commit(1)
@@ -609,10 +607,12 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 'committer': {'name': u'rick446',
                               'email': u'',
                               'username': u''},
-                'added': [u'/b'],
+                'added': [],
                 'removed': [],
                 'modified': [],
-                'copied': []
+                'copied': [
+                    {'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1},
+                ],
             }],
             'repository': {
                 'name': u'SVN',
