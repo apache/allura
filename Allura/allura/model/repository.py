@@ -1112,10 +1112,10 @@ class Commit(RepoObject, ActivityObject):
         copied = self._diffs_copied(diffs['added'], diffs['removed'])
         diffs['copied'].extend(copied)
         return Object(
-            added=diffs['added'],
-            removed=diffs['removed'],
-            changed=diffs['changed'],
-            copied=diffs['copied'],
+            added=sorted(diffs['added']),
+            removed=sorted(diffs['removed']),
+            changed=sorted(diffs['changed']),
+            copied=sorted(diffs['copied']),
             total=diffs['total'])
 
     def _diffs_copied(self, added, removed):
