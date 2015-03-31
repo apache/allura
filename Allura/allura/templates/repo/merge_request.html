@@ -57,7 +57,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
     <div>{{g.markdown.convert(req.description)}}</div>
 
-    {% if req.status == 'open' and c.app.forkable and h.has_access(c.app, 'write')() %}
+    {% if req.merge_allowed(c.user) %}
       {% set can_merge = req.can_merge() %}
       <div class="grid-19">
         <form action="merge" method="POST">

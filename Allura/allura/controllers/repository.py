@@ -445,8 +445,7 @@ class MergeRequestController(object):
     @expose()
     @require_post()
     def merge(self):
-        require_access(c.app, 'write')
-        if self.req.status != 'open' or not self.req.can_merge():
+        if not self.req.merge_allowed(c.user) or not self.req.can_merge():
             raise exc.HTTPNotFound
         self.req.merge()
         redirect(self.req.url())
