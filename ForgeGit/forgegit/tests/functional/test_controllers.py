@@ -542,6 +542,10 @@ class TestFork(_TestCase):
         assert 'git merge {}'.format(c_id) in merge_instructions
         assert_in('less than 1 minute ago', r.html.findAll('p')[0].getText())
 
+        merge_form = r.html.find('form', action='merge')
+        assert merge_form
+        assert_in('Merge request has no conflicts. You can merge automatically.', merge_form.getText())
+
     def test_merge_request_detail_noslash(self):
         self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/1', status=302)

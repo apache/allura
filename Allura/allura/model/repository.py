@@ -33,7 +33,7 @@ from itertools import chain
 from difflib import SequenceMatcher, unified_diff
 
 import tg
-from paste.deploy.converters import asint
+from paste.deploy.converters import asint, asbool
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 import pymongo
@@ -821,6 +821,17 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             title='Merge Request #%d of %s:%s' % (
                 self.request_number, self.project.name, self.app.repo.name))
         return result
+
+    def merge_allowed(self, user):
+        if not c.app.forkable:
+            return False
+        if self.status != 'open':
+            return False
+        if asbool(tg.config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))):
+            return False
+        if not h.has_access(c.app, 'write'):
+            return False
+        return True
 
     def can_merge(self):
         if not self.app.forkable:
