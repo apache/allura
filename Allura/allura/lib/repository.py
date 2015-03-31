@@ -20,10 +20,11 @@ from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect, flash, validate
+from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
+from paste.deploy.converters import asbool
 
 from ming.utils import LazyProperty
 
@@ -262,20 +263,34 @@ class RepoAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/checkout_url.html')
     def checkout_url(self):
-        return dict(app=self.app)
+        return dict(app=self.app,
+                    merge_allowed=not asbool(config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))),
+                    )
 
     @without_trailing_slash
     @expose()
     @require_post()
     @validate({'external_checkout_url': v.NonHttpUrl})
     def set_checkout_url(self, **post_data):
+        flash_msgs = []
         external_checkout_url = (post_data.get('external_checkout_url') or '').strip()
         if 'external_checkout_url' not in c.form_errors:
             if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
                 self.app.config.options.external_checkout_url = external_checkout_url
-                flash("External checkout URL successfully changed")
+                flash_msgs.append("External checkout URL successfully changed.")
         else:
-            flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
+            flash_msgs.append("Invalid external checkout URL: %s." % c.form_errors['external_checkout_url'])
+
+        merge_disabled = bool(post_data.get('merge_disabled'))
+        if merge_disabled != self.app.config.options.get('merge_disabled', False):
+            self.app.config.options.merge_disabled = merge_disabled
+            flash_msgs.append('One-click merge {}.'.format('disabled' if merge_disabled else 'enabled'))
+
+        if flash_msgs:
+            message = ' '.join(flash_msgs)
+            flash(message,
+                  'error' if 'Invalid' in message else 'ok')
+
         redirect(c.project.url() + 'admin/tools')
 
 
