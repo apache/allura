@@ -26,6 +26,18 @@
         Override the checkout URL with an external one.  This is useful if this repository is a mirror
         of another, canonical repository.
     </div>
+    {% if merge_allowed %}
+        <div class="grid-13">&nbsp;</div>
+        <div class="grid-9">
+            <label>
+            <input type="checkbox" name="merge_disabled" {% if app.config.options.get('merge_disabled') %}checked="checked"{% endif %}/>
+            Disable one-click merge via web.
+            </label>
+        </div>
+        <div class="grid-13">
+            You may want to disable one-click merge, if this repository is a mirror and not the primary repository.
+        </div>
+    {% endif %}
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>

@@ -831,6 +831,8 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         if not h.has_access(c.app, 'write'):
             return False
+        if self.app.config.options.get('merge_disabled'):
+            return False
         return True
 
     def can_merge(self):
