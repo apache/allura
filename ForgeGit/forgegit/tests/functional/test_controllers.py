@@ -415,6 +415,19 @@ class TestRootController(_TestCase):
         assert_not_in('<span>bad</span>', r)
         assert_in('<span>README</span>', r)
 
+    def test_set_checkout_url(self):
+        r = self.app.get('/p/test/admin/src-git/checkout_url')
+        r.form['external_checkout_url'].value = 'http://foo.bar/baz'
+        r.form['merge_disabled'].checked = True
+        r = r.form.submit()
+        assert_equal(json.loads(self.webflash(r))['message'],
+                     "External checkout URL successfully changed. One-click merge disabled.")
+        # for some reason c.app.config.options has old values still
+        app_config = M.AppConfig.query.get(_id=c.app.config._id)
+        assert_equal(app_config.options['external_checkout_url'], 'http://foo.bar/baz')
+        assert_equal(app_config.options['merge_disabled'], True)
+
+
 
 class TestRestController(_TestCase):
 
