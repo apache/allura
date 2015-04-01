@@ -117,6 +117,9 @@ class GenericTicketForm(ew.SimpleForm):
             ew.Checkbox(name='private', label='Mark as Private',
                         validator=v.AnonymousValidator(),
                         attrs={'class': 'unlabeled'}),
+            ew.Checkbox(name='discussion_disabled', label='Discussion Disabled',
+                        validator=fev.StringBool(),
+                        attrs={'class': 'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={
                           'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ffw.MarkdownEdit(name='comment', label='Comment',

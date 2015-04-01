@@ -62,7 +62,7 @@ from allura.model import (
 )
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
-from allura.model.types import MarkdownCache
+from allura.model.types import MarkdownCache, EVERYONE
 
 from allura.lib import security
 from allura.lib.search import search_artifact, SearchError
@@ -360,6 +360,10 @@ class Globals(MappedClass):
         if private:
             values['private'] = asbool(private)
 
+        discussion_disabled = post_data.get('discussion_disabled')
+        if discussion_disabled:
+            values['disabled_discussion'] = asbool(discussion_disabled)
+
         custom_values = {}
         custom_fields = {}
         for cf in self.custom_fields or []:
@@ -384,16 +388,17 @@ class Globals(MappedClass):
                             get_label(k),
                             new_user.display_name,
                             old_user.display_name)
-                elif k == 'private':
-                    def private_text(val):
+                elif k == 'private' or k == 'discussion_disabled':
+                    def _text(val):
                         if val:
                             return 'Yes'
                         else:
                             return 'No'
+
                     message += get_change_text(
                         get_label(k),
-                        private_text(v),
-                        private_text(getattr(ticket, k)))
+                        _text(v),
+                        _text(getattr(ticket, k)))
                 else:
                     message += get_change_text(
                         get_label(k),
@@ -681,6 +686,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             text=self.description,
             snippet_s=self.summary,
             private_b=self.private,
+            discussion_disabled_b=self.discussion_disabled,
             votes_up_i=self.votes_up,
             votes_down_i=self.votes_down,
             votes_total_i=(self.votes_up - self.votes_down),
@@ -827,7 +833,26 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             self.acl = []
     private = property(_get_private, _set_private)
 
-    def commit(self):
+    def _set_discussion_disabled(self, is_disabled):
+        """ Sets a ticket's discussion thread ACL to control a users ability to post.
+
+        :param is_disabled: If True, an explicit deny will be created on the discussion thread ACL.
+        """
+        if is_disabled:
+            _deny_post = lambda role, perms: [ACE.deny(role, perm) for perm in perms]
+            self.discussion_thread.acl = _deny_post(EVERYONE, ('post', 'unmoderated_post'))
+        else:
+            self.discussion_thread.acl = []
+
+    def _get_discussion_disabled(self):
+        """ Checks the discussion thread ACL to determine if users are allowed to post."""
+        thread = Thread.query.get(ref_id=self.index_id())
+        if thread:
+            return bool(thread.acl)
+        return False
+    discussion_disabled = property(_get_discussion_disabled, _set_discussion_disabled)
+
+    def commit(self, **kwargs):
         VersionedArtifact.commit(self)
         monitoring_email = self.app.config.options.get('TicketMonitoringEmail')
         if self.version > 1:
@@ -1093,6 +1118,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         self.assigned_to_id) or None,
                     status=self.status,
                     private=self.private,
+                    discussion_disabled=self.discussion_disabled,
                     attachments=[dict(bytes=attach.length,
                                       url=h.absurl(
                                           attach.url(
