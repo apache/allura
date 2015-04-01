@@ -127,6 +127,8 @@ def get_label(name):
         return 'Owner'
     if name == 'private':
         return 'Private'
+    if name == 'discussion_disabled':
+        return 'Discussion Disabled'
 
 
 def get_change_text(name, new_value, old_value):
@@ -371,9 +373,9 @@ class ForgeTrackerApp(Application):
         });""" % {'app_url': c.app.url}
 
     def has_custom_field(self, field):
-        '''Checks if given custom field is defined. (Custom field names
-        must start with '_'.)
-        '''
+        """Checks if given custom field is defined.
+        (Custom field names must start with '_'.)
+        """
         for f in self.globals.custom_fields:
             if f['name'] == field:
                 return True
@@ -424,7 +426,7 @@ class ForgeTrackerApp(Application):
                custom_fields=dict())
 
     def uninstall(self, project):
-        "Remove all the tool's artifacts from the database"
+        """Remove all the tool's artifacts from the database"""
         app_config_id = {'app_config_id': c.app.config._id}
         TM.TicketAttachment.query.remove(app_config_id)
         TM.Ticket.query.remove(app_config_id)
@@ -834,12 +836,12 @@ class RootController(BaseController, FeedController):
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
-        'Static page explaining markdown.'
+        """Static page explaining markdown."""
         return dict()
 
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
     def markdown_syntax_dialog(self):
-        'Static page explaining markdown.'
+        """Static page explaining markdown."""
         return dict()
 
     @expose()
@@ -1408,9 +1410,17 @@ class TicketController(BaseController, FeedController):
             else:
                 self.ticket.assigned_to_id = None
             changes['assigned_to'] = self.ticket.assigned_to
+
+        # Register a key with the changelog -->
+        # Update the ticket property from the post_data -->
+        # Set the value of the changelog key again in case it has changed.
         changes['private'] = 'Yes' if self.ticket.private else 'No'
         self.ticket.private = post_data.get('private', False)
         changes['private'] = 'Yes' if self.ticket.private else 'No'
+
+        changes['discussion'] = 'disabled' if self.ticket.discussion_disabled else 'enabled'
+        self.ticket.discussion_disabled = post_data.get('discussion_disabled', False)
+        changes['discussion'] = 'disabled' if self.ticket.discussion_disabled else 'enabled'
 
         if 'attachment' in post_data:
             attachment = post_data['attachment']

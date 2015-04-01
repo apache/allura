@@ -136,6 +136,9 @@
     <div class="grid-4">
       <label class="simple">Private:</label>
       {{'Yes' if ticket.private else 'No'}}
+        {% if ticket.discussion_disabled %}
+            <label class="simple"><span class="closed">Discussion Disabled</span></label>
+        {% endif %}
     </div>
   </div>
 </div>

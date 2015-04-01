@@ -625,6 +625,63 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/bugs/1/')
         assert_true('<li><strong>private</strong>: No --&gt; Yes</li>' in response)
 
+    def test_discussion_disabled_ticket(self):
+        response = self.new_ticket(summary='test discussion disabled ticket').follow()
+        # New tickets will not show discussion disabled
+        assert_not_in('<span class="closed">Discussion Disabled</span>', response)
+
+        ticket_params = {
+            'ticket_form.summary': 'test discussion disabled ticket',
+            'ticket_form.description': '',
+            'ticket_form.status': 'open',
+            'ticket_form._milestone': '1.0',
+            'ticket_form.assigned_to': '',
+            'ticket_form.labels': '',
+            'ticket_form.comment': 'no more comments allowed',
+            'ticket_form.discussion_disabled': 'on',
+        }
+
+        # Disable Discussion
+        response = self.app.post('/bugs/1/update_ticket_from_widget', ticket_params).follow()
+        assert_in('<li><strong>discussion</strong>: enabled --&gt; disabled</li>', response)
+        assert_in('<span class="closed">Discussion Disabled</span>', response)
+        assert_in('edit_post_form reply', response)  # Make sure admin can still comment
+
+        # Unauthorized user cannot comment or even see form fields
+        env = dict(username='*anonymous')
+        r = self.app.get('/p/test/bugs/1', extra_environ=env)
+        assert_not_in('edit_post_form reply', r)
+
+        env = dict(username='test-admin')
+        r = self.app.get('/p/test/bugs/1', extra_environ=env)
+
+        # Test re-enabling discussions
+        ticket_params['ticket_form.discussion_disabled'] = 'off'
+        response = self.app.post('/bugs/1/update_ticket_from_widget', ticket_params).follow()
+        assert_in('<li><strong>discussion</strong>: disabled --&gt; enabled</li>', response)
+        assert_not_in('<span class="closed">Discussion Disabled</span>', response)
+
+        # Test solr search
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        # At this point, there is one ticket and it has discussion_disabled set to False
+        r = self.app.get('/bugs/search/?q=discussion_disabled_b:False')
+        assert_in('1 results', r)
+        assert_in('test discussion disabled ticket', r)
+
+        # Set discussion_disabled to True and search again
+        ticket_params['ticket_form.discussion_disabled'] = 'on'
+        self.app.post('/bugs/1/update_ticket_from_widget', ticket_params)
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/bugs/search/?q=discussion_disabled_b:True')
+        assert_in('1 results', r)
+        assert_in('test discussion disabled ticket', r)
+
+        # Make sure there are no other tickets or false positives for good measure.
+        r = self.app.get('/bugs/search/?q=discussion_disabled_b:False')
+        assert_in('0 results', r)
+
     @td.with_tool('test', 'Tickets', 'doc-bugs')
     def test_two_trackers(self):
         summary = 'test two trackers'

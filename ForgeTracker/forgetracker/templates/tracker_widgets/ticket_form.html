@@ -51,8 +51,13 @@
     <label class="cr">Labels:</label>
     {{widget.display_field_by_name('labels')|safe}}
   </div>
-  <div class="grid-6">
-    {{widget.display_field_by_name('private')}}
+    <div class="grid-6">
+        {{widget.display_field_by_name('private')}}
+        {% if h.has_access(ticket, 'edit') %}
+        {# Only users with the ability to edit will be able to see the Discussion Disable option.
+            This also serves to hide the checkbox when creating new tickets #}
+            <div>{{widget.display_field_by_name('discussion_disabled')}}</div>
+        {% endif %}
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-6">
