@@ -860,7 +860,7 @@ class SubscriptionsController(BaseController):
             project = projects.get(mb.project_id, None)
             app_config = app_index.get(mb.app_config_id, None)
             if project is None:
-                mb.m.delete()
+                mb.query.delete()
                 continue
             if app_config is None:
                 continue
