@@ -823,19 +823,25 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return result
 
     def merge_allowed(self, user):
+        """
+        Returns true if a merge is allowed by system and tool configuration.
+        """
         if not c.app.forkable:
             return False
         if self.status != 'open':
             return False
         if asbool(tg.config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))):
             return False
-        if not h.has_access(c.app, 'write'):
+        if not h.has_access(c.app, 'write', user):
             return False
         if self.app.config.options.get('merge_disabled'):
             return False
         return True
 
     def can_merge(self):
+        """
+        Returns true if you can merge cleanly (no conflicts)
+        """
         if not self.app.forkable:
             return False
         try:
