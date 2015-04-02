@@ -820,8 +820,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if bool_flag:
             role_developer = ProjectRole.by_name('Developer')
             role_creator = ProjectRole.by_user(self.reported_by, upsert=True)
-            _allow_all = lambda role, perms: [
-                ACE.allow(role._id, perm) for perm in perms]
+            def _allow_all(role, perms):
+                return [ACE.allow(role._id, perm) for perm in perms]
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else
             acl = _allow_all(role_developer, security.all_allowed(self, role_developer))
@@ -839,8 +839,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         :param is_disabled: If True, an explicit deny will be created on the discussion thread ACL.
         """
         if is_disabled:
-            _deny_post = lambda role, perms: [ACE.deny(role, perm) for perm in perms]
-            self.discussion_thread.acl = _deny_post(EVERYONE, ('post', 'unmoderated_post'))
+            self.discussion_thread.acl = [ACE.deny(EVERYONE, 'post'),
+                                          ACE.deny(EVERYONE, 'unmoderated_post')]
         else:
             self.discussion_thread.acl = []
 
