@@ -96,6 +96,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
                         'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
             del args[bad_key]
         args['private'] = str(args['private'])
+        args['discussion_disabled'] = str(args['discussion_disabled'])
         ticket_view = self.api_post(
             '/rest/p/test/bugs/1/save', wrap_args='ticket_form', params=h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()

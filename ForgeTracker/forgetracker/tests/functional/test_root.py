@@ -652,9 +652,6 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1', extra_environ=env)
         assert_not_in('edit_post_form reply', r)
 
-        env = dict(username='test-admin')
-        r = self.app.get('/p/test/bugs/1', extra_environ=env)
-
         # Test re-enabling discussions
         ticket_params['ticket_form.discussion_disabled'] = 'off'
         response = self.app.post('/bugs/1/update_ticket_from_widget', ticket_params).follow()
