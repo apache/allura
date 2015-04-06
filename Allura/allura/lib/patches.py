@@ -26,8 +26,13 @@ import simplejson
 
 from allura.lib import helpers as h
 
-
+_patched = False
 def apply():
+    global _patched
+    if _patched:
+        return
+    _patched = True
+
     old_lookup_template_engine = tg.decorators.Decoration.lookup_template_engine
 
     @h.monkeypatch(tg.decorators.Decoration)
