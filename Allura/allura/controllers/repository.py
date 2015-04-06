@@ -374,7 +374,11 @@ class MergeRequestController(object):
             count=self.req.discussion_thread.post_count)
         try:
             result['commits'] = self.req.commits
-        except:
+        except Exception:
+            log.info(
+                "Can't get commits for merge request %s",
+                self.req.url(),
+                exc_info=True)
             result['commits'] = []
             result['error'] = True
         return result
