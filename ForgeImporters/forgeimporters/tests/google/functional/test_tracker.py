@@ -31,6 +31,7 @@ from allura import model as M
 from forgetracker import model as TM
 from forgeimporters import base
 from forgeimporters import google
+import forgeimporters.google.tracker
 
 
 class TestGCTrackerImporter(TestCase):
@@ -42,6 +43,10 @@ class TestGCTrackerImporter(TestCase):
                 'allura-google-importer', 'project_info')
         extractor.page = BeautifulSoup(html)
         extractor.url = "http://test/issue/?id=1"
+        # iter_comments will make more get_page() calls but we don't want the real thing to run an mess up the .page
+        # and .url attributes, make it a no-op which works with these tests (since its just the same page being
+        # fetched really)
+        extractor.get_page = lambda *a, **kw: ''
         return extractor
 
     def _make_ticket(self, issue, issue_id=1):
@@ -197,7 +202,7 @@ class TestGCTrackerImporter(TestCase):
                    for a in actual)
         self.assertEqual(atts, set(expected))
 
-    def test_attachements(self):
+    def test_attachments(self):
         ticket = self._make_ticket(self.test_issue)
         self._assert_attachments(ticket.attachments,
                                  ('at1.txt', 'text/plain',
