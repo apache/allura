@@ -39,7 +39,7 @@ from allura.app import Application, SitemapEntry
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search_app
-from allura.lib.decorators import require_post, Property
+from allura.lib.decorators import require_post
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -106,25 +106,25 @@ class ForgeBlogApp(Application):
         self.admin = BlogAdminController(self)
         self.api_root = RootRestController()
 
-    @Property
-    def external_feeds_list():
-        def fget(self):
-            globals = BM.Globals.query.get(app_config_id=self.config._id)
-            if globals is not None:
-                external_feeds = globals.external_feeds
-            else:
-                external_feeds = self.default_external_feeds
-            return external_feeds
+    @property
+    def external_feeds_list(self):
+        globals = BM.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            external_feeds = globals.external_feeds
+        else:
+            external_feeds = self.default_external_feeds
+        return external_feeds
 
-        def fset(self, new_external_feeds):
-            globals = BM.Globals.query.get(app_config_id=self.config._id)
-            if globals is not None:
-                globals.external_feeds = new_external_feeds
-            elif len(new_external_feeds) > 0:
-                globals = BM.Globals(
-                    app_config_id=self.config._id, external_feeds=new_external_feeds)
-            if globals is not None:
-                session(globals).flush()
+    @external_feeds_list.setter
+    def external_feeds_list(self, new_external_feeds):
+        globals = BM.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            globals.external_feeds = new_external_feeds
+        elif len(new_external_feeds) > 0:
+            globals = BM.Globals(
+                app_config_id=self.config._id, external_feeds=new_external_feeds)
+        if globals is not None:
+            session(globals).flush()
 
     def main_menu(self):
         return [SitemapEntry(self.config.options.mount_label, '.')]

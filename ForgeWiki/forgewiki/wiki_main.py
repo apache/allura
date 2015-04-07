@@ -35,7 +35,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_app
-from allura.lib.decorators import require_post, Property
+from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
@@ -129,25 +129,25 @@ class ForgeWikiApp(Application):
             log.exception('Error getting artifact %s', topic)
         self.handle_artifact_message(page, message)
 
-    @Property
-    def root_page_name():
-        def fget(self):
-            globals = WM.Globals.query.get(app_config_id=self.config._id)
-            if globals is not None:
-                page_name = globals.root
-            else:
-                page_name = self.default_root_page_name
-            return page_name
+    @property
+    def root_page_name(self):
+        globals = WM.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            page_name = globals.root
+        else:
+            page_name = self.default_root_page_name
+        return page_name
 
-        def fset(self, new_root_page_name):
-            globals = WM.Globals.query.get(app_config_id=self.config._id)
-            if globals is not None:
-                globals.root = new_root_page_name
-            elif new_root_page_name != self.default_root_page_name:
-                globals = WM.Globals(
-                    app_config_id=self.config._id, root=new_root_page_name)
-            if globals is not None:
-                session(globals).flush(globals)
+    @root_page_name.setter
+    def root_page_name(self, new_root_page_name):
+        globals = WM.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            globals.root = new_root_page_name
+        elif new_root_page_name != self.default_root_page_name:
+            globals = WM.Globals(
+                app_config_id=self.config._id, root=new_root_page_name)
+        if globals is not None:
+            session(globals).flush(globals)
 
     def default_root_page_text(self):
         return """Welcome to your wiki!
@@ -159,29 +159,29 @@ The wiki uses [Markdown](%s) syntax.
 [[members limit=20]]
 """ % (self.url + 'markdown_syntax/')
 
-    @Property
-    def show_discussion():
-        def fget(self):
-            return self.config.options.get('show_discussion', True)
+    @property
+    def show_discussion(self):
+        return self.config.options.get('show_discussion', True)
 
-        def fset(self, show):
-            self.config.options['show_discussion'] = bool(show)
+    @show_discussion.setter
+    def show_discussion(self, show):
+        self.config.options['show_discussion'] = bool(show)
 
-    @Property
-    def show_left_bar():
-        def fget(self):
-            return self.config.options.get('show_left_bar', True)
+    @property
+    def show_left_bar(self):
+        return self.config.options.get('show_left_bar', True)
 
-        def fset(self, show):
-            self.config.options['show_left_bar'] = bool(show)
+    @show_left_bar.setter
+    def show_left_bar(self, show):
+        self.config.options['show_left_bar'] = bool(show)
 
-    @Property
-    def show_right_bar():
-        def fget(self):
-            return self.config.options.get('show_right_bar', True)
+    @property
+    def show_right_bar(self):
+        return self.config.options.get('show_right_bar', True)
 
-        def fset(self, show):
-            self.config.options['show_right_bar'] = bool(show)
+    @show_right_bar.setter
+    def show_right_bar(self, show):
+        self.config.options['show_right_bar'] = bool(show)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
