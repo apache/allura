@@ -1389,6 +1389,14 @@ class TicketController(BaseController, FeedController):
 
     @require_post()
     def _update_ticket(self, post_data):
+        def attachments_info(attachments):
+            text = ''
+            for attach in attachments:
+                text = "%s %s (%s; %s) " % (
+                    text, attach.filename,
+                    h.do_filesizeformat(attach.length), attach.content_type)
+            return text
+
         require_access(self.ticket, 'update')
         changes = changelog()
         comment = post_data.pop('comment', None)
@@ -1424,7 +1432,9 @@ class TicketController(BaseController, FeedController):
 
         if 'attachment' in post_data:
             attachment = post_data['attachment']
+            changes['attachments'] = attachments_info(self.ticket.attachments)
             self.ticket.add_multiple_attachments(attachment)
+            changes['attachments'] = attachments_info(self.ticket.attachments)
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.' + cf.name in post_data:
                 value = post_data['custom_fields.' + cf.name]
