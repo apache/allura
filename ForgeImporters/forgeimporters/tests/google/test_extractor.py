@@ -33,7 +33,6 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def setUp(self):
         self._p_urlopen = mock.patch.object(base.ProjectExtractor, 'urlopen')
-        # self._p_soup = mock.patch.object(google, 'BeautifulSoup')
         self._p_soup = mock.patch.object(base, 'BeautifulSoup')
         self.urlopen = self._p_urlopen.start()
         self.soup = self._p_soup.start()
@@ -145,8 +144,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def _make_extractor(self, html):
         with mock.patch.object(base.ProjectExtractor, 'urlopen'):
-            extractor = google.GoogleCodeProjectExtractor(
-                'allura-google-importer')
+            extractor = google.GoogleCodeProjectExtractor('allura-google-importer')
         extractor.page = BeautifulSoup(html)
         extractor.get_page = lambda pagename: extractor.page
         extractor.url = "http://test/source/browse"
@@ -184,9 +182,9 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     @without_module('html2text')
     def test_get_issue_basic_fields(self):
-        test_issue = open(pkg_resources.resource_filename(
-            'forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
+
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
         self.assertEqual(gpe.get_issue_creator().url,
                          'http://code.google.com/u/101557263855536553789/')
@@ -224,8 +222,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     @skipif(module_not_available('html2text'))
     def test_get_issue_basic_fields_html2text(self):
-        test_issue = open(pkg_resources.resource_filename(
-            'forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
         self.assertEqual(gpe.get_issue_creator().url,
@@ -280,12 +277,6 @@ class TestGoogleCodeProjectExtractor(TestCase):
         gpe = self._make_extractor(html % u'My Summary')
         self.assertEqual(gpe.get_issue_summary(), u'My Summary')
 
-    def test_get_issue_mod_date(self):
-        test_issue = open(pkg_resources.resource_filename(
-            'forgeimporters', 'tests/data/google/test-issue.html')).read()
-        gpe = self._make_extractor(test_issue)
-        self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 15:36:57 2013')
-
     def test_get_issue_labels(self):
         test_issue = open(pkg_resources.resource_filename(
             'forgeimporters', 'tests/data/google/test-issue.html')).read()
@@ -315,108 +306,6 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(
             attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
-
-    @without_module('html2text')
-    @mock.patch.object(base, 'StringIO')
-    def test_iter_comments(self, StringIO):
-        test_issue = open(pkg_resources.resource_filename(
-            'forgeimporters', 'tests/data/google/test-issue.html')).read()
-        gpe = self._make_extractor(test_issue)
-        comments = list(gpe.iter_comments())
-        self.assertEqual(len(comments), 4)
-        expected = [
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:35:15 2013',
-                'body': 'Test \\*comment\\* is a comment',
-                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
-                'attachments': ['at2.txt'],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:35:34 2013',
-                'body': 'Another comment with references: [issue 2](#2), [r1]',
-                'updates': {},
-                'attachments': [],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:36:39 2013',
-                'body': 'Last comment',
-                'updates': {},
-                'attachments': ['at4.txt', 'at1.txt'],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:36:57 2013',
-                'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
-                'updates': {'Labels:': 'OpSys-OSX'},
-                'attachments': [],
-            },
-        ]
-        for actual, expected in zip(comments, expected):
-            self.assertEqual(actual.author.name, expected['author.name'])
-            self.assertEqual(actual.author.url, expected['author.url'])
-            self.assertEqual(actual.created_date, expected['created_date'])
-            self.assertEqual(actual.body, expected['body'])
-            self.assertEqual(actual.updates, expected['updates'])
-            self.assertEqual(
-                [a.filename for a in actual.attachments], expected['attachments'])
-
-    @skipif(module_not_available('html2text'))
-    @mock.patch.object(base, 'StringIO')
-    def test_iter_comments_html2text(self, StringIO):
-        test_issue = open(pkg_resources.resource_filename(
-            'forgeimporters', 'tests/data/google/test-issue.html')).read()
-        gpe = self._make_extractor(test_issue)
-        comments = list(gpe.iter_comments())
-        self.assertEqual(len(comments), 4)
-        expected = [
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:35:15 2013',
-                'body': 'Test \\*comment\\* is a comment',
-                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
-                'attachments': ['at2.txt'],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:35:34 2013',
-                'body': 'Another comment with references: [issue 2](#2), [r1]',
-                'updates': {},
-                'attachments': [],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:36:39 2013',
-                'body': 'Last comment',
-                'updates': {},
-                'attachments': ['at4.txt', 'at1.txt'],
-            },
-            {
-                'author.name': 'john...@gmail.com',
-                'author.url': 'http://code.google.com/u/101557263855536553789/',
-                'created_date': 'Thu Aug  8 15:36:57 2013',
-                'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
-                'updates': {'Labels:': 'OpSys-OSX'},
-                'attachments': [],
-            },
-        ]
-        for actual, expected in zip(comments, expected):
-            self.assertEqual(actual.author.name, expected['author.name'])
-            self.assertEqual(actual.author.url, expected['author.url'])
-            self.assertEqual(actual.created_date, expected['created_date'])
-            self.assertEqual(actual.body, expected['body'])
-            self.assertEqual(actual.updates, expected['updates'])
-            self.assertEqual(
-                [a.filename for a in actual.attachments], expected['attachments'])
 
     def test_get_issue_ids(self):
         extractor = google.GoogleCodeProjectExtractor(None)
@@ -471,6 +360,170 @@ class TestGoogleCodeProjectExtractor(TestCase):
         assert google.GoogleCodeProjectExtractor('my-project').check_readable()
         head.return_value.status_code = 404
         assert not google.GoogleCodeProjectExtractor('my-project').check_readable()
+
+
+class TestWithSetupForComments(TestCase):
+    # The main test suite did too much patching for how we want these tests to work
+    # These tests use iter_comments and 2 HTML pages of comments.
+
+    def _create_extractor(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue-first-page.html')).read()
+        test_issue_older = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue-prev-page.html')).read()
+
+        class LocalTestExtractor(google.GoogleCodeProjectExtractor):
+            def urlopen(self, url, **kw):
+                return self.urlopen_results.pop(0)
+
+            def setup_urlopen_results(self, results):
+                self.urlopen_results = results
+
+        gpe = LocalTestExtractor('allura-google-importer')
+        gpe.setup_urlopen_results([test_issue, test_issue_older])
+
+        return gpe
+
+    def test_get_issue_mod_date(self):
+        gpe = self._create_extractor()
+        gpe.get_page('detail?id=6')
+        self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 15:36:57 2013')
+
+    @without_module('html2text')
+    @mock.patch.object(base, 'StringIO')
+    def test_iter_comments(self, StringIO):
+        gpe = self._create_extractor()
+        gpe.get_page('detail?id=6')
+
+        with mock.patch.object(base.ProjectExtractor, 'urlopen'):  # for attachments, which end up using a different Extractor urlopen
+            comments = list(gpe.iter_comments())
+
+        self.assertEqual(len(comments), 6)
+        expected = [
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:34:01 2013',
+                'body': 'Simple comment',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:34:09 2013',
+                'body': 'Boring comment',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:15 2013',
+                'body': 'Test \\*comment\\* is a comment',
+                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                'attachments': ['at2.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:34 2013',
+                'body': 'Another comment with references: [issue 2](#2), [r1]',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:39 2013',
+                'body': 'Last comment',
+                'updates': {},
+                'attachments': ['at4.txt', 'at1.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:57 2013',
+                'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'updates': {'Labels:': 'OpSys-OSX'},
+                'attachments': [],
+            },
+        ]
+        for actual, expected in zip(comments, expected):
+            self.assertEqual(actual.author.name, expected['author.name'])
+            self.assertEqual(actual.author.url, expected['author.url'])
+            self.assertEqual(actual.created_date, expected['created_date'])
+            self.assertEqual(actual.body, expected['body'])
+            self.assertEqual(actual.updates, expected['updates'])
+            self.assertEqual(
+                [a.filename for a in actual.attachments], expected['attachments'])
+
+    @skipif(module_not_available('html2text'))
+    @mock.patch.object(base, 'StringIO')
+    def test_iter_comments_html2text(self, StringIO):
+        gpe = self._create_extractor()
+        gpe.get_page('detail?id=6')
+
+        with mock.patch.object(base.ProjectExtractor, 'urlopen'):  # for attachments, which end up using a different Extractor urlopen
+            comments = list(gpe.iter_comments())
+
+        self.assertEqual(len(comments), 6)
+        expected = [
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:34:01 2013',
+                'body': 'Simple comment',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:34:09 2013',
+                'body': 'Boring comment',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:15 2013',
+                'body': 'Test \\*comment\\* is a comment',
+                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                'attachments': ['at2.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:34 2013',
+                'body': 'Another comment with references: [issue 2](#2), [r1]',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:39 2013',
+                'body': 'Last comment',
+                'updates': {},
+                'attachments': ['at4.txt', 'at1.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:57 2013',
+                'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'updates': {'Labels:': 'OpSys-OSX'},
+                'attachments': [],
+            },
+        ]
+        for actual, expected in zip(comments, expected):
+            self.assertEqual(actual.author.name, expected['author.name'])
+            self.assertEqual(actual.author.url, expected['author.url'])
+            self.assertEqual(actual.created_date, expected['created_date'])
+            self.assertEqual(actual.body, expected['body'])
+            self.assertEqual(actual.updates, expected['updates'])
+            self.assertEqual(
+                [a.filename for a in actual.attachments], expected['attachments'])
 
 
 class TestUserLink(TestCase):

@@ -304,9 +304,9 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return self.page.find(id='hc0').find('span', 'date').get('title')
 
     def get_issue_mod_date(self):
-        comments = self.page.findAll('div', 'issuecomment')
+        comments = list(self.iter_comments())
         if comments:
-            last_update = Comment(comments[-1], self.project_name)
+            last_update = comments[-1]
             return last_update.created_date
         else:
             return self.get_issue_created_date()
@@ -346,8 +346,30 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return 0
 
     def iter_comments(self):
-        for comment in self.page.findAll('div', 'issuecomment'):
-            yield Comment(comment, self.project_name)
+        # first, get all pages if there are multiple pages of comments
+        looking_for_comment_pages = True
+        comment_page_urls = [self.url]
+        while looking_for_comment_pages:
+            first_comment = self.page.find('div', 'vt issuecomment')
+            looking_for_comment_pages = False
+            if first_comment and 'cursor_off' not in first_comment['class']:
+                # this is not a real comment, just forward/back links
+                for link in first_comment.findAll('a'):
+                    if link.text.startswith('Older'):
+                        prev_comments_page = urljoin(self.url, link['href'])
+                        comment_page_urls.insert(0, prev_comments_page)
+                        looking_for_comment_pages = True
+                        self.get_page(prev_comments_page)  # prep for next iteration of loop
+
+        # then go through those to get the actual comments
+        for comment_page_url in comment_page_urls:
+            self.get_page(comment_page_url)
+            # regular comments have cursor_off class
+            for comment in self.page.findAll('div', 'cursor_off vt issuecomment'):
+                yield Comment(comment, self.project_name)
+
+
+
 
 
 class UserLink(object):
