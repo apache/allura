@@ -38,6 +38,7 @@ from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
 
 from ming import schema
+from ming.odm import session
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
 
@@ -1434,6 +1435,11 @@ class TicketController(BaseController, FeedController):
             attachment = post_data['attachment']
             changes['attachments'] = attachments_info(self.ticket.attachments)
             self.ticket.add_multiple_attachments(attachment)
+            # flush new attachments to db
+            session(self.ticket.attachment_class()).flush()
+            # self.ticket.attachments is ming's LazyProperty, we need to reset
+            # it's cache to fetch updated attachments here:
+            self.ticket.__dict__.pop('attachments')
             changes['attachments'] = attachments_info(self.ticket.attachments)
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.' + cf.name in post_data:
