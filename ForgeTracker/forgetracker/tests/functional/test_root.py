@@ -807,7 +807,7 @@ class TestFunctionalController(TrackerTestController):
             'delete': 'True'
         })
         deleted_form = self.app.get('/bugs/1/')
-        assert file_name not in deleted_form
+        assert file_link not in deleted_form
 
     def test_delete_attachment_from_comments(self):
         ticket_view = self.new_ticket(summary='test ticket').follow()
