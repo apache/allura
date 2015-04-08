@@ -57,7 +57,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.plugin import ImportIdConverter
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
-from allura.controllers import attachments as ac
+from allura.controllers import attachments as att
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 
@@ -1531,12 +1531,12 @@ class TicketController(BaseController, FeedController):
         }
 
 
-class AttachmentController(ac.AttachmentController):
+class AttachmentController(att.AttachmentController):
     AttachmentClass = TM.TicketAttachment
     edit_perm = 'update'
 
 
-class AttachmentsController(ac.AttachmentsController):
+class AttachmentsController(att.AttachmentsController):
     AttachmentControllerClass = AttachmentController
 
 NONALNUM_RE = re.compile(r'\W+')

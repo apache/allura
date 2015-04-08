@@ -583,8 +583,8 @@ def twophase_transaction(*engines):
     txns = []
     to_rollback = []
     try:
-        for c in connections:
-            txn = c.begin_twophase()
+        for conn in connections:
+            txn = conn.begin_twophase()
             txns.append(txn)
             to_rollback.append(txn)
         yield

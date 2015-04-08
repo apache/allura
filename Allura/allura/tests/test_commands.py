@@ -193,11 +193,10 @@ class TestEnsureIndexCommand(object):
         cmd._update_indexes(collection, indexes)
 
         collection_call_order = {}
-        for i, call in enumerate(collection.mock_calls):
-            method_name = call[0]
+        for i, call_ in enumerate(collection.mock_calls):
+            method_name = call_[0]
             collection_call_order[method_name] = i
-        assert collection_call_order['ensure_index'] < collection_call_order[
-            'drop_index'], collection.mock_calls
+        assert collection_call_order['ensure_index'] < collection_call_order['drop_index'], collection.mock_calls
 
     def test_update_indexes_unique_changes(self):
         collection = Mock(name='collection')

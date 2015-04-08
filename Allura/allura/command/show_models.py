@@ -359,8 +359,8 @@ def dump_cls(depth, cls):
 
 def dfs(root, graph, depth=0):
     yield depth, root
-    for c in graph[root][1]:
-        for r in dfs(c, graph, depth + 1):
+    for node in graph[root][1]:
+        for r in dfs(node, graph, depth + 1):
             yield r
 
 

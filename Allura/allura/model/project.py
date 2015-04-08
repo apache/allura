@@ -551,7 +551,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             try:
                 App = ac.load()
             # If so, we don't want it listed
-            except KeyError as e:
+            except KeyError:
                 log.exception('AppConfig %s references invalid tool %s',
                               ac._id, ac.tool_name)
                 continue

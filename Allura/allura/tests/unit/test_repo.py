@@ -42,9 +42,9 @@ class TestCommitRunBuilder(unittest.TestCase):
             M.repository.CommitDoc.make(dict(
                 _id=str(i)))
             for i in range(10)]
-        for p, c in zip(commits, commits[1:]):
-            p.child_ids = [c._id]
-            c.parent_ids = [p._id]
+        for p, com in zip(commits, commits[1:]):
+            p.child_ids = [com._id]
+            com.parent_ids = [p._id]
         for ci in commits:
             ci.m.save()
         self.commits = commits
