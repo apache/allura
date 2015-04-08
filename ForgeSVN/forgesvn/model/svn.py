@@ -359,8 +359,7 @@ class SVNImplementation(M.RepositoryImplementation):
             if not oid.startswith(prefix):
                 break
             seen_oids.add(oid)
-        return [
-            oid for oid in oids if oid not in seen_oids]
+        return [o for o in oids if o not in seen_oids]
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repository import CommitDoc

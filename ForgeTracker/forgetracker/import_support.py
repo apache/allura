@@ -282,8 +282,8 @@ class ImportSupport(object):
         for a in artifacts:
             users.add(a['submitter'])
             users.add(a['assigned_to'])
-            for c in a['comments']:
-                users.add(c['submitter'])
+            for com in a['comments']:
+                users.add(com['submitter'])
         return users
 
     def find_unknown_users(self, users):

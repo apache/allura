@@ -275,18 +275,18 @@ class SiteAdminController(object):
                     _id = obj['id'].split('#')[1]
                     obj['object'] = mongo_objects.get(_id)
                 # Some objects can be deleted, but still have index in solr, should skip those
-                objects = [obj for obj in objects if obj.get('object')]
+                objects = [o for o in objects if o.get('object')]
 
         def convert_fields(obj):
             # throw the type away (e.g. '_s' from 'url_s')
             result = {}
-            for k,v in obj.iteritems():
+            for k,val in obj.iteritems():
                 name = k.rsplit('_', 1)
                 if len(name) == 2:
                     name = name[0]
                 else:
                     name = k
-                result[name] = v
+                result[name] = val
             return result
 
         return {

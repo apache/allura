@@ -254,8 +254,8 @@ class RepoRootController(BaseController, FeedController):
         columns = []
 
         def find_column(columns):
-            for i, c in enumerate(columns):
-                if c is None:
+            for i, col in enumerate(columns):
+                if col is None:
                     return i
             columns.append(None)
             return len(columns) - 1
@@ -757,8 +757,8 @@ def topo_sort(children, parents, dates, head_ids):
         visited.add(next)
         yield next
         for p in parents[next]:
-            for c in children[p]:
-                if c not in visited:
+            for child in children[p]:
+                if child not in visited:
                     break
             else:
                 to_visit.append(p)
