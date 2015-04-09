@@ -22,6 +22,7 @@ import string
 import logging
 import subprocess
 import time
+import operator as op
 from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
@@ -801,7 +802,7 @@ class SVNImplementation(M.RepositoryImplementation):
             return result
         if len(log_info) == 0:
             return result
-        paths = log_info[0].changed_paths
+        paths = sorted(log_info[0].changed_paths, key=op.itemgetter('path'))
         result['total'] = len(paths)
         for p in paths[start:end]:
             if p['copyfrom_path'] is not None:
