@@ -53,7 +53,7 @@ class TestLdapAuthenticationProvider(object):
         self.provider._encode_password = Mock(return_value='new-pass-hash')
         ldap.dn.escape_dn_chars = lambda x: x
 
-        dn = 'uid=%s,ou=users,dc=sf,dc=net' % user.username
+        dn = 'uid=%s,ou=people,dc=localdomain' % user.username
         self.provider.set_password(user, 'old-pass', 'new-pass')
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
@@ -74,7 +74,7 @@ class TestLdapAuthenticationProvider(object):
 
         self.provider._login()
 
-        dn = 'uid=%s,ou=users,dc=sf,dc=net' % params['username']
+        dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.bind_s.called_once_with(dn, 'test-password')
@@ -90,7 +90,7 @@ class TestLdapAuthenticationProvider(object):
         self.provider.request.method = 'POST'
         self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()])
         ldap.dn.escape_dn_chars = lambda x: x
-        dn = 'uid=%s,ou=users,dc=sf,dc=net' % params['username']
+        dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
         conn = ldap.initialize.return_value
         conn.search_s.return_value = [(dn, {'cn': [u'åℒƒ'.encode('utf-8')]})]
 
@@ -117,11 +117,11 @@ class TestLdapAuthenticationProvider(object):
         ThreadLocalORMSession.flush_all()
         assert_not_equal(M.User.query.get(username=user_doc['username']), None)
 
-        dn = 'uid=%s,ou=users,dc=sf,dc=net' % user_doc['username']
+        dn = 'uid=%s,ou=people,dc=localdomain' % user_doc['username']
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.bind_s.called_once_with(
-            'cn=site,ou=admin,dc=sf,dc=net',
+            'cn=admin,dc=localdomain',
             'admin-password')
         connection.add_s.assert_called_once_with(dn, modlist.addModlist.return_value)
         connection.unbind_s.assert_called_once()

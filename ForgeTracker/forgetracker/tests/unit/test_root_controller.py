@@ -15,16 +15,19 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import unittest
+
 from mock import Mock, patch
 from ming.orm.ormsession import session
+from pylons import tmpl_context as c
+from nose.tools import assert_equal
 
 from allura.lib import helpers as h
 from allura.model import User
-from pylons import tmpl_context as c
+
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.model import Ticket
 from forgetracker import tracker_main
-import unittest
 
 
 class WithUserAndBugsApp(TrackerTestWithModel):
@@ -46,7 +49,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
         expected = [dict(sortable_name='_iteration_number_s',
                          name='_iteration_number',
                          label='Iteration Number')]
-        assert self.response['sortable_custom_fields'] == expected
+        assert_equal(self.response['sortable_custom_fields'], expected)
 
     def test_that_tickets_are_listed(self):
         assert self.response['tickets'][0].summary == 'colors are wrong'

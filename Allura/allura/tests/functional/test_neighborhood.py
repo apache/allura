@@ -281,7 +281,7 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert "_add_tracking('nbhd', 'U-123456');" in r
+        assert "_add_tracking('nbhd', 'U-123456');" in r, r
         assert "_add_tracking('proj', 'U-654321');" in r
         # analytics not allowed
         neighborhood = M.Neighborhood.query.get(name='Adobe')

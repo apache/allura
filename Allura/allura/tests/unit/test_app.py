@@ -17,6 +17,8 @@
 
 from unittest import TestCase
 
+from nose.tools import assert_equal
+
 from allura.app import Application
 from allura import model
 from allura.tests.unit import WithDatabase
@@ -100,7 +102,7 @@ class TestAppDefaults(WithDatabase):
 
     def test_email_address(self):
         self.app.url = '/p/project/mount-point/'
-        assert self.app.email_address == 'mount-point@project.p.in.localhost'
+        assert_equal(self.app.email_address, 'mount-point@project.p.in.localhost')
 
 
 def install_app():

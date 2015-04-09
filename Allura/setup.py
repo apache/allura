@@ -90,16 +90,10 @@ setup(
         ('templates/**.html', 'genshi', None),
         ('public/**', 'ignore', None)]},
 
+    # These entry points define what tools and plugins are available for Allura.
+    # Other packages (the Forge* directories) or 3rd-party can add more too.
+    # development.ini is used for many cases to specify which to actually use.
     entry_points="""
-    [paste.app_factory]
-    main = allura.config.middleware:make_app
-    task = allura.config.middleware:make_task_app
-    tool_test = allura.config.middleware:make_tool_test_app
-
-    [paste.app_install]
-    main = pylons.util:PylonsInstaller
-    tool_test = pylons.util:PylonsInstaller
-
     [allura]
     profile = allura.ext.user_profile:UserProfileApp
     admin = allura.ext.admin:AdminApp

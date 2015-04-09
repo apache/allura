@@ -2351,7 +2351,7 @@ class TestFunctionalController(TrackerTestController):
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
-            assert '<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>' in body
+            assert_in('<p><strong> <a class="alink" href="http://localhost:8080/p/test/bugs/1">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>', body)
 
     @patch('forgetracker.search.query_filter_choices')
     def test_multiselect(self, query_filter_choices):
