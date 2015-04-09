@@ -430,7 +430,7 @@ Some text in a regular paragraph
     for i in range(10):
         print i
 ''')
-    assert 'http://localhost/' in g.forge_markdown(email=True).convert('[Home]')
+    assert_in('http://localhost:8080/', g.forge_markdown(email=True).convert('[Home]'))
     assert 'class="codehilite"' in g.markdown.convert('''
 ~~~~
 def foo(): pass

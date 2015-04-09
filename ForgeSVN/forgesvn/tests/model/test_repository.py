@@ -169,7 +169,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             hook_data = f.read()
         self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n',
+            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src/\n',
             hook_data)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', hook_data)
 
@@ -221,7 +221,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
         self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
+            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
@@ -696,7 +696,7 @@ class TestSVNRev(unittest.TestCase):
         n = M.Notification.query.find(
             dict(subject='[test:src] [r1] - rick446: Create readme')).first()
         assert n
-        assert_equal(n.text, 'Create readme http://localhost/p/test/src/1/')
+        assert_equal(n.text, 'Create readme http://localhost:8080/p/test/src/1/')
 
 
 class _Test(unittest.TestCase):
@@ -890,7 +890,7 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "master,branch:  by %s http://localhost/ci/foo99" % committer_name in n.text
+                assert "master,branch:  by %s http://localhost:8080/ci/foo99" % committer_name in n.text
                 break
         else:
             assert False, 'Did not find notification'

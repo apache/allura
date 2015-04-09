@@ -771,8 +771,8 @@ class TestAuth(TestController):
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
-            return_to='https://localhost/foo'))
-        assert_equal(r.location, 'https://localhost/foo')
+            return_to='http://localhost:8080/foo'))
+        assert_equal(r.location, 'http://localhost:8080/foo')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(

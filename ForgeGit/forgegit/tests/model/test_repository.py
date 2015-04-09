@@ -82,6 +82,7 @@ class TestNewGit(unittest.TestCase):
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
         all_cis = list(self.repo.log(self.rev._id, id_only=True))
         assert len(all_cis) == 4
+        c.lcid_cache = {}
         self.rev.tree.ls()
         # print self.rev.tree.readme()
         assert_equal(self.rev.tree.readme(), (
@@ -204,7 +205,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
             c = f.read()
         self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
+            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
@@ -238,7 +239,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
                 c = f.read()
             self.assertIn(
-                'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
+                'curl -s http://localhost:8080/auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
 
@@ -403,6 +404,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')
 
     def test_ls(self):
+        c.lcid_cache = {}  # else it'll be a mock
         lcd_map = self.repo.commit('HEAD').tree.ls()
         self.assertEqual(lcd_map, [{
             'href': u'README',
