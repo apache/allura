@@ -169,8 +169,11 @@ class EmailAddress(MappedClass):
         if mo:
             addr = mo.group(1)
         if '@' in addr:
-            user, domain = addr.strip().split('@')
-            return '%s@%s' % (user, domain.lower())
+            try:
+                user, domain = addr.strip().split('@')
+                return '%s@%s' % (user, domain.lower())
+            except ValueError:
+                return addr.strip()
         else:
             return None
 

@@ -105,6 +105,8 @@ def test_email_address_canonical():
                  'nobody@example.com')
     assert_equal(M.EmailAddress.canonical('  nobody@example.com\t'),
                  'nobody@example.com')
+    assert_equal(M.EmailAddress.canonical('I Am@Nobody <nobody@example.com> '),
+                 'I Am@Nobody <nobody@example.com>')
     assert_equal(M.EmailAddress.canonical('invalid'), None)
 
 @with_setup(setUp)
