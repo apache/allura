@@ -182,6 +182,11 @@ class AuthController(BaseController):
         user_record = M.User.by_email_address(email)
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            flash('Enter email in correct format!')
+            redirect('/auth/forgotten_password')
+
         if not allow_non_primary_email_reset:
             message = 'If the given email address is on record, a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
