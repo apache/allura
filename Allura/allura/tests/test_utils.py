@@ -25,7 +25,7 @@ from os import path
 
 from webob import Request
 from mock import Mock, patch
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, assert_raises, assert_in
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 from tg import config
@@ -201,7 +201,7 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
         hl_code = highlight(code, lexer, formatter)
         assert '<div class="codehilite">' in hl_code
         assert '<div id="l1" class="code_block">' in hl_code
-        assert '<span class="lineno">1</span>' in hl_code
+        assert_in('<span class="lineno">1 </span>', hl_code)
 
 
 class TestIsTextFile(unittest.TestCase):
