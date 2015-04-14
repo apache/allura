@@ -63,6 +63,7 @@ from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.lib.zarkov_helpers import ZarkovClient
+from allura.model.session import artifact_orm_session
 
 log = logging.getLogger(__name__)
 
@@ -104,11 +105,13 @@ class ForgeMarkdown(markdown.Markdown):
             return self.convert(source_text)
 
         md5 = None
+        # If a cached version exists and it is valid, return it.
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             if cache.md5 == md5 and getattr(cache, 'fix7528', False):
                 return h.html.literal(cache.html)
 
+        # Convert the markdown and time the result.
         start = time.time()
         html = self.convert(source_text)
         render_time = time.time() - start
@@ -121,11 +124,16 @@ class ForgeMarkdown(markdown.Markdown):
             log.warn('Skipping Markdown caching - The value for config param '
                      '"markdown_cache_threshold" must be a float.')
 
-        if threshold != None and render_time > threshold:
+        if threshold is not None and render_time > threshold:
+            # Save the cache
             if md5 is None:
                 md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
             cache.fix7528 = True  # flag to indicate good caches created after [#7528] was fixed
+
+            # Prevent cache creation from updating the mod_date timestamp.
+            _session = artifact_orm_session._get()
+            setattr(_session, 'skip_mod_date', True)
         return html
 
 
