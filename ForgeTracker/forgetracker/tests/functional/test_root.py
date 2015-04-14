@@ -16,6 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from datetime import datetime
 
 import urllib
 import os
@@ -719,6 +720,26 @@ class TestFunctionalController(TrackerTestController):
     def test_render_markdown_syntax(self):
         r = self.app.get('/bugs/markdown_syntax')
         assert_true('Markdown Syntax' in r)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    @patch('allura.lib.app_globals.ForgeMarkdown.cached_convert')
+    def test_cached_convert(self, mock_cached_convert):
+        from allura.model.session import artifact_orm_session
+        # Create ticket
+        params = dict(ticket_num=1,
+                      app_config_id=c.app.config._id,
+                      summary=u'test md cache',
+                      mod_date=datetime(2010, 1, 1, 1, 1, 1))
+        ticket = tm.Ticket(**params)
+        session = artifact_orm_session._get()
+        setattr(session, 'skip_mod_date', True)
+
+        # This visit will cause cache to be stored on the artifact.
+        # We want to make sure the 'last_updated' field isn't updated by the cache creation
+        r = self.app.get('/bugs/1').follow()
+        last_updated = r.html.find("span", {"id": "updated_id"}).text
+        assert_equal(last_updated, '2010-01-01')
+        assert_equal(mock_cached_convert.call_count, 1)
 
     def test_ticket_diffs(self):
         self.new_ticket(summary='difftest', description='1\n2\n3\n')
