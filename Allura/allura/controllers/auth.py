@@ -18,6 +18,7 @@
 import logging
 import os
 import datetime
+import re
 
 import bson
 import tg
@@ -184,7 +185,7 @@ class AuthController(BaseController):
 
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            flash('Enter email in correct format!')
+            flash('Enter email in correct format!','error')
             redirect('/auth/forgotten_password')
 
         if not allow_non_primary_email_reset:
