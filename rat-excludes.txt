@@ -39,6 +39,8 @@ ForgeGit/forgegit/data/post-receive_tmpl
 ForgeSVN/forgesvn/tests/data/
 ForgeImporters/forgeimporters/tests/data/google/empty-issue.html
 ForgeImporters/forgeimporters/tests/data/google/test-issue.html
+ForgeImporters/forgeimporters/tests/data/google/test-issue-first-page.html
+ForgeImporters/forgeimporters/tests/data/google/test-issue-prev-page.html
 ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
 ForgeImporters/forgeimporters/trac/tests/data/test-list.html
 ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
