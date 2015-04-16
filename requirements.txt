@@ -1,4 +1,3 @@
-pytz==2012j
 ActivityStream==0.2.0
 BeautifulSoup==3.2.0
 Beaker==1.6.4
@@ -36,6 +35,7 @@ pysolr==2.1.0-beta
 python-dateutil==1.5
 python-magic==0.4.3
 python-oembed==0.2.1
+pytz==2014.10
 requests==2.0.0
 oauthlib==0.4.2
 requests-oauthlib==0.4.0
