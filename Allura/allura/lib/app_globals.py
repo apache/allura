@@ -133,7 +133,7 @@ class ForgeMarkdown(markdown.Markdown):
 
             # Prevent cache creation from updating the mod_date timestamp.
             _session = artifact_orm_session._get()
-            setattr(_session, 'skip_mod_date', True)
+            _session.skip_mod_date = True
         return html
 
 
