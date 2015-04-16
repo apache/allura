@@ -148,6 +148,33 @@ def get_change_text(name, new_value, old_value):
         comment=None)
 
 
+def attachments_info(attachments):
+    text = []
+    for attach in attachments:
+        text.append("{} ({}; {})".format(
+            attach.filename,
+            h.do_filesizeformat(attach.length),
+            attach.content_type))
+    return "\n".join(text)
+
+
+def render_changes(changes, comment=None):
+    """
+    Render ticket changes given instanse of :class changelog:
+
+    Returns tuple (post_text, notification_text)
+    """
+    template = pkg_resources.resource_filename(
+        'forgetracker', 'data/ticket_changed_tmpl')
+    render = partial(
+        h.render_genshi_plaintext,
+        template,
+        changelist=changes.get_changed())
+    post_text = render(comment=None)
+    notification_text = render(comment=comment) if comment else None
+    return post_text, notification_text
+
+
 def _my_trackers(user, current_tracker_app_config):
     '''Collect all 'Tickets' instances in all user's projects
     for which user has admin permissions.
@@ -1390,15 +1417,6 @@ class TicketController(BaseController, FeedController):
 
     @require_post()
     def _update_ticket(self, post_data):
-        def attachments_info(attachments):
-            text = []
-            for attach in attachments:
-                text.append("{} ({}; {})".format(
-                    attach.filename,
-                    h.do_filesizeformat(attach.length),
-                    attach.content_type))
-            return "\n".join(text)
-
         require_access(self.ticket, 'update')
         changes = changelog()
         comment = post_data.pop('comment', None)
@@ -1469,11 +1487,7 @@ class TicketController(BaseController, FeedController):
                 self.ticket.custom_fields[cf.name] = value
                 changes[cf.label] = cf_val(cf)
 
-        tpl = pkg_resources.resource_filename(
-            'forgetracker', 'data/ticket_changed_tmpl')
-        render = partial(h.render_genshi_plaintext, tpl, changelist=changes.get_changed())
-        post_text = render(comment=None)
-        notification_text = render(comment=comment) if comment else None
+        post_text, notification_text = render_changes(changes, comment)
         thread = self.ticket.discussion_thread
         thread.add_post(text=post_text, is_meta=True,
                         notification_text=notification_text)
@@ -1551,6 +1565,24 @@ class TicketController(BaseController, FeedController):
 class AttachmentController(att.AttachmentController):
     AttachmentClass = TM.TicketAttachment
     edit_perm = 'update'
+
+    def handle_post(self, delete, **kw):
+        old_attachments = attachments_info(self.artifact.attachments)
+        super(AttachmentController, self).handle_post(delete, **kw)
+        if delete:
+            session(self.artifact.attachment_class()).flush()
+            # self.artifact.attachments is ming's LazyProperty, we need to reset
+            # it's cache to fetch updated attachments here:
+            self.artifact.__dict__.pop('attachments')
+            new_attachments = attachments_info(self.artifact.attachments)
+            changes = changelog()
+            changes['attachments'] = old_attachments
+            changes['attachments'] = new_attachments
+            post_text, notification = render_changes(changes)
+            self.artifact.discussion_thread.add_post(
+                text=post_text,
+                is_meta=True,
+                notification_text=notification)
 
 
 class AttachmentsController(att.AttachmentsController):

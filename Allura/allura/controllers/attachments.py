@@ -73,17 +73,20 @@ class AttachmentController(BaseController):
             raise exc.HTTPNotFound
         return attachment
 
+    def handle_post(self, delete, **kw):
+        require_access(self.artifact, self.edit_perm)
+        if delete:
+            self.attachment.delete()
+            try:
+                if self.thumbnail:
+                    self.thumbnail.delete()
+            except exc.HTTPNotFound:
+                pass
+
     @expose()
     def index(self, delete=False, **kw):
         if request.method == 'POST':
-            require_access(self.artifact, self.edit_perm)
-            if delete:
-                self.attachment.delete()
-                try:
-                    if self.thumbnail:
-                        self.thumbnail.delete()
-                except exc.HTTPNotFound:
-                    pass
+            self.handle_post(delete, **kw)
             redirect(request.referer)
         embed = False
         if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
