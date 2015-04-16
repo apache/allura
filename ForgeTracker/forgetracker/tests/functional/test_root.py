@@ -790,6 +790,10 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
         assert '<span>py</span>' not in ticket_editor
+        ticket_page = self.app.get('/bugs/1/')
+        diff = ticket_page.html.findAll('div', attrs={'class': 'codehilite'})
+        added = diff[-1].findAll('span', attrs={'class': 'gi'})[-1]
+        assert_in('+test_root.py', added.getText())
 
     def test_delete_attachment(self):
         file_name = 'test_root.py'
@@ -806,8 +810,11 @@ class TestFunctionalController(TrackerTestController):
         self.app.post(str(file_link['href']), {
             'delete': 'True'
         })
-        deleted_form = self.app.get('/bugs/1/')
-        assert file_link not in deleted_form
+        ticket_page = self.app.get('/bugs/1/')
+        assert file_link not in ticket_page
+        diff = ticket_page.html.findAll('div', attrs={'class': 'codehilite'})
+        removed = diff[-1].findAll('span', attrs={'class': 'gd'})[-1]
+        assert_in('-test_root.py', removed.getText())
 
     def test_delete_attachment_from_comments(self):
         ticket_view = self.new_ticket(summary='test ticket').follow()
