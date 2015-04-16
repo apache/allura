@@ -722,24 +722,29 @@ class TestFunctionalController(TrackerTestController):
         assert_true('Markdown Syntax' in r)
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
-    @patch('allura.lib.app_globals.ForgeMarkdown.cached_convert')
-    def test_cached_convert(self, mock_cached_convert):
+    def test_cached_convert(self):
         from allura.model.session import artifact_orm_session
         # Create ticket
         params = dict(ticket_num=1,
                       app_config_id=c.app.config._id,
                       summary=u'test md cache',
+                      description=u'# Test markdown cached_convert',
                       mod_date=datetime(2010, 1, 1, 1, 1, 1))
         ticket = tm.Ticket(**params)
+
+        # Enable skip_mod_date to prevent mod_date from being set automatically when the ticket is saved.
         session = artifact_orm_session._get()
-        setattr(session, 'skip_mod_date', True)
+        session.skip_mod_date = True
 
         # This visit will cause cache to be stored on the artifact.
         # We want to make sure the 'last_updated' field isn't updated by the cache creation
         r = self.app.get('/bugs/1').follow()
         last_updated = r.html.find("span", {"id": "updated_id"}).text
         assert_equal(last_updated, '2010-01-01')
-        assert_equal(mock_cached_convert.call_count, 1)
+
+        # Make sure the cache has been saved.
+        t = tm.Ticket.query.find({'_id': ticket._id}).first()
+        assert_in('<h1 id="test-markdown-cached_convert">Test markdown cached_convert</h1>', t.description_cache.html)
 
     def test_ticket_diffs(self):
         self.new_ticket(summary='difftest', description='1\n2\n3\n')
