@@ -20,8 +20,8 @@
 {% python from allura.model import User %}\
 {% for key, values in changelist %}\
 {% choose %}\
-{% when key == 'description' %}\
-- Description has changed:
+{% when key in ['description', 'attachments'] %}\
+- ${key.capitalize()} has changed:
 
 Diff:
 

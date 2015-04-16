@@ -1391,12 +1391,13 @@ class TicketController(BaseController, FeedController):
     @require_post()
     def _update_ticket(self, post_data):
         def attachments_info(attachments):
-            text = ''
+            text = []
             for attach in attachments:
-                text = "%s %s (%s; %s) " % (
-                    text, attach.filename,
-                    h.do_filesizeformat(attach.length), attach.content_type)
-            return text
+                text.append("{} ({}; {})".format(
+                    attach.filename,
+                    h.do_filesizeformat(attach.length),
+                    attach.content_type))
+            return "\n".join(text)
 
         require_access(self.ticket, 'update')
         changes = changelog()
