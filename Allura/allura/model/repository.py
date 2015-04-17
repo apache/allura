@@ -838,20 +838,23 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         return True
 
+    def can_merge_cache(self, source_hash, target_hash):
+        """
+        Returns True/False or None in case of cache miss.
+        """
+        return None
+
     def can_merge(self):
         """
         Returns true if you can merge cleanly (no conflicts)
         """
-        if not self.app.forkable:
-            return False
-        try:
-            result = self.app.repo.can_merge(self)
-        except:
-            log.exception(
-                "Can't determine if merge request %s can be merged",
-                self.url())
-            return False
-        return result
+        cached = self.can_merge_cache(None, None)
+        if cached is not None:
+            return cached
+        in_progress = self.can_merge_task_status() in ['ready', 'busy']
+        if self.app.forkable and not in_progress:
+            from allura.tasks import repo_tasks
+            repo_tasks.can_merge.post(self._id)
 
     def merge(self):
         in_progress = self.merge_task_status() in ['ready', 'busy']
@@ -863,6 +866,17 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         task = MonQTask.query.find({
             'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
             'task_name': 'allura.tasks.repo_tasks.merge',
+            'args': [self._id],
+            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)}, # constrain on index further
+        }).sort('_id', -1).limit(1).first()
+        if task:
+            return task.state
+        return None
+
+    def can_merge_task_status(self):
+        task = MonQTask.query.find({
+            'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
+            'task_name': 'allura.tasks.repo_tasks.can_merge',
             'args': [self._id],
             'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)}, # constrain on index further
         }).sort('_id', -1).limit(1).first()

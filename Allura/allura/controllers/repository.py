@@ -366,7 +366,9 @@ class MergeRequestController(object):
         return dict(
             downstream_app=downstream_app,
             req=self.req,
-            status=self.req.merge_task_status(),
+            can_merge=self.req.can_merge(),
+            can_merge_status=self.req.can_merge_task_status(),
+            merge_status=self.req.merge_task_status(),
             page=page,
             limit=limit,
             count=self.req.discussion_thread.post_count)
@@ -453,6 +455,10 @@ class MergeRequestController(object):
     @expose('json:')
     def merge_task_status(self):
         return {'status': self.req.merge_task_status()}
+
+    @expose('json:')
+    def can_merge_task_status(self):
+        return {'status': self.req.can_merge_task_status()}
 
 
 class RefsController(object):

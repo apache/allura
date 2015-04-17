@@ -158,8 +158,15 @@ def tarball(revision, path):
 @task
 def merge(merge_request_id):
     from allura import model as M
-    log = logging.getLogger(__name__)
     mr = M.MergeRequest.query.get(_id=merge_request_id)
     mr.app.repo.merge(mr)
     mr.status = 'merged'
     session(mr).flush(mr)
+
+
+@task
+def can_merge(merge_request_id):
+    from allura import model as M
+    mr = M.MergeRequest.query.get(_id=merge_request_id)
+    result = self.app.repo.can_merge(self)
+    # TODO: set cache

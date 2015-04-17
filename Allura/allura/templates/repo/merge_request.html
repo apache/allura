@@ -34,13 +34,20 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
 {% block content %}
   <div class="grid-19">
-    <div id="task_status">
-      {% if status == 'complete' %}
+    <div id="merge_task_status" class="task_status">
+      {% if merge_status == 'complete' %}
         <h2 class="complete">Merged</h2>
       {% else %}
         <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
         <h2 class="busy ready">Merging...</h2>
         <h2 class="complete">Merged</h2>
+        <h2 class="fail">Something went wrong. Please, merge manually</h2>
+      {% endif %}
+    </div>
+    <div id="can_merge_task_status" class="task_status">
+      {% if can_merge_status != 'complete' %}
+        <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
+        <h2 class="busy ready">Checking if merge is possible...</h2>
         <h2 class="fail">Something went wrong. Please, merge manually</h2>
       {% endif %}
     </div>
@@ -58,20 +65,19 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     <div>{{g.markdown.convert(req.description)}}</div>
 
     {% if req.merge_allowed(c.user) %}
-      {% set can_merge = req.can_merge() %}
       <div class="grid-19">
         <form action="merge" method="POST">
           {{ lib.csrf_token() }}
-          <input type="submit" value="Merge"{% if not can_merge or status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
-          {% if can_merge %}
-            <div class="merge-ok">
-              Merge request has no conflicts. You can merge automatically.
-            </div>
-          {% else %}
-            <div class="merge-conflicts">
-              Merge request has conflicts. Follow manual instructions below to merge.
-            </div>
-          {% endif %}
+          <input id="merge-btn" type="submit" value="Merge"{% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
+          <div class="merge-help-text can-merge-in-progress" {% if can_merge == None %}style="display: block;"{% endif %}>
+            Checking if merge is possible...
+          </div>
+          <div class="merge-help-text merge-ok" {% if can_merge == True %}style="display: block;"{% endif %}>
+            Merge request has no conflicts. You can merge automatically.
+          </div>
+          <div class="merge-help-text merge-conflicts" {% if can_merge == False %}style="display: block;"{% endif %}>
+            Merge request has conflicts. Follow manual instructions below to merge.
+          </div>
         </form>
       </div>
     {% endif %}
@@ -87,7 +93,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       <div class="grid-19">
         <textarea style="width:80%; height:60px;" readonly>{{ c.app.repo.merge_command(req) | safe }}</textarea>
       </div>
-      {% if status not in ('ready', 'busy') %}
+      {% if merge_status not in ('ready', 'busy') %}
         {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
         <br style="clear:both">
       {% endif %}
@@ -122,15 +128,17 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
 {% block extra_css %}
 <style type="text/css">
+  .merge-help-text { display: none; }
   .merge-ok { color: green; }
   .merge-conflicts { color: red; }
+  .can-merge-in-progress { color: grey; }
 
-  #task_status { margin: 0 10px; }
-  #task_status h2 { display: none; }
-  #task_status .{{ status }} { display: inline-block; }
-  #task_status h2.complete { color: #C6D880; }
-  #task_status h2.busy, #task_status h2.busy { color: #003565; }
-  #task_status h2.fail { color: #f33; }
+  .task_status { margin: 0 10px; }
+  .task_status h2 { display: none; }
+  .task_status .{{ merge_status }} { display: inline-block; }
+  .task_status h2.complete { color: #C6D880; }
+  .task_status h2.busy, .task_status h2.busy { color: #003565; }
+  .task_status h2.fail { color: #f33; }
 </style>
 {% endblock %}
 
@@ -138,35 +146,72 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {{ super() }}
 <script type="text/javascript">
 $(function() {
-    {% if status in ('ready', 'busy') %}
-        $('.spinner').show();
+    {% if merge_status in ('ready', 'busy') %}
+        $('#merge_task_status > .spinner').show();
         var delay = 500;
-        function check_status() {
+        function check_merge_status() {
           $.get("{{request.path.rstrip('/') + '/merge_task_status'}}", function(data) {
                 if (data.status === 'complete') {
-                    $('.spinner').hide();
-                    $('#task_status h2').hide();
-                    $('#task_status h2.complete').show();
+                    $('#merge_task_status > .spinner').hide();
+                    $('#merge_task_status h2').hide();
+                    $('#merge_task_status h2.complete').show();
                     location.reload();
                 } else {
                     if (data.status === 'ready' || data.status === 'busy') {
                         // keep waiting
-                        $('#task_status h2').hide();
-                        $('#task_status h2.busy').show();
+                        $('#merge_task_status h2').hide();
+                        $('#merge_task_status h2.busy').show();
                     } else {
                         // something went wrong
-                        $('.spinner').hide();
-                        $('#task_status h2').hide();
-                        $('#task_status h2.fail').show();
+                        $('#merge_task_status > .spinner').hide();
+                        $('#merge_task_status h2').hide();
+                        $('#merge_task_status h2.fail').show();
                     }
                     if (delay < 60000){
                         delay = delay * 2;
                     }
-                    window.setTimeout(check_status, delay);
+                    window.setTimeout(check_merge_status, delay);
                 }
             });
         }
-        window.setTimeout(check_status, delay);
+        window.setTimeout(check_merge_status, delay);
+    {% endif %}
+
+    {% if can_merge_status in ('ready', 'busy') %}
+        $('#can_merge_task_status > .spinner').show();
+        var delay = 500;
+        function check_can_merge_status() {
+          $.get("{{request.path.rstrip('/') + '/can_merge_task_status'}}", function(data) {
+                if (data.status === 'complete') {
+                    $('#can_merge_task_status > .spinner').hide();
+                    $('#can_merge_task_status h2').hide();
+                    // TODO: check if actually can merge and show appropriate message
+                    $('.merge-help-text').hide();
+                    $('.merge-ok').show();
+                    $('.merge-btn').prop('disabled', false);
+                } else {
+                    if (data.status === 'ready' || data.status === 'busy') {
+                        // keep waiting
+                        $('#can_merge_task_status h2').hide();
+                        $('#can_merge_task_status h2.busy').show();
+                        $('.merge-help-text').hide();
+                        $('.can-merge-in-progress').show();
+                    } else {
+                        // something went wrong
+                        $('#can_merge_task_status > .spinner').hide();
+                        $('#can_merge_task_status h2').hide();
+                        $('#merge_task_status h2.fail').show();
+                        $('.merge-help-text').hide();
+                        $('.merge-conflicts').show();
+                    }
+                    if (delay < 60000){
+                        delay = delay * 2;
+                    }
+                    window.setTimeout(check_can_merge_status, delay);
+                }
+            });
+        }
+        window.setTimeout(check_can_merge_status, delay);
     {% endif %}
 });
 </script>
