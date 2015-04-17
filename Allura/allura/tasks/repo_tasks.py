@@ -168,5 +168,5 @@ def merge(merge_request_id):
 def can_merge(merge_request_id):
     from allura import model as M
     mr = M.MergeRequest.query.get(_id=merge_request_id)
-    result = self.app.repo.can_merge(self)
-    # TODO: set cache
+    result = mr.app.repo.can_merge(mr)
+    # TODO: set cache (or inside repo's can_merge?)
