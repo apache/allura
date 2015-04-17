@@ -133,11 +133,12 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   .merge-conflicts { color: red; }
   .can-merge-in-progress { color: grey; }
 
+  #merge_task_status .{{ merge_status }} { display: inline-block; }
+  #can_merge_task_status .{{ can_merge_status }} { display: inline-block; }
   .task_status { margin: 0 10px; }
   .task_status h2 { display: none; }
-  .task_status .{{ merge_status }} { display: inline-block; }
   .task_status h2.complete { color: #C6D880; }
-  .task_status h2.busy, .task_status h2.busy { color: #003565; }
+  .task_status h2.busy { color: #003565; }
   .task_status h2.fail { color: #f33; }
 </style>
 {% endblock %}
@@ -146,72 +147,81 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {{ super() }}
 <script type="text/javascript">
 $(function() {
-    {% if merge_status in ('ready', 'busy') %}
-        $('#merge_task_status > .spinner').show();
-        var delay = 500;
-        function check_merge_status() {
-          $.get("{{request.path.rstrip('/') + '/merge_task_status'}}", function(data) {
-                if (data.status === 'complete') {
-                    $('#merge_task_status > .spinner').hide();
-                    $('#merge_task_status h2').hide();
-                    $('#merge_task_status h2.complete').show();
-                    location.reload();
-                } else {
-                    if (data.status === 'ready' || data.status === 'busy') {
-                        // keep waiting
-                        $('#merge_task_status h2').hide();
-                        $('#merge_task_status h2.busy').show();
-                    } else {
-                        // something went wrong
-                        $('#merge_task_status > .spinner').hide();
-                        $('#merge_task_status h2').hide();
-                        $('#merge_task_status h2.fail').show();
-                    }
-                    if (delay < 60000){
-                        delay = delay * 2;
-                    }
-                    window.setTimeout(check_merge_status, delay);
-                }
-            });
-        }
-        window.setTimeout(check_merge_status, delay);
-    {% endif %}
+    function make_status_watcher(spinner_selector, status_url, on_complete, on_progress, on_error) {
+      var delay = 500;
+      var delay_threshold = 60000;
 
-    {% if can_merge_status in ('ready', 'busy') %}
-        $('#can_merge_task_status > .spinner').show();
-        var delay = 500;
-        function check_can_merge_status() {
-          $.get("{{request.path.rstrip('/') + '/can_merge_task_status'}}", function(data) {
-                if (data.status === 'complete') {
-                    $('#can_merge_task_status > .spinner').hide();
-                    $('#can_merge_task_status h2').hide();
-                    // TODO: check if actually can merge and show appropriate message
-                    $('.merge-help-text').hide();
-                    $('.merge-ok').show();
-                    $('.merge-btn').prop('disabled', false);
-                } else {
-                    if (data.status === 'ready' || data.status === 'busy') {
-                        // keep waiting
-                        $('#can_merge_task_status h2').hide();
-                        $('#can_merge_task_status h2.busy').show();
-                        $('.merge-help-text').hide();
-                        $('.can-merge-in-progress').show();
-                    } else {
-                        // something went wrong
-                        $('#can_merge_task_status > .spinner').hide();
-                        $('#can_merge_task_status h2').hide();
-                        $('#merge_task_status h2.fail').show();
-                        $('.merge-help-text').hide();
-                        $('.merge-conflicts').show();
-                    }
-                    if (delay < 60000){
-                        delay = delay * 2;
-                    }
-                    window.setTimeout(check_can_merge_status, delay);
-                }
-            });
-        }
-        window.setTimeout(check_can_merge_status, delay);
+      var check_status = function() {
+        $.get(status_url, function(data) {
+          if (data.status === 'complete') {
+            $(spinner).hide();
+            on_complete();
+          } else {
+            if (data.status === 'ready' || data.status === 'busy') {
+              on_progress();
+            } else {
+              $(spinner).hide();
+              on_error();
+            }
+            if (delay < delay_threshold) {
+              delay = delay * 2;
+            }
+            window.setTimeout(check_status, delay);
+          }
+        });
+      }
+
+      var start = function() {
+        $(spinner_selector).show();
+        window.setTimeout(check_status, delay);
+      }
+
+      return start;
+    }
+
+    {% if merge_status in ('ready', 'busy') %}
+      var spinner = '#merge_task_status > .spinner';
+      var url = "{{request.path.rstrip('/') + '/merge_task_status'}}";
+      function on_complete() {
+        $('#merge_task_status h2').hide();
+        $('#merge_task_status h2.complete').show();
+        location.reload();
+      }
+      function on_progress() {
+        $('#merge_task_status h2').hide();
+        $('#merge_task_status h2.busy').show();
+      }
+      function on_error() {
+        $('#merge_task_status h2').hide();
+        $('#merge_task_status h2.fail').show();
+      }
+      var start_watcher = make_status_watcher(spinner, url, on_complete, on_progress, on_error);
+      start_watcher();
+
+    {% elif can_merge_status in ('ready', 'busy') %}
+      var spinner = '#can_merge_task_status > .spinner';
+      var url = "{{request.path.rstrip('/') + '/can_merge_task_status'}}";
+      function on_complete() {
+        $('#can_merge_task_status h2').hide();
+        // TODO: check if actually can merge and show appropriate message
+        $('.merge-help-text').hide();
+        $('.merge-ok').show();
+        $('#merge-btn').prop('disabled', false);
+      }
+      function on_progress() {
+        $('#can_merge_task_status h2').hide();
+        $('#can_merge_task_status h2.busy').show();
+        $('.merge-help-text').hide();
+        $('.can-merge-in-progress').show();
+      }
+      function on_error() {
+        $('#can_merge_task_status h2').hide();
+        $('#can_merge_task_status h2.fail').show();
+        $('.merge-help-text').hide();
+        $('.merge-conflicts').show();
+      }
+      var start_watcher = make_status_watcher(spinner, url, on_complete, on_progress, on_error);
+      start_watcher();
     {% endif %}
 });
 </script>
