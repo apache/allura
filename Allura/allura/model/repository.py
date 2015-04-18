@@ -737,6 +737,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     created = FieldProperty(datetime, if_missing=datetime.utcnow)
     summary = FieldProperty(str)
     description = FieldProperty(str)
+    can_merge_cache = FieldProperty({str: bool})
 
     @property
     def activity_name(self):
@@ -838,17 +839,34 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         return True
 
-    def can_merge_cache(self, source_hash, target_hash):
+    def can_merge_cache_key(self):
         """
-        Returns True/False or None in case of cache miss.
+        Returns key for can_merge_cache constructed from current
+        source & target branch commits.
         """
-        return None
+        source_hash = self.downstream.commit_id
+        target_hash = self.app.repo.commit(self.target_branch)._id
+        key = '{}-{}'.format(source_hash, target_hash)
+        return key
+
+    def get_can_merge_cache(self):
+        """Returns True/False or None in case of cache miss."""
+        key = self.can_merge_cache_key()
+        return self.can_merge_cache.get(key)
+
+    def set_can_merge_cache(self, val):
+        key = self.can_merge_cache_key()
+        self.can_merge_cache[key] = val
 
     def can_merge(self):
         """
-        Returns true if you can merge cleanly (no conflicts)
+        Returns boolean indicating if automatic merge is possible (no
+        conflicts). If result is unknown yet, returns None and fires a task to
+        get the result. Caches result for later reuse.
         """
-        cached = self.can_merge_cache(None, None)
+        if self.status == 'merged':
+            return True
+        cached = self.get_can_merge_cache()
         if cached is not None:
             return cached
         in_progress = self.can_merge_task_status() in ['ready', 'busy']

@@ -201,12 +201,19 @@ $(function() {
     {% elif can_merge_status in ('ready', 'busy') %}
       var spinner = '#can_merge_task_status > .spinner';
       var url = "{{request.path.rstrip('/') + '/can_merge_task_status'}}";
+      var can_merge_result_url = "{{request.path.rstrip('/') + '/can_merge_result'}}";
       function on_complete() {
         $('#can_merge_task_status h2').hide();
-        // TODO: check if actually can merge and show appropriate message
-        $('.merge-help-text').hide();
-        $('.merge-ok').show();
-        $('#merge-btn').prop('disabled', false);
+        $.get(can_merge_result_url, function(data) {
+          $('.merge-help-text').hide();
+          if (data.can_merge) {
+            $('.merge-ok').show();
+            $('#merge-btn').prop('disabled', false);
+          } else {
+            $('.merge-conflicts').show();
+            $('#merge-btn').prop('disabled', true);
+          }
+        });
       }
       function on_progress() {
         $('#can_merge_task_status h2').hide();

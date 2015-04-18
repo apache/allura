@@ -460,6 +460,11 @@ class MergeRequestController(object):
     def can_merge_task_status(self):
         return {'status': self.req.can_merge_task_status()}
 
+    @expose('json:')
+    def can_merge_result(self):
+        """Return result from the cache. Used by js, after task was completed."""
+        return {'can_merge': self.req.can_merge()}
+
 
 class RefsController(object):
 
