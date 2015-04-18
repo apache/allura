@@ -729,8 +729,36 @@ class TestMergeRequest(object):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        self.mr = M.MergeRequest(app_config=mock.Mock(_id=ObjectId()))
+        self.mr = M.MergeRequest(
+            app_config=mock.Mock(_id=ObjectId()),
+            downstream={'commit_id': '12345'},
+        )
         self.mr.app = mock.Mock(forkable=True)
+        self.mr.app.repo.commit.return_value = mock.Mock(_id='09876')
+
+    def test_can_merge_cache_key(self):
+        key = self.mr.can_merge_cache_key()
+        assert_equal(key, '12345-09876')
+
+    def test_get_can_merge_cache(self):
+        key = self.mr.can_merge_cache_key()
+        assert_equal(self.mr.get_can_merge_cache(), None)
+        self.mr.can_merge_cache[key] = True
+        assert_equal(self.mr.get_can_merge_cache(), True)
+
+        self.mr.can_merge_cache_key = lambda: '123-123'
+        self.mr.can_merge_cache['123-123'] = False
+        assert_equal(self.mr.get_can_merge_cache(), False)
+
+    def test_set_can_merge_cache(self):
+        key = self.mr.can_merge_cache_key()
+        assert_equal(self.mr.can_merge_cache, {})
+        self.mr.set_can_merge_cache(True)
+        assert_equal(self.mr.can_merge_cache, {key: True})
+
+        self.mr.can_merge_cache_key = lambda: '123-123'
+        self.mr.set_can_merge_cache(False)
+        assert_equal(self.mr.can_merge_cache, {key: True, '123-123': False})
 
     def test_can_merge(self):
         assert_equal(self.mr.can_merge(),
