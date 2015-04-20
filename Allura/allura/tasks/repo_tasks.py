@@ -169,6 +169,4 @@ def can_merge(merge_request_id):
     from allura import model as M
     mr = M.MergeRequest.query.get(_id=merge_request_id)
     result = mr.app.repo.can_merge(mr)
-    source_hash = mr.downstream.commit_id
-    target_hash = mr.app.repo.commit(mr.target_branch)._id
     mr.set_can_merge_cache(result)

@@ -75,6 +75,15 @@ class TestRepoTasks(unittest.TestCase):
         session.assert_called_once_with(mr)
         session.return_value.flush.assert_called_once_with(mr)
 
+    @mock.patch.object(M, 'MergeRequest', autospec=True)
+    def test_can_merge(self, MR):
+        mr = M.MergeRequest(_id='_id')
+        MR.query.get.return_value = mr
+        repo_tasks.can_merge(mr._id)
+        mr.app.repo.can_merge.assert_called_once_with(mr)
+        val = mr.app.repo.can_merge.return_value
+        mr.set_can_merge_cache.assert_called_once_with(val)
+
 
 class TestEventTasks(unittest.TestCase):
 
