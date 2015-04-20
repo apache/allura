@@ -94,6 +94,11 @@ setup(
     # Other packages (the Forge* directories) or 3rd-party can add more too.
     # development.ini is used for many cases to specify which to actually use.
     entry_points="""
+    [paste.app_factory]
+    main = allura.config.middleware:make_app
+    [paste.app_install]
+    main = pylons.util:PylonsInstaller
+
     [allura]
     profile = allura.ext.user_profile:UserProfileApp
     admin = allura.ext.admin:AdminApp
