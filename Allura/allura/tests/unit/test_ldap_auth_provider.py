@@ -41,6 +41,7 @@ class TestLdapAuthenticationProvider(object):
     def test_password_encoder(self):
         # Verify salt
         ep = self.provider._encode_password
+        # Note: OSX uses a crypt library with a known issue relating the hashing algorithms.
         assert_not_equal(ep('test_pass'), ep('test_pass'))
         assert_equal(ep('test_pass', '0000'), ep('test_pass', '0000'))
         # Test password format
