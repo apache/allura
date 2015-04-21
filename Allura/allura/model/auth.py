@@ -109,7 +109,7 @@ class AlluraUserProperty(ForeignIdProperty):
 
 
 class EmailAddress(MappedClass):
-    re_format = re.compile('^.* <(.*)>$')
+    re_format = re.compile('^.*\s+<(.*)>\s*$')
 
     class __mongometa__:
         name = 'email_address'
