@@ -735,6 +735,7 @@ class TestMergeRequest(object):
         )
         self.mr.app = mock.Mock(forkable=True)
         self.mr.app.repo.commit.return_value = mock.Mock(_id='09876')
+        self.mr.merge_allowed = mock.Mock(return_value=True)
 
     def test_can_merge_cache_key(self):
         key = self.mr.can_merge_cache_key()
@@ -776,6 +777,12 @@ class TestMergeRequest(object):
     def test_can_merge_not_cached(self, can_merge_task):
         assert_equal(self.mr.can_merge(), None)
         can_merge_task.post.assert_called_once_with(self.mr._id)
+
+    @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
+    def test_can_merge_disabled(self, can_merge_task):
+        self.mr.merge_allowed.return_value = False
+        assert_equal(self.mr.can_merge(), None)
+        assert_equal(can_merge_task.post.call_count, 0)
 
     @mock.patch('allura.tasks.repo_tasks.merge', autospec=True)
     def test_merge(self, merge_task):

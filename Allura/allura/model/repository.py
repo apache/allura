@@ -827,13 +827,13 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         """
         Returns true if a merge is allowed by system and tool configuration.
         """
-        if not c.app.forkable:
+        if not self.app.forkable:
             return False
         if self.status != 'open':
             return False
         if asbool(tg.config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))):
             return False
-        if not h.has_access(c.app, 'write', user):
+        if not h.has_access(self.app, 'write', user):
             return False
         if self.app.config.options.get('merge_disabled'):
             return False
@@ -864,6 +864,8 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         conflicts). If result is unknown yet, returns None and fires a task to
         get the result. Caches result for later reuse.
         """
+        if not self.merge_allowed(c.user):
+            return None
         if self.status == 'merged':
             return True
         cached = self.get_can_merge_cache()
