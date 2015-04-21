@@ -643,7 +643,7 @@ class GitImplementation(M.RepositoryImplementation):
         Must be called within mr.push_downstream_context()
         """
         base = self.merge_base(mr)
-        return list(mr.app.repo.log(
+        return list(c.app.repo.log(
             mr.downstream.commit_id,
             exclude=base,
             id_only=False))
