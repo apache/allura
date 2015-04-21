@@ -636,6 +636,18 @@ class GitImplementation(M.RepositoryImplementation):
         g.fetch(mr.app.repo.full_fs_path, mr.target_branch)
         return g.merge_base(mr.downstream.commit_id, 'FETCH_HEAD')
 
+    def merge_request_commits(self, mr):
+        """
+        Return list of commits to be merged
+
+        Must be called within mr.push_downstream_context()
+        """
+        base = self.merge_base(mr)
+        return list(mr.app.repo.log(
+            mr.downstream.commit_id,
+            exclude=base,
+            id_only=False))
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE = 4096

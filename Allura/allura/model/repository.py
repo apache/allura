@@ -321,9 +321,9 @@ class RepositoryImplementation(object):
         """
         raise NotImplementedError('paged_diffs')
 
-    def merge_base(self, mr):
-        """Given MergeRequest :param mr: find common ancestor for the merge"""
-        raise NotImplementedError('merge_base')
+    def merge_request_commits(self, mr):
+        """Given MergeRequest :param mr: return list of commits to be merged"""
+        raise NotImplementedError('merge_request_commits')
 
 
 class Repository(Artifact, ActivityObject):
@@ -719,9 +719,9 @@ class Repository(Artifact, ActivityObject):
             self.set_default_branch(branch_name)
         return branch_name
 
-    def merge_base(self, mr):
-        """Given MergeRequest :param mr: find common ancestor for the merge"""
-        return self._impl.merge_base(mr)
+    def merge_request_commits(self, mr):
+        """Given MergeRequest :param mr: return list of commits to be merged"""
+        return self._impl.merge_request_commits(mr)
 
 
 class MergeRequest(VersionedArtifact, ActivityObject):
@@ -790,11 +790,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
     def _commits(self):
         with self.push_downstream_context():
-            base = c.app.repo.merge_base(self)
-            return list(c.app.repo.log(
-                self.downstream.commit_id,
-                exclude=base,
-                id_only=False))
+            return c.app.repo.merge_request_commits(self)
 
     @classmethod
     def upsert(cls, **kw):
