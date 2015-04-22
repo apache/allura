@@ -693,8 +693,34 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             source_branch='zz',
             target_branch='master',
         )
-        res = self.repo.merge_base(mr)
+        res = self.repo._impl.merge_base(mr)
         assert_equal(res, '1e146e67985dcd71c74de79613719bef7bddca4a')
+
+    def test_merge_request_commits(self):
+        mr = M.MergeRequest(
+            downstream={
+                'commit_id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+            },
+            source_branch='zz',
+            target_branch='master',
+        )
+        res = self.repo.merge_request_commits(mr)
+        expected = [
+            {'authored': {
+                'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
+                'email': u'cjohns@slashdotmedia.com',
+                'name': u'Cory Johns'},
+             'committed': {
+                 'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
+                 'email': u'cjohns@slashdotmedia.com',
+                 'name': u'Cory Johns'},
+             'id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+             'message': u'Not repo root\n',
+             'parents': ['1e146e67985dcd71c74de79613719bef7bddca4a'],
+             'refs': ['zz'],
+             'rename_details': {},
+             'size': None}]
+        assert_equals(res, expected)
 
 
 class TestGitImplementation(unittest.TestCase):
