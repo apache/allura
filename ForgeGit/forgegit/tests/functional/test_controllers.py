@@ -683,10 +683,10 @@ class TestFork(_TestCase):
         r = self.app.get('/p/test/src-git/merge-requests').follow()
         assert '<a href="1/">changed summary</a>' in r
 
-    @patch.object(GM.Repository, 'merge_base', autospec=True)
-    def test_merge_base_error(self, merge_base):
+    @patch.object(GM.Repository, 'merge_request_commits', autospec=True)
+    def test_merge_request_commits_error(self, mr_commits):
         r, mr_num = self._request_merge()
-        merge_base.side_effect = Exception
+        mr_commits.side_effect = Exception
         r = self.app.get('/p/test/src-git/merge-requests/%s/' % mr_num)
         err = r.html.find('div', attrs={'class': 'grid-19 error'})
         assert_in("Can't find commits to merge", err.getText())
