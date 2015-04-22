@@ -838,16 +838,6 @@ class TestRepo(_TestWithRepo):
                 self.repo.clone_url('https', 'user'),
                 'https://user@foo.com/')
 
-    def test_merge_request(self):
-        M.MergeRequest.upsert(app_config_id=c.app.config._id, status='open')
-        M.MergeRequest.upsert(app_config_id=c.app.config._id, status='closed')
-        session(M.MergeRequest).flush()
-        session(M.MergeRequest).clear()
-        assert self.repo.merge_requests_by_statuses('open').count() == 1
-        assert self.repo.merge_requests_by_statuses('closed').count() == 1
-        assert self.repo.merge_requests_by_statuses(
-            'open', 'closed').count() == 2
-
     def test_guess_type(self):
         assert self.repo.guess_type('foo.txt') == ('text/plain', None)
         assert self.repo.guess_type('foo.gbaer') == (
@@ -930,55 +920,6 @@ class TestRepo(_TestWithRepo):
             self.repo.pending_upstream_merges()
         finally:
             M.Project.app_instance = old_app_instance
-
-
-class TestMergeRequest(_TestWithRepoAndCommit):
-
-    def setUp(self):
-        super(TestMergeRequest, self).setUp()
-        c.project.install_app('svn', 'test2')
-        h.set_context('test', 'test2', neighborhood='Projects')
-        self.repo2 = M.Repository(name='test2', tool='svn')
-        self.repo2._impl = mock.Mock(spec=M.RepositoryImplementation())
-        self.repo2._impl.log = lambda *a, **kw: (['foo'], [])
-        self.repo2._impl.all_commit_ids = lambda *a, **kw: []
-        self.repo2._impl._repo = self.repo2
-        self.repo2.init_as_clone('/p/test/', 'test1', '/p/test/test1/')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
-
-    def test_upsert(self):
-        h.set_context('test', 'test1', neighborhood='Projects')
-        mr = M.MergeRequest.upsert(
-            downstream=ming.base.Object(
-                project_id=c.project._id,
-                mount_point='test2',
-                commit_id='foo:2'),
-            target_branch='foobranch',
-            summary='summary',
-            description='description')
-        u = M.User.by_username('test-admin')
-        assert_equal(mr.creator, u)
-        assert_equal(mr.creator_name,  u.get_pref('display_name'))
-        assert_equal(mr.creator_url,  u.url())
-        assert_equal(mr.downstream_url,  '/p/test/test2/')
-        assert_equal(mr.downstream_repo_url,
-                     'http://svn.localhost/p/test/test2/')
-        with mock.patch('forgesvn.model.svn.SVNLibWrapper') as _svn,\
-                mock.patch('forgesvn.model.svn.SVNImplementation._map_log') as _map_log:
-            mr.app.repo._impl.head = 1
-            _svn().log.return_value = [mock.Mock(revision=mock.Mock(number=2))]
-            _map_log.return_value = 'bar'
-            assert_equal(mr.commits,  ['bar'])
-            # can't do assert_called_once_with because pysvn.Revision doesn't
-            # compare nicely
-            assert_equal(_svn().log.call_count, 1)
-            assert_equal(_svn().log.call_args[0],
-                         ('file:///tmp/svn/p/test/test2',))
-            assert_equal(_svn().log.call_args[1]['revision_start'].number, 2)
-            assert_equal(_svn().log.call_args[1]['limit'], 25)
-            _map_log.assert_called_once_with(
-                _svn().log.return_value[0], 'file:///tmp/svn/p/test/test2', None)
 
 
 class TestRepoObject(_TestWithRepoAndCommit):
