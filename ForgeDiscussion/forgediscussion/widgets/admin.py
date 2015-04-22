@@ -42,7 +42,10 @@ class OptionsAdmin(ff.AdminForm):
                 options=[
                     ew.Option(py_value='ApproveOnceModerated',
                               label='Approve Once Moderated'),
-                    ew.Option(py_value='ApproveAll', label='Approve All')])
+                    ew.Option(py_value='ApproveAll', label='Approve All')]),
+            ew.Checkbox(
+                name='AllowEmailPosting',
+                label='Allow posting replies via email')
         ]
         return fields
 

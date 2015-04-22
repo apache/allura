@@ -63,7 +63,8 @@ class ForgeDiscussionApp(Application):
     }
     config_options = Application.config_options + [
         ConfigOption('PostingPolicy',
-                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
+                     schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated'),
+        ConfigOption('AllowEmailPosting', bool, True)
     ]
     PostClass = DM.ForumPost
     AttachmentClass = DM.ForumAttachment
@@ -252,7 +253,8 @@ class ForumAdminController(DefaultAdminController):
         c.options_admin = W.options_admin
         return dict(app=self.app,
                     form_value=dict(
-                        PostingPolicy=self.app.config.options.get('PostingPolicy')))
+                        PostingPolicy=self.app.config.options.get('PostingPolicy'),
+                        AllowEmailPosting=self.app.config.options.get('AllowEmailPosting')))
 
     @expose('jinja:forgediscussion:templates/discussionforums/admin_forums.html')
     def forums(self, add_forum=None, **kw):
