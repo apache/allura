@@ -151,11 +151,11 @@ def get_change_text(name, new_value, old_value):
 def attachments_info(attachments):
     text = []
     for attach in attachments:
-        text.append("{} ({}; {})".format(
-            attach.filename,
+        text.append(u"{} ({}; {})".format(
+            h.really_unicode(attach.filename),
             h.do_filesizeformat(attach.length),
             attach.content_type))
-    return "\n".join(text)
+    return u"\n".join(text)
 
 
 def render_changes(changes, comment=None):
