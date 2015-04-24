@@ -34,6 +34,9 @@ class OptionsAdmin(ff.AdminForm):
             ew.Checkbox(
                 name='EnableVoting',
                 label='Enable voting on tickets'),
+            ew.Checkbox(
+                name='AllowEmailPosting',
+                label='Allow posting replies via email'),
             ew.TextField(
                 name='TicketMonitoringEmail',
                 label='Email ticket notifications to',

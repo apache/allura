@@ -238,7 +238,8 @@ class ForgeTrackerApp(Application):
         ConfigOption('TicketMonitoringEmail', str, ''),
         ConfigOption('TicketMonitoringType',
                      schema.OneOf('NewTicketsOnly', 'AllTicketChanges',
-                                  'NewPublicTicketsOnly', 'AllPublicTicketChanges'), None)
+                                  'NewPublicTicketsOnly', 'AllPublicTicketChanges'), None),
+        ConfigOption('AllowEmailPosting', bool, True)
     ]
     exportable = True
     searchable = True
@@ -1626,6 +1627,7 @@ class TrackerAdminController(DefaultAdminController):
                 'TicketMonitoringEmail'),
             TicketHelpNew=self.app.config.options.get('TicketHelpNew'),
             TicketHelpSearch=self.app.config.options.get('TicketHelpSearch'),
+            AllowEmailPosting=self.app.config.options.get('AllowEmailPosting'),
         ))
 
     @expose()
