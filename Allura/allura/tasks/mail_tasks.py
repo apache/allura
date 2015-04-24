@@ -59,6 +59,8 @@ def route_email(
                     if not app.has_access(c.user, userpart):
                         log.info('Access denied for %s to mailbox %s',
                                  c.user, userpart)
+                    elif not c.app.config.options.get('AllowEmailPosting', True):
+                        log.info("Posting from email is not enabled")
                     else:
                         if msg['multipart']:
                             msg_hdrs = msg['headers']

@@ -124,7 +124,7 @@ class TestIndexTasks(unittest.TestCase):
     def test_add_projects(self):
         g.solr.db.clear()
         old_solr_size = len(g.solr.db)
-        projects = M.Project.query.find().all()        
+        projects = M.Project.query.find().all()
         index_tasks.add_projects.post([p._id for p in projects])
         M.MonQTask.run_ready()
         new_solr_size = len(g.solr.db)
@@ -450,6 +450,20 @@ I'm not here'''
         import forgetracker
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(forgetracker.tracker_main.ForgeTrackerApp, 'handle_message') as hm:
+            mail_tasks.route_email(
+                '0.0.0.0',
+                c.user.email_addresses[0],
+                ['1@bugs.test.p.in.localhost'],
+                message)
+            assert_equal(hm.call_count, 0)
+
+    @td.with_tool('test', 'Tickets', 'bugs')
+    def test_email_posting_disabled(self):
+        message = 'Hello, world!'
+        import forgetracker
+        c.user = M.User.by_username('test-admin')
+        with mock.patch.object(forgetracker.tracker_main.ForgeTrackerApp, 'handle_message') as hm:
+            c.app.config.options = {'AllowEmailPosting': False}
             mail_tasks.route_email(
                 '0.0.0.0',
                 c.user.email_addresses[0],
