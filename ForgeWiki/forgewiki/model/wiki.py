@@ -160,7 +160,11 @@ class Page(VersionedArtifact, ActivityObject):
     def email_address(self):
         domain = '.'.join(
             reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
+        if context.app.config.options.get('AllowEmailPosting', True):
+            local_part = self.title.replace('/', '.')
+        else:
+            local_part = 'noreply'
+        return '%s@%s%s' % (local_part, domain, config.common_suffix)
 
     @property
     def email_subject(self):

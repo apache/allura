@@ -20,6 +20,7 @@ import logging
 from itertools import chain
 
 import pymongo
+from pylons import tmpl_context as c
 from ming import schema
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
@@ -78,7 +79,11 @@ class Forum(M.Discussion):
     def email_address(self):
         domain = '.'.join(
             reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, config.common_suffix)
+        if c.app.config.options.get('AllowEmailPosting', True):
+            local_part = self.shortname.replace('/', '.')
+        else:
+            local_part = 'noreply'
+        return '%s@%s%s' % (local_part, domain, config.common_suffix)
 
     @LazyProperty
     def announcements(self):
