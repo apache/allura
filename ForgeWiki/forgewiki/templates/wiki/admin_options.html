@@ -42,6 +42,14 @@
         <span>{{app.show_right_bar}}</span>
       {% endif %}
     </div>
+    <label class="grid-4">Allow posting replies via email:</label>
+    <div class="grid-9">
+      {% if allow_config %}
+        <input type="checkbox" name="allow_email_posting" id="allow_email_posting"{% if app.allow_email_posting %} checked="checked"{% endif %}/>
+      {% else %}
+        <span>{{app.allow_email_posting}}</span>
+      {% endif %}
+    </div>
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>

@@ -33,7 +33,7 @@ from ming.orm import session
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
-from allura.app import Application, SitemapEntry, DefaultAdminController
+from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
@@ -93,6 +93,9 @@ class ForgeWikiApp(Application):
         'delete': 'Delete wiki pages.',
         'admin': 'Set permissions. Configure options. Set wiki home page.',
     }
+    config_options = Application.config_options + [
+        ConfigOption('AllowEmailPosting', bool, True)
+    ]
     searchable = True
     exportable = True
     tool_label = 'Wiki'
@@ -182,6 +185,14 @@ The wiki uses [Markdown](%s) syntax.
     @show_right_bar.setter
     def show_right_bar(self, show):
         self.config.options['show_right_bar'] = bool(show)
+
+    @Property
+    def allow_email_posting():
+        def fget(self):
+            return self.config.options.get('AllowEmailPosting', True)
+
+        def fset(self, show):
+            self.config.options['AllowEmailPosting'] = bool(show)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -842,9 +853,11 @@ class WikiAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
-    def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False):
+    def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False,
+                    allow_email_posting=False):
         self.app.show_discussion = show_discussion
         self.app.show_left_bar = show_left_bar
         self.app.show_right_bar = show_right_bar
+        self.app.allow_email_posting = allow_email_posting
         flash('Wiki options updated')
         redirect(c.project.url() + 'admin/tools')
