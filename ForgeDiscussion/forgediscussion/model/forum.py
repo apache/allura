@@ -25,6 +25,8 @@ from ming import schema
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
 
+from tg import config as tg_config
+
 from allura import model as M
 from allura.model.notification import MailFooter
 from allura.lib import utils
@@ -77,13 +79,13 @@ class Forum(M.Discussion):
 
     @property
     def email_address(self):
-        domain = '.'.join(
-            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         if c.app.config.options.get('AllowEmailPosting', True):
+            domain = '.'.join(
+                reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
             local_part = self.shortname.replace('/', '.')
+            return '%s@%s%s' % (local_part, domain, config.common_suffix)
         else:
-            local_part = 'noreply'
-        return '%s@%s%s' % (local_part, domain, config.common_suffix)
+            return tg_config.get('forgemail.return_path')
 
     @LazyProperty
     def announcements(self):

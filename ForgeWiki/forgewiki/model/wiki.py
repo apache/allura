@@ -25,6 +25,8 @@ from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session
 from ming.orm.declarative import MappedClass
 
+from tg import config as tg_config
+
 from allura.model import (
     VersionedArtifact,
     Snapshot,
@@ -158,13 +160,12 @@ class Page(VersionedArtifact, ActivityObject):
 
     @property
     def email_address(self):
-        domain = '.'.join(
-            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         if context.app.config.options.get('AllowEmailPosting', True):
-            local_part = self.title.replace('/', '.')
+            domain = '.'.join(
+                reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+            return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
         else:
-            local_part = 'noreply'
-        return '%s@%s%s' % (local_part, domain, config.common_suffix)
+            return tg_config.get('forgemail.return_path')
 
     @property
     def email_subject(self):
