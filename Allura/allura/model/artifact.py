@@ -395,7 +395,8 @@ class Artifact(MappedClass, SearchIndexable):
         super(Artifact, self).delete()
 
     def get_mail_footer(self, notification, toaddr):
-        return MailFooter.standard(notification)
+        allow_email_posting = self.app.config.options.get('AllowEmailPosting', True)
+        return MailFooter.standard(notification, allow_email_posting)
 
     def message_id(self):
         '''Persistent, email-friendly (Message-ID header) id of this artifact'''
