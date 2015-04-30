@@ -186,13 +186,13 @@ The wiki uses [Markdown](%s) syntax.
     def show_right_bar(self, show):
         self.config.options['show_right_bar'] = bool(show)
 
-    @Property
-    def allow_email_posting():
-        def fget(self):
-            return self.config.options.get('AllowEmailPosting', True)
+    @property
+    def allow_email_posting(self):
+        return self.config.options.get('AllowEmailPosting', True)
 
-        def fset(self, show):
-            self.config.options['AllowEmailPosting'] = bool(show)
+    @allow_email_posting.setter
+    def allow_email_posting(self, show):
+        self.config.options['AllowEmailPosting'] = bool(show)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
