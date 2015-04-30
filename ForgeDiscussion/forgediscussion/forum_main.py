@@ -254,7 +254,7 @@ class ForumAdminController(DefaultAdminController):
         return dict(app=self.app,
                     form_value=dict(
                         PostingPolicy=self.app.config.options.get('PostingPolicy'),
-                        AllowEmailPosting=self.app.config.options.get('AllowEmailPosting')))
+                        AllowEmailPosting=self.app.config.options.get('AllowEmailPosting', True)))
 
     @expose('jinja:forgediscussion:templates/discussionforums/admin_forums.html')
     def forums(self, add_forum=None, **kw):

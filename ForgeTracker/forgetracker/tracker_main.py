@@ -1627,7 +1627,7 @@ class TrackerAdminController(DefaultAdminController):
                 'TicketMonitoringEmail'),
             TicketHelpNew=self.app.config.options.get('TicketHelpNew'),
             TicketHelpSearch=self.app.config.options.get('TicketHelpSearch'),
-            AllowEmailPosting=self.app.config.options.get('AllowEmailPosting'),
+            AllowEmailPosting=self.app.config.options.get('AllowEmailPosting', True),
         ))
 
     @expose()
