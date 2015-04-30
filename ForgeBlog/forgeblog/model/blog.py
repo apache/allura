@@ -21,6 +21,7 @@ from datetime import datetime
 from random import randint
 
 from pylons import tmpl_context as c, app_globals as g
+from tg import config as tg_config
 from pymongo.errors import DuplicateKeyError
 
 from ming import schema
@@ -184,9 +185,12 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     @property
     def email_address(self):
-        domain = '.'.join(
-            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
+        if self.config.options.get('AllowEmailPosting', True):
+            domain = '.'.join(
+                reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+            return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
+        else:
+            return tg_config.get('forgemail.return_path')
 
     @staticmethod
     def make_base_slug(title, timestamp):

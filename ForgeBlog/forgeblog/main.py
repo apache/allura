@@ -35,7 +35,7 @@ from webob import exc
 from ming.orm import session
 
 # Pyforge-specific imports
-from allura.app import Application, SitemapEntry
+from allura.app import Application, SitemapEntry, ConfigOption
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search_app
@@ -90,6 +90,9 @@ class ForgeBlogApp(Application):
         'write': 'Create new blog entry.',
         'admin': 'Set permissions. Enable/disable commenting.',
     }
+    config_options = Application.config_options + [
+        ConfigOption('AllowEmailPosting', bool, True)
+    ]
     ordinal = 14
     exportable = True
     config_options = Application.config_options
@@ -143,6 +146,14 @@ class ForgeBlogApp(Application):
             return self.config.options['show_discussion']
         else:
             return True
+
+    @property
+    def allow_email_posting(self):
+        return self.config.options.get('AllowEmailPosting', True)
+
+    @allow_email_posting.setter
+    def allow_email_posting(self, show):
+        self.config.options['AllowEmailPosting'] = bool(show)
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -404,9 +415,11 @@ class BlogAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
-    def set_options(self, show_discussion=False):
+    def set_options(self, show_discussion=False, allow_email_posting=False):
         self.app.config.options[
             'show_discussion'] = show_discussion and True or False
+        self.app.config.options[
+            'AllowEmailPosting'] = allow_email_posting and True or False
         flash('Blog options updated')
         redirect(h.really_unicode(c.project.url() + 'admin/tools')
                  .encode('utf-8'))
