@@ -25,6 +25,7 @@ from xml.etree import ElementTree as ET
 import pkg_resources
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
+from tg import config as tg_config
 from pylons import request, app_globals as g, tmpl_context as c
 from paste.deploy.converters import asbool, asint
 from bson import ObjectId
@@ -309,8 +310,11 @@ class Application(object):
 
         Assumes self.url returns a url path without domain, starting with '/'
         """
-        parts = list(reversed(self.url[1:-1].split('/')))
-        return '%s@%s%s' % (parts[0], '.'.join(parts[1:]), config.common_suffix)
+        if self.config.options.get('AllowEmailPosting', True):
+            parts = list(reversed(self.url[1:-1].split('/')))
+            return '%s@%s%s' % (parts[0], '.'.join(parts[1:]), config.common_suffix)
+        else:
+            return tg_config.get('forgemail.return_path')
 
     @property
     def acl(self):
