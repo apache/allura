@@ -67,7 +67,7 @@ class NexmoPhoneService(object):
             url += '/'
         url = urljoin(url, 'json')
         headers = {'Content-Type': 'application/json'}
-        params = json.dumps(self.add_common_params(params))
+        params = json.dumps(self.add_common_params(params), sort_keys=True)
         log.info('PhoneService (nexmo) request: %s %s', url, params)
         try:
             resp = requests.post(url, data=params, headers=headers)
