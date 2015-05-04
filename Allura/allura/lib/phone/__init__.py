@@ -50,13 +50,11 @@ class PhoneService(object):
         Given the :param pin: code user entered and :param request_id:
         (obtained by verify), verify that :param pin: is valid.
 
-        Returns dict with following keys: status, result, error. status is
-        either 'ok' or 'error'.
+        Returns dict with following keys: status, error. status is either 'ok'
+        or 'error'.
 
-        If status is 'ok' then result is present otherwise 'error' is an error
-        message.
-
-        result is True is phone verification succeeded, False otherwise.
+        If status is 'ok' then verification was successful otherwise 'error' is
+        an error message.
         """
         log.info('Phone service is not configured')
         return {
