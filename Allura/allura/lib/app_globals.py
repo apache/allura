@@ -284,6 +284,7 @@ class Globals(object):
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
             spam=_cache_eps('allura.spam'),
+            phone=_cache_eps('allura.phone'),
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
             admin=_cache_eps('allura.admin'),
@@ -315,6 +316,12 @@ class Globals(object):
         """
         from allura.lib import spam
         return spam.SpamFilter.get(config, self.entry_points['spam'])
+
+    @LazyProperty
+    def phone_service(self):
+        """Return a :class:`allura.lib.phone.PhoneService` implementation"""
+        from allura.lib import phone
+        return phone.PhoneService.get(config, self.entry_points['phone'])
 
     @LazyProperty
     def director(self):

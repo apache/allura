@@ -123,6 +123,9 @@ setup(
     akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
     mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
 
+    [allura.phone]
+    nexmo = allura.lib.phone.nexmo:NexmoPhoneService
+
     [allura.site_admin]
     stats = allura.controllers.site_admin:StatsSiteAdminExtension
     troves = allura.controllers.trovecategories:TroveCategorySiteAdminExtension
