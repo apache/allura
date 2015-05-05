@@ -533,6 +533,32 @@ class GitImplementation(M.RepositoryImplementation):
             return False
 
     @LazyProperty
+    def _is_valid(self):
+        """ Verifies the validity of the reference objects in the git database
+
+        Returns True if no issues are found. This allows us to bypass the individual testing of each ref
+        unless absolutely necessary.
+
+        :rtype: bool
+        """
+        try:
+            self._git.git.fsck(full=True)
+            return True
+        except git.GitCommandError as gce:
+            log.debug(u"Found inconsistency in {}: {}".format(self._repo.name, gce.stderr))
+            return False
+
+    def _get_refs(self, ref_list):
+        """ Returns a list of valid reference objects from the git database
+
+        :return: List of git ref objects.
+        :rtype: list
+        """
+        if self._is_valid:
+            return [Object(name=ref.name, object_id=ref.commit.hexsha) for ref in ref_list]
+        return [Object(name=ref.name, object_id=ref.commit.hexsha) for ref in ref_list if ref.is_valid()]
+
+    @LazyProperty
     def head(self):
         if not self._git or not self._git.heads:
             return None
@@ -549,15 +575,15 @@ class GitImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def heads(self):
-        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.heads if b.is_valid()]
+        return self._get_refs(self._git.heads)
 
     @LazyProperty
     def branches(self):
-        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.branches if b.is_valid()]
+        return self._get_refs(self._git.branches)
 
     @LazyProperty
     def tags(self):
-        return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags if t.is_valid()]
+        return self._get_refs(self._git.tags)
 
     def set_default_branch(self, name):
         if not name:

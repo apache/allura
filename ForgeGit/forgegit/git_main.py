@@ -66,7 +66,7 @@ class ForgeGitApp(RepositoryApp):
     def repo(self):
         return GM.Repository.query.get(app_config_id=self.config._id)
 
-    @property
+    @LazyProperty
     def default_branch_name(self):
         return self.repo.get_default_branch('master')
 
