@@ -71,13 +71,15 @@ tr.rev div.markdown_content p {
     margin-bottom: 0;
 }
 
-#login_overlay .title {
+#login_overlay .title,
+#phone_verification_overlay .title {
     margin-bottom: 0;
     padding-left: 10px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
 
-#login_overlay iframe {
+#login_overlay iframe,
+#phone_verification_overlay iframe {
     width: 400px;
 }

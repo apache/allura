@@ -24,5 +24,21 @@
 {% block header %}Create a Project{% endblock %}
 
 {% block content %}
-          {{c.add_project.display(action=neighborhood.url()+'register',value=form_data,neighborhood=neighborhood)}}
+  {% if c.show_phone_verification_overlay %}
+    {% do g.register_js('js/jquery.lightbox_me.js') %}
+    <div id="phone_verification_overlay" class="ui-widget-content">
+      <h2 class="dark title">Phone Verification Required</h2>
+      <iframe src="{{neighborhood.url_prefix}}phone_verification_fragment"></iframe>
+    </div>
+    <script type="text/javascript">
+      $(function () {
+        $('#phone_verification_overlay').draggable().lightbox_me({
+          closeClick: false,
+          closeEsc: false,
+          centered: true
+        });
+      });
+    </script>
+  {% endif %}
+  {{c.add_project.display(action=neighborhood.url()+'register',value=form_data,neighborhood=neighborhood)}}
 {% endblock %}

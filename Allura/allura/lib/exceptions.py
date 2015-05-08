@@ -43,6 +43,10 @@ class ProjectRatelimitError(ForgeError):
     pass
 
 
+class ProjectPhoneVerificationError(ForgeError):
+    pass
+
+
 class ToolError(ForgeError):
     pass
 
