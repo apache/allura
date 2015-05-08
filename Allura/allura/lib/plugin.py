@@ -708,6 +708,24 @@ class ProjectRegistrationProvider(object):
             if user_age < int(rate) and project_count >= count:
                 raise forge_exc.ProjectRatelimitError()
 
+    def phone_verified(self, user, neighborhood):
+        """
+        Check if user has completed phone verification.
+
+        Returns True if one of the following is true:
+            - phone verification is disabled
+            - :param user: has 'admin' access to :param neighborhood:
+            - phone is already verified for a :param user:
+
+        Otherwise returns False.
+        """
+        if asbool(config.get('project.verify_phone')):
+            return True
+        if security.has_access(neighborhood, 'admin', user=user)():
+            return True
+        # TODO: check user record
+        return False
+
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M
         shortname = '--init--'
@@ -772,6 +790,9 @@ class ProjectRegistrationProvider(object):
                 raise forge_exc.ProjectOverlimitError()
 
         self.rate_limit(user, neighborhood)
+
+        if not self.phone_verified(user, neighborhood):
+            raise forge_exc.ProjectPhoneVerificationError()
 
         if user_project and shortname.startswith('u/'):
             check_shortname = shortname.replace('u/', '', 1)

@@ -184,11 +184,18 @@ class NeighborhoodController(object):
     @without_trailing_slash
     def add_project(self, **form_data):
         require_access(self.neighborhood, 'register')
+        provider = plugin.ProjectRegistrationProvider.get()
+        phone_verified = provider.phone_verified(c.user, self.neighborhood)
+        c.show_phone_verification_overlay = not phone_verified
         c.add_project = W.add_project
         form_data.setdefault(
             'tools', [u'Wiki', u'Git', u'Tickets', u'Discussion'])
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
+
+    @expose('jinja:allura:templates/phone_verification_fragment.html')
+    def phone_verification_fragment(self, *args, **kw):
+        return {}
 
     @expose('json:')
     def suggest_name(self, project_name=''):
@@ -229,6 +236,9 @@ class NeighborhoodController(object):
         except exceptions.ProjectRatelimitError:
             flash(
                 "Project creation rate limit exceeded.  Please try again later.", 'error')
+            redirect('add_project')
+        except exceptions.ProjectPhoneVerificationError:
+            flash('You must pass phone verification', 'error')
             redirect('add_project')
         except Exception as e:
             log.error('error registering project: %s',
