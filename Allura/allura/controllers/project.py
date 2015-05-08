@@ -19,6 +19,7 @@ import re
 import logging
 from datetime import datetime, timedelta
 from urllib import unquote
+from hashlib import sha1
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, config
@@ -196,6 +197,26 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/phone_verification_fragment.html')
     def phone_verification_fragment(self, *args, **kw):
         return {}
+
+    @expose('json:')
+    def verify_phone(self, number):
+        p = plugin.ProjectRegistrationProvider.get()
+        result = p.verify_phone(c.user, number)
+        request_id = result.pop('request_id', None)
+        if request_id:
+            session['phone_verification.request_id'] = request_id
+            number_hash = sha1(h.really_unicode(number)).hexdigest()
+            session['phone_verification.number_hash'] = number_hash
+            session.save()
+        return result
+
+    @expose('json:')
+    def check_phone_verification(self, pin):
+        p = plugin.ProjectRegistrationProvider.get()
+        request_id = session.get('phone_verification.request_id')
+        number_hash = session.get('phone_verification.number_hash')
+        res = p.check_phone_verification(c.user, request_id, pin, number_hash)
+        return res
 
     @expose('json:')
     def suggest_name(self, project_name=''):
