@@ -723,8 +723,25 @@ class ProjectRegistrationProvider(object):
             return True
         if security.has_access(neighborhood, 'admin', user=user)():
             return True
-        # TODO: check user record
-        return False
+        return bool(user.get_tool_data('phone_verification', 'number_hash'))
+
+    def verify_phone(self, user, number):
+        ok = {'status': 'ok'}
+        if asbool(config.get('project.verify_phone')):
+            return ok
+        return g.phone_service.verify(number)
+
+    def check_phone_verification(self, user, request_id, pin, number_hash):
+        ok = {'status': 'ok'}
+        if asbool(config.get('project.verify_phone')):
+            return ok
+        res = g.phone_service.check(request_id, pin)
+        if res.get('status') == 'ok':
+            user.set_tool_data('phone_verification', number_hash=number_hash)
+            h.auditlog_user('Phone verification succeeded', user=user)
+        else:
+            h.auditlog_user('Phone verification failed', user=user)
+        return res
 
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M
