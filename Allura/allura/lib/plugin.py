@@ -719,7 +719,7 @@ class ProjectRegistrationProvider(object):
 
         Otherwise returns False.
         """
-        if asbool(config.get('project.verify_phone')):
+        if not asbool(config.get('project.verify_phone')):
             return True
         if security.has_access(neighborhood, 'admin', user=user)():
             return True
@@ -727,13 +727,13 @@ class ProjectRegistrationProvider(object):
 
     def verify_phone(self, user, number):
         ok = {'status': 'ok'}
-        if asbool(config.get('project.verify_phone')):
+        if not asbool(config.get('project.verify_phone')):
             return ok
         return g.phone_service.verify(number)
 
     def check_phone_verification(self, user, request_id, pin, number_hash):
         ok = {'status': 'ok'}
-        if asbool(config.get('project.verify_phone')):
+        if not asbool(config.get('project.verify_phone')):
             return ok
         res = g.phone_service.check(request_id, pin)
         if res.get('status') == 'ok':
