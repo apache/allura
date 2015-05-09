@@ -22,7 +22,7 @@ from urllib import unquote
 from hashlib import sha1
 
 from bson import ObjectId
-from tg import expose, flash, redirect, validate, request, config
+from tg import expose, flash, redirect, validate, request, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
