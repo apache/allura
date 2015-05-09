@@ -21,10 +21,12 @@ from cStringIO import StringIO
 import urllib2
 
 import PIL
+from mock import patch
 from tg import config
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_equal, assert_in, assert_not_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 from paste.httpexceptions import HTTPFound
+from pylons import app_globals as g
 
 import allura
 from allura import model as M
@@ -954,3 +956,107 @@ class TestNeighborhood(TestController):
             'div', {'class': 'neighborhood_title_link'}).find('a')
         assert 'View More Projects' in str(link)
         assert link['href'] == '/adobe/'
+
+
+class TestPhoneVerificationOnProjectRegistration(TestController):
+
+    def test_add_project_shows_phone_verification_overlay(self):
+        r = self.app.get('/p/add_project')
+        overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
+        assert_equal(overlay, None)
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            r = self.app.get('/p/add_project')
+            overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
+            assert_not_equal(overlay, None)
+            header = overlay.find('h2')
+            iframe = overlay.find('iframe')
+            assert_equal(header.getText(), 'Phone Verification Required')
+            assert_equal(iframe.get('src'), '/p/phone_verification_fragment')
+
+    def test_phone_verification_fragment_renders(self):
+        self.app.get('/p/phone_verification_fragment', status=200)
+        self.app.get('/adobe/phone_verification_fragment', status=200)
+
+    def test_verify_phone_no_params(self):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            self.app.get('/p/verify_phone', status=404)
+
+    def test_verify_phone_error(self):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+            expected = {'status': 'error',
+                        'error': 'Phone service is not configured'}
+            assert_equal(r.json, expected)
+            rid = r.session.get('phone_verification.request_id')
+            hash = r.session.get('phone_verification.number_hash')
+            assert_equal(rid, None)
+            assert_equal(hash, None)
+
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_verify_phone(self, phone_service):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            phone_service.verify.return_value = {
+                'request_id': 'request-id', 'status': 'ok'}
+            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+            phone_service.verify.assert_called_once_with('1234567890')
+            assert_equal(r.json, {'status': 'ok'})
+            rid = r.session.get('phone_verification.request_id')
+            hash = r.session.get('phone_verification.number_hash')
+            assert_equal(rid, 'request-id')
+            assert_equal(hash, '01b307acba4f54f55aafc33bb06bbbf6ca803e9a')
+
+    def test_check_phone_verification_no_params(self):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            self.app.get('/p/check_phone_verification', status=404)
+
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_check_phone_verification_error(self, phone_service):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            phone_service.check.return_value = {'status': 'error'}
+            req_id = 'request-id'
+
+            # make request to verify first to initialize session
+            phone_service.verify.return_value = {
+                'request_id': req_id, 'status': 'ok'}
+            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+
+            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+            assert_equal(r.json, {'status': 'error'})
+            phone_service.check.assert_called_once_with(req_id, '1234')
+
+            user = M.User.by_username('test-admin')
+            hash = user.get_tool_data('phone_verification', 'number_hash')
+            assert_equal(hash, None)
+
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_check_phone_verification_ok(self, phone_service):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            phone_service.check.return_value = {'status': 'ok'}
+            req_id = 'request-id'
+
+            # make request to verify first to initialize session
+            phone_service.verify.return_value = {
+                'request_id': req_id, 'status': 'ok'}
+            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+
+            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+            assert_equal(r.json, {'status': 'ok'})
+            phone_service.check.assert_called_once_with(req_id, '1234')
+
+            user = M.User.by_username('test-admin')
+            hash = user.get_tool_data('phone_verification', 'number_hash')
+            assert_equal(hash, '01b307acba4f54f55aafc33bb06bbbf6ca803e9a')
+
+    def test_register_phone_not_verified(self):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            r = self.app.post(
+                '/p/register',
+                params=dict(
+                    project_unixname='phonetest',
+                    project_name='Phone Test',
+                    project_description='',
+                    neighborhood='Projects'),
+                antispam=True)
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(wf['message'], 'You must pass phone verification')
