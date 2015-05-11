@@ -22,8 +22,7 @@
 {% if g.theme.jinja_macros %}
   {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
-{% do g.register_forge_js('js/jquery-base.js') %}
-{% do g.register_forge_js('js/allura-base.js') %}
+{% do g.register_forge_js('js/react.min.js', location='head_js') %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
 {# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
@@ -41,13 +40,8 @@
           {{ blob }}
         {% endfor %}
         <style type="text/css">
-            html {
-                overflow: hidden;
-            }
-            body {
-                padding-top: 1em;
-                width: 1000px;
-            }
+            html { overflow: hidden; }
+            body { padding-top: 1em; }
         </style>
     </head>
     <body>
