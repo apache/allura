@@ -83,3 +83,7 @@ tr.rev div.markdown_content p {
 #phone_verification_overlay iframe {
     width: 400px;
 }
+
+#phone_verification_overlay iframe {
+    height: 250px;
+}
