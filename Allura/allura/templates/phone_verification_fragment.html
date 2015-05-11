@@ -23,6 +23,8 @@
   {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
 {% do g.register_forge_js('js/react.min.js', location='head_js') %}
+{% do g.register_forge_js('js/jquery-base.js', location='head_js') %}
+{% do g.register_forge_js('js/phone-verification.js', location='body_js_tail') %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
 {# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
@@ -42,10 +44,27 @@
         <style type="text/css">
             html { overflow: hidden; }
             body { padding-top: 1em; }
+            .error-text {
+              color: red;
+              margin-top: .5em;
+              margin-bottom: .5em;
+            }
         </style>
     </head>
     <body>
-        TODO: Phone verification UI
+        <div class="grid-9">
+          {% block phone_validation_message %}
+          <p>
+            In order to register a project you need to perform phone validation
+            (just this once).  Please, enter your phone number below. You'll
+            receive an SMS message with a PIN you need to provide on the next
+            step.  Your phone number will not be stored.
+          </p>
+          {% endblock phone_validation_message %}
+          <div id="phone-verification-form">
+            {# Phone verification form will be mounted here (see phone-verification.js) #}
+          </div>
+        </div>
 
         {% for blob in g.resource_manager.emit('body_js_tail') %}
           {{ blob }}
