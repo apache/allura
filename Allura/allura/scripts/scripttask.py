@@ -69,7 +69,7 @@ class ScriptTask(object):
             return task(type.__new__(meta, classname, bases, classDict))
 
     def __new__(cls, arg_string=''):
-        cls._execute_task(arg_string)
+        return cls._execute_task(arg_string)
 
     @classmethod
     def _execute_task(cls, arg_string):
@@ -77,7 +77,7 @@ class ScriptTask(object):
             options = cls.parser().parse_args(shlex.split(arg_string or ''))
         except SystemExit:
             raise Exception("Error parsing args: '%s'" % arg_string)
-        cls.execute(options)
+        return cls.execute(options)
 
     @classmethod
     def execute(cls, options):
