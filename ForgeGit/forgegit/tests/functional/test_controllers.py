@@ -427,6 +427,9 @@ class TestRootController(_TestCase):
         assert_equal(app_config.options['external_checkout_url'], 'http://foo.bar/baz')
         assert_equal(app_config.options['merge_disabled'], True)
 
+    def test_markdown_syntax_dialog(self):
+        r = self.app.get('/p/test/src-git/markdown_syntax_dialog')
+        assert_in('<h1>Markdown Syntax Guide</h1>', r)
 
 
 class TestRestController(_TestCase):
@@ -635,8 +638,17 @@ class TestFork(_TestCase):
         assert '<a href="edit" title="Edit"><b data-icon="p" class="ico ico-pencil" title="Edit"></b></a>' in r
         r = self.app.get('/p/test/src-git/merge-requests/1/edit')
         assert 'value="summary"' in r
-        assert 'name="description">description</textarea>' in r
         assert '<option selected value="zz">zz</option>' in r
+        md_edit = r.html.find('div', {'class': 'markdown_edit'})
+        assert md_edit is not None, 'MarkdownEdit widget not found'
+        description = md_edit.find('textarea')
+        assert_equal(description['name'], 'description')
+        assert_equal(description['class'], 'auto_resize description')
+        help_btn = md_edit.find('a', {'class': 'markdown_help btn'})
+        preview_btn = md_edit.find('a', {'class': 'markdown_preview btn'})
+        assert_equal(help_btn['href'], '/p/test/src-git/markdown_syntax_dialog')
+        assert_equal(help_btn['title'], 'Formatting Help')
+        assert_equal(preview_btn['title'], 'Preview')
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
             params={
