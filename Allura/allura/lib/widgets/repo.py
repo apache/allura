@@ -76,8 +76,9 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 name='target_branch',
                 label='Target Branch',
                 options=self.target_branches),
-            ffw.AutoResizeTextarea(name='description',
-                                   css_class='description')]
+            ffw.MarkdownEdit(
+                name='description',
+                css_class='auto_resize description')]
         return result
 
     def resources(self):
