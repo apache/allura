@@ -37,6 +37,7 @@ from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController, DispatchIndex
+from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedArgs, FeedController
 
 from .forum import ForumController
@@ -299,7 +300,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         )
 
 
-class RootRestController(BaseController):
+class RootRestController(BaseController, AppRestControllerMixin):
 
     def _check_security(self):
         require_access(c.app, 'read')
