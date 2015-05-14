@@ -256,6 +256,16 @@ class NeighborhoodRestController(object):
     def __init__(self, neighborhood):
         self._neighborhood = neighborhood
 
+    @expose('json:')
+    def has_access(self, user, perm):
+        security.require_access(self._neighborhood, 'admin')
+        resp = {'result': False}
+        user = M.User.by_username(user)
+        if user:
+            resp['result'] = security.has_access(
+                self._neighborhood, perm, user=user)()
+        return resp
+
     @expose()
     def _lookup(self, name, *remainder):
         provider = plugin.ProjectRegistrationProvider.get()
