@@ -47,6 +47,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController, AppDiscussionRestController
+from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedArgs, FeedController
 
 # Local imports
@@ -456,7 +457,7 @@ class BlogAdminController(DefaultAdminController):
         redirect(c.project.url() + 'admin/tools')
 
 
-class RootRestController(BaseController):
+class RootRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self):
         self._discuss = AppDiscussionRestController()
