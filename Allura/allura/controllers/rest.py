@@ -263,6 +263,12 @@ def rest_has_access(obj, user, perm):
     return resp
 
 
+class AppRestControllerMixin(object):
+    @expose('json:')
+    def has_access(self, user, perm):
+        return rest_has_access(c.app, user, perm)
+
+
 class NeighborhoodRestController(object):
 
     def __init__(self, neighborhood):
