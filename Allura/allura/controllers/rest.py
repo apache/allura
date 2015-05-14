@@ -251,6 +251,18 @@ class OAuthNegotiator(object):
         return acc_token.to_string()
 
 
+def rest_has_access(obj, user, perm):
+    """
+    Helper function that encapsulates common functionality for has_access API
+    """
+    security.require_access(obj, 'admin')
+    resp = {'result': False}
+    user = M.User.by_username(user)
+    if user:
+        resp['result'] = security.has_access(obj, perm, user=user)()
+    return resp
+
+
 class NeighborhoodRestController(object):
 
     def __init__(self, neighborhood):
@@ -258,13 +270,7 @@ class NeighborhoodRestController(object):
 
     @expose('json:')
     def has_access(self, user, perm):
-        security.require_access(self._neighborhood, 'admin')
-        resp = {'result': False}
-        user = M.User.by_username(user)
-        if user:
-            resp['result'] = security.has_access(
-                self._neighborhood, perm, user=user)()
-        return resp
+        return rest_has_access(self._neighborhood, user, perm)
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -322,3 +328,6 @@ class ProjectRestController(object):
             return '<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()
 
+    @expose('json:')
+    def has_access(self, user, perm):
+        return rest_has_access(c.project, user, perm)
