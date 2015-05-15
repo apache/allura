@@ -61,6 +61,7 @@ from allura.controllers import AppDiscussionController, AppDiscussionRestControl
 from allura.controllers import attachments as att
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
+from allura.controllers.rest import AppRestControllerMixin
 
 # Local imports
 from forgetracker import model as TM
@@ -1752,7 +1753,7 @@ class TrackerAdminController(DefaultAdminController):
         redirect(request.referer)
 
 
-class RootRestController(BaseController):
+class RootRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self):
         self._discuss = AppDiscussionRestController()
@@ -1808,7 +1809,9 @@ class RootRestController(BaseController):
 
     @expose()
     def _lookup(self, ticket_num, *remainder):
-        return TicketRestController(ticket_num), remainder
+        if ticket_num.isdigit():
+            return TicketRestController(ticket_num), remainder
+        raise exc.HTTPNotFound
 
 
 class TicketRestController(BaseController):
