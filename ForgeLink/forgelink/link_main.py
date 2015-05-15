@@ -32,6 +32,7 @@ from allura.lib.security import require_access, has_access
 from allura.lib.utils import permanent_redirect
 from allura import model as M
 from allura.controllers import BaseController
+from allura.controllers.rest import AppRestControllerMixin
 
 # Local imports
 from forgelink import version
@@ -146,7 +147,7 @@ class LinkAdminController(DefaultAdminController):
         return {'status': 'ok'}
 
 
-class RootRestController(BaseController):
+class RootRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self, app):
         self.app = app
