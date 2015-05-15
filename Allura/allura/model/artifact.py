@@ -257,6 +257,12 @@ class Artifact(MappedClass, SearchIndexable):
             return 'mailto:%s' % self.email_address
 
     @property
+    def email_domain(self):
+        """Return domain part of email address for this Artifact"""
+        url = self.app.url[1:-1].split('/')
+        return '.'.join(reversed(url)).replace('_', '-')
+
+    @property
     def project(self):
         """Return the :class:`allura.model.project.Project` instance to which
         this Artifact belongs.

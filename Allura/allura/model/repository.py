@@ -567,9 +567,7 @@ class Repository(Artifact, ActivityObject):
 
     @property
     def email_address(self):
-        domain = '.'.join(
-            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return u'noreply@%s%s' % (domain, config.common_suffix)
+        return u'noreply@%s%s' % (self.email_domain, config.common_suffix)
 
     def index(self):
         result = Artifact.index(self)

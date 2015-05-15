@@ -765,8 +765,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if self.discussion_disabled:
             return tg_config.get('forgemail.return_path')
         if c.app.config.options.get('AllowEmailPosting', True):
-            domain = '.'.join(
-                reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+            domain = self.email_domain
             return '%s@%s%s' % (self.ticket_num, domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')

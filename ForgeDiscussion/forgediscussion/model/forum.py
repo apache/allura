@@ -80,8 +80,7 @@ class Forum(M.Discussion):
     @property
     def email_address(self):
         if c.app.config.options.get('AllowEmailPosting', True):
-            domain = '.'.join(
-                reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+            domain = self.email_domain
             local_part = self.shortname.replace('/', '.')
             return '%s@%s%s' % (local_part, domain, config.common_suffix)
         else:
