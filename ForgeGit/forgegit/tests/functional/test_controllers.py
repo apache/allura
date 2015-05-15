@@ -33,7 +33,7 @@ from alluratest.controller import setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import macro
-from alluratest.controller import TestController
+from alluratest.controller import TestController, TestRestApiBase
 from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
 from forgegit import model as GM
@@ -439,6 +439,57 @@ class TestRestController(_TestCase):
 
     def test_commits(self):
         self.app.get('/rest/p/test/src-git/commits', status=200)
+
+
+class TestHasAccessAPI(TestRestApiBase):
+
+    def setUp(self):
+        super(TestHasAccessAPI, self).setUp()
+        self.setup_with_tools()
+
+    @with_git
+    def setup_with_tools(self):
+        pass
+
+    def test_has_access_no_params(self):
+        r = self.api_get('/rest/p/test/src-git/has_access', status=404)
+        r = self.api_get('/rest/p/test/src-git/has_access?user=root', status=404)
+        r = self.api_get('/rest/p/test/src-git/has_access?perm=read', status=404)
+
+    def test_has_access_unknown_params(self):
+        """Unknown user and/or permission always False for has_access API"""
+        r = self.api_get(
+            '/rest/p/test/src-git/has_access?user=babadook&perm=read',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)
+        r = self.api_get(
+            '/rest/p/test/src-git/has_access?user=test-user&perm=jump',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)
+
+    def test_has_access_not_admin(self):
+        """
+        User which has no 'admin' permission on neighborhood can't use
+        has_access API
+        """
+        self.api_get(
+            '/rest/p/test/src-git/has_access?user=test-admin&perm=admin',
+            user='test-user',
+            status=403)
+
+    def test_has_access(self):
+        r = self.api_get(
+            '/rest/p/test/src-git/has_access?user=test-admin&perm=create',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], True)
+        r = self.api_get(
+            '/rest/p/test/src-git/has_access?user=test-user&perm=create',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)
 
 
 class TestFork(_TestCase):

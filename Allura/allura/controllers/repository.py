@@ -50,6 +50,7 @@ from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrows
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.controllers import AppDiscussionController
 from allura.controllers.base import DispatchIndex
+from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedController, FeedArgs
 from .base import BaseController
 
@@ -292,7 +293,7 @@ class RepoRootController(BaseController, FeedController):
         return dict(status=c.app.repo.status)
 
 
-class RepoRestController(RepoRootController):
+class RepoRestController(RepoRootController, AppRestControllerMixin):
 
     @expose('json:')
     def index(self, **kw):
