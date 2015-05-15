@@ -357,7 +357,7 @@ class PostController(BaseController):
             self.post.spam()
         elif kw.pop('approve', None):
             if self.post.status != 'ok':
-                self.post.status = 'ok'
+                self.post.approve(notify=False)
                 g.spam_checker.submit_ham(
                     self.post.text, artifact=self.post, user=c.user)
                 self.post.thread.post_to_feed(self.post)
