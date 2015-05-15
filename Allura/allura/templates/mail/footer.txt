@@ -22,7 +22,9 @@
 
 Sent from {{domain}} because you indicated interest in <{{ prefix }}{{ notification.link }}>
 
-{% if not allow_email_posting %}
+{% if discussion_disabled %}
+Please do not reply to this message. Discussion is disabled for the <{{ prefix }}{{ notification.link }}>
+{% elif not allow_email_posting %}
 Please do not reply to this message. Post your messages on the [original page]({{ prefix }}{{ notification.link }})
 {% endif %}
 

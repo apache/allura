@@ -676,12 +676,13 @@ class MailFooter(object):
         return cls.view.get_template(template).render(kw)
 
     @classmethod
-    def standard(cls, notification, allow_email_posting=True):
+    def standard(cls, notification, allow_email_posting=True, **kw):
         return cls._render('mail/footer.txt',
                            domain=config['domain'],
                            notification=notification,
                            prefix=config['forgemail.url'],
-                           allow_email_posting=allow_email_posting)
+                           allow_email_posting=allow_email_posting,
+                           **kw)
 
     @classmethod
     def monitored(cls, toaddr, app_url, setting_url):

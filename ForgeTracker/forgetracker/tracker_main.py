@@ -280,7 +280,11 @@ class ForgeTrackerApp(Application):
                 ticket_num=int(topic))
         except:
             log.exception('Error getting ticket %s', topic)
-        self.handle_artifact_message(ticket, message)
+            return
+        if ticket.discussion_disabled:
+            log.info('Discussion disabled for ticket %s', ticket.ticket_num)
+        else:
+            self.handle_artifact_message(ticket, message)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav

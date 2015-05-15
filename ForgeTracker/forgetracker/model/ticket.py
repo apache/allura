@@ -762,6 +762,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def email_address(self):
+        if self.discussion_disabled:
+            return tg_config.get('forgemail.return_path')
         if c.app.config.options.get('AllowEmailPosting', True):
             domain = '.'.join(
                 reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
@@ -1271,7 +1273,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 h.absurl('{0}admin/{1}/options'.format(
                     self.project.url(),
                     self.app.config.options.mount_point)))
-        return super(Ticket, self).get_mail_footer(notification, toaddr)
+        return MailFooter.standard(
+            notification,
+            self.app.config.options.get('AllowEmailPosting', True),
+            discussion_disabled=self.discussion_disabled)
 
 
 class TicketAttachment(BaseAttachment):
