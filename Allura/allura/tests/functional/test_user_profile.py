@@ -19,6 +19,7 @@ import mock
 import tg
 from nose.tools import assert_equal, assert_in, assert_not_in
 
+from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
@@ -174,3 +175,50 @@ class TestUserProfile(TestController):
         assert_in('Section c', r.body)
         assert_in('Section d', r.body)
         assert_not_in('Section f', r.body)
+
+
+class TestUserProfileHasAccessAPI(TestRestApiBase):
+
+    @td.with_user_project('test-admin')
+    def test_has_access_no_params(self):
+        r = self.api_get('/rest/u/test-admin/profile/has_access', status=404)
+        r = self.api_get('/rest/u/test-admin/profile/has_access?user=root', status=404)
+        r = self.api_get('/rest/u/test-admin/profile/has_access?perm=read', status=404)
+
+    @td.with_user_project('test-admin')
+    def test_has_access_unknown_params(self):
+        """Unknown user and/or permission always False for has_access API"""
+        r = self.api_get(
+            '/rest/u/test-admin/profile/has_access?user=babadook&perm=read',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)
+        r = self.api_get(
+            '/rest/u/test-admin/profile/has_access?user=test-user&perm=jump',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)
+
+    @td.with_user_project('test-admin')
+    def test_has_access_not_admin(self):
+        """
+        User which has no 'admin' permission on neighborhood can't use
+        has_access API
+        """
+        self.api_get(
+            '/rest/u/test-admin/profile/has_access?user=test-admin&perm=admin',
+            user='test-user',
+            status=403)
+
+    @td.with_user_project('test-admin')
+    def test_has_access(self):
+        r = self.api_get(
+            '/rest/u/test-admin/profile/has_access?user=test-admin&perm=admin',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], True)
+        r = self.api_get(
+            '/rest/u/test-admin/profile/has_access?user=test-user&perm=admin',
+            user='root')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['result'], False)

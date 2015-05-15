@@ -39,6 +39,7 @@ from allura.lib.plugin import AuthenticationProvider
 from allura.model import User, ACE, ProjectRole
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
+from allura.controllers.rest import AppRestControllerMixin
 from allura.lib.decorators import require_post
 from allura.lib.widgets.user_profile import SendMessageForm
 
@@ -211,7 +212,7 @@ class UserProfileController(BaseController, FeedController):
         return redirect(c.project.user_project_of.url())
 
 
-class UserProfileRestController(object):
+class UserProfileRestController(AppRestControllerMixin):
     @expose('json:')
     def index(self, **kw):
         user = c.project.user_project_of
