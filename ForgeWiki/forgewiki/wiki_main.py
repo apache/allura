@@ -41,6 +41,7 @@ from allura.controllers import AppDiscussionController, BaseController, AppDiscu
 from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
 from allura.controllers.feed import FeedArgs, FeedController
+from allura.controllers.rest import AppRestControllerMixin
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -754,7 +755,7 @@ Some *emphasized* and **strong** text
 '''
 
 
-class RootRestController(BaseController):
+class RootRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self):
         self._discuss = AppDiscussionRestController()
