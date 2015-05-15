@@ -32,6 +32,7 @@ from allura.app import Application
 from allura import version
 from allura import model as M
 from allura.controllers import BaseController
+from allura.controllers.rest import AppRestControllerMixin
 from allura.lib.security import require_authenticated, require_access
 from allura.model.timeline import perm_check, get_activity_object
 from allura.lib import helpers as h
@@ -206,7 +207,7 @@ class ForgeActivityController(BaseController):
             following=follow)
 
 
-class ForgeActivityRestController(BaseController):
+class ForgeActivityRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self, app, *args, **kw):
         super(ForgeActivityRestController, self).__init__(*args, **kw)
