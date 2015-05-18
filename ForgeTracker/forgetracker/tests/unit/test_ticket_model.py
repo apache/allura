@@ -23,8 +23,13 @@ import mock
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 from ming import schema
-from nose.tools import raises, assert_equal, assert_in
-
+from nose.tools import (
+    raises,
+    assert_equal,
+    assert_in,
+    assert_true,
+    assert_false,
+)
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.import_support import ResettableStream
@@ -86,6 +91,25 @@ class TestTicketModel(TrackerTestWithModel):
         t = Ticket(summary='my ticket', ticket_num=12)
         assert_in('allura_id', t.activity_extras)
         assert_equal(t.activity_extras['summary'], t.summary)
+
+    def test_has_activity_access(self):
+        t = Ticket(summary='ticket', ticket_num=666)
+        assert_true(t.has_activity_access('read', c.user, 'activity'))
+        t.deleted = True
+        assert_false(t.has_activity_access('read', c.user, 'activity'))
+
+    def test_comment_has_activity_access(self):
+        t = Ticket(summary='ticket', ticket_num=666, deleted=True)
+        p = t.discussion_thread.add_post(text='test post')
+        assert_equal(p.status, 'ok')
+        assert_true(p.has_activity_access('read', c.user, 'activity'))
+        p.status = 'spam'
+        assert_false(p.has_activity_access('read', c.user, 'activity'))
+        p.status = 'pending'
+        assert_false(p.has_activity_access('read', c.user, 'activity'))
+        p.status = 'ok'
+        p.deleted = True
+        assert_false(p.has_activity_access('read', c.user, 'activity'))
 
     def test_private_ticket(self):
         from allura.model import ProjectRole
