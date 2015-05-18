@@ -100,7 +100,7 @@ class ActivityObject(ActivityObjectBase):
         """Return True if user has perm access to this object, otherwise
         return False.
         """
-        if self.project is None:
+        if self.project is None or self.deleted:
             return False
         return security.has_access(self, perm, user, self.project)
 

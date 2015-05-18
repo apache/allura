@@ -522,11 +522,13 @@ class Post(Message, VersionedArtifact, ActivityObject):
         not have access to a 'comment' activity unless he also has access to
         the artifact on which it was posted (if there is one).
         """
-        if self.project is None:
+        if self.project is None or self.deleted or self.status != 'ok':
             return False
         artifact_access = True
         if self.thread.artifact:
             if self.thread.artifact.project is None:
+                return False
+            if self.thread.artifact.deleted:
                 return False
             artifact_access = security.has_access(self.thread.artifact, perm,
                                                   user, self.thread.artifact.project)
