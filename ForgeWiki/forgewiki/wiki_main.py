@@ -231,8 +231,11 @@ The wiki uses [Markdown](%s) syntax.
         links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
                   SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find(
-            {'discussion_id': discussion._id, 'status': 'pending'}).count() if discussion else 0
+        pending_mod_count = M.Post.query.find({
+            'discussion_id': discussion._id,
+            'status': 'pending',
+            'deleted': False
+        }).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(

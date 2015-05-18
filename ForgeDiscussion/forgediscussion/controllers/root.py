@@ -264,6 +264,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
                     '$gte': datetime.combine(begin, time.min),
                     '$lte': datetime.combine(end, time.max),
                 },
+                'deleted': False,
             }},
             {'$group': {
                 '_id': grouping,

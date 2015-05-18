@@ -158,9 +158,14 @@ class ForgeDiscussionApp(Application):
             for f in forums:
                 if has_access(f, 'read')():
                     if f.url() in request.url and h.has_access(f, 'moderate')():
+                        num_moderate = DM.ForumPost.query.find({
+                            'discussion_id': f._id,
+                            'status': {'$ne': 'ok'},
+                            'deleted': False,
+                        }).count()
                         moderate_link = SitemapEntry(
                             'Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
-                            small=DM.ForumPost.query.find({'discussion_id': f._id, 'status': {'$ne': 'ok'}}).count())
+                            small=num_moderate)
                     forum_links.append(
                         SitemapEntry(f.name, f.url(), small=f.num_topics))
             url = c.app.url + 'create_topic/'

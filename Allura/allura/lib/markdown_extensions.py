@@ -178,7 +178,8 @@ class TracRef2(Pattern):
         comments = ticket.discussion_thread.post_class().query.find(dict(
             discussion_id=ticket.discussion_thread.discussion_id,
             thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']})).sort('timestamp')
+            status={'$in': ['ok', 'pending']},
+            deleted=False)).sort('timestamp')
 
         if comment_num <= comments.count():
             return comments.all()[comment_num - 1].slug

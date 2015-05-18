@@ -92,16 +92,15 @@ class Discussion(Artifact, ActivityObject):
         self.num_topics = self.thread_class().query.find(
             dict(discussion_id=self._id)).count()
         self.num_posts = self.post_class().query.find(
-            dict(discussion_id=self._id, status='ok')).count()
+            dict(discussion_id=self._id, status='ok', deleted=False)).count()
 
     @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
             discussion_id=self._id,
-            status='ok'
-        ))\
-            .sort('timestamp', pymongo.DESCENDING)\
-            .limit(1)
+            status='ok',
+            deleted=False,
+        )).sort('timestamp', pymongo.DESCENDING).limit(1)
         return q.first()
 
     def url(self):
@@ -129,7 +128,7 @@ class Discussion(Artifact, ActivityObject):
         super(Discussion, self).delete()
 
     def find_posts(self, **kw):
-        q = dict(kw, discussion_id=self._id)
+        q = dict(kw, discussion_id=self._id, deleted=False)
         return self.post_class().query.find(q)
 
 
@@ -238,7 +237,9 @@ class Thread(Artifact, ActivityObject):
         return Post.query.find(dict(
             discussion_id=self.discussion_id,
             thread_id=self._id,
-            status={'$in': ['ok', 'pending']})).count()
+            status={'$in': ['ok', 'pending']},
+            deleted=False,
+        )).count()
 
     def primary(self):
         if self.ref is None:
@@ -340,12 +341,14 @@ class Thread(Artifact, ActivityObject):
 
     def update_stats(self):
         self.num_replies = self.post_class().query.find(
-            dict(thread_id=self._id, status='ok')).count() - 1
+            dict(thread_id=self._id, status='ok', deleted=False)).count() - 1
 
     @property
     def last_post(self):
         q = self.post_class().query.find(dict(
-            thread_id=self._id)).sort('timestamp', pymongo.DESCENDING)
+            thread_id=self._id,
+            deleted=False,
+        )).sort('timestamp', pymongo.DESCENDING)
         return q.first()
 
     def create_post_threads(self, posts):
@@ -370,6 +373,7 @@ class Thread(Artifact, ActivityObject):
                          status={'$in': ['ok', 'pending']})
         if status:
             terms['status'] = status
+        terms['deleted'] = False
         q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')
@@ -675,8 +679,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return 'Re: ' + (self.subject or '(no subject)')
 
     def delete(self):
-        self.attachment_class().remove(dict(post_id=self._id))
-        super(Post, self).delete()
+        self.deleted = True
+        session(self).flush(self)
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
     def approve(self, file_info=None, notify=True, notification_text=None):

@@ -354,8 +354,11 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('View Stats', self.config.url()
                      + 'stats', ui_icon=g.icons['stats']))
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find(
-            {'discussion_id': discussion._id, 'status': 'pending'}).count()
+        pending_mod_count = M.Post.query.find({
+            'discussion_id': discussion._id,
+            'status': 'pending',
+            'deleted': False,
+        }).count()
         if pending_mod_count and has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(
@@ -1022,6 +1025,7 @@ class RootController(BaseController, FeedController):
         q = dict(
             discussion_id=c.app.config.discussion_id,
             status='ok',
+            deleted=False,
         )
         if when is not None:
             q['timestamp'] = {'$gte': when}
