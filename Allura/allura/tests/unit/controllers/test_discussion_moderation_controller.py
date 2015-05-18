@@ -68,7 +68,7 @@ class TestWhenModerating(WithDatabase):
         ThreadLocalORMSession.flush_all()
 
     def get_post(self):
-        return model.Post.query.get(slug='mypost')
+        return model.Post.query.get(slug='mypost', deleted=False)
 
 
 class TestIndexWithNoPosts(WithDatabase):

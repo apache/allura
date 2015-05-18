@@ -171,7 +171,8 @@ class TestDiscuss(TestController):
         post = M.Post.query.find().first()
         assert post.status == 'ok'
         self.app.post(post_link + 'moderate', params=dict(delete='delete'))
-        assert M.Post.query.find().count() == 0
+        assert M.Post.query.find().count() == 1
+        assert M.Post.query.find({'deleted': False}).count() == 0
 
     @patch.object(M.Thread, 'is_spam')
     def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
