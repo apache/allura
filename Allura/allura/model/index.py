@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 
 # Collection definitions
 ArtifactReferenceDoc = collection(
-    'artifact_reference', main_doc_session,
+    b'artifact_reference', main_doc_session,
     Field('_id', str),
     Field('artifact_reference', dict(
         cls=S.Binary(),
@@ -57,7 +57,7 @@ ArtifactReferenceDoc = collection(
 )
 
 ShortlinkDoc = collection(
-    'shortlink', main_doc_session,
+    b'shortlink', main_doc_session,
     Field('_id', S.ObjectId()),
     # index needed for from_artifact() and index_tasks.py:del_artifacts
     Field('ref_id', str, index=True),

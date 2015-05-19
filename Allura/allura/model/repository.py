@@ -911,7 +911,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 # One of these for each commit in the physical repo on disk. The _id is the
 # hexsha of the commit (for Git and Hg).
 CommitDoc = collection(
-    'repo_ci', main_doc_session,
+    b'repo_ci', main_doc_session,
     Field('_id', str),
     Field('tree_id', str),
     Field('committed', SUser),
@@ -923,7 +923,7 @@ CommitDoc = collection(
 
 # Basic tree information (also see TreesDoc)
 TreeDoc = collection(
-    'repo_tree', main_doc_session,
+    b'repo_tree', main_doc_session,
     Field('_id', str),
     Field('tree_ids', [dict(name=str, id=str)]),
     Field('blob_ids', [dict(name=str, id=str)]),
@@ -931,7 +931,7 @@ TreeDoc = collection(
 
 # Information about the last commit to touch a tree
 LastCommitDoc = collection(
-    'repo_last_commit', main_doc_session,
+    b'repo_last_commit', main_doc_session,
     Field('_id', S.ObjectId()),
     Field('commit_id', str),
     Field('path', str),
@@ -944,14 +944,14 @@ LastCommitDoc = collection(
 # TreesDoc._id = CommitDoc._id
 # TreesDoc.tree_ids = [ TreeDoc._id, ... ]
 TreesDoc = collection(
-    'repo_trees', main_doc_session,
+    b'repo_trees', main_doc_session,
     Field('_id', str),
     Field('tree_ids', [str]))
 
 # List of commit runs (a run is a linear series of single-parent commits)
 # CommitRunDoc.commit_ids = [ CommitDoc._id, ... ]
 CommitRunDoc = collection(
-    'repo_commitrun', main_doc_session,
+    b'repo_commitrun', main_doc_session,
     Field('_id', str),
     Field('parent_commit_ids', [str], index=True),
     Field('commit_ids', [str], index=True),
