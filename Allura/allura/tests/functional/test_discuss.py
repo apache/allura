@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -63,9 +67,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': thread_link.encode("utf-8")},
@@ -88,9 +91,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
                           params=params,
@@ -103,9 +105,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
@@ -214,9 +215,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         assert create_activity.call_count == 1, create_activity.call_count
@@ -243,9 +243,8 @@ class TestAttachment(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': self.thread_link})
@@ -279,9 +278,8 @@ class TestAttachment(TestController):
         inputs = post_form.findAll('input')
 
         for field in inputs:
-            if field.has_key('name') and (field['name'] != 'file_info'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field and (field['name'] != 'file_info'):
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Reply'
         r = self.app.post(self.post_link + 'reply',
                           params=params,

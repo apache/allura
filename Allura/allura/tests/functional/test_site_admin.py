@@ -16,6 +16,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import datetime as dt
 
@@ -156,7 +160,7 @@ class TestSiteAdmin(TestController):
             user='root',
             path='/p/test/admin',
         ), status=302)
-        task = M.MonQTask.query.find({}).sort('_id', -1).next()
+        task = next(M.MonQTask.query.find({}).sort('_id', -1))
         assert str(task._id) in r.location
         assert task.context['project_id'] == project._id
         assert task.context['app_config_id'] == app.config._id

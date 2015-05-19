@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -137,7 +141,7 @@ class log_action(object):  # pragma no cover
                 result = self._func(*args, **kwargs)
             except exc.HTTPServerError:
                 raise
-            except exc.HTTPException, e:
+            except exc.HTTPException as e:
                 result = e
             args = self._args
             kwargs = self._kwargs

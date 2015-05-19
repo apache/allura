@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import shutil
 import stat
@@ -781,7 +785,7 @@ class TestGitCommit(unittest.TestCase):
                  + self.rev.diffs.changed
                  + self.rev.diffs.copied)
         for d in diffs:
-            print d
+            print(d)
 
     def test_log(self):
         # path only
@@ -883,5 +887,5 @@ class TestGitRename(unittest.TestCase):
 
     def test_merge_commit(self):
         merge_sha = '13951944969cf45a701bf90f83647b309815e6d5'
-        commit = self.repo.log(revs=merge_sha, id_only=False).next()
+        commit = next(self.repo.log(revs=merge_sha, id_only=False))
         self.assertEqual(commit['rename_details'], {})

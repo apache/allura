@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -246,7 +250,7 @@ class JsonValidator(fev.FancyValidator):
     def _to_python(self, value, state):
         try:
             json.loads(value)
-        except ValueError, e:
+        except ValueError as e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
         return value
 
@@ -258,7 +262,7 @@ class JsonConverter(fev.FancyValidator):
     def _to_python(self, value, state):
         try:
             obj = json.loads(value)
-        except ValueError, e:
+        except ValueError as e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
         return obj
 

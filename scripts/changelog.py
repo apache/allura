@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 import re
 import git
@@ -61,12 +65,12 @@ def get_ticket_summaries(tickets):
 
 
 def print_changelog(version, summaries):
-    print 'Version {version}  ({date})\n'.format(**{
+    print('Version {version}  ({date})\n'.format(**{
         'version': version,
         'date': datetime.utcnow().strftime('%B %Y'),
-    })
+    }))
     for ticket in sorted(summaries.keys()):
-        print " * [#{0}] {1}".format(ticket, summaries[ticket].encode('utf-8'))
+        print(" * [#{0}] {1}".format(ticket, summaries[ticket].encode('utf-8')))
 
 if __name__ == '__main__':
     main()

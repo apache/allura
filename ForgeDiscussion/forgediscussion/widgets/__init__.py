@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -15,6 +19,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from forum_widgets import ForumSubscriptionForm, ThreadSubscriptionForm, AnnouncementsTable
-from forum_widgets import ModerateThread, ForumHeader, ThreadHeader
-from forum_widgets import Post, Thread, Forum
+from .forum_widgets import ForumSubscriptionForm, ThreadSubscriptionForm, AnnouncementsTable
+from .forum_widgets import ModerateThread, ForumHeader, ThreadHeader
+from .forum_widgets import Post, Thread, Forum

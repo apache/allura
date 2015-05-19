@@ -43,6 +43,10 @@ To call as a task::
     MyScript.post('-p myproject --dry-run')
 
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import argparse
 import logging

@@ -18,6 +18,10 @@
 #       under the License.
 
 """The application's model objects"""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, TroveCategory, ProjectFile, AppConfig

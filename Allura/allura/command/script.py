@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -85,10 +89,10 @@ class SetToolAccessCommand(base.Command):
                        ' so removing from list.')
                 continue
             if s not in ('alpha', 'beta'):
-                print 'Unknown tool status %s' % s
+                print('Unknown tool status %s' % s)
                 sys.exit(1)
             extra_status.append(s)
-        print 'Setting project "%s" tool access to production + %r' % (
-            self.args[1], extra_status)
+        print('Setting project "%s" tool access to production + %r' % (
+            self.args[1], extra_status))
         c.project._extra_tool_status = extra_status
         session(c.project).flush()

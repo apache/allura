@@ -37,6 +37,10 @@
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',

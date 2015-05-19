@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -1571,7 +1575,7 @@ class LastCommit(RepoObject):
     @classmethod
     def _last_commit_id(cls, commit, path):
         try:
-            rev = commit.repo.log(commit._id, path, id_only=True).next()
+            rev = next(commit.repo.log(commit._id, path, id_only=True))
             return commit.repo.rev_to_commit_id(rev)
         except StopIteration:
             log.error('Tree node not recognized by SCM: %s @ %s',
@@ -1587,8 +1591,8 @@ class LastCommit(RepoObject):
             return lcid_cache[path]
         try:
             log_iter = commit.repo.log(commit._id, path, id_only=True)
-            log_iter.next()
-            rev = log_iter.next()
+            next(log_iter)
+            rev = next(log_iter)
             return commit.repo.rev_to_commit_id(rev)
         except StopIteration:
             return None

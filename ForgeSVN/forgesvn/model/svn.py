@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -247,7 +251,7 @@ class SVNImplementation(M.RepositoryImplementation):
                               'hooks', hook_name)
             with open(fn, 'wb') as fp:
                 fp.write('#!/bin/sh\n')
-            os.chmod(fn, 0755)
+            os.chmod(fn, 0o755)
 
         def clear_hook(hook_name):
             fn = os.path.join(self._repo.fs_path, self._repo.name,
@@ -627,7 +631,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
-        os.chmod(fn, 0755)
+        os.chmod(fn, 0o755)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])

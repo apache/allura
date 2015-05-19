@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -1354,7 +1358,7 @@ class TicketController(BaseController, FeedController):
                         subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count)
         else:
-            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
+            raise exc.HTTPNotFound('Ticket #%s does not exist.' % self.ticket_num)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -1648,7 +1652,7 @@ class TrackerAdminController(DefaultAdminController):
     @require_post()
     def allow_default_field(self, **post_data):
         for column in self.app.globals['show_in_search'].keys():
-            if post_data.has_key(column) and post_data[column] == 'on':
+            if column in post_data and post_data[column] == 'on':
                 self.app.globals['show_in_search'][column] = True
             else:
                 self.app.globals['show_in_search'][column] = False

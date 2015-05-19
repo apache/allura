@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -127,7 +131,7 @@ class ForgeUserStatsController(BaseController):
                 else:
                     categories[cat] = 1
         categories = sorted(categories.items(),
-                            key=lambda (x, y): y, reverse=True)
+                            key=lambda x_y: x_y[1], reverse=True)
 
         ret_dict['lastmonth_logins'] = stats.getLastMonthLogins()
         ret_dict['categories'] = categories

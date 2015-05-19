@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import calendar
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -147,6 +151,6 @@ class TestLdapAuthenticationProvider(object):
 
     def test_get_last_password_updated(self):
         user = Mock()
-        user.last_password_updated = datetime(2014, 06, 04, 13, 13, 13)
+        user.last_password_updated = datetime(2014, 0o6, 0o4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
         assert_equal(upd, user.last_password_updated)

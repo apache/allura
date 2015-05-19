@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -474,9 +478,9 @@ class TestFork(_TestCase):
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
-            print r.request.url
+            print(r.request.url)
         while r.status_int == 302:
-            print ' ==> 302 ==> %s' % r.location
+            print(' ==> 302 ==> %s' % r.location)
             r = r.follow(**kw)
         return r
 

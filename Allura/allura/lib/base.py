@@ -18,6 +18,10 @@
 #       under the License.
 
 """The base Controller API."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from webob import exc
 import pylons
 from tg import TGController
@@ -37,10 +41,10 @@ class WsgiDispatchController(TGController):
 
     def _setup_request(self):
         '''Responsible for setting all the values we need to be set on pylons.tmpl_context'''
-        raise NotImplementedError, '_setup_request'
+        raise NotImplementedError('_setup_request')
 
     def _cleanup_request(self):
-        raise NotImplementedError, '_cleanup_request'
+        raise NotImplementedError('_cleanup_request')
 
     def __call__(self, environ, start_response):
         try:
@@ -48,7 +52,7 @@ class WsgiDispatchController(TGController):
             response = super(WsgiDispatchController, self).__call__(
                 environ, start_response)
             return self.cleanup_iterator(response)
-        except exc.HTTPException, err:
+        except exc.HTTPException as err:
             return err(environ, start_response)
 
     def cleanup_iterator(self, response):

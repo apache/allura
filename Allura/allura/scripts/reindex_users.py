@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -47,7 +51,7 @@ class ReindexUsers(ScriptTask):
                         cls._post_add_users(chunk)
                     else:
                         add_users(chunk)
-            except CompoundError, err:
+            except CompoundError as err:
                 log.exception('Error indexing users:\n%r', err)
                 log.error('%s', err.format_error())
             M.main_orm_session.flush()

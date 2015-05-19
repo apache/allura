@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -28,10 +32,10 @@ def main(start, cnt):
         name = 'gen-proj-{}'.format(i)
         project = n.register_project(name, admin)
         if (i-start) > 0 and (i-start) % 100 == 0:
-            print 'Created {} projects'.format(i-start)
-    print 'Flushing...'
+            print('Created {} projects'.format(i-start))
+    print('Flushing...')
     ThreadLocalORMSession.flush_all()
-    print 'Done'
+    print('Done')
 
 if __name__ == '__main__':
     import sys

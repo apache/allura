@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -160,7 +164,7 @@ class GitImplementation(M.RepositoryImplementation):
             _git = git.Repo(self._repo.full_fs_path, odbt=git.GitCmdObjectDB)
             _git.git = GitLibCmdWrapper(_git.git)
             return _git
-        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError), err:
+        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError) as err:
             log.error('Problem looking up repo: %r', err)
             return None
 
@@ -474,7 +478,7 @@ class GitImplementation(M.RepositoryImplementation):
                           'hooks', 'post-receive')
         with open(fn, 'w') as fp:
             fp.write(text)
-        os.chmod(fn, 0755)
+        os.chmod(fn, 0o755)
 
     def _object(self, oid):
         evens = oid[::2]

@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import mock
 import random
 import logging
@@ -206,9 +210,8 @@ class TestForumAsync(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params['subject'] = 'New Subject'
         params['text'] = 'Asdf'
         r = self.app.post(url, params=params)
@@ -218,9 +221,8 @@ class TestForumAsync(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'text'
         r = self.app.post(url + 'reply', params=params)
         self._post('testforum', 'Test Reply', 'Nothing here, either',
@@ -369,9 +371,8 @@ class TestForum(TestController):
             params = dict()
             inputs = f.findAll('input')
             for field in inputs:
-                if field.has_key('name'):
-                    params[field['name']] = field.has_key(
-                        'value') and field['value'] or ''
+                if 'name' in field:
+                    params[field['name']] = 'value' in field and field['value'] or ''
             params[f.find('textarea')['name']] = '1st post in Zero Posts thread'
             params[f.find('select')['name']] = 'testforum'
             params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Zero Posts'
@@ -413,8 +414,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'This is a *test thread*'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
@@ -437,8 +438,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = "this is <h2> o'clock"
@@ -471,8 +472,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
@@ -508,8 +509,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -522,8 +523,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -544,8 +545,8 @@ class TestForum(TestController):
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         r = self.app.get(thread_url)
@@ -559,8 +560,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Post subject'
@@ -573,8 +574,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name') and 'subscription' not in field['name']:
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field and 'subscription' not in field['name']:
+                params[field['name']] = 'value' in field and field['value'] or ''
         self.app.post(str(subscribe_url), params=params)
         self.app.get('/discussion/general/subscribe_to_forum?subscribe=True')
         f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
@@ -582,8 +583,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Reply 2'
         self.app.post(str(rep_url), params=params)
         assert M.Notification.query.find(
@@ -607,8 +608,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
@@ -660,8 +661,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -674,8 +675,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic2'
@@ -725,8 +726,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -740,8 +741,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -773,8 +774,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -797,8 +798,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'

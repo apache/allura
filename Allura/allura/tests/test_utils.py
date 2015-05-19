@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import time
 import unittest
@@ -301,6 +305,6 @@ def test_empty_cursor():
 
 def test_DateJSONEncoder():
     data = {'message': u'Hi!',
-            'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
+            'date': dt.datetime(2015, 0o1, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')

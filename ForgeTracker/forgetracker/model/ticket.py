@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -664,7 +668,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 session(ticket).flush(ticket)
                 h.log_action(log, 'opened').info('')
                 return ticket
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning('Try to create duplicate ticket %s',
                                 ticket.url())
@@ -804,11 +808,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 fld = f
                 break
         if not fld:
-            raise KeyError, 'Custom field "%s" does not exist.' % custom_user_field_name
+            raise KeyError('Custom field "%s" does not exist.' % custom_user_field_name)
         if fld.type != 'user':
-            raise TypeError, 'Custom field "%s" is of type "%s"; expected ' \
+            raise TypeError('Custom field "%s" is of type "%s"; expected ' \
                              'type "user".' % (
-                                 custom_user_field_name, fld.type)
+                                 custom_user_field_name, fld.type))
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
             return None
@@ -1059,7 +1063,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 h.log_action(log, 'moved').info('Ticket %s moved to %s' %
                                                 (prior_url, new_url))
                 break
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning(
                         'Try to create duplicate ticket %s when moving from %s' %

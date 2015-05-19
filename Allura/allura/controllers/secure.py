@@ -18,6 +18,10 @@
 #       under the License.
 
 """Sample controller with all its actions protected."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 # This controller is only used when you activate auth. You can safely remove
 # this file from your project.

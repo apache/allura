@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 import os
 from glob import glob
@@ -42,11 +46,11 @@ def main(repo_dir, sub_dir='', commit=None):
     commit = Mock(_id=commit or git.head)
     paths = glob(os.path.join(repo_dir, sub_dir, '*'))
     paths = [path.replace(repo_dir + '/', '', 1) for path in paths]
-    print "Timing LCDs for %s at %s" % (paths, commit._id)
+    print("Timing LCDs for %s at %s" % (paths, commit._id))
     with benchmark() as timer:
         result = git.last_commit_ids(commit, paths)
     pprint(result)
-    print "Took %f seconds" % timer['result']
+    print("Took %f seconds" % timer['result'])
 
 if __name__ == '__main__':
     main(*sys.argv[1:])

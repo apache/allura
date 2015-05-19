@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -46,7 +50,7 @@ class ShowModelsCommand(base.Command):
         graph = build_model_inheritance_graph()
         for depth, cls in dfs(MappedClass, graph):
             for line in dump_cls(depth, cls):
-                print line
+                print(line)
 
 
 class ReindexCommand(base.Command):
@@ -136,7 +140,7 @@ class ReindexCommand(base.Command):
                     M.artifact_orm_session.clear()
                     try:
                         self._chunked_add_artifacts(ref_ids)
-                    except CompoundError, err:
+                    except CompoundError as err:
                         base.log.exception(
                             'Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
@@ -284,7 +288,7 @@ class EnsureIndexCommand(base.Command):
                 try:
                     collection.ensure_index(idx.index_spec, unique=True)
                     break
-                except DuplicateKeyError, err:
+                except DuplicateKeyError as err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
         for keys, idx in indexes.iteritems():

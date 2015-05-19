@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -339,7 +343,7 @@ class RootRestController(BaseController):
             warnings, doc = import_support.validate_import(
                 doc, username_mapping)
             return dict(warnings=warnings, errors=[])
-        except Exception, e:
+        except Exception as e:
             raise
             log.exception(e)
             return dict(status=False, errors=[repr(e)])
@@ -360,7 +364,7 @@ class RootRestController(BaseController):
             warnings = import_support.perform_import(
                 doc, username_mapping, default_username, create_users)
             return dict(warnings=warnings, errors=[])
-        except Exception, e:
+        except Exception as e:
             raise
             log.exception(e)
             return dict(status=False, errors=[str(e)])

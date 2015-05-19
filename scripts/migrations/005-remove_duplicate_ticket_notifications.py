@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -34,16 +38,16 @@ log = logging.getLogger(__name__)
 def trim_subs(subs, test):
     prime = False
 
-    print "Found %d '%s' subs with for user '%s'" % (len(subs), subs[0].artifact_title, str(subs[0].user_id))
+    print("Found %d '%s' subs with for user '%s'" % (len(subs), subs[0].artifact_title, str(subs[0].user_id)))
     for sub in subs:
         if sub.artifact_url and not prime:
             prime = True
-            print "   Keeping good subscription with a URL of '%s'" % sub.artifact_url
+            print("   Keeping good subscription with a URL of '%s'" % sub.artifact_url)
         else:
             if not sub.artifact_url:
-                print "   Found subscription with no artifact URL, deleting."
+                print("   Found subscription with no artifact URL, deleting.")
             else:
-                print "   Subscription has URL, but is a duplicate, deleting."
+                print("   Subscription has URL, but is a duplicate, deleting.")
             if not test:
                 sub.delete()
 

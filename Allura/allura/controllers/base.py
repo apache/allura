@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -26,7 +30,7 @@ class BaseController(object):
     def _lookup(self, name=None, *remainder):
         """Provide explicit default lookup to avoid dispatching backtracking
         and possible loops."""
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)
 
 
 class DispatchIndex(object):

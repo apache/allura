@@ -20,6 +20,10 @@
 """
 Model tests for project
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from nose import with_setup
 from nose.tools import assert_equals, assert_in
 from pylons import tmpl_context as c

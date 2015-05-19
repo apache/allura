@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -43,7 +47,7 @@ from .types import ACL, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
 
-from filesystem import File
+from .filesystem import File
 
 log = logging.getLogger(__name__)
 
@@ -129,7 +133,7 @@ class Artifact(MappedClass, SearchIndexable):
 
     @classmethod
     def attachment_class(cls):
-        raise NotImplementedError, 'attachment_class'
+        raise NotImplementedError('attachment_class')
 
     @LazyProperty
     def ref(self):
@@ -315,7 +319,7 @@ class Artifact(MappedClass, SearchIndexable):
         Subclasses must implement this.
 
         """
-        raise NotImplementedError, 'url'  # pragma no cover
+        raise NotImplementedError('url')  # pragma no cover
 
     def shorthand_id(self):
         """How to refer to this artifact within the app instance context.
@@ -448,7 +452,7 @@ class Snapshot(Artifact):
         return result
 
     def original(self):
-        raise NotImplemented, 'original'  # pragma no cover
+        raise NotImplemented('original')  # pragma no cover
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -529,7 +533,7 @@ class VersionedArtifact(Artifact):
                 self.__class__.__name__),
             version=n)
         if ss is None:
-            raise IndexError, n
+            raise IndexError(n)
         return ss
 
     def revert(self, version):

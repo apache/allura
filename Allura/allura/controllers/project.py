@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -125,10 +129,10 @@ class NeighborhoodController(object):
                          pname, remainder)
                 project.configure_project(is_user_project=True)
             else:
-                raise exc.HTTPNotFound, pname
+                raise exc.HTTPNotFound(pname)
         c.project = project
         if project is None or (project.deleted and not has_access(c.project, 'update')()):
-            raise exc.HTTPNotFound, pname
+            raise exc.HTTPNotFound(pname)
         return ProjectController(), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
@@ -366,10 +370,10 @@ class ProjectController(FeedController):
             return ProjectController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         c.app = app
         if not app.root:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
 
         return app.root, remainder
 

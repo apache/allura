@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import json
 import logging
@@ -68,7 +72,7 @@ def main(args):
 
     counts = count_page(test, url, verbose=args.verbose,
                         debug_html=args.debug_html)
-    print json.dumps(counts)
+    print(json.dumps(counts))
     write_csv(counts, args.id, args.data_file)
     test.tearDown()
 
@@ -116,17 +120,17 @@ def count_page(test, url, verbose=False, debug_html=False):
 
     with LogCapture('stats') as stats, LogCapture('timermiddleware') as calls:
         resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
-        print url, resp.status
+        print(url, resp.status)
         if debug_html:
             debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits)
                                                    for n in xrange(10)]))
             with open(debug_filename, 'w') as out:
                 out.write(resp.body)
-            print debug_filename
+            print(debug_filename)
 
     if verbose:
         for r in calls.records:
-            print r.getMessage()
+            print(r.getMessage())
 
     assert len(stats.records) == 1
     timings = json.loads(stats.records[0].getMessage())

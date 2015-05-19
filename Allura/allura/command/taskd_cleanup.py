@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -23,7 +27,7 @@ import subprocess
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
-import base
+from . import base
 
 
 class TaskdCleanupCommand(base.Command):

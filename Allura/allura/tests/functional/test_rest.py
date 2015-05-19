@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in

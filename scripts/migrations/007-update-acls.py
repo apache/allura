@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -77,8 +81,8 @@ def main():
     log.info('====================================')
     log.info('Update neighborhood ACLs')
     for n in q_neighborhoods:
-        p = c_project.find(dict(
-            neighborhood_id=n['_id'], shortname='--init--')).next()
+        p = next(c_project.find(dict(
+            neighborhood_id=n['_id'], shortname='--init--')))
         update_neighborhood_acl(n, p)
         if not options.test:
             c_neighborhood.save(n)
@@ -149,7 +153,7 @@ def update_neighborhood_acl(neighborhood_doc, init_doc):
     new_acl = list(init_doc['acl'])
     assert acl['read'] == [None]  # nbhd should be public
     for uid in acl['admin'] + acl['moderate']:
-        u = c_user.find(dict(_id=uid)).next()
+        u = next(c_user.find(dict(_id=uid)))
         if options.test:
             log.info('... grant nbhd admin to: %s', u['username'])
             continue
@@ -227,7 +231,7 @@ def _format_role(rid):
         if role['name']:
             return role['name']
         if role['user_id']:
-            u = c_user.find(_id=role['user_id']).next()
+            u = next(c_user.find(_id=role['user_id']))
             return u['username']
         break
     return '--invalid--'

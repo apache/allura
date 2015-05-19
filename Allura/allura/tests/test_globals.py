@@ -18,6 +18,10 @@
 #       under the License.
 
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 import os
 import allura
@@ -789,8 +793,8 @@ class TestNeighborhoodCache(object):
     @patch('allura.lib.app_globals.datetime', autospec=True)
     def test_lookup(self, dt_mock, M):
         dt_mock.datetime.utcnow.side_effect = [
-            dt.datetime(2015, 02, 05, 11, 32),
-            dt.datetime(2015, 02, 05, 11, 34),
+            dt.datetime(2015, 0o2, 0o5, 11, 32),
+            dt.datetime(2015, 0o2, 0o5, 11, 34),
         ]
         ret = M.Neighborhood.query.get.return_value
         cache = NeighborhoodCache(30)
@@ -801,7 +805,7 @@ class TestNeighborhoodCache(object):
         assert_equal(n, ret)
         assert_equal(cache._data, {'/p/': {
             'object': ret,
-            'ts': dt.datetime(2015, 02, 05, 11, 32),
+            'ts': dt.datetime(2015, 0o2, 0o5, 11, 32),
         }})
 
         # hits mongo every time
@@ -810,15 +814,15 @@ class TestNeighborhoodCache(object):
         assert_equal(n, ret)
         assert_equal(cache._data, {'/p/': {
             'object': ret,
-            'ts': dt.datetime(2015, 02, 05, 11, 34),
+            'ts': dt.datetime(2015, 0o2, 0o5, 11, 34),
         }})
 
     @patch('allura.lib.app_globals.M', autospec=True)
     @patch('allura.lib.app_globals.datetime', autospec=True)
     def test_get(self, dt_mock, M):
         dt_mock.datetime.utcnow.side_effect = [
-            dt.datetime(2015, 02, 05, 11, 32),
-            dt.datetime(2015, 02, 05, 11, 34),
+            dt.datetime(2015, 0o2, 0o5, 11, 32),
+            dt.datetime(2015, 0o2, 0o5, 11, 34),
         ]
         ret = M.Neighborhood.query.get.return_value
         cache = NeighborhoodCache(30)
@@ -842,7 +846,7 @@ class TestNeighborhoodCache(object):
     @patch('allura.lib.app_globals.datetime', autospec=True)
     def test_expired(self, dt_mock):
         dt_mock.timedelta = dt.timedelta  # restore original
-        _now = dt.datetime(2015, 02, 05, 11, 53)
+        _now = dt.datetime(2015, 0o2, 0o5, 11, 53)
         dt_mock.datetime.utcnow.return_value = _now
 
         cache = NeighborhoodCache(0)

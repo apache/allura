@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from nose.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
@@ -54,9 +58,8 @@ class TestDiscussionApiBase(TestRestApiBase):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = text
         params[f.find('select')['name']] = forum
         params[f.find('input', {'style': 'width: 90%'})['name']] = subject

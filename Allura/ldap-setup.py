@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import shutil
 import string
@@ -53,7 +57,7 @@ def main():
             run('ldapadd -Y EXTERNAL -H ldapi:/// -f %s' % name)
     with open('/etc/ldap.secret', 'w') as fp:
         fp.write(secret)
-    os.chmod('/etc/ldap.secret', 0400)
+    os.chmod('/etc/ldap.secret', 0o400)
     if get_value('add frontend ldif', 'y') == 'y':
         with tempfile(frontend_ldif, locals()) as name:
             run('ldapadd -c -x -D cn=admin,%s -W -f %s -y /etc/ldap.secret' %
@@ -74,7 +78,7 @@ def main():
         log.info('writing passwd')
         with open('/etc/ldapscripts/ldapscripts.passwd', 'w') as fp:
             fp.write(secret)
-        os.chmod('/etc/ldapscripts/ldapscripts.passwd', 0400)
+        os.chmod('/etc/ldapscripts/ldapscripts.passwd', 0o400)
         log.info('writing runtime')
         with open('/usr/share/ldapscripts/runtime.debian', 'w') as fp:
             fp.write(ldapscripts_debian)

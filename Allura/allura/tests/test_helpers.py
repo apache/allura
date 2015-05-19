@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from unittest import TestCase
 from os import path
 from datetime import datetime, timedelta
@@ -112,14 +116,14 @@ def test_find_project():
 
 
 def test_make_users():
-    r = h.make_users([None]).next()
+    r = next(h.make_users([None]))
     assert r.username == '*anonymous', r
 
 
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
     pr = M.ProjectRole.anonymous()
-    assert h.make_roles([pr._id]).next() == pr
+    assert next(h.make_roles([pr._id])) == pr
 
 
 @td.with_wiki
@@ -312,7 +316,7 @@ def test_inject_user(context):
 
 def test_datetimeformat():
     from datetime import date
-    assert h.datetimeformat(date(2013, 01, 01)) == '2013-01-01 00:00:00'
+    assert h.datetimeformat(date(2013, 0o1, 0o1)) == '2013-01-01 00:00:00'
 
 
 def test_nl2br_jinja_filter():

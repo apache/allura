@@ -35,6 +35,10 @@ Example:
     $ paster script production.ini ../scripts/add_user_to_group.py -- admin1 Admin --nbhd=/berlios/
 
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from allura import model as M
 from ming.orm import ThreadLocalORMSession

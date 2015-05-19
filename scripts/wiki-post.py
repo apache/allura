@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import types
 from sys import stdout
 import os
@@ -35,7 +39,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     This function was borrowed from Django
     """
-    if strings_only and isinstance(s, (types.NoneType, int)):
+    if strings_only and isinstance(s, (type(None), int)):
         return s
     elif not isinstance(s, basestring):
         try:
@@ -117,7 +121,7 @@ def main():
     url = options.url or config.get('wiki', 'url')
     if pagename_given:
         url = urljoin(url, urllib.quote(pagename))
-    print url
+    print(url)
 
     sign = Signer(token)
     params = [('text', markdown)] if method == 'PUT' else []
@@ -128,7 +132,7 @@ def main():
         else:
             result = urlopen(url + '?' + urlencode(params))
         stdout.write(result.read())
-    except HTTPError, e:
+    except HTTPError as e:
         stdout.write(e.read())
 
 if __name__ == '__main__':

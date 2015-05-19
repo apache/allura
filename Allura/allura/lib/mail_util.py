@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -101,18 +105,18 @@ def parse_address(addr):
     userpart, domain = addr.split('@')
     # remove common domain suffix
     if not domain.endswith(config.common_suffix):
-        raise exc.AddressException, 'Unknown domain: ' + domain
+        raise exc.AddressException('Unknown domain: ' + domain)
     domain = domain[:-len(config.common_suffix)]
     path = '/'.join(reversed(domain.split('.')))
     project, mount_point = h.find_project('/' + path)
     if project is None:
-        raise exc.AddressException, 'Unknown project: ' + domain
+        raise exc.AddressException('Unknown project: ' + domain)
     if len(mount_point) != 1:
-        raise exc.AddressException, 'Unknown tool: ' + domain
+        raise exc.AddressException('Unknown tool: ' + domain)
     with h.push_config(c, project=project):
         app = project.app_instance(mount_point[0])
         if not app:
-            raise exc.AddressException, 'Unknown tool: ' + domain
+            raise exc.AddressException('Unknown tool: ' + domain)
     return userpart, project, app
 
 

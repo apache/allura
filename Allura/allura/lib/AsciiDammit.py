@@ -16,6 +16,10 @@ To the extent that this statement does not divest the copyright,
 the copyright holder hereby grants irrevocably to every recipient
 all rights in this work otherwise reserved under copyright.
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
 __version__ = "$Revision: 1.3 $"
@@ -173,7 +177,7 @@ def _repl(match, html=0):
     "Replace the matched character with its HTML or ASCII equivalent."
     g = match.group(0)
     a = CHARS.get(g, g)
-    if type(a) == types.TupleType:
+    if type(a) == tuple:
         a = a[html]
         if html:
             a = '&' + a + ';'
@@ -213,11 +217,11 @@ def demoronise(t):
 if __name__ == '__main__':
 
     french = '\x93Sacr\xe9 bleu!\x93'
-    print "First we mangle some French."
-    print asciiDammit(french)
-    print htmlDammit(french)
+    print("First we mangle some French.")
+    print(asciiDammit(french))
+    print(htmlDammit(french))
 
-    print
-    print "And now we fix the MS-quotes but leave the French alone."
-    print demoronise(french)
-    print htmlDammit(french, 1)
+    print()
+    print("And now we fix the MS-quotes but leave the French alone.")
+    print(demoronise(french))
+    print(htmlDammit(french, 1))

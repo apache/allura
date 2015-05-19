@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -53,7 +57,7 @@ from .timeline import ActivityNode, ActivityObject
 from .types import ACL, ACE
 from .monq_model import MonQTask
 
-from filesystem import File
+from .filesystem import File
 
 log = logging.getLogger(__name__)
 
@@ -785,7 +789,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             provider.shortname_validator.to_python(
                 name, check_allowed=False, neighborhood=self.neighborhood)
         except exceptions.Invalid:
-            raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
+            raise exceptions.ToolError('Mount point "%s" is invalid' % name)
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 
     def ordered_mounts(self, include_hidden=False):
@@ -963,8 +967,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     def social_account(self, socialnetwork):
         try:
-            account = (
-                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
+            account = next((
+                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork))
         except StopIteration:
             return None
         else:

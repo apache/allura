@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -78,7 +82,7 @@ class parse(object):
                          exc_info=True)
                 msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
-        except Exception, ex:
+        except Exception as ex:
             raise
             return '[[Error parsing %s: %s]]' % (s, ex)
 

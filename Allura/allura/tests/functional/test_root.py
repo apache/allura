@@ -28,6 +28,10 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from pylons import tmpl_context as c
 from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession

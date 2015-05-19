@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -365,7 +369,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
             for a_entry in attachments:
                 try:
                     self.make_attachment(a['id'], t._id, a_entry)
-                except Exception, e:
+                except Exception as e:
                     self.warnings.append(
                         'Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)

@@ -18,6 +18,10 @@
 #       under the License.
 
 """Main Controller"""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 from urllib import unquote
 
@@ -94,7 +98,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     @expose()
     def _lookup(self, name, *remainder):
         if not h.re_project_name.match(name):
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         subproject = M.Project.query.get(
             shortname=c.project.shortname + '/' + name,
             neighborhood_id=self.p_nbhd._id)
@@ -111,10 +115,10 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             try:
                 c.project.install_app(ep_name, name)
             except KeyError:
-                raise exc.HTTPNotFound, name
+                raise exc.HTTPNotFound(name)
             app = c.project.app_instance(name)
             if app is None:
-                raise exc.HTTPNotFound, name
+                raise exc.HTTPNotFound(name)
         c.app = app
         return app.root, remainder
 

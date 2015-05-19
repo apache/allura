@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -467,10 +471,10 @@ class TestProjectAdmin(TestController):
                 'new.mount_label': 'sub-del-undel'})
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert 'checked' in r.html.find(
+            'input', {'name': 'removal', 'value': ''})
+        assert 'checked' not in r.html.find(
+            'input', {'name': 'removal', 'value': 'deleted'})
         with audits('delete project'):
             self.app.post('/admin/update', params=dict(
                 name='Test Project',
@@ -480,10 +484,10 @@ class TestProjectAdmin(TestController):
                 delete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert 'checked' not in r.html.find(
+            'input', {'name': 'removal', 'value': ''})
+        assert 'checked' in r.html.find(
+            'input', {'name': 'removal', 'value': 'deleted'})
         # make sure subprojects get deleted too
         r = self.app.get('/p/test/sub-del-undel/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
@@ -496,10 +500,10 @@ class TestProjectAdmin(TestController):
                 undelete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert 'checked' in r.html.find(
+            'input', {'name': 'removal', 'value': ''})
+        assert 'checked' not in r.html.find(
+            'input', {'name': 'removal', 'value': 'deleted'})
 
     def test_project_delete_not_allowed(self):
         # turn off project delete option
@@ -544,8 +548,8 @@ class TestProjectAdmin(TestController):
                     delete='on'))
             r = self.app.get('/p/test/sub-no-del/admin/overview')
             assert 'This project has been deleted and is not visible to non-admin users' in r
-            assert r.html.find(
-                'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+            assert 'checked' in r.html.find(
+                'input', {'name': 'removal', 'value': 'deleted'})
         finally:
             if old_allow_project_delete == ():
                 del config['allow_project_delete']

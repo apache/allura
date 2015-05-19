@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -72,7 +76,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
 
     # Refresh child references
     for i, oid in enumerate(commit_ids):
-        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+        ci = next(CommitDoc.m.find(dict(_id=oid), validate=False))
         refresh_children(ci)
         if (i + 1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s',
@@ -103,7 +107,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     if repo._refresh_precompute:
         cache = {}
         for i, oid in enumerate(commit_ids):
-            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            ci = next(CommitDoc.m.find(dict(_id=oid), validate=False))
             cache = refresh_commit_trees(ci, cache)
             if (i + 1) % 100 == 0:
                 log.info('Refresh commit trees %d: %s', (i + 1), ci._id)

@@ -16,6 +16,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import shutil
 import unittest
@@ -358,7 +362,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert not self.repo.is_file('/a')
 
     def test_paged_diffs(self):
-        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(2, id_only=True)))
         self.assertEqual(entry.diffs, entry.paged_diffs())
         self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
         added_expected = entry.diffs.added[1:3]
@@ -373,14 +377,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
-        entry = self.repo.commit(self.repo.log(1, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(1, id_only=True)))
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
                 removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
-        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(2, id_only=True)))
         actual = entry.diffs
         actual.added = sorted(actual.added)
         self.assertEqual(
@@ -391,21 +395,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                     '/a/b/c/hello.txt']), total=4))
 
     def test_diff_modify_file(self):
-        entry = self.repo.commit(self.repo.log(3, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(3, id_only=True)))
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=['/README'],
                 removed=[], added=[], total=1))
 
     def test_diff_delete(self):
-        entry = self.repo.commit(self.repo.log(4, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(4, id_only=True)))
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
                 removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
-        entry = self.repo.commit(self.repo.log(5, id_only=True).next())
+        entry = self.repo.commit(next(self.repo.log(5, id_only=True)))
         assert_equals(dict(entry.diffs), dict(
                 copied=[{'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1}],
                 changed=[], removed=[], added=[], total=1))
@@ -658,7 +662,7 @@ class TestSVNRev(unittest.TestCase):
                  + self.rev.diffs.changed
                  + self.rev.diffs.copied)
         for d in diffs:
-            print d
+            print(d)
 
     def _oid(self, rev_id):
         return '%s:%s' % (self.repo._id, rev_id)
@@ -709,11 +713,11 @@ class _Test(unittest.TestCase):
         for k, v in kwargs.iteritems():
             if isinstance(v, basestring):
                 obj = M.repository.Blob(
-                    t, k, self.idgen.next())
+                    t, k, next(self.idgen))
                 t.blob_ids.append(Object(
                     name=k, id=obj._id))
             else:
-                obj = self._make_tree(self.idgen.next(), **v)
+                obj = self._make_tree(next(self.idgen), **v)
                 t.tree_ids.append(Object(
                     name=k, id=obj._id))
         session(t).flush()

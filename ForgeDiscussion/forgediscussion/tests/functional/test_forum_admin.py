@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -185,9 +189,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'secret text'
         params[f.find('select')['name']] = 'secret'
         params[f.find('input', {'style': 'width: 90%'})
@@ -240,9 +243,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
@@ -266,9 +268,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
@@ -296,9 +297,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'

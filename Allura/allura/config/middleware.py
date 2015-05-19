@@ -18,6 +18,10 @@
 #       under the License.
 
 """WSGI middleware initialization for the allura application."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import mimetypes
 
 import pylons.middleware
@@ -121,9 +125,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         try:
             import zmq
         except ImportError:
-            raise ImportError, "Unable to import the zmq library. Please"\
+            raise ImportError("Unable to import the zmq library. Please"\
                                " check that zeromq is installed or comment out"\
-                               " the zarkov.host setting in your ini file."
+                               " the zarkov.host setting in your ini file.")
 
     app = tg.TGApp()
 

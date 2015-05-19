@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -588,7 +592,7 @@ class PreferencesController(BaseController):
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.upload_sshkey(c.user.username, key)
-        except AssertionError, ae:
+        except AssertionError as ae:
             flash('Error uploading key: %s' % ae, 'error')
         flash('Key uploaded')
         redirect('.')

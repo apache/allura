@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -35,6 +39,7 @@ from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
+from functools import reduce
 
 
 log = logging.getLogger(__name__)
@@ -232,7 +237,7 @@ class PersonalDataForm(ForgeForm):
                 options=[ew.Option(py_value=" ", label=" -- Unknown -- ", selected=False)] +
                         [ew.Option(py_value=c, label=n, selected=False)
                          for c, n in sorted(country_names.items(),
-                                            key=lambda (k, v): v)],
+                                            key=lambda k_v: k_v[1])],
                 attrs={'onchange': 'selectTimezone(this.value)'}),
             ew.TextField(
                 name='city',

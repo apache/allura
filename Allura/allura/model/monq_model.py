@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -199,7 +203,7 @@ class MonQTask(MappedClass):
                     sort=sort)
                 if obj is not None:
                     return obj
-            except pymongo.errors.OperationFailure, exc:
+            except pymongo.errors.OperationFailure as exc:
                 if 'No matching object found' not in exc.args[0]:
                     raise
             if waitfunc is None:
@@ -260,7 +264,7 @@ class MonQTask(MappedClass):
                 self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
-        except Exception, exc:
+        except Exception as exc:
             if asbool(config.get('monq.raise_errors')):
                 raise
             else:

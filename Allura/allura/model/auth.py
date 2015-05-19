@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -38,7 +42,7 @@ from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
 
-import types
+from . import types
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -61,7 +65,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     This function was borrowed from Django
     """
-    if strings_only and isinstance(s, (types.NoneType, int)):
+    if strings_only and isinstance(s, (type(None), int)):
         return s
     elif not isinstance(s, basestring):
         try:

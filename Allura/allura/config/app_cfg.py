@@ -30,6 +30,10 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
 
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 from functools import partial
 
@@ -123,7 +127,7 @@ class JinjaEngine(ew.TemplateEngine):
         try:
             return self._environ.get_template(template_name)
         except jinja2.TemplateNotFound:
-            raise ew.errors.TemplateNotFound, '%s not found' % template_name
+            raise ew.errors.TemplateNotFound('%s not found' % template_name)
 
     def parse(self, template_text, filepath=None):
         return self._environ.from_string(template_text)

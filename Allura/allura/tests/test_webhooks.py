@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -638,7 +642,7 @@ class TestModels(TestWebhookBase):
 
     @patch('allura.model.webhook.dt', autospec=True)
     def test_update_limit(self, dt_mock):
-        _now = dt.datetime(2015, 02, 02, 13, 39)
+        _now = dt.datetime(2015, 0o2, 0o2, 13, 39)
         dt_mock.datetime.utcnow.return_value = _now
         assert_equal(self.wh.last_sent, None)
         self.wh.update_limit()

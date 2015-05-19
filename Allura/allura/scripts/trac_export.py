@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 import sys
 import csv
@@ -120,7 +124,7 @@ class TracExport(object):
     def log_url(self, url):
         log.info(url)
         if self.verbose:
-            print >>sys.stderr, url
+            print(url, file=sys.stderr)
 
     @classmethod
     def trac2z_date(cls, s):
@@ -151,7 +155,7 @@ class TracExport(object):
         url = self.full_url(self.TICKET_URL % id, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        ticket_fields = reader.next()
+        ticket_fields = next(reader)
         ticket_fields['class'] = 'ARTIFACT'
         ticket = self.remap_fields(ticket_fields)
 
@@ -224,8 +228,8 @@ class TracExport(object):
         url = self.full_url(self.QUERY_MAX_ID_URL, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        fields = reader.next()
-        print fields
+        fields = next(reader)
+        print(fields)
         return int(fields['id'])
 
     def get_ticket(self, id, extra={}):
@@ -250,14 +254,14 @@ class TracExport(object):
         url = self.full_url(self.QUERY_BY_PAGE_URL % self.page, 'csv')
         try:
             f = self.csvopen(url)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
                 if 'beyond the number of pages in the query' in body or 'Log in with a SourceForge account' in body:
                     raise StopIteration
             raise
         reader = csv.reader(f)
-        cols = reader.next()
+        cols = next(reader)
         for r in reader:
             if r and r[0].isdigit():
                 id = int(r[0])

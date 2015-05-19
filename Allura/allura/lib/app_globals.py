@@ -19,6 +19,10 @@
 
 
 """The application's Globals object"""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 __all__ = ['Globals']
 import logging
@@ -387,7 +391,7 @@ class Globals(object):
                 self._zarkov = ZarkovClient(
                     config.get('zarkov.host', 'tcp://127.0.0.1:6543'))
             self._zarkov.event(event_type, context, extra)
-        except Exception, ex:
+        except Exception as ex:
             self._zarkov = None
             log.error('Error sending zarkov event(%r): %r', ex, dict(
                 type=event_type, context=context, extra=extra))

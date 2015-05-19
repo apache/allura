@@ -19,6 +19,10 @@
 a specific entity (e.g. user, project, ...). To do so, the new classes should
 overwrite the methods defined here, which will be called when the related
 event happens, so that the statistics for the given entity are updated.'''
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 
 class EventsListener:

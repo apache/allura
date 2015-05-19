@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -78,7 +82,7 @@ def route_email(
                                 c.app.handle_message(userpart, msg)
                         else:
                             c.app.handle_message(userpart, msg)
-            except exc.MailError, e:
+            except exc.MailError as e:
                 log.error('Error routing email to %s: %s', addr, e)
             except:
                 log.exception('Error routing mail to %s', addr)

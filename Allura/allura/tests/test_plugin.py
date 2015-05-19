@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -250,7 +254,7 @@ class TestLocalAuthenticationProvider(object):
 
     def test_get_last_password_updated(self):
         user = Mock()
-        user.last_password_updated = dt.datetime(2014, 06, 04, 13, 13, 13)
+        user.last_password_updated = dt.datetime(2014, 0o6, 0o4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
         assert_equal(upd, user.last_password_updated)
 

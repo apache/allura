@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -189,7 +193,7 @@ class AdminExtensionLookup(object):
             controller = admin_extension().project_admin_controllers.get(name)
             if controller:
                 return controller(), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)
 
 
 class ProjectAdminController(BaseController):
@@ -339,7 +343,7 @@ class ProjectAdminController(BaseController):
     def _lookup(self, name, *remainder):
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return app.admin, remainder
 
     @expose()
@@ -691,7 +695,7 @@ class ProjectAdminController(BaseController):
             if new_app:
                 # force redir to last page of tools, where new app will be
                 page = ''
-        except forge_exc.ForgeError, exc:
+        except forge_exc.ForgeError as exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         redirect('tools?limit=%s&page=%s' % (limit, page))
@@ -887,11 +891,11 @@ class ProjectAdminRestController(BaseController):
     @expose()
     def _lookup(self, *args):
         if len(args) == 0:
-            raise exc.HTTPNotFound, args
+            raise exc.HTTPNotFound(args)
         name, remainder = args[0], args[1:]
         app = c.project.app_instance(name)
         if app is None or app.admin_api_root is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return app.admin_api_root, remainder
 
 

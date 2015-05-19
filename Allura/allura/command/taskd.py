@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -32,7 +36,7 @@ from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
 
-import base
+from . import base
 
 faulthandler.enable()
 
@@ -193,7 +197,7 @@ class TaskCommand(base.Command):
         else:
             q = dict(state=self.options.state)
         for t in M.MonQTask.query.find(q):
-            print t
+            print(t)
 
     def _retry(self):
         '''Retry tasks in an error state'''

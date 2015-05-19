@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -58,7 +62,7 @@ MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 def permanent_redirect(url):
     try:
         tg.redirect(url)
-    except exc.HTTPFound, err:
+    except exc.HTTPFound as err:
         raise exc.HTTPMovedPermanently(location=err.location)
 
 
@@ -108,7 +112,7 @@ class lazy_logger(object):
 
     def __getattr__(self, name):
         if name.startswith('_'):
-            raise AttributeError, name
+            raise AttributeError(name)
         return getattr(self._logger, name)
 
 
@@ -232,7 +236,7 @@ def chunked_list(l, n):
 def chunked_iter(iterable, max_size):
     '''return iterable 'chunks' from the iterable of max size max_size'''
     eiter = enumerate(iterable)
-    keyfunc = lambda (i, x): i // max_size
+    keyfunc = lambda i_x: i_x[0] // max_size
     for _, chunk in groupby(eiter, keyfunc):
         yield (x for i, x in chunk)
 
@@ -339,7 +343,7 @@ class AntiSpam(object):
             timestamp = self.timestamp
         try:
             client_ip = ip_address(self.request)
-        except (TypeError, AttributeError), err:
+        except (TypeError, AttributeError) as err:
             client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
             timestamp, client_ip, pylons.config.get('spinner_secret', 'abcdef'))
@@ -359,17 +363,17 @@ class AntiSpam(object):
             if now is None:
                 now = time.time()
             if obj.timestamp > now + 5:
-                raise ValueError, 'Post from the future'
+                raise ValueError('Post from the future')
             if now - obj.timestamp > 24 * 60 * 60:
-                raise ValueError, 'Post from the distant past'
+                raise ValueError('Post from the distant past')
             if obj.spinner != obj.make_spinner(obj.timestamp):
-                raise ValueError, 'Bad spinner value'
+                raise ValueError('Bad spinner value')
             for k in new_params.keys():
                 new_params[obj.dec(k)] = new_params.pop(k)
             for fldno in range(obj.num_honey):
                 value = new_params.pop('honey%s' % fldno)
                 if value:
-                    raise ValueError, 'Value in honeypot field: %s' % value
+                    raise ValueError('Value in honeypot field: %s' % value)
         return new_params
 
     @classmethod

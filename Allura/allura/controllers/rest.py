@@ -18,6 +18,10 @@
 #       under the License.
 
 """REST Controller"""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 
 import oauth2 as oauth
@@ -93,7 +97,7 @@ class RestController(object):
             c.user = c.api_token.user
         neighborhood = M.Neighborhood.query.get(url_prefix='/' + name + '/')
         if not neighborhood:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return NeighborhoodRestController(neighborhood), remainder
 
 
@@ -263,12 +267,12 @@ class NeighborhoodRestController(object):
             provider.shortname_validator.to_python(
                 name, check_allowed=False, neighborhood=self._neighborhood)
         except Invalid:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         name = self._neighborhood.shortname_prefix + name
         project = M.Project.query.get(
             shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
         if not project:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
 
         if project and name and name.startswith('u/'):
             # make sure user-projects are associated with an enabled user
@@ -296,10 +300,10 @@ class ProjectRestController(object):
             return ProjectRestController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         c.app = app
         if app.api_root is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         action_logger.info('', extra=dict(
             api_key=request.params.get('api_key')))
         return app.api_root, remainder

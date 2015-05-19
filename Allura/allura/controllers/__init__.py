@@ -18,6 +18,10 @@
 #       under the License.
 
 """Controllers for the allura application."""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from .discuss import DiscussionController, AppDiscussionController, ThreadController, PostController, ModerationController
 from .discuss import AppDiscussionRestController
 from .base import BaseController, DispatchIndex
