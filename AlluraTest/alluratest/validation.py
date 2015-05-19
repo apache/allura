@@ -306,7 +306,26 @@ class ValidatingTestApp(PostParamCheckingTestApp):
             params[k] = kw.pop(k, False)
         return params, kw
 
+    def convert_dict(self, d):
+        return {str(k): str(v) for k, v in d.iteritems()}
+
+    def convert_args(self, args, kw):
+        """
+        Convert args to plain string, because webtest.TestApp.get/post/etc does
+        not work with unicode.
+        """
+        url = str(args[0])
+        args = (url,) + args[1:]
+        params = kw.pop('params', None)
+        extra_environ = kw.pop('extra_environ', None)
+        if params:
+            kw['params'] = self.convert_dict(params)
+        if extra_environ:
+            kw['extra_environ'] = self.convert_dict(extra_environ)
+        return args, kw
+
     def get(self, *args, **kw):
+        args, kw = self.convert_args(args, kw)
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).get(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
@@ -314,6 +333,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         return resp
 
     def post(self, *args, **kw):
+        args, kw = self.convert_args(args, kw)
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).post(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
@@ -321,6 +341,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         return resp
 
     def delete(self, *args, **kw):
+        args, kw = self.convert_args(args, kw)
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).delete(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
