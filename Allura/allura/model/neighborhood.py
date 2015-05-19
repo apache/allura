@@ -67,7 +67,7 @@ class Neighborhood(MappedClass):
     '''
     class __mongometa__:
         session = main_orm_session
-        name = 'neighborhood'
+        name = b'neighborhood'
         unique_indexes = ['url_prefix']
 
     _id = FieldProperty(S.ObjectId)

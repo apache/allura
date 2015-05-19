@@ -32,7 +32,7 @@ from allura.model.types import MarkdownCache
 class ChatChannel(MappedClass):
 
     class __mongometa__:
-        name = 'globals'
+        name = b'globals'
         session = M.main_orm_session
         indexes = ['project_id']
         unique_indexes = ['channel']
@@ -46,7 +46,7 @@ class ChatChannel(MappedClass):
 class ChatMessage(M.Artifact):
 
     class __mongometa__:
-        name = 'chat_message'
+        name = b'chat_message'
         indexes = ['timestamp']
     type_s = 'Chat Message'
 

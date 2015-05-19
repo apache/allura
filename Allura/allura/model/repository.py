@@ -330,7 +330,7 @@ class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
 
     class __mongometa__:
-        name = 'generic-repository'
+        name = b'generic-repository'
         indexes = ['upstream_repo.name']
     _impl = None
     repo_id = 'repo'
@@ -722,7 +722,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     statuses = ['open', 'merged', 'rejected']
 
     class __mongometa__:
-        name = 'merge-request'
+        name = b'merge-request'
         indexes = ['commit_id']
         unique_indexes = [('app_config_id', 'request_number')]
     type_s = 'MergeRequest'

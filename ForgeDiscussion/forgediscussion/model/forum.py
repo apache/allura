@@ -45,7 +45,7 @@ log = logging.getLogger(__name__)
 class Forum(M.Discussion):
 
     class __mongometa__:
-        name = 'forum'
+        name = b'forum'
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
@@ -161,7 +161,7 @@ class ForumFile(M.File):
 class ForumThread(M.Thread):
 
     class __mongometa__:
-        name = 'forum_thread'
+        name = b'forum_thread'
         indexes = [
             'flags',
             'discussion_id',
@@ -217,7 +217,7 @@ class ForumThread(M.Thread):
 class ForumPostHistory(M.PostHistory):
 
     class __mongometa__:
-        name = 'post_history'
+        name = b'post_history'
 
     artifact_id = ForeignIdProperty('ForumPost')
 
@@ -225,7 +225,7 @@ class ForumPostHistory(M.PostHistory):
 class ForumPost(M.Post):
 
     class __mongometa__:
-        name = 'forum_post'
+        name = b'forum_post'
         history_class = ForumPostHistory
         indexes = [
             'timestamp',  # for the posts_24hr site_stats query

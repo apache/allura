@@ -59,7 +59,7 @@ class Repository(M.Repository):
     type_s = 'SVN Repository'
 
     class __mongometa__:
-        name = 'svn-repository'
+        name = b'svn-repository'
     branches = FieldProperty([dict(name=str, object_id=str)])
     _refresh_precompute = False
 

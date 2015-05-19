@@ -56,7 +56,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = 'wiki-globals'
+        name = b'wiki-globals'
         session = project_orm_session
         indexes = ['app_config_id']
 
@@ -70,7 +70,7 @@ class Globals(MappedClass):
 class PageHistory(Snapshot):
 
     class __mongometa__:
-        name = 'page_history'
+        name = b'page_history'
 
     def original(self):
         return Page.query.get(_id=self.artifact_id)
@@ -106,7 +106,7 @@ class PageHistory(Snapshot):
 class Page(VersionedArtifact, ActivityObject):
 
     class __mongometa__:
-        name = 'page'
+        name = b'page'
         history_class = PageHistory
         unique_indexes = [('app_config_id', 'title')]
 

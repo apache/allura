@@ -116,7 +116,7 @@ class EmailAddress(MappedClass):
     re_format = re.compile('^.*\s+<(.*)>\s*$')
 
     class __mongometa__:
-        name = 'email_address'
+        name = b'email_address'
         session = main_orm_session
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
@@ -223,7 +223,7 @@ please visit the following URL:
 
 class AuthGlobals(MappedClass):
     class __mongometa__:
-        name = 'auth_globals'
+        name = b'auth_globals'
         session = main_orm_session
 
     _id = FieldProperty(int)
@@ -272,7 +272,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
     class __mongometa__:
-        name = 'user'
+        name = b'user'
         session = main_orm_session
         indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
@@ -816,7 +816,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
-        name = 'user'
+        name = b'user'
         unique_indexes = [('user_id', 'project_id', 'name')]
 
 
@@ -833,7 +833,7 @@ class ProjectRole(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'project_role'
+        name = b'project_role'
         unique_indexes = [('user_id', 'project_id', 'name')]
         indexes = [
             ('user_id',),

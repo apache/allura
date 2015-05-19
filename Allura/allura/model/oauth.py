@@ -44,7 +44,7 @@ class OAuthToken(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'oauth_token'
+        name = b'oauth_token'
         indexes = ['api_key']
         polymorphic_on = 'type'
         polymorphic_identity = None
@@ -65,7 +65,7 @@ class OAuthConsumerToken(OAuthToken):
 
     class __mongometa__:
         polymorphic_identity = 'consumer'
-        name = 'oauth_consumer_token'
+        name = b'oauth_consumer_token'
         unique_indexes = [('name', 'user_id')]
 
     type = FieldProperty(str, if_missing='consumer')

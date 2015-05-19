@@ -68,7 +68,7 @@ class MonQTask(MappedClass):
 
     class __mongometa__:
         session = task_orm_session
-        name = 'monq_task'
+        name = b'monq_task'
         indexes = [
             [
                 # used in MonQTask.get() method

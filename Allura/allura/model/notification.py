@@ -76,7 +76,7 @@ class Notification(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'notification'
+        name = b'notification'
         indexes = ['project_id']
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
@@ -386,7 +386,7 @@ class Mailbox(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'mailbox'
+        name = b'mailbox'
         unique_indexes = [
             ('user_id', 'project_id', 'app_config_id',
              'artifact_index_id', 'topic', 'is_flash'),
@@ -705,7 +705,7 @@ class SiteNotification(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'site_notification'
+        name = b'site_notification'
 
     _id = FieldProperty(S.ObjectId)
     content = FieldProperty(str, if_missing='')

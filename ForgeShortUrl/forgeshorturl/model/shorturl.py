@@ -31,7 +31,7 @@ from allura import model as M
 class ShortUrl(M.Artifact):
 
     class __mongometa__:
-        name = 'short_urls'
+        name = b'short_urls'
         unique_indexes = [('short_name', 'app_config_id')]
 
     type_s = 'ShortUrl'

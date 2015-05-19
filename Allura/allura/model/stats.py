@@ -37,7 +37,7 @@ from functools import reduce
 class Stats(MappedClass):
 
     class __mongometa__:
-        name = 'basestats'
+        name = b'basestats'
         session = main_orm_session
         unique_indexes = ['_id']
 

@@ -67,7 +67,7 @@ class Artifact(MappedClass, SearchIndexable):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name = 'artifact'
+        name = b'artifact'
         indexes = [
             ('app_config_id', 'labels'),
         ]
@@ -418,7 +418,7 @@ class Snapshot(Artifact):
     """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
     class __mongometa__:
         session = artifact_orm_session
-        name = 'artifact_snapshot'
+        name = b'artifact_snapshot'
         unique_indexes = [('artifact_class', 'artifact_id', 'version')]
         indexes = [('artifact_id', 'version')]
 
@@ -476,7 +476,7 @@ class VersionedArtifact(Artifact):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name = 'versioned_artifact'
+        name = b'versioned_artifact'
         history_class = Snapshot
 
     version = FieldProperty(S.Int, if_missing=0)
@@ -576,7 +576,7 @@ class Message(Artifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = 'message'
+        name = b'message'
     type_s = 'Generic Message'
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
@@ -624,7 +624,7 @@ class AwardFile(File):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'award_file'
+        name = b'award_file'
     award_id = FieldProperty(S.ObjectId)
 
 
@@ -632,7 +632,7 @@ class Award(Artifact):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'award'
+        name = b'award'
         indexes = ['short']
     type_s = 'Generic Award'
 
@@ -676,7 +676,7 @@ class AwardGrant(Artifact):
     "An :class:`Award <allura.model.artifact.Award>` can be bestowed upon a project by a neighborhood"
     class __mongometa__:
         session = main_orm_session
-        name = 'grant'
+        name = b'grant'
         indexes = ['short']
     type_s = 'Generic Award Grant'
 
@@ -750,7 +750,7 @@ class Feed(MappedClass):
     """
     class __mongometa__:
         session = project_orm_session
-        name = 'artifact_feed'
+        name = b'artifact_feed'
         indexes = [
             'pubdate',
             ('artifact_ref.project_id', 'artifact_ref.mount_point'),
@@ -869,7 +869,7 @@ class VotableArtifact(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'vote'
+        name = b'vote'
 
     votes = FieldProperty(int, if_missing=0)
     votes_up = FieldProperty(int, if_missing=0)
@@ -943,7 +943,7 @@ class MovedArtifact(Artifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = 'moved_artifact'
+        name = b'moved_artifact'
 
     _id = FieldProperty(S.ObjectId)
     app_config_id = ForeignIdProperty(
