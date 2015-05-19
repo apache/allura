@@ -287,7 +287,7 @@ class AntiSpam(object):
         tx_tbl = string.maketrans('+/', '-_')
         s = binascii.b2a_base64(s)
         s = s.rstrip('=\n')
-        s = s.translate(tx_tbl)
+        s = str(s).translate(tx_tbl)
         s = 'X' + s
         return s
 
@@ -312,10 +312,10 @@ class AntiSpam(object):
         plain = ([len(plain)]
                  + map(ord, plain)
                  + self.random_padding[:len(self.spinner_ord) - len(plain) - 1])
-        enc = ''.join(chr(p ^ s) for p, s in zip(plain, self.spinner_ord))
+        enc = b''.join(chr(p ^ s) for p, s in zip(plain, self.spinner_ord))
         enc = self._wrap(enc)
         if css_safe:
-            enc = ''.join(ch for ch in enc if ch.isalpha())
+            enc = b''.join(ch for ch in enc if ch.isalpha())
         return enc
 
     def dec(self, enc):
@@ -323,7 +323,7 @@ class AntiSpam(object):
         enc = list(map(ord, enc))
         plain = [e ^ s for e, s in zip(enc, self.spinner_ord)]
         plain = plain[1:1 + plain[0]]
-        plain = ''.join(map(chr, plain))
+        plain = b''.join(map(chr, plain))
         return plain
 
     def extra_fields(self):
