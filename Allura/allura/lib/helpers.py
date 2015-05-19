@@ -998,7 +998,7 @@ class exceptionless(object):
         self.log = log
 
     def __call__(self, fun):
-        fname = 'exceptionless(%s)' % fun.__name__
+        fname = b'exceptionless(%s)' % fun.__name__
 
         def inner(*args, **kwargs):
             try:
