@@ -259,7 +259,7 @@ class WikiAttachment(BaseAttachment):
     ArtifactType = Page
 
     class __mongometa__:
-        polymorphic_identity = 'WikiAttachment'
+        polymorphic_identity = b'WikiAttachment'
     attachment_type = FieldProperty(str, if_missing='WikiAttachment')
 
 Mapper.compile_all()

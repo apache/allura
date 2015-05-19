@@ -1287,7 +1287,7 @@ class TicketAttachment(BaseAttachment):
     ArtifactType = Ticket
 
     class __mongometa__:
-        polymorphic_identity = 'TicketAttachment'
+        polymorphic_identity = b'TicketAttachment'
     attachment_type = FieldProperty(str, if_missing='TicketAttachment')
 
 

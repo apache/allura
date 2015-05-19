@@ -746,7 +746,7 @@ class DiscussionAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = 'DiscussionAttachment'
+        polymorphic_identity = b'DiscussionAttachment'
         indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
 
     discussion_id = FieldProperty(schema.ObjectId)

@@ -64,7 +64,7 @@ class OAuthToken(MappedClass):
 class OAuthConsumerToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = 'consumer'
+        polymorphic_identity = b'consumer'
         name = b'oauth_consumer_token'
         unique_indexes = [('name', 'user_id')]
 
@@ -108,7 +108,7 @@ class OAuthConsumerToken(OAuthToken):
 class OAuthRequestToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = 'request'
+        polymorphic_identity = b'request'
 
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
@@ -122,7 +122,7 @@ class OAuthRequestToken(OAuthToken):
 class OAuthAccessToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = 'access'
+        polymorphic_identity = b'access'
 
     type = FieldProperty(str, if_missing='access')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')

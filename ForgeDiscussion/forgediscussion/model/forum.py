@@ -256,7 +256,7 @@ class ForumAttachment(M.DiscussionAttachment):
     PostClass = ForumPost
 
     class __mongometa__:
-        polymorphic_identity = 'ForumAttachment'
+        polymorphic_identity = b'ForumAttachment'
     attachment_type = FieldProperty(str, if_missing='ForumAttachment')
 
 Mapper.compile_all()

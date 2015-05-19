@@ -305,7 +305,7 @@ class Attachment(M.BaseAttachment):
     ArtifactClass = BlogPost
 
     class __mongometa__:
-        polymorphic_identity = 'BlogAttachment'
+        polymorphic_identity = b'BlogAttachment'
     attachment_type = FieldProperty(str, if_missing='BlogAttachment')
 
 
