@@ -59,7 +59,7 @@ class StaticFilesMiddleware(object):
             for ep in tool_entry_points]
 
     def __call__(self, environ, start_response):
-        environ['static.script_name'] = self.script_name
+        environ[b'static.script_name'] = self.script_name
         if not environ['PATH_INFO'].startswith(self.script_name):
             return self.app(environ, start_response)
         try:
@@ -79,14 +79,14 @@ class StaticFilesMiddleware(object):
                     file_path = pkg_resources.resource_filename(
                         resource_cls.__module__, resource_path)
                     return fileapp.FileApp(file_path, [
-                        ('Access-Control-Allow-Origin', '*')])
+                        (b'Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename(
             'allura', os.path.join(
                 'public', 'nf',
                 filename))
         return fileapp.FileApp(file_path, [
-            ('Access-Control-Allow-Origin', '*')])
+            (b'Access-Control-Allow-Origin', '*')])
 
 
 class LoginRedirectMiddleware(object):
@@ -145,7 +145,7 @@ class CSRFMiddleware(object):
         def session_start_response(status, headers, exc_info=None):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
                 headers.append(
-                    ('Set-cookie',
+                    (b'Set-cookie',
                      str('%s=%s; Path=/' % (self._cookie_name, cookie))))
             return start_response(status, headers, exc_info)
         return self._app(environ, session_start_response)
@@ -318,7 +318,7 @@ class RememberLoginMiddleware(object):
                     header, contents = headers[i]
                     if header == 'Set-cookie' and \
                             contents.lstrip().startswith(session.key):
-                        headers[i] = ('Set-cookie', cookie)
+                        headers[i] = (b'Set-cookie', str(cookie))
                         break
             return start_response(status, headers, exc_info)
 
