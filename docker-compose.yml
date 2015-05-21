@@ -1,0 +1,16 @@
+web:
+  build: .
+  working_dir: ${basedir}
+  command: paster serve Allura/docker-dev.ini --reload
+  ports:
+    - "8080:8080"
+  volumes:
+    - .:/${basedir}
+  links:
+    - mongo
+mongo:
+  image: mongo:2.6
+  expose:
+    - "27017"
+  volumes:
+    - /allura-data/mongo:/data/db
