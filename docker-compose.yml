@@ -1,11 +1,11 @@
 web:
   build: .
-  working_dir: ${basedir}
+  working_dir: /allura
   command: paster serve Allura/docker-dev.ini --reload
   ports:
     - "8080:8080"
   volumes:
-    - .:/${basedir}
+    - .:/allura
   links:
     - mongo
 mongo:
