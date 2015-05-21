@@ -12,6 +12,7 @@ web:
     - /allura-data/scm/svn:/allura-data/scm/svn
   links:
     - mongo
+    - solr
 
 taskd:
   image: allura_web
@@ -24,6 +25,16 @@ taskd:
     - /allura-data/scm/svn:/allura-data/scm/svn
   links:
     - mongo
+    - solr
+
+solr:
+  build: solr_config
+  working_dir: /solr/solr-4.2.1/example
+  command: java -jar start.jar
+  ports:
+    - "8983:8983"
+  volumes:
+    - /allura-data/solr:/solr/solr-4.2.1/example/solr/collection1/data
 
 mongo:
   image: mongo:2.6
