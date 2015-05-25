@@ -738,9 +738,11 @@ class ProjectRegistrationProvider(object):
         res = g.phone_service.check(request_id, pin)
         if res.get('status') == 'ok':
             user.set_tool_data('phone_verification', number_hash=number_hash)
-            h.auditlog_user('Phone verification succeeded', user=user)
+            msg = 'Phone verification succeeded. Hash: {}'.format(number_hash)
+            h.auditlog_user(msg, user=user)
         else:
-            h.auditlog_user('Phone verification failed', user=user)
+            msg = 'Phone verification failed. Hash: {}'.format(number_hash)
+            h.auditlog_user(msg, user=user)
         return res
 
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
