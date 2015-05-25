@@ -98,9 +98,9 @@ var FormStepMixin = {
     }
   },
 
-  isInputDisabled() { return this.props.state.in_progress; },
+  isInputDisabled: function() { return this.props.state.in_progress; },
 
-  isButtonDisabled() {
+  isButtonDisabled: function() {
     var input = this.props.state[this.getKey()];
     var has_input = Boolean(input);
     return this.isInputDisabled() || !has_input;
