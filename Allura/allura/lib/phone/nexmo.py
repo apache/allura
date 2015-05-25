@@ -20,26 +20,15 @@ from urlparse import urljoin
 
 import json
 import requests
+from allura.lib.phone import PhoneService
 
 log = logging.getLogger(__name__)
 
 
-class NexmoPhoneService(object):
+class NexmoPhoneService(PhoneService):
     """
     Implementation of :class:`allura.lib.phone.PhoneService` interface
     for Nexmo Verify
-
-    To enable NexmoPhoneService in your Allura instance, first enable the entry
-    point in setup.py::
-
-        [allura.phone]
-        nexmo = allura.lib.phone.nexmo:NexmoPhoneService
-
-    Then include the following parameters in your .ini file::
-
-        phone.method = nexmo
-        phone.api_key = <your Nexmo API key here>
-        phone.api_secret = <your Nexmo API secret here>
     """
 
     BASE_URL = 'https://api.nexmo.com/'
