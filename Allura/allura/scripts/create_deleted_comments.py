@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import sys
 import argparse
 import logging
 
@@ -22,7 +23,7 @@ from ming.odm import session
 from pylons import tmpl_context as c
 
 from allura.scripts import ScriptTask
-from allura.model import Post
+from allura import model as M
 from allura.lib.utils import chunked_find
 from forgediscussion.model import ForumPost
 
@@ -34,11 +35,14 @@ class CreateDeletedComments(ScriptTask):
 
     @classmethod
     def execute(cls, options):
-        models = [Post, ForumPost]
+        models = [M.Post, ForumPost]
+        app_config_id = cls.get_tool_id(options.tool)
         # Find all posts that have parent_id, but does not have actual parent
         # and create fake parent for them
         for model in models:
-            for chunk in chunked_find(model, {'parent_id': {'$ne': None}}):
+            q = {'parent_id': {'$ne': None},
+                 'app_config_id': app_config_id}
+            for chunk in chunked_find(model, q):
                 for post in chunk:
                     if not post.parent:
                         log.info('Creating deleted parent for %s %s',
@@ -59,7 +63,27 @@ class CreateDeletedComments(ScriptTask):
                             slug=slug,
                             full_slug=full_slug,
                         )
-                        session(deleted_post).flush(deleted_post)
+                        if options.dry_run:
+                            session(deleted_post).expunge(deleted_post)
+                        else:
+                            session(deleted_post).flush(deleted_post)
+
+    @classmethod
+    def get_tool_id(cls, tool):
+        _n, _p, _mount = tool.split('/')
+        n = M.Neighborhood.query.get(url_prefix='/{}/'.format(_n))
+        if not n:
+            log.error('Can not find neighborhood %s', _n)
+            sys.exit(1)
+        p = M.Project.query.get(neighborhood_id=n._id, shortname=_p)
+        if not p:
+            log.error('Can not find project %s', _p)
+            sys.exit(1)
+        t = p.app_instance(_mount)
+        if not t:
+            log.error('Can not find tool with mount point %s', _mount)
+            sys.exit(1)
+        return t.config._id
 
     @classmethod
     def parser(cls):
@@ -67,6 +91,18 @@ class CreateDeletedComments(ScriptTask):
             description='Create comments marked as deleted in place of '
                         'actually deleted parent comments (ticket:#1731)'
         )
+        parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            dest='dry_run',
+            default=False,
+            help='Show comments that will be created, but do not actually '
+                 'create anything',
+        )
+        parser.add_argument(
+            '-t', '--tool',
+            required=True,
+            help='Create comments only in specified tool, e.g. p/test/wiki')
         return parser
 
 
