@@ -307,6 +307,8 @@ class PostController(BaseController):
                                        tags=['comment'])
             redirect(request.referer)
         elif request.method == 'GET':
+            if self.post.deleted:
+                raise exc.HTTPNotFound
             if version is not None:
                 HC = self.post.__mongometa__.history_class
                 ss = HC.query.find(

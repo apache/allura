@@ -18,6 +18,8 @@
 from mock import patch
 from nose.tools import assert_in, assert_not_in, assert_equal
 
+from ming.odm import session
+
 from allura.tests import TestController
 from allura import model as M
 
@@ -227,6 +229,18 @@ class TestDiscuss(TestController):
         assert 'Last edit: Test Admin less than 1 minute ago' in str(
             r.html.find('div', {'class': 'display_post'}))
 
+    def test_deleted_post(self):
+        r = self._make_post('This is a post')
+        reply_form = r.html.find(
+            'div', {'class': 'edit_post_form reply'}).find('form')
+        post_link = str(reply_form['action']).rstrip('/reply')
+        _, slug = post_link.rsplit('/', 1)
+        r = self.app.get(post_link, status=200)
+        post = M.Post.query.get(slug=slug)
+        post.deleted = True
+        session(post).flush(post)
+        r = self.app.get(post_link, status=404)
+
 
 class TestAttachment(TestController):
 
@@ -254,17 +268,21 @@ class TestAttachment(TestController):
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
 
-    def test_attach(self):
-        r = self.app.post(self.post_link + 'attach',
-                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+    def attach_link(self):
         r = self.app.get(self.thread_link)
         for alink in r.html.findAll('a'):
             if 'attachment' in alink['href']:
                 alink = str(alink['href'])
-                break
+                return alink
         else:
             assert False, 'attachment link not found'
+
+    def test_attach(self):
+        r = self.app.post(self.post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+        r = self.app.get(self.thread_link)
         assert '<div class="attachment_thumb">' in r
+        alink = self.attach_link()
         r = self.app.get(alink)
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
@@ -289,3 +307,15 @@ class TestAttachment(TestController):
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.thread_link)
         assert "test.txt" in r
+
+    def test_deleted_post_attachment(self):
+        self.app.post(
+            self.post_link + 'attach',
+            upload_files=[('file_info', 'test.txt', 'HiThere!')])
+        alink = self.attach_link()
+        r = self.app.get(alink, status=200)
+        _, slug = self.post_link.rstrip('/reply').rsplit('/', 1)
+        post = M.Post.query.get(slug=slug)
+        post.deleted = True
+        session(post).flush(post)
+        r = self.app.get(alink, status=404)

@@ -88,6 +88,8 @@ class AttachmentController(BaseController):
         if request.method == 'POST':
             self.handle_post(delete, **kw)
             redirect(request.referer)
+        if self.artifact.deleted:
+            raise exc.HTTPNotFound
         embed = False
         if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
             embed = True
