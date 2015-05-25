@@ -205,7 +205,7 @@ class NeighborhoodController(object):
         request_id = result.pop('request_id', None)
         if request_id:
             session['phone_verification.request_id'] = request_id
-            number_hash = sha1(h.really_unicode(number)).hexdigest()
+            number_hash = utils.phone_number_hash(number)
             session['phone_verification.number_hash'] = number_hash
             session.save()
         return result

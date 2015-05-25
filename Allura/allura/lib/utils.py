@@ -600,3 +600,9 @@ class DateJSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
         return json.JSONEncoder.default(self, obj)
+
+
+def phone_number_hash(number):
+    pattern = re.compile('\W+')
+    number = pattern.sub('', number)
+    return hashlib.sha1(number).hexdigest()

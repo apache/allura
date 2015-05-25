@@ -25,7 +25,12 @@ from os import path
 
 from webob import Request
 from mock import Mock, patch
-from nose.tools import assert_equal, assert_raises, assert_in
+from nose.tools import (
+    assert_equal,
+    assert_not_equal,
+    assert_raises,
+    assert_in,
+)
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 from tg import config
@@ -304,3 +309,9 @@ def test_DateJSONEncoder():
             'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
+
+
+def test_phone_number_hash():
+    hash = utils.phone_number_hash
+    assert_equal(hash('1234567890'), hash('+123 456:7890'))
+    assert_not_equal(hash('1234567890'), hash('1234567891'))
