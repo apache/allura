@@ -248,3 +248,6 @@ For details, see AlluraTest/jslint/
 
 Modernizr, which is available under the MIT license.
 For details, see Allura/allura/public/nf/js/modernizr.js
+
+React.js, which is available under the BSD license.
+For details, see Allura/allura/public/nf/js/react.min.js
