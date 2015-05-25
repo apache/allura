@@ -435,7 +435,8 @@ class ModerationController(BaseController):
         c.post_filter = WidgetConfig.post_filter
         c.moderate_posts = WidgetConfig.moderate_posts
         query = dict(
-            discussion_id=self.discussion._id)
+            discussion_id=self.discussion._id,
+            deleted=False)
         if status != '-':
             query['status'] = status
         if flag:

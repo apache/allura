@@ -17,7 +17,7 @@
 
 from nose.tools import assert_equal
 from mock import Mock, patch
-from ming.orm import ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession, session
 
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.factories import create_post, create_discussion
@@ -97,6 +97,11 @@ class TestIndexWithAPostInTheDiscussion(WithDatabase):
         assert self.template_variables['limit'] == 50
         assert self.template_variables['pgnum'] == 1
         assert self.template_variables['pages'] == 1
+
+    def test_deleted_post_not_shown(self):
+        self.post.deleted = True
+        session(self.post).flush(self.post)
+        assert self.template_variables['posts'].all() == []
 
 
 def show_moderation_index(discussion, **kwargs_for_controller):
