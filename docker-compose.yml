@@ -1,11 +1,14 @@
 web:
   build: .
   working_dir: /allura
-  command: paster serve Allura/docker-dev.ini --reload
+  command: bash -c 'cd Allura && paster serve docker-dev.ini --reload'
   ports:
     - "8080:8080"
   volumes:
     - .:/allura
+    # mount env to allow update and sharing with taskd container
+    - env-docker/python:/usr/local/lib/python2.7
+    - env-docker/bin:/usr/local/bin
     # mounting it separatelly to create git, svn, hg directories automatically
     - /allura-data/scm/git:/allura-data/scm/git
     - /allura-data/scm/hg:/allura-data/scm/hg
@@ -18,11 +21,8 @@ taskd:
   image: allura_web
   working_dir: /allura/Allura
   command: paster taskd docker-dev.ini
-  volumes:
-    - .:/allura
-    - /allura-data/scm/git:/allura-data/scm/git
-    - /allura-data/scm/hg:/allura-data/scm/hg
-    - /allura-data/scm/svn:/allura-data/scm/svn
+  volumes_from:
+    - web
   links:
     - mongo
     - solr

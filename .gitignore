@@ -25,6 +25,7 @@ var/
 .nose-stopwatch-times
 .noseids
 env
+env-docker
 Allura/allura/templates/home
 Allura/allura/templates/var
 Allura/production.ini
