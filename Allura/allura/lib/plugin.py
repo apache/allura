@@ -715,6 +715,8 @@ class ProjectRegistrationProvider(object):
         Returns True if one of the following is true:
             - phone verification is disabled
             - :param user: has 'admin' access to :param neighborhood:
+            - :param user: is has 'admin' access for some project, which belongs
+              to :param neighborhood:
             - phone is already verified for a :param user:
 
         Otherwise returns False.
@@ -722,6 +724,10 @@ class ProjectRegistrationProvider(object):
         if not asbool(config.get('project.verify_phone')):
             return True
         if security.has_access(neighborhood, 'admin', user=user)():
+            return True
+        admin_in = [p for p in user.my_projects_by_role_name('Admin')
+                    if p.neighborhood_id == neighborhood._id]
+        if len(admin_in) > 0:
             return True
         return bool(user.get_tool_data('phone_verification', 'number_hash'))
 

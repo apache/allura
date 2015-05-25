@@ -90,6 +90,7 @@ class TestProjectRegistrationProvider(object):
 class UserMock(object):
     def __init__(self):
         self.tool_data = {}
+        self._projects = []
 
     def get_tool_data(self, tool, key):
         return self.tool_data.get(tool, {}).get(key, None)
@@ -97,6 +98,12 @@ class UserMock(object):
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
+
+    def set_projects(self, projects):
+        self._projects = projects
+
+    def my_projects_by_role_name(self, role):
+        return self._projects
 
 
 class TestProjectRegistrationProviderPhoneVerification(object):
@@ -114,6 +121,15 @@ class TestProjectRegistrationProviderPhoneVerification(object):
     def test_phone_verified_admin(self, has_access):
         has_access.return_value.return_value = True
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
+            assert_true(self.p.phone_verified(self.user, self.nbhd))
+
+    @patch.object(plugin.security, 'has_access', autospec=True)
+    def test_phone_verified_project_admin(self, has_access):
+        has_access.return_value.return_value = False
+        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
+            self.user.set_projects([Mock()])
+            assert_false(self.p.phone_verified(self.user, self.nbhd))
+            self.user.set_projects([Mock(neighborhood_id=self.nbhd._id)])
             assert_true(self.p.phone_verified(self.user, self.nbhd))
 
     @patch.object(plugin.security, 'has_access', autospec=True)
