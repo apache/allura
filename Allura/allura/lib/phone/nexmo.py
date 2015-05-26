@@ -21,6 +21,7 @@ from urlparse import urljoin
 import json
 import requests
 from allura.lib.phone import PhoneService
+from allura.lib.utils import phone_number_hash
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class NexmoPhoneService(PhoneService):
         params = self.add_common_params(params)
         log_params = dict(params, api_key='...', api_secret='...')
         if 'number' in log_params:
-            log_params['number'] = '...'
+            log_params['number'] = phone_number_hash(log_params['number'])
         params = json.dumps(params, sort_keys=True)
         log.info('PhoneService (nexmo) request: %s %s', url, log_params)
         try:
