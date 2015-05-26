@@ -185,9 +185,8 @@ class NeighborhoodController(object):
     @without_trailing_slash
     def add_project(self, **form_data):
         require_access(self.neighborhood, 'register')
-        provider = plugin.ProjectRegistrationProvider.get()
-        phone_verified = provider.phone_verified(c.user, self.neighborhood)
-        c.show_phone_verification_overlay = not phone_verified
+        verify = c.form_errors == {'_the_form': u'phone-verification'}
+        c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
         form_data.setdefault(
             'tools', [u'Wiki', u'Git', u'Tickets', u'Discussion'])
