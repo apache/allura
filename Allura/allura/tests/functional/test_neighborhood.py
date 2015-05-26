@@ -961,11 +961,12 @@ class TestNeighborhood(TestController):
 class TestPhoneVerificationOnProjectRegistration(TestController):
 
     def test_add_project_shows_phone_verification_overlay(self):
-        r = self.app.get('/p/add_project')
+        params = {'extra_environ': {'username': 'test-user'}}
+        r = self.app.get('/p/add_project', **params)
         overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
         assert_equal(overlay, None)
         with h.push_config(config, **{'project.verify_phone': 'true'}):
-            r = self.app.get('/p/add_project')
+            r = self.app.get('/p/add_project', **params)
             overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
             assert_not_equal(overlay, None)
             header = overlay.find('h2')
@@ -1056,6 +1057,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                     project_name='Phone Test',
                     project_description='',
                     neighborhood='Projects'),
+                extra_environ=dict(username='test-user'),
                 antispam=True)
             wf = json.loads(self.webflash(r))
             assert_equal(wf['status'], 'error')
