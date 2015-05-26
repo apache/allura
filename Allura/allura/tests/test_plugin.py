@@ -179,7 +179,7 @@ class TestProjectRegistrationProviderPhoneVerification(object):
                 self.user.get_tool_data('phone_verification', 'number_hash'),
                 None)
             audit.assert_called_once_with(
-                'Phone verification failed', user=self.user)
+                'Phone verification failed. Hash: hash', user=self.user)
 
     @patch.object(plugin.h, 'auditlog_user', autospec=True)
     @patch.object(plugin, 'g')
@@ -195,7 +195,7 @@ class TestProjectRegistrationProviderPhoneVerification(object):
                 self.user.get_tool_data('phone_verification', 'number_hash'),
                 'hash')
             audit.assert_called_once_with(
-                'Phone verification succeeded', user=self.user)
+                'Phone verification succeeded. Hash: hash', user=self.user)
 
 
 class TestThemeProvider(object):
