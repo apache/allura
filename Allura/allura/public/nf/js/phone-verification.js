@@ -145,7 +145,10 @@ var StepCheck = React.createClass({
   getAPIData: function() { return {'pin': this.props.state[this.getKey()]}; },
   getLabel: function() { return 'Enter PIN'; },
   getKey: function() { return 'pin'; },
-  onSuccess: function() { window.top.location.reload(); }
+  onSuccess: function() {
+    var form = window.top.jQuery('form[action="/p/register"]');
+    form.submit();
+  }
 });
 
 var PhoneVerificationForm = React.createClass({
