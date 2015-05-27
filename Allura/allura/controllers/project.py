@@ -188,8 +188,7 @@ class NeighborhoodController(object):
         verify = c.form_errors == {'_the_form': u'phone-verification'}
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
-        form_data.setdefault(
-            'tools', [u'Wiki', u'Git', u'Tickets', u'Discussion'])
+        form_data.setdefault('tools', W.add_project.default_tools)
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 

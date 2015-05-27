@@ -922,6 +922,8 @@ class NeighborhoodAddProjectForm(ForgeForm):
         method='post',
         submit_text='Start',
         neighborhood=None)
+    # tools installed by default
+    default_tools = [u'wiki', u'git', u'tickets', u'discussion']
 
     @property
     def fields(self):
