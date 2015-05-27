@@ -960,20 +960,6 @@ class TestNeighborhood(TestController):
 
 class TestPhoneVerificationOnProjectRegistration(TestController):
 
-    def test_add_project_shows_phone_verification_overlay(self):
-        params = {'extra_environ': {'username': 'test-user'}}
-        r = self.app.get('/p/add_project', **params)
-        overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
-        assert_equal(overlay, None)
-        with h.push_config(config, **{'project.verify_phone': 'true'}):
-            r = self.app.get('/p/add_project', **params)
-            overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
-            assert_not_equal(overlay, None)
-            header = overlay.find('h2')
-            iframe = overlay.find('iframe')
-            assert_equal(header.getText(), 'Phone Verification Required')
-            assert_equal(iframe.get('src'), '/p/phone_verification_fragment')
-
     def test_phone_verification_fragment_renders(self):
         self.app.get('/p/phone_verification_fragment', status=200)
         self.app.get('/adobe/phone_verification_fragment', status=200)
@@ -1059,6 +1045,9 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                     neighborhood='Projects'),
                 extra_environ=dict(username='test-user'),
                 antispam=True)
-            wf = json.loads(self.webflash(r))
-            assert_equal(wf['status'], 'error')
-            assert_equal(wf['message'], 'You must pass phone verification')
+            overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
+            assert_not_equal(overlay, None)
+            header = overlay.find('h2')
+            iframe = overlay.find('iframe')
+            assert_equal(header.getText(), 'Phone Verification Required')
+            assert_equal(iframe.get('src'), '/p/phone_verification_fragment')
