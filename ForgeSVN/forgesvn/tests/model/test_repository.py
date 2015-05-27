@@ -27,7 +27,7 @@ from zipfile import ZipFile
 from collections import defaultdict
 from pylons import tmpl_context as c, app_globals as g
 import mock
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from datadiff.tools import assert_equals
 import tg
 import ming
@@ -693,10 +693,10 @@ class TestSVNRev(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         send_notifications(self.repo, [self.repo.rev_to_commit_id(1)])
         ThreadLocalORMSession.flush_all()
-        n = M.Notification.query.find(
-            dict(subject='[test:src] [r1] - rick446: Create readme')).first()
+        n = M.Notification.query.find({u'subject': u'[test:src] New commit by rick446'}).first()
         assert n
-        assert_equal(n.text, 'Create readme http://localhost:8080/p/test/src/1/')
+        assert_in(u'By rick446', n.text)
+        assert_in(u'Create readme', n.text)
 
 
 class _Test(unittest.TestCase):
@@ -869,6 +869,7 @@ class TestRepo(_TestWithRepo):
             M.repository.CommitDoc(dict(
                 authored=dict(
                     name=committer_name,
+                    date=datetime(2010, 10, 8, 15, 32, 48, 0),
                     email=committer_email),
                 _id=oid)).m.insert()
         self.repo._impl.refresh_commit_info = refresh_commit_info
@@ -880,7 +881,8 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "master,branch:  by %s http://localhost:8080/ci/foo99" % committer_name in n.text
+                assert_in(u'By Test Committer on 10/08/2010 15:32', n.text)
+                assert_in(u'http://localhost:8080/ci/foo99/', n.text)
                 break
         else:
             assert False, 'Did not find notification'

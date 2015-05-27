@@ -16,8 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 --> #}
+{% if branches %}## Branch: {% for b in branches %} {{ b }}  {% endfor%}{% endif %}
 
-{% if branches %}# Branch: {% for b in branches %} {{ b }} {% endfor%}{% endif %}
 {{summary}}
-By {{ author }} on {{ date }}.
+
+By {{ author }} on {{ date }}
 [**View Changes**]({{ commit_url }})
