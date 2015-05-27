@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 from mock import patch
 from nose.tools import assert_in, assert_not_in, assert_equal
 
@@ -309,13 +310,19 @@ class TestAttachment(TestController):
         assert "test.txt" in r
 
     def test_deleted_post_attachment(self):
+        f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        with open(f) as f:
+            pic = f.read()
         self.app.post(
             self.post_link + 'attach',
-            upload_files=[('file_info', 'test.txt', 'HiThere!')])
+            upload_files=[('file_info', 'user.png', pic)])
         alink = self.attach_link()
-        r = self.app.get(alink, status=200)
+        thumblink = alink + '/thumb'
+        self.app.get(alink, status=200)
+        self.app.get(thumblink, status=200)
         _, slug = self.post_link.rstrip('/reply').rsplit('/', 1)
         post = M.Post.query.get(slug=slug)
         post.deleted = True
         session(post).flush(post)
-        r = self.app.get(alink, status=404)
+        self.app.get(alink, status=404)
+        self.app.get(thumblink, status=404)

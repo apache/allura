@@ -97,4 +97,6 @@ class AttachmentController(BaseController):
 
     @expose()
     def thumb(self):
+        if self.artifact.deleted:
+            raise exc.HTTPNotFound
         return self.thumbnail.serve(embed=True)
