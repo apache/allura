@@ -360,10 +360,18 @@ def unknown_commit_ids(all_commit_ids):
 
 
 def send_notifications(repo, commit_ids):
-    '''Create appropriate notification and feed objects for a refresh'''
+    """Create appropriate notification and feed objects for a refresh
+
+    :param repo: A repository artifact instance.
+    :type repo: Repository
+
+    :param commit_ids: A list of commit hash strings.
+    :type commit_ids: list
+    """
     from allura.model import Feed, Notification
     commit_msgs = []
     base_url = tg.config['base_url']
+    last_branch = []
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
         index = dict(
@@ -382,26 +390,30 @@ def send_notifications(repo, commit_ids):
                 author_name=ci.authored.name,
                 link=href,
                 unique_id=href)
-            branches = repo.symbolics_for_commit(ci)[0]
-            commit_msgs.append('%s: %s by %s %s%s' % (
-                ",".join(b for b in branches),
-                summary, ci.authored.name, base_url, ci.url()))
+
+            summary = g.markdown_commit.convert(ci.message) if ci.message else ""
+
+            current_branch = repo.symbolics_for_commit(ci)[0]
+            if last_branch == current_branch:
+                branches = []
+            else:
+                branches = current_branch
+                last_branch = branches
+
+            commit_msgs.append(dict(
+                author=ci.authored.name,
+                date=ci.authored.date.strftime("%m/%d/%Y %H:%M"),
+                summary=summary,
+                branches=branches,
+                commit_url=base_url + href))
+
     if commit_msgs:
         if len(commit_msgs) > 1:
-            subject = '%d new commits to %s %s' % (
-                len(commit_msgs), repo.app.project.name, repo.app.config.options.mount_label)
-            text = '\n\n'.join(commit_msgs)
+            subject = u"{} new commits to {}".format(len(commit_msgs), repo.app.config.options.mount_label)
         else:
-            subject = '{0} - {1}: {2}'.format(
-                repo.shorthand_for_commit(ci._id),
-                ci.authored.name,
-                summary)
-            branches = repo.symbolics_for_commit(ci)[0]
-            text_branches = ('%s: ' % ",".join(b for b in branches)
-                             if branches else '')
-            text = "%s%s %s%s" % (text_branches,
-                                  ci.message,
-                                  base_url, ci.url())
+            subject = u'New commit by {}'.format(commit_msgs[0]['author'])
+        template = g.jinja2_env.get_template("allura:templates/mail/commits.md")
+        text = u"\n\n-----".join([template.render(d) for d in commit_msgs])
 
         Notification.post(
             artifact=repo,

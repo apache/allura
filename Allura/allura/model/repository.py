@@ -578,7 +578,7 @@ class Repository(Artifact, ActivityObject):
         result.update(
             name_s=self.name,
             type_s=self.type_s,
-            title='Repository %s %s' % (self.project.name, self.name))
+            title=u'{} {} repository'.format(self.project.name, self.app.tool_label))
         return result
 
     @property

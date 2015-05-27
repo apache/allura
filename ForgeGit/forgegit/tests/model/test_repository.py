@@ -29,7 +29,7 @@ from pylons import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from testfixtures import TempDirectory
 from datadiff.tools import assert_equals
 
@@ -376,15 +376,15 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         send_notifications(
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
         ThreadLocalORMSession.flush_all()
-        n = M.Notification.query.find(
-            dict(subject='[test:src-git] [1e146e] - Rick Copeland: Change README')).first()
+
+        n = M.Notification.query.find({'subject': u'[test:src-git] New commit by Rick Copeland'}).first()
         assert n
-        assert 'master: ' in n.text, n.text
+        assert_in('Change README', n.text)
         send_notifications(
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         ThreadLocalORMSession.flush_all()
         assert M.Notification.query.find(
-            dict(subject='[test:src-git] 2 new commits to Test Project Git')).first()
+            dict(subject=u'[test:src-git] 2 new commits to Git')).first()
 
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']

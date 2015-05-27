@@ -264,9 +264,7 @@ class TestRootController(_TestCase):
         assert '<table class="side-by-side-diff">' in r
 
     def test_refresh(self):
-        notification = M.Notification.query.find(
-            dict(subject='[test:src-git] 5 new commits to Test Project Git')
-        ).first()
+        notification = M.Notification.query.find({'subject': '[test:src-git] 5 new commits to Git'}).first()
         assert notification
         domain = '.'.join(
             reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
