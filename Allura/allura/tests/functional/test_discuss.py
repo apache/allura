@@ -234,7 +234,7 @@ class TestDiscuss(TestController):
         r = self._make_post('This is a post')
         reply_form = r.html.find(
             'div', {'class': 'edit_post_form reply'}).find('form')
-        post_link = str(reply_form['action']).rstrip('/reply')
+        post_link = str(reply_form['action']).rstrip('/')
         _, slug = post_link.rsplit('/', 1)
         r = self.app.get(post_link, status=200)
         post = M.Post.query.get(slug=slug)
@@ -320,8 +320,9 @@ class TestAttachment(TestController):
         thumblink = alink + '/thumb'
         self.app.get(alink, status=200)
         self.app.get(thumblink, status=200)
-        _, slug = self.post_link.rstrip('/reply').rsplit('/', 1)
+        _, slug = self.post_link.rstrip('/').rsplit('/', 1)
         post = M.Post.query.get(slug=slug)
+        assert post, 'Could not find post for {} {}'.format(slug, self.post_link)
         post.deleted = True
         session(post).flush(post)
         self.app.get(alink, status=404)
