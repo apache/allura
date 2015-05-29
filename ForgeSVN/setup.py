@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -25,7 +29,7 @@ from forgesvn.version import __version__
 try:
     import pysvn
 except ImportError:
-    print '\npysvn must be installed for ForgeSVN to work\n'
+    print('\npysvn must be installed for ForgeSVN to work\n')
     raise
 
 setup(name='ForgeSVN',

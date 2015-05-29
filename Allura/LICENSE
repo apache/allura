@@ -242,6 +242,3 @@ For details, see allura/public/nf/js/sylvester.js
 
 Modernizr, which is available under the MIT license.
 For details, see allura/public/nf/js/modernizr.js
-
-React.js, which is available under the BSD license.
-For details, see Allura/allura/public/nf/js/react.min.js

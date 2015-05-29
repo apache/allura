@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -19,7 +23,7 @@
 import logging
 import json
 from datetime import datetime
-from cStringIO import StringIO
+from io import StringIO
 
 # Non-stdlib imports
 from pylons import tmpl_context as c
@@ -32,6 +36,7 @@ from allura.lib.plugin import ImportIdConverter
 
 # Local imports
 from forgetracker import model as TM
+import collections
 
 try:
     from forgeimporters.base import ProjectExtractor
@@ -197,13 +202,13 @@ class ImportSupport(object):
 
     def make_artifact(self, ticket_dict):
         remapped = {}
-        for f, v in ticket_dict.iteritems():
+        for f, v in ticket_dict.items():
             transform = self.FIELD_MAP.get(f, ())
             if transform is None:
                 continue
             elif transform is True:
                 remapped[f] = v
-            elif callable(transform):
+            elif isinstance(transform, collections.Callable):
                 transform(remapped, f, v)
             elif transform is ():
                 self.custom(remapped, f, v, ticket_dict.get('status'))
@@ -215,12 +220,12 @@ class ImportSupport(object):
             self.description_processing(remapped['description']))
         creator = owner = ''
         if ticket_dict.get('submitter') and not remapped.get('reported_by_id'):
-            creator = u'*Originally created by:* {0}\n'.format(
+            creator = '*Originally created by:* {0}\n'.format(
                 h.really_unicode(ticket_dict['submitter']))
         if ticket_dict.get('assigned_to') and not remapped.get('assigned_to_id'):
-            owner = u'*Originally owned by:* {0}\n'.format(
+            owner = '*Originally owned by:* {0}\n'.format(
                     h.really_unicode(ticket_dict['assigned_to']))
-        remapped['description'] = u'{0}{1}{2}{3}'.format(creator, owner,
+        remapped['description'] = '{0}{1}{2}{3}'.format(creator, owner,
                                                          '\n' if creator or owner else '', description)
 
         ticket_num = ticket_dict['id']
@@ -258,7 +263,7 @@ class ImportSupport(object):
         text = h.really_unicode(
             self.comment_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
-            text = u'*Originally posted by:* {0}\n\n{1}'.format(
+            text = '*Originally posted by:* {0}\n\n{1}'.format(
                 h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
@@ -307,7 +312,7 @@ class ImportSupport(object):
     def validate_user_mapping(self):
         if 'user_map' not in self.options:
             self.options['user_map'] = {}
-        for foreign_user, allura_user in self.options['user_map'].iteritems():
+        for foreign_user, allura_user in self.options['user_map'].items():
             u = M.User.by_username(allura_user)
             if not u:
                 raise ImportException(
@@ -323,7 +328,7 @@ class ImportSupport(object):
         self.validate_user_mapping()
 
         project_doc = json.loads(doc)
-        tracker_names = project_doc['trackers'].keys()
+        tracker_names = list(project_doc['trackers'].keys())
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings
@@ -343,7 +348,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         self.validate_user_mapping()
 
         project_doc = json.loads(doc)
-        tracker_names = project_doc['trackers'].keys()
+        tracker_names = list(project_doc['trackers'].keys())
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings
@@ -365,7 +370,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
             for a_entry in attachments:
                 try:
                     self.make_attachment(a['id'], t._id, a_entry)
-                except Exception, e:
+                except Exception as e:
                     self.warnings.append(
                         'Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)

@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -67,9 +71,9 @@ def test_pyflakes():
         # print 'Command was: %s' % cmd
         retval = run(cmd)
         if retval != 1:
-            print
+            print()
             # print 'Command was: %s' % cmd
-            print 'Returned %s' % retval
+            print('Returned %s' % retval)
             error = True
 
     if error:

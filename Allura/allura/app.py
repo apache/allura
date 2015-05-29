@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,7 +22,7 @@
 import os
 import logging
 from urllib import basejoin
-from cStringIO import StringIO
+from io import StringIO
 from collections import defaultdict
 from xml.etree import ElementTree as ET
 
@@ -43,6 +47,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
+import collections
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +72,7 @@ class ConfigOption(object):
         """Return the default value for this ConfigOption.
 
         """
-        if callable(self._default):
+        if isinstance(self._default, collections.Callable):
             return self._default()
         return self._default
 
@@ -135,7 +140,7 @@ class SitemapEntry(object):
         """
         lbl = self.label
         url = self.url
-        if callable(lbl):
+        if isinstance(lbl, collections.Callable):
             lbl = lbl(app)
         if url is not None:
             url = basejoin(app.url, url)
@@ -549,7 +554,7 @@ class Application(object):
         :return: a list of :class:`WebhookSender <allura.webhooks.WebhookSender>`
         """
         tool_name = self.config.tool_name.lower()
-        webhooks = [w for w in g.entry_points['webhooks'].itervalues()
+        webhooks = [w for w in g.entry_points['webhooks'].values()
                     if tool_name in w.triggered_by]
         return webhooks
 
@@ -660,7 +665,7 @@ class Application(object):
 
         Set exportable to True for applications implementing this.
         """
-        raise NotImplementedError, 'bulk_export'
+        raise NotImplementedError('bulk_export')
 
     def doap(self, parent):
         """App's representation for DOAP API.
@@ -738,7 +743,7 @@ class DefaultAdminController(BaseController):
     @require_post()
     def unblock_user(self, user_id=None, perm=None):
         try:
-            user_id = map(ObjectId, user_id)
+            user_id = list(map(ObjectId, user_id))
         except InvalidId:
             user_id = []
         users = model.User.query.find({'_id': {'$in': user_id}}).all()
@@ -759,7 +764,7 @@ class DefaultAdminController(BaseController):
         """Render the permissions management web page.
 
         """
-        from ext.admin.widgets import PermissionCard, BlockUser, BlockList
+        from .ext.admin.widgets import PermissionCard, BlockUser, BlockList
         c.card = PermissionCard()
         c.block_user = BlockUser()
         c.block_list = BlockList()
@@ -862,9 +867,9 @@ class DefaultAdminController(BaseController):
             new_group_ids = args.get('new', [])
             del_group_ids = []
             group_ids = args.get('value', [])
-            if isinstance(new_group_ids, basestring):
+            if isinstance(new_group_ids, str):
                 new_group_ids = [new_group_ids]
-            if isinstance(group_ids, basestring):
+            if isinstance(group_ids, str):
                 group_ids = [group_ids]
 
             for acl in old_acl:
@@ -872,18 +877,18 @@ class DefaultAdminController(BaseController):
                     del_group_ids.append(str(acl['role_id']))
 
             get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
-            groups = map(get_role, group_ids)
-            new_groups = map(get_role, new_group_ids)
-            del_groups = map(get_role, del_group_ids)
+            groups = list(map(get_role, group_ids))
+            new_groups = list(map(get_role, new_group_ids))
+            del_groups = list(map(get_role, del_group_ids))
 
             if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
-                    ', '.join(map(lambda role: role.name, filter(None, groups + del_groups))),
-                    ', '.join(map(lambda role: role.name, filter(None, groups + new_groups))),
+                    ', '.join([role.name for role in [_f for _f in groups + del_groups if _f]]),
+                    ', '.join([role.name for role in [_f for _f in groups + new_groups if _f]]),
                     self.app.config.options['mount_point']))
 
-            role_ids = map(ObjectId, group_ids + new_group_ids)
+            role_ids = list(map(ObjectId, group_ids + new_group_ids))
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]
 
@@ -921,4 +926,4 @@ class WebhooksLookup(BaseController):
         for hook in self.app._webhooks:
             if hook.type == name and hook.controller:
                 return hook.controller(hook, self.app), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)

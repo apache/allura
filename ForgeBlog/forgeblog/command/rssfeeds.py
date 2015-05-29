@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -21,7 +25,7 @@ from datetime import datetime
 import feedparser
 from bson import ObjectId
 
-import base
+from . import base
 from allura.command import base as allura_base
 
 from ming.orm import session
@@ -114,10 +118,9 @@ class RssFeedsCommand(base.BlogCommand):
     def process_entry(self, e, appid):
         title = e.title
         allura_base.log.info(" ...entry '%s'", title)
-        parsed_content = filter(
-            None, e.get('content') or [e.get('summary_detail')])
+        parsed_content = [_f for _f in e.get('content') or [e.get('summary_detail')] if _f]
         if parsed_content:
-            content = u''
+            content = ''
             for ct in parsed_content:
                 if ct.type != 'text/html':
                     content += plain2markdown(ct.value)
@@ -131,7 +134,7 @@ class RssFeedsCommand(base.BlogCommand):
                                              getattr(e, 'subtitle',
                                                      getattr(e, 'title'))))
 
-        content += u' [link](%s)' % e.link
+        content += ' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(calendar.timegm(e.updated_parsed))
 
         base_slug = BM.BlogPost.make_base_slug(title, updated)

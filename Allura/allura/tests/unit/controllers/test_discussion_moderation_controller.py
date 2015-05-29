@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 from nose.tools import assert_equal
 from mock import Mock, patch
-from ming.orm import ThreadLocalORMSession, session
+from ming.orm import ThreadLocalORMSession
 
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.factories import create_post, create_discussion
@@ -68,7 +72,7 @@ class TestWhenModerating(WithDatabase):
         ThreadLocalORMSession.flush_all()
 
     def get_post(self):
-        return model.Post.query.get(slug='mypost', deleted=False)
+        return model.Post.query.get(slug='mypost')
 
 
 class TestIndexWithNoPosts(WithDatabase):
@@ -97,11 +101,6 @@ class TestIndexWithAPostInTheDiscussion(WithDatabase):
         assert self.template_variables['limit'] == 50
         assert self.template_variables['pgnum'] == 1
         assert self.template_variables['pages'] == 1
-
-    def test_deleted_post_not_shown(self):
-        self.post.deleted = True
-        session(self.post).flush(self.post)
-        assert self.template_variables['posts'].all() == []
 
 
 def show_moderation_index(discussion, **kwargs_for_controller):

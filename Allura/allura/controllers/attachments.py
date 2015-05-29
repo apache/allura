@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -15,7 +19,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from urllib import unquote
+from urllib.parse import unquote
 from webob import exc
 
 from tg import expose, request, redirect
@@ -88,8 +92,6 @@ class AttachmentController(BaseController):
         if request.method == 'POST':
             self.handle_post(delete, **kw)
             redirect(request.referer)
-        if self.artifact.deleted:
-            raise exc.HTTPNotFound
         embed = False
         if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
             embed = True
@@ -97,6 +99,4 @@ class AttachmentController(BaseController):
 
     @expose()
     def thumb(self):
-        if self.artifact.deleted:
-            raise exc.HTTPNotFound
         return self.thumbnail.serve(embed=True)

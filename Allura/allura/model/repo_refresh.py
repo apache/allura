@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 import logging
 from itertools import chain
-from cPickle import dumps
+from pickle import dumps
 from collections import OrderedDict
 
 import bson
@@ -72,7 +76,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
 
     # Refresh child references
     for i, oid in enumerate(commit_ids):
-        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+        ci = next(CommitDoc.m.find(dict(_id=oid), validate=False))
         refresh_children(ci)
         if (i + 1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s',
@@ -103,7 +107,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     if repo._refresh_precompute:
         cache = {}
         for i, oid in enumerate(commit_ids):
-            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            ci = next(CommitDoc.m.find(dict(_id=oid), validate=False))
             cache = refresh_commit_trees(ci, cache)
             if (i + 1) % 100 == 0:
                 log.info('Refresh commit trees %d: %s', (i + 1), ci._id)
@@ -141,11 +145,11 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
         from allura.webhooks import RepoPushWebhookSender
         by_branches, by_tags = _group_commits(repo, commit_ids)
         params = []
-        for b, commits in by_branches.iteritems():
-            ref = u'refs/heads/{}'.format(b) if b != '__default__' else None
+        for b, commits in by_branches.items():
+            ref = 'refs/heads/{}'.format(b) if b != '__default__' else None
             params.append(dict(commit_ids=commits, ref=ref))
-        for t, commits in by_tags.iteritems():
-            ref = u'refs/tags/{}'.format(t)
+        for t, commits in by_tags.items():
+            ref = 'refs/tags/{}'.format(t)
             params.append(dict(commit_ids=commits, ref=ref))
         if params:
             RepoPushWebhookSender().send(params)
@@ -246,7 +250,7 @@ class CommitRunBuilder(object):
         log.info('%d runs', len(self.runs))
         for rid, run in sorted(self.runs.items()):
             log.info('%32s: %r', self.reasons.get(rid, 'none'), run._id)
-        for run in self.runs.itervalues():
+        for run in self.runs.values():
             run.m.save()
         return self.runs
 
@@ -260,7 +264,7 @@ class CommitRunBuilder(object):
             for run in CommitRunDoc.m.find(dict(parent_commit_ids={'$in': oids})):
                 runs[run._id] = run
         seen_run_ids = set()
-        runs = runs.values()
+        runs = list(runs.values())
         while runs:
             run = runs.pop()
             if run._id in seen_run_ids:
@@ -276,7 +280,7 @@ class CommitRunBuilder(object):
         runs = dict(
             (run['commit_ids'][0], run)
             for run in self._all_runs())
-        for rid, run in runs.items():
+        for rid, run in list(runs.items()):
             p_cis = run['parent_commit_ids']
             if len(p_cis) != 1:
                 continue
@@ -289,7 +293,7 @@ class CommitRunBuilder(object):
             run.m.save()
             parent_run.m.delete()
             del runs[p_cis[0]]
-        for run1 in runs.values():
+        for run1 in list(runs.values()):
             # if run1 is a subset of another run, delete it
             if CommitRunDoc.m.find(dict(commit_ids={'$all': run1.commit_ids},
                                         _id={'$ne': run1._id})).count():
@@ -306,7 +310,7 @@ class CommitRunBuilder(object):
     def merge_runs(self):
         '''Find partial runs that may be merged and merge them'''
         while True:
-            for run_id, run in self.runs.iteritems():
+            for run_id, run in self.runs.items():
                 if len(run.parent_commit_ids) != 1:
                     self.reasons[run_id] = '%d parents' % len(
                         run.parent_commit_ids)
@@ -360,8 +364,18 @@ def unknown_commit_ids(all_commit_ids):
 
 
 def send_notifications(repo, commit_ids):
-    '''Create appropriate notification and feed objects for a refresh'''
+    """Create appropriate notification and feed objects for a refresh
+
+    :param repo: A repository artifact instance.
+    :type repo: Repository
+
+    :param commit_ids: A list of commit hash strings.
+    :type commit_ids: list
+    """
     from allura.model import Feed, Notification
+    from allura import model as M
+    import forgesvn
+
     commit_msgs = []
     base_url = tg.config['base_url']
     for oids in utils.chunked_iter(commit_ids, QSIZE):
@@ -383,25 +397,35 @@ def send_notifications(repo, commit_ids):
                 link=href,
                 unique_id=href)
             branches = repo.symbolics_for_commit(ci)[0]
-            commit_msgs.append('%s: %s by %s %s%s' % (
-                ",".join(b for b in branches),
-                summary, ci.authored.name, base_url, ci.url()))
+            commit_info = get_commit_info(ci)
+
+            if isinstance(repo, forgesvn.model.Repository):
+                _user = M.User.by_username(commit_info['author'])
+            else:
+                _user = M.User.by_email_address(commit_info['author_email'])
+
+            if not _user:
+                _user = M.User.anonymous()
+
+            commit_info.update(
+                author_gravatar=_user.icon_url(),
+                text_branches=branches,
+                project=repo.app.project.shortname,
+                label=repo.app.config.options.mount_label,
+                commit_url=base_url + href,
+                short_date=ci.authored.date.strftime('%c')
+            )
+            commit_msgs.append(commit_info)
+            if not commit_info['author_url']:
+                commit_info['author_url'] = "{}/u/{}".format(base_url, commit_info['author'])
     if commit_msgs:
         if len(commit_msgs) > 1:
-            subject = '%d new commits to %s %s' % (
-                len(commit_msgs), repo.app.project.name, repo.app.config.options.mount_label)
-            text = '\n\n'.join(commit_msgs)
+            subject = "{} new commits to {}".format(len(commit_msgs), repo.app.config.options.mount_label)
         else:
-            subject = '{0} - {1}: {2}'.format(
-                repo.shorthand_for_commit(ci._id),
-                ci.authored.name,
-                summary)
-            branches = repo.symbolics_for_commit(ci)[0]
-            text_branches = ('%s: ' % ",".join(b for b in branches)
-                             if branches else '')
-            text = "%s%s %s%s" % (text_branches,
-                                  ci.message,
-                                  base_url, ci.url())
+            subject = 'New commit by {}'.format(
+                commit_msgs[0]['author'])
+        template = g.jinja2_env.get_template('allura:templates/mail/commits.md')
+        text = "\n\n".join([template.render(d) for d in commit_msgs])
 
         Notification.post(
             artifact=repo,
@@ -450,7 +474,7 @@ def _diff_trees(lhs, rhs, index, *path):
             rhs_tree = index[rhs_id]
         for difference in _diff_trees(index[o.id], rhs_tree, index, o.name, *path):
             yield difference
-    for name, id in rhs_tree_ids.items():  # added
+    for name, id in list(rhs_tree_ids.items()):  # added
         yield (_fq(name), None, id)
         lhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
         for difference in _diff_trees(lhs_tree, index[id], index, name, *path):
@@ -467,7 +491,7 @@ def _diff_trees(lhs, rhs, index, *path):
             yield (_fq(o.name), o.id, None)
         else:
             yield (_fq(o.name), o.id, rhs_id)
-    for name, id in rhs_blob_ids.items():
+    for name, id in list(rhs_blob_ids.items()):
         yield (_fq(name), None, id)
 
 
@@ -573,11 +597,11 @@ def _group_commits(repo, commit_ids):
         if tags:
             current_tags = tags
         for b in current_branches:
-            if b not in by_branches.keys():
+            if b not in list(by_branches.keys()):
                 by_branches[b] = []
             by_branches[b].append(commit)
         for t in current_tags:
-            if t not in by_tags.keys():
+            if t not in list(by_tags.keys()):
                 by_tags[t] = []
             by_tags[t].append(commit)
     return by_branches, by_tags

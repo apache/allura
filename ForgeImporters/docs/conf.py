@@ -37,6 +37,10 @@
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig']
 
@@ -188,8 +192,8 @@ htmlhelp_basename = 'alluradoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'allura.tex', u'allura Documentation',
-     u'Cory Johns, Tim Van Steenburgh, Dave Brondsema', 'manual'),
+    ('index', 'allura.tex', 'allura Documentation',
+     'Cory Johns, Tim Van Steenburgh, Dave Brondsema', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

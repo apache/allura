@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -443,12 +447,12 @@ class TestUserStats(unittest.TestCase):
                    login_datetime) < timedelta(seconds=1)
 
     def test_start_date(self):
-        stats = USM.UserStats(registration_date=datetime(2012, 04, 01))
-        self.assertEqual(stats.start_date, datetime(2012, 04, 01))
+        stats = USM.UserStats(registration_date=datetime(2012, 0o4, 0o1))
+        self.assertEqual(stats.start_date, datetime(2012, 0o4, 0o1))
         with h.push_config(config, **{'userstats.start_date': '2013-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2013, 04, 01))
+            self.assertEqual(stats.start_date, datetime(2013, 0o4, 0o1))
         with h.push_config(config, **{'userstats.start_date': '2011-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2012, 04, 01))
+            self.assertEqual(stats.start_date, datetime(2012, 0o4, 0o1))
 
     @mock.patch('allura.model.stats.difflib.unified_diff')
     def test_count_loc(self, unified_diff):

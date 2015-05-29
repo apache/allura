@@ -50,15 +50,13 @@
     {% if not neighborhood.project_template %}
     {% for opt in widget.fields.tools.options %}
         {% set tool = g.entry_points["tool"][opt.html_value] %}
-        {% set _ctx = widget.context_for(widget.fields.tools) %}
         {% if tool.installable %}
         <div class="tool">
             <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ opt.label }} icon">
-            <input type="checkbox" value="{{ opt.html_value }}"
-                   {% if _ctx['value'] and opt.html_value in _ctx['value'] %}checked{% endif %}
-                   name="{{ _ctx['rendered_name'] }}"
-                   id="{{ _ctx['rendered_name'] }}_{{ opt.html_value }}">
-            <h1><label for="{{ _ctx['rendered_name'] }}_{{ opt.html_value }}">{{ opt.label }}</label></h1>
+            <input checked type="checkbox" value="{{ opt.html_value }}"
+                   name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                   id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ opt.html_value }}">
+            <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ opt.html_value }}">{{ opt.label }}</label></h1>
             <p>{{ tool.tool_description }}</p>
         </div>
         {% endif %}

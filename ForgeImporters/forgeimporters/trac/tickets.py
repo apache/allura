@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -169,8 +173,7 @@ class TracImportSupport(ImportSupport):
         comments = ticket.discussion_thread.post_class().query.find(dict(
             discussion_id=ticket.discussion_thread.discussion_id,
             thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']},
-            deleted=False)).sort('timestamp')
+            status={'$in': ['ok', 'pending']})).sort('timestamp')
 
         if comment <= comments.count():
             return comments.all()[comment - 1].slug

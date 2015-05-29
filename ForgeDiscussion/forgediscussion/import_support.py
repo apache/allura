@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -27,6 +31,7 @@ from pylons import tmpl_context as c
 from allura import model as M
 
 from forgediscussion import model as DM
+import collections
 
 log = logging.getLogger(__name__)
 
@@ -50,11 +55,11 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
                     c.app.config.options.mount_point,
                     w)
 
-    for name, forum in json.forums.iteritems():
+    for name, forum in json.forums.items():
         log.info('... %s has %d threads with %d total posts',
-                 name, len(forum.threads), sum(len(t) for t in forum.threads.itervalues()))
+                 name, len(forum.threads), sum(len(t) for t in forum.threads.values()))
 
-    for name, forum in json.forums.iteritems():
+    for name, forum in json.forums.items():
         log.info('... creating %s/%s: %s',
                  c.project.shortname,
                  c.app.config.options.mount_point,
@@ -64,7 +69,7 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
             name=forum['name'],
             shortname=forum['name'],
             description=forum['description'])
-        for tid, posts in forum.threads.iteritems():
+        for tid, posts in forum.threads.items():
             rest, head = posts[:-1], posts[-1]
             t = DM.ForumThread.new(
                 _id=tid,
@@ -124,7 +129,7 @@ class AlluraUser(S.FancySchemaItem):
         result = M.User.by_username(sf_username)
         if result is None:
             self.warnings.append('User %s not found' % value)
-            if callable(self.default_username):
+            if isinstance(self.default_username, collections.Callable):
                 sf_username = self.default_username(value)
             else:
                 sf_username = self.default_username

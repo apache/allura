@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -24,7 +28,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-exec open('allura/version.py').read()
+exec(open('allura/version.py').read())
 
 PROJECT_DESCRIPTION = '''
 Allura is an open source implementation of a software "forge", a web site
@@ -122,9 +126,6 @@ setup(
     [allura.spam]
     akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
     mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
-
-    [allura.phone]
-    nexmo = allura.lib.phone.nexmo:NexmoPhoneService
 
     [allura.site_admin]
     stats = allura.controllers.site_admin:StatsSiteAdminExtension

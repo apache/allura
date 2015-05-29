@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 from unittest import TestCase
 import pkg_resources
-from urllib2 import HTTPError
+from urllib.error import HTTPError
 
 import mock
 from datadiff.tools import assert_equal
@@ -260,7 +264,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(gpe.get_issue_stars(), 1)
 
     def test_get_issue_summary(self):
-        html = u"""
+        html = """
         <div id="issueheader">
             <table>
                 <tbody>
@@ -272,10 +276,10 @@ class TestGoogleCodeProjectExtractor(TestCase):
             </table>
         </div>
         """
-        gpe = self._make_extractor(html % u'')
-        self.assertEqual(gpe.get_issue_summary(), u'')
-        gpe = self._make_extractor(html % u'My Summary')
-        self.assertEqual(gpe.get_issue_summary(), u'My Summary')
+        gpe = self._make_extractor(html % '')
+        self.assertEqual(gpe.get_issue_summary(), '')
+        gpe = self._make_extractor(html % 'My Summary')
+        self.assertEqual(gpe.get_issue_summary(), 'My Summary')
 
     def test_get_issue_labels(self):
         test_issue = open(pkg_resources.resource_filename(
@@ -584,17 +588,17 @@ class TestComment(TestCase):
         html = BeautifulSoup(self.html)
         comment = google.Comment(html.find('div', 'issuecomment'), 'pychess')
         self.assertEqual(comment.updates, {
-            u'Summary:': u'Make PyChess keyboard accessible',
-            u'Status:': u'Accepted',
+            'Summary:': 'Make PyChess keyboard accessible',
+            'Status:': 'Accepted',
         })
 
 
 class TestAsMarkdown(TestCase):
 
     def soup(self, tag):
-        return BeautifulSoup(u'<pre>%s</pre>' % tag).first()
+        return BeautifulSoup('<pre>%s</pre>' % tag).first()
 
     def test_unicode(self):
-        tag = self.soup(u'\ua000 foo <a href="http://example.com/">bar</a>')
+        tag = self.soup('\ua000 foo <a href="http://example.com/">bar</a>')
         res = google._as_markdown(tag, 'pn')
-        self.assertEqual(res, u'\ua000 foo [bar](http://example.com/)')
+        self.assertEqual(res, '\ua000 foo [bar](http://example.com/)')

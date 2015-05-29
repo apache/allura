@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -56,8 +60,8 @@ def get_facets(solr_hit):
     """
     result = {}
     if solr_hit is not None:
-        for facet_name, values in solr_hit.facets['facet_fields'].iteritems():
+        for facet_name, values in solr_hit.facets['facet_fields'].items():
             field_name = facet_name.rsplit('_s', 1)[0]
-            values = [(values[i], values[i+1]) for i in xrange(0, len(values), 2)]
+            values = [(values[i], values[i+1]) for i in range(0, len(values), 2)]
             result[field_name] = values
     return result

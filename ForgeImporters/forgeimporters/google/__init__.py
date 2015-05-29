@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -16,9 +20,9 @@
 #       under the License.
 
 import re
-import urllib
-from urllib2 import HTTPError
-from urlparse import urlparse, urljoin, parse_qs
+import urllib.request, urllib.parse, urllib.error
+from urllib.error import HTTPError
+from urllib.parse import urlparse, urljoin, parse_qs
 from collections import defaultdict
 import logging
 import os
@@ -44,7 +48,7 @@ def _as_text(node, chunks=None):
     if chunks is None:
         chunks = []
     for n in node:
-        if isinstance(n, basestring):
+        if isinstance(n, str):
             chunks.append(n)
         elif n.name == 'br':
             chunks.append('\n')
@@ -103,7 +107,7 @@ def _as_markdown(tag, project_name):
         else:
             # convert all others to plain MD
             fragment = h.plain2markdown(
-                unicode(fragment), preserve_multiple_spaces=True, has_html_entities=True)
+                str(fragment), preserve_multiple_spaces=True, has_html_entities=True)
         fragments.append(fragment)
     return ''.join(fragments).strip()
 
@@ -206,7 +210,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         # override, to handle hosted domains
         hosted_domain_prefix, project_name = split_project_name(self.project_name)
         return self.PAGE_MAP[page_name].format(
-            project_name=urllib.quote(project_name),
+            project_name=urllib.parse.quote(project_name),
             hosted_domain_prefix=hosted_domain_prefix,
             **kw)
 
@@ -224,7 +228,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         icon_url = urljoin(self.url, page.find(itemprop='image').get('src'))
         if icon_url == self.DEFAULT_ICON:
             return
-        icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
+        icon_name = urllib.parse.unquote(urlparse(icon_url).path).split('/')[-1]
         icon = File(icon_url, icon_name)
         filetype = icon.type
         # work around Google Code giving us bogus file type
@@ -425,17 +429,17 @@ class Comment(object):
     @property
     def annotated_text(self):
         text = (
-            u'*Originally posted by:* {author}\n'
-            u'\n'
-            u'{body}\n'
-            u'\n'
-            u'{updates}'
+            '*Originally posted by:* {author}\n'
+            '\n'
+            '{body}\n'
+            '\n'
+            '{updates}'
         ).format(
             author=self.author,
             body=self.body,
             updates='\n'.join(
                 '**%s** %s' % (k, v)
-                for k, v in self.updates.items()
+                for k, v in list(self.updates.items())
             ),
         )
         return text

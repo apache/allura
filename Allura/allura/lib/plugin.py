@@ -18,6 +18,10 @@
 '''
 Allura plugins for authentication and project registration
 '''
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 import os
 import logging
@@ -25,8 +29,8 @@ import subprocess
 import string
 import crypt
 import random
-from urllib2 import urlopen
-from cStringIO import StringIO
+from urllib.request import urlopen
+from io import StringIO
 from random import randint
 from hashlib import sha256
 from base64 import b64encode
@@ -360,13 +364,13 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         user.disabled = True
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user(u'Account disabled', user=user)
+            h.auditlog_user('Account disabled', user=user)
 
     def enable_user(self, user, **kw):
         user.disabled = False
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user(u'Account enabled', user=user)
+            h.auditlog_user('Account enabled', user=user)
 
     def activate_user(self, user, **kw):
         user.pending = False
@@ -414,7 +418,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         from allura import model as M
         if salt is None:
             salt = ''.join(chr(randint(1, 0x7f))
-                           for i in xrange(M.User.SALT_LEN))
+                           for i in range(M.User.SALT_LEN))
         hashpass = sha256(salt + password.encode('utf-8')).digest()
         return 'sha256' + salt + b64encode(hashpass)
 
@@ -701,55 +705,12 @@ class ProjectRegistrationProvider(object):
         now = datetime.utcnow().replace(tzinfo=FixedOffset(0, 'UTC'))
         project_count = len(list(user.my_projects()))
         rate_limits = json.loads(config.get('project.rate_limits', '{}'))
-        for rate, count in rate_limits.items():
+        for rate, count in list(rate_limits.items()):
             user_age = now - user._id.generation_time
             user_age = (user_age.microseconds +
                         (user_age.seconds + user_age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
             if user_age < int(rate) and project_count >= count:
                 raise forge_exc.ProjectRatelimitError()
-
-    def phone_verified(self, user, neighborhood):
-        """
-        Check if user has completed phone verification.
-
-        Returns True if one of the following is true:
-            - phone verification is disabled
-            - :param user: has 'admin' access to :param neighborhood:
-            - :param user: is has 'admin' access for some project, which belongs
-              to :param neighborhood:
-            - phone is already verified for a :param user:
-
-        Otherwise returns False.
-        """
-        if not asbool(config.get('project.verify_phone')):
-            return True
-        if security.has_access(neighborhood, 'admin', user=user)():
-            return True
-        admin_in = [p for p in user.my_projects_by_role_name('Admin')
-                    if p.neighborhood_id == neighborhood._id]
-        if len(admin_in) > 0:
-            return True
-        return bool(user.get_tool_data('phone_verification', 'number_hash'))
-
-    def verify_phone(self, user, number):
-        ok = {'status': 'ok'}
-        if not asbool(config.get('project.verify_phone')):
-            return ok
-        return g.phone_service.verify(number)
-
-    def check_phone_verification(self, user, request_id, pin, number_hash):
-        ok = {'status': 'ok'}
-        if not asbool(config.get('project.verify_phone')):
-            return ok
-        res = g.phone_service.check(request_id, pin)
-        if res.get('status') == 'ok':
-            user.set_tool_data('phone_verification', number_hash=number_hash)
-            msg = 'Phone verification succeeded. Hash: {}'.format(number_hash)
-            h.auditlog_user(msg, user=user)
-        else:
-            msg = 'Phone verification failed. Hash: {}'.format(number_hash)
-            h.auditlog_user(msg, user=user)
-        return res
 
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M
@@ -815,9 +776,6 @@ class ProjectRegistrationProvider(object):
                 raise forge_exc.ProjectOverlimitError()
 
         self.rate_limit(user, neighborhood)
-
-        if not self.phone_verified(user, neighborhood):
-            raise forge_exc.ProjectPhoneVerificationError()
 
         if user_project and shortname.startswith('u/'):
             check_shortname = shortname.replace('u/', '', 1)
@@ -895,8 +853,8 @@ class ProjectRegistrationProvider(object):
             for i, tool in enumerate(project_template['tools'].keys()):
                 tool_config = project_template['tools'][tool]
                 tool_options = tool_config.get('options', {})
-                for k, v in tool_options.iteritems():
-                    if isinstance(v, basestring):
+                for k, v in tool_options.items():
+                    if isinstance(v, str):
                         tool_options[k] = \
                             string.Template(v).safe_substitute(
                                 p.__dict__.get('root_project', {}))
@@ -919,7 +877,7 @@ class ProjectRegistrationProvider(object):
         if 'labels' in project_template:
             p.labels = project_template['labels']
         if 'trove_cats' in project_template:
-            for trove_type in project_template['trove_cats'].keys():
+            for trove_type in list(project_template['trove_cats'].keys()):
                 troves = getattr(p, 'trove_%s' % trove_type)
                 for trove_id in project_template['trove_cats'][trove_type]:
                     troves.append(
@@ -1228,7 +1186,7 @@ class ThemeProvider(object):
             Takes an instance of class Application, or else a string.
             Expected to be overriden by derived Themes.
         """
-        if isinstance(app, unicode):
+        if isinstance(app, str):
             app = str(app)
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:

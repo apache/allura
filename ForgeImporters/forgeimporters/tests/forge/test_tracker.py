@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,7 +22,7 @@
 from datetime import datetime
 from unittest import TestCase
 from cgi import FieldStorage
-from cStringIO import StringIO
+from io import StringIO
 
 import mock
 from ming.odm import ThreadLocalORMSession
@@ -358,9 +362,9 @@ class TestForgeTrackerImportController(TestController, TestCase):
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
         sui.assert_called_once_with(project, 'tickets.json', '{"key": "val"}')
         self.assertEqual(
-            u'mymount', import_tool.post.call_args[1]['mount_point'])
+            'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
-            u'mylabel', import_tool.post.call_args[1]['mount_label'])
+            'mylabel', import_tool.post.call_args[1]['mount_label'])
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')

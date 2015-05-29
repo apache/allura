@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 import time
 import unittest
@@ -25,12 +29,7 @@ from os import path
 
 from webob import Request
 from mock import Mock, patch
-from nose.tools import (
-    assert_equal,
-    assert_not_equal,
-    assert_raises,
-    assert_in,
-)
+from nose.tools import assert_equal, assert_raises, assert_in
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 from tg import config
@@ -93,7 +92,7 @@ class TestChunkedIterator(unittest.TestCase):
 class TestChunkedList(unittest.TestCase):
 
     def test_chunked_list(self):
-        l = range(10)
+        l = list(range(10))
         chunks = list(utils.chunked_list(l, 3))
         self.assertEqual(len(chunks), 4)
         self.assertEqual(len(chunks[0]), 3)
@@ -150,7 +149,7 @@ class TestAntispam(unittest.TestCase):
 
     def _encrypt_form(self, **kwargs):
         encrypted_form = dict(
-            (self.a.enc(k), v) for k, v in kwargs.items())
+            (self.a.enc(k), v) for k, v in list(kwargs.items()))
         encrypted_form.setdefault(self.a.enc('honey0'), '')
         encrypted_form.setdefault(self.a.enc('honey1'), '')
         encrypted_form['spinner'] = self.a.spinner_text
@@ -300,18 +299,12 @@ def test_empty_cursor():
     assert_equal(cursor.extensions, [])
     assert_equal(cursor.options(arg1='val1', arg2='val2'), cursor)
     assert_raises(ValueError, cursor.one)
-    assert_raises(StopIteration, cursor.next)
+    assert_raises(StopIteration, cursor.__next__)
     assert_raises(StopIteration, cursor._next_impl)
 
 
 def test_DateJSONEncoder():
-    data = {'message': u'Hi!',
-            'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
+    data = {'message': 'Hi!',
+            'date': dt.datetime(2015, 0o1, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
-
-
-def test_phone_number_hash():
-    hash = utils.phone_number_hash
-    assert_equal(hash('1234567890'), hash('+123 456:7890'))
-    assert_not_equal(hash('1234567890'), hash('1234567891'))

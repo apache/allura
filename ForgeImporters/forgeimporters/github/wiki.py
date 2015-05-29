@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -68,7 +72,7 @@ log = logging.getLogger(__name__)
 class GitHubWikiImportForm(ToolImportForm):
     gh_project_name = GitHubProjectNameValidator()
     gh_user_name = fev.UnicodeString(not_empty=True)
-    tool_option = fev.UnicodeString(if_missing=u'')
+    tool_option = fev.UnicodeString(if_missing='')
 
 
 class GitHubWikiImportController(ToolImportController, GitHubOAuthMixin):
@@ -192,7 +196,7 @@ class GitHubWikiImporter(ToolImporter):
 
     def _set_available_pages(self, commit):
         pages = [blob.name for blob in commit.tree.traverse()]
-        pages = map(os.path.splitext, pages)
+        pages = list(map(os.path.splitext, pages))
         pages = [self._convert_page_name(name) for name, ext in pages
                  if ext in self.supported_formats]
         self.available_pages = pages
@@ -203,7 +207,7 @@ class GitHubWikiImporter(ToolImporter):
             self._make_page(page.data_stream.read(), page.name, commit)
 
     def _with_history(self, commit):
-        for filename in commit.stats.files.keys():
+        for filename in list(commit.stats.files.keys()):
             self._set_available_pages(commit)
             renamed_to = None
             if '=>' in filename:
@@ -372,7 +376,7 @@ class GitHubWikiImporter(ToolImporter):
         title = options = None
         if len(link) == 1:
             link = link[0]
-        elif any(map(lambda opt: link[1].startswith(opt), available_options)):
+        elif any([link[1].startswith(opt) for opt in available_options]):
             # second element is option -> first is the link
             link, options = link[0], link[1:]
         else:
@@ -390,12 +394,12 @@ class GitHubWikiImporter(ToolImporter):
 
     def _gollum_external_link(self, link, title, options):
         if title:
-            return u'[{}]({})'.format(title, link)
-        return u'<{}>'.format(link)
+            return '[{}]({})'.format(title, link)
+        return '<{}>'.format(link)
 
     def _gollum_page_link(self, link, title, options):
         page = self._convert_page_name(link)
-        page = page.replace(u'&amp;', u'&')  # allow & in page links
+        page = page.replace('&amp;', '&')  # allow & in page links
         # gollum page lookups are case-insensitive, you'll always get link to
         # whatever comes first in the file system, no matter how you refer to a page.
         # E.g. if you have two pages: a.md and A.md both [[a]] and [[A]] will refer a.md.
@@ -409,8 +413,8 @@ class GitHubWikiImporter(ToolImporter):
             page = self.available_pages[idx]
 
         if title:
-            return u'[{}]({})'.format(title, page)
-        return u'[{}]'.format(page)
+            return '[{}]({})'.format(title, page)
+        return '[{}]'.format(page)
 
     def rewrite_links(self, html, prefix, new_prefix):
         if not prefix.endswith('/'):
@@ -427,7 +431,7 @@ class GitHubWikiImporter(ToolImporter):
                     a.setString(new_page)
                 elif a.text == prefix + page:
                     a.setString(new_prefix + new_page)
-        return unicode(soup)
+        return str(soup)
 
     def _prepare_textile_text(self, text):
         # need to convert lists properly

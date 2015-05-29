@@ -17,8 +17,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
-import StringIO
+import io
 import allura
 
 import PIL
@@ -53,9 +57,9 @@ class TestRootController(TestController):
         pass
 
     def test_root_index(self):
-        page_url = h.urlquote(u'/wiki/tést/')
+        page_url = h.urlquote('/wiki/tést/')
         r = self.app.get(page_url).follow()
-        assert u'tést' in r
+        assert 'tést' in r
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
         r = self.app.get(page_url,
@@ -75,13 +79,13 @@ class TestRootController(TestController):
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
-        response = self.app.get('/wiki/new_page?title=' + h.urlquote(u'tést'))
-        assert u'tést' in response
+        response = self.app.get('/wiki/new_page?title=' + h.urlquote('tést'))
+        assert 'tést' in response
 
     def test_root_new_search(self):
-        self.app.get(h.urlquote(u'/wiki/tést/'))
-        response = self.app.get('/wiki/search?q=' + h.urlquote(u'tést'))
-        assert u'Search wiki: tést' in response
+        self.app.get(h.urlquote('/wiki/tést/'))
+        response = self.app.get('/wiki/search?q=' + h.urlquote('tést'))
+        assert 'Search wiki: tést' in response
 
     def test_feed(self):
         for ext in ['', '.rss', '.atom']:
@@ -489,11 +493,11 @@ class TestRootController(TestController):
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/wiki/TEST/attachment/' + filename)
-        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(io.StringIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/wiki/TEST/attachment/' + filename + '/thumb')
 
-        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(io.StringIO(r.body))
         assert thumbnail.size == (255, 255)
 
         # Make sure thumbnail is absent

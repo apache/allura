@@ -18,6 +18,10 @@
 #       under the License.
 
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from mock import Mock
 from nose.tools import assert_equal
 
@@ -29,7 +33,7 @@ from forgetracker.tracker_main import MilestoneController
 def test_unicode_lookup():
     # can't use name= in constructor, that's special attribute for Mock
     milestone = Mock()
-    milestone.name = u'Перспектива'
+    milestone.name = 'Перспектива'
     milestone_field = Mock(milestones=[milestone])
     milestone_field.name = '_milestone'
 
@@ -43,4 +47,4 @@ def test_unicode_lookup():
         mc = MilestoneController(root, field, milestone_urlparam)
 
     assert mc.milestone  # check that it is found
-    assert_equal(mc.milestone.name, u'Перспектива')
+    assert_equal(mc.milestone.name, 'Перспектива')

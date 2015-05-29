@@ -20,6 +20,10 @@
 """
 Functions to syntax-validate output content
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from os import path
 import os
 import sys
@@ -126,7 +130,7 @@ def validate_json(json_or_response):
 
     try:
         obj = json.loads(j)
-    except Exception, e:
+    except Exception as e:
         ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
 
     return obj

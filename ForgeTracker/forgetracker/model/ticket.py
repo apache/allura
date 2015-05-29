@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -16,7 +20,7 @@
 #       under the License.
 
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 import difflib
 from datetime import datetime, timedelta
@@ -80,7 +84,7 @@ SOLR_TYPE_DEFAULTS = dict(_b=False, _i=0)
 
 
 def get_default_for_solr_type(solr_type):
-    return SOLR_TYPE_DEFAULTS.get(solr_type, u'')
+    return SOLR_TYPE_DEFAULTS.get(solr_type, '')
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
@@ -273,7 +277,7 @@ class Globals(MappedClass):
             app_config_id=self.app_config_id)).sort('ticket_num').all()
         filtered = self.filtered_by_subscription({t._id: t for t in tickets})
         original_ticket_nums = {t._id: t.ticket_num for t in tickets}
-        users = User.query.find({'_id': {'$in': filtered.keys()}}).all()
+        users = User.query.find({'_id': {'$in': list(filtered.keys())}}).all()
         moved_tickets = {}
         for ticket in tickets:
             moved = ticket.move(tracker, notify=False)
@@ -315,7 +319,7 @@ class Globals(MappedClass):
                 'original_num': original_ticket_nums[_id],
                 'destination_num': moved_tickets[_id].ticket_num,
                 'summary': moved_tickets[_id].summary
-            } for _id, t in moved_tickets.iteritems()
+            } for _id, t in moved_tickets.items()
                 if (not t.private or
                     self.app_config.options.get('TicketMonitoringType') ==
                     'AllTicketChanges')]
@@ -379,7 +383,7 @@ class Globals(MappedClass):
             if labels:
                 values['labels'] = self.append_new_labels(
                     ticket.labels, labels.split(','))
-            for k, v in sorted(values.iteritems()):
+            for k, v in sorted(values.items()):
                 if k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
                     old_user = User.query.get(_id=getattr(ticket, k))
@@ -405,7 +409,7 @@ class Globals(MappedClass):
                         v,
                         getattr(ticket, k))
                 setattr(ticket, k, v)
-            for k, v in sorted(custom_values.iteritems()):
+            for k, v in sorted(custom_values.items()):
                 def cf_val(cf):
                     return ticket.get_custom_user(cf.name) \
                         if cf.type == 'user' \
@@ -428,7 +432,7 @@ class Globals(MappedClass):
 
         filtered_changes = self.filtered_by_subscription(changed_tickets)
         users = User.query.find(
-            {'_id': {'$in': filtered_changes.keys()}}).all()
+            {'_id': {'$in': list(filtered_changes.keys())}}).all()
 
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
@@ -446,12 +450,12 @@ class Globals(MappedClass):
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
-        for f, v in sorted(values.iteritems()):
+        for f, v in sorted(values.items()):
             if f == 'assigned_to_id':
                 user = User.query.get(_id=v)
                 v = user.display_name if user else v
             head.append('- **%s**: %s' % (get_label(f), v))
-        for f, v in sorted(custom_values.iteritems()):
+        for f, v in sorted(custom_values.items()):
             cf = custom_fields[f]
             if cf.type == 'user':
                 user = User.by_username(v)
@@ -472,7 +476,7 @@ class Globals(MappedClass):
             monitoring_email = self.app_config.options.get(
                 'TicketMonitoringEmail')
             visible_changes = []
-            for t_id, t in changed_tickets.items():
+            for t_id, t in list(changed_tickets.items()):
                 if (not t.private or
                         self.app_config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
@@ -498,19 +502,19 @@ class Globals(MappedClass):
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
         ac_id = app_config_id if app_config_id else self.app_config_id
-        ticket_ids = tickets.keys()
+        ticket_ids = list(tickets.keys())
         tickets_index_id = {
-            ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
+            ticket.index_id(): t_id for t_id, ticket in tickets.items()}
         subscriptions = Mailbox.query.find({
             'project_id': p_id,
             'app_config_id': ac_id,
-            'artifact_index_id': {'$in': tickets_index_id.keys() + [None]}})
+            'artifact_index_id': {'$in': list(tickets_index_id.keys()) + [None]}})
         filtered = {}
         for subscription in subscriptions:
             if subscription.artifact_index_id is None:
                 # subscribed to entire tool, will see all changes
                 filtered[subscription.user_id] = set(ticket_ids)
-            elif subscription.artifact_index_id in tickets_index_id.keys():
+            elif subscription.artifact_index_id in list(tickets_index_id.keys()):
                 user = filtered.setdefault(subscription.user_id, set())
                 user.add(tickets_index_id[subscription.artifact_index_id])
         return filtered
@@ -559,7 +563,7 @@ class TicketHistory(Snapshot):
             text=self.data.summary)
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to match on it too.
-        result['text'] += pformat(result.values())
+        result['text'] += pformat(list(result.values()))
         return result
 
 
@@ -583,7 +587,7 @@ class Bin(Artifact, ActivityObject):
         params = dict(q=(h.really_unicode(self.terms).encode('utf-8') or ''))
         if self.sort:
             params['sort'] = self.sort
-        return base + urllib.urlencode(params)
+        return base + urllib.parse.urlencode(params)
 
     def shorthand_id(self):
         return self.summary
@@ -664,7 +668,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 session(ticket).flush(ticket)
                 h.log_action(log, 'opened').info('')
                 return ticket
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning('Try to create duplicate ticket %s',
                                 ticket.url())
@@ -692,11 +696,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             votes_total_i=(self.votes_up - self.votes_down),
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
         )
-        for k, v in self.custom_fields.iteritems():
+        for k, v in self.custom_fields.items():
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):
-                result[k + '_s'] = unicode(v)
+                result[k + '_s'] = str(v)
 
             # Now let's also index with proper Solr types.
             solr_type = self.app.globals.get_custom_field_solr_type(k)
@@ -711,7 +715,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to
         # match on it too.
-        result['text'] += pformat(result.values())
+        result['text'] += pformat(list(result.values()))
         return result
 
     @classmethod
@@ -804,11 +808,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 fld = f
                 break
         if not fld:
-            raise KeyError, 'Custom field "%s" does not exist.' % custom_user_field_name
+            raise KeyError('Custom field "%s" does not exist.' % custom_user_field_name)
         if fld.type != 'user':
-            raise TypeError, 'Custom field "%s" is of type "%s"; expected ' \
+            raise TypeError('Custom field "%s" is of type "%s"; expected ' \
                              'type "user".' % (
-                                 custom_user_field_name, fld.type)
+                                 custom_user_field_name, fld.type))
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
             return None
@@ -963,7 +967,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         attachment = None
         if 'attachment' in ticket_form:
             attachment = ticket_form.pop('attachment')
-        for k, v in ticket_form.iteritems():
+        for k, v in ticket_form.items():
             if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
@@ -972,7 +976,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
-            for k, v in ticket_form['custom_fields'].iteritems():
+            for k, v in ticket_form['custom_fields'].items():
                 if k in custom_users:
                     # restrict custom user field values to project members
                     user = self.app_config.project.user_in_project(v)
@@ -1059,7 +1063,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 h.log_action(log, 'moved').info('Ticket %s moved to %s' %
                                                 (prior_url, new_url))
                 break
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning(
                         'Try to create duplicate ticket %s when moving from %s' %

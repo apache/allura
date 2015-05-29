@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 #-*- python -*-
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 
 # Non-stdlib imports
@@ -41,7 +45,7 @@ from forgediscussion import utils
 from forgediscussion import version
 from .controllers import RootController, RootRestController
 
-from widgets.admin import OptionsAdmin, AddForum
+from .widgets.admin import OptionsAdmin, AddForum
 
 
 log = logging.getLogger(__name__)
@@ -100,7 +104,7 @@ class ForgeDiscussionApp(Application):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        shortname = urllib.unquote_plus(topic.replace('.', '/'))
+        shortname = urllib.parse.unquote_plus(topic.replace('.', '/'))
         forum = DM.Forum.query.get(
             shortname=shortname, app_config_id=self.config._id)
         if forum is None:
@@ -158,14 +162,9 @@ class ForgeDiscussionApp(Application):
             for f in forums:
                 if has_access(f, 'read')():
                     if f.url() in request.url and h.has_access(f, 'moderate')():
-                        num_moderate = DM.ForumPost.query.find({
-                            'discussion_id': f._id,
-                            'status': {'$ne': 'ok'},
-                            'deleted': False,
-                        }).count()
                         moderate_link = SitemapEntry(
                             'Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
-                            small=num_moderate)
+                            small=DM.ForumPost.query.find({'discussion_id': f._id, 'status': {'$ne': 'ok'}}).count())
                     forum_links.append(
                         SitemapEntry(f.name, f.url(), small=f.num_topics))
             url = c.app.url + 'create_topic/'

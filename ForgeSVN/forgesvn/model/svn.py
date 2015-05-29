@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -25,7 +29,7 @@ import time
 import operator as op
 from subprocess import Popen, PIPE
 from hashlib import sha1
-from cStringIO import StringIO
+from io import StringIO
 from datetime import datetime
 import tempfile
 from shutil import rmtree
@@ -247,7 +251,7 @@ class SVNImplementation(M.RepositoryImplementation):
                               'hooks', hook_name)
             with open(fn, 'wb') as fp:
                 fp.write('#!/bin/sh\n')
-            os.chmod(fn, 0755)
+            os.chmod(fn, 0o755)
 
         def clear_hook(hook_name):
             fn = os.path.join(self._repo.fs_path, self._repo.name,
@@ -338,7 +342,7 @@ class SVNImplementation(M.RepositoryImplementation):
         commit) and ending with the root (first commit).
         """
         head_revno = self.head
-        return map(self._oid, range(head_revno, 0, -1))
+        return list(map(self._oid, list(range(head_revno, 0, -1))))
 
     def new_commits(self, all_commits=False):
         head_revno = self.head
@@ -627,7 +631,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
-        os.chmod(fn, 0755)
+        os.chmod(fn, 0o755)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])

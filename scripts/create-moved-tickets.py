@@ -22,6 +22,10 @@ This is for making redirects for tickets that we move from SourceForge
 to Apache, but could be generalized pretty easily to work for making
 any type of redirect (change SF/Apache specifics to commandline arguments)
 '''
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import argparse
 import pymongo
@@ -52,8 +56,8 @@ nbhd = main_db.neighborhood.find_one({'url_prefix': '/%s/' % opts.n})
 project = main_db.project.find_one({'neighborhood_id': nbhd['_id'], 'shortname': opts.p})
 tool = project_data.config.find_one({'project_id': project['_id'], 'options.mount_point': opts.t})
 
-print "Tool id: %s" % tool['_id']
-print 'Setting app_config_id to: %s for tickets: %s' % ('moved-to-apache', ticket_nums)
+print("Tool id: %s" % tool['_id'])
+print('Setting app_config_id to: %s for tickets: %s' % ('moved-to-apache', ticket_nums))
 
 if not opts.dry_run:
     project_data.ticket.update({
@@ -61,7 +65,7 @@ if not opts.dry_run:
         'ticket_num': {'$in': ticket_nums}
     }, {'$set': {'app_config_id': 'moved-to-apache'}}, multi=True)
 
-print 'Creating MovingTickets for tickets: %s' % ticket_nums
+print('Creating MovingTickets for tickets: %s' % ticket_nums)
 
 if not opts.dry_run:
     for num in ticket_nums:

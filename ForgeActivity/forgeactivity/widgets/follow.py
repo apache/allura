@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -50,7 +54,7 @@ class FollowToggle(ew.SimpleForm):
 
     def success_message(self, following):
         context = self.prepare_context({})
-        return u'You are {state} {action}ing {thing}.'.format(
+        return 'You are {state} {action}ing {thing}.'.format(
             state='now' if following else 'no longer',
             action=context['action_label'],
             thing=context['thing'],

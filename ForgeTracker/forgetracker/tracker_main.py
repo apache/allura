@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -20,7 +24,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from functools import partial
-from urllib import urlencode, unquote
+from urllib.parse import urlencode, unquote
 from webob import exc
 import json
 
@@ -151,11 +155,11 @@ def get_change_text(name, new_value, old_value):
 def attachments_info(attachments):
     text = []
     for attach in attachments:
-        text.append(u"{} ({}; {})".format(
+        text.append("{} ({}; {})".format(
             h.really_unicode(attach.filename),
             h.do_filesizeformat(attach.length),
             attach.content_type))
-    return u"\n".join(text)
+    return "\n".join(text)
 
 
 def render_changes(changes, comment=None):
@@ -354,11 +358,8 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('View Stats', self.config.url()
                      + 'stats', ui_icon=g.icons['stats']))
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({
-            'discussion_id': discussion._id,
-            'status': 'pending',
-            'deleted': False,
-        }).count()
+        pending_mod_count = M.Post.query.find(
+            {'discussion_id': discussion._id, 'status': 'pending'}).count()
         if pending_mod_count and has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(
@@ -829,7 +830,7 @@ class RootController(BaseController, FeedController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url),
-                 description='You searched for %s' % q, language=u'en')
+                 description='You searched for %s' % q, language='en')
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
@@ -1025,7 +1026,6 @@ class RootController(BaseController, FeedController):
         q = dict(
             discussion_id=c.app.config.discussion_id,
             status='ok',
-            deleted=False,
         )
         if when is not None:
             q['timestamp'] = {'$gte': when}
@@ -1358,7 +1358,7 @@ class TicketController(BaseController, FeedController):
                         subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count)
         else:
-            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
+            raise exc.HTTPNotFound('Ticket #%s does not exist.' % self.ticket_num)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -1621,7 +1621,7 @@ class TrackerAdminController(DefaultAdminController):
         c.form = W.field_admin
         c.app = self.app
         columns = dict((column, get_label(column))
-                       for column in self.app.globals['show_in_search'].keys())
+                       for column in list(self.app.globals['show_in_search'].keys()))
         return dict(app=self.app, globals=self.app.globals, columns=columns)
 
     @expose('jinja:forgetracker:templates/tracker/admin_options.html')
@@ -1643,7 +1643,7 @@ class TrackerAdminController(DefaultAdminController):
     @validate(W.options_admin, error_handler=options)
     def set_options(self, **kw):
         require_access(self.app, 'configure')
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             self.app.config.options[k] = v
         flash('Options updated')
         redirect(c.project.url() + 'admin/tools')
@@ -1651,8 +1651,8 @@ class TrackerAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def allow_default_field(self, **post_data):
-        for column in self.app.globals['show_in_search'].keys():
-            if post_data.has_key(column) and post_data[column] == 'on':
+        for column in list(self.app.globals['show_in_search'].keys()):
+            if column in post_data and post_data[column] == 'on':
                 self.app.globals['show_in_search'][column] = True
             else:
                 self.app.globals['show_in_search'][column] = False
@@ -1803,7 +1803,7 @@ class RootRestController(BaseController):
 
         results = TM.Ticket.paged_search(
             c.app.config, c.user, q, limit, page, sort, show_deleted=False)
-        results['tickets'] = map(_convert_ticket, results['tickets'])
+        results['tickets'] = list(map(_convert_ticket, results['tickets']))
         return results
 
     @expose()

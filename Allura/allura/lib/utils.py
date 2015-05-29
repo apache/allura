@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -58,7 +62,7 @@ MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 def permanent_redirect(url):
     try:
         tg.redirect(url)
-    except exc.HTTPFound, err:
+    except exc.HTTPFound as err:
         raise exc.HTTPMovedPermanently(location=err.location)
 
 
@@ -108,7 +112,7 @@ class lazy_logger(object):
 
     def __getattr__(self, name):
         if name.startswith('_'):
-            raise AttributeError, name
+            raise AttributeError(name)
         return getattr(self._logger, name)
 
 
@@ -160,7 +164,7 @@ class StatsHandler(TimedRotatingHandler):
             kwpairs[name] = getattr(record, name, None)
         kwpairs.update(getattr(record, 'kwpairs', {}))
         record.kwpairs = ','.join(
-            '%s=%s' % (k, v) for k, v in sorted(kwpairs.iteritems())
+            '%s=%s' % (k, v) for k, v in sorted(kwpairs.items())
             if v is not None)
         record.exc_info = None  # Never put tracebacks in the rtstats log
         TimedRotatingHandler.emit(self, record)
@@ -225,14 +229,14 @@ def lsub_utf8(s, n):
 def chunked_list(l, n):
     """ Yield successive n-sized chunks from l.
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
 
 
 def chunked_iter(iterable, max_size):
     '''return iterable 'chunks' from the iterable of max size max_size'''
     eiter = enumerate(iterable)
-    keyfunc = lambda (i, x): i // max_size
+    keyfunc = lambda i_x: i_x[0] // max_size
     for _, chunk in groupby(eiter, keyfunc):
         yield (x for i, x in chunk)
 
@@ -259,7 +263,7 @@ class AntiSpam(object):
             self.spinner_text = request.params['spinner']
             self.timestamp = int(self.timestamp_text)
             self.spinner = self._unwrap(self.spinner_text)
-        self.spinner_ord = map(ord, self.spinner)
+        self.spinner_ord = list(map(ord, self.spinner))
         self.random_padding = [random.randint(0, 255) for x in self.spinner]
         self.honey_class = self.enc(self.spinner_text, css_safe=True)
 
@@ -306,7 +310,7 @@ class AntiSpam(object):
         # Plain starts with its length, includes the ordinals for its
         #   characters, and is padded with random data
         plain = ([len(plain)]
-                 + map(ord, plain)
+                 + list(map(ord, plain))
                  + self.random_padding[:len(self.spinner_ord) - len(plain) - 1])
         enc = ''.join(chr(p ^ s) for p, s in zip(plain, self.spinner_ord))
         enc = self._wrap(enc)
@@ -339,7 +343,7 @@ class AntiSpam(object):
             timestamp = self.timestamp
         try:
             client_ip = ip_address(self.request)
-        except (TypeError, AttributeError), err:
+        except (TypeError, AttributeError) as err:
             client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
             timestamp, client_ip, pylons.config.get('spinner_secret', 'abcdef'))
@@ -359,17 +363,17 @@ class AntiSpam(object):
             if now is None:
                 now = time.time()
             if obj.timestamp > now + 5:
-                raise ValueError, 'Post from the future'
+                raise ValueError('Post from the future')
             if now - obj.timestamp > 24 * 60 * 60:
-                raise ValueError, 'Post from the distant past'
+                raise ValueError('Post from the distant past')
             if obj.spinner != obj.make_spinner(obj.timestamp):
-                raise ValueError, 'Bad spinner value'
-            for k in new_params.keys():
+                raise ValueError('Bad spinner value')
+            for k in list(new_params.keys()):
                 new_params[obj.dec(k)] = new_params.pop(k)
             for fldno in range(obj.num_honey):
                 value = new_params.pop('honey%s' % fldno)
                 if value:
-                    raise ValueError, 'Value in honeypot field: %s' % value
+                    raise ValueError('Value in honeypot field: %s' % value)
         return new_params
 
     @classmethod
@@ -399,7 +403,7 @@ class TruthyCallable(object):
     def __call__(self, *args, **kw):
         return self.callable(*args, **kw)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.callable()
 
 
@@ -513,7 +517,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
         cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
-        etag = u'{0}?{1}'.format(filename, last_modified).encode('utf-8')
+        etag = '{0}?{1}'.format(filename, last_modified).encode('utf-8')
     if etag:
         etag_cache(etag)
     pylons.response.headers['Content-Type'] = ''
@@ -576,7 +580,7 @@ class EmptyCursor(ODMCursor):
     def _next_impl(self):
         raise StopIteration
 
-    def next(self):
+    def __next__(self):
         raise StopIteration
 
     def options(self, **kw):
@@ -600,9 +604,3 @@ class DateJSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%dT%H:%M:%SZ')
         return json.JSONEncoder.default(self, obj)
-
-
-def phone_number_hash(number):
-    pattern = re.compile('\W+')
-    number = pattern.sub('', number)
-    return hashlib.sha1(number).hexdigest()

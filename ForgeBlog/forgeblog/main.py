@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 #-*- python -*-
 import logging
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 # Non-stdlib imports
@@ -290,7 +294,7 @@ class RootController(BaseController, FeedController):
     def _lookup(self, year=None, month=None, name=None, *rest):
         if year is None or month is None or name is None:
             raise exc.HTTPNotFound()
-        slug = '/'.join((year, month, urllib2.unquote(name).decode('utf-8')))
+        slug = '/'.join((year, month, urllib.parse.unquote(name).decode('utf-8')))
         post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if post is None:
             raise exc.HTTPNotFound()
@@ -358,7 +362,7 @@ class PostController(BaseController, FeedController):
             self.post.delete()
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             setattr(self.post, k, v)
         self.post.commit()
         redirect('.')
@@ -441,7 +445,7 @@ class BlogAdminController(DefaultAdminController):
     @require_post()
     def set_exfeed(self, new_exfeed=None, **kw):
         exfeed_val = kw.get('exfeed', [])
-        if type(exfeed_val) == unicode:
+        if type(exfeed_val) == str:
             tmp_exfeed_list = []
             tmp_exfeed_list.append(exfeed_val)
         else:
@@ -503,7 +507,7 @@ class RootRestController(BaseController):
     def _lookup(self, year=None, month=None, title=None, *rest):
         if not (year and month and title):
             raise exc.HTTPNotFound()
-        slug = '/'.join((year, month, urllib2.unquote(title).decode('utf-8')))
+        slug = '/'.join((year, month, urllib.parse.unquote(title).decode('utf-8')))
         post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if not post:
             raise exc.HTTPNotFound()

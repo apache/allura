@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 import re
 import logging
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from tg import config
 from BeautifulSoup import BeautifulSoup
@@ -178,8 +182,7 @@ class TracRef2(Pattern):
         comments = ticket.discussion_thread.post_class().query.find(dict(
             discussion_id=ticket.discussion_thread.discussion_id,
             thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']},
-            deleted=False)).sort('timestamp')
+            status={'$in': ['ok', 'pending']})).sort('timestamp')
 
         if comment_num <= comments.count():
             return comments.all()[comment_num - 1].slug

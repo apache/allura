@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -104,12 +108,12 @@ def test_pull_rss_feeds(parsefeed):
 
     base_app = M.AppConfig.query.find().all()[0]
     tmp_app = M.AppConfig(
-        tool_name=u'Blog', discussion_id=base_app.discussion_id,
+        tool_name='Blog', discussion_id=base_app.discussion_id,
         project_id=base_app.project_id,
-        options={u'ordinal': 0, u'show_right_bar': True,
-                 u'project_name': base_app.project.name,
-                 u'mount_point': u'blog',
-                 u'mount_label': u'Blog'})
+        options={'ordinal': 0, 'show_right_bar': True,
+                 'project_name': base_app.project.name,
+                 'mount_point': 'blog',
+                 'mount_label': 'Blog'})
     new_external_feeds = ['http://example.com/news/feed/']
     BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
     ThreadLocalORMSession.flush_all()

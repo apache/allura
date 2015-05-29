@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -88,7 +92,7 @@ class GenericTicketForm(ew.SimpleForm):
         since normally `ProjectUserCombo` shows without any options, and loads
         them asynchronously (via ajax).
         """
-        if isinstance(user, basestring):
+        if isinstance(user, str):
             user = M.User.by_username(user)
         if user and user != M.User.anonymous():
             field.options = [

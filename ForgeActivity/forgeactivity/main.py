@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 import logging
 import calendar
-from itertools import islice, ifilter
+from itertools import islice
 
 from ming.orm import session
 from pylons import tmpl_context as c, app_globals as g
@@ -116,7 +120,7 @@ class ForgeActivityController(BaseController):
         timeline = g.director.get_timeline(followee, page,
                                            limit=extra_limit,
                                            actor_only=actor_only)
-        filtered_timeline = list(islice(ifilter(perm_check(c.user), timeline),
+        filtered_timeline = list(islice(filter(perm_check(c.user), timeline),
                                         0, limit))
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for
@@ -152,7 +156,7 @@ class ForgeActivityController(BaseController):
             'link': h.absurl(self.app.url),
             'description': 'Recent activity for %s' % (
                 data['followee'].activity_name),
-            'language': u'en',
+            'language': 'en',
         }
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
@@ -160,7 +164,7 @@ class ForgeActivityController(BaseController):
             feed = FG.Rss201rev2Feed(**d)
         for t in data['timeline']:
             url = h.absurl(t.obj.activity_url.encode('utf-8'))
-            feed.add_item(title=u'%s %s %s%s' % (
+            feed.add_item(title='%s %s %s%s' % (
                                 t.actor.activity_name,
                 t.verb,
                 t.obj.activity_name,
@@ -253,7 +257,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             self.user, page=0, limit=100,
             actor_only=True,
         )
-        filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
+        filtered_timeline = list(islice(filter(perm_check(c.user), full_timeline),
                                         0, 8))
         for activity in filtered_timeline:
             # Get the project for the activity.obj so we can use it in the

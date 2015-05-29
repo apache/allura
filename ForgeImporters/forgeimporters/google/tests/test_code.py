@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -121,11 +125,11 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertEqual(
             r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
         self.assertEqual(
-            u'mymount', import_tool.post.call_args[1]['mount_point'])
+            'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
-            u'mylabel', import_tool.post.call_args[1]['mount_label'])
+            'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual(
-            u'poop', import_tool.post.call_args[1]['project_name'])
+            'poop', import_tool.post.call_args[1]['project_name'])
 
     @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.base.import_tool')

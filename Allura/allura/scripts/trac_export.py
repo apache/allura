@@ -20,8 +20,8 @@
 import logging
 import sys
 import csv
-import urlparse
-import urllib2
+import urllib.parse
+import urllib.request, urllib.error, urllib.parse
 import json
 import time
 import re
@@ -39,7 +39,7 @@ except ImportError:
     try:
         from allura.lib.helpers import urlopen
     except ImportError:
-        from urllib2 import urlopen
+        from urllib.request import urlopen
 
 log = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class TracExport(object):
     def remap_fields(self, dict):
         "Remap fields to adhere to standard taxonomy."
         out = {}
-        for k, v in dict.iteritems():
+        for k, v in dict.items():
             key = self.match_pattern(r'\W*(\w+)\W*', k)
             out[self.FIELD_MAP.get(key, key)] = v
 
@@ -111,7 +111,7 @@ class TracExport(object):
         return out
 
     def full_url(self, suburl, type=None):
-        url = urlparse.urljoin(self.base_url, suburl)
+        url = urllib.parse.urljoin(self.base_url, suburl)
         if type is None:
             return url
         glue = '&' if '?' in suburl else '?'
@@ -120,7 +120,7 @@ class TracExport(object):
     def log_url(self, url):
         log.info(url)
         if self.verbose:
-            print >>sys.stderr, url
+            print(url, file=sys.stderr)
 
     @classmethod
     def trac2z_date(cls, s):
@@ -142,7 +142,7 @@ class TracExport(object):
         # telling that access denied. So, we'll emulate 403 ourselves.
         # TODO: currently, any non-csv result treated as 403.
         if not f.info()['Content-Type'].startswith('text/csv'):
-            raise urllib2.HTTPError(
+            raise urllib.error.HTTPError(
                 url, 403, 'Forbidden - emulated', f.info(), f)
         return f
 
@@ -151,7 +151,7 @@ class TracExport(object):
         url = self.full_url(self.TICKET_URL % id, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        ticket_fields = reader.next()
+        ticket_fields = next(reader)
         ticket_fields['class'] = 'ARTIFACT'
         ticket = self.remap_fields(ticket_fields)
 
@@ -172,7 +172,7 @@ class TracExport(object):
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
             c['date'] = self.trac2z_date(
                 comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
-            changes = unicode(comment.find('ul', 'changes') or '')
+            changes = str(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
             c['comment'] = html2text.html2text(changes + body)
@@ -224,8 +224,8 @@ class TracExport(object):
         url = self.full_url(self.QUERY_MAX_ID_URL, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        fields = reader.next()
-        print fields
+        fields = next(reader)
+        print(fields)
         return int(fields['id'])
 
     def get_ticket(self, id, extra={}):
@@ -250,14 +250,14 @@ class TracExport(object):
         url = self.full_url(self.QUERY_BY_PAGE_URL % self.page, 'csv')
         try:
             f = self.csvopen(url)
-        except urllib2.HTTPError, e:
+        except urllib.error.HTTPError as e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
                 if 'beyond the number of pages in the query' in body or 'Log in with a SourceForge account' in body:
                     raise StopIteration
             raise
         reader = csv.reader(f)
-        cols = reader.next()
+        cols = next(reader)
         for r in reader:
             if r and r[0].isdigit():
                 id = int(r[0])
@@ -274,7 +274,7 @@ class TracExport(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         while True:
             # queue empty, try to fetch more
             if len(self.ticket_queue) == 0 and not self.exhausted:

@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -92,15 +96,16 @@ class Discussion(Artifact, ActivityObject):
         self.num_topics = self.thread_class().query.find(
             dict(discussion_id=self._id)).count()
         self.num_posts = self.post_class().query.find(
-            dict(discussion_id=self._id, status='ok', deleted=False)).count()
+            dict(discussion_id=self._id, status='ok')).count()
 
     @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
             discussion_id=self._id,
-            status='ok',
-            deleted=False,
-        )).sort('timestamp', pymongo.DESCENDING).limit(1)
+            status='ok'
+        ))\
+            .sort('timestamp', pymongo.DESCENDING)\
+            .limit(1)
         return q.first()
 
     def url(self):
@@ -128,7 +133,7 @@ class Discussion(Artifact, ActivityObject):
         super(Discussion, self).delete()
 
     def find_posts(self, **kw):
-        q = dict(kw, discussion_id=self._id, deleted=False)
+        q = dict(kw, discussion_id=self._id)
         return self.post_class().query.find(q)
 
 
@@ -237,9 +242,7 @@ class Thread(Artifact, ActivityObject):
         return Post.query.find(dict(
             discussion_id=self.discussion_id,
             thread_id=self._id,
-            status={'$in': ['ok', 'pending']},
-            deleted=False,
-        )).count()
+            status={'$in': ['ok', 'pending']})).count()
 
     def primary(self):
         if self.ref is None:
@@ -341,14 +344,12 @@ class Thread(Artifact, ActivityObject):
 
     def update_stats(self):
         self.num_replies = self.post_class().query.find(
-            dict(thread_id=self._id, status='ok', deleted=False)).count() - 1
+            dict(thread_id=self._id, status='ok')).count() - 1
 
     @property
     def last_post(self):
         q = self.post_class().query.find(dict(
-            thread_id=self._id,
-            deleted=False,
-        )).sort('timestamp', pymongo.DESCENDING)
+            thread_id=self._id)).sort('timestamp', pymongo.DESCENDING)
         return q.first()
 
     def create_post_threads(self, posts):
@@ -373,7 +374,6 @@ class Thread(Artifact, ActivityObject):
                          status={'$in': ['ok', 'pending']})
         if status:
             terms['status'] = status
-        terms['deleted'] = False
         q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')
@@ -504,7 +504,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             subject=self.subject,
             status=self.status,
             text=self.text,
-            flagged_by=map(str, self.flagged_by),
+            flagged_by=list(map(str, self.flagged_by)),
             timestamp=self.timestamp,
             last_edited=self.last_edit_date,
             author_id=str(author._id),
@@ -526,13 +526,11 @@ class Post(Message, VersionedArtifact, ActivityObject):
         not have access to a 'comment' activity unless he also has access to
         the artifact on which it was posted (if there is one).
         """
-        if self.project is None or self.deleted or self.status != 'ok':
+        if self.project is None:
             return False
         artifact_access = True
         if self.thread.artifact:
             if self.thread.artifact.project is None:
-                return False
-            if self.thread.artifact.deleted:
                 return False
             artifact_access = security.has_access(self.thread.artifact, perm,
                                                   user, self.thread.artifact.project)
@@ -597,7 +595,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):
-            map(self.add_attachment, file_info)
+            list(map(self.add_attachment, file_info))
         else:
             self.add_attachment(file_info)
 
@@ -681,8 +679,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return 'Re: ' + (self.subject or '(no subject)')
 
     def delete(self):
-        self.deleted = True
-        session(self).flush(self)
+        self.attachment_class().remove(dict(post_id=self._id))
+        super(Post, self).delete()
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
     def approve(self, file_info=None, notify=True, notification_text=None):

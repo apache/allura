@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -19,7 +23,7 @@
 import json
 import logging
 from pprint import pformat
-from urllib import unquote
+from urllib.parse import unquote
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash, jsonify
@@ -106,7 +110,7 @@ class ForgeWikiApp(Application):
     default_mount_label = 'Wiki'
     default_mount_point = 'wiki'
     ordinal = 5
-    default_root_page_name = u'Home'
+    default_root_page_name = 'Home'
     icons = {
         24: 'images/wiki_24.png',
         32: 'images/wiki_32.png',
@@ -231,11 +235,8 @@ The wiki uses [Markdown](%s) syntax.
         links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
                   SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({
-            'discussion_id': discussion._id,
-            'status': 'pending',
-            'deleted': False
-        }).count() if discussion else 0
+        pending_mod_count = M.Post.query.find(
+            {'discussion_id': discussion._id, 'status': 'pending'}).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(

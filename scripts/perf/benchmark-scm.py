@@ -18,6 +18,10 @@
 #       under the License.
 
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import sys
 import argparse
@@ -71,9 +75,9 @@ def main(opts):
         impl(repo, cid, path, names, opts.repo_path)
         end = datetime.now()
         total += (end - start).total_seconds()
-    print
-    print 'Total time:           %s' % total
-    print 'Average time per run: %s' % (total / opts.count)
+    print()
+    print('Total time:           %s' % total)
+    print('Average time per run: %s' % (total / opts.count))
 
 
 def impl_git_tree(repo, cid, path, names, *args):

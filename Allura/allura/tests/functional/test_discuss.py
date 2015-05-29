@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -15,11 +19,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 from mock import patch
 from nose.tools import assert_in, assert_not_in, assert_equal
-
-from ming.odm import session
 
 from allura.tests import TestController
 from allura import model as M
@@ -66,9 +67,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': thread_link.encode("utf-8")},
@@ -91,9 +91,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
                           params=params,
@@ -106,9 +105,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
@@ -174,8 +172,7 @@ class TestDiscuss(TestController):
         post = M.Post.query.find().first()
         assert post.status == 'ok'
         self.app.post(post_link + 'moderate', params=dict(delete='delete'))
-        assert M.Post.query.find().count() == 1
-        assert M.Post.query.find({'deleted': False}).count() == 0
+        assert M.Post.query.find().count() == 0
 
     @patch.object(M.Thread, 'is_spam')
     def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
@@ -218,9 +215,8 @@ class TestDiscuss(TestController):
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         assert create_activity.call_count == 1, create_activity.call_count
@@ -229,18 +225,6 @@ class TestDiscuss(TestController):
         assert 'zzz' in str(r.html.find('div', {'class': 'display_post'}))
         assert 'Last edit: Test Admin less than 1 minute ago' in str(
             r.html.find('div', {'class': 'display_post'}))
-
-    def test_deleted_post(self):
-        r = self._make_post('This is a post')
-        reply_form = r.html.find(
-            'div', {'class': 'edit_post_form reply'}).find('form')
-        post_link = str(reply_form['action']).rstrip('/')
-        _, slug = post_link.rsplit('/', 1)
-        r = self.app.get(post_link, status=200)
-        post = M.Post.query.get(slug=slug)
-        post.deleted = True
-        session(post).flush(post)
-        r = self.app.get(post_link, status=404)
 
 
 class TestAttachment(TestController):
@@ -259,9 +243,8 @@ class TestAttachment(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': self.thread_link})
@@ -269,21 +252,17 @@ class TestAttachment(TestController):
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
 
-    def attach_link(self):
-        r = self.app.get(self.thread_link)
-        for alink in r.html.findAll('a'):
-            if 'attachment' in alink['href']:
-                alink = str(alink['href'])
-                return alink
-        else:
-            assert False, 'attachment link not found'
-
     def test_attach(self):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.thread_link)
+        for alink in r.html.findAll('a'):
+            if 'attachment' in alink['href']:
+                alink = str(alink['href'])
+                break
+        else:
+            assert False, 'attachment link not found'
         assert '<div class="attachment_thumb">' in r
-        alink = self.attach_link()
         r = self.app.get(alink)
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
@@ -299,31 +278,11 @@ class TestAttachment(TestController):
         inputs = post_form.findAll('input')
 
         for field in inputs:
-            if field.has_key('name') and (field['name'] != 'file_info'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if 'name' in field and (field['name'] != 'file_info'):
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Reply'
         r = self.app.post(self.post_link + 'reply',
                           params=params,
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.thread_link)
         assert "test.txt" in r
-
-    def test_deleted_post_attachment(self):
-        f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
-        with open(f) as f:
-            pic = f.read()
-        self.app.post(
-            self.post_link + 'attach',
-            upload_files=[('file_info', 'user.png', pic)])
-        alink = self.attach_link()
-        thumblink = alink + '/thumb'
-        self.app.get(alink, status=200)
-        self.app.get(thumblink, status=200)
-        _, slug = self.post_link.rstrip('/').rsplit('/', 1)
-        post = M.Post.query.get(slug=slug)
-        assert post, 'Could not find post for {} {}'.format(slug, self.post_link)
-        post.deleted = True
-        session(post).flush(post)
-        self.app.get(alink, status=404)
-        self.app.get(thumblink, status=404)

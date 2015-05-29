@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -151,7 +155,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
             self.custom_fields[name] = {
                 'type': self.field_types[name.lower()],
                 'label': name,
-                'name': u'_%s' % name.lower(),
+                'name': '_%s' % name.lower(),
                 'options': set(),
             }
         return self.custom_fields[name]
@@ -170,10 +174,10 @@ class GoogleCodeTrackerImporter(ToolImporter):
         else:
             owner_line = ''
         ticket.description = (
-            u'*Originally created by:* {creator}\n'
-            u'{owner}'
-            u'\n'
-            u'{body}').format(
+            '*Originally created by:* {creator}\n'
+            '{owner}'
+            '\n'
+            '{body}').format(
             creator=issue.get_issue_creator(),
             owner=owner_line,
             body=issue.get_issue_description(),
@@ -184,8 +188,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
         labels = set()
         custom_fields = defaultdict(set)
         for label in issue.get_issue_labels():
-            if u'-' in label:
-                name, value = label.split(u'-', 1)
+            if '-' in label:
+                name, value = label.split('-', 1)
                 cf = self.custom_field(name)
                 cf['options'].add(value)
                 custom_fields[cf['name']].add(value)
@@ -194,8 +198,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
             else:
                 labels.add(label)
         ticket.labels = list(labels)
-        ticket.custom_fields = {n: u', '.join(sorted(v))
-                                for n, v in custom_fields.iteritems()}
+        ticket.custom_fields = {n: ', '.join(sorted(v))
+                                for n, v in custom_fields.items()}
 
     def process_comments(self, ticket, issue):
         for comment in issue.iter_comments():
@@ -208,7 +212,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
 
     def postprocess_custom_fields(self):
         custom_fields = []
-        for name, field in self.custom_fields.iteritems():
+        for name, field in self.custom_fields.items():
             if field['name'] == '_milestone':
                 field['milestones'] = [{
                     'name': milestone,

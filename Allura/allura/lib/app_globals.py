@@ -19,6 +19,10 @@
 
 
 """The application's Globals object"""
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 __all__ = ['Globals']
 import logging
@@ -26,7 +30,7 @@ import cgi
 import hashlib
 import json
 import datetime
-from urllib import urlencode
+from urllib.parse import urlencode
 from subprocess import Popen, PIPE
 import os
 import time
@@ -76,7 +80,7 @@ class ForgeMarkdown(markdown.Markdown):
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
             escaped = cgi.escape(h.really_unicode(source))
-            return h.html.literal(u'<pre>%s</pre>' % escaped)
+            return h.html.literal('<pre>%s</pre>' % escaped)
         try:
             return markdown.Markdown.convert(self, source)
         except Exception:
@@ -84,7 +88,7 @@ class ForgeMarkdown(markdown.Markdown):
                      ''.join(traceback.format_stack()), exc_info=True)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
-            return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
+            return h.html.literal("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
 
     def cached_convert(self, artifact, field_name):
@@ -284,7 +288,6 @@ class Globals(object):
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
             spam=_cache_eps('allura.spam'),
-            phone=_cache_eps('allura.phone'),
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
             admin=_cache_eps('allura.admin'),
@@ -304,7 +307,7 @@ class Globals(object):
 
         # Set listeners to update stats
         statslisteners = []
-        for name, ep in self.entry_points['stats'].iteritems():
+        for name, ep in self.entry_points['stats'].items():
             statslisteners.append(ep())
         self.statsUpdater = PostEvent(statslisteners)
 
@@ -316,12 +319,6 @@ class Globals(object):
         """
         from allura.lib import spam
         return spam.SpamFilter.get(config, self.entry_points['spam'])
-
-    @LazyProperty
-    def phone_service(self):
-        """Return a :class:`allura.lib.phone.PhoneService` implementation"""
-        from allura.lib import phone
-        return phone.PhoneService.get(config, self.entry_points['phone'])
 
     @LazyProperty
     def director(self):
@@ -394,7 +391,7 @@ class Globals(object):
                 self._zarkov = ZarkovClient(
                     config.get('zarkov.host', 'tcp://127.0.0.1:6543'))
             self._zarkov.event(event_type, context, extra)
-        except Exception, ex:
+        except Exception as ex:
             self._zarkov = None
             log.error('Error sending zarkov event(%r): %r', ex, dict(
                 type=event_type, context=context, extra=extra))
@@ -458,7 +455,7 @@ class Globals(object):
                 # a <pre>
                 text = h.really_unicode(text)
                 text = cgi.escape(text)
-                return h.html.literal(u'<pre>' + text + u'</pre>')
+                return h.html.literal('<pre>' + text + '</pre>')
         else:
             lexer = pygments.lexers.get_lexer_by_name(
                 lexer, encoding='chardet')
@@ -592,7 +589,7 @@ class Globals(object):
         'h.set_context() is preferred over this method'
         if isinstance(pid_or_project, M.Project):
             c.project = pid_or_project
-        elif isinstance(pid_or_project, basestring):
+        elif isinstance(pid_or_project, str):
             raise TypeError('need a Project instance, got %r' % pid_or_project)
         elif pid_or_project is None:
             c.project = None
@@ -621,7 +618,7 @@ class Globals(object):
 
     @LazyProperty
     def noreply(self):
-        return unicode(config.get('noreply', 'noreply@%s' % config['domain']))
+        return str(config.get('noreply', 'noreply@%s' % config['domain']))
 
     @property
     def build_key(self):

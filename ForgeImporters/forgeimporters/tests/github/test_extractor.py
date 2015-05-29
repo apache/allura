@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,7 +21,7 @@
 
 import json
 from unittest import TestCase
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from mock import patch, Mock
 
@@ -25,7 +29,7 @@ from ... import github
 
 # Can't use cStringIO here, because we cannot set attributes or subclass it,
 # and this is needed in mocked_urlopen below
-from StringIO import StringIO
+from io import StringIO
 
 
 class TestGitHubProjectExtractor(TestCase):
@@ -35,28 +39,28 @@ class TestGitHubProjectExtractor(TestCase):
         'has_wiki': True,
     }
     CLOSED_ISSUES_LIST = [
-        {u'number': 1},
-        {u'number': 2},
+        {'number': 1},
+        {'number': 2},
     ]
     OPENED_ISSUES_LIST = [
-        {u'number': 3},
-        {u'number': 4},
-        {u'number': 5},
+        {'number': 3},
+        {'number': 4},
+        {'number': 5},
     ]
     OPENED_ISSUES_LIST_PAGE2 = [
-        {u'number': 6},
-        {u'number': 7},
-        {u'number': 8},
+        {'number': 6},
+        {'number': 7},
+        {'number': 8},
     ]
-    ISSUE_COMMENTS = [u'hello', u'mocked_comment']
-    ISSUE_COMMENTS_PAGE2 = [u'hello2', u'mocked_comment2']
+    ISSUE_COMMENTS = ['hello', 'mocked_comment']
+    ISSUE_COMMENTS_PAGE2 = ['hello2', 'mocked_comment2']
     ISSUE_EVENTS = [
-        {u'event': u'closed'},
-        {u'event': u'reopened'},
+        {'event': 'closed'},
+        {'event': 'reopened'},
     ]
     ISSUE_EVENTS_PAGE2 = [
-        {u'event': u'assigned'},
-        {u'event': u'not-supported-event'},
+        {'event': 'assigned'},
+        {'event': 'not-supported-event'},
     ]
 
     def mocked_urlopen(self, url):
@@ -110,9 +114,9 @@ class TestGitHubProjectExtractor(TestCase):
 
     def test_iter_issues(self):
         issues = list(self.extractor.iter_issues())
-        all_issues = zip((1, 2), self.CLOSED_ISSUES_LIST)
-        all_issues += zip((3, 4, 5), self.OPENED_ISSUES_LIST)
-        all_issues += zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2)
+        all_issues = list(zip((1, 2), self.CLOSED_ISSUES_LIST))
+        all_issues += list(zip((3, 4, 5), self.OPENED_ISSUES_LIST))
+        all_issues += list(zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2))
         self.assertEqual(issues, all_issues)
 
     def test_iter_comments(self):
@@ -202,7 +206,7 @@ class TestGitHubProjectExtractor(TestCase):
             mock_resp = StringIO('{}')
             mock_resp.info = lambda: {}
             urlopen.side_effect = [mock_resp]
-            raise urllib2.HTTPError(
+            raise urllib.error.HTTPError(
                 'url', 403, 'msg', limit_exceeded_headers, StringIO('{}'))
         urlopen.side_effect = urlopen_side_effect
         e = github.GitHubProjectExtractor('test_project')

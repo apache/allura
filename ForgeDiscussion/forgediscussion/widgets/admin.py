@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -67,7 +71,7 @@ class AddForum(ff.AdminForm):
                          validator=fev.UnicodeString()),
             ew.TextField(name='shortname', label='Short Name',
                          validator=All(
-                             fev.Regex(ur"^[^\s\/\.]*$", not_empty=True, messages={
+                             fev.Regex(r"^[^\s\/\.]*$", not_empty=True, messages={
                                  'invalid': 'Shortname cannot contain space . or /',
                                  'empty': 'You must create a short name for the forum.'}),
                              UniqueForumShortnameValidator())),

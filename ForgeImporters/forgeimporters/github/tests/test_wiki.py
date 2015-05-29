@@ -17,6 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from unittest import TestCase
 from nose.tools import assert_equal
 from mock import Mock, patch, call
@@ -137,8 +141,8 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(upsert.call_args_list, [call('Home2'), call('Home3')])
 
         assert_equal(render.call_args_list, [
-            call('Home2.creole', u'**test message**'),
-            call('Home3.rest', u'test message')])
+            call('Home2.creole', '**test message**'),
+            call('Home3.rest', 'test message')])
 
     @patch('forgeimporters.github.wiki.git.Repo')
     @patch('forgeimporters.github.wiki.mkdtemp')
@@ -182,7 +186,7 @@ class TestGitHubWikiImporter(TestCase):
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list,
-                     [call('Home.rst', u'# test message')])
+                     [call('Home.rst', '# test message')])
 
     @skipif(module_not_available('html2text'))
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
@@ -190,7 +194,7 @@ class TestGitHubWikiImporter(TestCase):
     def test_with_history_mediawiki(self, md2mkm, upsert):
         self.commit2.stats.files = {"Home.mediawiki": self.blob1}
         self.commit2.tree = {"Home.mediawiki": self.blob1}
-        md2mkm.return_value = u'# test message'
+        md2mkm.return_value = '# test message'
         importer = GitHubWikiImporter()
         importer._set_available_pages = Mock()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -198,28 +202,28 @@ class TestGitHubWikiImporter(TestCase):
         importer.app.config.options = {}
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
-        importer.convert_gollum_tags = Mock(return_value=u'# test message')
+        importer.convert_gollum_tags = Mock(return_value='# test message')
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
-        assert_equal(md2mkm.call_args_list, [call(u'# test message')])
+        assert_equal(md2mkm.call_args_list, [call('# test message')])
 
     def test_set_available_pages(self):
         importer = GitHubWikiImporter()
         commit = Mock()
         blobs = [Mock() for i in range(3)]
-        blobs[0].name = u'Home-42.md'
-        blobs[1].name = u'image.png'
-        blobs[2].name = u'code & fun.textile'
+        blobs[0].name = 'Home-42.md'
+        blobs[1].name = 'image.png'
+        blobs[2].name = 'code & fun.textile'
         commit.tree.traverse.return_value = blobs
         importer._set_available_pages(commit)
-        assert_equal(importer.available_pages, [u'Home 42', u'code & fun'])
+        assert_equal(importer.available_pages, ['Home 42', 'code & fun'])
 
     def test_gollum_page_links_case_insensitive(self):
         i = GitHubWikiImporter()
-        i.available_pages = [u'Home 42', u'code & fun']
-        assert_equal(i.convert_gollum_tags(u'[[Code & Fun]]'), u'[code & fun]')
-        assert_equal(i.convert_gollum_tags(u'[[home-42]]'), u'[Home 42]')
-        assert_equal(i.convert_gollum_tags(u'[[Unknown]]'), u'[Unknown]')
+        i.available_pages = ['Home 42', 'code & fun']
+        assert_equal(i.convert_gollum_tags('[[Code & Fun]]'), '[code & fun]')
+        assert_equal(i.convert_gollum_tags('[[home-42]]'), '[Home 42]')
+        assert_equal(i.convert_gollum_tags('[[Unknown]]'), '[Unknown]')
 
     def test_convert_page_name(self):
         f = GitHubWikiImporter()._convert_page_name
@@ -229,57 +233,57 @@ class TestGitHubWikiImporter(TestCase):
 
     def test_convert_gollum_page_links(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u'[[Page]]'), u'[Page]')
-        assert_equal(f(u'[[Page Title|Page]]'), u'[Page Title](Page)')
-        assert_equal(f(u'[[Pagê Nâme]]'), u'[Pagê Nâme]')
+        assert_equal(f('[[Page]]'), '[Page]')
+        assert_equal(f('[[Page Title|Page]]'), '[Page Title](Page)')
+        assert_equal(f('[[Pagê Nâme]]'), '[Pagê Nâme]')
         # Github always converts spaces and slashes in links to hyphens,
         # to lookup page in the filesystem. During import we're converting
         # all hyphens in page name to spaces, but still supporting both link
         # formats.
-        assert_equal(f(u'[[Page With Spaces]]'), u'[Page With Spaces]')
-        assert_equal(f(u'[[Page-With-Spaces]]'), u'[Page With Spaces]')
-        assert_equal(f(u'[[Page / 1]]'), u'[Page   1]')
-        assert_equal(f(u'[[Title|Page With Spaces]]'),
-                     u'[Title](Page With Spaces)')
-        assert_equal(f(u'[[Title|Page-With-Spaces]]'),
-                     u'[Title](Page With Spaces)')
-        assert_equal(f(u'[[go here|Page / 1]]'), u'[go here](Page   1)')
+        assert_equal(f('[[Page With Spaces]]'), '[Page With Spaces]')
+        assert_equal(f('[[Page-With-Spaces]]'), '[Page With Spaces]')
+        assert_equal(f('[[Page / 1]]'), '[Page   1]')
+        assert_equal(f('[[Title|Page With Spaces]]'),
+                     '[Title](Page With Spaces)')
+        assert_equal(f('[[Title|Page-With-Spaces]]'),
+                     '[Title](Page With Spaces)')
+        assert_equal(f('[[go here|Page / 1]]'), '[go here](Page   1)')
 
     def test_convert_gollum_page_links_escaped(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u"'[[Page]]"), u'[[Page]]')
-        assert_equal(f(u"'[[Page Title|Page]]"), u'[[Page Title|Page]]')
-        assert_equal(f(u"'[[Page With Spaces]]"), u'[[Page With Spaces]]')
-        assert_equal(f(u"'[[Page-With-Spaces]]"), u'[[Page-With-Spaces]]')
-        assert_equal(f(u"'[[Page / 1]]"), u'[[Page / 1]]')
-        assert_equal(f(u"'[[Title|Page With Spaces]]"),
-                     u'[[Title|Page With Spaces]]')
-        assert_equal(f(u"'[[Title|Page-With-Spaces]]"),
-                     u'[[Title|Page-With-Spaces]]')
-        assert_equal(f(u"'[[go here|Page / 1]]"), u'[[go here|Page / 1]]')
+        assert_equal(f("'[[Page]]"), '[[Page]]')
+        assert_equal(f("'[[Page Title|Page]]"), '[[Page Title|Page]]')
+        assert_equal(f("'[[Page With Spaces]]"), '[[Page With Spaces]]')
+        assert_equal(f("'[[Page-With-Spaces]]"), '[[Page-With-Spaces]]')
+        assert_equal(f("'[[Page / 1]]"), '[[Page / 1]]')
+        assert_equal(f("'[[Title|Page With Spaces]]"),
+                     '[[Title|Page With Spaces]]')
+        assert_equal(f("'[[Title|Page-With-Spaces]]"),
+                     '[[Title|Page-With-Spaces]]')
+        assert_equal(f("'[[go here|Page / 1]]"), '[[go here|Page / 1]]')
 
     def test_convert_gollum_external_links(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u'[[http://domain.net]]'), u'<http://domain.net>')
-        assert_equal(f(u'[[https://domain.net]]'), u'<https://domain.net>')
-        assert_equal(f(u'[[Site|http://domain.net]]'),
-                     u'[Site](http://domain.net)')
+        assert_equal(f('[[http://domain.net]]'), '<http://domain.net>')
+        assert_equal(f('[[https://domain.net]]'), '<https://domain.net>')
+        assert_equal(f('[[Site|http://domain.net]]'),
+                     '[Site](http://domain.net)')
 
     def test_convert_gollum_external_links_escaped(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u"'[[http://domain.net]]"), u'[[http://domain.net]]')
-        assert_equal(f(u"'[[https://domain.net]]"), u'[[https://domain.net]]')
-        assert_equal(f(u"'[[Site|http://domain.net]]"),
-                     u'[[Site|http://domain.net]]')
+        assert_equal(f("'[[http://domain.net]]"), '[[http://domain.net]]')
+        assert_equal(f("'[[https://domain.net]]"), '[[https://domain.net]]')
+        assert_equal(f("'[[Site|http://domain.net]]"),
+                     '[[Site|http://domain.net]]')
 
     def test_convert_gollum_toc(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u'[[_TOC_]]'), u'[TOC]')
-        assert_equal(f(u"'[[_TOC_]]"), u'[[_TOC_]]')
+        assert_equal(f('[[_TOC_]]'), '[TOC]')
+        assert_equal(f("'[[_TOC_]]"), '[[_TOC_]]')
 
     def test_convert_gollum_tags(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        source = u'''Look at [[this page|Some Page]]
+        source = '''Look at [[this page|Some Page]]
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
@@ -287,7 +291,7 @@ Our website is [[http://domain.net]].
 
 '[[Escaped Tag]]'''
 
-        result = u'''Look at [this page](Some Page)
+        result = '''Look at [this page](Some Page)
 
 More info at: [MoreInfo] [Even More Info]
 
@@ -306,7 +310,7 @@ Our website is <http://domain.net>.
         importer.github_markdown_converter = GitHubMarkdownConverter(
             'user', 'proj')
         f = importer.convert_markup
-        source = u'''Look at [[this page|Some Page]]
+        source = '''Look at [[this page|Some Page]]
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
@@ -323,7 +327,7 @@ ticket #1
 #1 header
 
 sha aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'''
-        result = u'''Look at [this page](Some Page)
+        result = '''Look at [this page](Some Page)
 
 More info at: [MoreInfo] [Even More Info]
 
@@ -341,7 +345,7 @@ ticket [#1]
 sha [aaaaaa]'''
         assert_equal(f(source, 'test.md').strip(), result)
 
-        assert_equal(f(u'h1. Hello', 't.textile').strip(), u'# Hello')
+        assert_equal(f('h1. Hello', 't.textile').strip(), '# Hello')
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
@@ -350,7 +354,7 @@ sha [aaaaaa]'''
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'''Look at [[this page|Some Page]]
+        source = '''Look at [[this page|Some Page]]
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
@@ -362,7 +366,7 @@ Our website is [[http://domain.net]].
 
 [External link](https://github.com/a/b/issues/1)'''
 
-        result = u'''<p>Look at [[this page|Some Page]]</p>
+        result = '''<p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://domain.net]].</p>
 <p>'[[Escaped Tag]]</p>
@@ -376,25 +380,25 @@ Our website is [[http://domain.net]].
         prefix = 'https://github/a/b/wiki'
         new = '/p/test/wiki/'
         assert_equal(
-            f(u'<a href="https://github/a/b/wiki/Test Page">Test Page</a>',
+            f('<a href="https://github/a/b/wiki/Test Page">Test Page</a>',
               prefix, new),
-            u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+            '<a href="/p/test/wiki/Test Page">Test Page</a>')
         assert_equal(
-            f(u'<a href="https://github/a/b/wiki/Test-Page">Test-Page</a>',
+            f('<a href="https://github/a/b/wiki/Test-Page">Test-Page</a>',
               prefix, new),
-            u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+            '<a href="/p/test/wiki/Test Page">Test Page</a>')
         assert_equal(
-            f(u'<a href="https://github/a/b/issues/1" class="1"></a>',
+            f('<a href="https://github/a/b/issues/1" class="1"></a>',
               prefix, new),
-            u'<a href="https://github/a/b/issues/1" class="1"></a>')
+            '<a href="https://github/a/b/issues/1" class="1"></a>')
         assert_equal(
-            f(u'<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>',
+            f('<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>',
               prefix, new),
-            u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
+            '<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
         assert_equal(
-            f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>',
+            f('<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>',
               prefix, new),
-            u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
+            '<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
 
     @skipif(module_not_available('html2text'))
     def test_convert_markup_with_mediawiki2markdown(self):
@@ -403,7 +407,7 @@ Our website is [[http://domain.net]].
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'''
+        source = '''
 ''Al'fredas 235 BC''
 == See also ==
 * [https://github.com/a/b/wiki/AgentSpring-running-instructions-for-d13n-model Test1]
@@ -411,7 +415,7 @@ Our website is [[http://domain.net]].
 * [https://github.com/a/b/wiki/AgentSpring-Q&A Test3]
 * [https://github.com/a/b/wiki/Extensions Test4]'''
 
-        result = u'''_Al'fredas 235 BC_
+        result = '''_Al'fredas 235 BC_
 
 ## See also
 
@@ -430,7 +434,7 @@ Our website is [[http://domain.net]].
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'''h1. Header 1
+        source = '''h1. Header 1
 
 Some text 1.
 
@@ -438,7 +442,7 @@ h2. Header 2
 
 See [[Page]]'''
 
-        result = u'''# Header 1
+        result = '''# Header 1
 
 Some text 1.
 
@@ -454,8 +458,8 @@ See [Page]'''
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'[[Ticks & Leeches]]'
-        result = u'[Ticks & Leeches]'
+        source = '[[Ticks & Leeches]]'
+        result = '[Ticks & Leeches]'
         # markdown should be untouched
         assert_equal(f(source, 'test.rst').strip(), result)
 
@@ -468,13 +472,13 @@ See [Page]'''
         f = importer.convert_markup
 
         # check if lists converting works properly
-        source = u'''There are good reasons for this:
+        source = '''There are good reasons for this:
 
   # Duplicate libraries regularly break builds
   # Subtle bugs emerge with duplicate libraries, and to a lesser extent, duplicate tools
   # We want you to try harder to make your formula work with what OS X comes with
 '''
-        result = u'''There are good reasons for this:
+        result = '''There are good reasons for this:
 
   1. Duplicate libraries regularly break builds
   2. Subtle bugs emerge with duplicate libraries, and to a lesser extent, duplicate tools
@@ -489,13 +493,13 @@ See [Page]'''
         assert_equal(f(source, 'test2.textile'), result)
 
         # links with formatting converts normal in textile now
-        source = u'''*[[this checklist|Troubleshooting]]*
+        source = '''*[[this checklist|Troubleshooting]]*
 
 some text and *[[Tips n' Tricks]]*
 
 *[[link|http://otherlink.com]]*
 '''
-        result = u'''**[this checklist](Troubleshooting)**
+        result = '''**[this checklist](Troubleshooting)**
 
 some text and **[Tips n' Tricks]**
 
@@ -510,9 +514,9 @@ some text and **[Tips n' Tricks]**
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'*[[this checklist|Troubleshooting]]*'
+        source = '*[[this checklist|Troubleshooting]]*'
         assert_equal(f(source, 't.textile').strip(),
-                     u'**[this checklist](Troubleshooting)**')
+                     '**[this checklist](Troubleshooting)**')
 
     @without_module('html2text')
     def test_convert_textile_special_tag_without_html2text(self):
@@ -521,8 +525,8 @@ some text and **[Tips n' Tricks]**
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'*[[this checklist|Troubleshooting]]*'
-        result = u'<p><strong>[[this checklist|Troubleshooting]]</strong></p>'
+        source = '*[[this checklist|Troubleshooting]]*'
+        result = '<p><strong>[[this checklist|Troubleshooting]]</strong></p>'
         assert_equal(f(source, 't.textile').strip(), result)
 
     @patch('forgeimporters.github.wiki.mkdtemp', autospec=True)
@@ -571,11 +575,11 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
                          test_project_with_wiki)
         args = import_tool.post.call_args[1]
-        self.assertEqual(u'GitHub Wiki', args['mount_label'])
-        self.assertEqual(u'gh-wiki', args['mount_point'])
-        self.assertEqual(u'mulder', args['project_name'])
-        self.assertEqual(u'spooky', args['user_name'])
-        self.assertEqual(u'import_history', args['tool_option'])
+        self.assertEqual('GitHub Wiki', args['mount_label'])
+        self.assertEqual('gh-wiki', args['mount_point'])
+        self.assertEqual('mulder', args['project_name'])
+        self.assertEqual('spooky', args['user_name'])
+        self.assertEqual('import_history', args['tool_option'])
         self.assertEqual(requests.head.call_count, 1)
 
         # without history
@@ -585,11 +589,11 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
                          test_project_with_wiki)
         args = import_tool.post.call_args[1]
-        self.assertEqual(u'GitHub Wiki', args['mount_label'])
-        self.assertEqual(u'gh-wiki', args['mount_point'])
-        self.assertEqual(u'mulder', args['project_name'])
-        self.assertEqual(u'spooky', args['user_name'])
-        self.assertEqual(u'', args['tool_option'])
+        self.assertEqual('GitHub Wiki', args['mount_label'])
+        self.assertEqual('gh-wiki', args['mount_point'])
+        self.assertEqual('mulder', args['project_name'])
+        self.assertEqual('spooky', args['user_name'])
+        self.assertEqual('', args['tool_option'])
         self.assertEqual(requests.head.call_count, 1)
 
     @with_wiki

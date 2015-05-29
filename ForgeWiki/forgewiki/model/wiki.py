@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -236,7 +240,7 @@ class Page(VersionedArtifact, ActivityObject):
             t = {}
             for user in users:
                 t[user.username] = user.id
-            return t.values()
+            return list(t.values())
         user_ids = uniq([r.author for r in self.history().all()])
         return User.query.find({
             '_id': {'$in': user_ids},

@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -64,7 +68,7 @@ class WebhookValidator(fev.FancyValidator):
                 pass
         if wh and wh.type == self.sender.type and wh.app_config_id == self.app.config._id:
             return wh
-        raise Invalid(u'Invalid webhook', value, state)
+        raise Invalid('Invalid webhook', value, state)
 
 
 class WebhookCreateForm(schema.Schema):
@@ -97,8 +101,7 @@ class WebhookControllerMeta(type):
         return type.__call__(cls, sender, app, *args, **kw)
 
 
-class WebhookController(BaseController):
-    __metaclass__ = WebhookControllerMeta
+class WebhookController(BaseController, metaclass=WebhookControllerMeta):
     create_form = WebhookCreateForm
     edit_form = WebhookEditForm
 
@@ -119,7 +122,7 @@ class WebhookController(BaseController):
             session(wh).flush(wh)
         except DuplicateKeyError:
             session(wh).expunge(wh)
-            msg = u'_the_form: "{}" webhook already exists for {} {}'.format(
+            msg = '_the_form: "{}" webhook already exists for {} {}'.format(
                 wh.type, self.app.config.options.mount_label, url)
             raise Invalid(msg, None, None)
 
@@ -186,7 +189,7 @@ class WebhookController(BaseController):
             raise exc.HTTPNotFound()
         c.form_values = {'url': kw.get('url') or wh.hook_url,
                          'secret': kw.get('secret') or wh.secret,
-                         'webhook': unicode(wh._id)}
+                         'webhook': str(wh._id)}
         return {'sender': self.sender,
                 'action': 'edit',
                 'form': form}
@@ -204,8 +207,8 @@ class WebhookRestController(BaseController):
         error = getattr(e, 'error_dict', None)
         if error:
             _error = {}
-            for k, v in error.iteritems():
-                _error[k] = unicode(v)
+            for k, v in error.items():
+                _error[k] = str(v)
             return _error
         error = getattr(e, 'msg', None)
         if not error:
@@ -283,7 +286,7 @@ class WebhookRestController(BaseController):
         try:
             params = {'secret': kw.pop('secret', old_secret),
                       'url': kw.pop('url', old_url),
-                      'webhook': unicode(webhook._id)}
+                      'webhook': str(webhook._id)}
             valid = form.to_python(params)
         except Exception as e:
             response.status_int = 400
@@ -324,7 +327,7 @@ class SendWebhookHelper(object):
     @property
     def retries(self):
         t = aslist(config.get('webhook.retry', [60, 120, 240]))
-        return map(int, t)
+        return list(map(int, t))
 
     def sign(self, json_payload):
         signature = hmac.new(
@@ -455,16 +458,16 @@ class RepoPushWebhookSender(WebhookSender):
                 # Merge commit will have multiple parents. As far as I can tell
                 # the last one will be the branch head before merge
                 return self._convert_id(parents[-1])
-        return u''
+        return ''
 
     def _after(self, commit_ids):
         if len(commit_ids) > 0:
             return self._convert_id(commit_ids[0])
-        return u''
+        return ''
 
     def _convert_id(self, _id):
         if ':' in _id:
-            _id = u'r' + _id.rsplit(':', 1)[1]
+            _id = 'r' + _id.rsplit(':', 1)[1]
         return _id
 
     def get_payload(self, commit_ids, **kw):

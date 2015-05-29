@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -113,12 +117,12 @@ class TestRootController(_TestCase):
         assert data['next_column'] == 1
         assert_equal(
             data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
-            {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
-             u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
-             u'short_id': u'[df3042]',
-             u'column': 0,
-             u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
-             u'message': u'Add README', u'row': 2})
+            {'url': '/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
+             'oid': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+             'short_id': '[df3042]',
+             'column': 0,
+             'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+             'message': 'Add README', 'row': 2})
 
     def test_log(self):
         resp = self.app.get(
@@ -474,9 +478,9 @@ class TestFork(_TestCase):
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
-            print r.request.url
+            print(r.request.url)
         while r.status_int == 302:
-            print ' ==> 302 ==> %s' % r.location
+            print(' ==> 302 ==> %s' % r.location)
             r = r.follow(**kw)
         return r
 
@@ -670,7 +674,7 @@ class TestFork(_TestCase):
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
         changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
-        dd_assert_equal(unicode(changes), """
+        dd_assert_equal(str(changes), """
 <div class="markdown_content"><ul>
 <li>
 <p><strong>Summary</strong>: summary --&gt; changed summary</p>

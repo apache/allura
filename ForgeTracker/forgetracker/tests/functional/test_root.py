@@ -16,13 +16,17 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from datetime import datetime
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 import time
 import json
-import StringIO
+import io
 import allura
 import mock
 
@@ -73,7 +77,7 @@ class TrackerTestController(TestController):
                 field.options = [('', False)] + [(u.username, False)
                                                  for u in p.users()]
 
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             form['ticket_form.%s' % k] = v
         resp = form.submit()
         assert resp.status_int != 200, resp
@@ -510,12 +514,12 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/edit/')
         opts = r.html.find('select', attrs={'name': '_type'})
         opts = opts.findAll('option')
-        assert_equal(opts[0].get('value'), u'')
-        assert_equal(opts[0].getText(), u'no change')
-        assert_equal(opts[1].get('value'), u'Bug')
-        assert_equal(opts[1].getText(), u'Bug')
-        assert_equal(opts[2].get('value'), u'Feature Request')
-        assert_equal(opts[2].getText(), u'Feature Request')
+        assert_equal(opts[0].get('value'), '')
+        assert_equal(opts[0].getText(), 'no change')
+        assert_equal(opts[1].get('value'), 'Bug')
+        assert_equal(opts[1].getText(), 'Bug')
+        assert_equal(opts[2].get('value'), 'Feature Request')
+        assert_equal(opts[2].getText(), 'Feature Request')
 
     def test_mass_edit_private_field(self):
         kw = {'private': True}
@@ -714,7 +718,7 @@ class TestFunctionalController(TrackerTestController):
 
         # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
+        create_button = r.html.find('a', attrs={'href': '/p/test/bugs/new/'})
         assert_equal(create_button['class'], 'sidebar-disabled')
 
     def test_render_markdown_syntax(self):
@@ -727,8 +731,8 @@ class TestFunctionalController(TrackerTestController):
         # Create ticket
         params = dict(ticket_num=1,
                       app_config_id=c.app.config._id,
-                      summary=u'test md cache',
-                      description=u'# Test markdown cached_convert',
+                      summary='test md cache',
+                      description='# Test markdown cached_convert',
                       mod_date=datetime(2010, 1, 1, 1, 1, 1))
         ticket = tm.Ticket(**params)
 
@@ -775,12 +779,12 @@ class TestFunctionalController(TrackerTestController):
             'status': 'ccc',
             '_milestone': '',
             'assigned_to': '',
-            'labels': u'yellow,greén'.encode('utf-8'),
+            'labels': 'yellow,greén'.encode('utf-8'),
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        assert_true(u'greén' in response)
+        assert_true('greén' in response)
         assert_true('<li><strong>labels</strong>:  --&gt; yellow, greén</li>' in response)
         self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz',
@@ -850,8 +854,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -904,11 +908,11 @@ class TestFunctionalController(TrackerTestController):
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/bugs/1/attachment/' + filename)
-        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(io.StringIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/bugs/1/attachment/' + filename + '/thumb')
 
-        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(io.StringIO(r.body))
         assert thumbnail.size == (100, 100)
 
     def test_sidebar_static_page(self):
@@ -1067,9 +1071,9 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         r = self.app.get('/bugs/new/')
-        assert u'<option value="oné">oné</option>'.encode('utf-8') in r
-        assert u'<option value="one and á half">one and á half</option>'.encode('utf-8') in r
-        assert u'<option value="two">two</option>' in r
+        assert '<option value="oné">oné</option>'.encode('utf-8') in r
+        assert '<option value="one and á half">one and á half</option>'.encode('utf-8') in r
+        assert '<option value="two">two</option>' in r
 
     def test_select_custom_field_invalid_quotes(self):
         params = dict(
@@ -1084,9 +1088,9 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         r = self.app.get('/bugs/new/')
-        assert u'<option value="closéd">closéd</option>'.encode('utf-8') in r
-        assert u'<option value="quote">quote</option>' in r
-        assert u'<option value="missing">missing</option>' in r
+        assert '<option value="closéd">closéd</option>'.encode('utf-8') in r
+        assert '<option value="quote">quote</option>' in r
+        assert '<option value="missing">missing</option>' in r
 
     def test_custom_field_update_comments(self):
         params = dict(
@@ -1310,7 +1314,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_search_with_strange_chars(self):
         r = self.app.get('/p/test/bugs/search/?' +
-                         urllib.urlencode({'q': 'tést'}))
+                         urllib.parse.urlencode({'q': 'tést'}))
         assert 'Search bugs: tést' in r
 
     def test_saved_search_with_strange_chars(self):
@@ -1436,8 +1440,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1452,8 +1456,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1471,8 +1475,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1499,8 +1503,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1513,8 +1517,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
@@ -1698,9 +1702,9 @@ class TestFunctionalController(TrackerTestController):
 - **Status**: unread --> accepted
 - **Milestone**: 1.0 --> 2.0
 '''
-        email = u'\n'.join([email_header, first_ticket_changes, ''])
+        email = '\n'.join([email_header, first_ticket_changes, ''])
         assert_equal(email, first_user_email.kwargs.text)
-        email = u'\n'.join([email_header, second_ticket_changes, ''])
+        email = '\n'.join([email_header, second_ticket_changes, ''])
         assert_equal(email, second_user_email.kwargs.text)
         assert_in(email_header, admin_email.kwargs.text)
         assert_in(first_ticket_changes, admin_email.kwargs.text)
@@ -1854,7 +1858,7 @@ class TestFunctionalController(TrackerTestController):
             tickets[1]._id: tickets[1],
         }
         filtered_changes = c.app.globals.filtered_by_subscription(changes)
-        filtered_users = [uid for uid, data in filtered_changes.iteritems()]
+        filtered_users = [uid for uid, data in filtered_changes.items()]
         assert_equal(sorted(filtered_users),
                      sorted([u._id for u in users[:-1] + [admin]]))
         ticket_ids = [t._id for t in tickets]
@@ -2098,8 +2102,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
@@ -2201,7 +2205,7 @@ class TestFunctionalController(TrackerTestController):
         M.Notification.query.remove()
         r = self.app.get('/p/test/bugs/2/')
         field_name = None  # comment text textarea name
-        for name, field in r.forms[2].fields.iteritems():
+        for name, field in r.forms[2].fields.items():
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
@@ -2258,7 +2262,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test ticket')
         r = self.app.get('/p/test/bugs/1/')
         field_name = None  # comment text textarea name
-        for name, field in r.forms[2].fields.iteritems():
+        for name, field in r.forms[2].fields.items():
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
@@ -2295,8 +2299,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if 'name' in field:
+                params[field['name']] = 'value' in field and field['value'] or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -2378,7 +2382,7 @@ class TestMilestoneAdmin(TrackerTestController):
                  show_in_search='on',
                  type='milestone',
                  milestones=[
-                     dict((k, v) for k, v in d.iteritems()) for d in mf['milestones']])
+                     dict((k, v) for k, v in d.items()) for d in mf['milestones']])
             for mf in milestones]}
         return self._post(params)
 
@@ -2540,7 +2544,7 @@ class TestEmailMonitoring(TrackerTestController):
             if (('thread' in f['action']) and ('post' in f['action'])):
                 params = {i['name']: i.get('value', '')
                           for i in f.findAll('input')
-                          if i.has_key('name')}
+                          if 'name' in i}
                 params[f.find('textarea')['name']] = 'foobar'
                 self.app.post(str(f['action']), params)
                 break  # Do it only once if many forms met
@@ -3040,7 +3044,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
 
     def test_comments(self):
         def find(d, pred):
-            for n, v in d.items():
+            for n, v in list(d.items()):
                 if pred(v):
                     return (n, v)
 
@@ -3123,9 +3127,9 @@ class TestArtifactLinks(TrackerTestController):
         assert_equal(ticket_features.app.config._id, features.config._id)
 
         c.app = bugs
-        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/bugs/1">[#1]</a></p></div>'
+        link = '<div class="markdown_content"><p><a class="alink" href="/p/test/bugs/1">[#1]</a></p></div>'
         assert_equal(g.markdown.convert('[#1]'), link)
 
         c.app = features
-        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/features/1">[#1]</a></p></div>'
+        link = '<div class="markdown_content"><p><a class="alink" href="/p/test/features/1">[#1]</a></p></div>'
         assert_equal(g.markdown.convert('[#1]'), link)

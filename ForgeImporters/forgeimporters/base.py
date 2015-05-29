@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,16 +22,16 @@
 import os
 import errno
 import logging
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 from collections import defaultdict
 import traceback
-from urlparse import urlparse
+from urllib.parse import urlparse
 from datetime import datetime
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
@@ -167,7 +171,7 @@ class ProjectExtractor(object):
 
     @staticmethod
     def urlopen(url, retries=3, codes=(408,), **kw):
-        req = urllib2.Request(url, **kw)
+        req = urllib.request.Request(url, **kw)
         req.add_header(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         return h.urlopen(req, retries=retries, codes=codes)
@@ -207,7 +211,7 @@ class ProjectExtractor(object):
 
         """
         return self.PAGE_MAP[page_name].format(
-            project_name=urllib.quote(self.project_name), **kw)
+            project_name=urllib.parse.quote(self.project_name), **kw)
 
     def parse_page(self, page):
         """Transforms the result of a `urlopen` call before returning it from
@@ -351,11 +355,10 @@ class ToolImportControllerMeta(type):
         return type.__call__(cls, importer, *args, **kw)
 
 
-class ToolImportController(BaseController):
+class ToolImportController(BaseController, metaclass=ToolImportControllerMeta):
     """ Base class for ToolImporter controllers.
 
     """
-    __metaclass__ = ToolImportControllerMeta
 
     def __init__(self, importer):
         """
@@ -392,7 +395,7 @@ class ToolImporterMeta(type):
         return type.__call__(cls, *args, **kw)
 
 
-class ToolImporter(object):
+class ToolImporter(object, metaclass=ToolImporterMeta):
 
     """
     Base class for tool importers.
@@ -428,7 +431,6 @@ class ToolImporter(object):
        The controller for this importer, to handle single tool imports.
 
     """
-    __metaclass__ = ToolImporterMeta
 
     target_app = None  # app or list of apps
     source = None  # string description of source, must match project importer

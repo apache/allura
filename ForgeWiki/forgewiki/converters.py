@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -53,7 +57,7 @@ def _convert_toc(wiki_html):
     soup = BeautifulSoup(wiki_html)
     for toc_div in soup.findAll('div', id='toc'):
         toc_div.replaceWith('[TOC]')
-    return unicode(soup)
+    return str(soup)
 
 
 def mediawiki2markdown(source):

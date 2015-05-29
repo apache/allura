@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -100,7 +104,7 @@ class TestRootController(SVNTestController):
         data = json.loads(resp.body)
         assert_equal(data['max_row'], 5)
         assert_equal(data['next_column'], 1)
-        for val in data['built_tree'].values():
+        for val in list(data['built_tree'].values()):
             if val['url'] == '/p/test/src/1/':
                 assert_equal(val['short_id'], '[r1]')
                 assert_equal(val['column'], 0)

@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -205,7 +209,7 @@ class SVNCommitBrowserController(BaseController):
             data['commits'].append(str(commit['id']))
             data['built_tree'][commit['id']] = {
                 'column': 0,
-                'parents': map(str, commit['parents']),
+                'parents': list(map(str, commit['parents'])),
                 'short_id': '[r%s]' % commit['id'],
                 'message': commit['message'],
                 'oid': str(commit['id']),

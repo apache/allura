@@ -19,6 +19,10 @@
 
 #-*- python -*-
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import tempfile
 import json
 
@@ -44,19 +48,19 @@ class TestBulkExport(TestDiscussionApiBase):
         discussion = json.loads(f.read())
         forums = sorted(discussion['forums'], key=lambda x: x['name'])
 
-        assert_equal(forums[0]['shortname'], u'general')
+        assert_equal(forums[0]['shortname'], 'general')
         assert_equal(
-            forums[0]['description'], u'Forum about anything you want to talk about.')
-        assert_equal(forums[0]['name'], u'General Discussion')
+            forums[0]['description'], 'Forum about anything you want to talk about.')
+        assert_equal(forums[0]['name'], 'General Discussion')
         forums[0]['threads'] = sorted(forums[0]['threads'],
                                       key=lambda x: x['posts'][0]['subject'])
         assert_equal(
-            forums[0]['threads'][0]['posts'][0]['text'], u'Hi boys and girls')
+            forums[0]['threads'][0]['posts'][0]['text'], 'Hi boys and girls')
         assert_equal(
-            forums[0]['threads'][0]['posts'][0]['subject'], u'Hi guys')
-        assert_equal(forums[0]['threads'][1]['posts'][0]['text'], u'1st post')
+            forums[0]['threads'][0]['posts'][0]['subject'], 'Hi guys')
+        assert_equal(forums[0]['threads'][1]['posts'][0]['text'], '1st post')
         assert_equal(
-            forums[0]['threads'][1]['posts'][0]['subject'], u"Let's talk")
-        assert_equal(forums[1]['shortname'], u'héllo')
-        assert_equal(forums[1]['description'], u'Say héllo here')
-        assert_equal(forums[1]['name'], u'Say Héllo')
+            forums[0]['threads'][1]['posts'][0]['subject'], "Let's talk")
+        assert_equal(forums[1]['shortname'], 'héllo')
+        assert_equal(forums[1]['description'], 'Say héllo here')
+        assert_equal(forums[1]['name'], 'Say Héllo')

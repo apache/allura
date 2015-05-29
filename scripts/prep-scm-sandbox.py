@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -41,26 +45,26 @@ def main():
             sb_host=sb_host,
             sb=sb,
             veid='%d0%.2d' % (sb_host, sb))
-        for sb_host in 5, 6, 7, 9
+        for sb_host in (5, 6, 7, 9)
         for sb in range(99)]
     new_lines = '\n'.join(new_lines)
     found_star = False
     with open(SSH_CONFIG, 'w') as fp:
         for line in lines:
             if not found_star and line.startswith('Host *'):
-                print >> fp, new_lines
+                print(new_lines, file=fp)
                 found_star = True
-            print >> fp, line.rstrip()
+            print(line.rstrip(), file=fp)
         if not found_star:
-            print >> fp, new_lines
+            print(new_lines, file=fp)
     os.system("ssh-keygen -t rsa -b 2048 -N '' -f %s" % KEYFILE)
 
     # Generate ldif
     pubkey = open(KEYFILE + '.pub').read()
     with open(LDIF_FILE, 'w') as fp:
         for user in USERS:
-            print >> fp, LDIF_TMPL.substitute(
-                user=user, pubkey=pubkey)
+            print(LDIF_TMPL.substitute(
+                user=user, pubkey=pubkey), file=fp)
 
     # Update LDAP
     assert 0 == os.system('/usr/local/sbin/ldaptool modify -v -f %s' %

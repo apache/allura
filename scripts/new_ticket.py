@@ -16,6 +16,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import sys
 import argparse
 import requests
@@ -36,10 +40,10 @@ def get_opts():
 opts = get_opts()
 access_token = raw_input('Access (bearer) token: ')
 summary = raw_input('Summary: ')
-print 'Description (C-d to end):'
-print '-----------------------------------------------'
+print('Description (C-d to end):')
+print('-----------------------------------------------')
 description = sys.stdin.read()
-print '-----------------------------------------------'
+print('-----------------------------------------------')
 
 r = requests.post(opts.url, params={
     'access_token': access_token,
@@ -47,7 +51,7 @@ r = requests.post(opts.url, params={
     'ticket_form.description': description,
 })
 if r.status_code == 200:
-    print 'Ticket created at: %s' % r.url
+    print('Ticket created at: %s' % r.url)
     pprint(r.json())
 else:
-    print 'Error [%s]:\n%s' % (r.status_code, r.text)
+    print('Error [%s]:\n%s' % (r.status_code, r.text))

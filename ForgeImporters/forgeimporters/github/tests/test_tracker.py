@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -58,12 +62,12 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
                          test_project_with_tracker)
         self.assertEqual(
-            u'Issues', import_tool.post.call_args[1]['mount_label'])
+            'Issues', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual(
-            u'issues', import_tool.post.call_args[1]['mount_point'])
+            'issues', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
-            u'mulder', import_tool.post.call_args[1]['project_name'])
-        self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
+            'mulder', import_tool.post.call_args[1]['project_name'])
+        self.assertEqual('spooky', import_tool.post.call_args[1]['user_name'])
         self.assertEqual(requests.head.call_count, 1)
 
     @with_tracker

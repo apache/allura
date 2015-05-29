@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,11 +22,10 @@
 import re
 import logging
 from datetime import datetime, timedelta
-from urllib import unquote
-from hashlib import sha1
+from urllib.parse import unquote
 
 from bson import ObjectId
-from tg import expose, flash, redirect, validate, request, config, session
+from tg import expose, flash, redirect, validate, request, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
@@ -126,10 +129,10 @@ class NeighborhoodController(object):
                          pname, remainder)
                 project.configure_project(is_user_project=True)
             else:
-                raise exc.HTTPNotFound, pname
+                raise exc.HTTPNotFound(pname)
         c.project = project
         if project is None or (project.deleted and not has_access(c.project, 'update')()):
-            raise exc.HTTPNotFound, pname
+            raise exc.HTTPNotFound(pname)
         return ProjectController(), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
@@ -185,36 +188,11 @@ class NeighborhoodController(object):
     @without_trailing_slash
     def add_project(self, **form_data):
         require_access(self.neighborhood, 'register')
-        verify = c.form_errors == {'_the_form': u'phone-verification'}
-        c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
-        form_data.setdefault('tools', W.add_project.default_tools)
+        form_data.setdefault(
+            'tools', ['Wiki', 'Git', 'Tickets', 'Discussion'])
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
-
-    @expose('jinja:allura:templates/phone_verification_fragment.html')
-    def phone_verification_fragment(self, *args, **kw):
-        return {}
-
-    @expose('json:')
-    def verify_phone(self, number):
-        p = plugin.ProjectRegistrationProvider.get()
-        result = p.verify_phone(c.user, number)
-        request_id = result.pop('request_id', None)
-        if request_id:
-            session['phone_verification.request_id'] = request_id
-            number_hash = utils.phone_number_hash(number)
-            session['phone_verification.number_hash'] = number_hash
-            session.save()
-        return result
-
-    @expose('json:')
-    def check_phone_verification(self, pin):
-        p = plugin.ProjectRegistrationProvider.get()
-        request_id = session.get('phone_verification.request_id')
-        number_hash = session.get('phone_verification.number_hash')
-        res = p.check_phone_verification(c.user, request_id, pin, number_hash)
-        return res
 
     @expose('json:')
     def suggest_name(self, project_name=''):
@@ -256,9 +234,6 @@ class NeighborhoodController(object):
             flash(
                 "Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('add_project')
-        except exceptions.ProjectPhoneVerificationError:
-            flash('You must pass phone verification', 'error')
-            redirect('add_project')
         except Exception as e:
             log.error('error registering project: %s',
                       project_unixname, exc_info=True)
@@ -272,7 +247,7 @@ class NeighborhoodController(object):
             anchored_tools = neighborhood.get_anchored_tools()
             install_params = []
             for i, tool in enumerate(tools):
-                if (tool.lower() not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
+                if (tool.lower() not in list(anchored_tools.keys())) and (c.project.app_instance(tool) is None):
                     install_params.append(dict(ep_name=tool, ordinal=i + offset))
             c.project.install_apps(install_params)
         flash('Welcome to the %s Project System! '
@@ -395,10 +370,10 @@ class ProjectController(FeedController):
             return ProjectController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         c.app = app
         if not app.root:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
 
         return app.root, remainder
 
@@ -690,7 +665,7 @@ class NeighborhoodAdminController(object):
                       anchored_tools, 'error')
                 result = False
 
-        for tool in validate_tools.keys():
+        for tool in list(validate_tools.keys()):
             if tool not in g.entry_points['tool']:
                 flash('Anchored tools "%s" is invalid' %
                       anchored_tools, 'error')

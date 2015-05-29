@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -19,7 +23,7 @@ import re
 import logging
 import json
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from datetime import datetime
 
 from tg import config, session, redirect, request, expose
@@ -91,7 +95,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         try:
             resp = super(GitHubProjectExtractor, self).urlopen(
                 self.add_token(url), **kw)
-        except urllib2.HTTPError as e:
+        except urllib.error.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
             # We're checking for limit on every request below, but we still
             # can get 403 if other import task exceeds the limit before.

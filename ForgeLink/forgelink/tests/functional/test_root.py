@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -66,17 +70,17 @@ class TestRootController(TestController):
     def test_set_url_validation(self):
         r = self.app.post('/p/test/admin/link/set_url', {})
         expected = {'status': 'error',
-                    'errors': {'url': u'Please enter a value'}}
+                    'errors': {'url': 'Please enter a value'}}
         assert_equal(r.json, expected)
 
         r = self.app.post('/p/test/admin/link/set_url', {'url': ''})
         expected = {'status': 'error',
-                    'errors': {'url': u'Please enter a value'}}
+                    'errors': {'url': 'Please enter a value'}}
         assert_equal(r.json, expected)
 
         r = self.app.post('/p/test/admin/link/set_url', {'url': 'bad url'})
         expected = {'status': 'error',
-                    'errors': {'url': u'That is not a valid URL'}}
+                    'errors': {'url': 'That is not a valid URL'}}
         assert_equal(r.json, expected)
 
         p = M.Project.query.get(shortname='test')

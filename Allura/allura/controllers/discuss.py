@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -15,7 +19,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from urllib import unquote
+from urllib.parse import unquote
 from datetime import datetime
 import logging
 
@@ -27,7 +31,7 @@ from ming.base import Object
 from ming.utils import LazyProperty
 
 from allura import model as M
-from base import BaseController
+from .base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
@@ -133,8 +137,7 @@ class AppDiscussionController(DiscussionController):
             app_config_id=c.app.config._id)
 
 
-class ThreadsController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ThreadsController(BaseController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -155,8 +158,7 @@ class ThreadsController(BaseController):
             raise exc.HTTPNotFound()
 
 
-class ThreadController(BaseController, FeedController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -253,8 +255,7 @@ class ThreadController(BaseController, FeedController):
             self.thread.url())
 
 
-class PostController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -292,7 +293,7 @@ class PostController(BaseController):
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
-            for k, v in post_fields.iteritems():
+            for k, v in post_fields.items():
                 try:
                     setattr(self.post, k, v)
                 except AttributeError:
@@ -307,8 +308,6 @@ class PostController(BaseController):
                                        tags=['comment'])
             redirect(request.referer)
         elif request.method == 'GET':
-            if self.post.deleted:
-                raise exc.HTTPNotFound
             if version is not None:
                 HC = self.post.__mongometa__.history_class
                 ss = HC.query.find(
@@ -359,7 +358,7 @@ class PostController(BaseController):
             self.post.spam()
         elif kw.pop('approve', None):
             if self.post.status != 'ok':
-                self.post.approve(notify=False)
+                self.post.status = 'ok'
                 g.spam_checker.submit_ham(
                     self.post.text, artifact=self.post, user=c.user)
                 self.post.thread.post_to_feed(self.post)
@@ -402,8 +401,7 @@ class DiscussionAttachmentsController(AttachmentsController):
     AttachmentControllerClass = DiscussionAttachmentController
 
 
-class ModerationController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
     PostModel = M.Post
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
@@ -435,8 +433,7 @@ class ModerationController(BaseController):
         c.post_filter = WidgetConfig.post_filter
         c.moderate_posts = WidgetConfig.moderate_posts
         query = dict(
-            discussion_id=self.discussion._id,
-            deleted=False)
+            discussion_id=self.discussion._id)
         if status != '-':
             query['status'] = status
         if flag:

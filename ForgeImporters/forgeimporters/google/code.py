@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -15,7 +19,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import formencode as fe
 from formencode import validators as fev
@@ -76,7 +80,7 @@ class GoogleRepoImportForm(fe.schema.Schema):
         try:
             repo_type = GoogleCodeProjectExtractor(
                 gc_project_name).get_repo_type()
-        except urllib2.HTTPError as e:
+        except urllib.error.HTTPError as e:
             if e.code == 404:
                 msg = 'No such project'
             else:

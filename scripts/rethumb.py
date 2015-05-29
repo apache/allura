@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -117,7 +121,7 @@ class RethumbCommand(base.Command):
 
                 # Otherwise, we'll take attachment classes belonging to app's
                 # package
-                ep = iter_entry_points('allura', app.tool_name).next()
+                ep = next(iter_entry_points('allura', app.tool_name))
                 app_package = ep.module_name.split('.', 1)[0]
                 if app_package == 'allura':
                     # Apps in allura known to not define own attachment types

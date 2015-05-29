@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -35,6 +39,7 @@ from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
+from functools import reduce
 
 
 log = logging.getLogger(__name__)
@@ -231,8 +236,8 @@ class PersonalDataForm(ForgeForm):
                 validator=V.MapValidator(country_names, not_empty=False),
                 options=[ew.Option(py_value=" ", label=" -- Unknown -- ", selected=False)] +
                         [ew.Option(py_value=c, label=n, selected=False)
-                         for c, n in sorted(country_names.items(),
-                                            key=lambda (k, v): v)],
+                         for c, n in sorted(list(country_names.items()),
+                                            key=lambda k_v: k_v[1])],
                 attrs={'onchange': 'selectTimezone(this.value)'}),
             ew.TextField(
                 name='city',
@@ -258,7 +263,7 @@ class PersonalDataForm(ForgeForm):
 
         self._fields = self.fields
 
-        birthdate_field = filter(lambda x: x.name == 'birthdate', self._fields)
+        birthdate_field = [x for x in self._fields if x.name == 'birthdate']
 
         sex_field = filter(lambda x: x.name == 'sex', self._fields)[0]
         country_field = filter(lambda x: x.name == 'country', self._fields)[0]
@@ -858,7 +863,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
         if neighborhood and neighborhood.features['css'] == "picker":
             css_form_dict = {}
-            for key in value.keys():
+            for key in list(value.keys()):
                 def_key = "%s-def" % (key)
                 if key[:4] == "css-" and def_key not in value:
                     css_form_dict[key[4:]] = value[key]
@@ -922,14 +927,12 @@ class NeighborhoodAddProjectForm(ForgeForm):
         method='post',
         submit_text='Start',
         neighborhood=None)
-    # tools installed by default
-    default_tools = [u'wiki', u'git', u'tickets', u'discussion']
 
     @property
     def fields(self):
         provider = plugin.ProjectRegistrationProvider.get()
         tools_options = []
-        for ep, tool in g.entry_points["tool"].iteritems():
+        for ep, tool in g.entry_points["tool"].items():
             if tool.status == 'production' and tool._installable(tool_name=ep,
                                                                  nbhd=c.project.neighborhood,
                                                                  project_tools=[]):
@@ -950,14 +953,6 @@ class NeighborhoodAddProjectForm(ForgeForm):
                           validator=provider.shortname_validator),
             ew.CheckboxSet(name='tools', options=tools_options),
         ])
-
-    @ew_core.core.validator
-    def validate(self, value, state=None):
-        value = super(NeighborhoodAddProjectForm, self).validate(value, state)
-        provider = plugin.ProjectRegistrationProvider.get()
-        if not provider.phone_verified(c.user, c.project.neighborhood):
-            raise formencode.Invalid(u'phone-verification', value, None)
-        return value
 
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources():

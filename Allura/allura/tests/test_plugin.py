@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -37,7 +41,6 @@ from mock import Mock, MagicMock, patch
 from allura import model as M
 from allura.app import Application
 from allura.lib import plugin
-from allura.lib import phone
 from allura.lib import helpers as h
 from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
@@ -85,117 +88,6 @@ class TestProjectRegistrationProvider(object):
                       'this is invalid and too long', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
-
-
-class UserMock(object):
-    def __init__(self):
-        self.tool_data = {}
-        self._projects = []
-
-    def get_tool_data(self, tool, key):
-        return self.tool_data.get(tool, {}).get(key, None)
-
-    def set_tool_data(self, tool, **kw):
-        d = self.tool_data.setdefault(tool, {})
-        d.update(kw)
-
-    def set_projects(self, projects):
-        self._projects = projects
-
-    def my_projects_by_role_name(self, role):
-        return self._projects
-
-
-class TestProjectRegistrationProviderPhoneVerification(object):
-
-    def setUp(self):
-        self.p = ProjectRegistrationProvider()
-        self.user = UserMock()
-        self.nbhd = MagicMock()
-
-    def test_phone_verified_disabled(self):
-        with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
-
-    @patch.object(plugin.security, 'has_access', autospec=True)
-    def test_phone_verified_admin(self, has_access):
-        has_access.return_value.return_value = True
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
-
-    @patch.object(plugin.security, 'has_access', autospec=True)
-    def test_phone_verified_project_admin(self, has_access):
-        has_access.return_value.return_value = False
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            self.user.set_projects([Mock()])
-            assert_false(self.p.phone_verified(self.user, self.nbhd))
-            self.user.set_projects([Mock(neighborhood_id=self.nbhd._id)])
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
-
-    @patch.object(plugin.security, 'has_access', autospec=True)
-    def test_phone_verified(self, has_access):
-        has_access.return_value.return_value = False
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            assert_false(self.p.phone_verified(self.user, self.nbhd))
-            self.user.set_tool_data('phone_verification', number_hash='123')
-            assert_true(self.p.phone_verified(self.user, self.nbhd))
-
-    @patch.object(plugin, 'g')
-    def test_verify_phone_disabled(self, g):
-        g.phone_service = Mock(spec=phone.PhoneService)
-        with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
-            result = self.p.verify_phone(self.user, '12345')
-            assert_false(g.phone_service.verify.called)
-            assert_equal(result, {'status': 'ok'})
-
-    @patch.object(plugin, 'g')
-    def test_verify_phone(self, g):
-        g.phone_service = Mock(spec=phone.PhoneService)
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            result = self.p.verify_phone(self.user, '12345')
-            g.phone_service.verify.assert_called_once_with('12345')
-            assert_equal(result, g.phone_service.verify.return_value)
-
-    @patch.object(plugin, 'g')
-    def test_check_phone_verification_disabled(self, g):
-        g.phone_service = Mock(spec=phone.PhoneService)
-        with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
-            result = self.p.check_phone_verification(
-                self.user, 'request-id', '1111', 'hash')
-            assert_false(g.phone_service.check.called)
-            assert_equal(result, {'status': 'ok'})
-
-    @patch.object(plugin.h, 'auditlog_user', autospec=True)
-    @patch.object(plugin, 'g')
-    def test_check_phone_verification_fail(self, g, audit):
-        g.phone_service = Mock(spec=phone.PhoneService)
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            result = self.p.check_phone_verification(
-                self.user, 'request-id', '1111', 'hash')
-            g.phone_service.check.assert_called_once_with(
-                'request-id', '1111')
-            assert_equal(result, g.phone_service.check.return_value)
-            assert_equal(
-                self.user.get_tool_data('phone_verification', 'number_hash'),
-                None)
-            audit.assert_called_once_with(
-                'Phone verification failed. Hash: hash', user=self.user)
-
-    @patch.object(plugin.h, 'auditlog_user', autospec=True)
-    @patch.object(plugin, 'g')
-    def test_check_phone_verification_success(self, g, audit):
-        g.phone_service = Mock(spec=phone.PhoneService)
-        with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            g.phone_service.check.return_value = {'status': 'ok'}
-            result = self.p.check_phone_verification(
-                self.user, 'request-id', '1111', 'hash')
-            g.phone_service.check.assert_called_once_with(
-                'request-id', '1111')
-            assert_equal(
-                self.user.get_tool_data('phone_verification', 'number_hash'),
-                'hash')
-            audit.assert_called_once_with(
-                'Phone verification succeeded. Hash: hash', user=self.user)
 
 
 class TestThemeProvider(object):
@@ -362,7 +254,7 @@ class TestLocalAuthenticationProvider(object):
 
     def test_get_last_password_updated(self):
         user = Mock()
-        user.last_password_updated = dt.datetime(2014, 06, 04, 13, 13, 13)
+        user.last_password_updated = dt.datetime(2014, 0o6, 0o4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
         assert_equal(upd, user.last_password_updated)
 

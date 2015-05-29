@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -45,7 +49,7 @@ class TicketSearchResults(ew_core.SimpleForm):
     def __init__(self, filters, *args, **kw):
         super(TicketSearchResults, self).__init__(*args, **kw)
         self.filters = {}
-        for name, field in filters.iteritems():
+        for name, field in filters.items():
             self.filters[name] = options = [{
                 'value': val,
                 'label': '%s (%s)' % (val, count),
