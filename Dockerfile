@@ -27,7 +27,12 @@ RUN apt-get update && apt-get install -y \
     libjpeg8-dev \
     zlib1g-dev \
     python-pip \
+    zip \
     subversion \
     python-svn
+
+# Snapshot generation for SVN (and maybe other SCMs) might fail without this
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
 
 WORKDIR /allura

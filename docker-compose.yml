@@ -30,6 +30,7 @@ web:
     - /allura-data/scm/git:/allura-data/scm/git
     - /allura-data/scm/hg:/allura-data/scm/hg
     - /allura-data/scm/svn:/allura-data/scm/svn
+    - /allura-data/scm/snapshots:/allura-data/scm/snapshots
   links:
     - mongo
     - solr
