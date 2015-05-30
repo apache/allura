@@ -35,4 +35,8 @@ RUN apt-get update && apt-get install -y \
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 
+# GitPython uses this to determine current user when committing (used in
+# tests). If this is not set, it uses os.getlogin, which fails inside docker.
+ENV USER root
+
 WORKDIR /allura
