@@ -34,6 +34,7 @@ web:
   links:
     - mongo
     - solr
+    - outmail
 
 taskd:
   image: allura_web
@@ -44,6 +45,7 @@ taskd:
   links:
     - mongo
     - solr
+    - outmail
 
 solr:
   build: solr_config
@@ -60,3 +62,20 @@ mongo:
     - "27017"
   volumes:
     - /allura-data/mongo:/data/db
+
+outmail:
+  image: allura_web
+  command: python -m smtpd -n -c DebuggingServer 0.0.0.0:8826
+  expose:
+    - "8826"
+
+inmail:
+  image: allura_web
+  working_dir: /allura/Allura
+  command: paster smtp_server docker-dev.ini
+  volumes_from:
+    - web
+  ports:
+    - "8825:8825"
+  links:
+    - mongo
