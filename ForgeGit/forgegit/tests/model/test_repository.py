@@ -143,6 +143,14 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+    @property
+    def merge_request(self):
+        cid = '5c47243c8e424136fd5cdd18cd94d34c66d1955c'
+        return M.MergeRequest(
+            downstream={'commit_id': cid},
+            source_branch='zz',
+            target_branch='master')
+
     def test_init(self):
         repo = GM.Repository(
             name='testgit.git',
@@ -686,25 +694,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert_equals(diffs, expected)
 
     def test_merge_base(self):
-        mr = M.MergeRequest(
-            downstream={
-                'commit_id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-            },
-            source_branch='zz',
-            target_branch='master',
-        )
-        res = self.repo._impl.merge_base(mr)
+        res = self.repo._impl.merge_base(self.merge_request)
         assert_equal(res, '1e146e67985dcd71c74de79613719bef7bddca4a')
 
     def test_merge_request_commits(self):
-        mr = M.MergeRequest(
-            downstream={
-                'commit_id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-            },
-            source_branch='zz',
-            target_branch='master',
-        )
-        res = self.repo.merge_request_commits(mr)
+        res = self.repo.merge_request_commits(self.merge_request)
         expected = [
             {'authored': {
                 'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
@@ -721,6 +715,18 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'rename_details': {},
              'size': None}]
         assert_equals(res, expected)
+
+    def test_merge_request_commits_tmp_dir(self):
+        """
+        repo.merge_request_commits should return the same result with and
+        without scm.merge_list.git.use_tmp_dir option enabled
+        """
+        mr = self.merge_request
+        res_without_tmp = self.repo.merge_request_commits(mr)
+        opt = {'scm.merge_list.git.use_tmp_dir': True}
+        with h.push_config(tg.config, **opt):
+            res_with_tmp = self.repo.merge_request_commits(mr)
+        assert_equals(res_without_tmp, res_with_tmp)
 
 
 class TestGitImplementation(unittest.TestCase):

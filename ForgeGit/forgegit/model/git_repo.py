@@ -21,6 +21,7 @@ import string
 import logging
 import tempfile
 from datetime import datetime
+from contextlib import contextmanager
 
 import tg
 import git
@@ -631,6 +632,14 @@ class GitImplementation(M.RepositoryImplementation):
             'total': total,
         }
 
+    @contextmanager
+    def _shared_clone(self, from_path):
+        tmp_path = tempfile.mkdtemp()
+        self._git.git.clone('--bare', '--shared', from_path, tmp_path)
+        tmp_repo = GitImplementation(Object(full_fs_path=tmp_path))
+        yield tmp_repo
+        shutil.rmtree(tmp_path, ignore_errors=True)
+
     def merge_base(self, mr):
         g = self._git.git
         g.fetch(mr.app.repo.full_fs_path, mr.target_branch)
@@ -642,11 +651,20 @@ class GitImplementation(M.RepositoryImplementation):
 
         Must be called within mr.push_downstream_context()
         """
-        base = self.merge_base(mr)
-        return list(c.app.repo.log(
-            mr.downstream.commit_id,
-            exclude=base,
-            id_only=False))
+        use_tmp_dir = tg.config.get('scm.merge_list.git.use_tmp_dir', False)
+        use_tmp_dir = asbool(use_tmp_dir)
+        if not use_tmp_dir:
+            base = self.merge_base(mr)
+            return list(c.app.repo.log(
+                mr.downstream.commit_id,
+                exclude=base,
+                id_only=False))
+        with self._shared_clone(self._repo.full_fs_path) as tmp_repo:
+            base = tmp_repo.merge_base(mr)
+            return list(tmp_repo.log(
+                [mr.downstream.commit_id],
+                exclude=[base],
+                id_only=False))
 
 
 class _OpenedGitBlob(object):
