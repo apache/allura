@@ -984,13 +984,13 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
             phone_service.verify.return_value = {
                 'request_id': 'request-id', 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
-            phone_service.verify.assert_called_once_with('1234567890')
+            r = self.app.get('/p/verify_phone', {'number': '555-444-3333'})
+            phone_service.verify.assert_called_once_with('15554443333')
             assert_equal(r.json, {'status': 'ok'})
             rid = r.session.get('phone_verification.request_id')
             hash = r.session.get('phone_verification.number_hash')
             assert_equal(rid, 'request-id')
-            assert_equal(hash, '01b307acba4f54f55aafc33bb06bbbf6ca803e9a')
+            assert_equal(hash, 'f9ac49faef45d18746ced08d001e23b179107940')
 
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
@@ -1024,7 +1024,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             # make request to verify first to initialize session
             phone_service.verify.return_value = {
                 'request_id': req_id, 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '1234567890'})
+            r = self.app.get('/p/verify_phone', {'number': '11234567890'})
 
             r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
             assert_equal(r.json, {'status': 'ok'})
@@ -1032,7 +1032,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
 
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('phone_verification', 'number_hash')
-            assert_equal(hash, '01b307acba4f54f55aafc33bb06bbbf6ca803e9a')
+            assert_equal(hash, '54c61c96d5d5aea5254c2d4f41508a938e5501b4')
 
     def test_register_phone_not_verified(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):

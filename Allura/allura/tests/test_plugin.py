@@ -152,8 +152,8 @@ class TestProjectRegistrationProviderPhoneVerification(object):
     def test_verify_phone(self, g):
         g.phone_service = Mock(spec=phone.PhoneService)
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            result = self.p.verify_phone(self.user, '12345')
-            g.phone_service.verify.assert_called_once_with('12345')
+            result = self.p.verify_phone(self.user, '123 45 45')
+            g.phone_service.verify.assert_called_once_with('1234545')
             assert_equal(result, g.phone_service.verify.return_value)
 
     @patch.object(plugin, 'g')

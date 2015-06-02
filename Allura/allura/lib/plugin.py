@@ -54,6 +54,7 @@ from ming.orm import ThreadLocalORMSession, session
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
+from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
@@ -735,6 +736,7 @@ class ProjectRegistrationProvider(object):
         ok = {'status': 'ok'}
         if not asbool(config.get('project.verify_phone')):
             return ok
+        number = utils.clean_phone_number(number)
         return g.phone_service.verify(number)
 
     def check_phone_verification(self, user, request_id, pin, number_hash):

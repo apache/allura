@@ -311,6 +311,14 @@ def test_DateJSONEncoder():
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
 
 
+def test_clean_phone_number():
+    clean = utils.clean_phone_number
+    assert_equal(clean('123456789'), '123456789')
+    assert_equal(clean('+123 456:789'), '123456789')
+    assert_equal(clean('555-555-5555'), '15555555555')
+    assert_equal(clean('1-555-555-5555'), '15555555555')
+
+
 def test_phone_number_hash():
     hash = utils.phone_number_hash
     assert_equal(hash('1234567890'), hash('+123 456:7890'))
