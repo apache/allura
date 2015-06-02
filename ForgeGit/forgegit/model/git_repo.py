@@ -22,6 +22,7 @@ import logging
 import tempfile
 from datetime import datetime
 from contextlib import contextmanager
+from time import time
 
 import tg
 import git
@@ -635,8 +636,10 @@ class GitImplementation(M.RepositoryImplementation):
     @contextmanager
     def _shared_clone(self, from_path):
         tmp_path = tempfile.mkdtemp()
+        start_time = time()
         self._git.git.clone('--bare', '--shared', from_path, tmp_path)
         tmp_repo = GitImplementation(Object(full_fs_path=tmp_path))
+        log.info('Merge request view - shared clone timing: %s for %s', time()-start_time, from_path)
         yield tmp_repo
         shutil.rmtree(tmp_path, ignore_errors=True)
 
