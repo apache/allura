@@ -976,11 +976,11 @@ def notifications_disabled(project, disabled=True):
 
 
 @contextmanager
-def null_contextmanager(*args, **kw):
+def null_contextmanager(returning=None, *args, **kw):
     """A no-op contextmanager.
 
     """
-    yield
+    yield returning
 
 
 class exceptionless(object):

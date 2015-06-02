@@ -653,15 +653,15 @@ class GitImplementation(M.RepositoryImplementation):
         """
         use_tmp_dir = tg.config.get('scm.merge_list.git.use_tmp_dir', False)
         use_tmp_dir = asbool(use_tmp_dir)
-        if not use_tmp_dir:
-            base = self.merge_base(mr)
-            return list(c.app.repo.log(
-                mr.downstream.commit_id,
-                exclude=base,
-                id_only=False))
-        with self._shared_clone(self._repo.full_fs_path) as tmp_repo:
-            base = tmp_repo.merge_base(mr)
-            return list(tmp_repo.log(
+
+        if use_tmp_dir:
+            ctx_mgr = self._shared_clone(self._repo.full_fs_path)
+        else:
+            ctx_mgr = h.null_contextmanager(returning=self)
+
+        with ctx_mgr as repo:
+            base = repo.merge_base(mr)
+            return list(repo.log(
                 [mr.downstream.commit_id],
                 exclude=[base],
                 id_only=False))
