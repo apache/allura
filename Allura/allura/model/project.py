@@ -169,12 +169,6 @@ class TroveCategory(MappedClass):
         )
 
 
-class ProjectMapperExtension(MapperExtension):
-
-    def after_insert(self, obj, st, sess):
-        g.zarkov_event('project_create', project=obj)
-
-
 class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     '''
     Projects contain tools, subprojects, and their own metadata.  They live
@@ -196,7 +190,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             ('deleted', 'shortname', 'neighborhood_id'),
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         unique_indexes = [('neighborhood_id', 'shortname')]
-        extensions = [ProjectMapperExtension]
 
     type_s = 'Project'
 

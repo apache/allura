@@ -62,7 +62,6 @@ from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
-from allura.lib.zarkov_helpers import ZarkovClient
 from allura.model.session import artifact_orm_session
 
 log = logging.getLogger(__name__)
@@ -299,9 +298,6 @@ class Globals(object):
         duration = asint(config.get('neighborhood.cache.duration', 0))
         self.neighborhood_cache = NeighborhoodCache(duration)
 
-        # Zarkov logger
-        self._zarkov = None
-
         # Set listeners to update stats
         statslisteners = []
         for name, ep in self.entry_points['stats'].iteritems():
@@ -355,49 +351,6 @@ class Globals(object):
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
-
-    def zarkov_event(
-            self, event_type,
-            user=None, neighborhood=None, project=None, app=None,
-            extra=None):
-        context = dict(
-            user=None,
-            neighborhood=None, project=None, tool=None,
-            mount_point=None,
-            is_project_member=False)
-
-        if not config.get('zarkov.host'):
-            return
-
-        user = user or getattr(c, 'user', None)
-        project = project or getattr(c, 'project', None)
-        app = app or getattr(c, 'app', None)
-        if user:
-            context['user'] = user.username
-        if project:
-            context.update(
-                project=project.shortname,
-                neighborhood=project.neighborhood.url_prefix.strip('/'))
-            if user:
-                cred = Credentials.get()
-                if cred is not None:
-                    for pr in cred.user_roles(user._id, project._id).reaching_roles:
-                        if pr.get('name') and pr.get('name')[0] != '*':
-                            context['is_project_member'] = True
-        if app:
-            context.update(
-                tool=app.config.tool_name,
-                mount_point=app.config.options.mount_point)
-
-        try:
-            if self._zarkov is None:
-                self._zarkov = ZarkovClient(
-                    config.get('zarkov.host', 'tcp://127.0.0.1:6543'))
-            self._zarkov.event(event_type, context, extra)
-        except Exception, ex:
-            self._zarkov = None
-            log.error('Error sending zarkov event(%r): %r', ex, dict(
-                type=event_type, context=context, extra=extra))
 
     @LazyProperty
     def theme(self):
