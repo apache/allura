@@ -732,11 +732,22 @@ class ProjectRegistrationProvider(object):
             return True
         return bool(user.get_tool_data('phone_verification', 'number_hash'))
 
-    def verify_phone(self, user, number):
+    def verify_phone(self, user, number, req):
         ok = {'status': 'ok'}
         if not asbool(config.get('project.verify_phone')):
             return ok
         number = utils.clean_phone_number(number)
+        blocked_prefix = self.t7_phone(number)
+        if blocked_prefix:
+            log.info(
+                'Blocked project registation, phone number is in T7 list. '
+                'User: %s, Phone # hash: %s, Country code: %s, IP: %s, UA: %s',
+                user.username,
+                utils.phone_number_hash(number),
+                blocked_prefix,
+                utils.ip_address(req),
+                req.headers.get('User-Agent'))
+            return {'status': 'error', 'error': 'T7_BLOCKED'}
         return g.phone_service.verify(number)
 
     def check_phone_verification(self, user, request_id, pin, number_hash):
@@ -752,6 +763,13 @@ class ProjectRegistrationProvider(object):
             msg = 'Phone verification failed. Hash: {}'.format(number_hash)
             h.auditlog_user(msg, user=user)
         return res
+
+    def t7_phone(self, number):
+        t7_prefixes = json.loads(config.get('phone.t7_prefixes', '[]'))
+        for p in t7_prefixes:
+            if number.startswith(p):
+                return p
+        return None
 
     def register_neighborhood_project(self, neighborhood, users, allow_register=False):
         from allura import model as M

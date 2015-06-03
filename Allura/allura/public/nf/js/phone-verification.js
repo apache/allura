@@ -71,12 +71,26 @@ var FormStepMixin = {
       disabled: this.isButtonDisabled()
     };
     var nbsp = String.fromCharCode(160);
+    var error = this.getError(this.props.state.error);
     return dom('div', null,
              dom('label', {className: grid}, this.getLabel()),
              dom('input', input_props),
-             dom('div', {className: grid + ' error-text'}, this.props.state.error || nbsp),
+             dom('div', {className: grid + ' error-text'}, error || nbsp),
              dom('div', {className: grid},
                dom('button', button_props, 'Submit')));
+  },
+
+  getError: function(error) {
+    if (error === 'T7_BLOCKED') {
+      var error_text = 'Your request is being denied as it appears the phone ' +
+                       'number provided is from a location banned by our ';
+      var link_attrs = {href: 'http://slashdotmedia.com/terms-of-use',
+                        target: '_blank'};
+      var error_link = dom('a', link_attrs, 'Terms of Use');
+      return dom('span', null, [error_text,  error_link]);
+    } else {
+      return error;
+    }
   },
   
   handleClick: function() {

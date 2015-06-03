@@ -199,7 +199,7 @@ class NeighborhoodController(object):
     @expose('json:')
     def verify_phone(self, number):
         p = plugin.ProjectRegistrationProvider.get()
-        result = p.verify_phone(c.user, number)
+        result = p.verify_phone(c.user, number, request)
         request_id = result.pop('request_id', None)
         if request_id:
             session['phone_verification.request_id'] = request_id

@@ -89,6 +89,7 @@ class TestProjectRegistrationProvider(object):
 
 class UserMock(object):
     def __init__(self):
+        self.username = 'test-user'
         self.tool_data = {}
         self._projects = []
 
@@ -144,17 +145,44 @@ class TestProjectRegistrationProviderPhoneVerification(object):
     def test_verify_phone_disabled(self, g):
         g.phone_service = Mock(spec=phone.PhoneService)
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
-            result = self.p.verify_phone(self.user, '12345')
+            result = self.p.verify_phone(self.user, '12345', None)
             assert_false(g.phone_service.verify.called)
             assert_equal(result, {'status': 'ok'})
+
+    @patch.object(plugin, 'log', autospec=True)
+    @patch.object(plugin, 'g', autospec=True)
+    def test_verify_phone_blocked(self, g, log):
+        g.phone_service = Mock(spec=phone.PhoneService)
+        cfg = {'project.verify_phone': 'true',
+               'phone.t7_prefixes': '["13", "74"]'}
+        with h.push_config(tg.config, **cfg):
+            req = Request.blank('/')
+            req.remote_addr = '1.2.3.4'
+            req.headers['User-Agent'] = 'Chrome'
+            result = self.p.verify_phone(self.user, '13-21-94', req)
+            assert_false(g.phone_service.verify.called)
+            assert_equal(result, {'status': 'error', 'error': 'T7_BLOCKED'})
+            log.info.assert_called_once_with(
+                'Blocked project registation, phone number is in T7 list. '
+                'User: %s, Phone # hash: %s, Country code: %s, IP: %s, UA: %s',
+                'test-user', '43648c7bc5f0fe67466d174876a9ccdf7a84f8c4',
+                '13', '1.2.3.4', 'Chrome')
 
     @patch.object(plugin, 'g')
     def test_verify_phone(self, g):
         g.phone_service = Mock(spec=phone.PhoneService)
         with h.push_config(tg.config, **{'project.verify_phone': 'true'}):
-            result = self.p.verify_phone(self.user, '123 45 45')
+            result = self.p.verify_phone(self.user, '123 45 45', None)
             g.phone_service.verify.assert_called_once_with('1234545')
             assert_equal(result, g.phone_service.verify.return_value)
+
+    def test_t7_phone(self):
+        cfg = {'phone.t7_prefixes': '["13", "74"]'}
+        with h.push_config(tg.config, **cfg):
+            assert_equal(self.p.t7_phone('13 01 24'), '13')
+            assert_equal(self.p.t7_phone('74010203'), '74')
+            assert_equal(self.p.t7_phone('555-555-5555'), None)
+            assert_equal(self.p.t7_phone('38 093 111 11 11'), None)
 
     @patch.object(plugin, 'g')
     def test_check_phone_verification_disabled(self, g):
