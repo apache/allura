@@ -992,6 +992,20 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             assert_equal(rid, 'request-id')
             assert_equal(hash, 'f9ac49faef45d18746ced08d001e23b179107940')
 
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_verify_phone_escapes_error(self, phone_service):
+        phone_service.verify.return_value = {
+            'status': 'error',
+            'error': '<script>alert("hacked");</script>',
+        }
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            r = self.app.get('/p/verify_phone', {'number': '555-444-3333'})
+        expected = {
+            'status': 'error',
+            'error': u'&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
+        }
+        assert_equal(r.json, expected)
+
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
             self.app.get('/p/check_phone_verification', status=404)
@@ -1033,6 +1047,20 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('phone_verification', 'number_hash')
             assert_equal(hash, '54c61c96d5d5aea5254c2d4f41508a938e5501b4')
+
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_check_phone_verification_escapes_error(self, phone_service):
+        phone_service.check.return_value = {
+            'status': 'error',
+            'error': '<script>alert("hacked");</script>',
+        }
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
+        expected = {
+            'status': 'error',
+            'error': u'&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
+        }
+        assert_equal(r.json, expected)
 
     def test_register_phone_not_verified(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):

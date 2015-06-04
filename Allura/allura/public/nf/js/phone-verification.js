@@ -70,13 +70,17 @@ var FormStepMixin = {
       onClick: this.handleClick,
       disabled: this.isButtonDisabled()
     };
-    var nbsp = String.fromCharCode(160);
     return dom('div', null,
              dom('label', {className: grid}, this.getLabel()),
              dom('input', input_props),
-             dom('div', {className: grid + ' error-text'}, this.props.state.error || nbsp),
+             dom('div', {className: grid + ' error-text',
+                         dangerouslySetInnerHTML: this.getErrorHtml()}),
              dom('div', {className: grid},
                dom('button', button_props, 'Submit')));
+  },
+
+  getErrorHtml: function() {
+    return {__html: this.props.state.error || '&nbsp;'};
   },
   
   handleClick: function() {

@@ -27,6 +27,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
+import jinja2
 import pymongo
 from formencode.api import Invalid
 
@@ -206,6 +207,9 @@ class NeighborhoodController(object):
             number_hash = utils.phone_number_hash(number)
             session['phone_verification.number_hash'] = number_hash
             session.save()
+        if 'error' in result:
+            result['error'] = jinja2.Markup.escape(result['error'])
+            result['error'] = h.really_unicode(result['error'])
         return result
 
     @expose('json:')
@@ -214,6 +218,9 @@ class NeighborhoodController(object):
         request_id = session.get('phone_verification.request_id')
         number_hash = session.get('phone_verification.number_hash')
         res = p.check_phone_verification(c.user, request_id, pin, number_hash)
+        if 'error' in res:
+            res['error'] = jinja2.Markup.escape(res['error'])
+            res['error'] = h.really_unicode(res['error'])
         return res
 
     @expose('json:')
