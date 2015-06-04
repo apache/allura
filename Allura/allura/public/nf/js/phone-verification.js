@@ -88,7 +88,7 @@ var FormStepMixin = {
   },
 
   getHtml: function(elem_id) {
-    var html = document.getElementById(elem_id).innerHTML
+    var html = document.getElementById(elem_id).innerHTML;
     return {__html: html};
   },
 
