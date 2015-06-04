@@ -1068,15 +1068,15 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
 def iter_entry_points(group, *a, **kw):
     """Yields entry points that have not been disabled in the config.
 
-    If ``group`` is "allura" (Allura tool entry points), this function also
-    checks for multiple entry points with the same name. If there are
-    multiple entry points with the same name, and one of them is a subclass
-    of the other(s), it will be yielded, and the other entry points with that
-    name will be ignored. If a subclass is not found, an ImportError will be
-    raised.
+    If ``group`` is "allura" (Allura tool entry points) or one of subgroups
+    (e.g. "allura.phone"), this function also checks for multiple entry points
+    with the same name. If there are multiple entry points with the same name,
+    and one of them is a subclass of the other(s), it will be yielded, and the
+    other entry points with that name will be ignored. If a subclass is not
+    found, an ImportError will be raised.
 
-    This treatment of "allura" entry points allows tool authors to subclass
-    another tool while reusing the original entry point name.
+    This treatment of "allura" and "allura.*" entry points allows tool authors
+    to subclass another tool while reusing the original entry point name.
 
     """
     def active_eps():
@@ -1105,7 +1105,8 @@ def iter_entry_points(group, *a, **kw):
                 return ep
         raise ImportError('Ambiguous [allura] entry points detected. ' +
                           'Multiple entry points with name "%s".' % entry_points[0].name)
-    return iter(unique_eps(active_eps()) if group == 'allura' else active_eps())
+    is_allura = group == 'allura' or group.startswith('allura.')
+    return iter(unique_eps(active_eps()) if is_allura else active_eps())
 
 
 # http://stackoverflow.com/a/1060330/79697
