@@ -71,6 +71,10 @@ var FormStepMixin = {
       disabled: this.isButtonDisabled()
     };
     return dom('div', null,
+             dom('div', {className: grid,
+                         dangerouslySetInnerHTML: this.getMessage()}),
+             dom('div', {className: grid,
+                         dangerouslySetInnerHTML: this.getExtraMessage()}),
              dom('label', {className: grid}, this.getLabel()),
              dom('input', input_props),
              dom('div', {className: grid + ' error-text',
@@ -82,6 +86,14 @@ var FormStepMixin = {
   getErrorHtml: function() {
     return {__html: this.props.state.error || '&nbsp;'};
   },
+
+  getHtml: function(elem_id) {
+    var html = document.getElementById(elem_id).innerHTML
+    return {__html: html};
+  },
+
+  getMessage: function() { return this.getHtml('message-' + this.getKey()); },
+  getExtraMessage: function() { return this.getHtml('message-extra'); },
   
   handleClick: function() {
     if (!this.isButtonDisabled()) {
@@ -147,7 +159,7 @@ var StepCheck = React.createClass({
   
   getAPIUrl: function() { return 'check_phone_verification'; },
   getAPIData: function() { return {'pin': this.props.state[this.getKey()]}; },
-  getLabel: function() { return 'Enter PIN'; },
+  getLabel: function() { return 'Enter your PIN'; },
   getKey: function() { return 'pin'; },
   onSuccess: function() {
     var form = window.top.jQuery('form[action="/p/register"]');

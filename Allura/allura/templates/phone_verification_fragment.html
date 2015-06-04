@@ -49,18 +49,36 @@
               margin-top: .5em;
               margin-bottom: .5em;
             }
+            .step-message { display: none; }
         </style>
     </head>
     <body>
         <div class="grid-9">
-          {% block phone_validation_message %}
-          <p>
-            In order to register a project you need to perform phone validation
-            (just this once).  Please, enter your phone number below. You'll
-            receive an SMS message with a PIN you need to provide on the next
-            step.  Your phone number will not be stored.
-          </p>
-          {% endblock phone_validation_message %}
+          {# The following blocks are hidden, they're used to provide messages to React component #}
+          <div id='message-number' class='step-message'>
+            {% block phone_validation_message_number %}
+            <p>
+              In order to register a project you need to perform phone
+              validation (just this once).  Please, enter your phone number
+              below (e.g. 1-311-555-2368 or +61 8 5550 1757). You'll receive
+              an SMS message with a PIN you need to provide on the next step.
+              Your phone number will not be stored.
+            </p>
+            {% endblock phone_validation_message_number %}
+          </div>
+          <div id='message-pin' class='step-message'>
+            {% block phone_validation_message_pin %}
+            <p>
+              A PIN is being sent to your phone. If you are unable to receive
+              SMS, you will get a voice call with the number.
+            </p>
+            {% endblock phone_validation_message_pin %}
+          </div>
+          <div id='message-extra' class='step-message'>
+            {% block phone_validation_message_extra %}
+            {% endblock phone_validation_message_extra %}
+          </div>
+
           <div id="phone-verification-form">
             {# Phone verification form will be mounted here (see phone-verification.js) #}
           </div>
