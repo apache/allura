@@ -818,7 +818,7 @@ class ProjectRegistrationProvider(object):
 
         self.rate_limit(user, neighborhood)
 
-        if not self.phone_verified(user, neighborhood):
+        if not self.phone_verified(user, neighborhood) and not user_project:
             raise forge_exc.ProjectPhoneVerificationError()
 
         if user_project and shortname.startswith('u/'):
