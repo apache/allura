@@ -46,7 +46,10 @@ class NexmoPhoneService(PhoneService):
         }
         return dict(params, **common)
 
-    def error(self, msg):
+    def error(self, code=None, msg=None):
+        allowed_codes = ['3', '10', '15', '16', '17']
+        if code is None or str(code) not in allowed_codes:
+            msg = 'Failed sending request to Nexmo'
         return {'status': 'error', 'error': msg}
 
     def ok(self, **params):
@@ -68,12 +71,11 @@ class NexmoPhoneService(PhoneService):
             log.info('PhoneService (nexmo) response: %s', resp.content)
             resp = resp.json()
         except Exception:
-            msg = 'Failed sending request to Nexmo'
-            log.exception(msg)
-            return self.error(msg)
+            log.exception('Failed sending request to Nexmo')
+            return self.error()
         if resp.get('status') == '0':
             return self.ok(request_id=resp.get('request_id'))
-        return self.error(resp.get('error_text'))
+        return self.error(code=resp.get('status'), msg=resp.get('error_text'))
 
     def verify(self, number):
         url = urljoin(self.BASE_URL, 'verify')

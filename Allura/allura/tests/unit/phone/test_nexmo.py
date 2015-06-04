@@ -40,7 +40,15 @@ class TestPhoneService(object):
         assert_equal(expected, res)
 
     def test_error(self):
-        res = self.phone.error('text')
+        res = self.phone.error()
+        expected = {'status': 'error',
+                    'error': 'Failed sending request to Nexmo'}
+        assert_equal(expected, res)
+        # not allowed code
+        res = self.phone.error(code='2', msg='text')
+        assert_equal(expected, res)
+        # allowed code
+        res = self.phone.error(code='15', msg='text')
         expected = {'status': 'error', 'error': 'text'}
         assert_equal(expected, res)
 
@@ -73,7 +81,7 @@ class TestPhoneService(object):
 
         req.post.reset_mock()
         req.post.return_value.json.return_value = {
-            'status': '1',
+            'status': '3',
             'error_text': 'Something went wrong',
         }
         resp = self.phone.verify('1234567890')
@@ -116,7 +124,7 @@ class TestPhoneService(object):
 
         req.post.reset_mock()
         req.post.return_value.json.return_value = {
-            'status': '1',
+            'status': '3',
             'error_text': 'Something went wrong',
         }
         resp = self.phone.check('test-req-id', '1234')
