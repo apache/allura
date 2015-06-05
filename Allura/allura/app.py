@@ -55,12 +55,13 @@ class ConfigOption(object):
 
     """
 
-    def __init__(self, name, ming_type, default, label=None):
+    def __init__(self, name, ming_type, default, label=None, validator=None):
         """Create a new ConfigOption.
 
         """
         self.name, self.ming_type, self._default, self.label = (
             name, ming_type, default, label or name)
+        self.validator = validator
 
     @property
     def default(self):
@@ -70,6 +71,10 @@ class ConfigOption(object):
         if callable(self._default):
             return self._default()
         return self._default
+
+    def validate(self, value):
+        if self.validator:
+            return self.validator.to_python(value)
 
 
 class SitemapEntry(object):
