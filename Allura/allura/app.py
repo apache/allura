@@ -32,6 +32,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from formencode import validators as V
 from webob import exc
+from formencode import validators as fev
 
 from ming.orm import session
 from ming.utils import LazyProperty
@@ -854,6 +855,11 @@ class DefaultAdminController(BaseController):
                     val = asbool(val or False)
                 elif opt.ming_type == int:
                     val = asint(val or 0)
+                try:
+                    val = opt.validate(val)
+                except fev.Invalid as e:
+                    flash(u'{}: {}'.format(opt.name, str(e)), 'error')
+                    continue
                 self.app.config.options[opt.name] = val
             if is_admin:
                 # possibly moving admin mount point
