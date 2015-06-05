@@ -725,6 +725,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             except fe.Invalid as e:
                 raise exceptions.ToolError(str(e))
 
+    def _validate_tool_option(self, opt, value):
+        try:
+            return opt.validate(value)
+        except fe.Invalid as e:
+            raise exceptions.ToolError(u'{}: {}'.format(opt.name, str(e)))
+
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
         App = g.entry_points['tool'][ep_name]
         mount_point = self._mount_point_for_install(App, mount_point)
@@ -733,10 +739,13 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                           [-1]['ordinal']) + 1
         options = App.default_options()
         options['mount_point'] = mount_point
-        options[
-            'mount_label'] = mount_label or App.default_mount_label or mount_point
+        options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
-        options.update(override_options)
+        options_on_install = {o.name: o for o in App.options_on_install()}
+        for o, v in override_options.iteritems():
+            if o in options_on_install:
+                v = self._validate_tool_option(options_on_install[o], v)
+            options[o] = v
         cfg = AppConfig(
             project_id=self._id,
             tool_name=ep_name.lower(),

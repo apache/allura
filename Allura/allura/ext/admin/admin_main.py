@@ -687,8 +687,18 @@ class ProjectAdminController(BaseController):
                 h.log_action(log, 'install tool').info(
                     'install tool %s', mount_point,
                     meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
+                App = g.entry_points['tool'][ep_name]
+                # pass only options which app expects
+                config_on_install = {
+                    k: v for (k, v) in kw.iteritems()
+                    if k in [o.name for o in App.options_on_install()]
+                }
                 return c.project.install_app(
-                    ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
+                    ep_name,
+                    mount_point,
+                    mount_label=new['mount_label'],
+                    ordinal=new['ordinal'],
+                    **config_on_install)
         g.post_event('project_updated')
 
     @h.vardec
