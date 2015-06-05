@@ -220,6 +220,8 @@ class Application(object):
         /<neighborhood>/<project>/<admin>/<app>/. Default is a
         :class:`DefaultAdminController` instance.
     :cvar dict icons: Mapping of icon sizes to application-specific icon paths.
+    :cvar list config_on_install: :class:`ConfigOption` names that should be
+        configured by user during app installation
     """
 
     __version__ = None
@@ -227,6 +229,7 @@ class Application(object):
         ConfigOption('mount_point', str, 'app'),
         ConfigOption('mount_label', str, 'app'),
         ConfigOption('ordinal', int, '0')]
+    config_on_install = []
     status_map = ['production', 'beta', 'alpha', 'user']
     status = 'production'
     script_name = None
@@ -480,6 +483,17 @@ class Application(object):
         return dict(
             (co.name, co.default)
             for co in cls.config_options)
+
+    @classmethod
+    def options_on_install(cls):
+        """
+        Return a list of :class:`config_options <ConfigOption>` which should be
+        configured by user during app installation.
+
+        :rtype: list
+        """
+        return [o for o in cls.config_options
+                if o.name in cls.config_on_install]
 
     def install(self, project):
         'Whatever logic is required to initially set up a tool'

@@ -51,6 +51,7 @@ class ForgeLinkApp(Application):
     config_options = Application.config_options + [
         ConfigOption('url', str, None)
     ]
+    config_on_install = ['url']
     searchable = True
     exportable = True
     tool_label = 'External Link'
