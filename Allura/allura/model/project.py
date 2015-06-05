@@ -742,10 +742,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
         options_on_install = {o.name: o for o in App.options_on_install()}
-        for o, v in override_options.iteritems():
+        for o, val in override_options.iteritems():
             if o in options_on_install:
-                v = self._validate_tool_option(options_on_install[o], v)
-            options[o] = v
+                val = self._validate_tool_option(options_on_install[o], val)
+            options[o] = val
         cfg = AppConfig(
             project_id=self._id,
             tool_name=ep_name.lower(),

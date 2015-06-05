@@ -358,6 +358,16 @@ class TestProjectAdmin(TestController):
             assert 'error' in self.webflash(r)
             assert 'limit exceeded' in self.webflash(r)
 
+    def test_tool_options_on_install(self):
+        self.app.get('/admin/options_on_install', status=404)
+        self.app.get('/admin/options_on_install?tool_name=fake', status=404)
+        r = self.app.get('/admin/options_on_install?tool_name=tickets')
+        assert_equals(r.body, '')
+        opts = ['EnableVoting']
+        with mock.patch.object(ForgeTrackerApp, 'config_on_install', new=opts):
+            r = self.app.get('/admin/options_on_install?tool_name=tickets')
+            assert_in(u'<input id="EnableVoting" name="EnableVoting" type="checkbox">', r)
+
     def test_grouping_threshold(self):
         r = self.app.get('/admin/tools')
         grouping_threshold = r.html.find(

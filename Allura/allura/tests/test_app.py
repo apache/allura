@@ -18,6 +18,8 @@
 from pylons import tmpl_context as c
 import mock
 from ming.base import Object
+from nose.tools import assert_equal, assert_raises
+from formencode import validators as fev
 
 from alluratest.controller import setup_unit_test
 from allura import app
@@ -50,6 +52,39 @@ def test_config_options():
         app.ConfigOption('test2', str, lambda:'MyTestValue')]
     assert options[0].default == 'MyTestValue'
     assert options[1].default == 'MyTestValue'
+
+
+def test_config_option_without_validator():
+    opt = app.ConfigOption('test1', str, None)
+    assert_equal(opt.validate(None), None)
+    assert_equal(opt.validate(''), '')
+    assert_equal(opt.validate('val'), 'val')
+
+
+def test_config_option_with_validator():
+    v = fev.NotEmpty()
+    opt = app.ConfigOption('test1', str, None, validator=v)
+    assert_equal(opt.validate('val'), 'val')
+    assert_raises(fev.Invalid, opt.validate, None)
+    assert_raises(fev.Invalid, opt.validate, '')
+
+
+def test_options_on_install_default():
+    a = app.Application(c.project, c.app.config)
+    assert_equal(a.options_on_install(), [])
+
+
+def test_options_on_install():
+    opts = [app.ConfigOption('url', str, None),
+            app.ConfigOption('private', bool, None)]
+    class TestApp(app.Application):
+        config_options = app.Application.config_options + opts + [
+            app.ConfigOption('not_on_install', str, None),
+        ]
+        config_on_install = ['url', 'private']
+
+    a = TestApp(c.project, c.app.config)
+    assert_equal(a.options_on_install(), opts)
 
 
 def test_sitemap():
