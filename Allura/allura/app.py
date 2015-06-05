@@ -76,6 +76,7 @@ class ConfigOption(object):
     def validate(self, value):
         if self.validator:
             return self.validator.to_python(value)
+        return value
 
 
 class SitemapEntry(object):

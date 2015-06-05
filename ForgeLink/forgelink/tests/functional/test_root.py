@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import json
 from nose.tools import assert_equal
 
 from allura import model as M
@@ -61,3 +62,56 @@ class TestRootController(TestController):
         response = self.app.get('/link/help')
         # HACK: support for remote redirects is limited in follow()
         assert 'http://www.google.de/search?q=help' in response
+
+
+class TestConfigOptions(TestController):
+
+    @property
+    def project(self):
+        return M.Project.query.get(shortname='test')
+
+    def assert_url(self, mount_point, val):
+        app = self.project.app_instance(mount_point)
+        assert_equal(app.config.options['url'], val)
+
+    def test_sets_url_on_install(self):
+        r = self.app.post('/p/test/admin/update_mounts', params={
+            'new.install': 'install',
+            'new.ep_name': 'link',
+            'new.ordinal': '1',
+            'new.mount_point': 'link-google',
+            'new.mount_label': 'Google',
+            'url': 'google.com'})
+        self.assert_url('link-google', 'http://google.com')
+
+    def test_validates_url_on_install(self):
+        r = self.app.post('/p/test/admin/update_mounts', params={
+            'new.install': 'install',
+            'new.ep_name': 'link',
+            'new.ordinal': '1',
+            'new.mount_point': 'link-google',
+            'new.mount_label': 'Google',
+            'url': 'invalid url'})
+        flash = json.loads(self.webflash(r))
+        assert_equal(flash['status'], 'error')
+        assert_equal(flash['message'], 'ToolError: url: That is not a valid URL')
+        app = self.project.app_instance('link-google')
+        assert_equal(app, None)
+
+    @td.with_link
+    def test_sets_url_on_config(self):
+        self.assert_url('link', None)
+        params = {'url': 'https://allura.apache.org'}
+        r = self.app.post('/p/test/admin/link/configure', params=params)
+        assert_equal(self.webflash(r), '')
+        self.assert_url('link', 'https://allura.apache.org')
+
+    @td.with_link
+    def test_validates_url_on_config(self):
+        self.assert_url('link', None)
+        params = {'url': 'invalid link'}
+        r = self.app.post('/p/test/admin/link/configure', params=params)
+        flash = json.loads(self.webflash(r))
+        assert_equal(flash['status'], 'error')
+        assert_equal(flash['message'], 'url: That is not a valid URL')
+        self.assert_url('link', None)

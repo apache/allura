@@ -24,6 +24,7 @@ from nose import with_setup
 from nose.tools import assert_equals, assert_in
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
+from formencode import validators as fev
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -94,6 +95,22 @@ def test_project():
     app_inst = c.project.app_instance('hello2123')
     c.project.breadcrumbs()
     c.app.config.breadcrumbs()
+
+
+@with_setup(setUp)
+def test_install_app_validates_options():
+    from forgetracker.tracker_main import ForgeTrackerApp
+    name = 'TicketMonitoringEmail'
+    opt = [o for o in ForgeTrackerApp.config_options if o.name == name][0]
+    opt.validator = fev.Email(not_empty=True)
+    with patch.object(ForgeTrackerApp, 'config_on_install', new=[opt.name]):
+        for v in [None, '', 'bad@email']:
+            with td.raises(ToolError):
+                c.project.install_app('Tickets', 'test-tickets', **{name: v})
+            assert_equals(c.project.app_instance('test-tickets'), None)
+        c.project.install_app('Tickets', 'test-tickets', **{name: 'e@e.com'})
+        app = c.project.app_instance('test-tickets')
+        assert_equals(app.config.options[name], 'e@e.com')
 
 
 def test_project_index():
