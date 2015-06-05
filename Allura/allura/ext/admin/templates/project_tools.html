@@ -73,6 +73,9 @@
         </span>
       </small>
     </div>
+    <div class="grid-13">&nbsp;</div>
+    <div id="install_options">{# js inserts form fields here #}</div>
+    <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>
     <div class="grid-13">
@@ -183,6 +186,7 @@
         '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
         {% endfor %}
     };
+    var install_options_url = "{{ c.project.url().rstrip('/') }}/admin/options_on_install";
 </script>
 <script>
 /* Real-time preview of a Url Path (aka mount point). */

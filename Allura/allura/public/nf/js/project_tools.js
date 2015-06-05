@@ -29,6 +29,7 @@
     var new_mount_label = install_form.find('input.new_mount_label');
     var install_tool_label = $('#install_tool_label');
     var mount_point_rule_names = $('#install_form .mount-point-rule-names');
+    var install_options = $('#install_options');
     install_popup.append(install_form.show());
     $('a.install_trig').click(function () {
         var datatool = $(this).data('tool');
@@ -36,6 +37,10 @@
         install_form.find('.mount-point-name-rules').hide();
         if (datatool) {
             var tool = defaults[datatool];
+            install_options.html('Loading options...');
+            $.get(install_options_url, {tool_name: datatool}, function (data) {
+                install_options.html(data);
+            });
             install_tool_label.html(tool.default_label);
             new_ep_name.val(datatool);
             new_mount_point.val(tool.default_mount);

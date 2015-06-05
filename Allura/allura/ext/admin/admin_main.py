@@ -293,6 +293,15 @@ class ProjectAdminController(BaseController):
             flash('Invalid threshold', 'error')
         redirect('tools?limit=%s&page=%s' % (limit, page))
 
+    @expose('jinja:allura:templates/app_admin_options_on_install.html')
+    def options_on_install(self, tool_name):
+        """Renders form fields for options configuration on install"""
+        tool = [t['app'] for t in AdminApp.installable_tools_for(c.project)
+                if t['name'].lower() == tool_name.lower()]
+        if len(tool) == 1:
+            return {'options': tool[0].options_on_install()}
+        raise exc.HTTPNotFound
+
     @expose()
     @require_post()
     def update_labels(self, labels=None, **kw):
