@@ -46,8 +46,11 @@ class TestStats(TestController):
     def test_login(self):
         user = User.by_username('test-user')
         init_logins = user.stats.tot_logins_count
+        self.app.get('/')  # establish session
         self.app.post('/auth/do_login', params=dict(
-            username=user.username, password='foo'))
+            username=user.username, password='foo',
+            _session_id=self.app.cookies['_session_id']
+        ))
 
         assert user.stats.tot_logins_count == 1 + init_logins
         assert user.stats.getLastMonthLogins() == 1 + init_logins

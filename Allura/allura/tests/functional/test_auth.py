@@ -55,9 +55,11 @@ def unentity(s):
 class TestAuth(TestController):
     def test_login(self):
         self.app.get('/auth/')
-        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
+        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com',
+                                                                      _session_id=self.app.cookies['_session_id']))
         email = M.User.query.get(username='test-admin').email_addresses[0]
-        r = self.app.post('/auth/send_verification_link', params=dict(a=email))
+        r = self.app.post('/auth/send_verification_link', params=dict(a=email,
+                                                                      _session_id=self.app.cookies['_session_id']))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
@@ -66,12 +68,15 @@ class TestAuth(TestController):
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='foo'))
+            username='test-user', password='foo',
+            _session_id=self.app.cookies['_session_id']))
         r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='food'))
+            username='test-user', password='food',
+            _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
         r = self.app.post('/auth/do_login', params=dict(
-            username='test-usera', password='foo'))
+            username='test-usera', password='foo',
+            _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
 
     def test_logout(self):
@@ -95,12 +100,14 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ip'], None)
         assert_equal(user.last_access['login_ua'], None)
 
+        self.app.get('/')  # establish session
         self.app.post('/auth/do_login',
                       headers={'User-Agent': 'browser'},
                       extra_environ={'REMOTE_ADDR': 'addr'},
                       params=dict(
                           username='test-user',
-                          password='foo'
+                          password='foo',
+                          _session_id=self.app.cookies['_session_id'],
                       ))
         user = M.User.by_username('test-user')
         assert_not_equal(user.last_access['login_date'], None)
@@ -110,9 +117,13 @@ class TestAuth(TestController):
     def test_rememberme(self):
         username = M.User.query.get(username='test-user').username
 
+        r = self.app.get('/')  # establish session
+
         # Login as test-user with remember me checkbox off
         r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='foo'))
+            username='test-user', password='foo',
+            _session_id=self.app.cookies['_session_id'],
+        ))
         assert_equal(r.session['username'], username)
         assert_equal(r.session['login_expires'], True)
 
@@ -122,7 +133,9 @@ class TestAuth(TestController):
 
         # Login as test-user with remember me checkbox on
         r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='foo', rememberme='on'))
+            username='test-user', password='foo', rememberme='on',
+            _session_id=self.app.cookies['_session_id'],
+        ))
         assert_equal(r.session['username'], username)
         assert_not_equal(r.session['login_expires'], True)
 
@@ -135,6 +148,7 @@ class TestAuth(TestController):
         email_address = 'test_abcd_123@domain.net'
         user = M.User.query.get(username='test-admin')
         addresses_number = len(user.email_addresses)
+        self.app.get('/')  # establish session
         self.app.post('/auth/preferences/update_emails',
                       params={
                           'new_addr.addr': email_address,
@@ -142,6 +156,7 @@ class TestAuth(TestController):
                           'primary_addr': 'test-admin@users.localhost',
                           'preferences.email_format': 'plain',
                           'password': 'foo',
+                          '_session_id': self.app.cookies['_session_id'],
                       },
                       extra_environ=dict(username='test-admin'))
 
@@ -153,6 +168,7 @@ class TestAuth(TestController):
                               'primary_addr': 'test-admin@users.localhost',
                               'preferences.email_format': 'plain',
                               'password': 'foo',
+                              '_session_id': self.app.cookies['_session_id'],
                           },
                           extra_environ=dict(username='test-admin'))
 
@@ -164,6 +180,7 @@ class TestAuth(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_user_added_claimed_address_by_other_user_confirmed(self, gen_message_id, sendsimplemail):
+        self.app.get('/')  # establish session
         email_address = 'test_abcd_123@domain.net'
 
         # test-user claimed & confirmed email address
@@ -185,6 +202,7 @@ class TestAuth(TestController):
                               'primary_addr': 'test-admin@users.localhost',
                               'preferences.email_format': 'plain',
                               'password': 'foo',
+                              '_session_id': self.app.cookies['_session_id'],
                           },
                           extra_environ=dict(username='test-admin'))
 
@@ -220,6 +238,7 @@ class TestAuth(TestController):
 
         user1 = M.User.query.get(username='test-user-1')
         addresses_number = len(user1.email_addresses)
+        self.app.get('/')  # establish session
         r = self.app.post('/auth/preferences/update_emails',
                           params={
                               'new_addr.addr': email_address,
@@ -227,6 +246,7 @@ class TestAuth(TestController):
                               'primary_addr': 'test-user-1@users.localhost',
                               'preferences.email_format': 'plain',
                               'password': 'foo',
+                              '_session_id': self.app.cookies['_session_id'],
                           },
                           extra_environ=dict(username='test-user-1'))
 
@@ -242,6 +262,7 @@ class TestAuth(TestController):
     @patch('allura.lib.helpers.gen_message_id')
     def test_user_cannot_claim_more_than_max_limit(self, gen_message_id, sendsimplemail):
         with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '1'}):
+            self.app.get('/')  # establish session
             r = self.app.post('/auth/preferences/update_emails',
                               params={
                                   'new_addr.addr': 'test_abcd_1@domain.net',
@@ -249,6 +270,7 @@ class TestAuth(TestController):
                                   'primary_addr': 'test-user-1@users.localhost',
                                   'preferences.email_format': 'plain',
                                   'password': 'foo',
+                                  '_session_id': self.app.cookies['_session_id'],
                               },
                               extra_environ=dict(username='test-user-1'))
             assert json.loads(self.webflash(r))['status'] == 'ok'
@@ -260,6 +282,7 @@ class TestAuth(TestController):
                                   'primary_addr': 'test-user-1@users.localhost',
                                   'preferences.email_format': 'plain',
                                   'password': 'foo',
+                                  '_session_id': self.app.cookies['_session_id'],
                               },
                               extra_environ=dict(username='test-user-1'))
 
@@ -269,6 +292,7 @@ class TestAuth(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_verification_link_for_confirmed_email(self, gen_message_id, sendsimplemail):
+        self.app.get('/')  # establish session
         email_address = 'test_abcd@domain.net'
 
         # test-user claimed email address
@@ -285,8 +309,8 @@ class TestAuth(TestController):
         ThreadLocalORMSession.flush_all()
 
         r = self.app.post('/auth/send_verification_link',
-                          params=dict(a=email_address),
-                          extra_environ=dict(username='test-user-1'))
+                          params=dict(a=email_address, _session_id=self.app.cookies['_session_id']),
+                          extra_environ=dict(username='test-user-1', _session_id=self.app.cookies['_session_id']))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
         assert json.loads(self.webflash(r))['message'] == 'Verification link sent'
@@ -299,6 +323,7 @@ class TestAuth(TestController):
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
     def test_invalidate_verification_link_if_email_was_confirmed(self):
+        self.app.get('/')  # establish session
         email_address = 'test_abcd@domain.net'
 
         # test-user claimed email address
@@ -308,9 +333,13 @@ class TestAuth(TestController):
         email.confirmed = False
         ThreadLocalORMSession.flush_all()
 
+        print 'email working with is', email
         self.app.post('/auth/send_verification_link',
-                      params=dict(a=email_address),
+                      params=dict(a=email_address,
+                                  _session_id=self.app.cookies['_session_id']),
                       extra_environ=dict(username='test-user'))
+        print 'later', M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        assert email.nonce
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
@@ -377,6 +406,8 @@ class TestAuth(TestController):
         user = self._create_password_reset_hash()
         session(user).flush(user)
 
+        self.app.get('/')  # establish session
+        change_params['_session_id'] = self.app.cookies['_session_id']
         self.app.post('/auth/preferences/update_emails',
                       extra_environ=dict(username='test-admin'),
                       params=change_params)
@@ -388,6 +419,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_change_password(self):
+        self.app.get('/')  # establish session
         # Get and assert user with password reset token.
         user = self._create_password_reset_hash()
         old_pass = user.get_pref('password')
@@ -399,6 +431,7 @@ class TestAuth(TestController):
                           'oldpw': 'foo',
                           'pw': 'asdfasdf',
                           'pw2': 'asdfasdf',
+                          '_session_id': self.app.cookies['_session_id'],
                       })
 
         # Confirm password was changed.
@@ -427,7 +460,8 @@ class TestAuth(TestController):
                                   'new_addr.claim': 'Claim Address',
                                   'primary_addr': 'test-admin@users.localhost',
                                   'password': 'foo',
-                                  'preferences.email_format': 'plain'
+                                  'preferences.email_format': 'plain',
+                                  '_session_id': self.app.cookies['_session_id'],
                               })
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
@@ -445,7 +479,8 @@ class TestAuth(TestController):
                                   'new_addr.addr': '',
                                   'primary_addr': 'test-admin@users.localhost',
                                   'password': 'foo',
-                                  'preferences.email_format': 'plain'
+                                  'preferences.email_format': 'plain',
+                                  '_session_id': self.app.cookies['_session_id'],
                               })
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
@@ -455,16 +490,20 @@ class TestAuth(TestController):
 
         with td.audits('Display Name changed Test Admin => Admin', user=True):
             r = self.app.post('/auth/preferences/update',
-                              params={'preferences.display_name': 'Admin'},
+                              params={'preferences.display_name': 'Admin',
+                                      '_session_id': self.app.cookies['_session_id'],
+                                      },
                               extra_environ=dict(username='test-admin'))
 
     @td.with_user_project('test-admin')
     def test_email_prefs_change_requires_password(self):
+        self.app.get('/')  # establish session
         # Claim new email
         new_email_params = {
             'new_addr.addr': 'test@example.com',
             'new_addr.claim': 'Claim Address',
             'primary_addr': 'test-admin@users.localhost',
+            '_session_id': self.app.cookies['_session_id'],
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
@@ -490,6 +529,7 @@ class TestAuth(TestController):
         change_primary_params = {
             'new_addr.addr': '',
             'primary_addr': 'test@example.com',
+            '_session_id': self.app.cookies['_session_id'],
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
@@ -518,6 +558,7 @@ class TestAuth(TestController):
             'addr-2.delete': 'on',
             'new_addr.addr': '',
             'primary_addr': 'test-admin@users.localhost',
+            '_session_id': self.app.cookies['_session_id'],
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
@@ -611,16 +652,20 @@ class TestAuth(TestController):
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     def test_format_email(self):
+        self.app.get('/')  # establish session
         self.app.post('/auth/subscriptions/update_subscriptions',
-                      params={'email_format': 'html', 'subscriptions': ''})
+                      params={'email_format': 'html', 'subscriptions': '',
+                              '_session_id': self.app.cookies['_session_id']})
         r = self.app.get('/auth/subscriptions/')
         assert '<option selected value="html">HTML</option>' in r
         self.app.post('/auth/subscriptions/update_subscriptions',
-                      params={'email_format': 'plain', 'subscriptions': ''})
+                      params={'email_format': 'plain', 'subscriptions': '',
+                              '_session_id': self.app.cookies['_session_id']})
         r = self.app.get('/auth/subscriptions/')
         assert '<option selected value="plain">Plain Text</option>' in r
         self.app.post('/auth/subscriptions/update_subscriptions',
-                      params={'email_format': 'both', 'subscriptions': ''})
+                      params={'email_format': 'both', 'subscriptions': '',
+                              '_session_id': self.app.cookies['_session_id']})
         r = self.app.get('/auth/subscriptions/')
         assert '<option selected value="both">Combined</option>' in r
 
@@ -628,7 +673,8 @@ class TestAuth(TestController):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
         r = self.app.post('/auth/save_new',
-                          params=dict(username='aaa', pw='123'))
+                          params=dict(username='aaa', pw='123',
+                                      _session_id=self.app.cookies['_session_id']))
         assert 'Enter a value 6 characters long or more' in r
         r = self.app.post(
             '/auth/save_new',
@@ -636,7 +682,9 @@ class TestAuth(TestController):
                 username='aaa',
                 pw='12345678',
                 pw2='12345678',
-                display_name='Test Me'))
+                display_name='Test Me',
+                _session_id=self.app.cookies['_session_id'],
+            ))
         r = r.follow()
         assert 'User "aaa" registered' in unentity(r.body)
         r = self.app.post(
@@ -645,15 +693,19 @@ class TestAuth(TestController):
                 username='aaa',
                 pw='12345678',
                 pw2='12345678',
-                display_name='Test Me'))
+                display_name='Test Me',
+                _session_id=self.app.cookies['_session_id'],
+            ))
         assert 'That username is already taken. Please choose another.' in r
         r = self.app.get('/auth/logout')
         r = self.app.post(
             '/auth/do_login',
-            params=dict(username='aaa', password='12345678'),
+            params=dict(username='aaa', password='12345678',
+                        _session_id=self.app.cookies['_session_id']),
             status=302)
 
     def test_create_account_require_email(self):
+        self.app.get('/')  # establish session
         with h.push_config(config, **{'auth.require_email_addr': 'false'}):
             self.app.post(
                 '/auth/save_new',
@@ -662,7 +714,9 @@ class TestAuth(TestController):
                     pw='12345678',
                     pw2='12345678',
                     display_name='Test Me',
-                    email='test@example.com'))
+                    email='test@example.com',
+                    _session_id=self.app.cookies['_session_id'],
+                ))
             user = M.User.query.get(username='aaa')
             assert not user.pending
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
@@ -673,12 +727,15 @@ class TestAuth(TestController):
                     pw='12345678',
                     pw2='12345678',
                     display_name='Test Me',
-                    email='test@example.com'))
+                    email='test@example.com',
+                    _session_id=self.app.cookies['_session_id']
+                ))
             user = M.User.query.get(username='bbb')
             assert user.pending
 
     def test_verify_email(self):
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
+            self.app.get('/')  # establish session
             r = self.app.post(
                 '/auth/save_new',
                 params=dict(
@@ -686,7 +743,9 @@ class TestAuth(TestController):
                     pw='12345678',
                     pw2='12345678',
                     display_name='Test Me',
-                    email='test@example.com'))
+                    email='test@example.com',
+                    _session_id=self.app.cookies['_session_id']
+                ))
             r = r.follow()
             user = M.User.query.get(username='aaa')
             em = M.EmailAddress.get(email='test@example.com')
@@ -709,12 +768,15 @@ class TestAuth(TestController):
 
     def test_create_account_disabled_submit_fails(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
+            self.app.get('/')  # establish session
             self.app.post('/auth/save_new',
                           params=dict(
                               username='aaa',
                               pw='12345678',
                               pw2='12345678',
-                              display_name='Test Me'),
+                              display_name='Test Me',
+                              _session_id=self.app.cookies['_session_id']
+                          ),
                           status=404)
 
     def test_one_project_role(self):
@@ -723,12 +785,15 @@ class TestAuth(TestController):
            an admin page."""
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        self.app.get('/')  # establish session
         self.app.post('/auth/save_new', params=dict(
             username='aaa',
             pw='12345678',
             pw2='12345678',
             display_name='Test Me',
-            email='test@example.com')).follow()
+            email='test@example.com',
+            _session_id=self.app.cookies['_session_id'],
+        )).follow()
         user = M.User.query.get(username='aaa')
         user.pending = False
         session(user).flush(user)
@@ -762,28 +827,32 @@ class TestAuth(TestController):
         assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
 
     def test_no_open_return_to(self):
-        r = self.app.get('/auth/logout')
+        r = self.app.get('/auth/logout').follow()
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
-            return_to='/foo'))
+            return_to='/foo',
+            _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost/foo')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
-            return_to='http://localhost:8080/foo'))
+            return_to='http://localhost:8080/foo',
+            _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost:8080/foo')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
-            return_to='http://example.com/foo'))
+            return_to='http://example.com/foo',
+            _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost/')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
-            return_to='//example.com/foo'))
+            return_to='//example.com/foo',
+            _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost/')
 
 
@@ -803,7 +872,9 @@ class TestPreferences(TestController):
                               birthdate=setbirthdate,
                               country=setcountry,
                               city=setcity,
-                              timezone=settimezone))
+                              timezone=settimezone,
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         sex = user.sex
         assert sex == setsex
@@ -818,7 +889,7 @@ class TestPreferences(TestController):
 
         # Check if setting a wrong date everything works correctly
         r = self.app.post('/auth/user_info/change_personal_data',
-                          params=dict(birthdate='30/02/1998'))
+                          params=dict(birthdate='30/02/1998', _session_id=self.app.cookies['_session_id']))
         assert 'Please enter a valid date' in str(r)
         user = M.User.query.get(username='test-admin')
         sex = user.sex
@@ -839,7 +910,9 @@ class TestPreferences(TestController):
                               birthdate='',
                               country=setcountry,
                               city=setcity,
-                              timezone=settimezone))
+                              timezone=settimezone,
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         assert user.birthdate is None
 
@@ -849,7 +922,7 @@ class TestPreferences(TestController):
         testvalue = 'testaccount'
         self.app.get('/auth/user_info/contacts/')
         self.app.post('/auth/user_info/contacts/skype_account',
-                      params=dict(skypeaccount=testvalue))
+                      params=dict(skypeaccount=testvalue, _session_id=self.app.cookies['_session_id']))
         user = M.User.query.get(username='test-admin')
         assert user.skypeaccount == testvalue
 
@@ -858,7 +931,9 @@ class TestPreferences(TestController):
         accounturl = 'http://www.facebook.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(socialnetwork=socialnetwork,
-                                  accounturl=accounturl))
+                                  accounturl=accounturl,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
         assert_equal(user.socialnetworks[0].socialnetwork, socialnetwork)
@@ -869,7 +944,9 @@ class TestPreferences(TestController):
         accounturl2 = 'http://twitter.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
                       params=dict(socialnetwork=socialnetwork2,
-                                  accounturl='@test'))
+                                  accounturl='@test',
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
         assert_in({'socialnetwork': socialnetwork, 'accounturl': accounturl}, user.socialnetworks)
@@ -878,21 +955,27 @@ class TestPreferences(TestController):
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
                       params=dict(socialnetwork=socialnetwork,
-                                  account=accounturl))
+                                  account=accounturl,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
         assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
-                      params=dict(accounturl=accounturl, socialnetwork=''))
+                      params=dict(accounturl=accounturl, socialnetwork='',
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
         assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
-                      params=dict(accounturl=accounturl, socialnetwork='invalid'))
+                      params=dict(accounturl=accounturl, socialnetwork='invalid',
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
         assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
@@ -900,40 +983,52 @@ class TestPreferences(TestController):
         # Add telephone number
         telnumber = '+3902123456'
         self.app.post('/auth/user_info/contacts/add_telnumber',
-                      params=dict(newnumber=telnumber))
+                      params=dict(newnumber=telnumber,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 1 and (user.telnumbers[0] == telnumber))
 
         # Add second telephone number
         telnumber2 = '+3902654321'
         self.app.post('/auth/user_info/contacts/add_telnumber',
-                      params=dict(newnumber=telnumber2))
+                      params=dict(newnumber=telnumber2,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
 
         # Remove first telephone number
         self.app.post('/auth/user_info/contacts/remove_telnumber',
-                      params=dict(oldvalue=telnumber))
+                      params=dict(oldvalue=telnumber,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 1 and telnumber2 in user.telnumbers)
 
         # Add website
         website = 'http://www.testurl.com'
         self.app.post('/auth/user_info/contacts/add_webpage',
-                      params=dict(newwebsite=website))
+                      params=dict(newwebsite=website,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and (website in user.webpages))
 
         # Add second website
         website2 = 'http://www.testurl2.com'
         self.app.post('/auth/user_info/contacts/add_webpage',
-                      params=dict(newwebsite=website2))
+                      params=dict(newwebsite=website2,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 2 and website in user.webpages and website2 in user.webpages)
 
         # Remove first website
         self.app.post('/auth/user_info/contacts/remove_webpage',
-                      params=dict(oldvalue=website))
+                      params=dict(oldvalue=website,
+                                  _session_id=self.app.cookies['_session_id'],
+                                  ))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and website2 in user.webpages)
 
@@ -949,7 +1044,9 @@ class TestPreferences(TestController):
                           params=dict(
                               weekday=weekday,
                               starttime=starttime.strftime('%H:%M'),
-                              endtime=endtime.strftime('%H:%M')))
+                              endtime=endtime.strftime('%H:%M'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         timeslot1dict = dict(
             week_day=weekday, start_time=starttime, end_time=endtime)
@@ -965,7 +1062,9 @@ class TestPreferences(TestController):
                           params=dict(
                               weekday=weekday2,
                               starttime=starttime2.strftime('%H:%M'),
-                              endtime=endtime2.strftime('%H:%M')))
+                              endtime=endtime2.strftime('%H:%M'),
+                            _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
                              start_time=starttime2, end_time=endtime2)
@@ -978,7 +1077,9 @@ class TestPreferences(TestController):
                           params=dict(
                               weekday=weekday,
                               starttime=starttime.strftime('%H:%M'),
-                              endtime=endtime.strftime('%H:%M')))
+                              endtime=endtime.strftime('%H:%M'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
 
@@ -987,7 +1088,9 @@ class TestPreferences(TestController):
                           params=dict(
                               weekday=weekday2,
                               starttime=endtime2.strftime('%H:%M'),
-                              endtime=starttime2.strftime('%H:%M')))
+                              endtime=starttime2.strftime('%H:%M'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         assert 'Invalid period:' in str(r)
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
@@ -1005,7 +1108,9 @@ class TestPreferences(TestController):
         r = self.app.post('/auth/user_info/availability/add_inactive_period',
                           params=dict(
                               startdate=startdate.strftime('%d/%m/%Y'),
-                              enddate=enddate.strftime('%d/%m/%Y')))
+                              enddate=enddate.strftime('%d/%m/%Y'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         period1dict = dict(start_date=startdate, end_date=enddate)
         assert len(user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
@@ -1016,7 +1121,9 @@ class TestPreferences(TestController):
         r = self.app.post('/auth/user_info/availability/add_inactive_period',
                           params=dict(
                               startdate=startdate2.strftime('%d/%m/%Y'),
-                              enddate=enddate2.strftime('%d/%m/%Y')))
+                              enddate=enddate2.strftime('%d/%m/%Y'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         period2dict = dict(start_date=startdate2, end_date=enddate2)
         assert len(user.inactiveperiod) == 2
@@ -1028,7 +1135,9 @@ class TestPreferences(TestController):
             '/auth/user_info/availability/remove_inactive_period',
             params=dict(
                 startdate=startdate.strftime('%d/%m/%Y'),
-                enddate=enddate.strftime('%d/%m/%Y')))
+                enddate=enddate.strftime('%d/%m/%Y'),
+                _session_id=self.app.cookies['_session_id'],
+            ))
         user = M.User.query.get(username='test-admin')
         assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
 
@@ -1036,7 +1145,9 @@ class TestPreferences(TestController):
         r = self.app.post('/auth/user_info/availability/add_inactive_period',
                           params=dict(
                               startdate='NOT/A/DATE',
-                              enddate=enddate2.strftime('%d/%m/%Y')))
+                              enddate=enddate2.strftime('%d/%m/%Y'),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         assert 'Please enter a valid date' in str(r)
         assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
@@ -1053,7 +1164,9 @@ class TestPreferences(TestController):
                           params=dict(
                               level=level,
                               comment=comment,
-                              selected_skill=str(skill_cat.trove_cat_id)))
+                              selected_skill=str(skill_cat.trove_cat_id),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         skilldict = dict(category_id=skill_cat._id,
                          comment=comment, level=level)
@@ -1067,7 +1180,9 @@ class TestPreferences(TestController):
                           params=dict(
                               level=level,
                               comment=comment,
-                              selected_skill=str(skill_cat.trove_cat_id)))
+                              selected_skill=str(skill_cat.trove_cat_id),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         skilldict = dict(category_id=skill_cat._id,
                          comment=comment, level=level)
@@ -1080,7 +1195,9 @@ class TestPreferences(TestController):
                           params=dict(
                               level=level2,
                               comment=comment2,
-                              selected_skill=str(skill_cat.trove_cat_id)))
+                              selected_skill=str(skill_cat.trove_cat_id),
+                              _session_id=self.app.cookies['_session_id'],
+                          ))
         user = M.User.query.get(username='test-admin')
         # Check that everything is as it was before
         assert len(user.skills) == 1 and skilldict in user.skills
@@ -1089,17 +1206,24 @@ class TestPreferences(TestController):
         self.app.get('/auth/user_info/skills/')
         self.app.post('/auth/user_info/skills/remove_skill',
                       params=dict(
-                          categoryid=str(skill_cat.trove_cat_id)))
+                          categoryid=str(skill_cat.trove_cat_id),
+                          _session_id=self.app.cookies['_session_id'],
+                      ))
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
 
     @td.with_user_project('test-admin')
     def test_user_message(self):
+        self.app.get('/')  # establish session
         assert not M.User.query.get(username='test-admin').get_pref('disable_user_messages')
-        self.app.post('/auth/preferences/user_message')
+        self.app.post('/auth/preferences/user_message',
+                      params={'_session_id': self.app.cookies['_session_id'],
+                              })
         assert M.User.query.get(username='test-admin').get_pref('disable_user_messages')
         self.app.post('/auth/preferences/user_message',
-                      params={'allow_user_messages': 'on'})
+                      params={'allow_user_messages': 'on',
+                              '_session_id': self.app.cookies['_session_id'],
+                              })
         assert not M.User.query.get(username='test-admin').get_pref('disable_user_messages')
 
     @td.with_user_project('test-admin')
@@ -1130,7 +1254,10 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = False
         ThreadLocalORMSession.flush_all()
-        self.app.post('/auth/password_recovery_hash', {'email': email.email})
+        self.app.get('/')  # establish session
+        self.app.post('/auth/password_recovery_hash', {'email': email.email,
+                                                       '_session_id': self.app.cookies['_session_id'],
+                                                       })
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
@@ -1142,13 +1269,17 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        self.app.post('/auth/password_recovery_hash', {'email': email.email})
+        self.app.get('/')  # establish session
+        self.app.post('/auth/password_recovery_hash', {'email': email.email,
+                                                       '_session_id': self.app.cookies['_session_id'],
+                                                       })
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_only_primary_email_reset_allowed(self, gen_message_id, sendmail):
+        self.app.get('/')  # establish session
         user = M.User.query.get(username='test-admin')
         user.claim_address(self.test_primary_email)
         user.set_pref('email_address', self.test_primary_email)
@@ -1158,7 +1289,9 @@ class TestPasswordReset(TestController):
         ThreadLocalORMSession.flush_all()
 
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'false'}):
-            self.app.post('/auth/password_recovery_hash', {'email': self.test_primary_email})
+            self.app.post('/auth/password_recovery_hash', {'email': self.test_primary_email,
+                                                           '_session_id': self.app.cookies['_session_id'],
+                                                           })
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
             args, kwargs = sendmail.post.call_args
@@ -1167,6 +1300,7 @@ class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_non_primary_email_reset_allowed(self, gen_message_id, sendmail):
+        self.app.get('/')  # establish session
         user = M.User.query.get(username='test-admin')
         email1 = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         user.claim_address(self.test_primary_email)
@@ -1175,7 +1309,9 @@ class TestPasswordReset(TestController):
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         with h.push_config(config, **{'auth.allow_non_primary_email_password_reset': 'true'}):
-            self.app.post('/auth/password_recovery_hash', {'email': email1.email})
+            self.app.post('/auth/password_recovery_hash', {'email': email1.email,
+                                                           '_session_id': self.app.cookies['_session_id'],
+                                                           })
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
             args, kwargs = sendmail.post.call_args
@@ -1184,6 +1320,7 @@ class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_password_reset(self, gen_message_id, sendmail):
+        self.app.get('/')  # establish session
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find(
             {'claimed_by_user_id': user._id}).first()
@@ -1191,7 +1328,9 @@ class TestPasswordReset(TestController):
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
         with td.audits('Password recovery link sent to: test-admin@users.localhost', user=True):
-            r = self.app.post('/auth/password_recovery_hash', {'email': email.email})
+            r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
+                                                               '_session_id': self.app.cookies['_session_id'],
+                                                               })
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert hash is not None
@@ -1238,7 +1377,10 @@ To reset your password on %s, please visit the following URL:
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/password_recovery_hash', {'email': email.email})
+        self.app.get('/')  # establish session
+        r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
+                                                           '_session_id': self.app.cookies['_session_id'],
+                                                           })
         user = M.User.by_username('test-admin')
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         user.set_tool_data('AuthPasswordReset',
@@ -1246,7 +1388,9 @@ To reset your password on %s, please visit the following URL:
         r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
         assert_in('Unable to process reset, please try again', r.follow().body)
         r = self.app.post('/auth/set_new_password/%s' %
-                          hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
+                          hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321',
+                                                 '_session_id': self.app.cookies['_session_id'],
+                                                 })
         assert_in('Unable to process reset, please try again', r.follow().body)
 
     @patch('allura.lib.plugin.AuthenticationProvider')
@@ -1258,9 +1402,11 @@ To reset your password on %s, please visit the following URL:
         ap.by_username().username = user.username
         self.app.get('/auth/forgotten_password', status=404)
         self.app.post('/auth/set_new_password',
-                      {'pw': 'foo', 'pw2': 'foo'}, status=404)
+                      {'pw': 'foo', 'pw2': 'foo', '_session_id': self.app.cookies['_session_id']},
+                      status=404)
         self.app.post('/auth/password_recovery_hash',
-                      {'email': 'foo'}, status=404)
+                      {'email': 'foo', '_session_id': self.app.cookies['_session_id']},
+                      status=404)
 
 
 class TestOAuth(TestController):
@@ -1268,7 +1414,9 @@ class TestOAuth(TestController):
         # register
         r = self.app.get('/auth/oauth/')
         r = self.app.post('/auth/oauth/register',
-                          params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+                          params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
+                                  '_session_id': self.app.cookies['_session_id'],
+                                  }).follow()
         assert 'oautstapp' in r
         # deregister
         assert_equal(r.forms[0].action, 'deregister')
@@ -1278,8 +1426,11 @@ class TestOAuth(TestController):
 
     def test_generate_revoke_access_token(self):
         # generate
+        self.app.get('/')  # establish session
         r = self.app.post('/auth/oauth/register',
-                          params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+                          params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
+                                  '_session_id': self.app.cookies['_session_id'],
+                                  }).follow()
         assert_equal(r.forms[1].action, 'generate_access_token')
         r.forms[1].submit()
         r = self.app.get('/auth/oauth/')
@@ -1309,10 +1460,13 @@ class TestOAuth(TestController):
             'oauth_consumer_key': 'api_key',
             'oauth_callback': 'http://my.domain.com/callback',
         }
-        r = self.app.post('/rest/oauth/request_token', params={})
+        self.app.get('/')  # establish session
+        r = self.app.post('/rest/oauth/request_token', params={'_session_id': self.app.cookies['_session_id']})
         rtok = parse_qs(r.body)['oauth_token'][0]
         r = self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': rtok})
+                          params={'oauth_token': rtok,
+                                  '_session_id': self.app.cookies['_session_id'],
+                                  })
         r = r.forms[0].submit('yes')
         assert r.location.startswith('http://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
@@ -1337,7 +1491,9 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
-        r = self.app.post('/rest/oauth/request_token', params={'key': 'value'})
+        r = self.app.post('/rest/oauth/request_token', params={'key': 'value',
+                                                               #'_session_id': self.app.cookies['_session_id'],
+                                                               })
         Request.from_request.assert_called_once_with(
             'POST', 'http://localhost/rest/oauth/request_token',
             headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
@@ -1353,8 +1509,12 @@ class TestOAuth(TestController):
     def test_request_token_no_consumer_token(self, Request, Server):
         req = Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key'}
+        self.app.get('/')  # establish session
         r = self.app.post('/rest/oauth/request_token',
-                          params={'key': 'value'}, status=403)
+                          params={'key': 'value',
+                                  '_session_id': self.app.cookies['_session_id'],
+                                  },
+                          status=403)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1368,7 +1528,12 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
-        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=403)
+        self.app.get('/')  # establish session
+        self.app.post('/rest/oauth/request_token',
+                      params={'key': 'value',
+                              '_session_id': self.app.cookies['_session_id'],
+                              },
+                      status=403)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -1384,12 +1549,17 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key',
+                                                           '_session_id': self.app.cookies['_session_id']})
         assert_in('ctok_desc', r.body)
         assert_in('api_key', r.body)
 
     def test_authorize_invalid(self):
-        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=403)
+        self.app.get('/')  # establish session
+        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key',
+                                                       '_session_id': self.app.cookies['_session_id']},
+                      status=403)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -1405,8 +1575,11 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
+        self.app.get('/')  # establish session
         self.app.post('/rest/oauth/do_authorize',
-                      params={'no': '1', 'oauth_token': 'api_key'})
+                      params={'no': '1', 'oauth_token': 'api_key',
+                              '_session_id': self.app.cookies['_session_id'],
+                              })
         assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key'))
 
     def test_do_authorize_oob(self):
@@ -1423,7 +1596,10 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
+                                                              '_session_id': self.app.cookies['_session_id'],
+                                                              })
         assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
 
     def test_do_authorize_cb(self):
@@ -1440,7 +1616,10 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
+                                                              '_session_id': self.app.cookies['_session_id'],
+                                                              })
         assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key&oauth_verifier=')
 
     def test_do_authorize_cb_params(self):
@@ -1457,7 +1636,10 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
+                                                              '_session_id': self.app.cookies['_session_id'],
+                                                              })
         assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key&oauth_verifier=')
 
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1583,13 +1765,17 @@ class TestDisableAccount(TestController):
         assert form is not None
 
     def test_bad_password(self):
-        r = self.app.post('/auth/disable/do_disable', {'password': 'bad'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/auth/disable/do_disable',{'password': 'bad',
+                                                      '_session_id': self.app.cookies['_session_id'],})
         assert_in('Invalid password', r)
         user = M.User.by_username('test-admin')
         assert_equal(user.disabled, False)
 
     def test_disable(self):
-        r = self.app.post('/auth/disable/do_disable', {'password': 'foo'})
+        self.app.get('/')  # establish session
+        r = self.app.post('/auth/disable/do_disable', {'password': 'foo',
+                                                       '_session_id': self.app.cookies['_session_id'],})
         assert_equal(r.status_int, 302)
         assert_equal(r.location, 'http://localhost/')
         flash = json.loads(self.webflash(r))
