@@ -990,7 +990,7 @@ class AuditLog(object):
 
     @classmethod
     def log(cls, message, *args, **kwargs):
-        project = kwargs.pop('project', c.project)
+        project = kwargs.pop('project') if 'project' in kwargs else c.project
         user = kwargs.pop('user', c.user)
         url = kwargs.pop('url', request.url)
         if args:
