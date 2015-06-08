@@ -1090,7 +1090,7 @@ class CsrfForm(ew.SimpleForm):
     def context_for(self, field):
         ctx = super(CsrfForm, self).context_for(field)
         if field.name == '_session_id':
-            ctx['value'] = tg.request.cookies.get('_session_id')
+            ctx['value'] = tg.request.cookies.get('_session_id') or tg.request.environ['_session_id']
         return ctx
 
 

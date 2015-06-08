@@ -1792,3 +1792,37 @@ class TestPasswordExpire(TestController):
             f['return_to'] = return_to
             r = f.submit(extra_environ={'username': 'test-user'}, status=302)
             assert_equal(r.location, 'http://localhost/p/test/tickets/?milestone=1.0&page=2')
+
+
+class TestCSRFProtection(TestController):
+
+    def test_blocks_invalid(self):
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r.form.submit()
+
+        # regular form submit
+        r = self.app.get('/admin/overview')
+        r = r.form.submit()
+        assert_equal(r.location, 'http://localhost/admin/overview')
+
+        # invalid form submit
+        r = self.app.get('/admin/overview')
+        r.form['_session_id'] = 'bogus'
+        r = r.form.submit()
+        assert_equal(r.location, 'http://localhost/auth/')
+
+    def test_blocks_invalid_on_login(self):
+        r = self.app.get('/auth/')
+        r.form['_session_id'] = 'bogus'
+        r.form.submit(status=403)
+
+    def test_token_present_on_first_request(self):
+        r = self.app.get('/auth/')
+        assert_true(r.form['_session_id'].value)
+

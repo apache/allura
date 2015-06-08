@@ -129,6 +129,8 @@ class CSRFMiddleware(object):
 
     def __call__(self, environ, start_response):
         req = Request(environ)
+
+        # enforce POSTs
         cookie = req.cookies.get(self._cookie_name, None)
         if cookie is None:
             cookie = h.cryptographic_nonce()
@@ -136,7 +138,17 @@ class CSRFMiddleware(object):
             param = req.str_POST.pop(self._param_name, None)
             if cookie != param:
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
-                environ.pop('HTTP_COOKIE', None)
+                environ.pop('HTTP_COOKIE', None)  # effectively kill the existing session
+                if req.path.startswith('/auth/'):
+                    # for operations where you're not logged in yet (e.g. login form, pwd recovery, etc), then killing
+                    # the session doesn't help, so we block the request entirely
+                    resp = exc.HTTPForbidden()
+                    return resp(environ, start_response)
+
+        # Set cookie for use in later forms:
+
+        # in addition to setting a cookie, set this so its available on first response before cookie gets created in browser
+        environ[self._cookie_name] = cookie
 
         def session_start_response(status, headers, exc_info=None):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
@@ -144,6 +156,7 @@ class CSRFMiddleware(object):
                     ('Set-cookie',
                      str('%s=%s; Path=/' % (self._cookie_name, cookie))))
             return start_response(status, headers, exc_info)
+
         return self._app(environ, session_start_response)
 
 

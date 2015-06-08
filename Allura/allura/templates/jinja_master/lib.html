@@ -19,7 +19,7 @@
 
 {% macro csrf() -%}
   {% if request -%}
-    {{request.cookies['_session_id']}}
+    {{ request.cookies['_session_id'] or request.environ['_session_id'] }}
   {%- endif %}
 {%- endmacro %}
 
