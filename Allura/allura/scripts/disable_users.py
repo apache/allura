@@ -49,6 +49,9 @@ class DisableUsers(ScriptTask):
             user = M.User.query.get(username=username)
             if not user:
                 log.info('Could not find user: %s', username)
+            elif user.disabled:
+                log.info('User is already disabled: %s', username)
+                session(user).expunge(user)
             else:
                 log.info('Disabling user: %s', username)
                 auth_provider.disable_user(user)
