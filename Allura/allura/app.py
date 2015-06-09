@@ -57,12 +57,13 @@ class ConfigOption(object):
 
     """
 
-    def __init__(self, name, ming_type, default, label=None, validator=None, extra_attrs=None):
-        """Create a new ConfigOption.
-
-        """
+    def __init__(self, name, ming_type, default,
+                 label=None, help_text=None, validator=None,
+                 extra_attrs=None):
+        """Create a new ConfigOption."""
         self.name, self.ming_type, self._default, self.label = (
             name, ming_type, default, label or name)
+        self.help_text = help_text
         self.validator = validator
         self.extra_attrs = extra_attrs
 
