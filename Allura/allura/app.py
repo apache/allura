@@ -36,6 +36,7 @@ from formencode import validators as fev
 
 from ming.orm import session
 from ming.utils import LazyProperty
+import ew.jinja2_ew as ew
 
 from allura.lib import helpers as h
 from allura.lib.security import has_access, require_access
@@ -56,13 +57,14 @@ class ConfigOption(object):
 
     """
 
-    def __init__(self, name, ming_type, default, label=None, validator=None):
+    def __init__(self, name, ming_type, default, label=None, validator=None, extra_attrs=None):
         """Create a new ConfigOption.
 
         """
         self.name, self.ming_type, self._default, self.label = (
             name, ming_type, default, label or name)
         self.validator = validator
+        self.extra_attrs = extra_attrs
 
     @property
     def default(self):
@@ -77,6 +79,10 @@ class ConfigOption(object):
         if self.validator:
             return self.validator.to_python(value)
         return value
+
+    def render_attrs(self):
+        """Return extra_attrs formatted in a way that allows inserting into html tag"""
+        return ew._Jinja2Widget().j2_attrs(self.extra_attrs or {})
 
 
 class SitemapEntry(object):

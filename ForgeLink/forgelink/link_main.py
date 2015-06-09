@@ -51,7 +51,8 @@ class ForgeLinkApp(Application):
     config_options = Application.config_options + [
         ConfigOption(
             'url', str, None,
-            validator=fev.URL(not_empty=True, add_http=True)),
+            validator=fev.URL(not_empty=True, add_http=True),
+            extra_attrs={'type': 'url'}),
     ]
     config_on_install = ['url']
     searchable = True

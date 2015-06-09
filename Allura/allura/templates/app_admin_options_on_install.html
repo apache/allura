@@ -20,9 +20,9 @@
   <label class="grid-13" for="{{o.name}}">{{o.label|capitalize}}</label>
   <div class="grid-13">
     {% if o.ming_type.__name__ == 'bool' %}
-      <input id="{{o.name}}" name="{{o.name}}" type="checkbox"{{ ' checked="checked"' if o.default}}>
+      <input {{o.render_attrs()}}id="{{o.name}}" name="{{o.name}}" type="checkbox"{{ ' checked="checked"' if o.default}}>
     {% else %}
-      <input id="{{o.name}}" name="{{o.name}}" value="{{o.default or ''}}">
+      <input {{o.render_attrs()}} id="{{o.name}}" name="{{o.name}}" value="{{o.default or ''}}">
     {% endif %}
   </div>
 {% endfor %}
