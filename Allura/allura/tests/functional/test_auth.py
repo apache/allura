@@ -1457,13 +1457,10 @@ class TestOAuth(TestController):
             'oauth_consumer_key': 'api_key',
             'oauth_callback': 'http://my.domain.com/callback',
         }
-        self.app.get('/')  # establish session
-        r = self.app.post('/rest/oauth/request_token', params={'_session_id': self.app.cookies['_session_id']})
+        r = self.app.post('/rest/oauth/request_token', params={})
         rtok = parse_qs(r.body)['oauth_token'][0]
         r = self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': rtok,
-                                  '_session_id': self.app.cookies['_session_id'],
-                                  })
+                          params={'oauth_token': rtok})
         r = r.forms[0].submit('yes')
         assert r.location.startswith('http://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
@@ -1488,9 +1485,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
-        r = self.app.post('/rest/oauth/request_token', params={'key': 'value',
-                                                               #'_session_id': self.app.cookies['_session_id'],
-                                                               })
+        r = self.app.post('/rest/oauth/request_token', params={'key': 'value'})
         Request.from_request.assert_called_once_with(
             'POST', 'http://localhost/rest/oauth/request_token',
             headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
@@ -1506,12 +1501,8 @@ class TestOAuth(TestController):
     def test_request_token_no_consumer_token(self, Request, Server):
         req = Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key'}
-        self.app.get('/')  # establish session
         r = self.app.post('/rest/oauth/request_token',
-                          params={'key': 'value',
-                                  '_session_id': self.app.cookies['_session_id'],
-                                  },
-                          status=403)
+                          params={'key': 'value'}, status=403)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1525,12 +1516,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
-        self.app.get('/')  # establish session
-        self.app.post('/rest/oauth/request_token',
-                      params={'key': 'value',
-                              '_session_id': self.app.cookies['_session_id'],
-                              },
-                      status=403)
+        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=403)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -1546,17 +1532,12 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
-        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key',
-                                                           '_session_id': self.app.cookies['_session_id']})
+        r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'})
         assert_in('ctok_desc', r.body)
         assert_in('api_key', r.body)
 
     def test_authorize_invalid(self):
-        self.app.get('/')  # establish session
-        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key',
-                                                       '_session_id': self.app.cookies['_session_id']},
-                      status=403)
+        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=403)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -1572,11 +1553,8 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
         self.app.post('/rest/oauth/do_authorize',
-                      params={'no': '1', 'oauth_token': 'api_key',
-                              '_session_id': self.app.cookies['_session_id'],
-                              })
+                      params={'no': '1', 'oauth_token': 'api_key'})
         assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key'))
 
     def test_do_authorize_oob(self):
@@ -1593,10 +1571,7 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
-                                                              '_session_id': self.app.cookies['_session_id'],
-                                                              })
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
 
     def test_do_authorize_cb(self):
@@ -1613,10 +1588,7 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
-                                                              '_session_id': self.app.cookies['_session_id'],
-                                                              })
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key&oauth_verifier=')
 
     def test_do_authorize_cb_params(self):
@@ -1633,10 +1605,7 @@ class TestOAuth(TestController):
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
-        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key',
-                                                              '_session_id': self.app.cookies['_session_id'],
-                                                              })
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key&oauth_verifier=')
 
     @mock.patch('allura.controllers.rest.oauth.Request')
