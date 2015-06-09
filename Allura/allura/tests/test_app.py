@@ -54,6 +54,11 @@ def test_config_options():
     assert options[1].default == 'MyTestValue'
 
 
+def test_config_options_render_attrs():
+    opt = app.ConfigOption('test1', str, None, extra_attrs={'type': 'url'})
+    assert_equal(opt.render_attrs(), 'type="url"')
+
+
 def test_config_option_without_validator():
     opt = app.ConfigOption('test1', str, None)
     assert_equal(opt.validate(None), None)
