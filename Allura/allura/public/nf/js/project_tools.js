@@ -33,8 +33,6 @@
     install_popup.append(install_form.show());
     $('a.install_trig').click(function () {
         var datatool = $(this).data('tool');
-        var relaxed_mount_points = $(this).data('relaxed-mount-points');
-        install_form.find('.mount-point-name-rules').hide();
         if (datatool) {
             var tool = defaults[datatool];
             install_options.html('Loading options...');
@@ -45,18 +43,11 @@
             new_ep_name.val(datatool);
             new_mount_point.val(tool.default_mount);
             new_mount_label.val(tool.default_label);
-            if (relaxed_mount_points) {
-              install_form.find('.mount-point-name-rules.tool-relaxed').show();
-            }
-            else {
-              install_form.find('.mount-point-name-rules.tool').show();
-            }
         } else {
             install_tool_label.html("Subproject");
             new_ep_name.val('');
             new_mount_point.val('');
             new_mount_label.val('');
-            install_form.find('.mount-point-name-rules.subproject').show();
         }
     });
     // Edit popup

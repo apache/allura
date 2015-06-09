@@ -31,7 +31,7 @@
   <div class="nested-grid-container">
     {% for tool in installable_tools %}
       <span class="tcenter grid-4 installable_tool">
-        <a class="install_trig" data-tool="{{ tool['name'] }}" data-relaxed-mount-points="{{ 'true' if tool.app.relaxed_mount_points else 'false' }}">
+        <a class="install_trig" data-tool="{{ tool['name'] }}">
           <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
           <img src="{{ g.theme.app_icon_url(tool['name'], 32) or 'unk.png' }}" alt="">
         </a>
@@ -55,25 +55,6 @@
         <input id="id_url_input" type="text" name="new.mount_point" title="The url for this tool relative to {{ full_url }} " class="new_mount_point">
        <p><span id="full-url-preview" data-url="{{full_url}}"></span></p>
     </div>
-    <div class="grid-13">
-      <small>
-        * The mount point is the name of the tool as it will appear in a URL.
-        <span class="mount-point-name-rules tool">
-          A valid mount point for this tool must begin with a letter, contain only lowercase letters,
-          numbers, and dashes, and be from 1-63 characters in length.
-        </span>
-        <span class="mount-point-name-rules tool-relaxed">
-          A valid mount point for this tool must begin with a letter or number, contain only
-          letters, numbers, dashes, underscores, periods, and plus signs, and be
-          from 1-63 characters in length.
-        </span>
-        <span class="mount-point-name-rules subproject">
-          A valid subproject mount point must begin with a letter, contain only lowercase letters,
-          numbers, and dashes, and be from 3-15 characters in length.
-        </span>
-      </small>
-    </div>
-    <div class="grid-13">&nbsp;</div>
     <div id="install_options">{# js inserts form fields here #}</div>
     <div class="grid-13">&nbsp;</div>
     <hr>
