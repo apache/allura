@@ -947,6 +947,10 @@ class NeighborhoodAddProjectForm(ForgeForm):
                           ),
             ew.InputField(name='project_unixname',
                           label='Short Name', field_type='text',
+                          attrs={
+                              'title': 'Create a URL name that matches your project name as closely as possible to improve search indexing and maximize visibility.',
+                              'class': 'tooltip'
+                          },
                           validator=provider.shortname_validator),
             ew.CheckboxSet(name='tools', options=tools_options),
         ])

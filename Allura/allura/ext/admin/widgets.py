@@ -150,7 +150,14 @@ class ScreenshotAdmin(ff.ForgeForm):
         fields = [
             ew.InputField(name='screenshot', field_type='file',
                           label='New Screenshot'),
-            ew.InputField(name='caption', field_type="text", label='Caption')
+            ew.InputField(name='caption',
+                          field_type="text",
+                          label='Caption',
+                          attrs={
+                              'title': "Reuse your project name in screenshot file names and create a caption to briefly describe each screenshot.",
+                              'class': 'tooltip',
+                          }
+                          )
         ]
         return fields
 
@@ -176,18 +183,26 @@ class MetadataAdmin(ff.AdminForm):
                              validator=formencode.All(
                                  fev.UnicodeString(not_empty=True, max=40),
                                  V.MaxBytesValidator(max=40)),
-                             attrs=dict(maxlength=40,
-                                        title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
+                             attrs={'maxlength': 40,
+                                    'title': "This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing.",
+                                    'class': 'tooltip',
+                                    })
         summary = ew.InputField(field_type="text", label='Short Summary',
                                 validator=formencode.All(
                                     fev.UnicodeString(max=70),
                                     V.MaxBytesValidator(max=70)),
-                                attrs=dict(maxlength=70))
+                                attrs={'maxlength': 70,
+                                       'title': 'Briefly state what your project is and what it does without repeating the project name. This summary appears in Google search results beneath the project name.',
+                                       'class': 'tooltip',
+                                       })
         short_description = ew.TextArea(label='Full Description',
                                         validator=formencode.All(
                                             fev.UnicodeString(max=1000),
                                             V.MaxBytesValidator(max=1000)),
-                                        attrs=dict(title="Add a few paragraphs describing your project to new users."))
+                                        attrs={
+                                            'title': 'Describe the full functionality of your project using related keywords. The first sentence has the most impact on search. Provide unique content that calls out keywords and describes the merits of your project.',
+                                            'class': 'tooltip'
+                                        })
         # Apparently, child field must be CompoundField with custom template
         # for SortableRepeatedField to work properly, that's why FeaturesField
         # is not just ew.TextField
