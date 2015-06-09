@@ -30,6 +30,9 @@
         {% else %}
             <input {{o.render_attrs()}} id="{{o.name}}" name="{{o.name}}" value="{{app.config.options.get(o.name, o.default)}}">
         {% endif %}
+        {% if o.help_text %}
+          <div class="grid-9"><small>{{o.help_text}}</small></div>
+        {% endif %}
       {% endif %}
     </div>
   {% else %}
