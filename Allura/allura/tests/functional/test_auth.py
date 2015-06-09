@@ -333,13 +333,10 @@ class TestAuth(TestController):
         email.confirmed = False
         ThreadLocalORMSession.flush_all()
 
-        print 'email working with is', email
         self.app.post('/auth/send_verification_link',
                       params=dict(a=email_address,
                                   _session_id=self.app.cookies['_session_id']),
                       extra_environ=dict(username='test-user'))
-        print 'later', M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
-        assert email.nonce
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
