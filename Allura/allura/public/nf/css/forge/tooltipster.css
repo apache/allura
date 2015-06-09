@@ -21,25 +21,32 @@
 }
 
 /* If you're using the icon option, use this next selector to style them */
+
+.tooltipster-div {
+    position: relative;
+    height: 100%;
+}
+
 .tooltipster-icon {
     cursor: help;
     background: #00AFFE;
-    font-size: medium;
-    font-weight: 600;
+    font-size: small;
+    font-weight: bold;
+    height: 1.3em;
     color: white;
-    border: 1px solid #067DB8;
-    border-radius: 15%;
+    border: 0.1em solid #067DB8;
+    border-radius: 18.5%;
     position: absolute;
-    padding: 0 4px;
-    left: 41.3%;
-    margin-top: -27.5px;
-    margin-bottom: 141px;
+    display: inline-block;
+    margin-top: 0.3em;
+    top: 2.7%;
+    right: 2%;
+    z-index: 9999999;
+    padding: 0 0.3em;
 }
 
-/* If you're using the icon option, use this next selector to style them */
 .tooltipster-icon:hover {
     background: #067DB8;
-    border: 1px solid #00AFFE;
 }
 
 /* This is the base styling required to make all Tooltipsters work */
@@ -314,3 +321,15 @@
     line-height: 16px;
     padding: 8px 10px;
 }
+
+textarea.tooltip {
+    position: relative;
+    display: block;
+    margin: 0px auto;
+}
+
+/*input.tooltip {*/
+    /*position: relative;*/
+    /*display: inline-block;*/
+    /*/!*margin: auto;*!/*/
+/*}*/
