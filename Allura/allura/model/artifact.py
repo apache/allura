@@ -32,6 +32,8 @@ from webhelpers import feedgenerator as FG
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import utils
+from allura.lib import plugin
+from allura.lib import exceptions as forge_exc
 
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session
@@ -407,6 +409,26 @@ class Artifact(MappedClass, SearchIndexable):
     def message_id(self):
         '''Persistent, email-friendly (Message-ID header) id of this artifact'''
         return h.gen_message_id(self._id)
+
+    @classmethod
+    def is_limit_exceeded(cls, app_config):
+        """
+        Returns True if any of artifact creation rate limits are exceeded,
+        False otherwise
+        """
+        pkg = cls.__module__.split('.', 1)[0]
+        opt = u'{}.rate_limits'.format(pkg)
+        count = cls.query.find(dict(app_config_id=app_config._id)).count()
+        provider = plugin.ProjectRegistrationProvider.get()
+        start = provider.registration_date(app_config.project)
+        # have to have the replace because, the generation_time is offset-aware
+        # UTC and h.rate_limit uses offset-naive UTC dates
+        start = start.replace(tzinfo=None)
+        try:
+            h.rate_limit(opt, count, start)
+        except forge_exc.RatelimitError:
+            return True
+        return False
 
 
 class Snapshot(Artifact):
