@@ -18,7 +18,9 @@
 from pylons import tmpl_context as c
 
 from datadiff.tools import assert_equal
+from nose.tools import assert_not_equal
 from mock import patch
+from tg import config
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -41,18 +43,18 @@ class TestTrackerApiBase(TestRestApiBase):
         h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals
 
-    def create_ticket(self):
+    def create_ticket(self, summary=None, status=None):
         return self.api_post(
             '/rest/p/test/bugs/new',
             wrap_args='ticket_form',
             params=dict(
-                summary='test new ticket',
+                summary=summary or 'test new ticket',
                 status=self.tracker_globals.open_status_names.split()[0],
                 labels='',
                 description='',
                 assigned_to='',
-                **{'custom_fields._milestone': ''})
-        )
+                **{'custom_fields._milestone': ''}),
+            status=status)
 
 
 class TestRestNewTicket(TestTrackerApiBase):
@@ -80,6 +82,21 @@ class TestRestNewTicket(TestTrackerApiBase):
 
     def test_invalid_ticket(self):
         self.app.get('/rest/p/test/bugs/2', status=404)
+
+    def test_create_limit(self):
+        self.create_ticket(summary='First ticket')
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'forgetracker.rate_limits': '{}'}):
+            summary = 'Second ticket'
+            self.create_ticket(summary=summary)
+            t = TM.Ticket.query.get(summary=summary)
+            assert_not_equal(t, None)
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
+            summary = 'Third ticket'
+            self.create_ticket(summary=summary, status=429)
+            t = TM.Ticket.query.get(summary=summary)
+            assert_equal(t, None)
 
 
 class TestRestUpdateTicket(TestTrackerApiBase):

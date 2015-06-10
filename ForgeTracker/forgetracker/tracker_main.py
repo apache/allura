@@ -57,6 +57,7 @@ from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.plugin import ImportIdConverter
+from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as att
 from allura.controllers import BaseController
@@ -630,6 +631,13 @@ class RootController(BaseController, FeedController):
     def _check_security(self):
         require_access(c.app, 'read')
 
+    def rate_limit(self, redir='..'):
+        if TM.Ticket.is_limit_exceeded(c.app.config):
+            msg = 'Ticket creation rate limit exceeded. '
+            log.warn(msg + c.app.config.url())
+            flash(msg + 'Please try again later.', 'error')
+            redirect(redir)
+
     @expose('json:')
     def bin_counts(self, *args, **kw):
         bin_counts = []
@@ -865,6 +873,7 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
     def new(self, description=None, summary=None, labels=None, **kw):
         require_access(c.app, 'create')
+        self.rate_limit(redir='..')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew', '').strip()
         return dict(action=c.app.config.url() + 'save_ticket',
@@ -901,6 +910,7 @@ class RootController(BaseController, FeedController):
             require_access(ticket, 'update')
         else:
             require_access(c.app, 'create')
+            self.rate_limit(redir='.')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
@@ -1786,6 +1796,10 @@ class RootRestController(BaseController, AppRestControllerMixin):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require_access(c.app, 'create')
+        if TM.Ticket.is_limit_exceeded(c.app.config):
+            msg = 'Ticket creation rate limit exceeded. '
+            log.warn(msg + c.app.config.url())
+            raise forge_exc.HTTPTooManyRequests()
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         ticket = TM.Ticket.new()
