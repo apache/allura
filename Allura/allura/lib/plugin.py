@@ -44,7 +44,6 @@ import tg
 from tg import config, request, redirect, response
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
-from bson.tz_util import FixedOffset
 from paste.deploy.converters import asbool, asint
 
 from ming.utils import LazyProperty
@@ -696,18 +695,13 @@ class ProjectRegistrationProvider(object):
         """
         if security.has_access(neighborhood, 'admin', user=user)():
             return
-        # have to have the replace because, despite being UTC,
-        # the result from utcnow() is still offset-naive  :-(
-        # maybe look into making the mongo connection offset-naive?
-        now = datetime.utcnow().replace(tzinfo=FixedOffset(0, 'UTC'))
+        opt = 'project.rate_limits'
         project_count = len(list(user.my_projects()))
-        rate_limits = json.loads(config.get('project.rate_limits', '{}'))
-        for rate, count in rate_limits.items():
-            user_age = now - user._id.generation_time
-            user_age = (user_age.microseconds +
-                        (user_age.seconds + user_age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
-            if user_age < int(rate) and project_count >= count:
-                raise forge_exc.ProjectRatelimitError()
+        # have to have the replace because, the generation_time is offset-aware
+        # UTC and h.rate_limit uses offset-naive UTC dates
+        start_date = user._id.generation_time.replace(tzinfo=None)
+        e = forge_exc.ProjectRatelimitError
+        h.rate_limit(opt, project_count, start_date, exception=e)
 
     def phone_verified(self, user, neighborhood):
         """

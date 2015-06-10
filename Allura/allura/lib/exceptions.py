@@ -39,7 +39,11 @@ class ProjectOverlimitError(ForgeError):
     pass
 
 
-class ProjectRatelimitError(ForgeError):
+class RatelimitError(ForgeError):
+    pass
+
+
+class ProjectRatelimitError(RatelimitError):
     pass
 
 
