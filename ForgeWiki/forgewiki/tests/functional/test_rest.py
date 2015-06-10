@@ -19,13 +19,15 @@
 
 import json
 
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_equal, assert_in, assert_not_equal
 import simplejson
 import tg
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
+
+from forgewiki.model import Page
 
 
 class TestWikiApi(TestRestApiBase):
@@ -83,6 +85,22 @@ class TestWikiApi(TestRestApiBase):
         r = self.api_get(u'/rest/p/test/wiki/tést/'.encode('utf-8'))
         assert_equal(r.json['text'], data['text'])
         assert_equal(r.json['labels'], data['labels'].split(','))
+
+    def test_create_page_limit(self):
+        data = {
+            'text': 'Embrace the Dark Side',
+            'labels': 'head hunting,dark side'
+        }
+        # Set rate limit to unlimit
+        with h.push_config(tg.config, **{'forgewiki.rate_limits': '{}'}):
+            r = self.api_post(u'/rest/p/test/wiki/page1/', status=200, **data)
+            p = Page.query.get(title='page1')
+            assert_not_equal(p, None)
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(tg.config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
+            r = self.api_post(u'/rest/p/test/wiki/page2/', status=429, **data)
+            p = Page.query.get(title='page2')
+            assert_equal(p, None)
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     def test_json_encoding_security(self):

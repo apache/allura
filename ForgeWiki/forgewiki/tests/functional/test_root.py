@@ -20,11 +20,13 @@
 import os
 import StringIO
 import allura
+import json
 
 import PIL
-from nose.tools import assert_true, assert_equal, assert_in
+from nose.tools import assert_true, assert_equal, assert_in, assert_not_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
+from tg import config
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -770,3 +772,47 @@ class TestRootController(TestController):
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
         link = r.html.find('a', {'href': '/p/test/wiki/subscribe?subscribe=True'})
         assert link is not None
+
+    def test_rate_limit_new_page(self):
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'forgewiki.rate_limits': '{}'}):
+            r = self.app.get('/p/test/wiki/new-page-title/')
+            assert_equal(r.status_int, 302)
+            assert_equal(
+                r.location,
+                'http://localhost/p/test/wiki/new-page-title/edit')
+            assert_equal(self.webflash(r), '')
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
+            r = self.app.get('/p/test/wiki/new-page-title/')
+            assert_equal(r.status_int, 302)
+            assert_equal(r.location, 'http://localhost/p/test/wiki/')
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(
+                wf['message'],
+                'Page creation rate limit exceeded. Please try again later.')
+
+    def test_rate_limit_update(self):
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'forgewiki.rate_limits': '{}'}):
+            r = self.app.post(
+                '/p/test/wiki/page1/update',
+                dict(text='Some text', title='page1')).follow()
+            assert_in('Some text', r)
+            p = model.Page.query.get(title='page1')
+            assert_not_equal(p, None)
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
+            r = self.app.post(
+                '/p/test/wiki/page2/update',
+                dict(text='Some text', title='page2'))
+            assert_equal(r.status_int, 302)
+            assert_equal(r.location, 'http://localhost/p/test/wiki/')
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(
+                wf['message'],
+                'Page creation rate limit exceeded. Please try again later.')
+            p = model.Page.query.get(title='page2')
+            assert_equal(p, None)

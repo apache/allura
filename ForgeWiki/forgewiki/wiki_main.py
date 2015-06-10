@@ -37,6 +37,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController, Config
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
+from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
@@ -489,6 +490,14 @@ class PageController(BaseController, FeedController):
                 require_access(self.page, 'delete')
         else:
             require_access(c.app, 'create')
+            self.rate_limit()
+
+    def rate_limit(self):
+        if WM.Page.is_limit_exceeded(c.app.config):
+            msg = 'Page creation rate limit exceeded. '
+            log.warn(msg + c.app.config.url())
+            flash(msg + 'Please try again later.', 'error')
+            redirect('..')
 
     def fake_page(self):
         return dict(
@@ -803,6 +812,10 @@ class PageRestController(BaseController):
         with h.notifications_disabled(c.project):
             if not self.page:
                 require_access(c.app, 'create')
+                if WM.Page.is_limit_exceeded(c.app.config):
+                    log.warn('Page creation rate limit exceeded. %s',
+                             c.app.config.url())
+                    raise forge_exc.HTTPTooManyRequests()
                 self.page = WM.Page.upsert(title)
                 self.page.viewable_by = ['all']
             else:
