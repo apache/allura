@@ -321,15 +321,3 @@
     line-height: 16px;
     padding: 8px 10px;
 }
-
-textarea.tooltip {
-    position: relative;
-    display: block;
-    margin: 0px auto;
-}
-
-/*input.tooltip {*/
-    /*position: relative;*/
-    /*display: inline-block;*/
-    /*/!*margin: auto;*!/*/
-/*}*/

@@ -170,37 +170,16 @@
 {% endif %}
 <script>
     $(document).ready(function () {
-        var toolTip = $(".tooltip");
-
-        var tooltipDiv = toolTip.wrap( "<div class='tooltipster-div'></div>" );
-        console.log('tooltipDiv', tooltipDiv);
-        var input_field = $('.tooltipster-div').find('input');
-
-
-
-        var input_width = input_field.outerWidth();
-        var _innerWidth = input_width + (input_width * 0.05);
-
-        if (_innerWidth < input_width){
-                     $('.tooltipster-div').width(_innerWidth);
-
-        }
-
-
-        toolTip.tooltipster({
+        $(".tooltip").tooltipster({
             animation: 'fade',
             delay: 200,
             theme: 'tooltipster-light',
             trigger: 'hover',
-{#            icon: '?',#}
-{#            touchDevices: true,#}
-{#            iconDesktop: true,#}
             position: 'right',
             iconCloning: false,
             maxWidth: 300
-    });
+        });
     })
-
 </script>
 </body>
 </html>
