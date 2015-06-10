@@ -1226,3 +1226,20 @@ def get_user_status(user):
         return 'disabled'
     elif pending:
         return 'pending'
+
+
+def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
+    """
+    Check the various config-defined artifact creation rate limits, and if any
+    are exceeded, raise exception.
+    """
+    if exception is None:
+        exception = exc.RatelimitError
+    rate_limits = json.loads(tg.config.get(cfg_opt, '{}'))
+    now = datetime.utcnow()
+    for rate, count in rate_limits.items():
+        age = now - start_date
+        age = (age.microseconds +
+                (age.seconds + age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+        if age < int(rate) and artifact_count >= count:
+            raise exception()
