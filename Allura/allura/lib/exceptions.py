@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import webob
 from formencode import Invalid
 
 
@@ -99,3 +100,9 @@ class CompoundError(ForgeError):
                 parts.append('    ' + line)
         parts.append('</%s>\n' % self.__class__.__name__)
         return ''.join(parts)
+
+
+class HTTPTooManyRequests(webob.exc.HTTPClientError):
+    code = 429
+    title = 'Too Many Requests'
+    explanation = 'Too Many Requests'

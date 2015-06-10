@@ -28,11 +28,20 @@ import mock
 
 import PIL
 from mock import patch
-from nose.tools import assert_true, assert_false, assert_equal, assert_in
-from nose.tools import assert_raises, assert_not_in, assert_items_equal
+from nose.tools import (
+    assert_true,
+    assert_false,
+    assert_equal,
+    assert_in,
+    assert_raises,
+    assert_not_in,
+    assert_items_equal,
+    assert_not_equal,
+)
 from formencode.variabledecode import variable_encode
 from pylons import tmpl_context as c
 from pylons import app_globals as g
+from tg import config
 
 from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
@@ -2362,6 +2371,48 @@ class TestFunctionalController(TrackerTestController):
         assert '<option value="open">open (2)</option>' in r
         assert query_filter_choices.call_count == 1
         assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed'
+
+    def test_rate_limit_new(self):
+        self.new_ticket(summary='First ticket')
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'forgetracker.rate_limits': '{}'}):
+            r = self.app.get('/bugs/new/')
+            assert_equal(r.status_int, 200)
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
+            r = self.app.get('/bugs/new/')
+            assert_equal(r.status_int, 302)
+            assert_equal(r.location, 'http://localhost/bugs/')
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(
+                wf['message'],
+                'Ticket creation rate limit exceeded. Please try again later.')
+
+    def test_rate_limit_save_ticket(self):
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'forgetracker.rate_limits': '{}'}):
+            summary = 'Ticket w/o limit'
+            post_data = {'ticket_form.summary': summary}
+            r = self.app.post('/bugs/save_ticket', post_data).follow()
+            assert_in(summary, r)
+            t = tm.Ticket.query.get(summary=summary)
+            assert_not_equal(t, None)
+        # Set rate limit to 1 in first hour of project
+        with h.push_config(config, **{'forgetracker.rate_limits': '{"3600": 1}'}):
+            summary = 'Ticket with limit'
+            post_data = {'ticket_form.summary': summary}
+            r = self.app.post('/bugs/save_ticket', post_data)
+            assert_equal(r.status_int, 302)
+            assert_equal(r.location, 'http://localhost/bugs/')
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(
+                wf['message'],
+                'Ticket creation rate limit exceeded. Please try again later.')
+            assert_not_in(summary, r.follow())
+            t = tm.Ticket.query.get(summary=summary)
+            assert_equal(t, None)
 
 
 class TestMilestoneAdmin(TrackerTestController):
