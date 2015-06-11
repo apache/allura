@@ -155,6 +155,11 @@ class ScreenshotAdmin(ff.ForgeForm):
         return fields
 
 
+class FeaturesField(ew.CompoundField):
+    template = 'jinja:allura.ext.admin:templates/admin_widgets/features_field.html'
+    fields = [ew.TextField(name='feature', show_label=False)]
+
+
 class MetadataAdmin(ff.AdminForm):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/metadata_admin.html'
     defaults = dict(
@@ -180,6 +185,19 @@ class MetadataAdmin(ff.AdminForm):
                                             fev.UnicodeString(max=1000),
                                             V.MaxBytesValidator(max=1000)),
                                         attrs=dict(title="Add a few paragraphs describing your project to new users."))
+        # Apparently, child field must be CompoundField with custom template
+        # for SortableRepeatedField to work properly, that's why FeaturesField
+        # is not just ew.TextField
+        features = ffw.SortableRepeatedField(
+            label='Features',
+            empty_msg='No features yet',
+            nonempty_msg='Drag and drop features to reorder. '
+                         'Leave empty to delete a feature.',
+            button=ew.InputField(
+                css_class='add',
+                field_type='button',
+                value='Add feature'),
+            field=FeaturesField())
         icon = ew.FileField(label='Icon')
         external_homepage = ew.InputField(field_type="text", label='Homepage',
                                           validator=fev.URL(add_http=True))

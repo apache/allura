@@ -241,6 +241,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     trove_environment = FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project = FieldProperty(bool, if_missing=False)
+    features = FieldProperty([str])
 
     # transient properties
     notifications_disabled = False
