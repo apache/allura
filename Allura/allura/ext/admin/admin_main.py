@@ -222,6 +222,10 @@ class ProjectAdminController(BaseController):
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.metadata_admin = W.metadata_admin
+        # need this because features field expects data in specific format
+        metadata_admin_value = h.fixed_attrs_proxy(
+            c.project,
+            features=[{'feature': f} for f in c.project.features])
         c.explain_export_modal = W.explain_export_modal
         show_export_control = asbool(config.get('show_export_control', False))
         allow_project_delete = asbool(config.get('allow_project_delete', True))
@@ -236,6 +240,7 @@ class ProjectAdminController(BaseController):
                 'please contact <a href="mailto:{contact}">{contact}</a>.'.format(contact=config['us_export_contact'])
         return dict(show_export_control=show_export_control,
                     allow_project_delete=allow_project_delete,
+                    metadata_admin_value=metadata_admin_value,
                     explain_export_text=explain_export_text)
 
     @without_trailing_slash
@@ -354,6 +359,7 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     @validate(W.metadata_admin, error_handler=overview)
+    @h.vardec
     def update(self, name=None,
                short_description=None,
                summary='',
@@ -370,6 +376,7 @@ class ProjectAdminController(BaseController):
                export_controlled=False,
                export_control_type=None,
                tracking_id='',
+               features=None,
                **kw):
         require_access(c.project, 'update')
 
@@ -470,6 +477,12 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project tracking ID').info('')
             M.AuditLog.log('change project tracking ID to %s', tracking_id)
             c.project.tracking_id = tracking_id
+        features = [f['feature'].strip() for f in features or []
+                    if f.get('feature', '').strip()]
+        if features != c.project.features:
+            h.log_action(log, 'change project features').info('')
+            M.AuditLog.log('change project features to %s', features)
+            c.project.features = features
 
         if icon is not None and icon != '':
             if c.project.icon:

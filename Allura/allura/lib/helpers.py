@@ -526,6 +526,18 @@ class proxy(object):
         return self._obj(*args, **kwargs)
 
 
+class fixed_attrs_proxy(proxy):
+    """
+    On attribute lookup, if keyword parameter matching attribute name was
+    provided during object construction, returns it's value. Otherwise proxies
+    to obj.
+    """
+    def __init__(self, obj, **kw):
+        self._obj = obj
+        for k, v in kw.iteritems():
+            setattr(self, k, v)
+
+
 def render_genshi_plaintext(template_name, **template_vars):
     assert os.path.exists(template_name)
     fd = open(template_name)

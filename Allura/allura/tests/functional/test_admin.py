@@ -161,6 +161,22 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/audit/')
         assert "uninstall tool test-tool" in r.body, r.body
 
+    def test_features(self):
+        proj = M.Project.query.get(shortname='test')
+        assert_equals(proj.features, [])
+        with audits(u"change project features to \[u'One', u'Two'\]"):
+            self.app.post('/admin/update', params={
+                'features-0.feature': 'One',
+                'features-1.feature': '  ',
+                'features-2.feature': ' Two '})
+        r = self.app.get('/admin/overview')
+        features = r.html.find('fieldset').findAll('input', {'type': 'text'})
+        assert_equals(len(features), 2+1)  # two features + extra empty input
+        assert_equals(features[0]['value'], u'One')
+        assert_equals(features[1]['value'], u'Two')
+        proj = M.Project.query.get(shortname='test')
+        assert_equals(proj.features, [u'One', u'Two'])
+
     def test_admin_export_control(self):
         self.app.get('/admin/')
         with audits('change project export controlled status to True'):
