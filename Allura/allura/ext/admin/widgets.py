@@ -196,6 +196,7 @@ class MetadataAdmin(ff.AdminForm):
             empty_msg='No features yet',
             nonempty_msg='Drag and drop features to reorder. '
                          'Leave empty to delete a feature.',
+            append_to='bottom',
             button=ew.InputField(
                 css_class='add',
                 field_type='button',

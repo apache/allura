@@ -25,6 +25,7 @@
         flist_cls:'sortable-field-list',
         stub_cls:'sortable-field-stub',
         msg_cls:'sortable-field-message',
+        append_to:'top',  // append new field to top by default. Also supports 'bottom'
     };
 
     $.fn.SortableRepeatedField = function(options) {
@@ -116,7 +117,11 @@
                         .replace(tpl_name, self.fld_name() + '-0'));
                 });
             $new_field.find('.hasDatepicker').removeClass('hasDatepicker');
-            self.data.$flist.prepend($new_field);
+            if (self.opts.append_to == 'top') {
+                self.data.$flist.prepend($new_field);
+            } else {
+                self.data.$flist.append($new_field);
+            }
             _renumberFields();
             _manageMessages();
             // Trigger event reattachment, etc.
