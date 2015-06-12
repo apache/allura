@@ -62,6 +62,7 @@ mongo:
     - "27017"
   volumes:
     - /allura-data/mongo:/data/db
+  command: mongod --smallfiles
 
 outmail:
   image: allura_web
