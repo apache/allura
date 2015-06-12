@@ -18,15 +18,10 @@
 -#}
 
 <div class="{{css_class}}">
-  {% for f in widget.fields %}
-    {% set ctx=widget.context_for(f) %}
-    <div data-name="{{f.name}}">
-      {% if f.show_label %}
-        <div class="grid-4"><label>{{f.label}}:</label></div>
-        <div class="grid-14">{{f.display(**ctx)}}</div>
-      {% else %}
-        <div>{{f.display(**ctx)}}</div>
-      {% endif %}
-    </div>
-  {% endfor %}
+  {% set f = widget.fields[0] %}
+  {% set ctx = widget.context_for(f) %}
+  <div data-name="{{f.name}}">
+    <span class="ui-icon ui-icon-arrowthick-2-n-s" style="display:inline-block;"></span>
+    {{f.display(**ctx)}}
+  </div>
 </div>

@@ -157,7 +157,10 @@ class ScreenshotAdmin(ff.ForgeForm):
 
 class FeaturesField(ew.CompoundField):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/features_field.html'
-    fields = [ew.TextField(name='feature', show_label=False)]
+    fields = [ew.TextField(name='feature', attrs={'style': 'width:89%'})]
+
+    def resources(self):
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.8.4.custom.css')
 
 
 class MetadataAdmin(ff.AdminForm):
