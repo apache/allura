@@ -412,6 +412,7 @@ class SortableRepeatedMixin(JQueryMixin):
         'flist_cls',
         'stub_cls',
         'msg_cls',
+        'append_to',
     ]
     defaults = dict(
         container_cls='sortable-repeated-field',
@@ -419,6 +420,7 @@ class SortableRepeatedMixin(JQueryMixin):
         flist_cls='sortable-field-list',
         stub_cls='sortable-field-stub',
         msg_cls='sortable-field-message',
+        append_to='top',
         empty_msg='No fields have been defined',
         nonempty_msg='Drag and drop the fields to reorder',
         repetitions=0)
