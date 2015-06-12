@@ -17,9 +17,9 @@
     under the License.
 -->
 
-# Sandbox Creation
+# Step-by-Step Installation
 
-For a faster setup with a pre-packaged machine image, see [Install and Run Allura - Vagrant](https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/) instead.
+For a simpler setup using Docker images, see INSTALL-Docker.markdown instead.
 
 In these instructions, we'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
