@@ -42,7 +42,7 @@
 {% block actions %}
   {% if not page['deleted'] %}
     {% if c.user and c.user != c.user.anonymous() %}
-      <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}" title="Edit"></b></a>
+      <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}" title="Edit"></b>&nbsp;Edit</a>
     {% endif %}
     <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}" title="History"></b></a>
   {% elif h.has_access(page, 'delete')() %}
@@ -108,8 +108,12 @@
   <hr style="margin-top: 1em; margin-bottom: 2em; clear:both;">
   {{lib.related_artifacts(page)}}
   {% if page.discussion_thread and c.app.show_discussion %}
-    {% set thread = page.discussion_thread %}
-    <div>{{c.thread.display(value=thread,page=pagenum,limit=limit,count=count)}}</div>
+      {% if h.has_access(page, 'edit')() or page.discussion_thread.num_replies > 0 %}
+          <div id="discussion_holder"><h2>Discussion</h2>
+          {% set thread = page.discussion_thread %}
+          <div>{{ c.thread.display(value=thread,page=pagenum,limit=limit,count=count) }}</div>
+          </div>
+      {% endif %}
   {% endif %}
   {{c.confirmation.display(content='')}}
 
