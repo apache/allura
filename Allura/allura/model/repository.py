@@ -56,7 +56,8 @@ from .timeline import ActivityObject
 from .monq_model import MonQTask
 from .project import AppConfig
 from .session import main_doc_session
-from .session import repository_orm_session
+from .session import repository_orm_session, artifact_orm_session
+
 
 log = logging.getLogger(__name__)
 config = utils.ConfigProxy(
@@ -831,6 +832,9 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         if self.app.config.options.get('merge_disabled'):
             return False
+
+        _session = artifact_orm_session._get()
+        _session.skip_mod_date = True
         return True
 
     def can_merge_cache_key(self):
