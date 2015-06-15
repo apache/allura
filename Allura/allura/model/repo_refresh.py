@@ -124,6 +124,15 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             if (i + 1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i + 1), ci._id)
 
+    # Clear any existing caches for branches/tags
+    if repo.cached_branches:
+        repo.cached_branches = []
+        session(repo).flush()
+
+    if repo.cached_tags:
+        repo.cached_tags = []
+        session(repo).flush()
+
     if not all_commits and not new_clone:
         for commit in commit_ids:
             new = repo.commit(commit)
