@@ -1,3 +1,82 @@
+Version 1.3.0  (June 2015)
+
+Upgrade Instructions
+
+ * Run: cd Allura; paster script development.ini allura/scripts/trim_emails.py
+
+New Features
+
+ Webhooks:
+ * [#4542] Implement webhooks
+ * [#7832] APIs to manage webhooks
+ * [#7829] Webhooks documentation
+ Merge requests:
+ * [#7830] One-click merge
+ * [#7865] Config options to disable one-click merge requests
+ * [#7866] Run can_merge in background, and cache results
+ * [#7882] Option to use a tmp dir for git ops on merge request view
+ * [#7872] Show markdown preview/help buttons for merge requests
+ Phone verification:
+ * [#7868] Phone verification system
+ * [#7881] Clean up phone numbers before using them
+ * [#7887] Better messaging for phone validation
+ Other:
+ * [#7806] Create a docker image for Allura
+ * [#7886] Config options to limit ticket & wiki page creation
+ * [#7840] Support Authorization header for OAuth
+ * [#7633] API for has_access
+ * [#6057] Adding an external link should be one step, not two
+ * [#7850] Ability to close discussion on a ticket
+ * [#6107] Disable email posting for the forum? [ss3579]
+
+Security
+
+ * [#7786] Invalidate pwd reset tokens after email change
+ * [#7893] CSRF checks don't work on login
+
+Bug Fixes & Minor Improvements
+
+ Tickets:
+ * [#6017] Should show attachment changelog when ticket gains an attachment
+ * [#5467] Create Issue Button Should Always Appear (Only possibly refer to an explanation for why it was disabled).
+ * [#7834] Bug: viewing a ticket updates its 'updated' date
+ * [#7874] UnicodeEncodeError on ticket attachment diff
+ Code Repositories:
+ * [#7837] Use repo directly instead of DiffInfoDoc
+ * [#7843] Handle quotes in filenames on commit view
+ * [#7857] Retry svnsync repo clone failures
+ * [#7825] Update "new commits" email template
+ * [#7836] Merge request shows 0 commits, if upstream has new commits
+ Wiki:
+ * [#7841] wiki code to not show delete authors.
+ User Profile:
+ * [#7072] User can't access personal subscriptions page [ss6565]
+ * [#7833] Trim emails before saving them to mongo NEEDS SCRIPT
+ Tools Configuration:
+ * [#7817] Replace "mount point" field with URL field, on tool creation forms
+ * [#7820] Validate URLs when configuring external link tool
+ Importers:
+ * [#7864] Error on google code import with paginated comments
+ * [#7854] Decode html entities in importers; and make taskd easier to debug
+ Activity Stream:
+ * [#7823] Commit activity is assigned to wrong person
+ * [#7082] Filter deleted, unmoderated, or spam artifacts from Activity Stream
+ * [#7888] has_activity_access/deleted error
+ Administration:
+ * [#7892] script/task to disable list users
+ For Developers:
+ * [#7827] Upgrade jQuery to latest version
+ * [#7835] Update theme for the documentation.
+ * [#7855] Upgrade docutils, Pygments and Babel, so docs can be built easily
+ * [#7869] During tests, apply patches only once
+ * [#7870] Clean up .ini files
+ Other:
+ * [#1731] Cannot delete a post, after deleting its parent
+ * [#7852] Don't update mod time when viewing artifact creates a cache
+ * [#7856] Error looking up user by email address when email is invalid
+ * [#7876] projects macro display_mode=list is missing CSS
+
+
 Version 1.2.1  (February 2015)
 
 Bug Fixes & Minor Improvements
