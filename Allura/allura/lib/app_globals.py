@@ -70,8 +70,8 @@ log = logging.getLogger(__name__)
 
 class ForgeMarkdown(markdown.Markdown):
 
-    def convert(self, source):
-        if len(source) > asint(config.get('markdown_render_max_length', 40000)):
+    def convert(self, source, render_limit=True):
+        if render_limit and len(source) > asint(config.get('markdown_render_max_length', 40000)):
             # if text is too big, markdown can take a long time to process it,
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
@@ -113,7 +113,7 @@ class ForgeMarkdown(markdown.Markdown):
 
         # Convert the markdown and time the result.
         start = time.time()
-        html = self.convert(source_text)
+        html = self.convert(source_text, render_limit=False)
         render_time = time.time() - start
 
         threshold = config.get('markdown_cache_threshold')
