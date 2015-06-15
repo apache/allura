@@ -532,31 +532,45 @@ class GitImplementation(M.RepositoryImplementation):
         except KeyError:
             return False
 
-    @LazyProperty
-    def _is_valid(self):
-        """ Verifies the validity of the reference objects in the git database
-
-        Returns True if no issues are found. This allows us to bypass the individual testing of each ref
-        unless absolutely necessary.
-
-        :rtype: bool
-        """
-        try:
-            self._git.git.fsck(full=True)
-            return True
-        except git.GitCommandError as gce:
-            log.debug(u"Found inconsistency in {}: {}".format(self._repo.name, gce.stderr))
-            return False
-
-    def _get_refs(self, ref_list):
-        """ Returns a list of valid reference objects from the git database
+    def _get_refs(self, field_name):
+        """ Returns a list of valid reference objects (branches or tags) from the git database
 
         :return: List of git ref objects.
         :rtype: list
         """
-        if self._is_valid:
-            return [Object(name=ref.name, object_id=ref.commit.hexsha) for ref in ref_list]
-        return [Object(name=ref.name, object_id=ref.commit.hexsha) for ref in ref_list if ref.is_valid()]
+
+        cache_name = 'cached_' + field_name
+        cache = getattr(self._repo, cache_name, None)
+
+        if cache:
+            return cache
+
+        ref_list = getattr(self._git, field_name)
+
+        refs = []
+        start_time = time()
+        for ref in ref_list:
+            try:
+                hex_sha = ref.commit.hexsha
+            except ValueError:
+                log.debug(u"Found invalid sha: {}".format(ref))
+                continue
+            refs.append(Object(name=ref.name, object_id=hex_sha))
+        time_taken = time() - start_time
+
+        threshold = tg.config.get('repo_refs_cache_threshold')
+        try:
+            threshold = float(threshold) if threshold else None
+        except ValueError:
+            threshold = None
+            log.warn('Skipping reference caching - The value for config param '
+                     '"repo_refs_cache_threshold" must be a float.')
+
+        if threshold is not None and time_taken > threshold:
+            setattr(self._repo, cache_name, refs)
+            session(self._repo).flush(self._repo)
+
+        return refs
 
     @LazyProperty
     def head(self):
@@ -573,17 +587,18 @@ class GitImplementation(M.RepositoryImplementation):
                 return None  # no valid heads
         return self._git.head.commit.hexsha
 
-    @LazyProperty
+    @property
     def heads(self):
-        return self._get_refs(self._git.heads)
+        """ In git, heads are just branches """
+        return self.branches
 
     @LazyProperty
     def branches(self):
-        return self._get_refs(self._git.branches)
+        return self._get_refs('branches')
 
     @LazyProperty
     def tags(self):
-        return self._get_refs(self._git.tags)
+        return self._get_refs('tags')
 
     def set_default_branch(self, name):
         if not name:
