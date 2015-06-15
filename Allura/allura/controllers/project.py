@@ -642,7 +642,12 @@ class NeighborhoodAdminController(object):
     @require_post()
     @validate(W.neighborhood_overview_form, error_handler=overview)
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
-        nbhd = self.neighborhood
+        # We need to get neighborhood from Mongo to populate Ming's session. If
+        # neighborhood object is coming from cache (i.e.
+        # neighborhood.cache.duration is set), then it will be absent in Ming's
+        # session for current thread, thus all changes will not be flushed to
+        # disk. See #7890 for details.
+        nbhd = M.Neighborhood.query.get(_id=self.neighborhood._id)
         c.project = nbhd.neighborhood_project
         h.log_if_changed(nbhd, 'name', name,
                          'change neighborhood name to %s' % name)
