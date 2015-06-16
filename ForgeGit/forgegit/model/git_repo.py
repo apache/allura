@@ -545,10 +545,9 @@ class GitImplementation(M.RepositoryImplementation):
         if cache:
             return cache
 
-        ref_list = getattr(self._git, field_name)
-
         refs = []
         start_time = time()
+        ref_list = getattr(self._git, field_name)
         for ref in ref_list:
             try:
                 hex_sha = ref.commit.hexsha
@@ -587,10 +586,9 @@ class GitImplementation(M.RepositoryImplementation):
                 return None  # no valid heads
         return self._git.head.commit.hexsha
 
-    @property
+    @LazyProperty
     def heads(self):
-        """ In git, heads are just branches """
-        return self.branches
+        return self._get_refs('heads')
 
     @LazyProperty
     def branches(self):

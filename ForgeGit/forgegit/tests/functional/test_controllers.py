@@ -390,10 +390,7 @@ class TestRootController(_TestCase):
 
     def test_default_branch(self):
         assert_equal(c.app.default_branch_name, 'master')
-        vv = c.app.repo.set_default_branch('zz')
-        print('-' * 10)
-        print(vv)
-        print('-' * 10)
+        c.app.repo.set_default_branch('zz')
         assert_equal(c.app.default_branch_name, 'zz')
         c.app.repo.set_default_branch('master')
         assert_equal(c.app.default_branch_name, 'master')

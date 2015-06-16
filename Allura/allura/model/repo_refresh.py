@@ -132,6 +132,10 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     if repo.cached_tags:
         repo.cached_tags = []
         session(repo).flush()
+    # The first view can be expensive to cache,
+    # so we want to do it here instead of on the first view.
+    repo.get_branches()
+    repo.get_tags()
 
     if not all_commits and not new_clone:
         for commit in commit_ids:
