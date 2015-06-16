@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-FROM ubuntu:12.04
+FROM ubuntu:14.04
 
 RUN apt-get update && apt-get install -y \
     default-jre-headless \
