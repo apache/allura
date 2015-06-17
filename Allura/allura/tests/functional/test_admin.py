@@ -170,8 +170,10 @@ class TestProjectAdmin(TestController):
                 'features-1.feature': '  ',
                 'features-2.feature': ' Two '})
         r = self.app.get('/admin/overview')
-        features = r.html.find('fieldset').findAll('input', {'type': 'text'})
-        assert_equals(len(features), 2+1)  # two features + extra empty input
+        features = r.html.find('div', {'id': 'features'})
+        features = features.findAll('input', {'type': 'text'})
+        # two features + extra empty input + stub hidden input for js
+        assert_equals(len(features), 2+1+1)
         assert_equals(features[0]['value'], u'One')
         assert_equals(features[1]['value'], u'Two')
         proj = M.Project.query.get(shortname='test')
