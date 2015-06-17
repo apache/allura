@@ -20,18 +20,22 @@
      xmlns:py="http://genshi.edgewall.org/"
      class="$container_cls"
      py:attrs="{'data-name':name}">
-  <div><p
+   <div><py:if test="show_msg"><p
           class="$msg_cls"
           data-empty-message="$empty_msg"
           data-nonempty-message="$nonempty_msg"
-          /></div>
-  ${widget.button.display()}
+          /></py:if></div>
+  <py:if test="show_button">${widget.button.display()}</py:if>
   <br style="clear:both"/>
   <div class="$flist_cls">
     <py:for each="i in xrange(repetitions)"
             py:with="ctx=widget.context_for(i)">
       ${widget.field.display(css_class=field_cls, **ctx)}
     </py:for>
+    <py:if test="extra_field_on_focus_name"
+           py:with="ctx=widget.context_for(repetitions)">
+      ${widget.field.display(css_class=field_cls, **ctx)}
+    </py:if>
     ${widget.field.display(name=name+'#', css_class=stub_cls)}
   </div>
 </div>

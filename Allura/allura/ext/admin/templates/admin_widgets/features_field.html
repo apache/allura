@@ -21,7 +21,7 @@
   {% set f = widget.fields[0] %}
   {% set ctx = widget.context_for(f) %}
   <div data-name="{{f.name}}">
-    <span class="ui-icon ui-icon-arrowthick-2-n-s" style="display:inline-block;"></span>
+    <span class="ui-icon ui-icon-arrowthick-2-n-s" style="display:inline-block;cursor:move;"></span>
     {{f.display(**ctx)}}
   </div>
 </div>

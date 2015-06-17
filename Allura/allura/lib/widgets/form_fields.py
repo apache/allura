@@ -413,6 +413,7 @@ class SortableRepeatedMixin(JQueryMixin):
         'stub_cls',
         'msg_cls',
         'append_to',
+        'extra_field_on_focus_name',
     ]
     defaults = dict(
         container_cls='sortable-repeated-field',
@@ -423,7 +424,11 @@ class SortableRepeatedMixin(JQueryMixin):
         append_to='top',
         empty_msg='No fields have been defined',
         nonempty_msg='Drag and drop the fields to reorder',
+        show_msg=True,
+        show_button=True,
+        extra_field_on_focus_name=None,
         repetitions=0)
+
     button = ew.InputField(
         css_class='add', field_type='button', value='New Field')
 

@@ -26,6 +26,7 @@
         stub_cls:'sortable-field-stub',
         msg_cls:'sortable-field-message',
         append_to:'top',  // append new field to top by default. Also supports 'bottom'
+        extra_field_on_focus_name:null,
     };
 
     $.fn.SortableRepeatedField = function(options) {
@@ -85,6 +86,11 @@
                 self.data.$delete_buttons.one('click', _deleteField);
                 self.data.$flist.sortable({stop:_renumberFields});
                 self.data.$stub.hide();
+                if (self.opts.extra_field_on_focus_name) {
+                  self.data.$flist.find('.' + self.opts.field_cls)
+                      .find('input[name$=' + self.opts.extra_field_on_focus_name + ']')
+                      .off('focus').last().on('focus', _addExtraField);
+                }
                 _manageMessages();
             },
             fld_name: function() {
@@ -158,6 +164,10 @@
                             .replace(regex, prefix + index));
                     });
             });
+        }
+        function _addExtraField() {
+          $(this).off('focus');
+          _addField();
         }
     };
 }(jQuery));

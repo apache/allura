@@ -193,14 +193,10 @@ class MetadataAdmin(ff.AdminForm):
         # is not just ew.TextField
         features = ffw.SortableRepeatedField(
             label='Features',
-            empty_msg='No features yet',
-            nonempty_msg='Drag and drop features to reorder. '
-                         'Leave empty to delete a feature.',
+            show_msg=False,
+            show_button=False,
             append_to='bottom',
-            button=ew.InputField(
-                css_class='add',
-                field_type='button',
-                value='Add feature'),
+            extra_field_on_focus_name='feature',
             field=FeaturesField())
         icon = ew.FileField(label='Icon')
         external_homepage = ew.InputField(field_type="text", label='Homepage',

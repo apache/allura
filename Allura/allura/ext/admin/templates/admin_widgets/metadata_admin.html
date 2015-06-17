@@ -49,10 +49,11 @@
 
     <div style="clear:both">&nbsp;</div>
 
-    <fieldset class="preferences" id="features">
-      <legend>{{ widget.display_label(widget.fields.features) }}</legend>
+    <div id="features">
+      {{ widget.display_label(widget.fields.features) }}
       {{ widget.display_field(widget.fields.features) }}
-    </fieldset>
+    </div>
+    <br>
 
     {% if tg.config.get('support_tool_choices') %}
     Preferred Support Page (for users of your project):<br>
