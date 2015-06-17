@@ -19,7 +19,9 @@
 <div xmlns="http://www.w3.org/1999/xhtml"
      xmlns:py="http://genshi.edgewall.org/"
      class="$container_cls"
+     style="overflow:auto;"
      py:attrs="{'data-name':name}">
+   <!-- We need "overflow:auto" for sortable.js to properly work in Firefox http://stackoverflow.com/a/3393282/4640690 -->
    <div><py:if test="show_msg"><p
           class="$msg_cls"
           data-empty-message="$empty_msg"
