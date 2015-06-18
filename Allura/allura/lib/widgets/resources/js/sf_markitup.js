@@ -23,6 +23,9 @@ $(window).load(function() {
         $('div.markdown_edit').each(function(){
             var $container = $(this);
             var $textarea = $('textarea', $container);
+            new Editor({
+              element: $textarea[0]
+            }).render();
             $textarea.tabby({tabString : "    "});
             var $preview = $('a.markdown_preview', $container);
             var $edit = $('a.markdown_edit', $container);

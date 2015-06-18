@@ -275,6 +275,9 @@ class MarkdownEdit(AutoResizeTextarea):
         yield ew.JSLink('js/jquery.textarea.js')
         yield ew.JSLink('js/sf_markitup.js')
         yield ew.CSSLink('css/markitup_sf.css')
+        yield ew.CSSLink('css/markdown_editor/editor.css')
+        yield ew.JSLink('js/markdown_editor/editor.js')
+        yield ew.JSLink('js/markdown_editor/marked.js')
 
 
 class PageList(ew_core.Widget):
