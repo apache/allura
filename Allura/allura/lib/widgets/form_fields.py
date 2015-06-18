@@ -256,11 +256,11 @@ class AutoResizeTextarea(ew.TextArea):
         ''')
 
 
-class MarkdownEdit(AutoResizeTextarea):
+class MarkdownEdit(ew.TextArea):
     template = 'jinja:allura:templates/widgets/markdown_edit.html'
     validator = fev.UnicodeString()
     defaults = dict(
-        AutoResizeTextarea.defaults,
+        ew.TextArea.defaults,
         name=None,
         value=None,
         show_label=True)
@@ -271,13 +271,10 @@ class MarkdownEdit(AutoResizeTextarea):
     def resources(self):
         for r in super(MarkdownEdit, self).resources():
             yield r
-        yield ew.JSLink('js/jquery.lightbox_me.js')
-        yield ew.JSLink('js/jquery.textarea.js')
-        yield ew.JSLink('js/sf_markitup.js')
-        yield ew.CSSLink('css/markitup_sf.css')
         yield ew.CSSLink('css/markdown_editor/editor.css')
         yield ew.JSLink('js/markdown_editor/editor.js')
         yield ew.JSLink('js/markdown_editor/marked.js')
+        yield ew.JSLink('js/sf_markitup.js')
 
 
 class PageList(ew_core.Widget):

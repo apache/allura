@@ -22,7 +22,6 @@ Allura/allura/lib/widgets/resources/js/jqfontselector.js
 Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
 Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
 Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
-Allura/allura/lib/widgets/resources/js/jquery.textarea.js
 Allura/allura/public/nf/js/jquery.flot.js
 Allura/allura/public/nf/js/jquery.maxlength.min.js
 Allura/allura/public/nf/js/jquery.tablesorter.js
