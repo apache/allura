@@ -271,6 +271,7 @@ class MarkdownEdit(ew.TextArea):
     def resources(self):
         for r in super(MarkdownEdit, self).resources():
             yield r
+        yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.CSSLink('css/markdown_editor/editor.css')
         yield ew.JSLink('js/markdown_editor/editor.js')
         yield ew.JSLink('js/markdown_editor/marked.js')
