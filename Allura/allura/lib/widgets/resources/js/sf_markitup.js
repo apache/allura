@@ -27,16 +27,31 @@ $(window).load(function() {
             var $help_area = $('div.markdown_help', $container);
             var $help_contents = $('div.markdown_help_contents', $container);
 
-            var toolbar = Editor.toolbar;
-            toolbar[11] = {name: 'info', action: show_help};
-            toolbar[12] = {name: 'preview', action: show_preview};
-            var editor = new Editor({
+            var toolbar = [];
+            // Exclude "code" tool from toolbar, since it's syntax not matching Allura's
+            // Override actions for "info" & "preview" tools
+            for (var i in Editor.toolbar) {
+              var tool = Editor.toolbar[i];
+              if (tool !== null && typeof tool === 'object') {
+                switch(tool.name) {
+                  case 'code':
+                    continue;
+                  case 'info':
+                    tool = {name: 'info', action: show_help};
+                    break;
+                  case 'preview':
+                    tool = {name: 'preview', action: show_preview};
+                    break;
+                }
+              }
+              toolbar.push(tool);
+            }
+            new Editor({
               element: $textarea[0],
               toolbar: toolbar
-            });
-            editor.render();
+            }).render();
 
-            function show_help() {
+            function show_help(editor) {
               $help_contents.html('Loading...');
               $.get($help_contents.attr('data-url'), function (data) {
                 $help_contents.html(data);
@@ -56,7 +71,7 @@ $(window).load(function() {
               $help_area.lightbox_me();
             }
 
-            function show_preview() {
+            function show_preview(editor) {
               /*
                * This is pretty much the same as original Editor.togglePreview,
                * but rendered text is fetched from the server.
