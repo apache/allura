@@ -347,13 +347,16 @@ class Post(HierWidget):
                     });
                 });
 
+                function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }
+
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function (ele) {
                         $('.display_post', post).hide();
-                        $('.edit_post_form', post).show();
-                        // Calling jQuery's ".focus()" forces browser to reload page
-                        // while using IE11 with sourceforge theme
-                        $('.edit_post_form textarea', post)[0].focus();
+                        var $edit_post_form = $('.edit_post_form', post);
+                        var cm = get_cm($edit_post_form);
+                        $edit_post_form.show();
+                        cm.refresh();
+                        cm.focus();
                         return false;
                     });
                     $("a.cancel_edit_post", post).click(function(evt){
@@ -363,10 +366,10 @@ class Post(HierWidget):
                 }
                 if($('.reply_post', post)){
                     $('.reply_post', post).click(function (ele) {
-                        $('.reply_post_form', post).show();
-                        // Calling jQuery's ".focus()" forces browser to reload page
-                        // while using IE11 with sourceforge theme
-                        $('.reply_post_form textarea', post)[0].focus();
+                        var $reply_post_form = $('.reply_post_form', post);
+                        var cm = get_cm($reply_post_form);
+                        $reply_post_form.show();
+                        cm.focus();
                         return false;
                     });
                     $('.reply_post', post).button();
