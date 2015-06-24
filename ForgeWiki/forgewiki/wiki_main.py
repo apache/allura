@@ -464,6 +464,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         return dict(example=MARKDOWN_EXAMPLE)
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         if subscribe:
@@ -735,6 +736,7 @@ class PageController(BaseController, FeedController):
         redirect(request.referer)
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if not self.page:

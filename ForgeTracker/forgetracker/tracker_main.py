@@ -1091,6 +1091,7 @@ class RootController(BaseController, FeedController):
         )
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         if subscribe:
@@ -1520,6 +1521,7 @@ class TicketController(BaseController, FeedController):
         redirect('.')
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
         if subscribe:

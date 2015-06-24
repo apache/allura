@@ -376,6 +376,7 @@ class PostController(BaseController, FeedController):
         redirect('.')
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:

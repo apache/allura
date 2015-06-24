@@ -123,6 +123,7 @@ class ForumController(DiscussionController):
         return dict()
 
     @expose()
+    @require_post()
     @validate(W.subscribe_form)
     def subscribe_to_forum(self, subscribe=None, unsubscribe=None, shortname=None, **kw):
         if subscribe:

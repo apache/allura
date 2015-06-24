@@ -16,9 +16,14 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% if value %}
   {% if style == 'icon' %}
-    <a href="{{action}}?unsubscribe=True" class="artifact_unsubscribe active" title="Unsubscribe from this {{thing}}"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Unsubscribe from this {{thing}}"></b></a>
+    <form action="{{action}}" id="subscribe_form" style="display:inline;" method="POST">
+      {{lib.csrf_token()}}
+      <input type="hidden" name="unsubscribe" value="1">
+      <a href="#" class="artifact_unsubscribe active" title="Unsubscribe from this {{thing}}" onclick="$('#subscribe_form').submit(); return false;"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Unsubscribe from this {{thing}}"></b></a>
+    </form>
   {% else %}
     You are currently subscribed to this {{thing}}.
     <br/>
@@ -26,7 +31,11 @@
   {% endif %}
 {% else %}
   {% if style == 'icon' %}
-    <a href="{{action}}?subscribe=True" class="artifact_subscribe" title="Subscribe to this {{thing}}"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Subscribe to this {{thing}}"></b></a>
+    <form action="{{action}}" id="subscribe_form" style="display:inline;" method="POST">
+      {{lib.csrf_token()}}
+      <input type="hidden" name="subscribe" value="1">
+      <a href="#" class="artifact_subscribe" title="Subscribe to this {{thing}}" onclick="$('#subscribe_form').submit(); return false;"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Subscribe to this {{thing}}"></b></a>
+    </form>
   {% else %}
     You are currently not subscribed to this {{thing}}.
     <br/>
