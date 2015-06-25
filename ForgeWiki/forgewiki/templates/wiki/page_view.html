@@ -116,5 +116,13 @@
       {% endif %}
   {% endif %}
   {{c.confirmation.display(content='')}}
-
 {% endblock %}
+
+{% block wiki_extra_js %}
+  <script type="text/javascript">
+    $('a[href$="#toggle-subscribe"]').click(function() {
+      $('#subscribe_form').submit();
+      return false;
+    })
+  </script>
+{% endblock wiki_extra_js %}
