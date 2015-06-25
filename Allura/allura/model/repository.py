@@ -349,6 +349,8 @@ class Repository(Artifact, ActivityObject):
     repo_tags = FieldProperty(S.Deprecated)
     upstream_repo = FieldProperty(dict(name=str, url=str))
     default_branch_name = FieldProperty(str)
+    cached_branches = FieldProperty([dict(name=str, object_id=str)])
+    cached_tags = FieldProperty([dict(name=str, object_id=str)])
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:

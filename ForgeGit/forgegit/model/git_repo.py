@@ -532,6 +532,45 @@ class GitImplementation(M.RepositoryImplementation):
         except KeyError:
             return False
 
+    def _get_refs(self, field_name):
+        """ Returns a list of valid reference objects (branches or tags) from the git database
+
+        :return: List of git ref objects.
+        :rtype: list
+        """
+
+        cache_name = 'cached_' + field_name
+        cache = getattr(self._repo, cache_name, None)
+
+        if cache:
+            return cache
+
+        refs = []
+        start_time = time()
+        ref_list = getattr(self._git, field_name)
+        for ref in ref_list:
+            try:
+                hex_sha = ref.commit.hexsha
+            except ValueError:
+                log.debug(u"Found invalid sha: {}".format(ref))
+                continue
+            refs.append(Object(name=ref.name, object_id=hex_sha))
+        time_taken = time() - start_time
+
+        threshold = tg.config.get('repo_refs_cache_threshold')
+        try:
+            threshold = float(threshold) if threshold else None
+        except ValueError:
+            threshold = None
+            log.warn('Skipping reference caching - The value for config param '
+                     '"repo_refs_cache_threshold" must be a float.')
+
+        if threshold is not None and time_taken > threshold:
+            setattr(self._repo, cache_name, refs)
+            session(self._repo).flush(self._repo)
+
+        return refs
+
     @LazyProperty
     def head(self):
         if not self._git or not self._git.heads:
@@ -549,15 +588,15 @@ class GitImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def heads(self):
-        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.heads if b.is_valid()]
+        return self._get_refs('heads')
 
     @LazyProperty
     def branches(self):
-        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.branches if b.is_valid()]
+        return self._get_refs('branches')
 
     @LazyProperty
     def tags(self):
-        return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags if t.is_valid()]
+        return self._get_refs('tags')
 
     def set_default_branch(self, name):
         if not name:

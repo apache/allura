@@ -728,6 +728,17 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             res_with_tmp = self.repo.merge_request_commits(mr)
         assert_equals(res_without_tmp, res_with_tmp)
 
+    def test_cached_branches(self):
+        with mock.patch.dict('allura.lib.app_globals.config', {'repo_refs_cache_threshold': '0'}):
+            rev = GM.Repository.query.get(_id=self.repo['_id'])
+            branches = rev._impl._get_refs('branches')
+            assert_equal(rev.cached_branches, branches)
+
+    def test_cached_tags(self):
+        with mock.patch.dict('allura.lib.app_globals.config', {'repo_refs_cache_threshold': '0'}):
+            rev = GM.Repository.query.get(_id=self.repo['_id'])
+            tags = rev._impl._get_refs('tags')
+            assert_equal(rev.cached_tags, tags)
 
 class TestGitImplementation(unittest.TestCase):
 
@@ -735,6 +746,7 @@ class TestGitImplementation(unittest.TestCase):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
+        repo.cached_branches = []
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.branches, [
             Object(name='master',
@@ -747,6 +759,7 @@ class TestGitImplementation(unittest.TestCase):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
+        repo.cached_tags = []
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.tags, [
             Object(name='foo',
