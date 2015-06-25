@@ -178,6 +178,10 @@
             position: 'right',
             iconCloning: false,
             maxWidth: 300
+        }).focus(function () {
+            $(this).tooltipster('show');
+        }).blur(function () {
+            $(this).tooltipster('hide');
         });
     })
 </script>
