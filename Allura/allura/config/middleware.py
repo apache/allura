@@ -117,14 +117,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Configure the Pylons environment
     load_environment(global_conf, app_conf)
 
-    if config.get('zarkov.host'):
-        try:
-            import zmq
-        except ImportError:
-            raise ImportError, "Unable to import the zmq library. Please"\
-                               " check that zeromq is installed or comment out"\
-                               " the zarkov.host setting in your ini file."
-
     app = tg.TGApp()
 
     for mw_ep in h.iter_entry_points('allura.middleware'):

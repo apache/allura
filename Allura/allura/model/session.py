@@ -133,13 +133,6 @@ class ArtifactSessionExtension(ManagedSessionExtension):
                 log.exception(
                     "Failed to update artifact references. Is this a borked project migration?")
             self.update_index(self.objects_deleted, arefs)
-            for obj in self.objects_added:
-                g.zarkov_event('create', extra=obj.index_id())
-            for obj in self.objects_modified:
-                g.zarkov_event('modify', extra=obj.index_id())
-            for obj in self.objects_deleted:
-                g.zarkov_event('delete', extra=obj.index_id())
-
         super(ArtifactSessionExtension, self).after_flush(obj)
 
     def update_index(self, objects_deleted, arefs):

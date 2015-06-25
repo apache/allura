@@ -161,7 +161,6 @@ class AuthenticationProvider(object):
             else:
                 self.session['login_expires'] = True
             self.session.save()
-            g.zarkov_event('login', user=user)
             g.statsUpdater.addUserLogin(user)
             user.track_login(self.request)
             # set a non-secure cookie with same expiration as session,
