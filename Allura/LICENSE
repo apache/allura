@@ -233,6 +233,8 @@ under the MIT license.  For details, see the individual files:
     allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js
     allura/public/nf/js/jquery.tablesorter.js
+    allura/public/nf/css/forge/tooltipster.css
+    allura/public/nf/js/jquery.tooltipster.js
 
 Blueprint, which is available under the MIT license.
 For details, see allura/public/nf/css/blueprint/
