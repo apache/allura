@@ -17,9 +17,16 @@
        under the License.
 */
 
-$(document).ready(function() {
-    $('#maximize-content, #restore-content').click(function(e) {
+$(document).ready(function () {
+    if ($.cookie('maximizeView') === 'true') {
+        $('body').addClass('content-maximized');
+    }
+    $(".content-maximized").toggle($.cookie('maximizeView') != 'false');
+    $('#maximize-content, #restore-content').click(function (e) {
         $('body').toggleClass('content-maximized');
+        var is_visible = $(".content-maximized").is(":visible") ? 'true' : 'false';
+        $.cookie('maximizeView', is_visible);
+
         e.preventDefault();
         return false;
     });
