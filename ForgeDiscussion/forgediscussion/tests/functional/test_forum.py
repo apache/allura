@@ -576,7 +576,7 @@ class TestForum(TestController):
             if field.has_key('name') and 'subscription' not in field['name']:
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         self.app.post(str(subscribe_url), params=params)
-        self.app.get('/discussion/general/subscribe_to_forum?subscribe=True')
+        self.app.post('/discussion/general/subscribe_to_forum', {'subscribe': True})
         f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()

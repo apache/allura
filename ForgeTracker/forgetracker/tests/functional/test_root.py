@@ -840,7 +840,7 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[1].findAll('a')[6]
+        file_link = req.html.findAll('form')[3].findAll('a')[6]
         assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']), {
             'delete': 'True'
@@ -882,7 +882,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
-        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
+        download = self.app.get(str(ticket_editor.html.findAll('form')[2].findAll('a')[7]['href']))
         assert_equal(download.body, file_data)
 
     def test_two_attachments(self):
@@ -1239,7 +1239,7 @@ class TestFunctionalController(TrackerTestController):
         # Test edit ticket form
         self.new_ticket(summary='Test ticket')
         response = self.app.get('/bugs/1/')
-        form = response.forms[1]
+        form = response.forms[2]
         assert_equal(
             form['ticket_form.custom_fields._priority'].value, 'normal')
         assert_equal(form['ticket_form.custom_fields._category'].value, '')
@@ -1247,9 +1247,9 @@ class TestFunctionalController(TrackerTestController):
         form['ticket_form.custom_fields._priority'] = 'urgent'
         form['ticket_form.custom_fields._category'] = 'bugs'
         error_form = form.submit()
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value,
+        assert_equal(error_form.forms[2]['ticket_form.custom_fields._priority'].value,
                      'urgent')
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value,
+        assert_equal(error_form.forms[2]['ticket_form.custom_fields._category'].value,
                      'bugs')
 
     def test_new_ticket_validation(self):
@@ -1269,7 +1269,7 @@ class TestFunctionalController(TrackerTestController):
         # set a summary, submit, and check for success
         error_form.forms[1]['ticket_form.summary'] = summary
         success = error_form.forms[1].submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):
@@ -1280,7 +1280,7 @@ class TestFunctionalController(TrackerTestController):
         # check that existing form is valid
         assert response.html.find('input', {'name': 'ticket_form.summary'})['value'] == old_summary
         assert not response.html.find('div', {'class': 'error'})
-        form = response.forms[1]
+        form = response.forms[2]
         # try submitting with no summary set and check for error message
         form['ticket_form.summary'] = ""
         error_form = form.submit()
@@ -1289,11 +1289,11 @@ class TestFunctionalController(TrackerTestController):
         assert error_message.string == 'You must provide a Title'
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[1]['ticket_form.summary'] = new_summary
-        r = error_form.forms[1].submit()
+        error_form.forms[2]['ticket_form.summary'] = new_summary
+        r = error_form.forms[2].submit()
         assert r.status_int == 302, r.showbrowser()
         success = r.follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.findAll('form')[2].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == new_summary
 
     def test_home(self):
@@ -2720,7 +2720,7 @@ class TestCustomUserField(TrackerTestController):
     def test_change_user_field(self):
         kw = {'custom_fields._code_review': ''}
         r = self.new_ticket(summary='test custom fields', **kw).follow()
-        f = r.forms[1]
+        f = r.forms[2]
         # Populate ProjectUserCombo's select with option we want.
         # This is a workaround for tests,
         # in real enviroment this is populated via ajax.

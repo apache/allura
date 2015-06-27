@@ -754,24 +754,24 @@ class TestRootController(TestController):
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
-        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?subscribe=True'})
-        assert link is not None
+        inp = r.html.find('input', {'type': 'hidden', 'name': 'subscribe'})
+        assert inp is not None
         # subscribe
-        self.app.get('/p/test/wiki/subscribe?subscribe=True',
+        self.app.post('/p/test/wiki/subscribe', {'subscribe': True},
                      extra_environ={'username': str(user.username)}).follow()
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
-        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?unsubscribe=True'})
-        assert link is not None
+        inp = r.html.find('input', {'type': 'hidden', 'name': 'unsubscribe'})
+        assert inp is not None
         # unsubscribe
-        self.app.get('/p/test/wiki/subscribe?unsubscribe=True',
+        self.app.post('/p/test/wiki/subscribe', {'unsubscribe': True},
                      extra_environ={'username': str(user.username)}).follow()
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
-        link = r.html.find('a', {'href': '/p/test/wiki/subscribe?subscribe=True'})
-        assert link is not None
+        inp = r.html.find('input', {'type': 'hidden', 'name': 'subscribe'})
+        assert inp is not None
 
     def test_rate_limit_new_page(self):
         # Set rate limit to unlimit
