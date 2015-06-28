@@ -175,7 +175,7 @@ foreground::
     # web
     pkill "paster serve" && paster serve --reload ../development.ini
     # taskd
-    pkill "paster taskd" && paster taskd ../development.ini --nocapture
+    pkill "^taskd" && paster taskd ../development.ini --nocapture
 
 Make a request to the web app, and when your line of code is hit, a debug
 session will start on the console where the process is running.
