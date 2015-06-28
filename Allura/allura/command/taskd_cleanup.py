@@ -129,7 +129,7 @@ class TaskdCleanupCommand(base.Command):
 
     def _taskd_pids(self):
         # space after "taskd" to ensure no match on taskd_cleanup (ourself)
-        p = subprocess.Popen(['pgrep', '-f', '/paster taskd '],
+        p = subprocess.Popen(['pgrep', '-f', '^taskd '],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
