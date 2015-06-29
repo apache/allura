@@ -21,6 +21,8 @@ import json
 import time
 import unittest
 import datetime as dt
+from ming.odm import session
+import model as M
 from os import path
 
 from webob import Request
@@ -323,3 +325,9 @@ def test_phone_number_hash():
     hash = utils.phone_number_hash
     assert_equal(hash('1234567890'), hash('+123 456:7890'))
     assert_not_equal(hash('1234567890'), hash('1234567891'))
+
+
+def test_skip_mod_date():
+    with utils.skip_mod_date(M.Artifact):
+        assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) == True
+    assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) == False
