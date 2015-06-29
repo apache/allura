@@ -832,9 +832,6 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         if self.app.config.options.get('merge_disabled'):
             return False
-
-        _session = artifact_orm_session._get()
-        _session.skip_mod_date = True
         return True
 
     def can_merge_cache_key(self):
@@ -853,8 +850,11 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return self.can_merge_cache.get(key)
 
     def set_can_merge_cache(self, val):
+        from allura import model as M
         key = self.can_merge_cache_key()
-        self.can_merge_cache[key] = val
+        with utils.skip_mod_date(M.MergeRequest):
+            self.can_merge_cache[key] = val
+            session(self).flush(self)
 
     def can_merge(self):
         """
