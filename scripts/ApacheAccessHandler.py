@@ -115,7 +115,11 @@ def check_authentication(req):
     r = requests.post(auth_url, allow_redirects=False, data={
         'username': username,
         'password': password,
-        'return_to': '/login_successful'})
+        'return_to': '/login_successful',
+        '_session_id': 'this-is-our-session',
+    }, cookies={
+        '_session_id': 'this-is-our-session',
+    })
     return r.status_code == 302 and r.headers['location'].endswith('/login_successful')
 
 
