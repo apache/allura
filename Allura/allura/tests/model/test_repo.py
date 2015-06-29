@@ -808,5 +808,6 @@ class TestMergeRequest(object):
         assert_equal(self.mr.can_merge_task_status(), None)
         repo_tasks.can_merge.post(self.mr._id)
         assert_equal(self.mr.can_merge_task_status(), 'ready')
-        M.MonQTask.run_ready()
+        with mock.patch('allura.model.repository.MergeRequest.set_can_merge_cache'):
+            M.MonQTask.run_ready()
         assert_equal(self.mr.can_merge_task_status(), 'complete')

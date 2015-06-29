@@ -620,6 +620,22 @@ def phone_number_hash(number):
 
 @contextmanager
 def skip_mod_date(model_cls):
+    """ Avoids updating 'mod_date'
+
+    Useful for saving cache on a model and things like that.
+
+    .. note:: This only works when the changes made to the model are flushed.
+
+    :Example:
+
+    from allura import model as M
+    key = self.can_merge_cache_key()
+    with utils.skip_mod_date(M.MergeRequest):
+        self.can_merge_cache[key] = val
+        session(self).flush(self)
+
+    :param model_cls: The model *class* being updated.
+    """
     skip_mod_date = getattr(session(model_cls)._get(), 'skip_mod_date', False)
     session(model_cls)._get().skip_mod_date = True
     try:
