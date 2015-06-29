@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from contextlib import contextmanager
 
 import time
 import string
@@ -21,6 +22,7 @@ import hashlib
 import binascii
 import logging.handlers
 import codecs
+from ming.odm import session
 import os.path
 import datetime
 import random
@@ -614,3 +616,13 @@ def clean_phone_number(number):
 def phone_number_hash(number):
     number = clean_phone_number(number)
     return hashlib.sha1(number).hexdigest()
+
+
+@contextmanager
+def skip_mod_date(model_cls):
+    skip_mod_date = getattr(session(model_cls)._get(), 'skip_mod_date', False)
+    session(model_cls)._get().skip_mod_date = True
+    try:
+        yield
+    finally:
+        session(model_cls)._get().skip_mod_date = skip_mod_date
