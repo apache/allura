@@ -483,7 +483,7 @@ class DateField(JQueryMixin, ew.TextField):
     def resources(self):
         for r in super(DateField, self).resources():
             yield r
-        yield ew.CSSLink('css/jquery.ui.datepicker.css')
+        yield ew.CSSLink('css/jquery.ui.datepicker.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
 
 class FieldCluster(ew.CompoundField):
