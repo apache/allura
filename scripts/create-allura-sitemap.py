@@ -142,7 +142,7 @@ def main(options):
             f.write(sitemap_index_content)
 
 
-def parse_options():
+def parser():
     import argparse
     class Validate(argparse.Action):
         def __call__(self, parser, namespace, value, option_string=None):
@@ -165,8 +165,11 @@ def parse_options():
     parser.add_argument('-n', '--neighborhood', dest='neighborhood',
                          help="URL prefix of excluded neighborhood(s)",
                          default=None, nargs='*')
+    return parser
 
-    return parser.parse_args()
+def parse_options():
+    return parser().parse_args()
+
 
 if __name__ == '__main__':
     sys.exit(main(parse_options()))

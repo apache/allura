@@ -66,5 +66,8 @@ class DisableUsers(ScriptTask):
         return parser
 
 
+def get_parser():
+    return DisableUsers.parser()
+
 if __name__ == '__main__':
     DisableUsers.main()

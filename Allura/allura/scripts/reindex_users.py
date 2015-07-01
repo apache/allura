@@ -73,7 +73,7 @@ class ReindexUsers(ScriptTask):
 
     @classmethod
     def parser(cls):
-        parser = argparse.ArgumentParser(description='Reindex all users')
+        parser = argparse.ArgumentParser(description='Reindex all users into Solr (for searching)')
         parser.add_argument('--dry-run', action='store_true', dest='dry_run',
                             default=False, help='Log names of projects that would be reindexed, '
                             'but do not perform the actual reindex.')
@@ -83,6 +83,10 @@ class ReindexUsers(ScriptTask):
             '--max-chunk', dest='max_chunk', type=int, default=100 * 1000,
             help='Max number of artifacts to index in one Solr update command')
         return parser
+
+
+def get_parser():
+    return ReindexUsers.parser()
 
 
 if __name__ == '__main__':

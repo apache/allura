@@ -134,16 +134,23 @@ def main(options):
     return 0
 
 
-def parse_options():
+def parser():
     import argparse
     parser = argparse.ArgumentParser(
-        description='Removes private data from the Allura MongoDB.')
+        description='Removes private data from the Allura MongoDB.  DO NOT RUN THIS on your main database.  '
+                    'This is intended to be used on a copy of your database, to prepare it for sharing with others.'
+    )
     parser.add_argument('--dry-run', dest='dry_run', default=False,
                         action='store_true',
                         help='Run in test mode (no updates will be applied).')
     parser.add_argument('--log', dest='log_level', default='INFO',
                         help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
-    return parser.parse_args()
+    return parser
+
+
+def parse_options():
+    return parser().parse_args()
+
 
 if __name__ == '__main__':
     sys.exit(main(parse_options()))

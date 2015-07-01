@@ -41,6 +41,7 @@ import os
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.ifconfig']
+extensions += ['sphinxarg.ext']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -56,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Apache Allura'
-copyright = '2012-2014 The Apache Software Foundation'
+copyright = '2012-2015 The Apache Software Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

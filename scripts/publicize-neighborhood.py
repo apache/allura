@@ -70,7 +70,7 @@ def main(options):
     return 0
 
 
-def parse_options():
+def parser():
     import argparse
     parser = argparse.ArgumentParser(
         description='Make all projects in a neighborhood public.')
@@ -81,7 +81,12 @@ def parse_options():
                         help='Run in test mode (no updates will be applied).')
     parser.add_argument('--log', dest='log_level', default='INFO',
                         help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
-    return parser.parse_args()
+    return parser
+
+
+def parse_options():
+    return parser().parse_args()
+
 
 if __name__ == '__main__':
     sys.exit(main(parse_options()))

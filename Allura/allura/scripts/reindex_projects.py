@@ -87,7 +87,7 @@ class ReindexProjects(ScriptTask):
 
     @classmethod
     def parser(cls):
-        parser = argparse.ArgumentParser(description='Reindex all projects')
+        parser = argparse.ArgumentParser(description='Reindex all project records into Solr (for searching)')
         parser.add_argument('-n', '--nbhd', action='store', default='', dest='nbhd',
                             help='Restrict reindex to a particular neighborhood, e.g. /p/.')
         parser.add_argument(
@@ -107,6 +107,10 @@ class ReindexProjects(ScriptTask):
             '--max-chunk', dest='max_chunk', type=int, default=100 * 1000,
             help='Max number of artifacts to index in one Solr update command')
         return parser
+
+
+def get_parser():
+    return ReindexProjects.parser()
 
 
 if __name__ == '__main__':

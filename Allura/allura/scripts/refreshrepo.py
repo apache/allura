@@ -194,6 +194,10 @@ class RefreshRepo(ScriptTask):
         return parser
 
 
+def get_parser():
+    return RefreshRepo.parser()
+
+
 if __name__ == '__main__':
     faulthandler.enable()
     RefreshRepo.main()
