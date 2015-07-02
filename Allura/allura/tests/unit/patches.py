@@ -18,7 +18,11 @@
 from mock import Mock, patch
 from pylons import tmpl_context as c
 
-from allura.tests.unit.factories import create_project, create_app_config
+from allura.tests.unit.factories import (
+    create_project,
+    create_app_config,
+    create_user,
+)
 
 
 def fake_app_patch(test_case):
@@ -29,6 +33,11 @@ def fake_app_patch(test_case):
     app.config = app_config
     app.url = '/-app-/'
     return patch.object(c, 'app', app, create=True)
+
+
+def fake_user_patch(test_case):
+    user = create_user(username='my_user')
+    return patch.object(c, 'user', user, create=True)
 
 
 def project_app_loading_patch(test_case):

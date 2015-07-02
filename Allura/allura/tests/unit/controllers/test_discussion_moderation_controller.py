@@ -28,6 +28,7 @@ from allura.tests.unit import patches
 
 class TestWhenModerating(WithDatabase):
     patches = [patches.fake_app_patch,
+               patches.fake_user_patch,
                patches.fake_redirect_patch,
                patches.fake_request_patch,
                patches.disable_notifications_patch]
