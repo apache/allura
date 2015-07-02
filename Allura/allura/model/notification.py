@@ -110,14 +110,17 @@ class Notification(MappedClass):
     @classmethod
     def post(cls, artifact, topic, **kw):
         '''Create a notification and  send the notify message'''
-        import allura.tasks.notification_tasks
         n = cls._make_notification(artifact, topic, **kw)
         if n:
             # make sure notification is flushed in time for task to process it
             session(n).flush(n)
-            allura.tasks.notification_tasks.notify.post(
-                n._id, artifact.index_id(), topic)
+            n.fire_notification_task(artifact, topic)
         return n
+
+    def fire_notification_task(self, artifact, topic):
+        import allura.tasks.notification_tasks
+        allura.tasks.notification_tasks.notify.post(
+            self._id, artifact.index_id(), topic)
 
     @classmethod
     def post_user(cls, user, artifact, topic, **kw):
@@ -168,10 +171,9 @@ class Notification(MappedClass):
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
             author = post.author()
-            msg_id = artifact.url() + post._id
+            msg_id = kwargs.get('message_id') or artifact.url() + post._id
             parent_msg_id = artifact.url() + \
-                post.parent_id if post.parent_id else artifact.message_id(
-                )
+                post.parent_id if post.parent_id else artifact.message_id()
             d = dict(
                 _id=msg_id,
                 from_address=str(
