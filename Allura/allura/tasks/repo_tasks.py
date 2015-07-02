@@ -24,7 +24,6 @@ from ming.odm import session
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
-from allura.lib.utils import skip_mod_date
 
 
 @task

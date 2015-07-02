@@ -56,7 +56,7 @@ from .timeline import ActivityObject
 from .monq_model import MonQTask
 from .project import AppConfig
 from .session import main_doc_session
-from .session import repository_orm_session, artifact_orm_session
+from .session import repository_orm_session
 
 
 log = logging.getLogger(__name__)
