@@ -20,6 +20,7 @@ from datetime import datetime
 import logging
 
 from tg import expose, redirect, validate, request, flash
+from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 
@@ -182,6 +183,7 @@ class ThreadController(BaseController, FeedController):
         id = unquote(id)
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/discussion/thread.html')
     def index(self, limit=None, page=0, count=0, **kw):
         c.thread = self.W.thread
