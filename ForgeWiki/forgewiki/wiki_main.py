@@ -249,7 +249,7 @@ The wiki uses [Markdown](%s) syntax.
             subscribe_title = '{}{}'.format(
                 subscribe_action.capitalize(),
                 '' if subscribed else ' to wiki')
-            subscribe_url = '{}#toggle-subscribe'.format(self.url, subscribe_action)
+            subscribe_url = '#toggle-subscribe'.format(self.url)
             links += [SitemapEntry(''),
                       SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
         if not admin_menu:
@@ -483,6 +483,8 @@ class PageController(BaseController, FeedController):
         if self.page is not None:
             self.attachment = WikiAttachmentsController(self.page)
         c.create_page_lightbox = W.create_page_lightbox
+        if not c.user.is_anonymous():
+            c.subscribed = M.Mailbox.subscribed()
 
     def _check_security(self):
         if self.page:

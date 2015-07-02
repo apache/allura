@@ -116,12 +116,22 @@
       {% endif %}
   {% endif %}
   {{c.confirmation.display(content='')}}
+  {% if not c.user.is_anonymous() %}
+    <form action="{{c.app.url}}subscribe" id="wiki_subscribe_form" style="display:none;" method="POST">
+      {{lib.csrf_token()}}
+      {% if c.subscribed %}
+        <input type="hidden" name="unsubscribe" value="1">
+      {% else %}
+        <input type="hidden" name="subscribe" value="1">
+      {% endif %}
+    </form>
+  {% endif %}
 {% endblock %}
 
 {% block wiki_extra_js %}
   <script type="text/javascript">
     $('a[href$="#toggle-subscribe"]').click(function() {
-      $('#subscribe_form').submit();
+      $('#wiki_subscribe_form').submit();
       return false;
     })
   </script>
