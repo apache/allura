@@ -714,16 +714,31 @@ class Post(Message, VersionedArtifact, ActivityObject):
                                        related_nodes=[self.app_config.project],
                                        tags=['comment'])
 
-    def notify(self, file_info=None, check_dup=False, notification_text=None):
+    def notify(self, file_info=None, notification_text=None):
         if self.project.notifications_disabled:
             return  # notifications disabled for entire project
         artifact = self.thread.artifact or self.thread
-        n = Notification.query.get(
-            _id=artifact.url() + self._id) if check_dup else None
+        msg_id = artifact.url() + self._id
+        notification_params = dict(
+            post=self,
+            text=notification_text,
+            file_info=file_info)
+        n = Notification.query.get(_id=msg_id)
+        if n and 'Moderation action required' in n.subject:
+            # Existing notification for this artifact is for moderators only,
+            # this means artifact was not auto approved, and all the
+            # subscribers did not receive notification. Now, moderator approved
+            # artifact/post, so we should re-send actual notification
+            msg_id = u'approved-' + msg_id
+            n = Notification.query.get(_id=msg_id)
+            if n:
+                # 'approved' notification also exists, re-send
+                n.fire_notification_task(artifact, 'message')
+            else:
+                # 'approved' notification does not exist, create
+                notification_params['message_id'] = msg_id
         if not n:
-            n = Notification.post(artifact, 'message',
-                                  post=self, text=notification_text,
-                                  file_info=file_info)
+            n = Notification.post(artifact, 'message', **notification_params)
         if not n:
             return
         if (hasattr(artifact, "monitoring_email")
