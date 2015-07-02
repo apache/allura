@@ -746,6 +746,7 @@ class TestGitImplementation(unittest.TestCase):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
+        repo.__ming__ = mock.Mock()
         repo.cached_branches = []
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.branches, [
@@ -759,6 +760,7 @@ class TestGitImplementation(unittest.TestCase):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
+        repo.__ming__ = mock.Mock()
         repo.cached_tags = []
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.tags, [
