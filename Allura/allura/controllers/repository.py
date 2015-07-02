@@ -689,6 +689,7 @@ class TreeBrowser(BaseController, DispatchIndex):
             self), rest
 
     @expose()
+    @require_post()
     @validate(subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:
