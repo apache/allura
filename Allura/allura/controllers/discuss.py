@@ -89,6 +89,7 @@ class DiscussionController(BaseController, FeedController):
         if not hasattr(self, 'moderate'):
             self.moderate = ModerationController(self)
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/discussion/index.html')
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         c.discussion = self.W.discussion
