@@ -353,24 +353,26 @@ class TestRootController(_TestCase):
         assert link is not None, r.html
 
         # subscribe
-        self.app.get(ci + 'tree/subscribe?subscribe=True',
-                     extra_environ={'username': str(user.username)}).follow()
+        self.app.post(str(ci + 'tree/subscribe'),
+                      {'subscribe': True},
+                      extra_environ={'username': str(user.username)}).follow()
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
-        link = r.html.find('a', 'artifact_unsubscribe active')
-        assert link is not None, r.html
+        inp = r.html.find('input', {'type': 'hidden', 'name': 'unsubscribe'})
+        assert inp is not None
 
         # unsubscribe
-        self.app.get(ci + 'tree/subscribe?unsubscribe=True',
+        self.app.post(str(ci + 'tree/subscribe'),
+                     {'unsubscribe': True},
                      extra_environ={'username': str(user.username)}).follow()
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
-        link = r.html.find('a', 'artifact_subscribe')
-        assert link is not None, r.html
+        inp = r.html.find('input', {'type': 'hidden', 'name': 'subscribe'})
+        assert inp is not None
 
     def test_timezone(self):
         ci = self._get_ci()
