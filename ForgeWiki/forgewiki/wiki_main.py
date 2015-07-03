@@ -249,7 +249,7 @@ The wiki uses [Markdown](%s) syntax.
             subscribe_title = '{}{}'.format(
                 subscribe_action.capitalize(),
                 '' if subscribed else ' to wiki')
-            subscribe_url = '#toggle-subscribe'.format(self.url)
+            subscribe_url = '{}#toggle-subscribe'.format(self.url)
             links += [SitemapEntry(''),
                       SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
         if not admin_menu:
