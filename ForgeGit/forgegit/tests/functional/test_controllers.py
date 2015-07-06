@@ -1,3 +1,5 @@
+# coding: utf-8
+
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -77,6 +79,18 @@ class _TestCase(TestController):
 
 
 class TestRootController(_TestCase):
+
+
+    @with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
+    def _setup_weird_chars_repo(self):
+        h.set_context('test', 'weird-chars', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'weird-chars.git'
+        ThreadLocalORMSession.flush_all()
+        c.app.repo.refresh()
 
     def test_status(self):
         resp = self.app.get('/src-git/status')
@@ -164,11 +178,11 @@ class TestRootController(_TestCase):
     def test_tags(self):
         self.app.get('/src-git/ref/master~/tags/')
 
-    def _get_ci(self):
-        r = self.app.get('/src-git/ref/master/')
+    def _get_ci(self, repo='/p/test/src-git/'):
+        r = self.app.get(repo + 'ref/master/')
         resp = r.follow()
         for tag in resp.html.findAll('a'):
-            if tag['href'].startswith('/p/test/src-git/ci/'):
+            if tag['href'].startswith(repo + 'ci/'):
                 href = tag['href']
                 if href.endswith('tree/'):
                     href = href[:-5]
@@ -240,6 +254,23 @@ class TestRootController(_TestCase):
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
+
+    def test_file_raw(self):
+        self._setup_weird_chars_repo()
+        ci = self._get_ci(repo='/p/test/weird-chars/')
+        url = ci + 'tree/' + h.urlquote(u'привіт.txt') + '?format=raw'
+        resp = self.app.get(url)
+        assert_in(u'Привіт!\nWhich means Hello!', resp.body.decode('utf-8'))
+        assert_equal(
+            resp.headers.get('Content-Disposition').decode('utf-8'),
+            u'attachment;filename="привіт.txt"')
+
+        url = ci + 'tree/' + h.urlquote(u'with space.txt') + '?format=raw'
+        resp = self.app.get(url)
+        assert_in(u'with space', resp.body.decode('utf-8'))
+        assert_equal(
+            resp.headers.get('Content-Disposition').decode('utf-8'),
+            u'attachment;filename="with space.txt"')
 
     def test_invalid_file(self):
         ci = self._get_ci()

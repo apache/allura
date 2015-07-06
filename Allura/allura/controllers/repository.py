@@ -739,7 +739,7 @@ class FileBrowser(BaseController):
             response.content_encoding = content_encoding
         response.headers.add(
             'Content-Disposition',
-            'attachment;filename="%s"' % filename.encode('utf-8'))
+            'attachment;filename="%s"' % filename)
         return iter(self._blob)
 
     def diff(self, commit, fmt=None, **kw):
