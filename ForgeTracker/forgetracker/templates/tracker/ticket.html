@@ -192,10 +192,13 @@
           var original_title = title_holder.text();
           var title_actions = title_holder.find('small');
           var vote = $('#vote');
-          var discussion_comment_textarea = $('#new_post_holder').find('form').find('textarea');
+
+          function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }
+
+          var discussion_comment_cm = get_cm($('#new_post_holder'));
 
           $('a.edit_ticket').click(function () {
-            var not_posted_comment = discussion_comment_textarea.val();
+            var not_posted_comment = discussion_comment_cm.getValue();
             form_holder.show();
             view_holder.hide();
             discussion_holder.hide();
@@ -206,8 +209,12 @@
             vote.hide();
             $('div.new-ticket-title label').hide();
             $('a.edit_ticket').addClass('btn_activate');
-            $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
-            $('textarea[name="ticket_form.comment"]').val(not_posted_comment);
+            var cm = get_cm(form_holder);
+            cm.refresh();
+            cm.focus();
+            var comment_cm = get_cm($('textarea[name="ticket_form.comment"]').parent());
+            comment_cm.setValue(not_posted_comment);
+            $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker');
             $(this).trigger('editTicket');
             return false;
           });
