@@ -200,6 +200,7 @@ users, projects, and tools on Allura.  However, SourceForge has help docs that c
 these functions https://sourceforge.net/p/forge/documentation/Docs%20Home/  Note
 that this documentation also covers some SourceForge features that are not part of Allura.
 
+.. _public_api:
 
 Public API Documentation
 ========================

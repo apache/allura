@@ -19,6 +19,10 @@
 Allura API
 **********
 
+This documents the python classes available to Allura tools and extensions.
+
+If you are looking for the web REST API, see :ref:`public_api`
+
 
 .. toctree::
     :maxdepth: 3
