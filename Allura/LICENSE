@@ -245,4 +245,9 @@ Modernizr, which is available under the MIT license.
 For details, see allura/public/nf/js/modernizr.js
 
 React.js, which is available under the BSD license.
-For details, see Allura/allura/public/nf/js/react.min.js
+For details, see allura/public/nf/js/react.min.js
+
+Markdown editor (https://github.com/lepture/editor) is available under the MIT
+license. For details, see:
+    allura/lib/widgets/resources/js/markdown_editor/
+    allura/lib/widgets/resources/css/markdown_editor/
