@@ -51,17 +51,21 @@ $(window).load(function() {
               toolbar: toolbar
             });
             var cm = editor.codemirror;
-            cm.on('viewportChange', function(cm, from, to) {
+            cm.on('viewportChange', resize);
+            editor.render();
+            // trigger resize to properly display editor in case of a lot of text in the textarea
+            resize(cm);
+
+            // focus editor by clicking anywhere on it, not only on the first few lines
+            $('.CodeMirror').click(function () { this.CodeMirror.focus(); });
+
+            function resize(cm) {
               var toolbar_h = $('.editor-toolbar', $container).outerHeight();
               var statusbar_h = $('.editor-statusbar', $container).outerHeight();
               var cm_h = cm.getScrollInfo().clientHeight;
               var h = toolbar_h + statusbar_h + cm_h;
               $container.height(h);
-            });
-            editor.render();
-
-            // focus editor by clicking anywhere on it, not only on the first few lines
-            $('.CodeMirror').click(function () { this.CodeMirror.focus(); });
+            }
 
             function show_help(editor) {
               $help_contents.html('Loading...');
