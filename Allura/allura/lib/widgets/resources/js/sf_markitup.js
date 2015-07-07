@@ -61,7 +61,7 @@ $(window).load(function() {
             editor.render();
 
             // focus editor by clicking anywhere on it, not only on the first few lines
-            $('.CodeMirror').click(function () { cm.focus(); });
+            $('.CodeMirror').click(function () { this.CodeMirror.focus(); });
 
             function show_help(editor) {
               $help_contents.html('Loading...');
