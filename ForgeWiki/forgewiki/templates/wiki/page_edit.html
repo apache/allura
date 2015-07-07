@@ -25,8 +25,13 @@
 
 {% block extra_css %}
 <style type="text/css">
-  textarea[name="text"]{
+  .markdown_edit {
     height: 600px;
+    min-height: 600px;
+  }
+  .markdown_edit .CodeMirror {
+    height: auto;
+    min-height: 520px;
   }
 </style>
 {% endblock %}
@@ -85,7 +90,6 @@
 {% block wiki_extra_js %}
 <script type="text/javascript">
   /*<![CDATA[*/
-  $('textarea.auto_resize').autosize();
   $('span.removable').click(function(e){
     var vals = $('#page_edit_form').serialize();
     var del_name = $('input', this)[0].name.replace('.id','.delete');
