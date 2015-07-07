@@ -46,7 +46,7 @@ html2text.BODY_WIDTH = 0
 
 
 class RssFeedsCommand(base.BlogCommand):
-    summary = 'Rss feed client'
+    summary = 'Fetch external rss feeds for all Blog tools, and convert new feed entries into blog posts'
     parser = base.BlogCommand.standard_parser(verbose=True)
     parser.add_option('-a', '--appid', dest='appid', default='',
                       help='application id')

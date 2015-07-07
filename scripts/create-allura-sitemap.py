@@ -16,7 +16,7 @@
 #       under the License.
 
 """
-Generate Allura sitemap xml files.
+Generate Allura sitemap xml files.  You will need to configure your webserver to serve the files.
 
 This takes a while to run on a prod-sized data set. There are a couple of
 things that would make it faster, if we need/want to.

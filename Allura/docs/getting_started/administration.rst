@@ -70,7 +70,71 @@ running a script via this interface, the `args/kwargs` JSON should be like::
 
 See the listing of :mod:`some available tasks <allura.tasks.admin_tasks>`.
 
-Available scripts and tasks are:
+
+Available scripts and commands are:
+
+
+create-neighborhood
+-------------------
+
+.. program-output:: paster create-neighborhood development.ini --help
+
+
+ensure_index
+------------
+
+.. program-output:: paster ensure_index development.ini --help
+
+
+ircbot
+------
+
+.. program-output:: paster ircbot development.ini --help
+
+
+reindex
+-------
+
+.. program-output:: paster reindex development.ini --help
+
+
+set-neighborhood-features
+-------------------------
+
+.. program-output:: paster set-neighborhood-features development.ini --help
+
+
+set-tool-access
+---------------
+
+.. program-output:: paster set-tool-access development.ini --help
+
+
+taskd
+-----
+
+.. program-output:: paster taskd development.ini --help
+
+
+taskd_cleanup
+-------------
+
+.. program-output:: paster taskd_cleanup development.ini --help
+
+
+pull-rss-feeds
+--------------
+
+Blog tools may optionally be configured to fetch external RSS feeds.  If that is in place, this command should
+be used to fetch all those rss feeds and convert new entries into blog posts.
+
+Requires `html2text`, a GPL library.
+
+::
+
+    cd ../ForgeBlog
+    paster pull-rss-feeds development.ini --help
+
 
 disable_users.py
 ----------------
@@ -82,6 +146,7 @@ disable_users.py
     :func: get_parser
     :prog: paster script development.ini allura/scripts/disable_users.py --
 
+
 refreshrepo.py
 --------------
 
@@ -91,6 +156,7 @@ refreshrepo.py
     :module: allura.scripts.refreshrepo
     :func: get_parser
     :prog: paster script development.ini allura/scripts/refreshrepo.py --
+
 
 reindex_projects.py
 -------------------
@@ -102,6 +168,7 @@ reindex_projects.py
     :func: get_parser
     :prog: paster script development.ini allura/scripts/reindex_projects.py --
 
+
 reindex_users.py
 ----------------
 
@@ -111,6 +178,7 @@ reindex_users.py
     :module: allura.scripts.reindex_users
     :func: get_parser
     :prog: paster script development.ini allura/scripts/reindex_users.py --
+
 
 create-allura-sitemap.py
 ------------------------
@@ -122,6 +190,7 @@ create-allura-sitemap.py
     :func: parser
     :prog: paster script development.ini ../scripts/create-allura-sitemap.py --
 
+
 publicize-neighborhood.py
 -------------------------
 
@@ -132,6 +201,7 @@ publicize-neighborhood.py
     :func: parser
     :prog: paster script development.ini ../scripts/publicize-neighborhood.py --
 
+
 scrub-allura-data.py
 --------------------
 
@@ -141,6 +211,7 @@ scrub-allura-data.py
     :file: ../../scripts/scrub-allura-data.py
     :func: parser
     :prog: paster script development.ini ../scripts/scrub-allura-data.py --
+
 
 teamforge-import.py
 -------------------

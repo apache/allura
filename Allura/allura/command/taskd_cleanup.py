@@ -27,7 +27,7 @@ import base
 
 
 class TaskdCleanupCommand(base.Command):
-    summary = 'Tasks cleanup command'
+    summary = 'Tasks cleanup command.  Determines which taskd processes are handling tasks, and what has been dropped or got hung.'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-k', '--kill-stuck-taskd',
                       dest='kill', action='store_true',

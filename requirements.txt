@@ -81,3 +81,4 @@ q==2.3
 WebError==0.10.3
 -e git://github.com/brondsem/sphinx-argparse.git#egg=sphinx-argparse   # pending merge requests
 sphinx-rtd-theme==0.1.6
+sphinxcontrib-programoutput==0.8

@@ -53,7 +53,7 @@ class ReindexCommand(base.Command):
     min_args = 1
     max_args = 1
     usage = '<ini file>'
-    summary = 'Reindex and re-shortlink all artifacts'
+    summary = 'Reindex into solr and re-shortlink all artifacts'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
                       help='project to reindex')
@@ -203,7 +203,7 @@ class EnsureIndexCommand(base.Command):
     min_args = 1
     max_args = 1
     usage = '[<ini file>]'
-    summary = 'Run ensure_index on all mongo objects'
+    summary = 'Create all the Mongo indexes specified by Ming models, drop any unspecified indexes.'
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
