@@ -51,3 +51,8 @@
 .markdown_edit .editor-preview {
   padding: 5px;
 }
+
+
+.markdown_edit .editor-preview {
+  z-index: 1001;  /* should always be under help modal */
+}
