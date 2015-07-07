@@ -18,6 +18,7 @@
 */
 .markdown_edit {
   height: 200px;
+  min-height: 200px;
   width: 95%;
   font-family: Consolas, "Andale Mono", "Lucida Console", monospace;
 
@@ -37,10 +38,16 @@
   border: 1px solid #aaaaaa;
 }
 
+.markdown_edit .CodeMirror {
+  height: auto;
+  min-height: 120px;
+}
+
 .markdown_edit .editor-toolbar:before {
   background: none;  /* hide toolbar's top border */
 }
 
-.markdown_edit .CodeMirror-scroll {
+.markdown_edit .CodeMirror-sizer,
+.markdown_edit .editor-preview {
   padding: 5px;
 }

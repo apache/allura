@@ -46,10 +46,19 @@ $(window).load(function() {
               }
               toolbar.push(tool);
             }
-            new Editor({
+            var editor = new Editor({
               element: $textarea[0],
               toolbar: toolbar
-            }).render();
+            });
+            var cm = editor.codemirror;
+            cm.on('viewportChange', function(cm, from, to) {
+              var toolbar_h = $('.editor-toolbar', $container).outerHeight();
+              var statusbar_h = $('.editor-statusbar', $container).outerHeight();
+              var cm_h = cm.getScrollInfo().clientHeight;
+              var h = toolbar_h + statusbar_h + cm_h;
+              $container.height(h);
+            });
+            editor.render();
 
             function show_help(editor) {
               $help_contents.html('Loading...');
