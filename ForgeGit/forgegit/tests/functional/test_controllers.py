@@ -725,14 +725,6 @@ class TestFork(_TestCase):
         assert '<option selected value="zz">zz</option>' in r
         md_edit = r.html.find('div', {'class': 'markdown_edit'})
         assert md_edit is not None, 'MarkdownEdit widget not found'
-        description = md_edit.find('textarea')
-        assert_equal(description['name'], 'description')
-        assert_equal(description['class'], 'auto_resize description')
-        help_btn = md_edit.find('a', {'class': 'markdown_help btn'})
-        preview_btn = md_edit.find('a', {'class': 'markdown_preview btn'})
-        assert_equal(help_btn['href'], '/p/test/src-git/markdown_syntax_dialog')
-        assert_equal(help_btn['title'], 'Formatting Help')
-        assert_equal(preview_btn['title'], 'Preview')
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
             params={
