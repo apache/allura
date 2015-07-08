@@ -30,7 +30,8 @@ import oauth2 as oauth
 
 
 def main():
-    op = OptionParser(usage='usage: %prog [options]')
+    op = OptionParser(usage='usage: %prog [options]',
+                      description='Reads the wiki pages from one Allura wiki instance and uploads them to another Allura wiki instance.')
     op.add_option('-f', '--from-wiki', action='store', dest='from_wiki',
                   help='URL of wiki API to copy from like http://fromserver.com/rest/p/test/wiki/')
     op.add_option('-t', '--to-wiki', action='store', dest='to_wiki',

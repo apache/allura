@@ -85,7 +85,7 @@ class Signer(object):
 
 def main():
     usage = 'usage: %prog [options] [PageName [file]]'
-    op = OptionParser(usage=usage)
+    op = OptionParser(usage=usage, description='Use a markdown file to create/update a wiki page')
     op.add_option('-c', '--config', metavar='CONFIG')
     op.add_option('-t', '--token', metavar='TOKEN')
     op.add_option('', '--anon', action='store_true')

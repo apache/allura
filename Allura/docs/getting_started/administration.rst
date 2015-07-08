@@ -233,16 +233,33 @@ Requires running: :command:`pip install suds` first. ::
 Client Scripts
 ==============
 
-Allura includes some client scripts that use Allura APIs and do not have to be run
-from an Allura server.  They do require various python packages to be installed
-and possibly a local Allura codebase set up.
+Allura includes some client scripts that demonstrate use of the Allura REST API and do not have to be run
+from an Allura environment.  They do require some python packages to be installed, though.
 
-One such script is `wiki-copy.py` which reads the wiki pages from one Allura wiki
-instance and uploads them to another Allura wiki instance.  It can be run as:
 
-.. code-block:: console
+wiki-copy.py
+------------
 
-    $ python scripts/wiki-copy.py --help
+.. program-output:: python ../../scripts/wiki-copy.py --help | sed 's/Usage: /Usage: python scripts\//'
+    :shell:
+
+
+new_ticket.py
+-------------
+
+Illustrates creating a new ticket, using the simple OAuth Bearer token.
+
+.. argparse::
+    :file: ../../scripts/new_ticket.py
+    :func: get_parser
+    :prog: python scripts/new_ticket.py
+
+
+wiki-post.py
+------------
+
+.. program-output:: python ../../scripts/wiki-post.py --help | sed 's/Usage: /Usage: python scripts\//'
+    :shell:
 
 
 Site Notifications
