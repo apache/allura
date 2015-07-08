@@ -825,9 +825,9 @@ class TestNeighborhood(TestController):
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
-        assert_equal(r.json, dict(suggested_name='mymoz'))
+        assert_equal(r.json, dict(suggested_name='my-moz'))
         r = self.app.get('/p/suggest_name?project_name=Te%st!')
-        assert_equal(r.json, dict(suggested_name='test'))
+        assert_equal(r.json, dict(suggested_name='te-st'))
 
     def test_name_check(self):
         for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):

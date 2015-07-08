@@ -685,7 +685,8 @@ class ProjectRegistrationProvider(object):
         Example: "My Great Project" -> "mygreatproject"
 
         """
-        return re.sub("[^A-Za-z0-9]", "", project_name).lower()
+        name = re.sub("[^A-Za-z0-9]", " ", project_name).lower()
+        return '-'.join(name.split())
 
     def rate_limit(self, user, neighborhood):
         """Check the various config-defined project registration rate
