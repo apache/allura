@@ -29,7 +29,7 @@ from pylons import tmpl_context as c
 from nose.tools import assert_equals, with_setup
 import mock
 from mock import patch
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 
 from ming.orm import session, ThreadLocalORMSession
 from webob import exc
@@ -208,7 +208,11 @@ def test_attachment_methods():
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
         subject=u'[test:wiki] Test comment notification')
-    assert '\nAttachment: fake.txt (37 Bytes; text/plain)' in n.text
+    url = h.absurl('{}attachment/{}'.format(p.url(), fs.filename))
+    assert_in(
+        '\nAttachments:\n\n'
+        '- [fake.txt]({}) (37 Bytes; text/plain)'.format(url),
+        n.text)
 
 
 @with_setup(setUp, tearDown())
@@ -265,11 +269,16 @@ def test_notification_two_attaches():
     fs2.filename = 'fake2.txt'
     fs2.type = 'text/plain'
     fs2.file = StringIO('this is the content of the fake file\n')
-    t.post(text=u'test message', forum=None, subject='', file_info=[fs1, fs2])
+    p = t.post(text=u'test message', forum=None, subject='', file_info=[fs1, fs2])
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
         subject=u'[test:wiki] Test comment notification')
-    assert '\nAttachment: fake.txt (37 Bytes; text/plain)  fake2.txt (37 Bytes; text/plain)' in n.text
+    base_url = h.absurl('{}attachment/'.format(p.url()))
+    assert_in(
+        '\nAttachments:\n\n'
+        '- [fake.txt]({0}fake.txt) (37 Bytes; text/plain)\n'
+        '- [fake2.txt]({0}fake2.txt) (37 Bytes; text/plain)'.format(base_url),
+        n.text)
 
 
 @with_setup(setUp, tearDown)
