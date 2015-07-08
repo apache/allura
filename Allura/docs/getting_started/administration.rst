@@ -248,6 +248,44 @@ Requires running: :command:`pip install suds` first. ::
     usage: paster script development.ini ../scripts/teamforge-import.py -- --help
 
 
+Site Notifications
+==================
+
+Allura has support for site-wide notifications that appear below the site header,
+but there is currently no UI for managing them.  They can easily be inserted via
+manual mongo queries, however:
+
+.. code-block:: console
+
+    > db.site_notification.insert({
+    ... active: true,
+    ... impressions: 10,
+    ... content: 'You can now reimport exported project data.'
+    ... })
+
+This will create a notification that will be shown for 10 page views or until the
+user closes it manually.  An `impressions` value of 0 will show the notification
+indefinitely (until closed).  The notification content can contain HTML.  Only the
+most recent notification will be shown, unless it has `active:false`, in which case
+no notification will be shown.
+
+
+Using Projects and Tools
+========================
+
+We currently don't have any further documentation for basic operations of managing
+users, projects, and tools on Allura.  However, SourceForge has help docs that cover
+these functions https://sourceforge.net/p/forge/documentation/Docs%20Home/  Note
+that this documentation also covers some SourceForge features that are not part of Allura.
+
+
+.. _public_api:
+
+Public API Documentation
+========================
+
+Allura's web api is currently documented at https://sourceforge.net/p/forge/documentation/Allura%20API/
+
 
 Client Scripts
 ==============
@@ -279,41 +317,3 @@ wiki-post.py
 
 .. program-output:: python ../../scripts/wiki-post.py --help | sed 's/Usage: /Usage: python scripts\//'
     :shell:
-
-
-Site Notifications
-==================
-
-Allura has support for site-wide notifications that appear below the site header,
-but there is currently no UI for managing them.  They can easily be inserted via
-manual mongo queries, however:
-
-.. code-block:: console
-
-    > db.site_notification.insert({
-    ... active: true,
-    ... impressions: 10,
-    ... content: 'You can now reimport exported project data.'
-    ... })
-
-This will create a notification that will be shown for 10 page views or until the
-user closes it manually.  An `impressions` value of 0 will show the notification
-indefinitely (until closed).  The notification content can contain HTML.  Only the
-most recent notification will be shown, unless it has `active:false`, in which case
-no notification will be shown.
-
-
-Using Projects and Tools
-========================
-
-We currently don't have any further documentation for basic operations of managing
-users, projects, and tools on Allura.  However, SourceForge has help docs that cover
-these functions https://sourceforge.net/p/forge/documentation/Docs%20Home/  Note
-that this documentation also covers some SourceForge features that are not part of Allura.
-
-.. _public_api:
-
-Public API Documentation
-========================
-
-Allura's web api is currently documented at https://sourceforge.net/p/forge/documentation/Allura%20API/
