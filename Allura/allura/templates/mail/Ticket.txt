@@ -34,5 +34,12 @@
     **Last Updated:** {{data.mod_date.strftime('%a %b %d, %Y %I:%M %p UTC')}}
 {% endif -%}
 **Owner:** {{data.assigned_to_name()}}
+{% if data.attachments -%}
+    **Attachments:**
+
+{% for att in data.attachments -%}
+    - [{{att.filename}}]({{h.absurl(att.url())}}) ({{h.do_filesizeformat(att.length)}}; {{att.content_type}})
+{% endfor -%}
+{% endif %}
 
 {{data.description}}

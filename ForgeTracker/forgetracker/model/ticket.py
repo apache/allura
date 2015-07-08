@@ -981,9 +981,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 elif k in other_custom_fields:
                     # strings are good enough for any other custom fields
                     self.custom_fields[k] = v
-        self.commit()
         if attachment is not None:
             self.add_multiple_attachments(attachment)
+            # flush the session to make attachments available in the
+            # notification email
+            ThreadLocalORMSession.flush_all()
+        self.commit()
 
     def _move_attach(self, attachments, attach_metadata, app_config):
         for attach in attachments:
