@@ -22,6 +22,25 @@ Administration
 .. contents::
    :local:
 
+
+Site Admin Interface
+====================
+
+Allura has an admin interface at http://MYSITE/nf/admin/  You must be an admin of the
+`/p/allura` project on the site to access it.  If you want to use another project to control
+admin access, change the :code:`site_admin_project` setting in :file:`development.ini`.
+
+The admin interface allows you to:
+
+* View newly registered projects
+* Search for projects
+* View neighborhood total stats
+* Search for users, view user details, update user status, email address, and reset their password
+* View background task statuses, and submit new background tasks
+* Manage "trove" categories (for user skill choices)
+* Subscriber a user to an artifact
+* Reclone a repository
+
 Commands, Scripts, and Tasks
 ============================
 
