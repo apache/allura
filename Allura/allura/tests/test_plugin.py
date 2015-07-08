@@ -67,8 +67,11 @@ class TestProjectRegistrationProvider(object):
 
     def test_suggest_name(self):
         f = self.provider.suggest_name
+        assert_equals(f('Foo Bar', Mock()), 'foo-bar')
         assert_equals(f('A More Than Fifteen Character Name', Mock()),
-                      'amorethanfifteencharactername')
+                      'a-more-than-fifteen-character-name')
+        assert_equals(f('foo! bar?.. the great!!', Mock()),
+                      'foo-bar-the-great')
 
     @patch('allura.model.Project')
     def test_shortname_validator(self, Project):
