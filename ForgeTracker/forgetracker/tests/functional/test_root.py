@@ -1599,6 +1599,26 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
 
+    def test_new_ticket_notification_contains_attachments(self):
+        file_name = u'tést_root.py'.encode('utf-8')
+        file_data = file(__file__).read()
+        upload = ('ticket_form.attachment', file_name, file_data)
+        r = self.app.post('/bugs/save_ticket', {
+            'ticket_form.summary': 'new ticket with attachment'
+        }, upload_files=[upload]).follow()
+        assert_in(file_name, r)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        email = M.MonQTask.query.find(
+            dict(task_name='allura.tasks.mail_tasks.sendmail')
+        ).first()
+        expected_text = (
+            u'**Attachments:**\n\n'
+            u'- [tést_root.py]'
+            u'(http://localhost/p/test/bugs/1/attachment/t%C3%A9st_root.py)')
+        assert_in(expected_text, email.kwargs['text'])
+
     def test_ticket_notification_contains_milestones(self):
         params = dict(
             custom_fields=[
