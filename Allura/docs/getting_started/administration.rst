@@ -77,7 +77,8 @@ Available scripts and commands are:
 create-neighborhood
 -------------------
 
-.. program-output:: paster create-neighborhood development.ini --help
+.. program-output:: paster create-neighborhood development.ini --help | fmt -s -w 95
+   :shell:
 
 
 ensure_index
@@ -101,13 +102,15 @@ reindex
 set-neighborhood-features
 -------------------------
 
-.. program-output:: paster set-neighborhood-features development.ini --help
+.. program-output:: paster set-neighborhood-features development.ini --help | fmt -s -w 95
+   :shell:
 
 
 set-tool-access
 ---------------
 
-.. program-output:: paster set-tool-access development.ini --help
+.. program-output:: paster set-tool-access development.ini --help | fmt -s -w 95
+   :shell:
 
 
 taskd
@@ -119,7 +122,8 @@ taskd
 taskd_cleanup
 -------------
 
-.. program-output:: paster taskd_cleanup development.ini --help
+.. program-output:: paster taskd_cleanup development.ini --help | fmt -s -w 95
+   :shell:
 
 
 pull-rss-feeds
