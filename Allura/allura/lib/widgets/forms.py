@@ -56,7 +56,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
     def _validate_shortname(self, shortname, neighborhood, state):
         if not h.re_project_name.match(shortname):
             raise forge_exc.ProjectShortnameInvalid(
-                'Please use only letters, numbers, and dashes 3-15 characters long.',
+                'Please use only small letters, numbers, and dashes 3-15 characters long.',
                 shortname, state)
 
     def _validate_allowed(self, shortname, neighborhood, state):
@@ -747,7 +747,7 @@ class RegistrationForm(ForgeForm):
             validator=fev.Regex(
                 h.re_project_name))
         username.validator._messages['invalid'] = (
-            'Usernames must include only letters, numbers, and dashes.'
+            'Usernames must include only small letters, numbers, and dashes.'
             ' They must also start with a letter and be at least 3 characters'
             ' long.')
         fields = [

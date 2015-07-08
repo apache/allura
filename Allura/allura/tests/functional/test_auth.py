@@ -670,9 +670,12 @@ class TestAuth(TestController):
         r = self.app.get('/auth/create_account')
         assert 'Create an Account' in r
         r = self.app.post('/auth/save_new',
-                          params=dict(username='aaa', pw='123',
+                          params=dict(username='AAA', pw='123',
                                       _session_id=self.app.cookies['_session_id']))
-        assert 'Enter a value 6 characters long or more' in r
+        assert_in('Enter a value 6 characters long or more', r)
+        assert_in('Usernames must include only small letters, numbers, '
+                  'and dashes. They must also start with a letter and be '
+                  'at least 3 characters long.', r)
         r = self.app.post(
             '/auth/save_new',
             params=dict(

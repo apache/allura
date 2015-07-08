@@ -509,7 +509,7 @@ class TestNeighborhood(TestController):
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div', {'class': 'error'}
-                           ).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+                           ).string == 'Please use only small letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='mymoz', project_name='My Moz',
@@ -524,7 +524,7 @@ class TestNeighborhood(TestController):
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.html.find('div', {'class': 'error'}
-                           ).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+                           ).string == 'Please use only small letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/p/register',
                           params=dict(
                               project_unixname='test', project_name='Tester',
@@ -834,7 +834,7 @@ class TestNeighborhood(TestController):
             r = self.app.get(
                 '/p/check_names?neighborhood=Projects&project_unixname=%s' % name)
             assert_equal(
-                r.json, {'project_unixname': 'Please use only letters, numbers, and dashes 3-15 characters long.'})
+                r.json, {'project_unixname': 'Please use only small letters, numbers, and dashes 3-15 characters long.'})
         r = self.app.get(
             '/p/check_names?neighborhood=Projects&project_unixname=mymoz')
         assert_equal(r.json, {})
