@@ -139,7 +139,13 @@ Allura uses a background task service called "taskd" to do async tasks like send
 
 In order to initialize the Allura database, you'll need to run the following:
 
+For development setup:
+
     (env-allura)~/src/allura/Allura$ paster setup-app development.ini
+
+For production setup:
+
+    (env-allura)~/src/allura/Allura$ ALLURA_TEST_DATA=False paster setup-app development.ini
 
 This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  Once this is done, you can start the application server:
 
