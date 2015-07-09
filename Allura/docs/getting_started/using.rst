@@ -55,14 +55,26 @@ TODO
 Anchored Tools
 ^^^^^^^^^^^^^^
 
-TODO
+Anchored tools allow you to "anchor" specific tools at the beginning of the topbar menu for all projects belonging to the neighborhood.  If specified tool does not exist in the project, it will be created automatically.  This tools can not be removed by the project.
+
+To configure them, go to "Neighborhood Admin -> Overview".  Use the following
+format "tool_name:The Label, another_tool:Another Label", e.g.
+
+.. code-block:: text
+
+    wiki:Wiki, activity:Activity
+
 
 .. _prohibited-tools:
 
 Prohibited Tools
 ^^^^^^^^^^^^^^^^
 
-TODO
+Prohibited tools allow you to forbid installation of specific tools for all the projects belonging to the neighborhood. Tools, already installed in the project, will not be automatically removed. To configure it, just list tool names using comma as separator. E.g.
+
+.. code-block:: text
+
+  blog, discussion, svn
 
 
 Configuring your project
