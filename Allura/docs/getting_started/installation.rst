@@ -24,10 +24,59 @@ Our step-by-step setup instructions are in our INSTALL.markdown file.  You can r
 
 For a faster and easier setup, see our `Vagrant/VirtualBox installation guide <https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/>`_
 
+That's all for the development setup.  For the production setup see :ref:`next section <post-setup-instructions>`.
+
+.. _post-setup-instructions:
+
+Post-setup instructions
+-----------------------
+
+Create project for site-admin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First of all you need to create a project, which will serve as a container for keeping site administrators (users who will have access to the :ref:`admin interface <site-admin-interface>`).
+
+In order to do that:
+
+- open main page of the site in your browser
+- go to "Projects" neighborhood (:ref:`what-are-neighborhoods`)
+- click "Register a new project" link
+
+By default all admins of "allura" project in "Projects" neighborhood are treated as site admins. If you want to use different project for that, change `site_admins_project` in :file:`development.ini`.
+
+Change default configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the :file:`development.ini`:
+
+Change `[handler_console]` section, so that logs go to a file and will include background tasks info.
+
+.. code-block:: ini
+
+    class = allura.lib.utils.CustomWatchedFileHandler
+    args = ('/path/to/allura.log', 'a')
+
+Add write permissions to the :file:`/path/to/allura.log` for the user you use to run allura proccess.
+
+Change "secrets".
+
+.. code-block:: ini
+
+    beaker.session.secret = <your-secret-key>
+    beaker.session.validate_key = <yet-another-secret-key>
+
+The first one is used for simple cookies, the latter is used for encrypted cookies.
+
+You can use the following command to generate a good key:
+
+.. code-block:: bash
+
+    ~$ python -c 'import os; l = 20; print "%.2x" * l % tuple(map(ord, os.urandom(l)))'
+
 Configuring Optional Features
 -----------------------------
 
-The `development.ini` file has many options you can explore and configure.  It is geared towards development, so you will want to review
+The :file:`development.ini` file has many options you can explore and configure.  It is geared towards development, so you will want to review
 carefully and make changes for production use.
 
 To run SVN and Git services, see the :doc:`scm_host` page.

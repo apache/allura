@@ -23,6 +23,47 @@ Using Allura
 We don't have much end-user help for Allura yet.  SourceForge projects use Allura,
 though, so their support documentation may be useful to anyone using Allura:
 
+.. _what-are-neighborhoods:
+
+What are neighborhoods?
+-----------------------
+
+You can think of neighborhoods as groups of logically related projects, which all have the same default options. Allura has two default neighborhoods: "Projects" and "Users". The "Users" neighborhood is special, it contains a project for every user registered on a site. This user projects contain a few special tools, e.g. "Profile" and "Statistics".   The "Projects" contains all other projects.
+
+Each neighborhood has admin interface. You can get there by clicking "Neighborhood administration" from the home page of the neighborhood or by "Admin" icon in the top toolbar.
+
+This interface allows you to:
+
+- add a new project to the neighborhood
+- change neighborhood's name
+- change neighborhood icon
+- configure redirect from neighborhood's main page to other url
+- specify :ref:`project template <project-templates>` for newly created projects
+- specify project list url (the link will be displayed under neighborhood name in page header)
+- :ref:`anchor tools <anchored-tools>` in the top menu for each project in the neighborhood
+- :ref:`prohibit installation of specific tools <prohibited-tools>` in all projects of this neighborhood
+
+.. _project-templates:
+
+Project Templates
+^^^^^^^^^^^^^^^^^
+
+TODO
+
+.. _anchored-tools:
+
+Anchored Tools
+^^^^^^^^^^^^^^
+
+TODO
+
+.. _prohibited-tools:
+
+Prohibited Tools
+^^^^^^^^^^^^^^^^
+
+TODO
+
 
 Configuring your project
 ------------------------
