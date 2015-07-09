@@ -105,10 +105,11 @@ class NeighborhoodController(object):
             # create user-project if it is missing
             user = M.User.query.get(username=pname, disabled=False, pending=False)
             if user:
-                project = self.neighborhood.register_project(
-                    plugin.AuthenticationProvider.get(
-                        request).user_project_shortname(user),
-                    user=user, user_project=True)
+                project = user.private_project()
+                if project.shortname != self.prefix + pname:
+                    # might be different URL than the URL requested
+                    # e.g. if username isn't valid project name and user_project_shortname() converts the name
+                    redirect(project.url())
         if project is None:
             # look for neighborhood tools matching the URL
             project = self.neighborhood.neighborhood_project
