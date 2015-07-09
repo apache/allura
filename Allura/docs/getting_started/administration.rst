@@ -38,7 +38,7 @@ The admin interface allows you to:
 * Search for users, view user details, update user status, email address, and reset their password
 * View background task statuses, and submit new background tasks
 * Manage "trove" categories (for user skill choices)
-* Subscriber a user to an artifact
+* Subscribe a user to an artifact
 * Reclone a repository
 
 Commands, Scripts, and Tasks
