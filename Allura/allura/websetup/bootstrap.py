@@ -75,6 +75,8 @@ def bootstrap(command, conf, vars):
         REGISTRY.register(ew.widget_context,
                           ew.core.WidgetContext('http', ew.ResourceManager()))
 
+    create_test_data = asbool(os.getenv('ALLURA_TEST_DATA', True))
+
     # if this is a test_run, skip user project creation to save time
     make_user_projects = not test_run
 
@@ -101,7 +103,7 @@ def bootstrap(command, conf, vars):
     index = EnsureIndexCommand('ensure_index')
     index.run([''])
 
-    if asbool(conf.get('cache_test_data')):
+    if create_test_data and asbool(conf.get('cache_test_data')):
         if restore_test_data():
             h.set_context('test', neighborhood='Projects')
             return
@@ -114,7 +116,25 @@ def bootstrap(command, conf, vars):
         display_name='Anonymous')
 
     # never make a user project for the root user
-    root = create_user('Root', make_project=False)
+    if create_test_data:
+        root = create_user('Root', make_project=False)
+    else:
+        # TODO: ask user to provide username/password for root
+        root_name = raw_input('Enter username for root user (default "root"): ').strip()
+        if not root_name:
+            root_name = 'root'
+        ok = False
+        while not ok:
+            root_password1 = raw_input('Enter password: ').strip()
+            root_password2 = raw_input('Confirm password: ').strip()
+            if len(root_password1) == 0:
+                log.info('Please, provide password')
+                return
+            if root_password1 != root_password2:
+                log.info("Passwords don't match")
+                return
+            root = create_user(root_name, password=root_password1, make_project=False)
+            ok = True
 
     n_projects = M.Neighborhood(name='Projects', url_prefix='/p/',
                                 features=dict(private_projects=True,
@@ -128,18 +148,12 @@ def bootstrap(command, conf, vars):
                                            max_projects=None,
                                            css='none',
                                            google_analytics=False))
-    n_adobe = M.Neighborhood(
-        name='Adobe', url_prefix='/adobe/', project_list_url='/adobe/',
-        features=dict(private_projects=True,
-                      max_projects=None,
-                      css='custom',
-                      google_analytics=True))
+
     assert tg.config['auth.method'] == 'local'
     project_reg = plugin.ProjectRegistrationProvider.get()
     p_projects = project_reg.register_neighborhood_project(
         n_projects, [root], allow_register=True)
     p_users = project_reg.register_neighborhood_project(n_users, [root])
-    p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
 
     def set_nbhd_wiki_content(nbhd_proj, content):
         wiki = nbhd_proj.app_instance('wiki')
@@ -164,30 +178,37 @@ def bootstrap(command, conf, vars):
 
         [[projects show_total=yes]]
         '''))
-    set_nbhd_wiki_content(p_adobe, dedent('''
-        This is the "Adobe" neighborhood.  It is just an example of having projects in a different neighborhood.
+    if create_test_data:
+        n_adobe = M.Neighborhood(
+            name='Adobe', url_prefix='/adobe/', project_list_url='/adobe/',
+            features=dict(private_projects=True,
+                          max_projects=None,
+                          css='custom',
+                          google_analytics=True))
+        p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
+        set_nbhd_wiki_content(p_adobe, dedent('''
+            This is the "Adobe" neighborhood.  It is just an example of having projects in a different neighborhood.
 
-        [Neighborhood administration](/adobe/admin)
+            [Neighborhood administration](/adobe/admin)
 
-        [[projects show_total=yes]]
-        '''))
+            [[projects show_total=yes]]
+            '''))
+        # add the adobe icon
+        file_name = 'adobe_icon.png'
+        file_path = os.path.join(
+            allura.__path__[0], 'public', 'nf', 'images', file_name)
+        M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
 
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 
-    # add the adobe icon
-    file_name = 'adobe_icon.png'
-    file_path = os.path.join(
-        allura.__path__[0], 'public', 'nf', 'images', file_name)
-    M.NeighborhoodFile.from_path(file_path, neighborhood_id=n_adobe._id)
-
-    # Add some test users
-    for unum in range(10):
-        make_user('Test User %d' % unum)
+    if create_test_data:
+        # Add some test users
+        for unum in range(10):
+            make_user('Test User %d' % unum)
 
     log.info('Creating basic project categories')
     cat1 = M.ProjectCategory(name='clustering', label='Clustering')
-
     cat2 = M.ProjectCategory(name='communications', label='Communications')
     cat2_1 = M.ProjectCategory(
         name='synchronization', label='Synchronization', parent_id=cat2._id)
@@ -202,36 +223,40 @@ def bootstrap(command, conf, vars):
     cat3_2 = M.ProjectCategory(
         name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
 
-    log.info('Registering "regular users" (non-root) and default projects')
-    # since this runs a lot for tests, separate test and default users and
-    # do the minimal needed
-    if asbool(conf.get('load_test_data')):
-        u_admin = make_user('Test Admin')
-        u_admin.preferences = dict(email_address='test-admin@users.localhost')
-        u_admin.email_addresses = ['test-admin@users.localhost']
-        u_admin.set_password('foo')
-        u_admin.claim_address('test-admin@users.localhost')
-        ThreadLocalORMSession.flush_all()
+    if create_test_data:
+        log.info('Registering "regular users" (non-root) and default projects')
+        # since this runs a lot for tests, separate test and default users and
+        # do the minimal needed
+        if asbool(conf.get('load_test_data')):
+            u_admin = make_user('Test Admin')
+            u_admin.preferences = dict(email_address='test-admin@users.localhost')
+            u_admin.email_addresses = ['test-admin@users.localhost']
+            u_admin.set_password('foo')
+            u_admin.claim_address('test-admin@users.localhost')
+            ThreadLocalORMSession.flush_all()
 
-        admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
-        admin_email.confirmed = True
-    else:
-        u_admin = make_user('Admin 1', username='admin1')
-        # Admin1 is almost root, with admin access for Users and Projects
-        # neighborhoods
-        p_projects.add_user(u_admin, ['Admin'])
-        p_users.add_user(u_admin, ['Admin'])
+            admin_email = M.EmailAddress.get(email='test-admin@users.localhost')
+            admin_email.confirmed = True
+        else:
+            u_admin = make_user('Admin 1', username='admin1')
+            # Admin1 is almost root, with admin access for Users and Projects
+            # neighborhoods
+            p_projects.add_user(u_admin, ['Admin'])
+            p_users.add_user(u_admin, ['Admin'])
 
-        p_allura = n_projects.register_project('allura', u_admin, 'Allura')
-    u1 = make_user('Test User')
-    p_adobe1 = n_adobe.register_project('adobe-1', u_admin, 'Adobe project 1')
-    p_adobe.add_user(u_admin, ['Admin'])
-    p0 = n_projects.register_project('test', u_admin, 'Test Project')
-    p1 = n_projects.register_project('test2', u_admin, 'Test 2')
-    p0._extra_tool_status = ['alpha', 'beta']
+            p_allura = n_projects.register_project('allura', u_admin, 'Allura')
+        u1 = make_user('Test User')
+        p_adobe1 = n_adobe.register_project('adobe-1', u_admin, 'Adobe project 1')
+        p_adobe.add_user(u_admin, ['Admin'])
+        p0 = n_projects.register_project('test', u_admin, 'Test Project')
+        p1 = n_projects.register_project('test2', u_admin, 'Test 2')
+        p0._extra_tool_status = ['alpha', 'beta']
 
     sess = session(M.Neighborhood)  # all the sessions are the same
-    for x in (n_adobe, n_projects, n_users, p_projects, p_users, p_adobe):
+    _list = (n_projects, n_users, p_projects, p_users)
+    if create_test_data:
+        _list += (n_adobe, p_adobe)
+    for x in _list:
         # Ming doesn't detect substructural changes in newly created objects
         # (vs loaded from DB)
         state(x).status = 'dirty'
@@ -249,24 +274,27 @@ def bootstrap(command, conf, vars):
         create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
         create_trove_categories.run([''])
 
-        p0.add_user(u_admin, ['Admin'])
-        log.info('Registering initial apps')
-        with h.push_config(c, user=u_admin):
-            p0.install_apps([{'ep_name': ep_name}
-                for ep_name, app in g.entry_points['tool'].iteritems()
-                if app._installable(tool_name=ep_name,
-                                    nbhd=n_projects,
-                                    project_tools=[])
-            ])
+        if create_test_data:
+            p0.add_user(u_admin, ['Admin'])
+            log.info('Registering initial apps')
+            with h.push_config(c, user=u_admin):
+                p0.install_apps([{'ep_name': ep_name}
+                    for ep_name, app in g.entry_points['tool'].iteritems()
+                    if app._installable(tool_name=ep_name,
+                                        nbhd=n_projects,
+                                        project_tools=[])
+                ])
 
-    # reload our p0 project so that p0.app_configs is accurate with all the
-    # newly installed apps
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
-    p0 = M.Project.query.get(_id=p0._id)
-    sub = p0.new_subproject('sub1', project_name='A Subproject')
-    with h.push_config(c, user=u_admin):
-        sub.install_app('wiki')
+
+    if create_test_data:
+        # reload our p0 project so that p0.app_configs is accurate with all the
+        # newly installed apps
+        p0 = M.Project.query.get(_id=p0._id)
+        sub = p0.new_subproject('sub1', project_name='A Subproject')
+        with h.push_config(c, user=u_admin):
+            sub.install_app('wiki')
 
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
