@@ -22,6 +22,7 @@ Administration
 .. contents::
    :local:
 
+.. _site-admin-interface:
 
 Site Admin Interface
 ====================
