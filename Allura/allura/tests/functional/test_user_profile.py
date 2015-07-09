@@ -53,6 +53,19 @@ class TestUserProfile(TestController):
         assert p is not None and p.is_user_project
         response = self.app.get('/u/test-user/profile/', status=404)
 
+    def test_differing_profile_proj_shortname(self):
+        User.upsert('foo_bar')
+
+        # default auth provider's user_project_shortname() converts _ to - for the project name
+        response = self.app.get('/u/foo_bar/profile/', status=302)
+        assert_equal(response.location, 'http://localhost/u/foo-bar/')
+
+        # unfortunately this doesn't work because the default auth provider's user_by_project_shortname()
+        # doesn't try converting back (and it probably shouldn't since you could get multiple users with conflicting proj names)
+        # at least this works with other auth providers that have a more complete implementation of both
+        # user_project_shortname() and user_by_project_shortname()
+        #self.app.get('/u/foo-bar/profile/')
+
     @td.with_user_project('test-admin')
     @td.with_wiki
     def test_feed(self):
