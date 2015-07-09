@@ -72,6 +72,10 @@ Initialize database with test data:
 
     ~$ docker-compose run web bash -c 'cd Allura && paster setup-app docker-dev.ini'
 
+If you want to skip test data creation you can instead run:
+
+    ~$ docker-compose run web bash -c 'cd Allura && ALLURA_TEST_DATA=False paster setup-app docker-dev.ini'
+
 Start containers in background:
 
     ~$ docker-compose up -d
