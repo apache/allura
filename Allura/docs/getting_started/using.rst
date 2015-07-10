@@ -48,7 +48,50 @@ This interface allows you to:
 Project Templates
 ^^^^^^^^^^^^^^^^^
 
-TODO
+Allows to specify a template for newly created projects. The template controls default tools, permissions, labels, etc for a project. It is formatted as JSON dictionary with the following structure:
+
+.. code-block:: javascript
+
+  {
+    "private": false,
+    "tools": {
+        "tool_name": {               /* e.g. wiki, git, tickets, etc */
+          "label": "Tool Label",     /* Required */
+          "mount_point": "url-path"  /* Required */
+          "options": {}              /* Any other tool's options here. Optional */
+        }
+    },
+    "groups": [
+      {
+        "name": "Admin",        /* Default groups are: Admin, Developer, Member */
+        "usernames": ["admin1"] /* Add existing users to existing group */
+      },
+      {
+        "name": "New Group",     /* You can also create a new group */
+        "usernames": ["user1"],  /* and add existing users to it */
+        /*
+         * Then you need to specify permissions for newly created group.
+         * Supported permissions are: admin, create, update, read
+         */
+        "permissions": ["read", "update"]
+      }
+    ],
+    "tool_order": ["wiki", "tickets", "git"], /* tools order in the topbar menu */
+    "labels": ["Open Source", "web"],
+    "trove_cats": {
+      /*
+       * Available trove types are: root_database, license, developmentstatus,
+       * audience, os, language, topic, natlanguage, environment.
+       */
+      "trove_type": [905, 869]  /* TroveCategory ids */
+    },
+    "icon": {
+      "url: "http://img.host/path/to/image.png",  /* Required */
+      "filename": "default-project-icon.png"      /* Required */
+    }
+  }
+
+Top level keys are optional.
 
 .. _anchored-tools:
 
