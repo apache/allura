@@ -119,20 +119,20 @@ def bootstrap(command, conf, vars):
     if create_test_data:
         root = create_user('Root', make_project=False)
     else:
-        # TODO: ask user to provide username/password for root
+        from getpass import getpass
         root_name = raw_input('Enter username for root user (default "root"): ').strip()
         if not root_name:
             root_name = 'root'
         ok = False
         while not ok:
-            root_password1 = raw_input('Enter password: ').strip()
-            root_password2 = raw_input('Confirm password: ').strip()
+            root_password1 = getpass('Enter password: ')
             if len(root_password1) == 0:
-                log.info('Please, provide password')
-                return
+                log.info('Password must not be empty')
+                continue
+            root_password2 = getpass('Confirm password: ')
             if root_password1 != root_password2:
                 log.info("Passwords don't match")
-                return
+                continue
             root = create_user(root_name, password=root_password1, make_project=False)
             ok = True
 
