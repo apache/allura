@@ -122,7 +122,7 @@ class ForumController(DiscussionController):
     def deleted(self):
         return dict()
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
     def subscribe_to_forum(self, subscribe=None, unsubscribe=None, shortname=None, **kw):
@@ -130,7 +130,10 @@ class ForumController(DiscussionController):
             self.discussion.subscribe(type='direct')
         elif unsubscribe:
             self.discussion.unsubscribe()
-        redirect(h.really_unicode(request.referer).encode('utf-8'))
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.discussion),
+        }
 
 
 class ForumThreadController(ThreadController):

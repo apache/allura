@@ -737,7 +737,7 @@ class PageController(BaseController, FeedController):
         self.page.add_multiple_attachments(file_info)
         redirect(request.referer)
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
@@ -747,7 +747,10 @@ class PageController(BaseController, FeedController):
             self.page.subscribe(type='direct')
         elif unsubscribe:
             self.page.unsubscribe()
-        redirect(request.referer)
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.page),
+        }
 
 
 class WikiAttachmentController(ac.AttachmentController):

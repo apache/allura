@@ -1090,7 +1090,7 @@ class RootController(BaseController, FeedController):
             dates=dates,
         )
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
@@ -1098,7 +1098,10 @@ class RootController(BaseController, FeedController):
             M.Mailbox.subscribe(type='direct')
         elif unsubscribe:
             M.Mailbox.unsubscribe()
-        redirect(request.referer)
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(),
+        }
 
 
 class BinController(BaseController):
@@ -1520,7 +1523,7 @@ class TicketController(BaseController, FeedController):
         c.app.globals.invalidate_bin_counts()
         redirect('.')
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None):
@@ -1528,7 +1531,10 @@ class TicketController(BaseController, FeedController):
             self.ticket.subscribe(type='direct')
         elif unsubscribe:
             self.ticket.unsubscribe()
-        redirect(request.referer)
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.ticket),
+        }
 
     @expose('json:')
     @require_post()

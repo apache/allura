@@ -322,8 +322,10 @@ class PostController(BaseController, FeedController):
         version = kw.pop('version', None)
         post = self._get_version(version)
         base_post = self.post
+        subscribed = M.Mailbox.subscribed(artifact=self.post)
         return dict(post=post, base_post=base_post,
-                    page=page, limit=limit, count=post_count)
+                    page=page, limit=limit, count=post_count,
+                    subscribed=subscribed)
 
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
@@ -375,7 +377,7 @@ class PostController(BaseController, FeedController):
         self.post.commit()
         redirect('.')
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
@@ -383,7 +385,10 @@ class PostController(BaseController, FeedController):
             self.post.subscribe(type='direct')
         elif unsubscribe:
             self.post.unsubscribe()
-        redirect(h.really_unicode(request.referer).encode('utf-8'))
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.post),
+        }
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
