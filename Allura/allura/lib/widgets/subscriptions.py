@@ -75,7 +75,7 @@ class SubscribeForm(ew.SimpleForm):
     defaults = dict(
         ew.SimpleForm.defaults,
         thing='tool',
-        style='text',
+        style='icon',
         tool_subscribed=False,
         value=None)
 
@@ -86,3 +86,8 @@ class SubscribeForm(ew.SimpleForm):
 
     def from_python(self, value, state):
         return value
+
+    def resources(self):
+        for r in super(SubscribeForm, self).resources():
+            yield r
+        yield ew.JSLink('js/subscriptions.js')

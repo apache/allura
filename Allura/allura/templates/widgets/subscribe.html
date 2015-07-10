@@ -17,28 +17,24 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-{% if value %}
-  {% if style == 'icon' %}
-    <form action="{{action}}" id="subscribe_form" style="display:inline;" method="POST">
-      {{lib.csrf_token()}}
-      <input type="hidden" name="unsubscribe" value="1">
-      <a href="#" class="artifact_unsubscribe active" title="Unsubscribe from this {{thing}}" onclick="$('#subscribe_form').submit(); return false;"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Unsubscribe from this {{thing}}"></b></a>
-    </form>
-  {% else %}
-    You are currently subscribed to this {{thing}}.
-    <br/>
-    {{fields['unsubscribe'].display()}}
-  {% endif %}
-{% else %}
-  {% if style == 'icon' %}
-    <form action="{{action}}" id="subscribe_form" style="display:inline;" method="POST">
-      {{lib.csrf_token()}}
-      <input type="hidden" name="subscribe" value="1">
-      <a href="#" class="artifact_subscribe" title="Subscribe to this {{thing}}" onclick="$('#subscribe_form').submit(); return false;"><b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}" title="Subscribe to this {{thing}}"></b></a>
-    </form>
-  {% else %}
-    You are currently not subscribed to this {{thing}}.
-    <br/>
-    {{fields['subscribe'].display()}}
-  {% endif %}
+
+{% do g.register_forge_js('js/react.min.js', location='head_js') %}
+{% for blob in g.resource_manager.emit('head_js') %}
+{% if 'react.min.js' in blob %}
+  {{ blob }}
 {% endif %}
+{% endfor %}
+
+<div id="subscription-form" style="display: inline;">{# see subscription.js #}</div>
+
+<script>
+  document.SUBSCRIPTION_OPTIONS = {
+    "thing": "{{thing}}",
+    "subscribed": {{"true" if value else "false"}},
+    "url": "{{action}}",
+    "icon": {
+      "char": "{{g.icons['mail'].char}}",
+      "css": "{{g.icons['mail'].css}}"
+    }
+  };
+</script>

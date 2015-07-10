@@ -688,7 +688,7 @@ class TreeBrowser(BaseController, DispatchIndex):
             self._path + '/' + next,
             self), rest
 
-    @expose()
+    @expose('json:')
     @require_post()
     @validate(subscribe_form)
     def subscribe(self, subscribe=None, unsubscribe=None, **kw):
@@ -696,7 +696,10 @@ class TreeBrowser(BaseController, DispatchIndex):
             M.Mailbox.subscribe()
         elif unsubscribe:
             M.Mailbox.unsubscribe()
-        redirect(request.referer)
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(),
+        }
 
 
 class FileBrowser(BaseController):
