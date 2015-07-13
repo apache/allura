@@ -19,7 +19,7 @@
 
 # Step-by-Step Installation
 
-For a simpler setup using Docker images, see INSTALL-Docker.markdown instead.
+For a simpler setup using Docker images, see INSTALL-docker.markdown instead.
 
 In these instructions, we'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 14.04](http://ubuntu.com) (12.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 

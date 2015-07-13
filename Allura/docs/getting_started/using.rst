@@ -19,27 +19,27 @@
 Using Allura
 ************
 
+.. contents::
+   :local:
 
-We don't have much end-user help for Allura yet.  SourceForge projects use Allura,
-though, so their support documentation may be useful to anyone using Allura:
 
 .. _what-are-neighborhoods:
 
 What are neighborhoods?
 -----------------------
 
-You can think of neighborhoods as groups of logically related projects, which all have the same default options. Allura has two default neighborhoods: "Projects" and "Users". The "Users" neighborhood is special, it contains a project for every user registered on a site. This user projects contain a few special tools, e.g. "Profile" and "Statistics".   The "Projects" contains all other projects.
+You can think of neighborhoods as groups of logically related projects, which all have the same default options. Allura has two default neighborhoods: "Projects" and "Users". The "Users" neighborhood is special, it contains a project for every user registered on a site. These user projects contain a few special tools, e.g. "Profile" and "Statistics".   The "Projects" neighborhood contains all other projects.
 
-Each neighborhood has admin interface. You can get there by clicking "Neighborhood administration" from the home page of the neighborhood or by "Admin" icon in the top toolbar.
+Each neighborhood has an admin interface. You can get there by clicking "Neighborhood administration" from the home page of the neighborhood or by "Admin" icon in the top toolbar.
 
 This interface allows you to:
 
 - add a new project to the neighborhood
-- change neighborhood's name
-- change neighborhood icon
+- change the neighborhood's name
+- change the neighborhood's icon
 - configure redirect from neighborhood's main page to other url
-- specify :ref:`project template <project-templates>` for newly created projects
-- specify project list url (the link will be displayed under neighborhood name in page header)
+- specify a :ref:`project template <project-templates>` for newly created projects
+- specify a project list url (the link will be displayed under neighborhood name in page header)
 - :ref:`anchor tools <anchored-tools>` in the top menu for each project in the neighborhood
 - :ref:`prohibit installation of specific tools <prohibited-tools>` in all projects of this neighborhood
 
@@ -48,7 +48,7 @@ This interface allows you to:
 Project Templates
 ^^^^^^^^^^^^^^^^^
 
-Allows to specify a template for newly created projects. The template controls default tools, permissions, labels, etc for a project. It is formatted as JSON dictionary with the following structure:
+Allows you to specify a template for newly created projects. The template controls default tools, permissions, labels, etc for a project.  If a template is specified, it is used during project creation and no tool choices are possible.  It is formatted as JSON dictionary with the following structure:
 
 .. code-block:: javascript
 
@@ -98,7 +98,7 @@ Top level keys are optional.
 Anchored Tools
 ^^^^^^^^^^^^^^
 
-Anchored tools allow you to "anchor" specific tools at the beginning of the topbar menu for all projects belonging to the neighborhood.  If specified tool does not exist in the project, it will be created automatically.  This tools can not be removed by the project.
+Anchored tools allow you to "anchor" specific tools at the beginning of the topbar menu for all projects belonging to the neighborhood.  If the specified tool does not exist in the project, it will be created automatically.  These tools can not be removed by the project.
 
 To configure them, go to "Neighborhood Admin -> Overview".  Use the following
 format "tool_name:The Label, another_tool:Another Label", e.g.
@@ -113,7 +113,7 @@ format "tool_name:The Label, another_tool:Another Label", e.g.
 Prohibited Tools
 ^^^^^^^^^^^^^^^^
 
-Prohibited tools allow you to forbid installation of specific tools for all the projects belonging to the neighborhood. Tools, already installed in the project, will not be automatically removed. To configure it, just list tool names using comma as separator. E.g.
+Prohibited tools allow you to forbid installation of specific tools for all the projects belonging to the neighborhood. Tools already installed in the project will not be automatically removed. To configure prohibited tools , just list tool names using comma as separator. E.g.
 
 .. code-block:: text
 
@@ -122,6 +122,9 @@ Prohibited tools allow you to forbid installation of specific tools for all the 
 
 Configuring your project
 ------------------------
+
+We don't have much end-user help for Allura yet.  SourceForge projects use Allura,
+though, so their support documentation may be useful to anyone using Allura:
 
 See SourceForge help page: https://sourceforge.net/p/forge/documentation/Create%20a%20New%20Project/
 
