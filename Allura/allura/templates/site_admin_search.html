@@ -34,9 +34,11 @@
   </div>
 
   {% if objects %}
-    <table>
-      {% include search_results_template %}
-    </table>
+    <div style="overflow:auto; clear:both">
+      <table>
+        {% include search_results_template %}
+      </table>
+    </div>
   {% endif %}
 
   <div class="grid-23">
