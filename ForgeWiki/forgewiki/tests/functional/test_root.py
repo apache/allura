@@ -258,8 +258,6 @@ class TestRootController(TestController):
                 'labels': '',
                 'viewable_by-0.id': 'all'})
         self.app.post('/wiki/tést/revert', params=dict(version='1'))
-        response = self.app.get('/wiki/tést/')
-        assert 'Subscribe' in response
         response = self.app.get('/wiki/tést/diff?v1=0&v2=0')
         assert 'tést' in response
         d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):

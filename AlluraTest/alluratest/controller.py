@@ -18,6 +18,7 @@
 """Unit and functional test suite for allura."""
 import os
 import urllib
+import json
 
 import mock
 import beaker.session
@@ -168,6 +169,21 @@ class TestController(object):
     def webflash(self, response):
         "Extract webflash content from response."
         return urllib.unquote(response.cookies_set.get('webflash', ''))
+
+    def subscription_options(self, response):
+        """
+        Extract subscription options to be passed to React SubscriptionForm
+        component from the <script> tag
+        """
+        script = None
+        for s in response.html.findAll('script'):
+            if s.getText().strip().startswith('document.SUBSCRIPTION_OPTIONS'):
+                script = s
+                break
+        assert script is not None, 'subscription options not found'
+        _, json_dict = script.getText().split('=')
+        json_dict = json_dict.strip(' ;')
+        return json.loads(json_dict)
 
 
 class TestRestApiBase(TestController):

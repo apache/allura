@@ -349,30 +349,32 @@ class TestRootController(_TestCase):
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
-        link = r.html.find('a', 'artifact_subscribe')
-        assert link is not None, r.html
+        opts = self.subscription_options(r)
+        assert_equal(opts['subscribed'], False)
 
         # subscribe
-        self.app.post(str(ci + 'tree/subscribe'),
-                      {'subscribe': True},
-                      extra_environ={'username': str(user.username)}).follow()
+        r = self.app.post(str(ci + 'tree/subscribe'),
+                          {'subscribe': True},
+                          extra_environ={'username': str(user.username)})
+        assert_equal(r.json, {'status': 'ok', 'subscribed': True})
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
-        inp = r.html.find('input', {'type': 'hidden', 'name': 'unsubscribe'})
-        assert inp is not None
+        opts = self.subscription_options(r)
+        assert_equal(opts['subscribed'], True)
 
         # unsubscribe
-        self.app.post(str(ci + 'tree/subscribe'),
-                     {'unsubscribe': True},
-                     extra_environ={'username': str(user.username)}).follow()
+        r = self.app.post(str(ci + 'tree/subscribe'),
+                          {'unsubscribe': True},
+                          extra_environ={'username': str(user.username)})
+        assert_equal(r.json, {'status': 'ok', 'subscribed': False})
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                          extra_environ={'username': str(user.username)})
-        inp = r.html.find('input', {'type': 'hidden', 'name': 'subscribe'})
-        assert inp is not None
+        opts = self.subscription_options(r)
+        assert_equal(opts['subscribed'], False)
 
     def test_timezone(self):
         ci = self._get_ci()
