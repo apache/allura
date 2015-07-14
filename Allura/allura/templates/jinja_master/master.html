@@ -31,6 +31,7 @@
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_forge_css('css/forge/tooltipster.css') %}
+{% do g.register_forge_css('css/font-awesome.min.css', compress=False) %}
 {% do g.register_css('/nf/tool_icon_css?' + g.build_key, compress=False) %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}

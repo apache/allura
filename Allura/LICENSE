@@ -247,7 +247,13 @@ For details, see allura/public/nf/js/modernizr.js
 React.js, which is available under the BSD license.
 For details, see allura/public/nf/js/react.min.js
 
-Markdown editor (https://github.com/lepture/editor) is available under the MIT
+Font Awesome is available under the MIT license (for the code) and SIL OFL 1.1 (for the fonts).
+Source code available at http://fortawesome.github.io/Font-Awesome/
+For details, see:
+    allura/public/nf/css/font-awesome.min.css
+    allura/public/nf/fonts/
+
+SimpleMDE markdown editor (https://github.com/NextStepWebs/simplemde-markdown-editor/) is available under the MIT
 license. For details, see:
-    allura/lib/widgets/resources/js/markdown_editor/
-    allura/lib/widgets/resources/css/markdown_editor/
+    allura/lib/widgets/resources/js/simplemde.min.js
+    allura/lib/widgets/resources/css/simplemde.min.css
