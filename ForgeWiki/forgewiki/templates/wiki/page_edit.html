@@ -25,13 +25,9 @@
 
 {% block extra_css %}
 <style type="text/css">
-  .markdown_edit {
-    height: 600px;
-    min-height: 600px;
-  }
   .markdown_edit .CodeMirror {
     height: auto;
-    min-height: 520px;
+    min-height: 600px;
   }
 </style>
 {% endblock %}
@@ -68,10 +64,12 @@
 	  {{c.markdown_editor.display(id='text', name='text',value=page.text)}}
 	</div>
 	<div style="clear:both;"></div>
+  <div style="margin-top: 1em;">
 	<label class="grid-4">Labels:</label>
 	<div class="grid-14" style="margin-left:0">
 		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
 	</div>
+  </div>
   <div class="grid-19">
     <input type="submit" value="Save">
     <input type="reset" value="Cancel">

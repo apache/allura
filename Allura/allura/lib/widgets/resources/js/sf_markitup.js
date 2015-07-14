@@ -27,45 +27,35 @@ $(window).load(function() {
             var $help_area = $('div.markdown_help', $container);
             var $help_contents = $('div.markdown_help_contents', $container);
 
+            // Add "info" tool & override action "preview" tool
             var toolbar = [];
-            // Exclude "code" tool from toolbar, since it's syntax not matching Allura's
-            // Override actions for "info" & "preview" tools
-            for (var i in Editor.toolbar) {
-              var tool = Editor.toolbar[i];
-              if (tool !== null && typeof tool === 'object') {
-                switch(tool.name) {
-                  case 'code':
-                    continue;
-                  case 'info':
-                    tool = {name: 'info', action: show_help};
-                    break;
-                  case 'preview':
-                    tool = {name: 'preview', action: show_preview};
-                    break;
-                }
+            for (var i in SimpleMDE.toolbar) {
+              var tool = SimpleMDE.toolbar[i];
+              if (tool !== null && typeof tool === 'object' && tool.name === 'preview') {
+                  toolbar.push({
+                    name: 'info',
+                    action: show_help,
+                    className: 'fa fa-info'
+                  });
+                  toolbar.push({
+                    name: 'preview',
+                    action: show_preview,
+                    className: 'fa fa-eye'
+                  });
+              } else {
+                toolbar.push(tool);
               }
-              toolbar.push(tool);
             }
-            var editor = new Editor({
+
+            var editor = new SimpleMDE({
               element: $textarea[0],
+              autofocus: false,
               toolbar: toolbar
             });
-            var cm = editor.codemirror;
-            cm.on('viewportChange', resize);
             editor.render();
-            // trigger resize to properly display editor in case of a lot of text in the textarea
-            resize(cm);
 
             // focus editor by clicking anywhere on it, not only on the first few lines
             $('.CodeMirror').click(function () { this.CodeMirror.focus(); });
-
-            function resize(cm) {
-              var toolbar_h = $('.editor-toolbar', $container).outerHeight();
-              var statusbar_h = $('.editor-statusbar', $container).outerHeight();
-              var cm_h = cm.getScrollInfo().clientHeight;
-              var h = toolbar_h + statusbar_h + cm_h;
-              $container.height(h);
-            }
 
             function show_help(editor) {
               $help_contents.html('Loading...');
@@ -89,11 +79,13 @@ $(window).load(function() {
 
             function show_preview(editor) {
               /*
-               * This is pretty much the same as original Editor.togglePreview,
+               * This is pretty much the same as original SimpleMDE.togglePreview,
                * but rendered text is fetched from the server.
-               * https://github.com/lepture/editor/blob/0f493bfdc7c3014ee7ac656f41b5b52f8955b2e9/src/intro.js#L216-L242
+               * https://github.com/NextStepWebs/simplemde-markdown-editor/blob/1.2.1/source%20files/markdownify.js#L218-L249
                */
+              var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
               var toolbar = editor.toolbar.preview;
+              var parse = editor.constructor.markdown;
               var cm = editor.codemirror;
               var wrapper = cm.getWrapperElement();
               var preview = wrapper.lastChild;
@@ -104,18 +96,23 @@ $(window).load(function() {
               }
               if (/editor-preview-active/.test(preview.className)) {
                 preview.className = preview.className.replace(
-                    /\s*editor-preview-active\s*/g, ''
-                    );
+                  /\s*editor-preview-active\s*/g, ''
+                );
                 toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
+                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
               } else {
                 /* When the preview button is clicked for the first time,
                  * give some time for the transition from editor.css to fire and the view to slide from right to left,
                  * instead of just appearing.
                  */
-                setTimeout(function() {preview.className += ' editor-preview-active';}, 1);
+                setTimeout(function() {
+                  preview.className += ' editor-preview-active';
+                }, 1);
                 toolbar.className += ' active';
+                toolbar_div.className += ' disabled-for-preview';
               }
-              get_rendered_text(preview, cm.getValue());
+              var text = cm.getValue();
+              get_rendered_text(preview, text);
             }
 
             function get_rendered_text(preview, text) {

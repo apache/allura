@@ -17,43 +17,23 @@
        under the License.
 */
 .markdown_edit {
-  height: 200px;
-  min-height: 200px;
   width: 95%;
-  font-family: Consolas, "Andale Mono", "Lucida Console", monospace;
-
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -o-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -khtml-border-radius: 4px;
-  border-radius: 4px;
-  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
-  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
-  -o-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
-  border: medium none;
-  margin-bottom: 5px;
-  margin-left: 2px;
-  border: 1px solid #aaaaaa;
   background: white;
 }
-
 .markdown_edit .CodeMirror {
-  height: auto;
+  min-height: 120px;
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.markdown_edit .CodeMirror-scroll {
   min-height: 120px;
 }
-
-.markdown_edit .editor-toolbar:before {
-  background: none;  /* hide toolbar's top border */
+.markdown_edit .editor-statusbar {
+  border: 1px solid #ddd;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
-
-.markdown_edit .CodeMirror-sizer,
-.markdown_edit .editor-preview {
-  padding: 5px;
-}
-
-
 .markdown_edit .editor-preview {
   z-index: 1001;  /* should always be under help modal */
 }
