@@ -19,6 +19,8 @@
 .markdown_edit {
   width: 95%;
   background: white;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 .markdown_edit .CodeMirror {
   min-height: 120px;
