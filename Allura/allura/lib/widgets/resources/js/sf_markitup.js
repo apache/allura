@@ -80,7 +80,7 @@ $(window).load(function() {
             function show_preview(editor) {
               /*
                * This is pretty much the same as original SimpleMDE.togglePreview,
-               * but rendered text is fetched from the server.
+               * but rendered text is fetched from the server (see the comment bellow)
                * https://github.com/NextStepWebs/simplemde-markdown-editor/blob/1.2.1/source%20files/markdownify.js#L218-L249
                */
               var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
@@ -112,6 +112,9 @@ $(window).load(function() {
                 toolbar_div.className += ' disabled-for-preview';
               }
               var text = cm.getValue();
+              /* Code modified by Allura is here */
+              $container.toggleClass('preview-active');
+              $container.siblings('span.arw').toggleClass('preview-active');
               get_rendered_text(preview, text);
             }
 
