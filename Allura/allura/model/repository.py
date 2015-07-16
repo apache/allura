@@ -1520,6 +1520,12 @@ class Blob(object):
         return self._content_type_encoding[0]
 
     @LazyProperty
+    def is_text(self):
+        """Return true if this blob is text."""
+
+        return self.content_type.startswith("text")
+
+    @LazyProperty
     def content_encoding(self):
         return self._content_type_encoding[1]
 
