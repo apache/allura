@@ -84,6 +84,63 @@ class StaticFilesMiddleware(object):
         return fileapp.FileApp(file_path, [
             ('Access-Control-Allow-Origin', '*')])
 
+class CORSMiddleware(object):
+    '''Enables Cross-Origin Resource Sharing for REST API'''
+
+    def __init__(self, app, allowed_methods, allowed_headers, cache=None):
+        self.app = app
+        self.allowed_methods = [m.upper() for m in allowed_methods]
+        self.allowed_headers = set(h.lower() for h in allowed_headers)
+        self.cache_preflight = cache or None
+
+    def __call__(self, environ, start_response):
+        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
+        valid_cors = 'HTTP_ORIGIN' in environ
+        if not is_api_request or not valid_cors:
+            return self.app(environ, start_response)
+
+        method = environ.get('REQUEST_METHOD')
+        acrm = environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+        if method == 'OPTIONS' and acrm:
+            return self.handle_preflight_request(environ, start_response)
+        else:
+            return self.handle_simple_request(environ, start_response)
+
+    def handle_simple_request(self, environ, start_response):
+        def cors_start_response(status, headers, exc_info=None):
+            headers.extend(self.get_response_headers(preflight=False))
+            return start_response(status, headers, exc_info)
+        return self.app(environ, cors_start_response)
+
+    def handle_preflight_request(self, environ, start_response):
+        method = environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+        if method not in self.allowed_methods:
+            return self.app(environ, start_response)
+        headers = self.get_access_control_request_headers(environ)
+        if not headers.issubset(self.allowed_headers):
+            return self.app(environ, start_response)
+        r = exc.HTTPOk(headers=self.get_response_headers(preflight=True))
+        return r(environ, start_response)
+
+    def get_response_headers(self, preflight=False):
+        headers = [('Access-Control-Allow-Origin', '*')]
+        if preflight:
+            ac_methods = ', '.join(self.allowed_methods)
+            ac_headers = ', '.join(self.allowed_headers)
+            headers.extend([
+                ('Access-Control-Allow-Methods', ac_methods),
+                ('Access-Control-Allow-Headers', ac_headers),
+            ])
+            if self.cache_preflight:
+                headers.append(
+                    ('Access-Control-Max-Age', self.cache_preflight)
+                )
+        return headers
+
+    def get_access_control_request_headers(self, environ):
+        headers = environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS', '')
+        return set(h.strip().lower() for h in headers.split(',') if h.strip())
+
 
 class LoginRedirectMiddleware(object):
 

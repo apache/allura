@@ -25,7 +25,7 @@ import tg
 import tg.error
 import pkg_resources
 from tg import config
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist, asint
 from paste.registry import RegistryManager
 from routes.middleware import RoutesMiddleware
 from pylons.middleware import StatusCodeRedirect
@@ -44,6 +44,7 @@ from allura.lib.custom_middleware import AlluraTimerMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
+from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib import patches
@@ -137,6 +138,12 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
         app = CSRFMiddleware(app, '_session_id')
+    if asbool(config.get('cors.enabled', False)):
+        # Handle CORS requests
+        allowed_methods = aslist(config.get('cors.methods'))
+        allowed_headers = aslist(config.get('cors.headers'))
+        cache_duration = asint(config.get('cors.cache_duration', 0))
+        app = CORSMiddleware(app, allowed_methods, allowed_headers)
     # Setup the allura SOPs
     app = allura_globals_middleware(app)
     # Ensure http and https used per config
