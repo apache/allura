@@ -113,7 +113,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {{c.page_list.display(page=page, limit=limit, count=count)}}
 <table>
   <tbody>
-    {% for type, file, _ in artifacts %}
+    {% for type, file, _, _ in artifacts %}
     <tr>
         <td>{{ type }}</td>
         <td><a href="#diff-{{loop.index}}">
@@ -128,9 +128,10 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
   </tbody>
 </table>
 
-{% for type, file, obj_type in artifacts %}
-        <div class="inline-diff">
-            <h6>
+    {% for type, file, obj_type, is_text in artifacts %}
+        {% if is_text %}
+            <div class="inline-diff">
+                <h6>
             {% if type in ('added', 'changed') %}
                 {% if obj_type == 'tree' %}
                     <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
@@ -169,6 +170,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% endif %}
             </div>
         </div>
-{% endfor %}
-{{c.page_list.display(page=page, limit=limit, count=count)}}
+        {% endif %}
+    {% endfor %}
+    {{ c.page_list.display(page=page, limit=limit, count=count) }}
 {% endblock %}
