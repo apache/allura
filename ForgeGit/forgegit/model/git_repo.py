@@ -652,13 +652,14 @@ class GitImplementation(M.RepositoryImplementation):
             # relies on this)
             '-t',
             '-z',  # don't escape filenames and use \x00 as fields delimiter
-            commit_id)
-        files = files.split('\x00')[:-1]
-        # files = ['A', 'filename', 'D', 'another filename', ...]
+            commit_id).split('\x00')[:-1]
+
         total = len(files) / 2
-        for i in range(1, len(files), 2):
-            status = files[i-1]
-            name = h.really_unicode(files[i])
+        files = [(files[i], h.really_unicode(files[i+1]))
+                 for i in xrange(0, len(files), 2)]
+
+        # files = [('A', u'filename'), ('D', u'another filename'), ...]
+        for status, name in files[start:end]:
             if status == 'A':
                 added.append(name)
             elif status == 'D':
