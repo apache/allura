@@ -39,6 +39,9 @@
 .markdown_edit .editor-preview {
   z-index: 1001;  /* should always be under help modal */
 }
+.markdown_edit .editor-preview pre {
+  font-family: monospace;
+}
 .markdown_edit .editor-preview-active {
   background-color: transparent;
   position: relative;
