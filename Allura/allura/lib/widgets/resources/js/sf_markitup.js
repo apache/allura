@@ -50,6 +50,8 @@ $(window).load(function() {
             var editor = new SimpleMDE({
               element: $textarea[0],
               autofocus: false,
+              indentWithTabs: false,
+              tabSize: 4,
               toolbar: toolbar
             });
             editor.render();
