@@ -23,13 +23,13 @@
   margin-bottom: 5px;
 }
 .markdown_edit .CodeMirror {
-  min-height: 120px;
+  min-height: 60px;
   border-bottom: none;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
 .markdown_edit .CodeMirror-scroll {
-  min-height: 120px;
+  min-height: 60px;
 }
 .markdown_edit .editor-statusbar {
   border: 1px solid #ddd;
