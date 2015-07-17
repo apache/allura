@@ -107,12 +107,13 @@ $(window).load(function() {
                 }, 1);
                 toolbar.className += ' active';
                 toolbar_div.className += ' disabled-for-preview';
+
+                /* Code modified by Allura is here */
+                var text = cm.getValue();
+                get_rendered_text(preview, text);
               }
-              var text = cm.getValue();
-              /* Code modified by Allura is here */
               $container.toggleClass('preview-active');
               $container.siblings('span.arw').toggleClass('preview-active');
-              get_rendered_text(preview, text);
             }
 
             function get_rendered_text(preview, text) {
