@@ -693,6 +693,24 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         }
         assert_equals(diffs, expected)
 
+        # pagination
+        diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=0, end=1)
+        expected = {
+            'added': [u'with space.txt'],
+            'removed': [],
+            'changed': [],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+        diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=1, end=2)
+        expected = {
+            'added': [u'привіт.txt'],
+            'removed': [],
+            'changed': [],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+
     def test_merge_base(self):
         res = self.repo._impl.merge_base(self.merge_request)
         assert_equal(res, '1e146e67985dcd71c74de79613719bef7bddca4a')
