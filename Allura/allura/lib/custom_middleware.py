@@ -133,7 +133,7 @@ class CORSMiddleware(object):
             ])
             if self.cache_preflight:
                 headers.append(
-                    ('Access-Control-Max-Age', self.cache_preflight)
+                    ('Access-Control-Max-Age', str(self.cache_preflight))
                 )
         return headers
 

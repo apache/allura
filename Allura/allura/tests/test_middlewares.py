@@ -95,7 +95,7 @@ class TestCORSMiddleware(object):
                      [('Access-Control-Allow-Origin', '*'),
                       ('Access-Control-Allow-Methods', 'GET, PUT'),
                       ('Access-Control-Allow-Headers', 'accept'),
-                      ('Access-Control-Max-Age', 86400)])
+                      ('Access-Control-Max-Age', '86400')])
 
     def test_get_access_control_request_headers(self):
         key = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'

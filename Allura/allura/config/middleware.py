@@ -143,7 +143,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         allowed_methods = aslist(config.get('cors.methods'))
         allowed_headers = aslist(config.get('cors.headers'))
         cache_duration = asint(config.get('cors.cache_duration', 0))
-        app = CORSMiddleware(app, allowed_methods, allowed_headers)
+        app = CORSMiddleware(app, allowed_methods, allowed_headers, cache_duration)
     # Setup the allura SOPs
     app = allura_globals_middleware(app)
     # Ensure http and https used per config
