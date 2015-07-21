@@ -353,6 +353,24 @@ class TestRestHome(TestRestApiBase):
             r = self.api_get('/rest/p/test/')
             assert r.status_int == 404
 
+    @td.with_wiki
+    def test_cors_POST_req_blocked_by_csrf(self):
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login to get a session cookie set up
+        r = self.app.get('/auth/')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r.form.submit()
+
+        # simulate CORS ajax request withCredentials (cookie headers)
+        # make sure we don't allow the cookies to authorize the request (else could be a CSRF attack vector)
+        assert self.app.cookies['allura']
+        self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': 'http://bad.com/'},
+                      status=401)
+
+
 class TestDoap(TestRestApiBase):
     validate_skip = True
     ns = '{http://usefulinc.com/ns/doap#}'
