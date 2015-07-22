@@ -133,6 +133,7 @@ class ForumController(DiscussionController):
         return {
             'status': 'ok',
             'subscribed': M.Mailbox.subscribed(artifact=self.discussion),
+            'subscribed_to_tool': M.Mailbox.subscribed(),
         }
 
 

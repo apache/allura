@@ -558,6 +558,7 @@ class PageController(BaseController, FeedController):
         next = cur + 1
         hide_left_bar = not (c.app.show_left_bar)
         subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
+        c.subscribe_form.tool_subscribed = M.Mailbox.subscribed()
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
@@ -750,6 +751,7 @@ class PageController(BaseController, FeedController):
         return {
             'status': 'ok',
             'subscribed': M.Mailbox.subscribed(artifact=self.page),
+            'subscribed_to_tool': M.Mailbox.subscribed(),
         }
 
 

@@ -23,21 +23,30 @@ var dom = React.createElement;
 var state = {
   'thing': 'tool',
   'subscribed': false,
+  'subscribed_to_tool': false,
   'url': '',
   'icon': {}
 };
 
 SubscriptionForm = React.createClass({
 
+  getInitialState: function() {
+    return {tooltip_timeout: null};
+  },
+
   render: function() {
     var action = this.props.subscribed ? "Unsubscribe from" : "Subscribe to";
     var title = action + ' this ' + this.props.thing;
     var link_opts = {
+      ref: 'link',
       className: this.props.subscribed ? 'active' : '',
       href: '#',
       title: title,
       onClick: this.handleClick
     };
+    if (this.props.in_progress) {
+      link_opts.style = {cursor: 'wait'};
+    }
     var icon_opts = {
       'data-icon': this.props.icon.char,
       className: 'ico ' + this.props.icon.css,
@@ -56,23 +65,48 @@ SubscriptionForm = React.createClass({
       data.subscribe = true;
     }
     set_state({in_progress: true});
-    /*
-     * TODO:
-     * - show 'in-progress' status to user somehow
-     * - handle errors (show to the user in some kind of popup/flash?)
-     * - If user is subscribed to the whole tool and she tries to subsribe to
-     *   the artifact she will not be subscribed, so nothing will change in the
-     *   UI and it's confusing. We need to show some information message in
-     *   such case
-     */
     $.post(url, data, function(resp) {
       if (resp.status == 'ok') {
-        set_state({subscribed: resp.subscribed});
+        set_state({
+          subscribed: resp.subscribed,
+          subscribed_to_tool: resp.subscribed_to_tool
+        });
+        var link = this.getLinkNode();
+        var text = null;
+        if (resp.subscribed_to_tool) {
+          text = "You can't subscribe to this ";
+          text += this.props.thing;
+          text += " because you are already subscribed to the entire tool";
+        } else {
+          var action = resp.subscribed ? 'subscribed to' : 'unsubscribed from';
+          text = 'Successfully ' + action + ' this ' + this.props.thing;
+        }
+        $(link).tooltipster('content', text).tooltipster('show');
+        if (this.state.tooltip_timeout) {
+          clearTimeout(this.state.tooltip_timeout);
+        }
+        var t = setTimeout(function() { $(link).tooltipster('hide'); }, 4000);
+        this.setState({tooltip_timeout: t});
       }
-    }).always(function() {
+    }.bind(this)).always(function() {
       set_state({in_progress: false});
     });
     return false;
+  },
+
+  getLinkNode: function() { return React.findDOMNode(this.refs.link); },
+
+  componentDidMount: function() {
+    var link = this.getLinkNode();
+    $(link).tooltipster({
+      content: '',
+      animation: 'fade',
+      delay: 200,
+      trigger: 'custom',
+      position: 'top',
+      iconCloning: false,
+      maxWidth: 300
+    });
   }
 
 });
