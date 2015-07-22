@@ -1359,6 +1359,7 @@ class TicketController(BaseController, FeedController):
             c.ticket_custom_field = W.ticket_custom_field
             c.vote_form = W.vote_form
             tool_subscribed = M.Mailbox.subscribed()
+            c.subscribe_form.tool_subscribed = tool_subscribed
             if tool_subscribed:
                 subscribed = False
             else:
@@ -1534,6 +1535,7 @@ class TicketController(BaseController, FeedController):
         return {
             'status': 'ok',
             'subscribed': M.Mailbox.subscribed(artifact=self.ticket),
+            'subscribed_to_tool': M.Mailbox.subscribed(),
         }
 
     @expose('json:')
