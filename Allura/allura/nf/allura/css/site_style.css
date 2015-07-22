@@ -2636,10 +2636,18 @@ div.attachment_thumb .file_type span {
   width: 74%;
 }
 
+#comment .edit_post_form ul,
+#comment .reply_post_form ul,
 #comment .display_post ul {
   float: none;
   padding-left: 1em;
   list-style-type: disc;
+  margin-bottom: 20px !important;
+}
+#comment .edit_post_form ul,
+#comment .reply_post_form ul {
+  padding-left: 1.5em;
+  width: 95%
 }
 
 .reply {
