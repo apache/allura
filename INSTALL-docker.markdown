@@ -53,10 +53,11 @@ Services data:
 
 # First run
 
-Install [Docker](http://docs.docker.com/installation/) 
-and [Docker Compose](https://docs.docker.com/compose/install/).
+[Download the latest release](http://www.apache.org/dyn/closer.cgi/allura/) of Allura, or [clone from git](https://forge-allura.apache.org/p/allura/git/ci/master/tree/) for the bleeding edge.
 
-Build/fetch all required images:
+Install [Docker](http://docs.docker.com/installation/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+Build/fetch all required images (run these in your allura directory):
 
     ~$ docker-compose build
 
