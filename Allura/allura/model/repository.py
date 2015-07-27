@@ -77,11 +77,21 @@ SObjType = S.OneOf('blob', 'tree', 'submodule')
 
 # Used for when we're going to batch queries using $in
 QSIZE = 100
-README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
-VIEWABLE_EXTENSIONS = [
-    '.php', '.py', '.js', '.java', '.html', '.htm', '.yaml', '.sh',
-    '.rb', '.phtml', '.txt', '.bat', '.ps1', '.xhtml', '.css', '.cfm', '.jsp', '.jspx',
-    '.pl', '.php4', '.php3', '.rhtml', '.svg', '.markdown', '.json', '.ini', '.tcl', '.vbs', '.xsl']
+BINARY_EXTENSIONS = [
+    "3ds", "3g2", "3gp", "7z", "a", "aac", "adp", "ai", "aif", "apk", "ar", "asf", "au", "avi",
+    "bak", "bin", "bk", "bmp", "btif", "bz2", "cab", "caf", "cgm", "cmx", "cpio", "cr2", "dat", "deb", "djvu", "dll",
+    "dmg", "dng", "doc", "docx", "dra", "DS_Store", "dsk", "dts", "dtshd", "dvb", "dwg", "dxf", "ecelp4800",
+    "ecelp7470", "ecelp9600", "egg", "eol", "eot", "epub", "exe", "f4v", "fbs", "fh", "fla", "flac", "fli", "flv",
+    "fpx", "fst", "fvt", "g3", "gif", "gz", "h261", "h263", "h264", "ico", "ief", "img", "ipa", "iso", "jar", "jpeg",
+    "jpg", "jpgv", "jpm", "jxr", "ktx", "lvp", "lz", "lzma", "lzo", "m3u", "m4a", "m4v", "mar", "mdi", "mid", "mj2",
+    "mka", "mkv", "mmr", "mng", "mov", "movie", "mp3", "mp4", "mp4a", "mpeg", "mpg", "mpga", "mxu", "nef", "npx", "o",
+    "oga", "ogg", "ogv", "otf", "pbm", "pcx", "pdf", "pea", "pgm", "pic", "png", "pnm", "ppm", "psd", "pya", "pyc",
+    "pyo", "pyv", "qt", "rar", "ras", "raw", "rgb", "rip", "rlc", "rz", "s3m", "s7z", "scpt", "sgi", "shar", "sil",
+    "smv", "so", "sub", "swf", "tar", "tbz2", "tga", "tgz", "tif", "tiff", "tlz", "ts", "ttf", "uvh", "uvi", "uvm",
+    "uvp", "uvs", "uvu", "viv", "vob", "war", "wav", "wax", "wbmp", "wdp", "weba", "webm", "webp", "whl", "wm", "wma",
+    "wmv", "wmx", "woff", "woff2", "wvx", "xbm", "xif", "xm", "xpi", "xpm", "xwd", "xz", "z", "zip", "zipx"
+]
+
 PYPELINE_EXTENSIONS = utils.MARKDOWN_EXTENSIONS + ['.rst']
 
 DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
@@ -1520,12 +1530,6 @@ class Blob(object):
         return self._content_type_encoding[0]
 
     @LazyProperty
-    def is_text(self):
-        """Return true if this blob is text."""
-
-        return self.content_type.startswith("text")
-
-    @LazyProperty
     def content_encoding(self):
         return self._content_type_encoding[1]
 
@@ -1535,8 +1539,10 @@ class Blob(object):
             return True
         return False
 
-    @property
+    @LazyProperty
     def has_html_view(self):
+        if self.extension in BINARY_EXTENSIONS:
+            return False
         if (self.content_type.startswith('text/') or
                 self.extension in VIEWABLE_EXTENSIONS or
                 self.extension in PYPELINE_EXTENSIONS or
