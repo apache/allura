@@ -781,13 +781,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return []
 
     def paged_diffs(self, commit_id, start=0, end=None):
-        result = {
-            'added': [],
-            'removed': [],
-            'changed': [],
-            'copied': [],
-            'total': 0,
-        }
+        result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': [], 'total': 0}
         rev = self._revision(commit_id)
         try:
             log_info = self._svn.log(
@@ -822,6 +816,15 @@ class SVNImplementation(M.RepositoryImplementation):
                 # svn add aaa.txt
                 # svn commit -m "Replace aaa.txt"
                 result['changed'].append(h.really_unicode(p.path))
+
+        for r in result['copied']:
+            if r['old'] in result['removed'][:]:
+                result['removed'].remove(r['old'])
+                result['copied'].remove(r)
+                result['renamed'].append(r)
+            if r['new'] in result['added']:
+                result['added'].remove(r['new'])
+
         return result
 
 Mapper.compile_all()

@@ -642,36 +642,55 @@ class GitImplementation(M.RepositoryImplementation):
             max_count=1).splitlines()[1:]
 
     def paged_diffs(self, commit_id, start=0, end=None):
-        added, removed, changed = [], [], []
+        result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': [], 'total': 0}
+
         files = self._git.git.diff_tree(
             '--no-commit-id',
+            '--find-renames',
+            '--find-copies',
             '--name-status',
-            '--no-renames',
+            '--no-abbrev',
             '--root',
-            # show tree entry itself as well as subtrees (Commit.added_paths
-            # relies on this)
+            '--find-copies-harder',
+            # show tree entry itself as well as subtrees (Commit.added_paths relies on this)
             '-t',
             '-z',  # don't escape filenames and use \x00 as fields delimiter
             commit_id).split('\x00')[:-1]
 
-        total = len(files) / 2
-        files = [(files[i], h.really_unicode(files[i+1]))
-                 for i in xrange(0, len(files), 2)]
+        result['total'] = len(files) / 2
+        x = 0
+        while x < len(files):
+            try:
+                if files[x].startswith("R") or files[x].startswith("C"):
+                    change_list = result['renamed'] if files[x].startswith("R") else result['copied']
+                    ratio = float(files[x][1:4]) / 100.0
+                    change_list.append({
+                        'new': h.really_unicode(files[x + 2]),
+                        'old': h.really_unicode(files[x + 1]),
+                        'ratio': ratio,
+                        'diff': '',
+                    })
+                    del files[x:x+3]
+                    x += 3
+                    result['total'] -= 1
+                else:
+                    x += 2
+            except IndexError:
+                break
+
+        files = [(files[i], h.really_unicode(files[i + 1]))
+                 for i in xrange(0, result['total'] + 1, 2)]
 
         # files = [('A', u'filename'), ('D', u'another filename'), ...]
         for status, name in files[start:end]:
             if status == 'A':
-                added.append(name)
+                result['added'].append(name)
             elif status == 'D':
-                removed.append(name)
+                result['removed'].append(name)
             elif status == 'M':
-                changed.append(name)
-        return {
-            'added': added,
-            'removed': removed,
-            'changed': changed,
-            'total': total,
-        }
+                result['changed'].append(name)
+
+        return result
 
     @contextmanager
     def _shared_clone(self, from_path):
