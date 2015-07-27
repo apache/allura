@@ -670,6 +670,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'added': [u'with space.txt', u'привіт.txt'],
             'removed': [],
             'changed': [],
+            'copied': [],
+            'renamed': [],
             'total': 2,
         }
         assert_equals(diffs, expected)
@@ -678,6 +680,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         expected = {
             'added': [],
             'removed': [],
+            'copied': [],
+            'renamed': [],
             'changed': [u'привіт.txt'],
             'total': 1,
         }
@@ -689,6 +693,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'added': [u'README.md'],
             'removed': [],
             'changed': [],
+            'copied': [],
+            'renamed': [],
             'total': 1,
         }
         assert_equals(diffs, expected)
@@ -698,6 +704,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         expected = {
             'added': [u'with space.txt'],
             'removed': [],
+            'copied': [],
+            'renamed': [],
             'changed': [],
             'total': 2,
         }
@@ -706,6 +714,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         expected = {
             'added': [u'привіт.txt'],
             'removed': [],
+            'copied': [],
+            'renamed': [],
             'changed': [],
             'total': 2,
         }

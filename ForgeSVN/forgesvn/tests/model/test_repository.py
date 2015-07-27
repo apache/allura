@@ -363,7 +363,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
         added_expected = entry.diffs.added[1:3]
         expected = dict(
-            copied=[], changed=[], removed=[],
+            copied=[], changed=[], removed=[], renamed=[],
             added=added_expected, total=4)
         actual = entry.paged_diffs(start=1, end=3)
         self.assertEqual(expected, actual)
@@ -376,7 +376,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         entry = self.repo.commit(self.repo.log(1, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
-                copied=[], changed=[],
+                copied=[], changed=[], renamed=[],
                 removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
@@ -385,7 +385,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         actual.added = sorted(actual.added)
         self.assertEqual(
             entry.diffs, dict(
-                copied=[], changed=[], removed=[],
+                copied=[], changed=[], removed=[], renamed=[],
                 added=sorted([
                     '/a', '/a/b', '/a/b/c',
                     '/a/b/c/hello.txt']), total=4))
@@ -394,20 +394,20 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         entry = self.repo.commit(self.repo.log(3, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
-                copied=[], changed=['/README'],
+                copied=[], changed=['/README'], renamed=[],
                 removed=[], added=[], total=1))
 
     def test_diff_delete(self):
         entry = self.repo.commit(self.repo.log(4, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
-                copied=[], changed=[],
+                copied=[], changed=[], renamed=[],
                 removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
         entry = self.repo.commit(self.repo.log(5, id_only=True).next())
         assert_equals(dict(entry.diffs), dict(
-                copied=[{'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1}],
+                copied=[{'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1}],  renamed=[],
                 changed=[], removed=[], added=[], total=1))
 
     def test_commit(self):
@@ -1002,6 +1002,8 @@ class TestCommit(_TestWithRepo):
         self.repo._impl.paged_diffs.return_value = {
             'added': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
             'changed': [],
+            'copied': [],
+            'renamed': [],
             'removed': [],
             'total': 5,
         }
@@ -1024,6 +1026,8 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         self.repo._impl.paged_diffs.return_value = {
             'added': ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'],
+            'renamed': [],
+            'copied': [],
             'changed': [],
             'removed': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
             'total': 10,
@@ -1044,25 +1048,38 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['bar']
         self._make_log(ci)
         self.repo._impl.paged_diffs.return_value = {
-            'added': ['b/c', 'b/a/z'],
+            'added': [u'b/c', u'b/a/z'],
+            'removed': [u'/b/a/b', u'b/b'],
             'changed': [],
-            'removed': ['b/a/b', 'b/b', 'b/a/a'],
-            'total': 10,
+            'copied': [
+                {
+                    'new': u'b/c',
+                    'old': u'b/a/b',
+                    'ratio': 1,
+                    'diff': '',
+                },
+                {
+                    'new': u'b/a/z',
+                    'old': u'b/b',
+                    'ratio': 1,
+                    'diff': '',
+                },
+            ],
+            'renamed': [],
+            'total': 2
         }
         M.repo_refresh.refresh_commit_trees(ci, {})
-        assert_equal(ci.diffs.added, [])
+        assert_equal(ci.diffs.added, [u'b/a/z', u'b/c'])
         assert_equal(ci.diffs.changed, [])
-        assert_equal(ci.diffs.removed, ['b/a/a'])
+        assert_equal(ci.diffs.removed, [u'/b/a/b', u'b/b'])
         # see mock for open_blob
         assert_equal(len(ci.diffs.copied), 2)
-        assert_equal(ci.diffs.copied[0]['old'], 'b/a/b')
-        assert_equal(ci.diffs.copied[0]['new'], 'b/c')
-        assert_equal(ci.diffs.copied[0]['ratio'], 1)
-        assert_equal(ci.diffs.copied[0]['diff'], '')
-        assert_equal(ci.diffs.copied[1]['old'], 'b/b')
-        assert_equal(ci.diffs.copied[1]['new'], 'b/a/z')
-        assert ci.diffs.copied[1]['ratio'] < 1, ci.diffs.copied[1]['ratio']
-        assert '+++' in ci.diffs.copied[1]['diff'], ci.diffs.copied[1]['diff']
+        assert_equal(ci.diffs.copied[1]['old'], 'b/a/b')
+        assert_equal(ci.diffs.copied[1]['new'], 'b/c')
+        assert_equal(ci.diffs.copied[1]['ratio'], 1)
+        assert_equal(ci.diffs.copied[1]['diff'], '')
+        assert_equal(ci.diffs.copied[0]['old'], 'b/b')
+        assert_equal(ci.diffs.copied[0]['new'], 'b/a/z')
 
     def test_context(self):
         self.ci.context()
@@ -1132,6 +1149,7 @@ class TestDirectRepoAccess(object):
             'removed': [],
             'changed': [],
             'copied': [],
+            'renamed': [],
             'total': 1,
         }
         assert_equals(diffs, expected)
@@ -1142,6 +1160,7 @@ class TestDirectRepoAccess(object):
             'added': [u'/a', u'/a/b', u'/a/b/c', u'/a/b/c/hello.txt'],
             'removed': [],
             'changed': [],
+            'renamed': [],
             'copied': [],
             'total': 4,
         }
@@ -1152,6 +1171,7 @@ class TestDirectRepoAccess(object):
         expected = {
             'added': [],
             'removed': [],
+            'renamed': [],
             'changed': [u'/README'],
             'copied': [],
             'total': 1,
@@ -1164,6 +1184,7 @@ class TestDirectRepoAccess(object):
             'added': [],
             'removed': ['/a/b/c/hello.txt'],
             'changed': [],
+            'renamed': [],
             'copied': [],
             'total': 1,
         }
