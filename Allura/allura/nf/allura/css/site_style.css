@@ -2642,7 +2642,7 @@ div.attachment_thumb .file_type span {
   float: none;
   padding-left: 1em;
   list-style-type: disc;
-  margin-bottom: 20px !important;
+  margin-bottom: 5px !important;
 }
 #comment .edit_post_form ul,
 #comment .reply_post_form ul {
@@ -3018,6 +3018,9 @@ td.code {
     width:100%;
 }
 
+div.codehilite {
+  margin-bottom: 5px;
+}
 div.codehilite pre {
     padding-left: 0px;
     padding-top:10px;
