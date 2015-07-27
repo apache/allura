@@ -27,29 +27,45 @@ $(window).load(function() {
             var $help_area = $('div.markdown_help', $container);
             var $help_contents = $('div.markdown_help_contents', $container);
 
-            // Add "info" tool & override action "preview" tool
+            // Override action for "preview" & "guide" tools
             var toolbar = [];
             for (var i in SimpleMDE.toolbar) {
               var tool = SimpleMDE.toolbar[i];
-              if (tool !== null && typeof tool === 'object' && tool.name === 'preview') {
-                  toolbar.push({
-                    name: 'info',
-                    action: show_help,
-                    className: 'fa fa-info'
-                  });
-                  toolbar.push({
-                    name: 'preview',
-                    action: show_preview,
-                    className: 'fa fa-eye'
-                  });
-              } else {
-                toolbar.push(tool);
+              if (tool !== null && typeof tool === 'object') {
+                switch (tool.name) {
+                  case 'guide':
+                    tool = {
+                      name: tool.name,
+                      action: show_help,
+                      className: tool.className
+                    };
+                    break;
+                  case 'preview':
+                    tool = {
+                      name: tool.name,
+                      action: show_preview,
+                      className: tool.className
+                    };
+                    break;
+                }
               }
+              toolbar.push(tool);
             }
 
             var editor = new SimpleMDE({
               element: $textarea[0],
               autofocus: false,
+              /*
+               * spellChecker: false is important!
+               * It's enabled by default and consumes a lot of memory and CPU
+               * if you have more than one editor on the page. In Allura we
+               * usually have a lot of (hidden) editors on the page (e.g.
+               * comments). On my machine it consumes ~1G of memory for a page
+               * with ~10 comments.
+               * We're using bleeding age 1.4.0, we might want to
+               * re-check when more stable version will be available.
+               */
+              spellChecker: false,
               indentWithTabs: false,
               tabSize: 4,
               toolbar: toolbar
