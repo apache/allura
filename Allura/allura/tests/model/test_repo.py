@@ -143,6 +143,8 @@ class TestLastCommit(unittest.TestCase):
         self.repo.paged_diffs.return_value = {
             'added': [],
             'removed': [],
+            'copied': [],
+            'renamed': [],
             'changed': [],
             'total': 0,
         }
