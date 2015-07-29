@@ -18,9 +18,6 @@
 */
 
 (function() {
-    // Provide CSRF protection
-    var cval = $.cookie('_session_id');
-    var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
     // Install popup
     var install_popup = $('#lightbox_install_modal');
     var install_form = $('#install_form');
@@ -49,42 +46,6 @@
             new_mount_point.val('');
             new_mount_label.val('');
         }
-    });
-    // Edit popup
-    var $popup_title = $('#popup_title');
-    var $popup_contents = $('#popup_contents');
-    $('a.admin_modal').click(function () {
-        var link = this;
-        $popup_title.html('');
-        $popup_contents.html('Loading...');
-        $.get(link.href, function (data) {
-            $popup_title.html($(link).html());
-            $popup_contents.html(data);
-            $popup_contents.find('form').append(csrf_input);
-        });
-    });
-    // delete popup
-    var form_to_delete = null;
-    var mount_delete_popup = $('#lightbox_mount_delete');
-    var mount_delete_form = $('#mount_delete_form');
-    mount_delete_popup.append(mount_delete_form.show());
-    mount_delete_form.find('.continue_delete').click(function () {
-        form_to_delete.submit();
-        form_to_delete = null;
-    });
-    mount_delete_form.find('.cancel_delete').click(function () {
-        form_to_delete = null;
-    });
-    $('a.mount_delete').click(function () {
-        var tool_label = 'this';
-        var mount_point = $(this).data('mount-point');
-        if (mount_point) {
-            tool_label = 'the "' + mount_point + '"';
-        }
-        $('div.warning_msg').text('Warning: This will destroy all data in ' + tool_label + ' tool and is irreversible!');
-
-        form_to_delete = this.parentNode;
-        return false;
     });
     // sorting
     $('#sortable').sortable({items: ".fleft:not(.isnt_sorted)"}).bind( "sortupdate", function (e) {
