@@ -44,6 +44,7 @@ from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
+from allura.lib.widgets import admin_widgets
 from allura import model as M
 
 log = logging.getLogger(__name__)
@@ -289,6 +290,14 @@ class Application(object):
         self.project = project
         self.config = app_config_object
         self.admin = DefaultAdminController(self)
+
+    @LazyProperty
+    def admin_modal(self):
+        return admin_widgets.AdminModal()
+
+    @LazyProperty
+    def admin_tool_delete_modal(self):
+        return admin_widgets.AdminToolDeleteModal()
 
     @LazyProperty
     def sitemap(self):
@@ -615,6 +624,19 @@ class Application(object):
         if len(self._webhooks) > 0:
             links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
         return links
+
+    @LazyProperty
+    def admin_menu_delete_button(self):
+        anchored_tools = self.project.neighborhood.get_anchored_tools()
+        anchored = self.tool_label.lower() in anchored_tools.keys()
+        if self.uninstallable and not anchored:
+            return SitemapEntry(
+                label='Delete',
+                url='#',
+                className='admin_tool_delete_modal',
+                extra_html_attrs={
+                    'data-mount-point': self.config.options.mount_point,
+                })
 
     def handle_message(self, topic, message):
         """Handle incoming email msgs addressed to this tool.

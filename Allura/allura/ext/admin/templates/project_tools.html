@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends g.theme.master %}
+{% from 'allura:templates/jinja_master/sidebar_menu.html' import sidebar_item with context %}
 
 {% do g.register_forge_css('css/forge/deck.css') %}
 {% do g.register_forge_js('js/project_tools.js', location='body_js_tail') %}
@@ -87,24 +88,9 @@
                         <img src="{{ g.theme.app_icon_url(app, 48) }}" alt="">
                     </li>
                     {% for link in links %}
-                    <li>
-                        <a href="{{ link.url }}" class="{{ link.className }}">{{ link.label }}</a>
-                    </li>
+                      {{sidebar_item(link)}}
                     {% endfor %}
-                    {% if app.uninstallable and not (app.tool_label.lower() in app.project.neighborhood.get_anchored_tools().keys()) %}
-                    <li>
-                      <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
-                        <input type="hidden" class="mount_point"
-                               name="tool-{{loop.index0}}.mount_point"
-                               value="{{mount['ac'].options.mount_point}}"/>
-                        <input name="tool-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                        {% if mount['ac'].load().uninstallable %}
-                          <a href="#" class="mount_delete" data-mount-point="{{ mount['ac'].options.mount_point }}">Delete</a>
-                        {% endif %}
-                        {{lib.csrf_token()}}
-                      </form>
-                    </li>
-                    {% endif %}
+                    {{sidebar_item(app.admin_menu_delete_button)}}
                 </ul>
                 {% if not app.uninstallable %}
                   <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
@@ -119,14 +105,9 @@
                         <img src="{{ g.theme.app_icon_url('subproject', 48) }}" alt="">
                     </li>
                     <li>
-                      <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
-                          <input type="hidden" class="shortname"
-                                 name="subproject-{{loop.index0}}.shortname"
-                                 value="{{mount['sub'].shortname}}"/>
-                          <input name="subproject-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                          <a href="#" class="mount_delete" data-mount-point="{{ mount['sub'].shortname }}">Delete</a>
-                          {{lib.csrf_token()}}
-                      </form>
+                      <a href="#" data-mount-point="{{ mount['sub'].shortname }}" class="admin_tool_delete_modal">
+                        <span>Delete</span>
+                      </a>
                     </li>
                 </ul>
             </div>
@@ -137,17 +118,8 @@
 <div style="clear:both">
   {{c.page_list.display(page=page, limit=limit, count=total_mounts)}}
 </div>
-<form id="mount_delete_form" style="display:none">
-  <div class="grid-13 warning_msg">Warning: This will destroy all data in this tool and is irreversible!</div>
-  <div class="grid-13">&nbsp;</div>
-  <hr>
-  <div class="grid-13">&nbsp;</div>
-  <div class="grid-13">
-    <input type="button" value="Delete" class="continue_delete"> <input type="button" value="Cancel" class="cancel_delete close">
-  </div>
-</form>
-{{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
-{{c.mount_delete.display(content='<h1>Confirm Delete</h1>')}}
+{{c.admin_modal.display()}}
+{{c.mount_delete.display()}}
 <div><!--dummy-->
 
 <h3 style="clear:left">Grouping</h3>

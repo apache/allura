@@ -44,6 +44,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.tasks import export_tasks
 from allura.lib.widgets.project_list import ProjectScreenshots
+from allura.lib.widgets import admin_widgets
 
 from . import widgets as aw
 
@@ -54,8 +55,8 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    mount_delete = ffw.Lightbox(name='mount_delete', trigger='a.mount_delete')
-    admin_modal = ffw.Lightbox(name='admin_modal', trigger='a.admin_modal')
+    admin_modal = admin_widgets.AdminModal()
+    mount_delete = admin_widgets.AdminToolDeleteModal()
     install_modal = ffw.Lightbox(
         name='install_modal', trigger='a.install_trig')
     explain_export_modal = ffw.Lightbox(

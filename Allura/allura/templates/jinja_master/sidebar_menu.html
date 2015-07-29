@@ -54,6 +54,17 @@
       {% endfor %}
     {% endif %}
     {% if c.app %}
+      {% if h.has_access(c.app, 'admin')() %}
+        {% for s in c.app.admin_menu() %}
+          {{sidebar_item(s)}}
+        {% endfor %}
+        {{sidebar_item(c.app.admin_menu_delete_button)}}
+        {{sidebar_item(None)}}
+        {{c.app.admin_modal.display()}}
+        {% if c.app.admin_menu_delete_button %}
+          {{c.app.admin_tool_delete_modal.display()}}
+        {% endif %}
+      {% endif %}
       {% for s in c.app.sidebar_menu() %}
         {{sidebar_item(s)}}
       {% endfor %}
