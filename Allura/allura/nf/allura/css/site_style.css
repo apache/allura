@@ -2642,7 +2642,6 @@ div.attachment_thumb .file_type span {
   float: none;
   padding-left: 1em;
   list-style-type: disc;
-  margin-bottom: 5px !important;
 }
 #comment .edit_post_form ul,
 #comment .reply_post_form ul {
