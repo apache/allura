@@ -1036,6 +1036,7 @@ class GroupsController(BaseController):
 
     @without_trailing_slash
     @expose()
+    @require_post()
     @h.vardec
     def delete_group(self, group_name, **kw):
         role = M.ProjectRole.by_name(group_name)

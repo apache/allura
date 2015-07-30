@@ -43,8 +43,10 @@ $(function() {
   $('a.delete_group').click(function(evt){
     evt.preventDefault();
     var link = this;
-    if(confirm("Are you sure you want to remove the group? All users and groups in the group will lose its permissions.")){
-      $.get(link.href, function (data) {
+    var csrf = $.cookie('_session_id');
+    var data = {_session_id: csrf};
+    if(confirm("Are you sure you want to remove the group? All users and groups in the group will lose their permissions.")){
+      $.post(link.href, data, function(resp) {
         $(link).closest('tr').hide('fast');
       });
     }
