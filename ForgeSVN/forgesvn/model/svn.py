@@ -817,8 +817,8 @@ class SVNImplementation(M.RepositoryImplementation):
                 # svn commit -m "Replace aaa.txt"
                 result['changed'].append(h.really_unicode(p.path))
 
-        for r in result['copied']:
-            if r['old'] in result['removed'][:]:
+        for r in result['copied'][:]:
+            if r['old'] in result['removed']:
                 result['removed'].remove(r['old'])
                 result['copied'].remove(r)
                 result['renamed'].append(r)
