@@ -626,6 +626,15 @@ class Application(object):
         return links
 
     @LazyProperty
+    def admin_menu_collapse_button(self):
+        return SitemapEntry(
+            label='Admin',
+            url='#',
+            extra_html_attrs={
+                'id': 'sidebar-admin-menu-trigger',
+            })
+
+    @LazyProperty
     def admin_menu_delete_button(self):
         anchored_tools = self.project.neighborhood.get_anchored_tools()
         anchored = self.tool_label.lower() in anchored_tools.keys()
