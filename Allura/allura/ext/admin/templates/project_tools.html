@@ -105,7 +105,9 @@
                         <img src="{{ g.theme.app_icon_url('subproject', 48) }}" alt="">
                     </li>
                     <li>
-                      <a href="#" data-mount-point="{{ mount['sub'].shortname }}" class="admin_tool_delete_modal">
+                      <a href="#" data-mount-point="{{ mount['sub'].shortname }}"
+                                  data-subproject="true"
+                                  class="admin_tool_delete_modal">
                         <span>Delete</span>
                       </a>
                     </li>

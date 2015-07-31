@@ -20,7 +20,14 @@ $(function() {
   var $form = $('#admin-tool-delete-modal-form');
   $('a.admin_tool_delete_modal').click(function() {
     var mount_point = $(this).data('mount-point');
-    $form.find('.mount_point').val(mount_point);
+    var is_sub = $(this).data('subproject');
+    var prefix = is_sub ? 'subproject-0' : 'tool-0';
+    var mount_point_name = prefix + (is_sub ? '.shortname' : '.mount_point');
+    var delete_name = prefix + '.delete';
+    $form.find('.mount_point')
+         .attr('name', mount_point_name)
+         .val(mount_point);
+    $form.find('.delete-input').attr('name', delete_name);
     var tool_label = 'this';
     if (mount_point) {
       tool_label = 'the "' + mount_point + '"';
