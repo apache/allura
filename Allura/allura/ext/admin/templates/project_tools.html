@@ -92,9 +92,8 @@
                     {% endfor %}
                     {{sidebar_item(app.admin_menu_delete_button)}}
                 </ul>
-                {% if not app.uninstallable %}
-                  <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
-                {% endif %}
+                {# for ordering #}
+                <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
             </div>
         {% endif %}
         {% if 'sub' in mount and not mount['sub'].deleted %}
