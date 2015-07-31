@@ -563,11 +563,17 @@ class CommitBrowser(BaseController):
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
         diffs = self._commit.paged_diffs(start=start, end=start + limit)
-        result['artifacts'] = [
-            (t, f, 'blob' if tree.get_blob_by_path(f) else 'tree',
-            tree.get_blob_by_path(f) and tree.get_blob_by_path(f).has_html_view)
-            for t in ('added', 'removed', 'changed', 'copied', 'renamed')
-            for f in diffs[t]]
+        result['artifacts'] = []
+        for t in ('added', 'removed', 'changed', 'copied', 'renamed'):
+            for f in diffs[t]:
+                if t in ('copied', 'renamed'):
+                    filepath = f['new']
+                else:
+                    filepath = f
+                is_text = filepath and tree.get_blob_by_path(filepath) and tree.get_blob_by_path(filepath).has_html_view
+                result['artifacts'].append(
+                    (t, f, 'blob' if tree.get_blob_by_path(f) else 'tree', is_text)
+                )
         count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))
         return result

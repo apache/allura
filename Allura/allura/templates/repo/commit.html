@@ -132,9 +132,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 </table>
 
     {% for type, file, obj_type, is_text in artifacts %}
-        {% if is_text %}
-            <div class="inline-diff">
-                <h6>
+        <div class="inline-diff">
+            <h6>
             {% if type in ('added', 'changed') %}
                 {% if obj_type == 'tree' %}
                     <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
@@ -145,9 +144,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% endif %}
             {% elif type == 'removed' %}
                 <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
-            {% elif type == 'renamed' %}
-                <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
-            {% elif type == 'copied' %}
+            {% elif type in ('copied', 'renamed') %}
                 <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file.old))}}">{{h.really_unicode(file.old)}}</a>
                 to
                 <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file.new))}}">{{h.really_unicode(file.new)}}</a>
@@ -156,14 +153,16 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             <div id="diff-{{loop.index}}" class="inline-diff-body">
                 {% if type == 'removed' %}
                   <span class="empty-diff">File was removed.</span>
-                {% elif type == 'copied' %}
+                {% elif type in ('copied', 'renamed') %}
                   {% if file.ratio == 1 %}
-                    <span class="empty-diff">File was copied or renamed.</span>
+                    <span class="empty-diff">File was {{ type }}.</span>
                   {% else %}
                     {{g.highlight(file.diff, lexer='diff')}}
                   {% endif %}
                 {% elif obj_type == 'tree' %}
                     <span class="empty-diff">Directory.</span>
+                {% elif not is_text %}
+                    <span class="empty-diff">Binary file was {{ type }}.</span>
                 {% else %}
                     <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                     <script type="text/javascript">
@@ -175,7 +174,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% endif %}
             </div>
         </div>
-        {% endif %}
     {% endfor %}
     {{ c.page_list.display(page=page, limit=limit, count=count) }}
 {% endblock %}
