@@ -651,7 +651,6 @@ class GitImplementation(M.RepositoryImplementation):
             '--name-status',
             '--no-abbrev',
             '--root',
-            '--find-copies-harder',
             # show tree entry itself as well as subtrees (Commit.added_paths relies on this)
             '-t',
             '-z',  # don't escape filenames and use \x00 as fields delimiter
