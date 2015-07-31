@@ -121,7 +121,7 @@ class TestNewGit(unittest.TestCase):
         assert_equal(
             sorted(rev.webhook_info.keys()),
             sorted(['id', 'url', 'timestamp', 'message', 'author',
-                    'committer', 'added', 'removed', 'modified', 'copied']))
+                    'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
 
 class TestGitRepo(unittest.TestCase, RepoImplTestBase):
@@ -568,7 +568,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 'added': [u'bad'],
                 'removed': [],
                 'modified': [],
-                'copied': []
+                'copied': [],
+                'renamed': [],
             }, {
                 'id': u'1e146e67985dcd71c74de79613719bef7bddca4a',
                 'url': u'http://localhost/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
@@ -583,7 +584,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 'added': [],
                 'removed': [],
                 'modified': [u'README'],
-                'copied': []
+                'copied': [],
+                'renamed': [],
             }],
             'repository': {
                 'name': u'Git',

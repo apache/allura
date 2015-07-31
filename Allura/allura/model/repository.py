@@ -1275,6 +1275,7 @@ class Commit(RepoObject, ActivityObject):
             'removed': self.diffs.removed,
             'modified': self.diffs.changed,
             'copied': self.diffs.copied,
+            'renamed': self.diffs.renamed,
         }
 
 

@@ -102,7 +102,7 @@ class TestNewRepo(unittest.TestCase):
         assert_equal(
             sorted(self.rev.webhook_info.keys()),
             sorted(['id', 'url', 'timestamp', 'message', 'author',
-                    'committer', 'added', 'removed', 'modified', 'copied']))
+                    'committer', 'added', 'removed', 'renamed', 'modified', 'copied']))
 
 
 class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
@@ -595,7 +595,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 'added': [u'/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
                 'removed': [],
                 'modified': [],
-                'copied': []
+                'copied': [],
+                'renamed': [],
             }, {
                 'id': u'r5',
                 'url': u'http://localhost/p/test/src/5/',
@@ -613,6 +614,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 'copied': [
                     {'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1},
                 ],
+                'renamed': [],
             }],
             'repository': {
                 'name': u'SVN',
