@@ -153,12 +153,34 @@ class TestTree(unittest.TestCase):
 class TestBlob(unittest.TestCase):
 
     def test_pypeline_view(self):
-        blob = M.repository.Blob(Mock(), Mock(), Mock())
-        blob._id = 'blob1'
-        blob.path = Mock(return_value='path')
-        blob.name = 'INSTALL.mdown'
-        blob.extension = '.mdown'
+        blob = M.repository.Blob(Mock(), 'INSTALL.mdown', 'blob1')
         assert_equal(blob.has_pypeline_view, True)
+
+    def test_has_html_view_text_mime(self):
+        blob = M.repository.Blob(Mock(), 'INSTALL', 'blob1')
+        blob.content_type = 'text/plain'
+        assert_equal(blob.has_html_view, True)
+
+    def test_has_html_view_text_ext(self):
+        blob = M.repository.Blob(Mock(), 'INSTALL.txt', 'blob1')
+        blob.content_type = 'foo/bar'
+        assert_equal(blob.has_html_view, True)
+
+    def test_has_html_view_text_contents(self):
+        blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
+        blob.content_type = 'foo/bar'
+        blob.text = 'hello world, this is text here'
+        assert_equal(blob.has_html_view, True)
+
+    def test_has_html_view_bin_ext(self):
+        blob = M.repository.Blob(Mock(), 'INSTALL.zip', 'blob1')
+        assert_equal(blob.has_html_view, False)
+
+    def test_has_html_view_bin_content(self):
+        blob = M.repository.Blob(MagicMock(), 'myfile', 'blob1')
+        blob.content_type = 'whatever'
+        blob.text = '\0\0\0\0'
+        assert_equal(blob.has_html_view, False)
 
 
 class TestCommit(unittest.TestCase):
