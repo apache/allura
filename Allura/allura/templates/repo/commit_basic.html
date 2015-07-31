@@ -46,6 +46,15 @@
         <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
       </td>
     </tr>
+    {% endfor %}{% for diff in commit.diffs.renamed %}
+    <tr>
+      <td>rename</td>
+      <td>
+        <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
+        <br/>to<br/>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
+      </td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>
