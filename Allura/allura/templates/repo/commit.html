@@ -148,6 +148,10 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file.old))}}">{{h.really_unicode(file.old)}}</a>
                 to
                 <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file.new))}}">{{h.really_unicode(file.new)}}</a>
+                {% if file.ratio != 1 %}
+                    <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?diff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}">Diff</a>
+                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?barediff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                {% endif %}
             {% endif %}
             </h6>
             <div id="diff-{{loop.index}}" class="inline-diff-body">
@@ -157,7 +161,13 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                   {% if file.ratio == 1 %}
                     <span class="empty-diff">File was {{ type }}.</span>
                   {% else %}
-                    {{g.highlight(file.diff, lexer='diff')}}
+                    <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
+                    <script type="text/javascript">
+                      diff_queue.push({
+                        selector: '#diff-{{loop.index}}',
+                        url: '{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?barediff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}'
+                      });
+                    </script>
                   {% endif %}
                 {% elif obj_type == 'tree' %}
                     <span class="empty-diff">Directory.</span>

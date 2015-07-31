@@ -803,7 +803,6 @@ class SVNImplementation(M.RepositoryImplementation):
                     'new': h.really_unicode(p.path),
                     'old': h.really_unicode(p.copyfrom_path),
                     'ratio': 1,
-                    'diff': '',
                 })
             elif p['action'] == 'A':
                 result['added'].append(h.really_unicode(p.path))

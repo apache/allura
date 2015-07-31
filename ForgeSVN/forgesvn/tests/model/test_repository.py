@@ -407,7 +407,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_diff_copy(self):
         entry = self.repo.commit(self.repo.log(5, id_only=True).next())
         assert_equals(dict(entry.diffs), dict(
-                copied=[{'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1}],  renamed=[],
+                copied=[{'new': u'/b', 'old': u'/a', 'ratio': 1}],  renamed=[],
                 changed=[], removed=[], added=[], total=1))
 
     def test_commit(self):
@@ -612,7 +612,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 'removed': [],
                 'modified': [],
                 'copied': [
-                    {'new': u'/b', 'old': u'/a', 'diff': '', 'ratio': 1},
+                    {'new': u'/b', 'old': u'/a', 'ratio': 1},
                 ],
                 'renamed': [],
             }],
