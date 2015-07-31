@@ -135,22 +135,25 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         <div class="inline-diff">
             <h6>
             {% if type in ('added', 'changed') %}
-                {% if obj_type == 'tree' %}
-                    <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
-                {% else %}
-                    <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
-                    <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?diff={{prev[0]._id if prev else ''}}">Diff</a>
-                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?barediff={{prev[0]._id if prev else ''}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                {% set file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
+                <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>
+                {% if obj_type != 'tree' %}
+                    {% set diff_url = file_url + '?barediff=' + (prev[0]._id if prev else '') %}
+                    <a class="commit-diff-link" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
+                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{ diff_url }}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
                 {% endif %}
             {% elif type == 'removed' %}
-                <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file))}}">{{h.really_unicode(file)}}</a>
+                {% set file_url = prev[0].url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
+                <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>
             {% elif type in ('copied', 'renamed') %}
                 <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file.old))}}">{{h.really_unicode(file.old)}}</a>
                 to
-                <a href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file.new))}}">{{h.really_unicode(file.new)}}</a>
+                {% set new_file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file.new)) %}
+                <a href="{{ new_file_url }}">{{h.really_unicode(file.new)}}</a>
                 {% if file.ratio != 1 %}
-                    <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?diff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}">Diff</a>
-                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?barediff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                    {% set diff_url = new_file_url + '?barediff=' + (prev[0]._id if prev else '') + '&prev_file=' + h.urlquote(h.really_unicode(file['old'])) %}
+                    <a class="commit-diff-link" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
+                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{diff_url}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
                 {% endif %}
             {% endif %}
             </h6>
@@ -165,7 +168,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                     <script type="text/javascript">
                       diff_queue.push({
                         selector: '#diff-{{loop.index}}',
-                        url: '{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file['new']))}}?barediff={{prev[0]._id if prev else ''}}&prev_file={{h.urlquote(h.really_unicode(file['old']))}}'
+                        url: '{{diff_url}}'
                       });
                     </script>
                   {% endif %}
@@ -178,7 +181,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                     <script type="text/javascript">
                       diff_queue.push({
                         selector: '#diff-{{loop.index}}',
-                        url: '{{commit.url()}}tree/{{h.urlquote(h.really_unicode(file))}}?barediff={{prev[0]._id if prev else ''}}'
+                        url: '{{diff_url}}'
                       });
                     </script>
                 {% endif %}
