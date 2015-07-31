@@ -724,11 +724,11 @@ class FileBrowser(BaseController):
         elif 'diff' in kw:
             tg.decorators.override_template(
                 self.index, 'jinja:allura:templates/repo/diff.html')
-            return self.diff(kw['diff'], kw.pop('diformat', None))
+            return self.diff(kw['diff'], kw.pop('diformat', None), kw.pop('prev_file', None))
         elif 'barediff' in kw:
             tg.decorators.override_template(
                 self.index, 'jinja:allura:templates/repo/barediff.html')
-            return self.diff(kw['barediff'], kw.pop('diformat', None))
+            return self.diff(kw['barediff'], kw.pop('diformat', None), kw.pop('prev_file', None))
         else:
             force_display = 'force' in kw
             stats = utils.generate_code_stats(self._blob)
@@ -753,13 +753,20 @@ class FileBrowser(BaseController):
             'attachment;filename="%s"' % filename)
         return iter(self._blob)
 
-    def diff(self, commit, fmt=None, **kw):
+    def diff(self, prev_commit, fmt=None, prev_file=None, **kw):
+        '''
+        :param prev_commit: previous commit to compare against
+        :param fmt: "sidebyside", or anything else for "unified"
+        :param prev_file: previous filename, if different
+        :return:
+        '''
         try:
             path, filename = os.path.split(self._blob.path())
-            a_ci = c.app.repo.commit(commit)
-            a = a_ci.get_path(self._blob.path())
+            a_ci = c.app.repo.commit(prev_commit)
+            a = a_ci.get_path(prev_file or self._blob.path())
             apath = a.path()
         except:
+            # prev commit doesn't have the file
             a = []
             apath = ''
         b = self._blob

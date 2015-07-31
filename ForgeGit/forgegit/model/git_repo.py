@@ -681,7 +681,6 @@ class GitImplementation(M.RepositoryImplementation):
                     'new': h.really_unicode(cmd_output[x + 2]),
                     'old': h.really_unicode(cmd_output[x + 1]),
                     'ratio': ratio,
-                    'diff': '',
                 }))
                 x += 3
             else:
