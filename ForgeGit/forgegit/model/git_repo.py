@@ -642,9 +642,9 @@ class GitImplementation(M.RepositoryImplementation):
             max_count=1).splitlines()[1:]
 
     def paged_diffs(self, commit_id, start=0, end=None):
-        result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': [], 'total': 0}
+        result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': []}
 
-        files = self._git.git.diff_tree(
+        cmd_output = self._git.git.diff_tree(
             '--no-commit-id',
             '--find-renames',
             '--find-copies',
@@ -656,39 +656,49 @@ class GitImplementation(M.RepositoryImplementation):
             '-z',  # don't escape filenames and use \x00 as fields delimiter
             commit_id).split('\x00')[:-1]
 
-        result['total'] = len(files) / 2
+        ''' cmd_output will be like:
+        [
+        'A',
+        'filename',
+        'D',
+        'another filename',
+        'M',
+        'po',
+        'R100',
+        'po/sr.po',
+        'po/sr_Latn.po',
+        ]
+        '''
+
         x = 0
-        while x < len(files):
-            try:
-                if files[x].startswith("R") or files[x].startswith("C"):
-                    change_list = result['renamed'] if files[x].startswith("R") else result['copied']
-                    ratio = float(files[x][1:4]) / 100.0
-                    change_list.append({
-                        'new': h.really_unicode(files[x + 2]),
-                        'old': h.really_unicode(files[x + 1]),
-                        'ratio': ratio,
-                        'diff': '',
-                    })
-                    del files[x:x+3]
-                    x += 3
-                    result['total'] -= 1
-                else:
-                    x += 2
-            except IndexError:
-                break
+        files = []
+        while x < len(cmd_output):
+            status = cmd_output[x][0]
+            if status in ('R', 'C'):
+                # TODO: make sure we have a test for this
+                ratio = float(cmd_output[x][1:4]) / 100.0
+                files.append((status, {
+                    'new': h.really_unicode(cmd_output[x + 2]),
+                    'old': h.really_unicode(cmd_output[x + 1]),
+                    'ratio': ratio,
+                    'diff': '',
+                }))
+                x += 3
+            else:
+                files.append((status, h.really_unicode(cmd_output[x+1])))
+                x += 2
 
-        files = [(files[i], h.really_unicode(files[i + 1]))
-                 for i in xrange(0, result['total'] + 1, 2)]
-
-        # files = [('A', u'filename'), ('D', u'another filename'), ...]
         for status, name in files[start:end]:
-            if status == 'A':
-                result['added'].append(name)
-            elif status == 'D':
-                result['removed'].append(name)
-            elif status == 'M':
-                result['changed'].append(name)
+            change_list = {
+                'R': result['renamed'],
+                'C': result['copied'],
+                'A': result['added'],
+                'D': result['removed'],
+                'M': result['changed']
+            }[status]
+            change_list.append(name)
 
+        result['total'] = len(files)
         return result
 
     @contextmanager
