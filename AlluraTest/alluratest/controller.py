@@ -185,6 +185,12 @@ class TestController(object):
         json_dict = json_dict.strip(' ;')
         return json.loads(json_dict)
 
+    def find_form(self, resp, cond):
+        """Find form on the page that meets given condition"""
+        for f in resp.forms.itervalues():
+            if cond(f):
+                return f
+
 
 class TestRestApiBase(TestController):
 

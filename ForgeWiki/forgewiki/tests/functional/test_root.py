@@ -54,6 +54,10 @@ class TestRootController(TestController):
     def setup_with_tools(self):
         pass
 
+    def _find_edit_form(self, resp):
+        cond = lambda f: f.id == 'page_edit_form'
+        return self.find_form(resp, cond)
+
     def test_root_index(self):
         page_url = h.urlquote(u'/wiki/tést/')
         r = self.app.get(page_url).follow()
@@ -678,8 +682,9 @@ class TestRootController(TestController):
         assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get(
             '/p/test/wiki/')
         req = self.app.get('/p/test/wiki/Home/edit')
-        req.forms[1]['title'].value = 'new_title'
-        req.forms[1].submit()
+        form = self._find_edit_form(req)
+        form['title'].value = 'new_title'
+        form.submit()
         assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get(
             '/p/test/wiki/')
 
