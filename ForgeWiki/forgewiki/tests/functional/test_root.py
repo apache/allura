@@ -819,3 +819,20 @@ class TestRootController(TestController):
                 'Page creation rate limit exceeded. Please try again later.')
             p = model.Page.query.get(title='page2')
             assert_equal(p, None)
+
+    def test_sidebar_admin_menu(self):
+        r = self.app.get('/p/test/wiki/Home/')
+        menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
+        menu = [li.find('span').getText() for li in menu.findAll('li')]
+        assert_equal(
+            menu,
+            ['Admin', 'Set Home', 'Permissions', 'Options', 'Label', 'Delete'])
+
+    def test_sidebar_admin_menu_invisible_to_not_admin(self):
+        def assert_invisible_for(username):
+            env = {'username': username}
+            r = self.app.get('/p/test/wiki/Home/', extra_environ=env)
+            menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
+            assert_equal(menu, None)
+        assert_invisible_for('*anonymous')
+        assert_invisible_for('test-user')
