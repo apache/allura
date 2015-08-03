@@ -74,18 +74,14 @@ class CommitMessageExtension(markdown.Extension):
         md.registerExtension(self)
         # remove default preprocessors and add our own
         md.preprocessors.clear()
-        md.preprocessors['trac_refs'] = PatternReplacingProcessor(
-            TracRef1(), TracRef2(), TracRef3(self.app))
+        md.preprocessors['trac_refs'] = PatternReplacingProcessor(TracRef1(), TracRef2(), TracRef3(self.app))
         # remove all inlinepattern processors except short refs and links
         md.inlinePatterns.clear()
-        md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(
-            markdown.inlinepatterns.LINK_RE, md)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(
-            markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(markdown.inlinepatterns.LINK_RE, md)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
         # remove all default block processors except for paragraph
         md.parser.blockprocessors.clear()
-        md.parser.blockprocessors['paragraph'] = \
-            markdown.blockprocessors.ParagraphProcessor(md.parser)
+        md.parser.blockprocessors['paragraph'] = markdown.blockprocessors.ParagraphProcessor(md.parser)
         # wrap artifact link text in square brackets
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
@@ -253,31 +249,23 @@ class ForgeExtension(markdown.Extension):
         # https://github.com/waylan/Python-Markdown/issues/52
         md.preprocessors['html_block'].markdown_in_raw = True
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
-        md.preprocessors.add('plain_text_block',
-                             PlainTextPreprocessor(md), "_begin")
-        md.preprocessors.add(
-            'macro_include', ForgeMacroIncludePreprocessor(md), '_end')
+        md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
+        md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
-        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(
-            r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
+        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
         # replace the link pattern with our extended version
-        md.inlinePatterns['link'] = ForgeLinkPattern(
-            markdown.inlinepatterns.LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(
-            markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
         # macro must be processed before links
-        md.inlinePatterns.add(
-            'macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
+        md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
-        # Rewrite all relative links that don't start with . to have a '../'
-        # prefix
-        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(
-            make_absolute=self._is_email)
+        # Rewrite all relative links that don't start with . to have a '../' prefix
+        md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(make_absolute=self._is_email)
         # Put a class around markdown content for custom css
         md.postprocessors['add_custom_class'] = AddCustomClass()
         md.postprocessors['mark_safe'] = MarkAsSafe()
