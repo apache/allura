@@ -110,6 +110,7 @@ class DiscussionController(BaseController, FeedController):
             else:
                 thread['subscription'] = False
             M.session.artifact_orm_session._get().skip_mod_date = True
+            M.session.artifact_orm_session._get().skip_last_updated = True
         redirect(request.referer)
 
     def get_feed(self, project, app, user):
@@ -193,6 +194,7 @@ class ThreadController(BaseController, FeedController):
         self.thread.num_views += 1
         # the update to num_views shouldn't affect it
         M.session.artifact_orm_session._get().skip_mod_date = True
+        M.session.artifact_orm_session._get().skip_last_updated = True
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
