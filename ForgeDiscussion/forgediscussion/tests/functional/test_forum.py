@@ -831,6 +831,19 @@ class TestForum(TestController):
         r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
         assert u'<option value="téstforum" selected>Tést Forum</option>' in r
 
+    def test_viewing_a_thread_does_not_update_project_last_updated(self):
+        # Create new topic/thread
+        r = self.app.get('/discussion/create_topic/')
+        url = self.fill_new_topic_form(r).submit().follow().request.url
+
+        # Remember project's last_updated
+        timestamp_before = M.Project.query.get(shortname='test').last_updated
+
+        # View the thread and make sure project last_updated is not updated
+        thread = self.app.get(url)
+        timestamp_after = M.Project.query.get(shortname='test').last_updated
+        assert_equal(timestamp_before, timestamp_after)
+
 
 class TestForumStats(TestController):
     def test_stats(self):
