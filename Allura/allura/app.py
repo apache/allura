@@ -293,10 +293,12 @@ class Application(object):
 
     @LazyProperty
     def admin_modal(self):
+        """Returns modal dialog widget for app's admin options"""
         return admin_widgets.AdminModal()
 
     @LazyProperty
     def admin_tool_delete_modal(self):
+        """Returns modal dialog widget for app's delete workflow"""
         return admin_widgets.AdminToolDeleteModal()
 
     @LazyProperty
@@ -627,6 +629,7 @@ class Application(object):
 
     @LazyProperty
     def admin_menu_collapse_button(self):
+        """Returns button for showing/hiding admin sidebar menu"""
         return SitemapEntry(
             label='Admin',
             url='#',
@@ -636,6 +639,7 @@ class Application(object):
 
     @LazyProperty
     def admin_menu_delete_button(self):
+        """Returns button for deleting an app if app can be deleted"""
         anchored_tools = self.project.neighborhood.get_anchored_tools()
         anchored = self.tool_label.lower() in anchored_tools.keys()
         if self.uninstallable and not anchored:
