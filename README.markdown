@@ -22,7 +22,7 @@ Apache Allura
 
 Allura is an open source implementation of a software "forge", a web site that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual projects.
 
-To install Allura, see INSTALL.markdown
+To install Allura, see `Allura/docs`.
 
 Website: <https://allura.apache.org/>
 
