@@ -103,11 +103,12 @@ class ForgeMarkdown(markdown.Markdown):
                 field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
+        bugfix_rev = 2  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
         md5 = None
         # If a cached version exists and it is valid, return it.
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
-            if cache.md5 == md5 and getattr(cache, 'fix7528', False):
+            if cache.md5 == md5 and getattr(cache, 'fix7528', False) == bugfix_rev:
                 return h.html.literal(cache.html)
 
         # Convert the markdown and time the result.
@@ -128,7 +129,7 @@ class ForgeMarkdown(markdown.Markdown):
             if md5 is None:
                 md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
-            cache.fix7528 = True  # flag to indicate good caches created after [#7528] was fixed
+            cache.fix7528 = bugfix_rev  # flag to indicate good caches created after [#7528] and other critical bugs were fixed.
 
             # Prevent cache creation from updating the mod_date timestamp.
             _session = artifact_orm_session._get()
