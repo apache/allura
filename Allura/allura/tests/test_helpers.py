@@ -250,7 +250,7 @@ def test_render_any_markup_formatting():
                   '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
                   '<div class="codehilite"><pre><span class="nt">'
                   '&lt;script&gt;</span>alert(1)<span class="nt">'
-                  '&lt;/script&gt;</span> bar\n</pre></div>\n</div>')
+                  '&lt;/script&gt;</span> bar\n</pre></div>\n\n</div>')
 
 
 class AuditLogMock(Mock):

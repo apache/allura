@@ -48,6 +48,9 @@ from allura.tests import decorators as td
 from forgewiki import model as WM
 from forgeblog import model as BM
 
+def squish_spaces(text):
+    return re.sub(r'\s+', ' ', text)
+
 
 def setUp():
     """Method called by nose once before running the package.  Some functions need it run again to reset data"""
@@ -210,12 +213,14 @@ def test_macro_members():
     p_test.add_user(M.User.by_username('test-user'), ['Developer'])
     p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
     ThreadLocalORMSession.flush_all()
-    r = g.markdown_wiki.convert('[[members limit=2]]')
-    assert_equal(r, '<div class="markdown_content"><h6>Project Members:</h6>\n'
-                 '<ul class="md-users-list">\n'
-                 '<li><a href="/u/test-admin">Test Admin</a> (admin)</li><li><a href="/u/test-user">Test User</a></li>\n'
-                 '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>\n'
-                 '</ul>\n'
+    r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t','').replace('\n','')
+    assert_equal(r,
+                 '<div class="markdown_content"><h6>Project Members:</h6>'
+                 '<ul class="md-users-list">'
+                 '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
+                 '<li><a href="/u/test-user/">Test User</a></li>'
+                 '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>'
+                 '</ul>'
                  '</div>')
 
 
@@ -224,10 +229,11 @@ def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Admin <script>'
     r = g.markdown_wiki.convert('[[members]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Members:</h6>\n'
-                 u'<ul class="md-users-list">\n'
-                 u'<li><a href="/u/test-admin">Test Admin &lt;script&gt;</a> (admin)</li>\n'
-                 u'</ul>\n</div>')
+    assert_equal(r.replace('\n', '').replace('\t', ''),
+                 u'<div class="markdown_content"><h6>Project Members:</h6>'
+                 u'<ul class="md-users-list">'
+                 u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
+                 u'</ul></div>')
 
 
 @with_setup(setUp)
@@ -236,8 +242,11 @@ def test_macro_project_admins():
     user.display_name = u'Test Ådmin <script>'
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(
-        r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
+    assert_equal(r.replace('\n', ''),
+                 u'<div class="markdown_content"><h6>Project Admins:</h6>'
+                 u'<ul class="md-users-list">'
+                 u'    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
+                 u'</ul></div>')
 
 
 @with_setup(setUp)
@@ -249,7 +258,7 @@ def test_macro_project_admins_one_br():
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
 
-    assert not '</a><br /><br /><a href=' in r, r
+    assert not '</a><br/><br/><a href=' in r, r
     assert '</a></li><li><a href=' in r, r
 
 
@@ -272,17 +281,17 @@ def test_macro_include_no_extra_br():
         md = '[[include ref=Include_1]]\n[[include ref=Include_2]]\n[[include ref=Include_3]]'
         html = g.markdown_wiki.convert(md)
 
-    expected_html = '''
-<div class="markdown_content">
-<p>
-<div><div class="markdown_content"><p>included page 1</p></div></div>
-<div><div class="markdown_content"><p>included page 2</p></div></div>
-<div><div class="markdown_content"><p>included page 3</p></div></div>
-</p>
-<p></p>
+    expected_html = '''<div class="markdown_content"><p></p><div>
+<div class="markdown_content"><p>included page 1</p></div>
 </div>
-'''.strip().replace('\n', '')
-    assert html.strip().replace('\n', '') == expected_html, html
+<div>
+<div class="markdown_content"><p>included page 2</p></div>
+</div>
+<div>
+<div class="markdown_content"><p>included page 3</p></div>
+</div>
+<p></p></div>'''
+    assert_equal(squish_spaces(html), squish_spaces(expected_html))
 
 @with_setup(setUp, tearDown)
 @td.with_wiki
@@ -324,10 +333,9 @@ def test_macro_embed(oembed_fetch):
         "html": '<iframe width="480" height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" frameborder="0" allowfullscreen></iframe>)',
         "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
     }
-    r = g.markdown_wiki.convert(
-        '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe>\n</div>',
-              r)
+    r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
+    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
+              r.replace('\n', ''))
 
 
 def test_macro_embed_notsupported():
@@ -357,29 +365,29 @@ def test_wiki_artifact_links():
     assert 'See <span>[18:13:49]</span>' in text, text
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('Read [here](Home) about our project')
-        assert '<a class="" href="/p/test/wiki/Home">here</a>' in text, text
+        assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text
         text = g.markdown.convert('[Go home](test:wiki:Home)')
-        assert '<a class="" href="/p/test/wiki/Home">Go home</a>' in text, text
+        assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text, text
         text = g.markdown.convert('See [test:wiki:Home]')
-        assert '<a class="alink" href="/p/test/wiki/Home">[test:wiki:Home]</a>' in text, text
+        assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 
 
 def test_markdown_links():
     with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
-        text = g.markdown.convert(
-            'Read [here](http://foobar.net/) about our project')
-        assert_in('class="" href="http://foobar.net">here</a> about', text)
+        text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
+        assert_in('class="" href="http://foobar.net/">here</a> about', text)
 
-    text = g.markdown.convert(
-        'Read [here](http://foobar.net/) about our project')
-    assert_in('class="" href="http://foobar.net" rel="nofollow">here</a> about', text)
+    text = g.markdown.convert('Read [here](http://foobar.net/) about our project')
+    assert_in('class="" href="http://foobar.net/" rel="nofollow">here</a> about', text)
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
     assert_in('class="" href="/p/foobar/blah">here</a> about', text)
 
+    text = g.markdown.convert('Read [here](/p/foobar/blah/) about our project')
+    assert_in('class="" href="/p/foobar/blah/">here</a> about', text)
+
     text = g.markdown.convert('Read <http://foobar.net/> about our project')
-    assert_in(
-        'href="http://foobar.net" rel="nofollow">http://foobar.net/</a> about', text)
+    assert_in('href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about', text)
 
 
 def test_markdown_and_html():
@@ -390,11 +398,9 @@ def test_markdown_and_html():
 
 def test_markdown_within_html():
     with h.push_context('test', neighborhood='Projects'):
-        r = g.markdown_wiki.convert(
-            '<div style="float:left" markdown>**blah**</div>')
-    assert '''<div style="float: left;">
-<p><strong>blah</strong></p>
-</div>''' in r, r
+        r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
+    assert_in('<div style="float: left;"><p><strong>blah</strong></p></div>',
+              r.replace('\n', ''))
 
 
 def test_markdown_with_html_comments():
@@ -413,16 +419,15 @@ def test_markdown_big_text():
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
-        assert '<a class="alink" href="/p/test/wiki/Home">[Home]</a>' in text, text
+        assert '<a class="alink" href="/p/test/wiki/Home/">[Home]</a>' in text, text
         text = g.markdown.convert('# Foo!\n[Rooted]')
         assert '<a href=' not in text, text
 
-    assert '<br' in g.markdown.convert(
-        'Multi\nLine'), g.markdown.convert('Multi\nLine')
+    assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
 
     g.markdown.convert("<class 'foo'>")  # should not raise an exception
-    assert '<br>' not in g.markdown.convert('''# Header
+    assert '<br' not in g.markdown.convert('''# Header
 
 Some text in a regular paragraph
 
@@ -446,7 +451,7 @@ def test_markdown_autolink():
     # beginning of doc
     assert_in('<a href=', g.markdown.convert('http://domain.net abc'))
     # beginning of a line
-    assert_in('<br />\n<a href="http://',
+    assert_in('<br/>\n<a href="http://',
               g.markdown.convert('foobar\nhttp://domain.net abc'))
     # no conversion of these urls:
     assert_in('a blahttp://sdf.com z',
@@ -461,8 +466,7 @@ def test_markdown_autolink():
 def test_markdown_autolink_with_escape():
     # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
     # (it occurs during html2text conversion during project migrations)
-    r = g.markdown.convert(
-        'a http://www.phpmyadmin.net/home\_page/security/\#target b')
+    r = g.markdown.convert('a http://www.phpmyadmin.net/home\_page/security/\#target b')
     assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
@@ -588,7 +592,7 @@ def test_myprojects_macro():
     for p in c.user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url().rstrip('/'), p.name)
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
         assert_in(proj_title, r)
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
@@ -597,7 +601,7 @@ def test_myprojects_macro():
     for p in user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url().rstrip('/'), p.name)
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
         assert_in(proj_title, r)
 
 
@@ -625,9 +629,11 @@ def test_hideawards_macro():
 
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert '<div class="feature">\n<a href="http://award.org" title="Winner!" rel="nofollow">Award short</a>\n</div>' in r, r
+        assert_in('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">Award short</a> </div>',
+                  squish_spaces(r))
+
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
-        assert '<div class="feature">\n<a href="http://award.org" title="Winner!" rel="nofollow">Award short</a>\n</div>' not in r, r
+        assert_not_in('Award short', r)
 
 
 def get_project_names(r):
