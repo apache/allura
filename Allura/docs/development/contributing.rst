@@ -39,8 +39,8 @@ so you can see and test the changes you make. You can install Allura from
 scratch, or by using our pre-built Vagrant image. Instructions for these
 approaches can be found here:
 
-* `Install from scratch <https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown>`_
-* `Install from Vagrant image <https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/>`_
+* :ref:`Install from scratch <step-by-step-install>`
+* :ref:`Install using Docker <docker-install>`
 
 Managing Services
 -----------------
