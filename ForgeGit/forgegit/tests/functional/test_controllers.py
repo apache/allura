@@ -574,10 +574,15 @@ class TestFork(_TestCase):
         r = self._follow(r, **kw)
         return r
 
+    def _find_request_merge_form(self, resp):
+        cond = lambda f: f.action == 'do_request_merge'
+        return self.find_form(resp, cond)
+
     def _request_merge(self, **kw):
         r = self.app.get('/p/test2/code/request_merge', **kw)
         r = self._follow(r, **kw)
-        r = r.forms[0].submit()
+        form = self._find_request_merge_form(r)
+        r = form.submit()
         r = self._follow(r, **kw)
         mr_num = r.request.url.split('/')[-2]
         assert mr_num.isdigit(), mr_num
@@ -640,7 +645,7 @@ class TestFork(_TestCase):
         assert 'git checkout master' in merge_instructions
         assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
         assert 'git merge {}'.format(c_id) in merge_instructions
-        assert_in('less than 1 minute ago', r.html.findAll('p')[0].getText())
+        assert_in('less than 1 minute ago', r.html.findAll('p')[2].getText())
 
         merge_form = r.html.find('form', action='merge')
         assert merge_form
@@ -669,8 +674,8 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/')
         assert 'href="%s/"' % mr_num in r, r
-        assert_equal(r.html.findAll('span')[8].getText(), 'less than 1 minute ago')
-        assert_equal(r.html.findAll('span')[9].getText(), 'less than 1 minute ago')
+        assert_equal(r.html.findAll('span')[-2].getText(), 'less than 1 minute ago')
+        assert_equal(r.html.findAll('span')[-1].getText(), 'less than 1 minute ago')
 
     def test_merge_request_update_status(self):
         r, mr_num = self._request_merge()

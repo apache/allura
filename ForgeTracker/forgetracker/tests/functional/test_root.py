@@ -27,6 +27,7 @@ import allura
 import mock
 
 import PIL
+from BeautifulSoup import BeautifulSoup
 from mock import patch
 from nose.tools import (
     assert_true,
@@ -65,11 +66,19 @@ class TrackerTestController(TestController):
     def setup_with_tools(self):
         pass
 
+    def _find_new_ticket_form(self, resp):
+        cond = lambda f: f.action.endswith('/save_ticket')
+        return self.find_form(resp, cond)
+
+    def _find_update_ticket_form(self, resp):
+        cond = lambda f: f.action.endswith('/update_ticket_from_widget')
+        return self.find_form(resp, cond)
+
     def new_ticket(self, mount_point='/bugs/', extra_environ=None, **kw):
         extra_environ = extra_environ or {}
         response = self.app.get(mount_point + 'new/',
                                 extra_environ=extra_environ)
-        form = response.forms[1]
+        form = self._find_new_ticket_form(response)
         # If this is ProjectUserCombo's select populate it
         # with all the users in the project. This is a workaround for tests,
         # in real enviroment this is populated via ajax.
@@ -346,7 +355,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_new_ticket_form(self):
         response = self.app.get('/bugs/new/')
-        form = response.forms[1]
+        form = self._find_new_ticket_form(response)
         form['ticket_form.summary'] = 'test new ticket form'
         form['ticket_form.description'] = 'test new ticket form description'
         response = form.submit().follow()
@@ -841,7 +850,8 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[1].findAll('a')[1]
+        form = self._find_update_ticket_form(req)
+        file_link = BeautifulSoup(form.text).findAll('a')[1]
         assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']), {
             'delete': 'True'
@@ -883,7 +893,8 @@ class TestFunctionalController(TrackerTestController):
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
-        download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[1]['href']))
+        form = self._find_update_ticket_form(ticket_editor)
+        download = self.app.get(str(BeautifulSoup(form.text).findAll('a')[1]['href']))
         assert_equal(download.body, file_data)
 
     def test_two_attachments(self):
@@ -1229,18 +1240,17 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields', params=variable_encode(params))
         # Test new ticket form
         r = self.app.get('/bugs/new/')
-        form = r.forms[1]
+        form = self._find_new_ticket_form(r)
         form['ticket_form.custom_fields._priority'] = 'urgent'
         form['ticket_form.custom_fields._category'] = 'bugs'
         error_form = form.submit()
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value,
-                     'urgent')
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value,
-                     'bugs')
+        form = self._find_new_ticket_form(error_form)
+        assert_equal(form['ticket_form.custom_fields._priority'].value, 'urgent')
+        assert_equal(form['ticket_form.custom_fields._category'].value, 'bugs')
         # Test edit ticket form
         self.new_ticket(summary='Test ticket')
         response = self.app.get('/bugs/1/')
-        form = response.forms[1]
+        form = self._find_update_ticket_form(response)
         assert_equal(
             form['ticket_form.custom_fields._priority'].value, 'normal')
         assert_equal(form['ticket_form.custom_fields._category'].value, '')
@@ -1248,29 +1258,29 @@ class TestFunctionalController(TrackerTestController):
         form['ticket_form.custom_fields._priority'] = 'urgent'
         form['ticket_form.custom_fields._category'] = 'bugs'
         error_form = form.submit()
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value,
-                     'urgent')
-        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value,
-                     'bugs')
+        form = self._find_update_ticket_form(error_form)
+        assert_equal(form['ticket_form.custom_fields._priority'].value, 'urgent')
+        assert_equal(form['ticket_form.custom_fields._category'].value, 'bugs')
 
     def test_new_ticket_validation(self):
         summary = 'ticket summary'
         response = self.app.get('/bugs/new/')
         assert not response.html.find('div', {'class': 'error'})
-        form = response.forms[1]
+        form = self._find_new_ticket_form(response)
         form['ticket_form.labels'] = 'foo'
         # try submitting with no summary set and check for error message
         error_form = form.submit()
-        assert error_form.forms[1]['ticket_form.labels'].value == 'foo'
-        error_message = error_form.html.find('div', {'class': 'error'})
+        form = self._find_new_ticket_form(error_form)
+        assert form['ticket_form.labels'].value == 'foo'
+        error_message = BeautifulSoup(form.text).find('div', {'class': 'error'})
         assert error_message
         assert (error_message.string == 'You must provide a Title' or
                 error_message.string == 'Missing value')
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[1]['ticket_form.summary'] = summary
-        success = error_form.forms[1].submit().follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        form['ticket_form.summary'] = summary
+        success = form.submit().follow().html
+        assert success.findAll('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == summary
 
     def test_edit_ticket_validation(self):
@@ -1281,7 +1291,7 @@ class TestFunctionalController(TrackerTestController):
         # check that existing form is valid
         assert response.html.find('input', {'name': 'ticket_form.summary'})['value'] == old_summary
         assert not response.html.find('div', {'class': 'error'})
-        form = response.forms[1]
+        form = self._find_update_ticket_form(response)
         # try submitting with no summary set and check for error message
         form['ticket_form.summary'] = ""
         error_form = form.submit()
@@ -1290,11 +1300,12 @@ class TestFunctionalController(TrackerTestController):
         assert error_message.string == 'You must provide a Title'
         assert error_message.findPreviousSibling('input').get('name') == 'ticket_form.summary'
         # set a summary, submit, and check for success
-        error_form.forms[1]['ticket_form.summary'] = new_summary
-        r = error_form.forms[1].submit()
+        form = self._find_update_ticket_form(error_form)
+        form['ticket_form.summary'] = new_summary
+        r = form.submit()
         assert r.status_int == 302, r.showbrowser()
         success = r.follow().html
-        assert success.findAll('form')[1].get('action') == '/p/test/bugs/1/update_ticket_from_widget'
+        assert success.findAll('form', {'action': '/p/test/bugs/1/update_ticket_from_widget'}) is not None
         assert success.find('input', {'name': 'ticket_form.summary'})['value'] == new_summary
 
     def test_home(self):
@@ -2721,7 +2732,7 @@ class TestCustomUserField(TrackerTestController):
     def test_change_user_field(self):
         kw = {'custom_fields._code_review': ''}
         r = self.new_ticket(summary='test custom fields', **kw).follow()
-        f = r.forms[1]
+        f = self._find_update_ticket_form(r)
         # Populate ProjectUserCombo's select with option we want.
         # This is a workaround for tests,
         # in real enviroment this is populated via ajax.
