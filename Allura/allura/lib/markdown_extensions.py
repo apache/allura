@@ -20,7 +20,7 @@ import logging
 from urlparse import urljoin
 
 from tg import config
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
@@ -441,7 +441,8 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         self._make_absolute = make_absolute
 
     def run(self, text):
-        soup = BeautifulSoup(text)
+        soup = BeautifulSoup(text, 'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
+
         if self._make_absolute:
             rewrite = self._rewrite_abs
         else:
@@ -450,15 +451,9 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'href')
         for link in soup.findAll('img'):
             rewrite(link, 'src')
-        # BeautifulSoup always stores data in unicode,
-        # but when doing unicode(soup) it does some strange things
-        # like nesting html comments, e.g. returns <!--<!-- comment -->-->
-        # instead of <!-- comment -->.
-        # Converting soup object to string representation first,
-        # and then back to unicode avoids that.
-        # str() called on BeautifulSoup document always returns string
-        # encoded in utf-8, so this should always work.
-        return h.really_unicode(str(soup))
+
+        # html5lib parser adds html/head/body tags, so output <body> without its own tags
+        return unicode(soup.body)[len('<body>'):-len('</body>')]
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)

@@ -1,5 +1,6 @@
 ActivityStream==0.2.0
 BeautifulSoup==3.2.0
+BeautifulSoup4==4.4.0
 Beaker==1.6.4
 chardet==1.0.1
 colander==0.9.3

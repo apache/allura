@@ -480,6 +480,13 @@ def test_markdown_invalid_tagslash():
     r = g.markdown.convert('<div/onload><img src=x onerror=alert(document.cookie)>')
     assert_not_in('onerror', r)
 
+def test_markdown_invalid_script_in_link():
+    r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
+    assert_equal('''<div class="markdown_content"><p><a class="" href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' rel="nofollow">xss</a></p></div>''', r)
+
+def test_markdown_invalid_script_in_link2():
+    r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
+    assert_equal('''<div class="markdown_content"><p><a class="" href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' rel="nofollow">xss</a></p></div>''', r)
 
 @td.with_wiki
 def test_macro_include():
