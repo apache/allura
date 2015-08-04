@@ -116,7 +116,9 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
   <tbody>
     {% for type, file, _, _ in artifacts %}
     <tr>
-        <td>{{ type }}</td>
+        <td>{{ type }}
+            {% if type in ('copied', 'renamed') and file.ratio != 1 %}(with changes){% endif %}
+        </td>
         <td><a href="#diff-{{loop.index}}">
             {% if type == 'copied' %}
               {{ '%s -> %s' % (h.really_unicode(file.old), h.really_unicode(file.new)) }}
@@ -137,7 +139,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             {% if type in ('added', 'changed') %}
                 {% set file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
                 <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>
-                {% if obj_type != 'tree' %}
+                {% if obj_type != 'tree' and is_text %}
                     {% set diff_url = file_url + '?barediff=' + (prev[0]._id if prev else '') %}
                     <a class="commit-diff-link" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
                     <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{ diff_url }}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
