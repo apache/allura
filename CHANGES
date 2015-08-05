@@ -1,3 +1,58 @@
+Version 1.3.1  (August 2015)
+
+Upgrade Instructions
+
+ To enable CORS headers for the rest APIs, use the cors.* settings in the development.ini file.
+ If you have your own .ini file, enable git tag & branch caching speedups by setting: repo_refs_cache_threshold = .01
+
+New Features
+
+ * [#5943] Post-setup instructions
+ * [#6373] Document administrative commands
+ * [#7897] Live syntax highlighting for markdown editing
+ * [#7927] Allow CORS access to rest APIs
+ * [#7540] Ticket notifications should include links to attachments
+
+Security
+
+ * [#7947] XSS vulnerability in link rewriting
+ * [#7942] In project admin - user permissions, removing a custom group needs to use POST
+ * [#7685] Subscribe/unsubscribe action should use POST
+
+Bug Fixes & Minor Improvements
+
+ Tickets:
+ * [#4020] Date picker in milestone editor doesn't flip between months
+ Wiki:
+ * [#4802] Wiki edit link is not very discoverable
+ * [#7310] "Maximize" should stick
+ Code repositories:
+ * [#7873] Git branch & tag speedups  -- NEEDS INI
+ * [#7894] Don't update merge request timestamps incorrectly
+ * [#7932] Fix pagination issue in the commit browser
+ * [#7899] Issue with downloading files from repo with spaces in name
+ * [#7906] Fix login check on ApacheAccessHandler.py
+ Forums:
+ * [#7880] Forums mail not getting sent that require moderation
+ * [#7930] Bug: viewing a thread updates project mod_date
+ Project Admin:
+ * [#7884] Move add/edit Features to Metadata section
+ * [#7885] Tooltip for project admin
+ * [#7898] Icon upload/edit is not clear
+ General:
+ * [#7803] Fix taskd_cleanup to search for right process name
+ * [#7889] Improve markdown logic for cached vs threshold limits
+ * [#7890] Neighborhood cache preventing saving admin changes
+ * [#7916] Error when handling user-profile URLs of users with invalid names.
+ * [#7928] Site admin search tables can overflow the page width
+ * [#7903] No mention about small letters in user registration
+ * [#7909] Use dashes when suggesting project shortnames
+ * [#7915] Move Allura installation instructions into the docs
+ For Developers:
+ * [#7809] Update install/docker to ubuntu 14.04
+ * [#7891] Remove zarkov integration code
+
+
 Version 1.3.0  (June 2015)
 
 Upgrade Instructions
