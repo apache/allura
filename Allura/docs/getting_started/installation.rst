@@ -29,9 +29,9 @@ Step-by-Step Installation
 
 For a simpler setup using Docker images, see :ref:`docker-install` instead.
 
-In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`_ and `Ubuntu 14.04 <http://ubuntu.com>`_ (12.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
+In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 14.04 <http://ubuntu.com>`_ (12.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
-* Download and install `VirtualBox <http://www.virtualbox.org/wiki/Downloads>`_ for your platform.
+* Download and install `VirtualBox <http://www.virtualbox.org/wiki/Downloads>`__ for your platform.
 
 * Download a minimal `Ubuntu 14.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
 
@@ -44,8 +44,8 @@ In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`_ and `
 * Consult `available documentation <https://help.ubuntu.com/>`_ for help installing Ubuntu.
 
 
-Installation
-^^^^^^^^^^^^
+System Packages
+^^^^^^^^^^^^^^^
 
 Before we begin, you'll need to install some system packages.
 
@@ -62,7 +62,7 @@ Optional, for SVN support:
     ~$ sudo aptitude install subversion python-svn
 
 Setting up a virtual python environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The first step to installing the Allura platform is installing a virtual environment via `virtualenv <https://virtualenv.pypa.io/en/latest/>`_.  This helps keep our distribution python installation clean.
 
@@ -87,7 +87,7 @@ In order to use the virtual environment, you'll need to activate it:
 You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your :file:`~/.bashrc` file.
 
 Creating the log directory
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -95,7 +95,7 @@ Creating the log directory
     (env-allura)~$ sudo chown $(whoami) /var/log/allura
 
 Installing the Allura code and dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.  If you don't have the source code yet, run:
 
@@ -133,12 +133,12 @@ Next, run :code:`./rebuild-all.bash` to setup all the Allura applications.  If y
     # repeat for any other tools you want to use
 
 Initializing the environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Allura forge consists of several components, all of which need to be running to have full functionality.
 
 SOLR search and indexing server
-*******************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We have a custom config ready for use.
 
@@ -154,7 +154,7 @@ We have a custom config ready for use.
 
 
 Create code repo directories
-****************************
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default configuration stores repos in :file:`/srv`, so we need to create those directories:
 
@@ -169,7 +169,7 @@ If you don't have :code:`sudo` permission or just want to store them somewhere e
 If you want to set up remote access to the repositories, see :ref:`scm_hosting`
 
 Allura task processing
-**********************
+~~~~~~~~~~~~~~~~~~~~~~
 
 Allura uses a background task service called "taskd" to do async tasks like sending emails, and indexing data into solr, etc.  Let's get it running
 
@@ -179,7 +179,7 @@ Allura uses a background task service called "taskd" to do async tasks like send
     (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log 2>&1 &
 
 The application server
-**********************
+~~~~~~~~~~~~~~~~~~~~~~
 
 In order to initialize the Allura database, you'll need to run the following:
 
@@ -202,7 +202,7 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
     (env-allura)~/src/allura/Allura$ nohup paster serve --reload development.ini  > /var/log/allura/allura.log 2>&1 &
 
 Next Steps
-~~~~~~~~~~
+^^^^^^^^^^
 
 Go to the Allura webapp running on your `local machine <http://localhost:8080/>`_ port 8080.
 (If you're running this inside a VM, you'll probably have to configure the port forwarding settings)
@@ -214,7 +214,7 @@ There are a few default projects (like "test") and neighborhoods.  Feel free to 
 register a new project in your own forge, visit `/p/add_project`.
 
 Extra
-~~~~~
+^^^^^
 
 * Read :ref:`post-setup-instructions`
 * Ask questions and discuss Allura on the `allura-dev mailing list <http://mail-archives.apache.org/mod_mbox/allura-dev/>`_
