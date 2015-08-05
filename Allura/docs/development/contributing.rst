@@ -15,6 +15,8 @@
        specific language governing permissions and limitations
        under the License.
 
+.. _contributing:
+
 ************
 Contributing
 ************
@@ -36,7 +38,7 @@ Installing Allura
 -----------------
 Before hacking on Allura, you'll need to get an Allura instance up and running
 so you can see and test the changes you make. You can install Allura from
-scratch, or by using our pre-built Vagrant image. Instructions for these
+scratch, or by using our Docker container images. Instructions for these
 approaches can be found here:
 
 * :ref:`Install from scratch <step-by-step-install>`

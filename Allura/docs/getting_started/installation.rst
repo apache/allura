@@ -220,7 +220,7 @@ Extra
 * Ask questions and discuss Allura on the `allura-dev mailing list <http://mail-archives.apache.org/mod_mbox/allura-dev/>`_
 * Run the test suite (slow): :code:`$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at https://forge-allura.apache.org/p/allura/tickets/new/ (login required)
-* Contribute code according to `this guide <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>`_
+* Contribute code according to :ref:`this guide <contributing>`
 
 .. _docker-install:
 
