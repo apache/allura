@@ -803,19 +803,6 @@ blockquote {
   border: 1px solid black;
 }
 
-/* help */
-#help {
-  width: 100%;
-  padding: 20px 0 0;
-  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0 0 20px 0 inset;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0 0 20px 0 inset;
-  -o-box-shadow: rgba(0, 0, 0, 0.5) 0 0 20px 0 inset;
-  box-shadow: rgba(0, 0, 0, 0.5) 0 0 20px 0 inset;
-}
-#help h1 {
-  padding-left: 20px;
-}
-
 .markdown_syntax_toc_crumb {
   float: right !important;
   margin-left: 20px;
