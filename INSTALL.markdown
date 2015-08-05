@@ -17,4 +17,4 @@
     under the License.
 -->
 
-See `Allura/docs`.
+See see `Allura/docs/getting_started/installation.rst` or <https://forge-allura.apache.org/docs/getting_started/installation.html>.
