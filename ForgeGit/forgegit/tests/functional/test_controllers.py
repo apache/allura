@@ -828,8 +828,7 @@ class TestGitRename(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testrename.git'
@@ -839,21 +838,35 @@ class TestGitRename(TestController):
         ThreadLocalORMSession.flush_all()
 
     def test_log(self):
-        resp = self.app.get(
-            '/src-git/ci/259c77dd6ee0e6091d11e429b56c44ccbf1e64a3/log/?path=/f2.txt')
+        # commit after the rename
+        resp = self.app.get('/src-git/ci/259c77dd6ee0e6091d11e429b56c44ccbf1e64a3/log/?path=/f2.txt')
         assert '<b>renamed from</b>' in resp
         assert '/f.txt' in resp
         assert '(27 Bytes)' in resp
         assert '(19 Bytes)' in resp
 
-        resp = self.app.get(
-            '/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/log/?path=/f.txt')
+        # commit before the rename
+        resp = self.app.get('/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/log/?path=/f.txt')
         assert '(19 Bytes)' in resp
         assert '(10 Bytes)' in resp
 
-        resp = self.app.get(
-            '/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
+        # first commit, adding the file
+        resp = self.app.get('/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
         assert "2 lines (1 with data), 10 Bytes" in resp
+
+    def test_commit(self):
+        # get the rename commit itself
+        resp = self.app.get('/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/')
+
+        # the top portion of the output
+        assert "<td>renamed" in resp
+        assert "f.txt -&gt; f2.txt" in resp
+
+        # the diff portion of the output
+        resp_no_ws = re.sub(r'\s+', '', str(resp))
+        assert '<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt">f.txt</a>to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt">f2.txt</a>'.replace(' ','') \
+               in resp_no_ws
+        assert '<span class="empty-diff">File was renamed.</span>' in resp
 
 
 class TestGitBranch(TestController):
