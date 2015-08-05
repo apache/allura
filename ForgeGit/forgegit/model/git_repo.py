@@ -675,7 +675,6 @@ class GitImplementation(M.RepositoryImplementation):
         while x < len(cmd_output):
             status = cmd_output[x][0]
             if status in ('R', 'C'):
-                # TODO: make sure we have a test for this
                 ratio = float(cmd_output[x][1:4]) / 100.0
                 files.append((status, {
                     'new': h.really_unicode(cmd_output[x + 2]),
