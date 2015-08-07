@@ -1,0 +1,24 @@
+{
+    "webhooks": [
+        {
+            "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae874a4d21222df2980868",
+            "mod_date": "2015-07-21 17:54:18.066000",
+            "_id": "55ae874a4d21222df2980868",
+            "type": "repo-push",
+            "hook_url": "http://hs.dev:9999/webhooks/"
+        },
+        {
+            "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae876e4d21222df298086e",
+            "mod_date": "2015-07-21 17:54:54.836000",
+            "_id": "55ae876e4d21222df298086e",
+            "type": "repo-push",
+            "hook_url": "http://hs.dev:9999/push-it/"
+        }
+    ],
+    "limits": {
+        "repo-push": {
+            "max": 3,
+            "used": 2
+        }
+    }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "properties": {
+    "related_artifacts": {
+      "id": "related_artifacts",
+      "type": "array",
+      "items": {}
+    },
+    "discussion_thread": {
+      "id": "discussion_thread",
+      "type": "object",
+      "properties": {
+        "_id": {
+          "id": "_id",
+          "type": "string"
+        },
+        "posts": {
+          "id": "posts",
+          "type": "array",
+          "items": {}
+        },
+        "discussion_id": {
+          "id": "discussion_id",
+          "type": "string"
+        },
+        "subject": {
+          "id": "subject",
+          "type": "string"
+        }
+      }
+    },
+    "author": {
+      "id": "author",
+      "type": "string"
+    },
+    "url": {
+      "id": "url",
+      "type": "string"
+    },
+    "text": {
+      "id": "text",
+      "type": "string"
+    },
+    "labels": {
+      "id": "labels",
+      "type": "array",
+      "items": {
+        "id": "0",
+        "type": "string"
+      }
+    },
+    "state": {
+      "id": "state",
+      "type": "string"
+    },
+    "mod_date": {
+      "id": "mod_date",
+      "type": "string"
+    },
+    "title": {
+      "id": "title",
+      "type": "string"
+    },
+    "_id": {
+      "id": "_id",
+      "type": "string"
+    },
+    "discussion_thread_url": {
+      "id": "discussion_thread_url",
+      "type": "string"
+    }
+  }
+}

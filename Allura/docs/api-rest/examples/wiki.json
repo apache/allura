@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "ASF Release Guidelines",
+    "Allura Deployments",
+    "Allura Wiki",
+    "Apache Allura (incubating) Wiki",
+    "Apache Allura™ (incubating) Wiki",
+    "Asking Questions",
+    "Contributing Code",
+    "Contributing to the Discussion",
+    "Extensions",
+    "FAQ",
+    "Feature Comparison",
+    "Features",
+    "Goals",
+    "Google Summer of Code",
+    "HTTP(S) Repositories",
+    "Home",
+    "Install and Run Allura - Vagrant",
+    "Notes",
+    "Our Development Model",
+    "PyCon 2014 Sprint",
+    "Themes in Allura",
+    "Videos",
+    "Webhooks",
+    "Working with Contributors"
+  ]
+}

@@ -1,0 +1,179 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#",
+    "properties": {
+        "status": {
+            "type": "string",
+            "id": "status"
+        },
+        "_id": {
+            "type": "string",
+            "id": "_id"
+        },
+        "name": {
+            "type": "string",
+            "id": "name"
+        },
+        "preferred_support_tool": {
+            "type": ["string", "null"], 
+            "id": "preferred_support_tool"
+        },
+        "preferred_support_url": {
+            "type": ["string", "null"], 
+            "id": "preferred_support_url"
+        },
+        "icon_url": {
+            "type": ["string", "null"], 
+            "id": "icon_url"
+        },
+        "labels": {
+            "type": "array",
+            "id": "labels"
+        },
+        "private": {
+            "type": "boolean",
+            "id": "private"
+        },
+        "creation_date": {
+            "type": "string",
+            "id": "creation_date"
+        },
+        "url": {
+            "type": "string",
+            "id": "url"
+        },
+        "short_description": {
+            "type": ["string", "null"], 
+            "id": "short_description"
+        },
+        "summary": {
+            "type": ["string", "null"], 
+            "id": "summary"
+        },
+        "tools": {
+            "items": {
+                "type": "object",
+                "id": "0",
+                "properties": {
+                    "mount_point": {
+                        "type": "string",
+                        "id": "mount_point"
+                    },
+                    "name": {
+                        "type": "string",
+                        "id": "name"
+                    },
+                    "label": {
+                        "type": "string",
+                        "id": "label"
+                    }
+                }
+            },
+            "type": "array",
+            "id": "tools"
+        },
+        "video_url": {
+            "type": ["string", "null"], 
+            "id": "video_url"
+        },
+        "socialnetworks": {
+            "items": {
+                "type": "object",
+                "id": "0",
+                "properties": {
+                    "accounturl": {
+                        "type": ["string", "null"], 
+                        "id": "accounturl"
+                    },
+                    "socialnetwork": {
+                        "type": ["string", "null"], 
+                        "id": "socialnetwork"
+                    }
+                }
+            },
+            "type": "array",
+            "id": "socialnetworks"
+        },
+        "moved_to_url": {
+            "type": ["string", "null"], 
+            "id": "moved_to_url"
+        },
+        "shortname": {
+            "type": "string",
+            "id": "shortname"
+        },
+        "developers": {
+            "items": {
+                "type": "object",
+                "id": "0",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "id": "url"
+                    },
+                    "username": {
+                        "type": "string",
+                        "id": "username"
+                    },
+                    "name": {
+                        "type": "string",
+                        "id": "name"
+                    }
+                }
+            },
+            "type": "array",
+            "id": "developers"
+        },
+        "screenshots": {
+            "type": "array",
+            "id": "screenshots"
+        },
+        "external_homepage": {
+            "type": ["string", "null"], 
+            "id": "external_homepage"
+        },
+        "categories": {
+            "type": "object",
+            "id": "categories",
+            "properties": {
+                "developmentstatus": {
+                    "type": "array",
+                    "id": "developmentstatus"
+                },
+                "environment": {
+                    "type": "array",
+                    "id": "environment"
+                },
+                "language": {
+                    "type": "array",
+                    "id": "language"
+                },
+                "license": {
+                    "type": "array",
+                    "id": "license"
+                },
+                "database": {
+                    "type": "array",
+                    "id": "database"
+                },
+                "topic": {
+                    "type": "array",
+                    "id": "topic"
+                },
+                "audience": {
+                    "type": "array",
+                    "id": "audience"
+                },
+                "translation": {
+                    "type": "array",
+                    "id": "translation"
+                },
+                "os": {
+                    "type": "array",
+                    "id": "os"
+                }
+            }
+        }
+    }
+}

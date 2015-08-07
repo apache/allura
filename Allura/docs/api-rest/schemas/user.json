@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "title": "User.",
+  "description": "A user's first and last name.",
+  "type": "object",
+  "properties": {
+    "status": {
+      "id": "status",
+      "type": "string"
+    },
+    "preferred_support_tool": {
+      "id": "preferred_support_tool",
+      "type": "string"
+    },
+    "profile_api_url": {
+      "id": "profile_api_url",
+      "type": "string"
+    },
+    "preferred_support_url": {
+      "id": "preferred_support_url",
+      "type": "string"
+    },
+    "labels": {
+      "id": "labels",
+      "type": "array",
+      "items": {}
+    },
+    "private": {
+      "id": "private",
+      "type": "boolean"
+    },
+    "creation_date": {
+      "id": "creation_date",
+      "type": "string"
+    },
+    "socialnetworks": {
+      "id": "socialnetworks",
+      "type": "array",
+      "items": {
+        "id": "1",
+        "type": "object",
+        "properties": {
+          "accounturl": {
+            "id": "accounturl",
+            "type": "string"
+          },
+          "socialnetwork": {
+            "id": "socialnetwork",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tools": {
+      "id": "tools",
+      "type": "array",
+      "items": {
+        "id": "5",
+        "type": "object",
+        "properties": {
+          "mount_point": {
+            "id": "mount_point",
+            "type": "string"
+          },
+          "name": {
+            "id": "name",
+            "type": "string"
+          },
+          "label": {
+            "id": "label",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "categories": {
+      "id": "categories",
+      "type": "object",
+      "properties": {
+        "developmentstatus": {
+          "id": "developmentstatus",
+          "type": "array",
+          "items": {}
+        },
+        "environment": {
+          "id": "environment",
+          "type": "array",
+          "items": {}
+        },
+        "language": {
+          "id": "language",
+          "type": "array",
+          "items": {}
+        },
+        "license": {
+          "id": "license",
+          "type": "array",
+          "items": {}
+        },
+        "database": {
+          "id": "database",
+          "type": "array",
+          "items": {}
+        },
+        "topic": {
+          "id": "topic",
+          "type": "array",
+          "items": {}
+        },
+        "audience": {
+          "id": "audience",
+          "type": "array",
+          "items": {}
+        },
+        "translation": {
+          "id": "translation",
+          "type": "array",
+          "items": {}
+        },
+        "os": {
+          "id": "os",
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "_id": {
+      "id": "_id",
+      "type": "string"
+    },
+    "name": {
+      "id": "name",
+      "type": "string"
+    },
+    "url": {
+      "id": "url",
+      "type": "string"
+    },
+    "icon_url": {
+      "id": "icon_url",
+      "type": "null"
+    },
+    "video_url": {
+      "id": "video_url",
+      "type": "string"
+    },
+    "screenshots": {
+      "id": "screenshots",
+      "type": "array",
+      "items": {}
+    },
+    "summary": {
+      "id": "summary",
+      "type": "string"
+    },
+    "short_description": {
+      "id": "short_description",
+      "type": "null"
+    },
+    "moved_to_url": {
+      "id": "moved_to_url",
+      "type": "string"
+    },
+    "shortname": {
+      "id": "shortname",
+      "type": "string"
+    },
+    "developers": {
+      "id": "developers",
+      "type": "array",
+      "items": {
+        "id": "0",
+        "type": "object",
+        "properties": {
+          "url": {
+            "id": "url",
+            "type": "string"
+          },
+          "username": {
+            "id": "username",
+            "type": "string"
+          },
+          "name": {
+            "id": "name",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "external_homepage": {
+      "id": "external_homepage",
+      "type": "string"
+    }
+  }
+}

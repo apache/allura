@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "properties": {
+    "webhooks": {
+      "id": "webhooks",
+      "type": "array",
+      "items": {
+        "id": "1",
+        "type": "object",
+        "properties": {
+          "url": {
+            "id": "url",
+            "type": "string"
+          },
+          "mod_date": {
+            "id": "mod_date",
+            "type": "string"
+          },
+          "_id": {
+            "id": "_id",
+            "type": "string"
+          },
+          "type": {
+            "id": "type",
+            "type": "string"
+          },
+          "hook_url": {
+            "id": "hook_url",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "limits": {
+      "id": "limits",
+      "type": "object",
+      "properties": {
+        "repo-push": {
+          "id": "repo-push",
+          "type": "object",
+          "properties": {
+            "max": {
+              "id": "max",
+              "type": "integer"
+            },
+            "used": {
+              "id": "used",
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
