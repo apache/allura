@@ -1,0 +1,126 @@
+{
+  "sort": null,
+  "count": 2,
+  "filter_choices": {
+    "status": [
+      [
+        "closed",
+        4
+      ],
+      [
+        "in-progress",
+        5
+      ],
+      [
+        "open",
+        2
+      ],
+      [
+        "review",
+        3
+      ]
+    ],
+    "reported_by": [
+      [
+        "brondsem",
+        5
+      ],
+      [
+        "ctsai",
+        1
+      ],
+      [
+        "heiths",
+        7
+      ],
+      [
+        "jetmind",
+        1
+      ]
+    ],
+    "_milestone": [
+      [
+        "unreleased",
+        14
+      ]
+    ],
+    "assigned_to": [
+      [
+        "brondsem",
+        1
+      ],
+      [
+        "heiths",
+        4
+      ],
+      [
+        "jetmind",
+        7
+      ]
+    ]
+  },
+  "filter": {},
+  "q": "labels:\"sf-current\"",
+  "solr_error": null,
+  "limit": 100,
+  "tickets": [
+    {
+      "status": "review",
+      "reported_by_id": "548b2d136d19cd59705380a3",
+      "related_artifacts": [],
+      "attachments": [],
+      "reported_by": "heiths",
+      "assigned_to": "heiths",
+      "labels": [
+        "sf-current",
+        "sf-2"
+      ],
+      "discussion_disabled": false,
+      "assigned_to_id": "548b2d136d19cd59705380a3",
+      "private": false,
+      "summary": "Fix pagination issue in the commit browser",
+      "mod_date": "2015-07-17 14:53:43.480000",
+      "votes_down": 0,
+      "votes_up": 0,
+      "_id": "55a6c6c86d19cd7d2dc5d89d",
+      "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/3e30246e/",
+      "ticket_num": 7932,
+      "custom_fields": {
+        "_component": "General",
+        "_milestone": "unreleased",
+        "_reviewer": ""
+      },
+      "created_date": "2015-07-15 20:47:04.434000"
+    },
+    {
+      "status": "closed",
+      "reported_by_id": "511aa8756d19cd161e8c1b04",
+      "related_artifacts": [],
+      "attachments": [],
+      "reported_by": "brondsem",
+      "assigned_to": "brondsem",
+      "labels": [
+        "sf-current",
+        "sf-1",
+        "ux"
+      ],
+      "discussion_disabled": false,
+      "assigned_to_id": "511aa8756d19cd161e8c1b04",
+      "private": false,
+      "summary": "Site admin search tables can overflow the page width",
+      "mod_date": "2015-07-14 08:40:35.931000",
+      "votes_down": 0,
+      "votes_up": 0,
+      "_id": "55a3effc6d19cd320d814749",
+      "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/1f1023b2/",
+      "ticket_num": 7928,
+      "custom_fields": {
+        "_component": "General",
+        "_milestone": "unreleased",
+        "_reviewer": "jetmind"
+      },
+      "created_date": "2015-07-13 17:06:04.135000"
+    }
+  ],
+  "page": 0
+}

@@ -1,0 +1,7 @@
+{
+    "hook_url": "http://hs.dev:9999/push-it/",
+    "mod_date": "2015-07-24 16:44:03.871000",
+    "url": "http://localhost:8080/rest/p/finna/admin/finna/webhooks/repo-push/55ae876e4d21222df298086e",
+    "_id": "55ae876e4d21222df298086e",
+    "type": "repo-push"
+}

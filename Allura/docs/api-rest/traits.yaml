@@ -1,0 +1,80 @@
+- searchable:
+    queryParameters:
+      query:
+        description: |
+          JSON array [{"field1","value1","operator1"},{"field2","value2","operator2"},...,{"fieldN","valueN","operatorN"}] <<description>>
+        example: |
+          <<example>>
+- orderable:
+    queryParameters:
+      orderBy:
+        description: |
+          Order by field: <<fieldsList>>
+        type: string
+        required: false
+      order:
+        description: Order
+        enum: [desc, asc]
+        default: desc
+        required: false
+- pageable:
+    queryParameters:
+      page:
+        description: Skip over a number of elements by specifying an offset value for the query
+        type: integer
+        required: false
+        example: 2
+        default: 0
+      limit:
+        description: Limit the number of elements on the response
+        type: integer
+        required: false
+        example: 5
+        default: 10
+- paged:
+    queryParameters:
+      numPages:
+        description: The number of pages to return
+- secured:
+    displayName: secured
+    headers:
+      Authorization:
+        description: The auth token for this request
+    responses:
+      401:
+        description: Unauthorized
+- rateLimited:
+    queryParameters:
+      numPages:
+        description: The number of pages to return, not to exceed <<maxPages>>
+- permissionTestable:
+    description: |
+      **Endpoints**
+      Permissions can be checked at three levels: 
+      1. **Neighborhood:** `/rest/p/has_access`
+      2. **Project:** `/rest/p/project_name/has_access`
+      3. **Tool:** `/rest/p/project_name/mount_point/has_access`
+      
+      --- 
+      
+      It is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.
+      
+      E.g.:
+      **GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`
+      *returns* { result: true }
+      **GET** `/rest/p/test/wiki/has_access?user=user01&perm=create`
+      *returns* { result: false }
+
+    queryParameters:
+      user:
+        type: string
+        example: heiths
+        required: true
+        description: The username to check
+      perm:
+        displayName: Permission
+        required: true
+        type: string
+        example: create
+        default: read
+        enum: ["read", "admin", "create", "update"]

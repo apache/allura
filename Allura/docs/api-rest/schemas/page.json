@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "type": "object",
+  "properties": {
+    "related_artifacts": {
+      "items": {
+        "type": ["null", "string"],
+      },
+      "type": ["null", "array"],
+      "id": "related_artifacts"
+    },
+    "attachments": {
+      "type": ["null", "array"],
+      "id": "attachments"
+    },
+    "title": {
+      "type": "string",
+      "id": "title"
+    },
+    "text": {
+      "type": ["null", "string"],
+      "id": "text"
+    },
+    "labels": {
+      "type": ["null", "array"],
+      "id": "labels"
+    },
+    "discussion_thread": {
+      "type": "object",
+      "id": "discussion_thread",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "id": "_id"
+        },
+        "posts": {
+          "type": "array",
+          "id": "posts"
+        },
+        "discussion_id": {
+          "type": "string",
+          "id": "discussion_id"
+        },
+        "subject": {
+          "type": "string",
+          "id": "subject"
+        }
+      }
+    },
+    "mod_date": {
+      "type": "string",
+      "id": "mod_date"
+    },
+    "_id": {
+      "type": "string",
+      "id": "_id"
+    },
+    "discussion_thread_url": {
+      "type": "string",
+      "id": "discussion_thread_url"
+    }
+  }
+}

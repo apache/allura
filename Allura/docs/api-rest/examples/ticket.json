@@ -1,0 +1,65 @@
+{
+  "ticket": {
+    "status": "review",
+    "reported_by_id": "548b2d136d19cd59705380a3",
+    "related_artifacts": [],
+    "attachments": [],
+    "reported_by": "heiths",
+    "assigned_to": "heiths",
+    "labels": [
+      "sf-2",
+      "sf-current"
+    ],
+    "discussion_disabled": false,
+    "assigned_to_id": "548b2d136d19cd59705380a3",
+    "private": false,
+    "summary": " Speed up diff processing with binary files",
+    "description": "In a git repo with a large amount of binary files, our diff processing can be very inefficient. We should test if a file is binary and exclude it from the diff processing section.",
+    "discussion_thread": {
+      "_id": "8fe1847f",
+      "posts": [
+        {
+          "text": "- **labels**:  --> sf-2, sf-current\n",
+          "attachments": [],
+          "author": "brondsem",
+          "timestamp": "2015-07-13 15:53:20.175000",
+          "last_edited": null,
+          "slug": "498b",
+          "subject": "#7925  Speed up diff processing with binary files"
+        },
+        {
+          "text": "- **status**: in-progress --> review\n",
+          "attachments": [],
+          "author": "heiths",
+          "timestamp": "2015-07-16 19:10:50.153000",
+          "last_edited": null,
+          "slug": "bd3e",
+          "subject": "#7925  Speed up diff processing with binary files"
+        },
+        {
+          "text": "QA: **hs/7925**\r\n\r\nBinary files should no longer make XHR requests for diff processing.",
+          "attachments": [],
+          "author": "heiths",
+          "timestamp": "2015-07-16 19:10:50.511000",
+          "last_edited": null,
+          "slug": "b8a7",
+          "subject": "#7925  Speed up diff processing with binary files"
+        }
+      ],
+      "discussion_id": "545186e86d19cd63b88d1604",
+      "subject": ""
+    },
+    "mod_date": "2015-07-16 19:10:50.625000",
+    "votes_down": 0,
+    "votes_up": 0,
+    "_id": "55a3d3736d19cd2cf292db10",
+    "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/tickets/_discuss/thread/8fe1847f/",
+    "ticket_num": 7925,
+    "custom_fields": {
+      "_component": "General",
+      "_milestone": "unreleased",
+      "_reviewer": ""
+    },
+    "created_date": "2015-07-13 15:04:19.926000"
+  }
+}

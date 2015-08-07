@@ -1,0 +1,58 @@
+{
+  "count": 3,
+  "forums": [
+    {
+      "num_topics": 1,
+      "name": "Dev Only",
+      "url": "http://localhost:8080/rest/p/finna/discussion/devs/",
+      "shortname": "devs",
+      "_id": "55ad23c34d21224d82656add",
+      "last_post": {
+        "flagged_by": [],
+        "status": "ok",
+        "last_edited": "2015-07-20 16:39:53.290000",
+        "author": "root",
+        "timestamp": "2015-07-20 16:39:46.083000",
+        "thread_id": "2adb0c35",
+        "text": "checking into it.",
+        "author_id": "55687b5f4d2122410c76eb92",
+        "_id": "83aa16ca9db9f811d68ba47285c3d4c65b4f60d7.discussion@finna.p.localhost",
+        "slug": "c5af",
+        "subject": "Potential issue"
+      },
+      "description": "not open to public!"
+    },
+    {
+      "num_topics": 2,
+      "name": "General Discussion",
+      "url": "http://localhost:8080/rest/p/finna/discussion/general/",
+      "shortname": "general",
+      "_id": "5568f6684d212236d1eaed07",
+      "last_post": {
+        "flagged_by": [],
+        "status": "ok",
+        "last_edited": null,
+        "author": "root",
+        "timestamp": "2015-07-20 16:36:18.019000",
+        "thread_id": "a7528751",
+        "text": "How to fix anything!",
+        "author_id": "55687b5f4d2122410c76eb92",
+        "_id": "b248780c7fa265106dc91e6004107dd4a601afe8.discussion@finna.p.localhost",
+        "slug": "c920",
+        "subject": "Tech Support"
+      },
+      "description": "Forum about anything you want to talk about."
+    },
+    {
+      "num_topics": 0,
+      "name": "Off Topic",
+      "url": "http://localhost:8080/rest/p/finna/discussion/off-topic/",
+      "shortname": "off-topic",
+      "_id": "55ad23a44d21224d82656ada",
+      "last_post": null,
+      "description": "anything else...."
+    }
+  ],
+  "limit": 25,
+  "page": 0
+}

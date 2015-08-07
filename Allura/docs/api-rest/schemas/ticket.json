@@ -1,0 +1,180 @@
+{
+    "$schema": "http://json-schema.org/draft04/schema#",
+    "id": "/",
+    "type": "object",
+    "properties": {
+        "ticket": {
+            "id": "ticket",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "id": "status",
+                    "type": "string"
+                },
+                "reported_by_id": {
+                    "id": "reported_by_id",
+                    "type": "string"
+                },
+                "related_artifacts": {
+                    "id": "related_artifacts",
+                    "type": "array",
+                    "items": {},
+                    "additionalItems": false
+                },
+                "attachments": {
+                    "id": "attachments",
+                    "type": "array",
+                    "items": {},
+                    "additionalItems": false
+                },
+                "reported_by": {
+                    "id": "reported_by",
+                    "type": "string"
+                },
+                "assigned_to": {
+                    "id": "assigned_to",
+                    "type": "string"
+                },
+                "labels": {
+                    "id": "labels",
+                    "type": "array",
+                    "items": {
+                        "id": "1",
+                        "type": "string"
+                    },
+                    "additionalItems": false
+                },
+                "discussion_disabled": {
+                    "id": "discussion_disabled",
+                    "type": "boolean"
+                },
+                "assigned_to_id": {
+                    "id": "assigned_to_id",
+                    "type": "string"
+                },
+                "private": {
+                    "id": "private",
+                    "type": "boolean"
+                },
+                "summary": {
+                    "id": "summary",
+                    "type": "string"
+                },
+                "description": {
+                    "id": "description",
+                    "type": "string"
+                },
+                "discussion_thread": {
+                    "id": "discussion_thread",
+                    "type": "object",
+                    "properties": {
+                        "_id": {
+                            "id": "_id",
+                            "type": "string"
+                        },
+                        "posts": {
+                            "id": "posts",
+                            "type": "array",
+                            "items": {
+                                "id": "2",
+                                "type": "object",
+                                "properties": {
+                                    "text": {
+                                        "id": "text",
+                                        "type": "string"
+                                    },
+                                    "attachments": {
+                                        "id": "attachments",
+                                        "type": "array",
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "author": {
+                                        "id": "author",
+                                        "type": "string"
+                                    },
+                                    "timestamp": {
+                                        "id": "timestamp",
+                                        "type": "string"
+                                    },
+                                    "last_edited": {
+                                        "id": "last_edited",
+                                        "type": "null"
+                                    },
+                                    "slug": {
+                                        "id": "slug",
+                                        "type": "string"
+                                    },
+                                    "subject": {
+                                        "id": "subject",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "additionalItems": false
+                        },
+                        "discussion_id": {
+                            "id": "discussion_id",
+                            "type": "string"
+                        },
+                        "subject": {
+                            "id": "subject",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "mod_date": {
+                    "id": "mod_date",
+                    "type": "string"
+                },
+                "votes_down": {
+                    "id": "votes_down",
+                    "type": "integer"
+                },
+                "votes_up": {
+                    "id": "votes_up",
+                    "type": "integer"
+                },
+                "_id": {
+                    "id": "_id",
+                    "type": "string"
+                },
+                "discussion_thread_url": {
+                    "id": "discussion_thread_url",
+                    "type": "string"
+                },
+                "ticket_num": {
+                    "id": "ticket_num",
+                    "type": "integer"
+                },
+                "custom_fields": {
+                    "id": "custom_fields",
+                    "type": "object",
+                    "properties": {
+                        "_component": {
+                            "id": "_component",
+                            "type": "string"
+                        },
+                        "_milestone": {
+                            "id": "_milestone",
+                            "type": "string"
+                        },
+                        "_reviewer": {
+                            "id": "_reviewer",
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "created_date": {
+                    "id": "created_date",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

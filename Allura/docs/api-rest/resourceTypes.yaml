@@ -1,0 +1,150 @@
+- base:
+    get?:
+      responses: &standardResponses
+        200:
+          description: OK
+    put?:
+      responses: *standardResponses
+    patch?:
+      responses: *standardResponses
+    post?:
+        responses:
+          201:
+            description: Created
+    delete?:
+      responses: *standardResponses
+- baseTool:
+    get?:
+      responses:
+        200:
+          description: OK
+    post?:
+        responses:
+          201:
+            description: Created
+    delete?:
+      responses: *standardResponses
+- collection:
+    type: base
+    get:
+      is: [ pageable ]
+    post:
+- member:
+      type: base
+      get?:
+      post?:
+      put?:
+      patch?:
+      delete?:
+- tool:
+    type: member
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+              example: <<example>>
+    post?:
+    put?:
+      body:
+        application/json:
+          schema: <<schema>>
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+    patch?:
+      body:
+        application/json:
+          schema: <<schema>>
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+    delete?:   
+- permissionCheck:
+    description: |
+      This is API to run permission checks. 
+      It is available on a neighborhood, project and tool level.
+      
+      This is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. 
+      It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, 
+      indicating if given user has perm permission to the neighborhood/project/tool.
+    get:
+      queryParameters:
+        user:
+          type: string
+          example: heiths
+          required: true
+          description: The username to check
+        perm:
+          displayName: Permission
+          required: true
+          type: string
+          example: create
+          default: read
+          enum: ["read", "admin", "create", "update"]
+      description: |
+        Get permissions for <<resourcePathName>>.
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schemaItem>>
+- searchableCollection:
+    get:
+      queryParameters:
+        <<queryParamName>>:
+          description: Return <<resourcePathName>> that have their <<queryParamName>> matching the given value
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+              example: <<example>>
+- typedCollection:
+    type: collection
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+              example: <<example>>
+    post:
+      body:
+        application/json:
+      responses:
+        201:
+          body:
+            application/json:
+              schema: <<schema>>
+- permission:
+    securedBy: [null, oauth_1_0]
+    description: |
+      Checks if a given user has permissions.
+    get:
+      is: [permissionTestable]
+- project:
+    type: member
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+              example: <<example>>
+    put:
+      body:
+        application/json:
+          schema: <<schema>>
+      responses:
+        200:
+          body:
+            application/json:
+              schema: <<schema>>
+
+    

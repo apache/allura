@@ -1,0 +1,150 @@
+{
+    "tickets": [
+        {
+            "summary": "Diff view on the Commit Browser should have a file size limit",
+            "ticket_num": 7933
+        },
+        {
+            "summary": "Fix pagination issue in the commit browser",
+            "ticket_num": 7932
+        },
+        {
+            "summary": "Tool install dialog needs to escape html/js",
+            "ticket_num": 7931
+        },
+        {
+            "summary": "Bug: viewing a thread updates project mod_date",
+            "ticket_num": 7930
+        },
+        {
+            "summary": "Enable voting on tickets by default",
+            "ticket_num": 7929
+        }
+    ],
+    "count": 3662,
+    "milestones": [
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 2316,
+            "default": false,
+            "description": "",
+            "total": 2316,
+            "name": "asf_release_1.0.0"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 0,
+            "default": false,
+            "description": "",
+            "total": 0,
+            "name": "asf_release_1.0.0-RC1"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 66,
+            "default": false,
+            "description": "",
+            "total": 66,
+            "name": "asf_release_1.0.1"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 145,
+            "default": false,
+            "description": "",
+            "total": 145,
+            "name": "asf_release_1.1.0"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 337,
+            "default": "on",
+            "description": "",
+            "total": 891,
+            "name": "unreleased"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 182,
+            "default": false,
+            "description": "",
+            "total": 182,
+            "name": "asf_release_1.2.0"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 13,
+            "default": false,
+            "description": "",
+            "total": 13,
+            "name": "asf_release_1.2.1"
+        },
+        {
+            "due_date": "",
+            "complete": false,
+            "closed": 49,
+            "default": false,
+            "description": "",
+            "total": 49,
+            "name": "asf_release_1.3.0"
+        }
+    ],
+    "tracker_config": {
+        "_id": "545186e86d19cd63b88d1603",
+        "options": {
+            "ordinal": 3,
+            "TicketHelpNew": "",
+            "mount_point": "tickets",
+            "TicketMonitoringType": "AllPublicTicketChanges",
+            "EnableVoting": true,
+            "TicketHelpSearch": "",
+            "TicketMonitoringEmail": "dev@allura.apache.org",
+            "import_id": {
+                "source": "Allura",
+                "app_config_id": "4c3493551be1ce11d8000032"
+            },
+            "mount_label": "Tickets"
+        }
+    },
+    "limit": 5,
+    "saved_bins": [
+        {
+            "sort": "",
+            "_id": "54526f3f6d19cd509a769848",
+            "terms": "labels:bitesize AND (status:open OR status:review OR status:in-progress)",
+            "summary": "Bitesize Tickets"
+        },
+        {
+            "sort": "",
+            "_id": "54526fd16d19cd5093545c7b",
+            "terms": "(assigned_to_s:$USER AND status:(blocked in-progress open)) OR (_reviewer_s:$USER AND status:review)",
+            "summary": "My Assigned Tickets"
+        },
+        {
+            "sort": "",
+            "_id": "545270036d19cd509a76984c",
+            "terms": "reported_by:$USER AND NOT status:closed",
+            "summary": "My Submitted Tickets"
+        },
+        {
+            "sort": "",
+            "_id": "54526ef86d19cd42f87fbb80",
+            "terms": "status:review",
+            "summary": "Needs Review"
+        },
+        {
+            "sort": "",
+            "_id": "5452703a6d19cd509a769850",
+            "terms": "labels:\"sf-current\"",
+            "summary": "SourceForge current sprint"
+        }
+    ],
+    "page": 0
+}
