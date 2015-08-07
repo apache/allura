@@ -65,10 +65,10 @@ config = utils.ConfigProxy(
     common_prefix='forgemail.url')
 
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
-VIEWABLE_EXTENSIONS = [
+VIEWABLE_EXTENSIONS = frozenset([
     '.php', '.py', '.js', '.java', '.html', '.htm', '.yaml', '.sh',
     '.rb', '.phtml', '.txt', '.bat', '.ps1', '.xhtml', '.css', '.cfm', '.jsp', '.jspx',
-    '.pl', '.php4', '.php3', '.rhtml', '.svg', '.markdown', '.json', '.ini', '.tcl', '.vbs', '.xsl']
+    '.pl', '.php4', '.php3', '.rhtml', '.svg', '.markdown', '.json', '.ini', '.tcl', '.vbs', '.xsl'])
 
 
 # Some schema types
@@ -77,7 +77,7 @@ SObjType = S.OneOf('blob', 'tree', 'submodule')
 
 # Used for when we're going to batch queries using $in
 QSIZE = 100
-BINARY_EXTENSIONS = [
+BINARY_EXTENSIONS = frozenset([
     ".3ds", ".3g2", ".3gp", ".7z", ".a", ".aac", ".adp", ".ai", ".aif", ".apk", ".ar", ".asf", ".au", ".avi",
     ".bak", ".bin", ".bk", ".bmp", ".btif", ".bz2", ".cab", ".caf", ".cgm", ".cmx", ".cpio", ".cr2", ".dat", ".deb", ".djvu", ".dll",
     ".dmg", ".dng", ".doc", ".docx", ".dra", ".DS_Store", ".dsk", ".dts", ".dtshd", ".dvb", ".dwg", ".dxf", ".ecelp4800",
@@ -90,9 +90,9 @@ BINARY_EXTENSIONS = [
     ".smv", ".so", ".sub", ".swf", ".tar", ".tbz2", ".tga", ".tgz", ".tif", ".tiff", ".tlz", ".ts", ".ttf", ".uvh", ".uvi", ".uvm",
     ".uvp", ".uvs", ".uvu", ".viv", ".vob", ".war", ".wav", ".wax", ".wbmp", ".wdp", ".weba", ".webm", ".webp", ".whl", ".wm", ".wma",
     ".wmv", ".wmx", ".woff", ".woff2", ".wvx", ".xbm", ".xif", ".xm", ".xpi", ".xpm", ".xwd", ".xz", ".z", ".zip", ".zipx"
-]
+])
 
-PYPELINE_EXTENSIONS = utils.MARKDOWN_EXTENSIONS + ['.rst']
+PYPELINE_EXTENSIONS = frozenset(utils.MARKDOWN_EXTENSIONS + ['.rst'])
 
 DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
 
