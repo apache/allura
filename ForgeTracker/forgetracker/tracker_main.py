@@ -370,7 +370,7 @@ class ForgeTrackerApp(Application):
         if pending_mod_count and has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(
-                    'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                    'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
                     small=pending_mod_count))
 
         links += milestones

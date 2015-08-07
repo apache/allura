@@ -164,7 +164,7 @@ class ForgeDiscussionApp(Application):
                             'deleted': False,
                         }).count()
                         moderate_link = SitemapEntry(
-                            'Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
+                            'Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['moderate'],
                             small=num_moderate)
                     forum_links.append(
                         SitemapEntry(f.name, f.url(), small=f.num_topics))
@@ -172,12 +172,12 @@ class ForgeDiscussionApp(Application):
             url = h.urlquote(
                 url + c.forum.shortname if getattr(c, 'forum', None) and c.forum else url)
             l.append(
-                SitemapEntry('Create Topic', url, ui_icon=g.icons['plus']))
+                SitemapEntry('Create Topic', url, ui_icon=g.icons['add']))
             if has_access(c.app, 'configure')():
                 l.append(SitemapEntry('Add Forum', c.app.url +
                          'new_forum', ui_icon=g.icons['conversation']))
                 l.append(SitemapEntry('Admin Forums', c.project.url() + 'admin/' +
-                         self.config.options.mount_point + '/forums', ui_icon=g.icons['pencil']))
+                         self.config.options.mount_point + '/forums', ui_icon=g.icons['admin']))
             if moderate_link:
                 l.append(moderate_link)
             # if we are in a thread and not anonymous, provide placeholder

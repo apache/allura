@@ -24,13 +24,13 @@
 
 {% block actions %}
   {% if h.has_access(post, 'write')() %}
-    <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    {{ g.icons['edit'].render(href='edit') }}
   {% endif %}
-  <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}"></b></a>
+  {{ g.icons['history'].render(href='history') }}
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
   {% endif %}
-  <a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {{ g.icons['feed'].render(href='feed.rss', title='RSS') }}
 {% endblock %}
 
 {% block content %}

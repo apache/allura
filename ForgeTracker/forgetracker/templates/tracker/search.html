@@ -31,12 +31,15 @@
 
 {% block actions %}
   {{ lib.maximize_content_button() }}
-  <a href="{{tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort))}}" title="Feed"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {% set feed_url = tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort)) %}
+  {{ g.icons['feed'].render(href=feed_url) }}
 {% if allow_edit and count != 0 %}
-  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+  {% set bulk_edit_url = tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter)) %}
+  {{ g.icons['edit'].render(href=bulk_edit_url, title='Bulk Edit') }}
 {% endif %}
 {% if allow_move and count != 0 %}
-  <a href="{{tg.url(c.app.url + 'move/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter))}}" title="Bulk Move"><b data-icon="" class=""></b>Bulk Move</a>
+  {% set bulk_move_url = tg.url(c.app.url+'move/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter)) %}
+  {{ g.icons['move'].render(href=bulk_move_url, title='Bulk Move', show_title=True) }}
 {% endif %}
 {% endblock %}
 
@@ -75,7 +78,11 @@
   {% endif %}
   <input type="submit" value="Search"/>
 </form>
-<a href="{{tg.url(c.app.url + 'search_help/')}}" target="_blank" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
+{{ g.icons['help'].render(
+    show_title=True,
+    target='_blank',
+    href=tg.url(c.app.url + 'search_help/'),
+    extra_css='btn search_help_modal') }}
 
 </div>
 <div style="clear:both"></div>

@@ -31,7 +31,8 @@
 {% block header %}ForgeTracker for {{c.project.shortname}}{% endblock %}
 
 {% block actions %}
-    <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}} active"></b></a>
+  {% set edit_url = tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page)) %}
+  {{ g.icons['edit'].render(href=edit_url, title='Bulk Edit', extra_css='active') }}
 {% endblock %}
 
 {% block edit_box %}

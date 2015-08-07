@@ -19,7 +19,8 @@
 {% extends 'forgetracker:templates/tracker/mass_edit.html' %}
 
 {% block actions %}
-<a href="{{tg.url(c.app.url+'move/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Move" class="active"><b data-icon="" class=""></b>Bulk Move</a>
+{% set move_url = tg.url(c.app.url+'move/', dict(q=q, limit=limit, sort=sort, page=page)) %}
+{{ g.icons['move'].render(href=move_url, title='Bulk Move', extra_css='active', show_title=True) }}
 {% endblock %}
 
 {% block edit_box %}

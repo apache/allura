@@ -25,10 +25,7 @@
   </div>
   {% if c.help_modal %}
   <div class="grid-6">
-    <a href="#" class="btn search_help_modal">
-      <b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b>
-      Help
-    </a>
+    {{ g.icons['help'].render(extra_css='btn search_help_modal', show_title=True) }}
   </div>
   {% endif %}
   <div style="clear:both"></div>

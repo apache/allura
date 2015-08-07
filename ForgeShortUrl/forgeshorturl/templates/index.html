@@ -23,15 +23,12 @@
 
 {% block actions %}
   {% if can_create %}
-  <a href="{{ '{}admin/{}/add/'.format(c.project.url(), c.app.config.options.mount_point) }}"
-     title="Add Short URL"
-     class="add-short-url">
-    <b data-icon="{{g.icons['plus'].char}}" class="ico {{g.icons['plus'].css}}"></b>
-  </a>
+  {{ g.icons['plus'].render(
+      href='{}admin/{}/add/'.format(c.project.url(), c.app.config.options.mount_point),
+      title="Add Short URL",
+      extra_css="add-short-url") }}
   {% endif %}
-  <a href="search/" title="Search">
-    <b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b>
-  </a>
+  {{ g.icons['search'].render(href='search/') }}
 {% endblock %}
 
 {% block content %}

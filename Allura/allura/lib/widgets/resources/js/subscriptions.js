@@ -37,22 +37,17 @@ SubscriptionForm = React.createClass({
   render: function() {
     var action = this.props.subscribed ? "Unsubscribe from" : "Subscribe to";
     var title = action + ' this ' + this.props.thing;
-    var link_opts = {
+    var opts = {
       ref: 'link',
-      className: this.props.subscribed ? 'active' : '',
+      className: this.props.icon.css + (this.props.subscribed ? ' active' : ''),
       href: '#',
       title: title,
       onClick: this.handleClick
     };
     if (this.props.in_progress) {
-      link_opts.style = {cursor: 'wait'};
+      opts.style = {cursor: 'wait'};
     }
-    var icon_opts = {
-      'data-icon': this.props.icon.char,
-      className: 'ico ' + this.props.icon.css,
-      title: title
-    };
-    return dom('a', link_opts, dom('b', icon_opts));
+    return dom('a', opts);
   },
 
   handleClick: function() {

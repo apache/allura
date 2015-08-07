@@ -28,7 +28,7 @@
     {% if c.user and not c.user.is_anonymous() and c.user != user %}
         {{follow_toggle.display(following=following, action=activity_app.url+'follow')}}
     {% endif %}
-    <a href="feed.rss" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
+    {{ g.icons['feed'].render(href='feed.rss', title='RSS') }}
 {% endblock %}
 
 {% block section_class %}activity{% endblock %}

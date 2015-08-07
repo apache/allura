@@ -42,11 +42,11 @@
 {% block actions %}
   {% if not page['deleted'] %}
     {% if c.user and c.user != c.user.anonymous() %}
-      <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}" title="Edit"></b>&nbsp;Edit</a>
+      {{ g.icons['edit'].render(href='edit', show_title=True) }}
     {% endif %}
-    <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}" title="History"></b></a>
+      {{ g.icons['history'].render(href='history') }}
   {% elif h.has_access(page, 'delete')() %}
-    <a class="post-link" href="#" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
+    {{ g.icons['undelete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
         <b class="ico ico-close close" data-icon="D"></b>
         <h1>Confirm page restoration</h1>
@@ -64,8 +64,8 @@
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=page_subscribed, action='subscribe', style='icon')}}
   {% endif %}
-	<a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
-  <a href="../search" title="Search"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="Search"></b></a>
+  {{ g.icons['feed'].render(href='feed', title='RSS') }}
+  {{ g.icons['search'].render(href='../search') }}
 {% endblock %}
 
 {% block wiki_content %}

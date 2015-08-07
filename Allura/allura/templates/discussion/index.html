@@ -24,9 +24,12 @@
 
 {% block actions %}
   {% if discussion.email_address and c.app.config.options.get('AllowEmailPosting', True) %}
-    <a href="{{h.really_unicode(discussion.email_link(subject=None))}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    {{ g.icons['send'].render(
+          extra_css='email',
+          title='Send Email to Create a New Topic',
+          href=h.really_unicode(discussion.email_link(subject=None))) }}
   {% endif %}
-  <a href="feed" title="Feed" ><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {{ g.icons['feed'].render(href='feed.rss') }}
 {% endblock %}
 
 {% block edit_box %}

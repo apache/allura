@@ -34,20 +34,20 @@
 {% set editable = h.has_access(ticket, 'update') and not ticket.deleted %}
 
 {% block actions %}
-<a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {{ g.icons['feed'].render(href='feed.rss', title='Follow this Ticket') }}
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}
 {% if h.has_access(ticket.app, 'admin') %}
-  <a href="move" title="Move"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
+  {{ g.icons['move'].render(show_title=True, href='move') }}
 {% endif %}
 {% if editable %}
-  <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
+  {{ g.icons['edit'].render(show_title=True, extra_css='edit_ticket') }}
   {%if h.has_access(ticket, 'delete') and not ticket.deleted%}
-    <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+    {{ g.icons['delete'].render(href='delete', extra_css='post-link') }}
   {% endif %}
 {%elif h.has_access(ticket, 'delete') and ticket.deleted%}
-  <a class="post-link" href="undelete" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
+  {{ g.icons['undelete'].render(href='undelete', extra_css='post-link') }}
 {% endif %}
 {% endblock %}
 

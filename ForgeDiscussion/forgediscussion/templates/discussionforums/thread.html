@@ -27,10 +27,10 @@
 
 {% block actions %}
   {% if show_moderate and h.has_access(thread, 'moderate')() %}
-  <a href="#" title="Moderate" id="mod_thread_link"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    {{ g.icons['moderate'].render(id='mod_thread_link') }}
   {% endif %}
-  <a href="#" title="Label This" class="thread_tag"><b data-icon="z" class="ico ico-tag"></b></a>
-  <a href="feed.rss" class="thread_feed0" title="Follow This"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}
+  {{ g.icons['feed'].render(href='feed.rss', title='Follow This', extra_css='thread_feed0') }}
 {% endblock %}
 
 {% block edit_box %}

@@ -30,6 +30,10 @@ b.ico {
     background-repeat: no-repeat;
     vertical-align: middle;
 }
+a.fa { color: rgb(85, 85, 85); }
+a.fa:hover { text-decoration: none; }
+a.btn.fa { font-family: FontAwesome; }
+a.fa > span { font-family: sans-serif; }
 h2.dark b.ico, .modal b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}
 
 b.ico.ico-fork { background-position: -240px -16px; }
@@ -102,4 +106,3 @@ tr.rev div.markdown_content p {
 #sidebar-admin-header h3 {
     padding-left: 2px;
 }
-

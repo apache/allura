@@ -28,7 +28,7 @@
 {% endblock %}
 
 {% block actions %}
-    <a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
+    {{ g.icons['feed'].render(href='feed.rss', title='RSS') }}
 {% endblock %}
 
 {% block content %}

@@ -241,7 +241,7 @@ The wiki uses [Markdown](%s) syntax.
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(
                 SitemapEntry(
-                    'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                    'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
                     small=pending_mod_count))
         if not c.user.is_anonymous():
             subscribed = M.Mailbox.subscribed(app_config_id=self.config._id)

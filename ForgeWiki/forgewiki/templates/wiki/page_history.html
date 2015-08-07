@@ -24,7 +24,7 @@
 {% block header %}{{title}}{% endblock %}
 
 {% block actions %}
-  <a href="." title="View Page"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Page"></b></a>
+  {{ g.icons['eye'].render(href='.', title='View Page') }}
 {% endblock %}
 
 {% block wiki_content %}
@@ -67,7 +67,7 @@
                 </p>
               </div>
             {% endif %}
-            <a href="./?version={{p.version}}"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}" title="View Revision"></b></a>
+            {{ g.icons['eye'].render(href='./?version={}'.format(p.version), title='View Revision') }}
           </td>
         </tr>
         {% set i = i+1 %}

@@ -65,7 +65,7 @@
           {{c.date_field.display(value=m.due_date)}}
         </td>
         <td>{{m.closed}} / {{m.total}}</td>
-        <td style="width:20px;"><a href="#" title="Edit" class="edit_milestone"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a></td>
+        <td style="width:20px;">{{ g.icons['edit'].render(extra_css='edit_milestone') }}</td>
       </tr>
       {% else %}
       <tr class="empty_message">

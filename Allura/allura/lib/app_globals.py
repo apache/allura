@@ -48,6 +48,7 @@ from pypeline.markup import markup as pypeline_markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 from ming.utils import LazyProperty
+from jinja2 import Markup
 
 import allura.tasks.event_tasks
 from allura import model as M
@@ -221,27 +222,33 @@ class Globals(object):
         self.analytics = analytics.GoogleAnalytics(accounts=accounts)
 
         self.icons = dict(
-            admin=Icon('x', 'ico-admin'),
-            pencil=Icon('p', 'ico-pencil'),
-            help=Icon('h', 'ico-help'),
-            search=Icon('s', 'ico-search'),
-            history=Icon('N', 'ico-history'),
-            feed=Icon('f', 'ico-feed'),
-            mail=Icon('M', 'ico-mail'),
+            move=Icon('fa fa-arrows', 'Move'),
+            edit=Icon('fa fa-edit', 'Edit'),
+            admin=Icon('fa fa-gear', 'Admin'),
+            send=Icon('fa fa-send-o', 'Send'),
+            add=Icon('fa fa-plus-circle', 'Add'),
+            moderate=Icon('fa fa-hand-stop-o', 'Moderate'),
+            pencil=Icon('fa fa-pencil', 'Edit'),
+            help=Icon('fa fa-question-circle', 'Help'),
+            eye=Icon('fa fa-eye', 'View'),
+            search=Icon('fa fa-search', 'Search'),
+            history=Icon('fa fa-calendar', 'History'),
+            feed=Icon('fa fa-rss', 'Feed'),
+            mail=Icon('fa fa-envelope-o', 'Subscribe'),
             reply=Icon('w', 'ico-reply'),
-            tag=Icon('z', 'ico-tag'),
+            tag=Icon('fa fa-tag', 'Tag'),
             flag=Icon('^', 'ico-flag'),
-            undelete=Icon('+', 'ico-undelete'),
-            delete=Icon('#', 'ico-delete'),
+            undelete=Icon('fa fa-undo', 'Undelete'),
+            delete=Icon('fa fa-trash-o', 'Delete'),
             close=Icon('D', 'ico-close'),
             table=Icon('n', 'ico-table'),
-            stats=Icon('Y', 'ico-stats'),
+            stats=Icon('fa fa-line-chart', 'Stats'),
             pin=Icon('@', 'ico-pin'),
             folder=Icon('o', 'ico-folder'),
             fork=Icon('R', 'ico-fork'),
             merge=Icon('J', 'ico-merge'),
-            plus=Icon('+', 'ico-plus'),
-            conversation=Icon('q', 'ico-conversation'),
+            plus=Icon('fa fa-plus-circle', 'Add'),
+            conversation=Icon('fa fa-comments', 'Conversation'),
             group=Icon('g', 'ico-group'),
             user=Icon('U', 'ico-user'),
             secure=Icon('(', 'ico-lock'),
@@ -586,6 +593,22 @@ class Globals(object):
 
 class Icon(object):
 
-    def __init__(self, char, css):
-        self.char = char
+    def __init__(self, css, title=None):
         self.css = css
+        self.title = title or u''
+
+    def render(self, show_title=False, extra_css=None, closing_tag=True, **kw):
+        title = kw.get('title') or self.title
+        attrs = {
+            'href': '#',
+            'title': title,
+            'class': ' '.join(['icon', self.css, extra_css or '']).strip(),
+        }
+        attrs.update(kw)
+        attrs = ew._Jinja2Widget().j2_attrs(attrs)
+        visible_title = u''
+        if show_title:
+            visible_title = u'<span>&nbsp;{}</span>'.format(Markup.escape(title))
+        closing_tag = u'</a>' if closing_tag else u''
+        icon = u'<a {}>{}{}'.format(attrs, visible_title, closing_tag)
+        return Markup(icon)

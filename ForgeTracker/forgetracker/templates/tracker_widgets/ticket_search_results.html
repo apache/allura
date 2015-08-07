@@ -51,7 +51,7 @@
             </th>
           {% endfor %}
           <th id="select_col_menu">
-            <a href="#" id="col_menu" title="Select Columns"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
+            {{ g.icons['admin'].render(id='col_menu', title='Select Columns') }}
           </th>
         </tr>
       </thead>

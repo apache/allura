@@ -28,7 +28,7 @@
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
 {% endblock %}
 {% block actions %}
-  <a href="{{c.app.url}}feed.rss" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow') }}
 {% endblock %}
 
 {% block content %}
