@@ -1,0 +1,8 @@
+- oauth_1_0:
+    description: |
+        Apache Allura supports OAuth 1.0 for authenticating API requests.
+    type: OAuth 1.0
+    settings:
+      requestTokenUri: https://forge-allura.apache.org/rest/oauth/request_token
+      authorizationUri: https://forge-allura.apache.org/rest/oauth/authorize
+      tokenCredentialsUri: https://forge-allura.apache.org/rest/oauth/access_token

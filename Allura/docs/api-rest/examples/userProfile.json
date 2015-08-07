@@ -1,0 +1,56 @@
+{
+    "username": "heiths",
+    "name": "Heith Seewald",
+    "localization": {
+        "city": "Grand Rapids Area",
+        "country": "United States"
+    },
+    "skills": [
+        {
+            "comment": "asdf",
+            "skill": {
+                "fullpath": "Programming Language",
+                "fullname": "Programming Language",
+                "shortname": "language",
+                "id": 160
+            },
+            "level": "high"
+        }
+    ],
+    "webpages": [],
+    "joined": "2014-12-12 17:59:47+00:00",
+    "socialnetworks": [
+        {
+            "accounturl": "www.linkedin.com/in/heiths/",
+            "socialnetwork": "Linkedin"
+        },
+        {
+            "accounturl": "heiths",
+            "socialnetwork": "Google+"
+        }
+    ],
+    "telnumbers": [],
+    "sex": "Male",
+    "availability": [
+        {
+            "start_time": {
+                "h": 3,
+                "m": 30
+            },
+            "week_day": "Thursday",
+            "end_time": {
+                "h": 4,
+                "m": 45
+            }
+        }
+    ],
+    "projects": [
+        {
+            "url": "/p/allura/",
+            "last_updated": "2015-07-28 16:40:57.701000",
+            "name": "Apache Allura™",
+            "summary": "Forge software for hosting software projects"
+        }
+    ],
+    "skypeaccount": null
+}

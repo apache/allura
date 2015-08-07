@@ -1,0 +1,266 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "title": "User Profile.",
+  "name": "/",
+  "properties": {
+    "username": {
+      "id": "username",
+      "type": "string",
+      "name": "username"
+    },
+    "name": {
+      "id": "name",
+      "type": "string",
+      "title": "Full Name.",
+      "description": "A user's first and last name.",
+      "name": "name"
+    },
+    "localization": {
+      "id": "localization",
+      "type": "object",
+      "description": "General Location.",
+      "name": "localization",
+      "properties": {
+        "city": {
+          "id": "city",
+          "type": "string",
+          "name": "city"
+        },
+        "country": {
+          "id": "country",
+          "type": "string",
+          "name": "country"
+        }
+      }
+    },
+    "skills": {
+      "id": "skills",
+      "type": "array",
+      "title": "Skills.",
+      "description": "A list of skills and associated skill levels.",
+      "name": "skills",
+      "items": {
+        "id": "0",
+        "type": "object",
+        "title": "0 schema.",
+        "name": "0",
+        "properties": {
+          "comment": {
+            "id": "comment",
+            "type": "string",
+            "title": "Comment.",
+            "description": "Additional comments about a given skill.",
+            "name": "comment"
+          },
+          "skill": {
+            "id": "skill",
+            "type": "object",
+            "title": "Skill schema.",
+            "name": "skill",
+            "properties": {
+              "fullpath": {
+                "id": "fullpath",
+                "type": "string",
+                "title": "Full Path.",
+                "description": "Category hierarchy.",
+                "name": "fullpath"
+              },
+              "fullname": {
+                "id": "fullname",
+                "type": "string",
+                "title": "Fullname schema.",
+                "description": "Name of category.",
+                "name": "fullname"
+              },
+              "shortname": {
+                "id": "shortname",
+                "type": "string",
+                "title": "Shortname.",
+                "description": "Short form of category.",
+                "name": "shortname"
+              },
+              "id": {
+                "id": "id",
+                "type": "integer",
+                "title": "Id.",
+                "description": "Unique identifier",
+                "name": "id"
+              }
+            }
+          },
+          "level": {
+            "id": "level",
+            "type": "string",
+             "enum": ["low", "medium", "high"],
+            "title": "Skill Level.",
+            "description": "low, medium or high",
+            "name": "level"
+          }
+        }
+      }
+    },
+    "webpages": {
+      "id": "webpages",
+      "type": "array",
+      "title": "Webpages schema.",
+      "description": "A list of URL strings associated with a user.",
+      "name": "webpages",
+      "items": {}
+    },
+    "joined": {
+      "id": "joined",
+      "type": "string",
+      "title": "Joined schema.",
+      "description": "The date a user signed up.",
+      "name": "joined"
+    },
+    "socialnetworks": {
+      "id": "socialnetworks",
+      "type": "array",
+      "title": "Social Networks.",
+      "description": "A list of social networks URLs.",
+      "name": "socialnetworks",
+      "items": {
+        "type": "object",
+        "properties": {
+          "accounturl": {
+            "id": "accounturl",
+            "type": "string",
+            "title": "Account Url.",
+            "description": "URL to the associated user account on the social network site.",
+            "name": "accounturl"
+          },
+          "socialnetwork": {
+            "id": "socialnetwork",
+            "type": "string",
+            "title": "Socialnetwork schema.",
+            "description": "Name of the social networking site.",
+            "name": "socialnetwork"
+          }
+        }
+      }
+    },
+    "telnumbers": {
+      "id": "telnumbers",
+      "type": "array",
+      "title": "Telnumbers schema.",
+      "description": "A list of phone numbers as strings.",
+      "name": "telnumbers",
+      "items": {}
+    },
+    "sex": {
+      "id": "sex",
+      "type": "string",
+      "name": "sex"
+    },
+    "availability": {
+      "id": "availability",
+      "type": "array",
+      "title": "Availability.",
+      "description": "Indicates the availability of a user.",
+      "name": "availability",
+      "items": {
+        "type": "object",
+        "description": "An explanation about the puropose of this instance described by this schema.",
+        "properties": {
+          "start_time": {
+            "id": "start_time",
+            "type": "object",
+            "title": "Start Time.",
+            "description": "The start of a user's availability.",
+            "name": "start_time",
+            "properties": {
+              "h": {
+                "id": "h",
+                "type": "integer",
+                "title": "Hour.",
+                "name": "h"
+              },
+              "m": {
+                "id": "m",
+                "type": "integer",
+                "title": "Minute.",
+                "name": "m"
+              }
+            }
+          },
+          "week_day": {
+            "id": "week_day",
+            "type": "string",
+            "title": "Week Day.",
+            "description": "Day of week.",
+            "name": "week_day"
+          },
+          "end_time": {
+            "id": "end_time",
+            "type": "object",
+            "title": "End Time.",
+            "description": "The end of a user's availability.",
+            "name": "end_time",
+            "properties": {
+              "h": {
+                "id": "h",
+                "type": "integer",
+                "title": "Hour.",
+                "name": "h"
+              },
+              "m": {
+                "id": "m",
+                "type": "integer",
+                "title": "Minute.",
+                "name": "m"
+              }
+            }
+          }
+        }
+      }
+    },
+    "projects": {
+      "id": "projects",
+      "type": "array",
+      "title": "Projects.",
+      "description": "A list of projects accociated with a user.",
+      "name": "projects",
+      "items": {
+        "type": "object",
+        "description": "Apache Allura project.",
+        "properties": {
+          "url": {
+            "id": "url",
+            "type": "string",
+            "title": "Project Url.",
+            "name": "url"
+          },
+          "last_updated": {
+            "id": "last_updated",
+            "type": "string",
+            "title": "Last Updated.",
+            "description": "string formatted timestamp.",
+            "name": "last_updated"
+          },
+          "name": {
+            "id": "name",
+            "type": "string",
+            "title": "Name.",
+            "name": "name"
+          },
+          "summary": {
+            "id": "summary",
+            "type": "string",
+            "title": "Project Summary.",
+            "name": "summary"
+          }
+        }
+      }
+    },
+    "skypeaccount": {
+      "id": "skypeaccount",
+      "type": ["null", "string"],
+      "title": "Skype Account.",
+      "description": "Skype account username.",
+      "name": "skypeaccount"
+    }
+  }
+}

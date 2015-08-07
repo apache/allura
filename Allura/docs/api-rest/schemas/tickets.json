@@ -1,0 +1,163 @@
+ {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "id": "/",
+        "type": "object",
+        "properties": {
+          "tickets": {
+            "id": "tickets",
+            "type": "array",
+            "items": {
+              "id": "99",
+              "type": "object",
+              "properties": {
+                "summary": {
+                  "id": "summary",
+                  "type": "string"
+                },
+                "ticket_num": {
+                  "id": "ticket_num",
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "count": {
+            "id": "count",
+            "type": "integer"
+          },
+          "milestones": {
+            "id": "milestones",
+            "type": "array",
+            "items": {
+              "id": "7",
+              "type": "object",
+              "properties": {
+                "due_date": {
+                  "id": "due_date",
+                  "type": "string"
+                },
+                "complete": {
+                  "id": "complete",
+                  "type": "boolean"
+                },
+                "closed": {
+                  "id": "closed",
+                  "type": "integer"
+                },
+                "default": {
+                  "id": "default",
+                  "type": ""
+                },
+                "description": {
+                  "id": "description",
+                  "type": "string"
+                },
+                "total": {
+                  "id": "total",
+                  "type": "integer"
+                },
+                "name": {
+                  "id": "name",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "tracker_config": {
+            "id": "tracker_config",
+            "type": "object",
+            "properties": {
+              "_id": {
+                "id": "_id",
+                "type": "string"
+              },
+              "options": {
+                "id": "options",
+                "type": "object",
+                "properties": {
+                  "ordinal": {
+                    "id": "ordinal",
+                    "type": "integer"
+                  },
+                  "TicketHelpNew": {
+                    "id": "TicketHelpNew",
+                    "type": "string"
+                  },
+                  "mount_point": {
+                    "id": "mount_point",
+                    "type": "string"
+                  },
+                  "TicketMonitoringType": {
+                    "id": "TicketMonitoringType",
+                    "type": "string"
+                  },
+                  "EnableVoting": {
+                    "id": "EnableVoting",
+                    "type": "boolean"
+                  },
+                  "TicketHelpSearch": {
+                    "id": "TicketHelpSearch",
+                    "type": "string"
+                  },
+                  "TicketMonitoringEmail": {
+                    "id": "TicketMonitoringEmail",
+                    "type": "string"
+                  },
+                  "import_id": {
+                    "id": "import_id",
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "id": "source",
+                        "type": "string"
+                      },
+                      "app_config_id": {
+                        "id": "app_config_id",
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "mount_label": {
+                    "id": "mount_label",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "limit": {
+            "id": "limit",
+            "type": "integer"
+          },
+          "saved_bins": {
+            "id": "saved_bins",
+            "type": "array",
+            "items": {
+              "id": "4",
+              "type": "object",
+              "properties": {
+                "sort": {
+                  "id": "sort",
+                  "type": "string"
+                },
+                "_id": {
+                  "id": "_id",
+                  "type": "string"
+                },
+                "terms": {
+                  "id": "terms",
+                  "type": "string"
+                },
+                "summary": {
+                  "id": "summary",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "page": {
+            "id": "page",
+            "type": "integer"
+          }
+        }
+      }

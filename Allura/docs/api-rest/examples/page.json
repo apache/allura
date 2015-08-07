@@ -1,0 +1,18 @@
+{
+  "related_artifacts": [
+    "/p/allura/wiki/Home/"
+  ],
+  "attachments": [],
+  "title": "Extensions",
+  "text": "The following extensions for Allura are available as separate packages:\r\n\r\nType  | Title  | License | Notes\r\n----- | ------------- | ----- | Notes\r\nTool  | [ForgeHg](http://pypi.python.org/pypi/ForgeHg) | GPLv2 | Maintained by the Allura developers.\u003Cbr>  Separate package due to Hg GPL license.\r\nTool  | [Pastebin](https://sourceforge.net/p/forgepastebin/) | Apache&nbsp;2 | Maintained by the Allura developers.\u003Cbr>  Example of writing a simple tool.\r\nTool  | [Donay Incentify](http://docs.donay.com/display/Dosense/Installing+Incentify+in+Allura) | Apache 2\r\nTool  | [Bitergia metrics](https://github.com/Bitergia/AlluraBitergiaMetrics) | Apache 2\r\nTool  | [Perforce SCM](https://sourceforge.net/p/p4allura/allura-fork/ci/master/tree/ForgeP4/)\r\nTool  | [Django Allura](https://github.com/rick446/DjangoAllura)\r\nImporter | [Google Code Wiki Importer](http://pypi.python.org/pypi/googlecodewikiimporter/) | GPLv3 | Maintained by the Allura developers.\u003Cbr>  Separate package due to `html2text` GPL.\r\nImporter | [Trac Wiki Importer](http://pypi.python.org/pypi/tracwikiimporter/) | GPLv3 | Maintained by the Allura developers.\u003Cbr>  Separate package due to `html2text` GPL.\r\nImporter | [Mediawiki data importer](http://pypi.python.org/pypi/mediawikiimporter/) | GPLv3 | Maintained by the Allura developers.\u003Cbr>  Separate package due to `html2text` GPL.\r\nExternal Integration  | [TeamCity](https://github.com/Vampire/teamcity-sourceforge) | Apache 2 | Targeted at SourceForge.net but APIs are the same, so base domain could be changed to any Allura host.\r\n",
+  "labels": [],
+  "discussion_thread": {
+    "_id": "9d181a1d",
+    "posts": [],
+    "discussion_id": "523331da6d19cd54e56931db",
+    "subject": ""
+  },
+  "mod_date": "2015-07-07 17:30:01.607000",
+  "_id": "523332d96d19cd54e569322b",
+  "discussion_thread_url": "https://forge-allura.apache.org/rest/p/allura/wiki/_discuss/thread/9d181a1d/"
+}

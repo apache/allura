@@ -1,0 +1,19 @@
+{
+    "count": 3,
+    "limit": 10,
+    "page": 0,
+    "posts": [
+        {
+            "title": "Project Insights",
+            "url": "http://localhost:8080/rest/p/finna/blog/2015/07/project-insights/"
+        },
+        {
+            "title": "New blog",
+            "url": "http://localhost:8080/rest/p/finna/blog/2015/07/new-blog/"
+        },
+        {
+            "title": "Old News",
+            "url": "http://localhost:8080/rest/p/finna/blog/2015/07/old-news/"
+        }
+    ]
+}

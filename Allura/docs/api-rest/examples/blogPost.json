@@ -1,0 +1,20 @@
+{
+    "_id": "55ad27204d21224d82656b45",
+    "author": "root",
+    "discussion_thread": {
+        "_id": "afb74fce",
+        "discussion_id": "55ad26e94d21224d82656b31",
+        "posts": [],
+        "subject": "New blog discussion"
+    },
+    "discussion_thread_url": "http://localhost:8080/rest/p/finna/blog/_discuss/thread/afb74fce/",
+    "labels": [
+        "general"
+    ],
+    "mod_date": "2015-07-20 16:51:44.589000",
+    "related_artifacts": [],
+    "state": "published",
+    "text": "Just made a new blog here",
+    "title": "New blog",
+    "url": "http://localhost:8080/rest/p/finna/blog/2015/07/new-blog/"
+}
