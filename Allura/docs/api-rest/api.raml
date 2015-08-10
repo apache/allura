@@ -17,51 +17,70 @@ baseUriParameters:
 
 /{neighborhood}:
     description: |
-      Neighborhoods are groups of logically related projects, which have the same default options. 
-      
+      Neighborhoods are groups of logically related projects, which have the same default options.
+
     uriParameters:
       neighborhood:
         example: p
         description: |
-          Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`. 
+          Allura has two default neighborhoods: **“Projects”** `/p` and **“Users”** `/u`.
           More information can be found [here](https://forge-allura.apache.org/docs/getting_started/using.html?highlight=neighborhood#what-are-neighborhoods)
-    
+
     /has_access:
       type: permission
+      get:
+        queryParameters:
+          perm:
+            displayName: Permission
+            required: true
+            type: string
+            example: create
+            default: read
+            enum: [read, admin, create, update, register]
+
 
     /{project}:
       description: |
         Get or modify existing projects.
       uriParameters:
         project:
-          description: "The Apache Allura Project."
+          description: The Project short name.
           example: "allura"
           pattern: ([a-zA-Z]+)
-    
-      type: { 
-          project: { 
+
+      type: {
+          project: {
           schema: !include schemas/project.json,
           example: !include examples/project.json
           }
         }
-            
+
       /has_access:
         type: permission
-        
+        get:
+          queryParameters:
+            perm:
+              displayName: Permission
+              required: true
+              type: string
+              example: create
+              default: read
+              enum: [read, admin, create, update]
+
         /{link}:
           description: |
             Represents the External Link tool.
-          type: { 
+          type: {
               tool: {
               example: !include examples/link.json,
               schema: !include schemas/link.json
               }
             }
-        
+
           get:
             description: |
               Returns the existing url.
-        
+
           post:
             description: |
               Updates the url. *authentication required*.
@@ -73,9 +92,9 @@ baseUriParameters:
                       The url you would like to update to.
                     type: string
                     example: http://google.com
-        
+
         /{blog}:
-          type: { 
+          type: {
               tool: {
               example: !include examples/blog.json,
               schema: !include schemas/blog.json
@@ -83,14 +102,14 @@ baseUriParameters:
             }
           description: |
             Represents the **Blog tool**
-        
+
           displayName: Blog
           uriParameters:
            blog:
              displayName: Blog Name
              type: string
              example: blog
-        
+
           get:
             description: |
               Returns a list of posts, including title and API url.
@@ -127,8 +146,9 @@ baseUriParameters:
                     enum: [draft, published]
                     type: string
                     example: published
-        
+
           /{year}/{month}/{title}:
+              description: Represents a blog post entry.
               type: {
                 tool: {
                 example: !include examples/blogPost.json,
@@ -149,7 +169,7 @@ baseUriParameters:
                  displayName: Title
                  type: string
                  example: project-insights
-        
+
               post:
                 description: |
                   Updates an existing blog post.
@@ -173,10 +193,19 @@ baseUriParameters:
                           Draft or published.
                         enum: [draft, published]
                         type: string
-        
+
           /has_access:
             type: permission
-        
+            get:
+              queryParameters:
+                perm:
+                  displayName: Permission
+                  required: true
+                  type: string
+                  example: post
+                  default: read
+                  enum: [admin, configure, moderate, post, unmoderated_post, read, write]
+
         /{forum}:
           description: |
             A list of forums
@@ -186,7 +215,7 @@ baseUriParameters:
               schema: !include schemas/page.json
               }
             }
-        
+
           displayName: forum
           uriParameters:
            forum:
@@ -195,19 +224,30 @@ baseUriParameters:
              example: general
              description: |
                Returns a list of forums, including name, description, num_posts, API URL, and last_post details
-        
+
                To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
-        
+
           /forum:
             description: |
               returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
+            get:
             /{slug}:
               description: |
                 returns a limited list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
-        
+              get:
+
           /has_access:
             type: permission
-        
+            get:
+              queryParameters:
+                perm:
+                  displayName: Permission
+                  required: true
+                  type: string
+                  example: post
+                  default: read
+                  enum: [admin, configure, moderate, post, unmoderated_post, read]
+
         /{discussion}:
           description: |
             Represents the **Discussion Tool**.
@@ -215,17 +255,17 @@ baseUriParameters:
               tool: {
               schema: !include schemas/discussion.json,
               example: !include examples/discussion.json
-        
+
               }
             }
-        
+
           displayName: Discussion
           uriParameters:
            discussion:
              displayName: Discussion Name
              type: string
              example: "discussion"
-        
+
           /{forum}:
             type: {
                 tool: {
@@ -233,17 +273,17 @@ baseUriParameters:
                   schema: !include schemas/page.json
                 }
               }
-        
+
             displayName: forum
             uriParameters:
              forum:
                displayName: Forum Name
                type: string
                example: general
-        
+
           /has_access:
             type: permission
-        
+
         /{wiki}:
           description: |
             Represents the **Wiki Tool**.
@@ -253,15 +293,15 @@ baseUriParameters:
               schema: !include schemas/wiki.json
               }
             }
-        
+
           displayName: Wiki
           uriParameters:
            wiki:
              displayName: Wiki Name
              type: string
              example: wiki
-        
-        
+
+
           /{title}:
             type: {
                 tool: {
@@ -269,7 +309,7 @@ baseUriParameters:
                 schema: !include schemas/page.json
                 }
               }
-        
+
             displayName: Title
             uriParameters:
              title:
@@ -293,11 +333,20 @@ baseUriParameters:
                       description: |
                        Comma-separated list of page labels.
                       type: string
-        
-        
+
+
           /has_access:
             type: permission
-        
+            get:
+              queryParameters:
+                perm:
+                  displayName: Permission
+                  required: true
+                  type: string
+                  example: post
+                  default: read
+                  enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, edit]
+
         /{tracker}:
           description: |
             Represents the **Ticket Tracker Tool**.
@@ -308,70 +357,65 @@ baseUriParameters:
               }
             }
           is: [pageable]
-        
+
           displayName: Tracker Url
           uriParameters:
            tracker:
              displayName: Tracker Name
              type: string
              example: tickets
-        
+
           get:
             is: [pageable]
             description: |
               Get a list of tickets
-        
-          /_discuss:
-            description: |
-              returns summary information about the tool discussion, including the threads in the discussion (there is one thread per ticket)
+
+          /_discuss/thread/{threadId}:
+            uriParameters:
+             threadId:
+               displayName: Thread ID
+               type: string
+               example: f78b98a0
+
             get:
-        
-            /thread/{threadId}:
+              description: |
+                returns summary information about a thread, including the posts in a thread
+            /{slug}:
               uriParameters:
-               threadId:
-                 displayName: Thread ID
+               slug:
+                 displayName: Slug
                  type: string
-                 example: f78b98a0
-        
+                 example: 9133
               get:
                 description: |
-                  returns summary information about a thread, including the posts in a thread
-              /{slug}:
-                uriParameters:
-                 slug:
-                   displayName: Slug
-                   type: string
-                   example: 9133
-                get:
-                  description: |
-                    returns detailed information about a post
-                /reply:
-                  description: |
-                    create a threaded reply to the given post
-                  post:
-                    body:
-                      application/x-www-form-urlencoded:
-                        formParameters:
-                          text:
-                            description: the text of the reply
-                            example: |
-                              I *agree* with you.
-                            required: true
-                            type: string
-              /new:
+                  returns detailed information about a post
+              /reply:
                 description: |
-                  create a post in the given thread
+                  create a threaded reply to the given post
                 post:
                   body:
                     application/x-www-form-urlencoded:
                       formParameters:
                         text:
-                          description: The text of the new post
+                          description: the text of the reply
                           example: |
-                            This is a new post!
+                            I *agree* with you.
                           required: true
                           type: string
-        
+            /new:
+              description: |
+                create a post in the given thread
+              post:
+                body:
+                  application/x-www-form-urlencoded:
+                    formParameters:
+                      text:
+                        description: The text of the new post
+                        example: |
+                          This is a new post!
+                        required: true
+                        type: string
+
           /search:
             type: {
               searchableCollection: {
@@ -381,12 +425,13 @@ baseUriParameters:
               }
             }
             is: [ pageable]
-        
+
           /new:
             description: |
               Creates a new ticket.
             post:
               body:
+                # FIXME?
                 application/x-www-form-urlencoded:
                   formParameters:
                     access_token:
@@ -417,13 +462,13 @@ baseUriParameters:
                       description:  custom field value
                       type: string
                       required: false
-        
+
           /{ticketNumber}:
             type: {
               tool: {
               example: !include examples/ticket.json,
               schema: !include schemas/ticket.json
-        
+
               }
             }
             displayName: Ticket Number
@@ -432,14 +477,15 @@ baseUriParameters:
                 example: 1
                 description: |
                   Get a details of a ticket.
-        
+
             /save:
               description: |
                 updates an existing ticket
                 parameters are the same as /rest/p/project_name/mount_point/new
-        
+
               post:
                 body:
+                  # form?
                   application/x-www-form-urlencoded:
                     formParameters:
                       access_token:
@@ -470,22 +516,31 @@ baseUriParameters:
                         description:  custom field value
                         type: string
                         required: false
-        
+
           /has_access:
             type: permission
-        
-        
+            get:
+              queryParameters:
+                perm:
+                  displayName: Permission
+                  required: true
+                  type: string
+                  example: post
+                  default: read
+                  enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, update, save_searches]
+
+
         /admin:
           description: |
             Endpoints for **project exporting** and managing **webhooks**
-        
+
           /export:
             description: |
               Generates a full bulk export of your tool(s) in the same format as the API for individual access. Authentication required. Here is an [example shell](https://forge-allura.apache.org/p/allura/git/ci/master/tree/scripts/project_export) script using these APIs, suitable to run as a cron job.
             post:
               description: |
                 Submits an export job
-        
+
                 **400 Bad Request:** tools parameter not provided or is invalid
                 **503 Service Unavailable:** an export job is already running
                 **200 OK:** job submitted. Body will be: *{"status": "in progress", "filename": FILENAME}*
@@ -495,7 +550,7 @@ baseUriParameters:
             get:
               description: |
                 Returns status: busy or ready
-        
+
           /{project}/webhooks:
               type: {
                 typedCollection: {
@@ -506,10 +561,10 @@ baseUriParameters:
               is: [secured]
               description: |
                 This is to manage webhooks programatically. See the [Webhook docs](https://forge-allura.apache.org/p/allura/wiki/Webhooks/) for more information.
-        
+
                 The webhook payloads and signature verification method are documented at https://forge-allura.apache.org/p/allura/wiki/Webhooks/
-        
-        
+
+
               /{type}:
                 uriParameters:
                   type:
@@ -534,7 +589,7 @@ baseUriParameters:
                       type: string
                       description: |
                         Unique identifier for a webhook.
-        
+
                   get:
                     description: |
                       View a webhook
@@ -552,7 +607,7 @@ baseUriParameters:
                           secret:
                             description: |
                               Optionally supply your own secret.
-        
+
                               Note: DO NOT ever expose your secret!
                             required: false
                             type: string
@@ -562,7 +617,7 @@ baseUriParameters:
           /install_tool:
             description: |
               Adds a new tool to the project. *Authentication Required*.
-        
+
               returns dict with two fields:
               success: False if error is occurred, otherwise True
               info: success or error message
@@ -594,24 +649,24 @@ baseUriParameters:
                       required: false
                       description: |
                         "first", "last", or "alpha_tool" for position with respect to existing tools (or existing tools of the same type for "alpha_tool")
-        
-        /{username}:
-            description: |
-              Represents a user (returns a project-like response).
-              
-              Most often you'll use the /profile suffix to return user data.
-            type: {
-              tool:{
-                example: !include examples/user.json,
-                schema: !include schemas/user.json
-              }
-            }
-            /profile:
-              description: |
-                A user profile
-              type: {
-                tool:{
-                example: !include examples/userProfile.json,
-                schema: !include schemas/userProfile.json
-                }
-              }
+
+/u/{username}:
+    description: |
+      Represents a user (returns a project-like response).
+
+      Most often you'll use the /profile suffix to return user data.
+    type: {
+      tool:{
+        example: !include examples/user.json,
+        schema: !include schemas/user.json
+      }
+    }
+    /profile:
+      description: |
+        A user profile
+      type: {
+        tool:{
+        example: !include examples/userProfile.json,
+        schema: !include schemas/userProfile.json
+        }
+      }
