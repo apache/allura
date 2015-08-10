@@ -115,12 +115,6 @@ baseUriParameters:
         get:
           description: |
             Returns a list of posts, including title and API url.
-          responses:
-            200:
-              body:
-                application/json:
-                  schema: !include schemas/blog.json
-                  example: !include examples/blog.json
         post:
           description: |
             Creates a new blog post.
@@ -208,35 +202,57 @@ baseUriParameters:
                 default: read
                 enum: [admin, configure, moderate, post, unmoderated_post, read, write]
 
-      /{forum}:
+      /{discussion}:
         description: |
-          A list of forums
+          Represents the **Discussion Tool**.
         type: {
-            tool: {
-            example: !include examples/page.json,
-            schema: !include schemas/page.json
+          tool: {
+            schema: !include schemas/discussion.json,
+            example: !include examples/discussion.json
             }
           }
 
-        displayName: forum
+        displayName: Discussion
         uriParameters:
-         forum:
-           displayName: Forum Name
+         discussion:
+           displayName: Discussion Tool Name
            type: string
-           example: general
-           description: |
-             Returns a list of forums, including name, description, num_posts, API URL, and last_post details
-
-             To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
-
-        /forum:
+           example: "discussion"
+        get:
           description: |
-            returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
+            Returns a list of forums, including name, description, num_topics, and last_post details
+          is: [pageable]
+
+        /{forum}:
+          description: |
+            Represents a forum within a Discussion tool.
+          type: {
+            tool: {
+              # FIXME
+              example: !include examples/page.json,
+              schema: !include schemas/page.json
+            }
+          }
+          displayName: forum
+          uriParameters:
+           forum:
+             displayName: Forum Name
+             type: string
+             example: general
+
           get:
-          /{slug}:
+            is: [pageable]
             description: |
-              returns a limited list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
+              returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
+              To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
+
+          /thread/{thread}:
+            description: |
+              Represents a thread of posts.
             get:
+              is: [pageable]
+              description: |
+                returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
 
         /has_access:
           type: permission
@@ -249,42 +265,6 @@ baseUriParameters:
                 example: post
                 default: read
                 enum: [admin, configure, moderate, post, unmoderated_post, read]
-
-      /{discussion}:
-        description: |
-          Represents the **Discussion Tool**.
-        type: {
-            tool: {
-            schema: !include schemas/discussion.json,
-            example: !include examples/discussion.json
-
-            }
-          }
-
-        displayName: Discussion
-        uriParameters:
-         discussion:
-           displayName: Discussion Name
-           type: string
-           example: "discussion"
-
-        /{forum}:
-          type: {
-              tool: {
-                example: !include examples/page.json,
-                schema: !include schemas/page.json
-              }
-            }
-
-          displayName: forum
-          uriParameters:
-           forum:
-             displayName: Forum Name
-             type: string
-             example: general
-
-        /has_access:
-          type: permission
 
       /{wiki}:
         description: |
@@ -355,7 +335,7 @@ baseUriParameters:
         type: {
             tool: {
             example: !include examples/tickets.json,
-            schema: !include schemas/ticket.json
+            schema: !include schemas/tickets.json
             }
           }
         is: [pageable]
@@ -470,7 +450,6 @@ baseUriParameters:
             tool: {
             example: !include examples/ticket.json,
             schema: !include schemas/ticket.json
-
             }
           }
           displayName: Ticket Number
@@ -557,7 +536,7 @@ baseUriParameters:
             type: {
               typedCollection: {
               example: !include examples/webhooks.json,
-              schema: !include schemas/webhook.json
+              schema: !include schemas/webhooks.json
               }
             }
             description: |
@@ -585,6 +564,12 @@ baseUriParameters:
                         required: true
                         type: string
               /{id}:
+                type: {
+                  tool: {
+                  example: !include examples/webhook.json,
+                  schema: !include schemas/webhook.json
+                  }
+                }
                 uriParameters:
                   id:
                     type: string
@@ -634,7 +619,7 @@ baseUriParameters:
                     type: string
                   mount_point:
                     description: |
-                      The section of the url relitive to your project. For example: /p/your_project/{mount_point}
+                      The section of the url relative to your project. For example: /p/your_project/{mount_point}
                     example: git
                     type: string
                     required: true
