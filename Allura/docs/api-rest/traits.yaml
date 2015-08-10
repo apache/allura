@@ -35,14 +35,6 @@
     queryParameters:
       numPages:
         description: The number of pages to return
-- secured:
-    displayName: secured
-    headers:
-      Authorization:
-        description: The auth token for this request
-    responses:
-      401:
-        description: Unauthorized
 - rateLimited:
     queryParameters:
       numPages:
