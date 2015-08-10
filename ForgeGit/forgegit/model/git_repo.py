@@ -646,8 +646,8 @@ class GitImplementation(M.RepositoryImplementation):
 
         cmd_output = self._git.git.diff_tree(
             '--no-commit-id',
-            '--find-renames',
-            '--find-copies',
+            '-M',  # detect renames
+            '-C',  # detect copies
             '--name-status',
             '--no-abbrev',
             '--root',
