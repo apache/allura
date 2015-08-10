@@ -3,6 +3,7 @@
 title: Apache Allura
 version: 1
 baseUri: https://{domain}/rest
+securedBy: [null, oauth_1_0, oauth_bearer_token]
 
 resourceTypes: !include resourceTypes.yaml
 traits: !include traits.yaml
@@ -13,6 +14,7 @@ baseUriParameters:
     description: "The website domain"
     example: "forge-allura.apache.org"
     default: "forge-allura.apache.org"
+
 
 
 /{neighborhood}:
@@ -558,7 +560,6 @@ baseUriParameters:
                 schema: !include schemas/webhook.json
                 }
               }
-              is: [secured]
               description: |
                 This is to manage webhooks programatically. See the [Webhook docs](https://forge-allura.apache.org/p/allura/wiki/Webhooks/) for more information.
 
