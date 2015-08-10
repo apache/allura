@@ -50,15 +50,15 @@
 - permissionTestable:
     description: |
       **Endpoints**
-      Permissions can be checked at three levels: 
+      Permissions can be checked at three levels:
       1. **Neighborhood:** `/rest/p/has_access`
       2. **Project:** `/rest/p/project_name/has_access`
       3. **Tool:** `/rest/p/project_name/mount_point/has_access`
-      
-      --- 
-      
+
+      ---
+
       It is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, indicating if given user has perm permission to the neighborhood/project/tool.
-      
+
       E.g.:
       **GET** `/rest/p/test/wiki/has_access?user=admin1&perm=create`
       *returns* { result: true }
@@ -71,10 +71,3 @@
         example: heiths
         required: true
         description: The username to check
-      perm:
-        displayName: Permission
-        required: true
-        type: string
-        example: create
-        default: read
-        enum: ["read", "admin", "create", "update"]
