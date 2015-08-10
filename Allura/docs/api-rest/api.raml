@@ -69,152 +69,210 @@ baseUriParameters:
               default: read
               enum: [read, admin, create, update]
 
-        /{link}:
-          description: |
-            Represents the External Link tool.
-          type: {
-              tool: {
-              example: !include examples/link.json,
-              schema: !include schemas/link.json
-              }
+      /{link}:
+        description: |
+          Represents the External Link tool.
+        type: {
+            tool: {
+            example: !include examples/link.json,
+            schema: !include schemas/link.json
             }
+          }
 
-          get:
-            description: |
-              Returns the existing url.
-
-          post:
-            description: |
-              Updates the url. *authentication required*.
-            body:
-              application/x-www-form-urlencoded:
-                formParameters:
-                  url:
-                    description: |
-                      The url you would like to update to.
-                    type: string
-                    example: http://google.com
-
-        /{blog}:
-          type: {
-              tool: {
-              example: !include examples/blog.json,
-              schema: !include schemas/blog.json
-              }
-            }
+        get:
           description: |
-            Represents the **Blog tool**
+            Returns the existing url.
 
-          displayName: Blog
-          uriParameters:
-           blog:
-             displayName: Blog Name
-             type: string
-             example: blog
-
-          get:
-            description: |
-              Returns a list of posts, including title and API url.
-            responses:
-              200:
-                body:
-                  application/json:
-                    schema: !include schemas/blog.json
-                    example: !include examples/blog.json
-          post:
-            description: |
-              Creates a new blog post.
-            body:
-              application/x-www-form-urlencoded:
-                formParameters:
-                  title:
-                    description: |
-                      The title of the post.
-                    type: string
-                    example: New API docs released!
-                  text:
-                    description: |
-                      The text of the post.
-                    type: string
-                    example: Lots of text here describing apis!\nThat is all.
-                  labels:
-                    description: |
-                      Labels of the post -- comma seperated strings
-                    type: string
-                    example: api,development
-                  state:
-                    description: |
-                      Draft or published.
-                    enum: [draft, published]
-                    type: string
-                    example: published
-
-          /{year}/{month}/{title}:
-              description: Represents a blog post entry.
-              type: {
-                tool: {
-                example: !include examples/blogPost.json,
-                schema: !include schemas/blogPost.json
-                }
-              }
-              displayName: Blog Post
-              uriParameters:
-               year:
-                 displayName: Year
-                 type: number
-                 example: 2015
-               month:
-                 displayName: Month
-                 type: number
-                 example: 04
-               title:
-                 displayName: Title
-                 type: string
-                 example: project-insights
-
-              post:
-                description: |
-                  Updates an existing blog post.
-                body:
-                  application/x-www-form-urlencoded:
-                    formParameters:
-                      title:
-                        description: |
-                          The title of the post.
-                        type: string
-                      text:
-                        description: |
-                          The text of the post.
-                        type: string
-                      labels:
-                        description: |
-                          Labels of the post -- comma seperated strings
-                        type: string
-                      state:
-                        description: |
-                          Draft or published.
-                        enum: [draft, published]
-                        type: string
-
-          /has_access:
-            type: permission
-            get:
-              queryParameters:
-                perm:
-                  displayName: Permission
-                  required: true
+        post:
+          description: |
+            Updates the url. *authentication required*.
+          body:
+            application/x-www-form-urlencoded:
+              formParameters:
+                url:
+                  description: |
+                    The url you would like to update to.
                   type: string
-                  example: post
-                  default: read
-                  enum: [admin, configure, moderate, post, unmoderated_post, read, write]
+                  example: http://google.com
+
+      /{blog}:
+        type: {
+            tool: {
+            example: !include examples/blog.json,
+            schema: !include schemas/blog.json
+            }
+          }
+        description: |
+          Represents the **Blog tool**
+
+        displayName: Blog
+        uriParameters:
+         blog:
+           displayName: Blog Name
+           type: string
+           example: blog
+
+        get:
+          description: |
+            Returns a list of posts, including title and API url.
+          responses:
+            200:
+              body:
+                application/json:
+                  schema: !include schemas/blog.json
+                  example: !include examples/blog.json
+        post:
+          description: |
+            Creates a new blog post.
+          body:
+            application/x-www-form-urlencoded:
+              formParameters:
+                title:
+                  description: |
+                    The title of the post.
+                  type: string
+                  example: New API docs released!
+                text:
+                  description: |
+                    The text of the post.
+                  type: string
+                  example: Lots of text here describing apis!\nThat is all.
+                labels:
+                  description: |
+                    Labels of the post -- comma seperated strings
+                  type: string
+                  example: api,development
+                state:
+                  description: |
+                    Draft or published.
+                  enum: [draft, published]
+                  type: string
+                  example: published
+
+        /{year}/{month}/{title}:
+            description: Represents a blog post entry.
+            type: {
+              tool: {
+              example: !include examples/blogPost.json,
+              schema: !include schemas/blogPost.json
+              }
+            }
+            displayName: Blog Post
+            uriParameters:
+             year:
+               displayName: Year
+               type: number
+               example: 2015
+             month:
+               displayName: Month
+               type: number
+               example: 04
+             title:
+               displayName: Title
+               type: string
+               example: project-insights
+
+            post:
+              description: |
+                Updates an existing blog post.
+              body:
+                application/x-www-form-urlencoded:
+                  formParameters:
+                    title:
+                      description: |
+                        The title of the post.
+                      type: string
+                    text:
+                      description: |
+                        The text of the post.
+                      type: string
+                    labels:
+                      description: |
+                        Labels of the post -- comma seperated strings
+                      type: string
+                    state:
+                      description: |
+                        Draft or published.
+                      enum: [draft, published]
+                      type: string
+
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read, write]
+
+      /{forum}:
+        description: |
+          A list of forums
+        type: {
+            tool: {
+            example: !include examples/page.json,
+            schema: !include schemas/page.json
+            }
+          }
+
+        displayName: forum
+        uriParameters:
+         forum:
+           displayName: Forum Name
+           type: string
+           example: general
+           description: |
+             Returns a list of forums, including name, description, num_posts, API URL, and last_post details
+
+             To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
+
+        /forum:
+          description: |
+            returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
+          get:
+          /{slug}:
+            description: |
+              returns a limited list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
+            get:
+
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read]
+
+      /{discussion}:
+        description: |
+          Represents the **Discussion Tool**.
+        type: {
+            tool: {
+            schema: !include schemas/discussion.json,
+            example: !include examples/discussion.json
+
+            }
+          }
+
+        displayName: Discussion
+        uriParameters:
+         discussion:
+           displayName: Discussion Name
+           type: string
+           example: "discussion"
 
         /{forum}:
-          description: |
-            A list of forums
           type: {
               tool: {
-              example: !include examples/page.json,
-              schema: !include schemas/page.json
+                example: !include examples/page.json,
+                schema: !include schemas/page.json
               }
             }
 
@@ -224,216 +282,212 @@ baseUriParameters:
              displayName: Forum Name
              type: string
              example: general
-             description: |
-               Returns a list of forums, including name, description, num_posts, API URL, and last_post details
 
-               To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
+        /has_access:
+          type: permission
 
-          /forum:
+      /{wiki}:
+        description: |
+          Represents the **Wiki Tool**.
+        type: {
+            tool: {
+            example: !include examples/wiki.json,
+            schema: !include schemas/wiki.json
+            }
+          }
+
+        displayName: Wiki
+        uriParameters:
+         wiki:
+           displayName: Wiki Name
+           type: string
+           example: wiki
+
+
+        /{title}:
+          type: {
+              tool: {
+              example: !include examples/page.json,
+              schema: !include schemas/page.json
+              }
+            }
+
+          displayName: Title
+          uriParameters:
+           title:
+             displayName: Wiki Title
+             type: string
+             example: Extensions
+          get:
             description: |
-              returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
-            get:
-            /{slug}:
-              description: |
-                returns a limited list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
-              get:
+              returns a JSON representation of a page
+          post:
+            description: |
+              Creates or updates the titled page.
+            body:
+              application/x-www-form-urlencoded:
+                formParameters:
+                  text:
+                    description: |
+                      Page text.
+                    type: string
+                  labels:
+                    description: |
+                     Comma-separated list of page labels.
+                    type: string
 
-          /has_access:
-            type: permission
-            get:
-              queryParameters:
-                perm:
-                  displayName: Permission
-                  required: true
-                  type: string
-                  example: post
-                  default: read
-                  enum: [admin, configure, moderate, post, unmoderated_post, read]
 
-        /{discussion}:
-          description: |
-            Represents the **Discussion Tool**.
-          type: {
-              tool: {
-              schema: !include schemas/discussion.json,
-              example: !include examples/discussion.json
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, edit]
 
-              }
+      /{tracker}:
+        description: |
+          Represents the **Ticket Tracker Tool**.
+        type: {
+            tool: {
+            example: !include examples/tickets.json,
+            schema: !include schemas/ticket.json
             }
+          }
+        is: [pageable]
 
-          displayName: Discussion
-          uriParameters:
-           discussion:
-             displayName: Discussion Name
-             type: string
-             example: "discussion"
+        displayName: Tracker Url
+        uriParameters:
+         tracker:
+           displayName: Tracker Name
+           type: string
+           example: tickets
 
-          /{forum}:
-            type: {
-                tool: {
-                  example: !include examples/page.json,
-                  schema: !include schemas/page.json
-                }
-              }
-
-            displayName: forum
-            uriParameters:
-             forum:
-               displayName: Forum Name
-               type: string
-               example: general
-
-          /has_access:
-            type: permission
-
-        /{wiki}:
-          description: |
-            Represents the **Wiki Tool**.
-          type: {
-              tool: {
-              example: !include examples/wiki.json,
-              schema: !include schemas/wiki.json
-              }
-            }
-
-          displayName: Wiki
-          uriParameters:
-           wiki:
-             displayName: Wiki Name
-             type: string
-             example: wiki
-
-
-          /{title}:
-            type: {
-                tool: {
-                example: !include examples/page.json,
-                schema: !include schemas/page.json
-                }
-              }
-
-            displayName: Title
-            uriParameters:
-             title:
-               displayName: Wiki Title
-               type: string
-               example: Extensions
-            get:
-              description: |
-                returns a JSON representation of a page
-            post:
-              description: |
-                Creates or updates the titled page.
-              body:
-                application/x-www-form-urlencoded:
-                  formParameters:
-                    text:
-                      description: |
-                        Page text.
-                      type: string
-                    labels:
-                      description: |
-                       Comma-separated list of page labels.
-                      type: string
-
-
-          /has_access:
-            type: permission
-            get:
-              queryParameters:
-                perm:
-                  displayName: Permission
-                  required: true
-                  type: string
-                  example: post
-                  default: read
-                  enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, edit]
-
-        /{tracker}:
-          description: |
-            Represents the **Ticket Tracker Tool**.
-          type: {
-              tool: {
-              example: !include examples/tickets.json,
-              schema: !include schemas/ticket.json
-              }
-            }
+        get:
           is: [pageable]
+          description: |
+            Get a list of tickets
 
-          displayName: Tracker Url
+        /_discuss/thread/{threadId}:
           uriParameters:
-           tracker:
-             displayName: Tracker Name
+           threadId:
+             displayName: Thread ID
              type: string
-             example: tickets
+             example: f78b98a0
 
           get:
-            is: [pageable]
             description: |
-              Get a list of tickets
-
-          /_discuss/thread/{threadId}:
+              returns summary information about a thread, including the posts in a thread
+          /{slug}:
             uriParameters:
-             threadId:
-               displayName: Thread ID
+             slug:
+               displayName: Slug
                type: string
-               example: f78b98a0
-
+               example: 9133
             get:
               description: |
-                returns summary information about a thread, including the posts in a thread
-            /{slug}:
-              uriParameters:
-               slug:
-                 displayName: Slug
-                 type: string
-                 example: 9133
-              get:
-                description: |
-                  returns detailed information about a post
-              /reply:
-                description: |
-                  create a threaded reply to the given post
-                post:
-                  body:
-                    application/x-www-form-urlencoded:
-                      formParameters:
-                        text:
-                          description: the text of the reply
-                          example: |
-                            I *agree* with you.
-                          required: true
-                          type: string
-            /new:
+                returns detailed information about a post
+            /reply:
               description: |
-                create a post in the given thread
+                create a threaded reply to the given post
               post:
                 body:
                   application/x-www-form-urlencoded:
                     formParameters:
                       text:
-                        description: The text of the new post
+                        description: the text of the reply
                         example: |
-                          This is a new post!
+                          I *agree* with you.
                         required: true
                         type: string
-
-          /search:
-            type: {
-              searchableCollection: {
-              queryParamName: q,
-              schema: !include schemas/searchedTickets.json,
-              example: !include examples/searchedTickets.json
-              }
-            }
-            is: [ pageable]
-
           /new:
             description: |
-              Creates a new ticket.
+              create a post in the given thread
             post:
               body:
-                # FIXME?
+                application/x-www-form-urlencoded:
+                  formParameters:
+                    text:
+                      description: The text of the new post
+                      example: |
+                        This is a new post!
+                      required: true
+                      type: string
+
+        /search:
+          type: {
+            searchableCollection: {
+            queryParamName: q,
+            schema: !include schemas/searchedTickets.json,
+            example: !include examples/searchedTickets.json
+            }
+          }
+          is: [ pageable]
+
+        /new:
+          description: |
+            Creates a new ticket.
+          post:
+            body:
+              # FIXME?
+              application/x-www-form-urlencoded:
+                formParameters:
+                  access_token:
+                    description: "The access token provided by the authentication application"
+                    required: true
+                    type: string
+                  ticket_form.summary:
+                    description: Ticket title
+                    type: string
+                    required: false
+                  ticket_form.description:
+                    description: ticket description
+                    type: string
+                    required: false
+                  ticket_form.assigned_to::
+                    type: string
+                    required: false
+                    description: username of ticket assignee
+                  ticket_form.labels:
+                    type: string
+                    required: false
+                    description:  comma-separated list of ticket labels
+                  ticket_form.attachment:
+                    type: file
+                    description:  (optional) attachment
+                    required: false
+                  ticket_form.custom field name:
+                    description:  custom field value
+                    type: string
+                    required: false
+
+        /{ticketNumber}:
+          type: {
+            tool: {
+            example: !include examples/ticket.json,
+            schema: !include schemas/ticket.json
+
+            }
+          }
+          displayName: Ticket Number
+          uriParameters:
+            ticketNumber:
+              example: 1
+              description: |
+                Get a details of a ticket.
+
+          /save:
+            description: |
+              updates an existing ticket
+              parameters are the same as /rest/p/project_name/mount_point/new
+
+            post:
+              body:
+                # form?
                 application/x-www-form-urlencoded:
                   formParameters:
                     access_token:
@@ -465,117 +519,84 @@ baseUriParameters:
                       type: string
                       required: false
 
-          /{ticketNumber}:
-            type: {
-              tool: {
-              example: !include examples/ticket.json,
-              schema: !include schemas/ticket.json
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, update, save_searches]
 
+
+      /admin:
+        description: |
+          Endpoints for **project exporting** and managing **webhooks**
+
+        /export:
+          description: |
+            Generates a full bulk export of your tool(s) in the same format as the API for individual access. Authentication required. Here is an [example shell](https://forge-allura.apache.org/p/allura/git/ci/master/tree/scripts/project_export) script using these APIs, suitable to run as a cron job.
+          post:
+            description: |
+              Submits an export job
+
+              **400 Bad Request:** tools parameter not provided or is invalid
+              **503 Service Unavailable:** an export job is already running
+              **200 OK:** job submitted. Body will be: *{"status": "in progress", "filename": FILENAME}*
+        /export_status:
+          description: |
+            Check status of a bulk export job
+          get:
+            description: |
+              Returns status: busy or ready
+
+        /{project}/webhooks:
+            type: {
+              typedCollection: {
+              example: !include examples/webhooks.json,
+              schema: !include schemas/webhook.json
               }
             }
-            displayName: Ticket Number
-            uriParameters:
-              ticketNumber:
-                example: 1
-                description: |
-                  Get a details of a ticket.
+            description: |
+              This is to manage webhooks programatically. See the [Webhook docs](https://forge-allura.apache.org/p/allura/wiki/Webhooks/) for more information.
 
-            /save:
-              description: |
-                updates an existing ticket
-                parameters are the same as /rest/p/project_name/mount_point/new
+              The webhook payloads and signature verification method are documented at https://forge-allura.apache.org/p/allura/wiki/Webhooks/
 
+
+            /{type}:
+              uriParameters:
+                type:
+                  example: repo-push
+                  enum: [repo-push]
+                  description: |
+                    Allura supports one type of webhook for the moment - repo-push, triggered when a repository receives new commits. It is supported for Git, Mercurial and SVN repositories.
               post:
+                description: |
+                  Create a new webhook.
                 body:
-                  # form?
                   application/x-www-form-urlencoded:
                     formParameters:
-                      access_token:
-                        description: "The access token provided by the authentication application"
+                      url:
+                        description: |
+                          The url to call when the the webhook is triggered.
                         required: true
                         type: string
-                      ticket_form.summary:
-                        description: Ticket title
-                        type: string
-                        required: false
-                      ticket_form.description:
-                        description: ticket description
-                        type: string
-                        required: false
-                      ticket_form.assigned_to::
-                        type: string
-                        required: false
-                        description: username of ticket assignee
-                      ticket_form.labels:
-                        type: string
-                        required: false
-                        description:  comma-separated list of ticket labels
-                      ticket_form.attachment:
-                        type: file
-                        description:  (optional) attachment
-                        required: false
-                      ticket_form.custom field name:
-                        description:  custom field value
-                        type: string
-                        required: false
-
-          /has_access:
-            type: permission
-            get:
-              queryParameters:
-                perm:
-                  displayName: Permission
-                  required: true
-                  type: string
-                  example: post
-                  default: read
-                  enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, update, save_searches]
-
-
-        /admin:
-          description: |
-            Endpoints for **project exporting** and managing **webhooks**
-
-          /export:
-            description: |
-              Generates a full bulk export of your tool(s) in the same format as the API for individual access. Authentication required. Here is an [example shell](https://forge-allura.apache.org/p/allura/git/ci/master/tree/scripts/project_export) script using these APIs, suitable to run as a cron job.
-            post:
-              description: |
-                Submits an export job
-
-                **400 Bad Request:** tools parameter not provided or is invalid
-                **503 Service Unavailable:** an export job is already running
-                **200 OK:** job submitted. Body will be: *{"status": "in progress", "filename": FILENAME}*
-          /export_status:
-            description: |
-              Check status of a bulk export job
-            get:
-              description: |
-                Returns status: busy or ready
-
-          /{project}/webhooks:
-              type: {
-                typedCollection: {
-                example: !include examples/webhooks.json,
-                schema: !include schemas/webhook.json
-                }
-              }
-              description: |
-                This is to manage webhooks programatically. See the [Webhook docs](https://forge-allura.apache.org/p/allura/wiki/Webhooks/) for more information.
-
-                The webhook payloads and signature verification method are documented at https://forge-allura.apache.org/p/allura/wiki/Webhooks/
-
-
-              /{type}:
+              /{id}:
                 uriParameters:
-                  type:
-                    example: repo-push
-                    enum: [repo-push]
+                  id:
+                    type: string
                     description: |
-                      Allura supports one type of webhook for the moment - repo-push, triggered when a repository receives new commits. It is supported for Git, Mercurial and SVN repositories.
+                      Unique identifier for a webhook.
+
+                get:
+                  description: |
+                    View a webhook
                 post:
                   description: |
-                    Create a new webhook.
+                    Update an existing webhook
                   body:
                     application/x-www-form-urlencoded:
                       formParameters:
@@ -584,72 +605,51 @@ baseUriParameters:
                             The url to call when the the webhook is triggered.
                           required: true
                           type: string
-                /{id}:
-                  uriParameters:
-                    id:
-                      type: string
-                      description: |
-                        Unique identifier for a webhook.
+                        secret:
+                          description: |
+                            Optionally supply your own secret.
 
-                  get:
-                    description: |
-                      View a webhook
-                  post:
-                    description: |
-                      Update an existing webhook
-                    body:
-                      application/x-www-form-urlencoded:
-                        formParameters:
-                          url:
-                            description: |
-                              The url to call when the the webhook is triggered.
-                            required: true
-                            type: string
-                          secret:
-                            description: |
-                              Optionally supply your own secret.
+                            Note: DO NOT ever expose your secret!
+                          required: false
+                          type: string
+                delete:
+                  description: |
+                    Delete an existing webhook
+        /install_tool:
+          description: |
+            Adds a new tool to the project. *Authentication Required*.
 
-                              Note: DO NOT ever expose your secret!
-                            required: false
-                            type: string
-                  delete:
+            returns dict with two fields:
+            success: False if error is occurred, otherwise True
+            info: success or error message
+          post:
+            body:
+              application/x-www-form-urlencoded:
+                formParameters:
+                  tool:
+                    description: Tool name that you want to install.
+                    example: tickets
+                    enum: [tickets, link, git, svn, mercurial, blog, discussion, subproject, wiki]
+                    required: true
+                    type: string
+                  mount_point:
                     description: |
-                      Delete an existing webhook
-          /install_tool:
-            description: |
-              Adds a new tool to the project. *Authentication Required*.
-
-              returns dict with two fields:
-              success: False if error is occurred, otherwise True
-              info: success or error message
-            post:
-              body:
-                application/x-www-form-urlencoded:
-                  formParameters:
-                    tool:
-                      description: Tool name that you want to install.
-                      example: tickets
-                      enum: [tickets, link, git, svn, mercurial, blog, discussion, subproject, wiki]
-                      required: true
-                      type: string
-                    mount_point:
-                      description: |
-                        The section of the url relitive to your project. For example: /p/your_project/{mount_point}
-                      example: git
-                      type: string
-                      required: true
-                    mount_label:
-                      description: |
-                        How your tool will be displayed in your project (like a "nice name" for the tool).
-                      example: Git
-                      type: string
-                      required: true
-                    order:
-                      type: string
-                      enum: [first, last, alpha_tool]
-                      required: false
-                      description: |
-                        "first", "last", or "alpha_tool" for position with respect to existing tools (or existing tools of the same type for "alpha_tool")
+                      The section of the url relitive to your project. For example: /p/your_project/{mount_point}
+                    example: git
+                    type: string
+                    required: true
+                  mount_label:
+                    description: |
+                      How your tool will be displayed in your project (like a "nice name" for the tool).
+                    example: Git
+                    type: string
+                    required: true
+                  order:
+                    type: string
+                    enum: [first, last, alpha_tool]
+                    required: false
+                    description: |
+                      "first", "last", or "alpha_tool" for position with respect to existing tools (or existing tools of the same type for "alpha_tool")
 
 /u/{username}:
     description: |
