@@ -64,36 +64,7 @@
           body:
             application/json:
               schema: <<schema>>
-    delete?:   
-- permissionCheck:
-    description: |
-      This is API to run permission checks. 
-      It is available on a neighborhood, project and tool level.
-      
-      This is only available to users that have 'admin' permission for corresponding neighborhood/project/tool. 
-      It requires user and perm parameters and will return JSON dict with result key, which contains boolean value, 
-      indicating if given user has perm permission to the neighborhood/project/tool.
-    get:
-      queryParameters:
-        user:
-          type: string
-          example: heiths
-          required: true
-          description: The username to check
-        perm:
-          displayName: Permission
-          required: true
-          type: string
-          example: create
-          default: read
-          enum: ["read", "admin", "create", "update"]
-      description: |
-        Get permissions for <<resourcePathName>>.
-      responses:
-        200:
-          body:
-            application/json:
-              schema: <<schemaItem>>
+    delete?:
 - searchableCollection:
     get:
       queryParameters:
@@ -147,4 +118,3 @@
             application/json:
               schema: <<schema>>
 
-    
