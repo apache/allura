@@ -94,7 +94,6 @@
             application/json:
               schema: <<schema>>
 - permission:
-    securedBy: [null, oauth_1_0]
     description: |
       Checks if a given user has permissions.
     get:
