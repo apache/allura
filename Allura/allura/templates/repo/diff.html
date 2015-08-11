@@ -53,7 +53,7 @@
   {% else %}
   <div class="clip grid-19 diffbrowser">
     <h3>
-      <span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span>
+      {{ g.icons['table'].render(title=h.really_unicode(a.filename) or ' ', show_title=True) }}
       <span class="fright">
         {% if session.diformat == 'sidebyside' %}
           {% set switch_url = request.url.replace('&diformat=sidebyside', '') + '&diformat=regular' %}

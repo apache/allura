@@ -17,7 +17,7 @@
        under the License.
 -#}
 <div id="lightbox_{{name}}" class="modal" style="display:none">
-  <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
+  {{ g.icons['close'].render(extra_css='close') }}
   {% if content_template %}
     {% include content_template with context %}
   {% else %}

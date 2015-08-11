@@ -34,10 +34,12 @@
 
 {% block nav_menu %}
     {% if user != c.user %}
-    <a id="user-message" href="send_message" class="btn">
-        <b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b>
-        <span>Send Message</span>
-    </a>
+    {{ g.icons['mail'].render(
+        title='Send Message',
+        show_title=True,
+        href='send_message',
+        extra_css='btn',
+        id='user-message') }}
     {% endif %}
     {{super()}}
 {% endblock %}

@@ -30,8 +30,15 @@ b.ico {
     background-repeat: no-repeat;
     vertical-align: middle;
 }
-a.fa { color: rgb(85, 85, 85); }
-a.fa:hover { text-decoration: none; }
+a.fa,
+a.fa:hover {
+  text-decoration: none;
+  color: rgb(85, 85, 85);
+}
+.modal .fa {
+  color: white;
+  float: right;
+}
 a.btn.fa { font-family: FontAwesome; }
 a.fa > span { font-family: sans-serif; }
 h2.dark b.ico, .modal b.ico {background-image: url('../images/neo-icon-set-ffffff-256x350.png');}

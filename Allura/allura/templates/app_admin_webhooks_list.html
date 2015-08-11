@@ -33,12 +33,11 @@
           <td>{{ wh.secret or '' }}</td>
           <td><a href="{{wh.url()}}">Edit</a></td>
           <td>
-            <a href="{{admin_url}}/{{hook.type}}/delete"
-               class="delete-link"
-               data-id="{{h.really_unicode(wh._id)}}"
-               title="Delete">
-              <b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b>
-            </a>
+            {{ g.icons['delete'].render(
+                href='{}/{}/delete'.format(admin_url, hook.type),
+                extra_css='delete-link',
+                show_title=True,
+                **{'data-id': h.really_unicode(wh._id)}) }}
           </td>
         </tr>
         {% endfor %}

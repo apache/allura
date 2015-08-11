@@ -20,7 +20,7 @@
 <div class="markdown_edit">
   <textarea id="{{id or rendered_name}}" name="{{rendered_name}}" class="{{widget.css_class}}" {{widget.j2_attrs(attrs)}}>{{value or ''}}</textarea>
   <div class="modal markdown_help" style="display:none">
-    <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
+    {{ g.icons['close'].render(extra_css='close') }}
     <div class="markdown_help_contents" data-url="{{c.app.url}}markdown_syntax_dialog"></div>
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
