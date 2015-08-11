@@ -23,6 +23,7 @@
   margin-bottom: 5px;
 }
 .markdown_edit .CodeMirror {
+  color: rgb(85, 85, 85);
   min-height: 60px;
   height: auto;
   border-bottom: none;
@@ -38,6 +39,8 @@
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
 }
+.markdown_edit .fullscreen,
+.markdown_edit .CodeMirror-fullscreen,
 .markdown_edit .editor-preview {
   z-index: 1001;  /* should always be under help modal */
 }
@@ -52,8 +55,9 @@
 .markdown_edit.preview-active {
   background-color: transparent;
 }
-.markdown_edit.preview-active .CodeMirror,
-.markdown_edit.preview-active .editor-toolbar {
+.markdown_edit.preview-active .CodeMirror:not(.CodeMirror-fullscreen),
+.markdown_edit.preview-active .editor-toolbar:not(.fullscreen) {
+  background-color: transparent;
   border: 0;
 }
 .markdown_edit.preview-active .CodeMirror-scroll,
@@ -61,6 +65,6 @@
 span.arw.preview-active {
   display: none;
 }
-.markdown_edit.preview-active .editor-toolbar a {
+.markdown_edit.preview-active .editor-toolbar.disabled-for-preview a {
   background-color: transparent;
 }

@@ -99,7 +99,7 @@ $(window).load(function() {
                * https://github.com/NextStepWebs/simplemde-markdown-editor/blob/1.2.1/source%20files/markdownify.js#L218-L249
                */
               var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
-              var toolbar = editor.toolbar.preview;
+              var toolbar = editor.toolbarElements.preview;
               var parse = editor.constructor.markdown;
               var cm = editor.codemirror;
               var wrapper = cm.getWrapperElement();
@@ -114,7 +114,7 @@ $(window).load(function() {
                   /\s*editor-preview-active\s*/g, ''
                 );
                 toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
+                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
               } else {
                 /* When the preview button is clicked for the first time,
                  * give some time for the transition from editor.css to fire and the view to slide from right to left,
@@ -125,7 +125,6 @@ $(window).load(function() {
                 }, 1);
                 toolbar.className += ' active';
                 toolbar_div.className += ' disabled-for-preview';
-
                 /* Code modified by Allura is here */
                 var text = cm.getValue();
                 get_rendered_text(preview, text);
