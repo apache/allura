@@ -48,7 +48,7 @@ function render(state) {
 
 var FormStepMixin = {
 
-  /* 
+  /*
    * Subclasses must implement:
    *   - getAPIUrl(): return API url this step will submit to
    *   - getAPIData(): returns data to submit to API url
@@ -60,11 +60,13 @@ var FormStepMixin = {
   render: function() {
     var input_props = {
       type: 'text',
+      ref: 'mainInput',
       className: grid,
       value: this.props.state[this.getKey()],
       disabled: this.isInputDisabled(),
       onChange: this.handleChange,
-      onKeyDown: this.onKeyDown
+      onKeyDown: this.onKeyDown,
+      autoFocus: true
     };
     var button_props = {
       onClick: this.handleClick,
@@ -83,6 +85,13 @@ var FormStepMixin = {
                dom('button', button_props, 'Submit')));
   },
 
+  componentDidMount: function() {
+    React.findDOMNode(this.refs.mainInput).focus();
+  },
+  componentDidUpdate: function() {
+    React.findDOMNode(this.refs.mainInput).focus();
+  },
+
   getErrorHtml: function() {
     return {__html: this.props.state.error || '&nbsp;'};
   },
@@ -94,7 +103,7 @@ var FormStepMixin = {
 
   getMessage: function() { return this.getHtml('message-' + this.getKey()); },
   getExtraMessage: function() { return this.getHtml('message-extra'); },
-  
+
   handleClick: function() {
     if (!this.isButtonDisabled()) {
       set_state({error: null});
@@ -146,7 +155,7 @@ var FormStepMixin = {
 
 var StepVerify = React.createClass({
   mixins: [FormStepMixin],
-  
+
   getAPIUrl: function() { return 'verify_phone'; },
   getAPIData: function() { return {'number': this.props.state[this.getKey()]}; },
   getLabel: function() { return 'Enter phone number'; },
@@ -156,7 +165,7 @@ var StepVerify = React.createClass({
 
 var StepCheck = React.createClass({
   mixins: [FormStepMixin],
-  
+
   getAPIUrl: function() { return 'check_phone_verification'; },
   getAPIData: function() { return {'pin': this.props.state[this.getKey()]}; },
   getLabel: function() { return 'Enter your PIN'; },
