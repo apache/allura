@@ -18,6 +18,7 @@
 import json
 from mock import patch
 from datadiff.tools import assert_equal
+from nose.tools import assert_in, assert_not_in
 
 from allura.lib.phone.nexmo import NexmoPhoneService
 
@@ -51,6 +52,20 @@ class TestPhoneService(object):
         res = self.phone.error(code='15', msg='text')
         expected = {'status': 'error', 'error': 'text'}
         assert_equal(expected, res)
+
+        # invalid format, possibly US
+        res = self.phone.error(code='3', msg='Invalid value for parameter: number', number='8005551234')
+        assert_equal(res['status'], 'error')
+        assert_in('Invalid value for parameter: number', res['error'])
+        assert_in('country code', res['error'])
+        assert_in('US', res['error'])
+
+        # invalid format, not US
+        res = self.phone.error(code='3', msg='Invalid value for parameter: number', number='738005551234')
+        assert_equal(res['status'], 'error')
+        assert_in('Invalid value for parameter: number', res['error'])
+        assert_in('country code', res['error'])
+        assert_not_in('US', res['error'])
 
     def test_ok(self):
         res = self.phone.ok(request_id='123', other='smth')

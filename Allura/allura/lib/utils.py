@@ -607,9 +607,6 @@ class DateJSONEncoder(json.JSONEncoder):
 def clean_phone_number(number):
     pattern = re.compile('\W+')
     number = pattern.sub('', number)
-    if len(number) == 10:
-        # assume US phone
-        number = u'1' + number
     return number
 
 
