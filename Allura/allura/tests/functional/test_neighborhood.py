@@ -984,7 +984,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
             phone_service.verify.return_value = {
                 'request_id': 'request-id', 'status': 'ok'}
-            r = self.app.get('/p/verify_phone', {'number': '555-444-3333'})
+            r = self.app.get('/p/verify_phone', {'number': '1-555-444-3333'})
             phone_service.verify.assert_called_once_with('15554443333')
             assert_equal(r.json, {'status': 'ok'})
             rid = r.session.get('phone_verification.request_id')

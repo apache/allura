@@ -17,9 +17,12 @@
 
 import logging
 from urlparse import urljoin
-
+import cgi
 import json
+
 import requests
+import jinja2
+
 from allura.lib.phone import PhoneService
 from allura.lib.utils import phone_number_hash
 
@@ -46,10 +49,18 @@ class NexmoPhoneService(PhoneService):
         }
         return dict(params, **common)
 
-    def error(self, code=None, msg=None):
-        allowed_codes = ['3', '10', '15', '16', '17']
+    def error(self, code=None, msg=None, number=''):
+        allowed_codes = ['3', '10', '15', '16', '17']  # https://docs.nexmo.com/index.php/verify/search#verify_return_code
         if code is None or str(code) not in allowed_codes:
             msg = 'Failed sending request to Nexmo'
+        if str(code) == '3' and msg.endswith(' number'):
+            msg = jinja2.Markup(
+                '{}{}{}'.format(
+                    cgi.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
+                    '<br>Make sure you include the country code (see examples above)',
+                    '. For US numbers, you must include <code>1-</code> before the area code.' if len(number) == 10 else '',
+                ))
+
         return {'status': 'error', 'error': msg}
 
     def ok(self, **params):
@@ -64,10 +75,10 @@ class NexmoPhoneService(PhoneService):
         log_params = dict(params, api_key='...', api_secret='...')
         if 'number' in log_params:
             log_params['number'] = phone_number_hash(log_params['number'])
-        params = json.dumps(params, sort_keys=True)
+        post_params = json.dumps(params, sort_keys=True)
         log.info('PhoneService (nexmo) request: %s %s', url, log_params)
         try:
-            resp = requests.post(url, data=params, headers=headers)
+            resp = requests.post(url, data=post_params, headers=headers)
             log.info('PhoneService (nexmo) response: %s', resp.content)
             resp = resp.json()
         except Exception:
@@ -75,7 +86,7 @@ class NexmoPhoneService(PhoneService):
             return self.error()
         if resp.get('status') == '0':
             return self.ok(request_id=resp.get('request_id'))
-        return self.error(code=resp.get('status'), msg=resp.get('error_text'))
+        return self.error(code=resp.get('status'), msg=resp.get('error_text'), number=params.get('number',''))
 
     def verify(self, number):
         url = urljoin(self.BASE_URL, 'verify')

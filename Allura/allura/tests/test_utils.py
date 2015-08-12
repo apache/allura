@@ -317,7 +317,7 @@ def test_clean_phone_number():
     clean = utils.clean_phone_number
     assert_equal(clean('123456789'), '123456789')
     assert_equal(clean('+123 456:789'), '123456789')
-    assert_equal(clean('555-555-5555'), '15555555555')
+    assert_equal(clean('555-555-5555'), '5555555555')
     assert_equal(clean('1-555-555-5555'), '15555555555')
 
 
