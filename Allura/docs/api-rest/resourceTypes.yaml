@@ -87,13 +87,5 @@
             application/json:
               schema: <<schema>>
               example: <<example>>
-    put:
-      body:
-        application/json:
-          schema: <<schema>>
-      responses:
-        200:
-          body:
-            application/json:
-              schema: <<schema>>
+
 
