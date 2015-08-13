@@ -8,15 +8,15 @@
     patch?:
       responses: *standardResponses
     post?:
-        responses:
-          201:
-            description: Created
+      responses:
+        201:
+          description: Created
     delete?:
       responses: *standardResponses
 - collection:
     type: base
     get:
-      is: [ pageable ]
+      is: [ pageable, bearerAuth ]
 - member:
       type: base
       get?:
@@ -27,6 +27,7 @@
 - tool:
     type: member
     get:
+      is: [ bearerAuth ]
       responses:
         200:
           body:
@@ -55,6 +56,7 @@
     delete?:
 - searchableCollection:
     get:
+      is: [ bearerAuth ]
       queryParameters:
         <<queryParamName>>:
           description: Return <<resourcePathName>> that have their <<queryParamName>> matching the given value
@@ -77,7 +79,7 @@
     description: |
       Checks if a given user has permissions.
     get:
-      is: [permissionTestable]
+      is: [permissionTestable, bearerAuth]
 - project:
     type: member
     get:
