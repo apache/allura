@@ -29,10 +29,9 @@
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
     <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
-      <a href="#" title="{{perm['text']}}">
-        <b data-icon="{{g.icons['perm_has_%s'%perm['has']].char}}"
-           class="ico {{g.icons['perm_has_%s'%perm['has']].css}}">
-        </b> {{perm['name']}}</a>
+      {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
+        {{perm['name']}}
+      </a> {# close tag, opened by render #}
     </li>
     {% endfor %}
   </ul>

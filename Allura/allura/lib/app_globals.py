@@ -261,8 +261,8 @@ class Globals(object):
             perm_delete=Icon('fa fa-minus-circle', 'Remove'),
             perm_tool=Icon('x', 'ico-config'),
             perm_admin=Icon('(', 'ico-lock'),
-            perm_has_yes=Icon('3', 'ico-check'),
-            perm_has_no=Icon('d', 'ico-noentry'),
+            perm_has_yes=Icon('fa fa-check', 'Check'),
+            perm_has_no=Icon('fa fa-ban', 'No entry'),
             perm_has_inherit=Icon('2', 'ico-checkcircle'),
         )
 
