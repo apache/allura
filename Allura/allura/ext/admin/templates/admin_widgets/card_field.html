@@ -22,11 +22,10 @@
     <li class="tcenter">
       <h3>{{name}}</h3>
       {% if settings_href %}
-      <a href="{{settings_href}}" class="admin_modal" title="{{name}} Settings">
-        <small
-           data-icon="{{g.icons.perm_tool.char}}"
-           class="ico-r admin_modal {{g.icons.perm_tool.css}}"></small>
-      </a>
+      {{ g.icons['perm_tool'].render(
+          href=settings_href,
+          extra_css='admin_modal',
+          title='{} Settings'.format(name)) }}
       {% endif %}
       <p style="padding-bottom: 0">{{ g.icons[icon_name].render(tag='b', style='font-size:24px;') }}</p>
       {% if desc %}
@@ -46,9 +45,7 @@
           {{ widget.item_display(item) }}
           <input type="hidden" name="card-{{index}}.value"
                  {{ widget.j2_attrs(dict(value=widget.item_id(item))) }} />
-          <small data-icon="{{g.icons['perm_delete'].char}}"
-                 class="ico-r {{g.icons['perm_delete'].css}}"
-                 title="Remove"></small>
+          {{ g.icons['perm_delete'].render(tag='small') }}
         </a>
     </li>
     {% endfor %}

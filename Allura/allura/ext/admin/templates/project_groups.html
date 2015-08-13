@@ -71,9 +71,11 @@
           {% endfor %}
           {% for r in role.users_with_role() %}
           <li class="deleter" data-user="{{r.user.username}}">
-            <b data-icon="{{g.icons['perm_delete'].char}}"
-               class="ico {{g.icons['perm_delete'].css}} deleter" data-user="{{r.user.username}}"></b>
-            {{ r.user.display_name }} ({{r.user.username}})
+            {{ g.icons['perm_delete'].render(
+                title='{} ({})'.format(r.user.display_name, r.user.username),
+                show_title=True,
+                extra_css='deleter',
+                **{'data-user': r.user.username}) }}
           </li>
           {% endfor %}
           <li class="new-item">
@@ -115,6 +117,10 @@
 <script type="text/javascript">
   // these icons are used in the js, so set them up now
   var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
-  var perm_delete_ico = '<b data-icon="{{g.icons['perm_delete'].char}}" class="ico {{g.icons['perm_delete'].css}}"></b>';
+  {% set perm_delete_ico = g.icons['perm_delete'].render(
+                title='',
+                show_title=True,
+                extra_css='deleter') %}
+  var perm_delete_ico = '{{perm_delete_ico}}';
 </script>
 {% endblock %}
