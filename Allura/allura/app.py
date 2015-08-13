@@ -631,7 +631,7 @@ class Application(object):
     def admin_menu_collapse_button(self):
         """Returns button for showing/hiding admin sidebar menu"""
         return SitemapEntry(
-            label='Admin',
+            label=u'Admin - {}'.format(self.config.options.mount_label),
             extra_html_attrs={
                 'id': 'sidebar-admin-menu-trigger',
             })
