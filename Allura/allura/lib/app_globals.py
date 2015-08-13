@@ -247,16 +247,12 @@ class Globals(object):
             folder=Icon('fa fa-folder', 'Folder'),
             fork=Icon('fa fa-code-fork', 'Fork'),
             merge=Icon('fa fa-code-fork', 'Merge'),  # TODO: use something else here
-            plus=Icon('fa fa-plus-circle', 'Add'),
             conversation=Icon('fa fa-comments', 'Conversation'),
-            group=Icon('g', 'ico-group'),
-            user=Icon('U', 'ico-user'),
-            secure=Icon('(', 'ico-lock'),
-            unsecure=Icon(')', 'ico-unlock'),
-            star=Icon('S', 'ico-star'),
-            watch=Icon('E', 'ico-watch'),
-            expand=Icon('`', 'ico-expand'),
-            restore=Icon('J', 'ico-restore'),
+            group=Icon('fa fa-group', 'Group'),
+            user=Icon('fa fa-user', 'User'),
+            secure=Icon('fa fa-lock', 'Lock'),
+            unsecure=Icon('fa fa-unlock', 'Unlock'),
+            star=Icon('fa fa-star', 'Star'),
             # Permissions
             perm_read=Icon('E', 'ico-focus'),
             perm_update=Icon('0', 'ico-sync'),
@@ -597,7 +593,7 @@ class Icon(object):
         self.css = css
         self.title = title or u''
 
-    def render(self, show_title=False, extra_css=None, closing_tag=True, **kw):
+    def render(self, show_title=False, extra_css=None, closing_tag=True, tag='a', **kw):
         title = kw.get('title') or self.title
         attrs = {
             'href': '#',
@@ -609,6 +605,6 @@ class Icon(object):
         visible_title = u''
         if show_title:
             visible_title = u'<span>&nbsp;{}</span>'.format(Markup.escape(title))
-        closing_tag = u'</a>' if closing_tag else u''
-        icon = u'<a {}>{}{}'.format(attrs, visible_title, closing_tag)
+        closing_tag = u'</{}>'.format(tag) if closing_tag else u''
+        icon = u'<{} {}>{}{}'.format(tag, attrs, visible_title, closing_tag)
         return Markup(icon)

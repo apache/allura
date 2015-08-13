@@ -60,7 +60,10 @@
          title="{{display_name}}"
          class="emboss{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}">
   {% else %}
-    <b data-icon="{{g.icons['user'].char}}" class="ico emboss {{g.icons['user'].css}}{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}"></b>
+    {{ g.icons['user'].render(
+        tag='b',
+        style='font-size:{}px;'.format(size) if size else '',
+        extra_css='emboss {}'.format(className or '')) }}
   {% endif %}
 {%- endmacro %}
 
@@ -78,7 +81,10 @@
          title="{{title or email}}"
          class="emboss {% if size %} x{{size}}{% endif %}">
   {% else %}
-    <b data-icon="{{g.icons['user'].char}}" class="ico emboss {{g.icons['user'].css}}{% if size %} x{{size}}{% endif %}"></b>
+    {{ g.icons['user'].render(
+        tag='b',
+        style='font-size:{}px;'.format(size) if size else '',
+        extra_css='emboss') }}
   {% endif %}
 {%- endmacro %}
 

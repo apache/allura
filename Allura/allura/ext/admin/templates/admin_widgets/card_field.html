@@ -28,10 +28,7 @@
            class="ico-r admin_modal {{g.icons.perm_tool.css}}"></small>
       </a>
       {% endif %}
-      <p style="padding-bottom: 0"><b
-            data-icon="{{g.icons[icon_name].char}}"
-            class="ico x48 {{g.icons[icon_name].css}}"></b>
-      </p>
+      <p style="padding-bottom: 0">{{ g.icons[icon_name].render(tag='b', style='font-size:24px;') }}</p>
       {% if desc %}
       <p>{{ desc }}</p>
       {% endif %}
@@ -61,9 +58,7 @@
     <li>
       <a href="#"  class="adder">
         Add
-        <small data-icon="{{g.icons['plus'].char}}"
-               class="ico-r {{g.icons['plus'].css}}"
-               title="Add a user"></small>
+        {{ g.icons['add'].render(title="Add a user", tag="small") }}
       </a>
     </li>
     <li>

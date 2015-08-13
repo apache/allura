@@ -225,7 +225,7 @@ The wiki uses [Markdown](%s) syntax.
         links = []
         if has_create_access:
             links += [SitemapEntry('Create Page', create_page_url,
-                                   ui_icon=g.icons['plus'],
+                                   ui_icon=g.icons['add'],
                                    className=create_page_class)]
         if not admin_menu:
             links += [SitemapEntry(''),

@@ -136,7 +136,7 @@ class AdminApp(Application):
 
         if c.project.is_nbhd_project:
             links.append(SitemapEntry('Add Project', c.project.url()
-                                      + 'add_project', ui_icon=g.icons['plus']))
+                                      + 'add_project', ui_icon=g.icons['add']))
             nbhd_admin_url = c.project.neighborhood.url() + '_admin/'
             links = links + [
                 SitemapEntry('Neighborhood'),

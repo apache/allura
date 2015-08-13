@@ -113,3 +113,8 @@ tr.rev div.markdown_content p {
 #sidebar-admin-header h3 {
     padding-left: 2px;
 }
+
+#usergroup_admin td.group {
+  text-align: center;
+  line-height: 3em;
+}

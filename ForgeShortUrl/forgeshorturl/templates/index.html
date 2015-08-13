@@ -23,7 +23,7 @@
 
 {% block actions %}
   {% if can_create %}
-  {{ g.icons['plus'].render(
+  {{ g.icons['add'].render(
       href='{}admin/{}/add/'.format(c.project.url(), c.app.config.options.mount_point),
       title="Add Short URL",
       extra_css="add-short-url") }}

@@ -38,10 +38,7 @@
   </ul>
 {% endmacro %}
 {% macro group_icon(icon) %}
-<p style="padding-bottom: 0"><b
-  data-icon="{{g.icons[icon].char}}"
-  class="ico x48 {{g.icons[icon].css}}"></b>
-</p>
+<p style="padding-bottom: 0">{{ g.icons[icon].render(tag='b', style='font-size:24px;') }}</p>
 {% endmacro %}
 
 {% block content %}
@@ -87,9 +84,7 @@
             </form>
           </li>
           <li class="adder">
-            <b data-icon="{{g.icons['plus'].char}}"
-               class="ico {{g.icons['plus'].css}}"></b>
-            Add
+            {{ g.icons['add'].render(show_title=True) }}
           </li>
         </ul>
       </td>
@@ -108,11 +103,7 @@
     </tr>
     <tr>
       <td colspan="3" class="new_group">
-        <a href="new" class="admin_modal" title="Add Group">
-          <b data-icon="{{g.icons['plus'].char}}"
-             class="ico x48 {{g.icons['plus'].css}}"></b>
-          Add a new group
-        </a>
+        {{ g.icons['add'].render(href="new", title="Add a new Group", show_title=True, extra_css='admin_modal') }}
       </td>
     </tr>
   </tbody>

@@ -169,7 +169,7 @@ class NeighborhoodController(object):
         if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()
-                             + 'add_project', ui_icon=g.icons['plus']),
+                             + 'add_project', ui_icon=g.icons['add']),
                 SitemapEntry('')
             ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [

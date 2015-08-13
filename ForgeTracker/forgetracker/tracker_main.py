@@ -346,14 +346,14 @@ class ForgeTrackerApp(Application):
         links = []
         if has_access(self, 'create')():
             links.append(SitemapEntry('Create Ticket',
-                                      self.config.url() + 'new/', ui_icon=g.icons['plus']))
+                                      self.config.url() + 'new/', ui_icon=g.icons['add']))
         else:
             extra_attrs = {"title": "To create a new ticket, you must be authorized by the project admin."}
             links.append(SitemapEntry('Create Ticket',
                                       self.config.url() + 'new/',
                                       extra_html_attrs=extra_attrs,
                                       className='sidebar-disabled',
-                                      ui_icon=g.icons['plus']))
+                                      ui_icon=g.icons['add']))
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Edit Milestones', self.config.url()
                          + 'milestones', ui_icon=g.icons['table']))
