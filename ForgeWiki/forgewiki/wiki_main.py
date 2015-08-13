@@ -232,7 +232,7 @@ The wiki uses [Markdown](%s) syntax.
                       SitemapEntry('Wiki Home', self.url, className='wiki_home')]
         links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
                   SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
-        discussion = c.app.config.discussion
+        discussion = self.config.discussion
         pending_mod_count = M.Post.query.find({
             'discussion_id': discussion._id,
             'status': 'pending',
@@ -250,8 +250,9 @@ The wiki uses [Markdown](%s) syntax.
                 subscribe_action.capitalize(),
                 '' if subscribed else ' to wiki')
             subscribe_url = '{}#toggle-subscribe'.format(self.url)
-            links += [SitemapEntry(''),
-                      SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'])]
+            if not admin_menu:
+                links.append(SitemapEntry(None))
+            links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail']))
         if not admin_menu:
             links += [SitemapEntry(''),
                       SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
