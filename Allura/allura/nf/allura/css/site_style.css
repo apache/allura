@@ -2525,7 +2525,6 @@ div.attachment_thumb .file_type span {
   -khtml-border-radius: 5px;
   border-radius: 5px;
   position: relative;
-  z-index: 1;
   float: right;
   clear: right;
   min-width: inherit;
@@ -2607,7 +2606,6 @@ div.attachment_thumb .file_type span {
 }
 
 #comment ul ul .row {
-  border: 3px solid #ebebeb;
   border-radius: 0;
   -moz-border-radius: 0;
   -webkit-border-radius: 0;
@@ -2616,7 +2614,6 @@ div.attachment_thumb .file_type span {
   -moz-border-radius-bottomleft: 5px;
   margin: -3px 0 0 0;
   position: relative;
-  z-index: 0;
 }
 
 #comment ul .column.grid_8 {
