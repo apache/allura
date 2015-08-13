@@ -3,7 +3,7 @@
 title: Apache Allura
 version: 1
 baseUri: https://{domain}/rest
-securedBy: [null, oauth_1_0, oauth_bearer_token]
+securedBy: [null, oauth_1_0]
 
 resourceTypes: !include resourceTypes.yaml
 traits: !include traits.yaml
@@ -14,8 +14,6 @@ baseUriParameters:
     description: "The website domain"
     example: "forge-allura.apache.org"
     default: "forge-allura.apache.org"
-
-
 
 /{neighborhood}:
     description: |
@@ -107,6 +105,7 @@ baseUriParameters:
           post:
             description: |
               Creates or updates the titled page.
+            is: [ bearerAuth ]
             body:
               application/x-www-form-urlencoded:
                 formParameters:
@@ -141,8 +140,6 @@ baseUriParameters:
             schema: !include schemas/tickets.json
             }
           }
-        is: [pageable]
-
         displayName: Tracker Url
         uriParameters:
          tracker:
@@ -165,6 +162,7 @@ baseUriParameters:
           get:
             description: |
               returns summary information about a thread, including the posts in a thread
+            is: [ bearerAuth ]
           /{slug}:
             uriParameters:
              slug:
@@ -174,10 +172,12 @@ baseUriParameters:
             get:
               description: |
                 returns detailed information about a post
+              is: [ bearerAuth ]
             /reply:
               description: |
                 create a threaded reply to the given post
               post:
+                is: [ bearerAuth ]
                 body:
                   application/x-www-form-urlencoded:
                     formParameters:
@@ -191,6 +191,7 @@ baseUriParameters:
             description: |
               create a post in the given thread
             post:
+              is: [ bearerAuth ]
               body:
                 application/x-www-form-urlencoded:
                   formParameters:
@@ -215,6 +216,7 @@ baseUriParameters:
           description: |
             Creates a new ticket.
           post:
+            is: [ bearerAuth ]
             body:
               application/x-www-form-urlencoded:
                 formParameters:
@@ -267,6 +269,7 @@ baseUriParameters:
               parameters are the same as /rest/p/project_name/mount_point/new
 
             post:
+              is: [ bearerAuth ]
               body:
                 application/x-www-form-urlencoded:
                   formParameters:
@@ -360,7 +363,7 @@ baseUriParameters:
             description: |
               Represents a thread of posts.
             get:
-              is: [pageable]
+              is: [pageable, bearerAuth]
               description: |
                 returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
 
@@ -399,6 +402,7 @@ baseUriParameters:
         post:
           description: |
             Creates a new blog post.
+          is: [ bearerAuth ]
           body:
             application/x-www-form-urlencoded:
               formParameters:
@@ -450,6 +454,7 @@ baseUriParameters:
             post:
               description: |
                 Updates an existing blog post.
+              is: [ bearerAuth ]
               body:
                 application/x-www-form-urlencoded:
                   formParameters:
@@ -500,6 +505,7 @@ baseUriParameters:
         post:
           description: |
             Updates the url. *authentication required*.
+          is: [ bearerAuth ]
           body:
             application/x-www-form-urlencoded:
               formParameters:
@@ -523,13 +529,14 @@ baseUriParameters:
               **400 Bad Request:** tools parameter not provided or is invalid
               **503 Service Unavailable:** an export job is already running
               **200 OK:** job submitted. Body will be: *{"status": "in progress", "filename": FILENAME}*
+            is: [ bearerAuth ]
         /export_status:
           description: |
             Check status of a bulk export job
           get:
             description: |
               Returns status: busy or ready
-
+            is: [ bearerAuth ]
         /{project}/webhooks:
             type: {
               typedCollection: {
@@ -555,6 +562,7 @@ baseUriParameters:
               post:
                 description: |
                   Create a new webhook.
+                is: [ bearerAuth ]
                 body:
                   application/x-www-form-urlencoded:
                     formParameters:
@@ -582,6 +590,7 @@ baseUriParameters:
                 post:
                   description: |
                     Update an existing webhook
+                  is: [ bearerAuth ]
                   body:
                     application/x-www-form-urlencoded:
                       formParameters:
@@ -598,6 +607,7 @@ baseUriParameters:
                           required: false
                           type: string
                 delete:
+                  is: [ bearerAuth ]
                   description: |
                     Delete an existing webhook
         /install_tool:
@@ -608,6 +618,7 @@ baseUriParameters:
             success: False if error is occurred, otherwise True
             info: success or error message
           post:
+            is: [ bearerAuth ]
             body:
               application/x-www-form-urlencoded:
                 formParameters:

@@ -55,3 +55,14 @@
         example: heiths
         required: true
         description: The username to check
+- bearerAuth:
+    # This can also be done with ?access_token=
+    # But it's simpler in the docs / Try It interface to just show one option
+    # and using the header method keeps it separate from query params that the individual API endpoints use
+    headers:
+      Authorization:
+        description: |
+          Optional.  Authenticate yourselve with a token from https://forge-allura.apache.org/auth/oauth/
+          Use it here like: `Bearer 5d79e800a36bf602314d`
+        type: string
+        pattern: "^Bearer [0-9a-f]+$"
