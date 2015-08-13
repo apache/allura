@@ -20,25 +20,17 @@
 - pageable:
     queryParameters:
       page:
-        description: Skip over a number of elements by specifying an offset value for the query
+        description: Skip over a number of elements by specifying a starting page
         type: integer
         required: false
-        example: 2
+        example: 0
         default: 0
       limit:
-        description: Limit the number of elements on the response
+        description: Limit the number of elements on the response "page"
         type: integer
         required: false
-        example: 5
+        example: 10
         default: 10
-- paged:
-    queryParameters:
-      numPages:
-        description: The number of pages to return
-- rateLimited:
-    queryParameters:
-      numPages:
-        description: The number of pages to return, not to exceed <<maxPages>>
 - permissionTestable:
     description: |
       **Endpoints**
