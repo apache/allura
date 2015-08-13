@@ -49,7 +49,7 @@ baseUriParameters:
           pattern: ([a-zA-Z]+)
 
       type: {
-          project: {
+        project: {
           schema: !include schemas/project.json,
           example: !include examples/project.json
           }
@@ -71,11 +71,11 @@ baseUriParameters:
         description: |
           Represents the **Wiki Tool**.
         type: {
-            tool: {
+          generic: {
             example: !include examples/wiki.json,
             schema: !include schemas/wiki.json
-            }
           }
+        }
 
         displayName: Wiki
         uriParameters:
@@ -87,7 +87,7 @@ baseUriParameters:
 
         /{title}:
           type: {
-              tool: {
+            generic: {
               example: !include examples/page.json,
               schema: !include schemas/page.json
               }
@@ -135,7 +135,7 @@ baseUriParameters:
         description: |
           Represents the **Ticket Tracker Tool**.
         type: {
-            tool: {
+          generic: {
             example: !include examples/tickets.json,
             schema: !include schemas/tickets.json
             }
@@ -251,9 +251,9 @@ baseUriParameters:
 
         /{ticketNumber}:
           type: {
-            tool: {
-            example: !include examples/ticket.json,
-            schema: !include schemas/ticket.json
+            generic: {
+              example: !include examples/ticket.json,
+              schema: !include schemas/ticket.json
             }
           }
           displayName: Ticket Number
@@ -319,7 +319,7 @@ baseUriParameters:
         description: |
           Represents the **Discussion Tool**.
         type: {
-          tool: {
+          generic: {
             schema: !include schemas/discussion.json,
             example: !include examples/discussion.json
             }
@@ -340,7 +340,7 @@ baseUriParameters:
           description: |
             Represents a forum within a Discussion tool.
           type: {
-            tool: {
+            generic: {
               # FIXME
               example: !include examples/page.json,
               schema: !include schemas/page.json
@@ -381,11 +381,11 @@ baseUriParameters:
 
       /{blog}:
         type: {
-            tool: {
+          generic: {
             example: !include examples/blog.json,
             schema: !include schemas/blog.json
-            }
           }
+        }
         description: |
           Represents the **Blog tool**
 
@@ -431,9 +431,9 @@ baseUriParameters:
         /{year}/{month}/{title}:
             description: Represents a blog post entry.
             type: {
-              tool: {
-              example: !include examples/blogPost.json,
-              schema: !include schemas/blogPost.json
+              generic: {
+                example: !include examples/blogPost.json,
+                schema: !include schemas/blogPost.json
               }
             }
             displayName: Blog Post
@@ -492,11 +492,11 @@ baseUriParameters:
         description: |
           Represents the External Link tool.
         type: {
-            tool: {
+          generic: {
             example: !include examples/link.json,
             schema: !include schemas/link.json
-            }
           }
+        }
 
         get:
           description: |
@@ -573,9 +573,9 @@ baseUriParameters:
                         type: string
               /{id}:
                 type: {
-                  tool: {
-                  example: !include examples/webhook.json,
-                  schema: !include schemas/webhook.json
+                  generic: {
+                    example: !include examples/webhook.json,
+                    schema: !include schemas/webhook.json
                   }
                 }
                 uriParameters:
@@ -653,7 +653,7 @@ baseUriParameters:
 
       Most often you'll use the /profile suffix to return user data.
     type: {
-      tool:{
+      generic: {
         example: !include examples/user.json,
         schema: !include schemas/user.json
       }
@@ -662,8 +662,8 @@ baseUriParameters:
       description: |
         A user profile
       type: {
-        tool:{
-        example: !include examples/userProfile.json,
-        schema: !include schemas/userProfile.json
+        generic: {
+          example: !include examples/userProfile.json,
+          schema: !include schemas/userProfile.json
         }
       }
