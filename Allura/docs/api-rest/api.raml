@@ -216,7 +216,6 @@ baseUriParameters:
             Creates a new ticket.
           post:
             body:
-              # FIXME?
               application/x-www-form-urlencoded:
                 formParameters:
                   access_token:
@@ -269,7 +268,6 @@ baseUriParameters:
 
             post:
               body:
-                # form?
                 application/x-www-form-urlencoded:
                   formParameters:
                     access_token:
@@ -543,7 +541,9 @@ baseUriParameters:
               This is to manage webhooks programatically. See the [Webhook docs](https://forge-allura.apache.org/p/allura/wiki/Webhooks/) for more information.
 
               The webhook payloads and signature verification method are documented at https://forge-allura.apache.org/p/allura/wiki/Webhooks/
-
+            get:
+              description: |
+                Returns the list of webhooks
 
             /{type}:
               uriParameters:
