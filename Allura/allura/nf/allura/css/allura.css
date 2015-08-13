@@ -87,3 +87,5 @@ tr.rev div.markdown_content p {
 #phone_verification_overlay iframe {
     height: 320px;
 }
+
+#sidebar-admin-header { cursor: pointer; }

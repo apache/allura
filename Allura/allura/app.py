@@ -632,7 +632,6 @@ class Application(object):
         """Returns button for showing/hiding admin sidebar menu"""
         return SitemapEntry(
             label='Admin',
-            url='#',
             extra_html_attrs={
                 'id': 'sidebar-admin-menu-trigger',
             })

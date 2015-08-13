@@ -55,35 +55,22 @@
     {% endif %}
     {% if c.app %}
       {% if h.has_access(c.app, 'admin')() %}
-        <style>
-          #sidebar-admin-menu.hide ul li:not(:first-child) {
-            display: none;
-          }
-          #sidebar-admin-menu.hide ul li:first-child {
-            border-bottom: medium none;
-          }
-        </style>
-        <div id='sidebar-admin-menu' class='hide'>
-        {% for s in c.app.admin_menu() %}
-          {% if loop.first %}
+        {% if c.app.admin_menu() %}
+          <a id='sidebar-admin-header' onclick='$("#sidebar-admin-menu").toggleClass("hidden");'>
             {{sidebar_item(c.app.admin_menu_collapse_button)}}
-            <script>
-              $('#sidebar-admin-menu-trigger').click(function(e) {
-                e.preventDefault();
-                $(this).parents('li').toggleClass('active');
-                $('#sidebar-admin-menu').toggleClass('hide');
-              });
-            </script>
-          {% endif %}
-          {{sidebar_item(s)}}
-        {% endfor %}
-        {{sidebar_item(c.app.admin_menu_delete_button)}}
-        {{sidebar_item(None)}}
+          </a>
+          <div id='sidebar-admin-menu' class='hidden'>
+            {% for s in c.app.admin_menu() %}
+              {{sidebar_item(s)}}
+            {% endfor %}
+            {{sidebar_item(c.app.admin_menu_delete_button)}}
+            {{sidebar_item(None)}}
+          </div>
+        {% endif %}
         {{c.app.admin_modal.display()}}
         {% if c.app.admin_menu_delete_button %}
           {{c.app.admin_tool_delete_modal.display()}}
         {% endif %}
-        </div>
       {% endif %}
       {% for s in c.app.sidebar_menu() %}
         {{sidebar_item(s)}}
