@@ -826,7 +826,7 @@ class TestRootController(TestController):
         menu = [li.find('span').getText() for li in menu.findAll('li')]
         assert_equal(
             menu,
-            ['Admin', 'Set Home', 'Permissions', 'Options', 'Label', 'Delete'])
+            ['Set Home', 'Permissions', 'Options', 'Label', 'Delete'])
 
     def test_sidebar_admin_menu_invisible_to_not_admin(self):
         def assert_invisible_for(username):
