@@ -69,203 +69,6 @@ baseUriParameters:
               default: read
               enum: [read, admin, create, update]
 
-      /{link}:
-        description: |
-          Represents the External Link tool.
-        type: {
-            tool: {
-            example: !include examples/link.json,
-            schema: !include schemas/link.json
-            }
-          }
-
-        get:
-          description: |
-            Returns the existing url.
-
-        post:
-          description: |
-            Updates the url. *authentication required*.
-          body:
-            application/x-www-form-urlencoded:
-              formParameters:
-                url:
-                  description: |
-                    The url you would like to update to.
-                  type: string
-                  example: http://google.com
-
-      /{blog}:
-        type: {
-            tool: {
-            example: !include examples/blog.json,
-            schema: !include schemas/blog.json
-            }
-          }
-        description: |
-          Represents the **Blog tool**
-
-        displayName: Blog
-        uriParameters:
-         blog:
-           displayName: Blog Name
-           type: string
-           example: blog
-
-        get:
-          description: |
-            Returns a list of posts, including title and API url.
-        post:
-          description: |
-            Creates a new blog post.
-          body:
-            application/x-www-form-urlencoded:
-              formParameters:
-                title:
-                  description: |
-                    The title of the post.
-                  type: string
-                  example: New API docs released!
-                text:
-                  description: |
-                    The text of the post.
-                  type: string
-                  example: Lots of text here describing apis!\nThat is all.
-                labels:
-                  description: |
-                    Labels of the post -- comma seperated strings
-                  type: string
-                  example: api,development
-                state:
-                  description: |
-                    Draft or published.
-                  enum: [draft, published]
-                  type: string
-                  example: published
-
-        /{year}/{month}/{title}:
-            description: Represents a blog post entry.
-            type: {
-              tool: {
-              example: !include examples/blogPost.json,
-              schema: !include schemas/blogPost.json
-              }
-            }
-            displayName: Blog Post
-            uriParameters:
-             year:
-               displayName: Year
-               type: number
-               example: 2015
-             month:
-               displayName: Month
-               type: number
-               example: 04
-             title:
-               displayName: Title
-               type: string
-               example: project-insights
-
-            post:
-              description: |
-                Updates an existing blog post.
-              body:
-                application/x-www-form-urlencoded:
-                  formParameters:
-                    title:
-                      description: |
-                        The title of the post.
-                      type: string
-                    text:
-                      description: |
-                        The text of the post.
-                      type: string
-                    labels:
-                      description: |
-                        Labels of the post -- comma seperated strings
-                      type: string
-                    state:
-                      description: |
-                        Draft or published.
-                      enum: [draft, published]
-                      type: string
-
-        /has_access:
-          type: permission
-          get:
-            queryParameters:
-              perm:
-                displayName: Permission
-                required: true
-                type: string
-                example: post
-                default: read
-                enum: [admin, configure, moderate, post, unmoderated_post, read, write]
-
-      /{discussion}:
-        description: |
-          Represents the **Discussion Tool**.
-        type: {
-          tool: {
-            schema: !include schemas/discussion.json,
-            example: !include examples/discussion.json
-            }
-          }
-
-        displayName: Discussion
-        uriParameters:
-         discussion:
-           displayName: Discussion Tool Name
-           type: string
-           example: "discussion"
-        get:
-          description: |
-            Returns a list of forums, including name, description, num_topics, and last_post details
-          is: [pageable]
-
-        /{forum}:
-          description: |
-            Represents a forum within a Discussion tool.
-          type: {
-            tool: {
-              # FIXME
-              example: !include examples/page.json,
-              schema: !include schemas/page.json
-            }
-          }
-          displayName: forum
-          uriParameters:
-           forum:
-             displayName: Forum Name
-             type: string
-             example: general
-
-          get:
-            is: [pageable]
-            description: |
-              returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
-              To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
-
-          /thread/{thread}:
-            description: |
-              Represents a thread of posts.
-            get:
-              is: [pageable]
-              description: |
-                returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
-
-        /has_access:
-          type: permission
-          get:
-            queryParameters:
-              perm:
-                displayName: Permission
-                required: true
-                type: string
-                example: post
-                default: read
-                enum: [admin, configure, moderate, post, unmoderated_post, read]
-
       /{wiki}:
         description: |
           Represents the **Wiki Tool**.
@@ -510,6 +313,203 @@ baseUriParameters:
                 default: read
                 enum: [admin, configure, moderate, post, unmoderated_post, read, create, delete, update, save_searches]
 
+
+      /{discussion}:
+        description: |
+          Represents the **Discussion Tool**.
+        type: {
+          tool: {
+            schema: !include schemas/discussion.json,
+            example: !include examples/discussion.json
+            }
+          }
+
+        displayName: Discussion
+        uriParameters:
+         discussion:
+           displayName: Discussion Tool Name
+           type: string
+           example: "discussion"
+        get:
+          description: |
+            Returns a list of forums, including name, description, num_topics, and last_post details
+          is: [pageable]
+
+        /{forum}:
+          description: |
+            Represents a forum within a Discussion tool.
+          type: {
+            tool: {
+              # FIXME
+              example: !include examples/page.json,
+              schema: !include schemas/page.json
+            }
+          }
+          displayName: forum
+          uriParameters:
+           forum:
+             displayName: Forum Name
+             type: string
+             example: general
+
+          get:
+            is: [pageable]
+            description: |
+              returns a limited list of topics in the forum, with fields for subject, num_replies, API URL, and last_post
+              To view more than 100 threads, or 100 posts in a thread, use the pagination support of the API by adding ?page=1 etc. to the URL.
+
+          /thread/{thread}:
+            description: |
+              Represents a thread of posts.
+            get:
+              is: [pageable]
+              description: |
+                returns a list of posts in the thread, with fields for author, text, and timestamp. Nested posts (i.e. a reply to a post) can be determined by the slug structure. For example, "slug": "0a0b/9f00" is a reply to the post with "slug": "0a0b"
+
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read]
+
+      /{blog}:
+        type: {
+            tool: {
+            example: !include examples/blog.json,
+            schema: !include schemas/blog.json
+            }
+          }
+        description: |
+          Represents the **Blog tool**
+
+        displayName: Blog
+        uriParameters:
+         blog:
+           displayName: Blog Name
+           type: string
+           example: blog
+
+        get:
+          description: |
+            Returns a list of posts, including title and API url.
+        post:
+          description: |
+            Creates a new blog post.
+          body:
+            application/x-www-form-urlencoded:
+              formParameters:
+                title:
+                  description: |
+                    The title of the post.
+                  type: string
+                  example: New API docs released!
+                text:
+                  description: |
+                    The text of the post.
+                  type: string
+                  example: Lots of text here describing apis!\nThat is all.
+                labels:
+                  description: |
+                    Labels of the post -- comma seperated strings
+                  type: string
+                  example: api,development
+                state:
+                  description: |
+                    Draft or published.
+                  enum: [draft, published]
+                  type: string
+                  example: published
+
+        /{year}/{month}/{title}:
+            description: Represents a blog post entry.
+            type: {
+              tool: {
+              example: !include examples/blogPost.json,
+              schema: !include schemas/blogPost.json
+              }
+            }
+            displayName: Blog Post
+            uriParameters:
+             year:
+               displayName: Year
+               type: number
+               example: 2015
+             month:
+               displayName: Month
+               type: number
+               example: 04
+             title:
+               displayName: Title
+               type: string
+               example: project-insights
+
+            post:
+              description: |
+                Updates an existing blog post.
+              body:
+                application/x-www-form-urlencoded:
+                  formParameters:
+                    title:
+                      description: |
+                        The title of the post.
+                      type: string
+                    text:
+                      description: |
+                        The text of the post.
+                      type: string
+                    labels:
+                      description: |
+                        Labels of the post -- comma seperated strings
+                      type: string
+                    state:
+                      description: |
+                        Draft or published.
+                      enum: [draft, published]
+                      type: string
+
+        /has_access:
+          type: permission
+          get:
+            queryParameters:
+              perm:
+                displayName: Permission
+                required: true
+                type: string
+                example: post
+                default: read
+                enum: [admin, configure, moderate, post, unmoderated_post, read, write]
+
+      /{link}:
+        description: |
+          Represents the External Link tool.
+        type: {
+            tool: {
+            example: !include examples/link.json,
+            schema: !include schemas/link.json
+            }
+          }
+
+        get:
+          description: |
+            Returns the existing url.
+
+        post:
+          description: |
+            Updates the url. *authentication required*.
+          body:
+            application/x-www-form-urlencoded:
+              formParameters:
+                url:
+                  description: |
+                    The url you would like to update to.
+                  type: string
+                  example: http://google.com
 
       /admin:
         description: |
