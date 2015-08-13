@@ -254,16 +254,16 @@ class Globals(object):
             unsecure=Icon('fa fa-unlock', 'Unlock'),
             star=Icon('fa fa-star', 'Star'),
             # Permissions
-            perm_read=Icon('E', 'ico-focus'),
-            perm_update=Icon('0', 'ico-sync'),
-            perm_create=Icon('e', 'ico-config'),
-            perm_register=Icon('e', 'ico-config'),
+            perm_read=Icon('fa fa-eye', 'Read'),
+            perm_update=Icon('fa fa-rotate-left', 'Update'),
+            perm_create=Icon('fa fa-flash', 'Create'),
+            perm_register=Icon('fa fa-gear', 'Config'),
             perm_delete=Icon('fa fa-minus-circle', 'Remove'),
-            perm_tool=Icon('x', 'ico-config'),
-            perm_admin=Icon('(', 'ico-lock'),
+            perm_tool=Icon('fa fa-gear', 'Tool'),
+            perm_admin=Icon('fa fa-gear', 'Admin'),
             perm_has_yes=Icon('fa fa-check', 'Check'),
             perm_has_no=Icon('fa fa-ban', 'No entry'),
-            perm_has_inherit=Icon('2', 'ico-checkcircle'),
+            perm_has_inherit=Icon('fa fa-check-circle', 'Has inherit'),
         )
 
         # Cache some loaded entry points
