@@ -61,7 +61,7 @@
           {% set admin_menu = c.app.admin_menu() %}
         {% endif %}
         {% if admin_menu %}
-          <a id='sidebar-admin-header' onclick='$("#sidebar-admin-menu").toggleClass("hidden");'>
+          <a id='sidebar-admin-header' onclick='$("#sidebar-admin-menu").toggleClass("hidden");return false;' href='#'>
             {{sidebar_item(c.app.admin_menu_collapse_button)}}
           </a>
           <div id='sidebar-admin-menu' class='hidden'>
