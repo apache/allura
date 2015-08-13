@@ -2606,13 +2606,14 @@ div.attachment_thumb .file_type span {
 }
 
 #comment ul ul .row {
+  border: 3px solid #ebebeb;
+  border-top: none;
   border-radius: 0;
   -moz-border-radius: 0;
   -webkit-border-radius: 0;
   border-bottom-left-radius: 0;
   -webkit-border-bottom-left-radius: 5px;
   -moz-border-radius-bottomleft: 5px;
-  margin: -3px 0 0 0;
   position: relative;
 }
 
