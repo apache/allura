@@ -440,12 +440,16 @@ class GitImplementation(M.RepositoryImplementation):
                 ]
                 if commit_lines:
                     hexsha, decoration = commit_lines[0].split('\x00')
-                    refs = decoration.strip(' ()').split(
-                        ', ') if decoration else []
+                    if decoration:
+                        # "->" replacement is because git 2.4 introduced "HEAD -> master" syntax
+                        refs = decoration.strip(' ()').replace(' -> ', ', ').split(', ')
+                    else:
+                        refs = []
                     tag_prefix = 'tag: '  # introduced in git 1.8.3
                     for i, ref in enumerate(refs):
                         if ref.startswith(tag_prefix):
                             refs[i] = ref[len(tag_prefix):]
+                    refs.sort()
                     renamed = {}
                     # merge commits don't have any --name-status output
                     if len(commit_lines) > 1:
