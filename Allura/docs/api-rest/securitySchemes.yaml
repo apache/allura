@@ -1,29 +1,22 @@
 - oauth_1_0:
     description: |
-        Apache Allura supports OAuth 1.0 for authenticating API requests.
+        OAuth 1.0 may be used to authenticate API requests.
+
+        Another option which is simpler in some ways is "bearer tokens":
+
+        A bearer token (aka access token) may be generated at https://forge-allura.apache.org/auth/oauth/ and used
+        in an HTTP header like:
+
+        `Authorization: Bearer MY_BEARER_TOKEN`
+
+          or in a URL like
+
+        `?access_token=MY_BEARER_TOKEN`
+
+        To use bearer tokens, choose "Anonymous" security and then use the Authorization header to enter your Bearer token.
     type: OAuth 1.0
     settings:
       requestTokenUri: https://forge-allura.apache.org/rest/oauth/request_token
-      authorizationUri: /rest/oauth/authorize
-      tokenCredentialsUri: /rest/oauth/access_token
+      authorizationUri: https://forge-allura.apache.org/rest/oauth/authorize
+      tokenCredentialsUri: https://forge-allura.apache.org/rest/oauth/access_token
 
-- oauth_bearer_token:
-    description: |
-        A bearer token (aka access token) may be generated at https://forge-allura.apache.org/auth/oauth/ for simple
-        authorization via URL parameter or HTTP header.
-    type: x-OAuth-Bearer-Token
-    describedBy:
-        headers:
-            Authorization:
-                description: |
-                   Used to send a bearer token.  Use either this or
-                   the "access_token" query string parameter.
-                type: string
-        queryParameters:
-            access_token:
-                description: |
-                   Used to send a bearer token.  Use either this or
-                   the "Authorization" header
-                type: string
-    settings:
-      authorizationUri: https://forge-allura.apache.org//auth/oauth/
