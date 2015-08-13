@@ -17,15 +17,10 @@
     type: base
     get:
       is: [ pageable, bearerAuth ]
-- member:
-      type: base
-      get?:
-      post?:
-      put?:
-      patch?:
-      delete?:
-- tool:
-    type: member
+- generic:
+    # this is really just a shorthand for us when we have a schema & example
+    # so we couldn't come up with a good name and picked something generic :)
+    type: base
     get:
       is: [ bearerAuth ]
       responses:
@@ -81,7 +76,7 @@
     get:
       is: [permissionTestable, bearerAuth]
 - project:
-    type: member
+    type: base
     get:
       responses:
         200:
