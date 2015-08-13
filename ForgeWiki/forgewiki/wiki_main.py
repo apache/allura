@@ -257,7 +257,7 @@ The wiki uses [Markdown](%s) syntax.
                       SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
         return links
 
-    def admin_menu(self):
+    def admin_menu(self, skip_common_menu=False):
         admin_url = c.project.url() + \
             'admin/' + \
             self.config.options.mount_point + '/'
@@ -265,7 +265,7 @@ The wiki uses [Markdown](%s) syntax.
                               admin_url + 'home',
                               className='admin_modal')]
 
-        if not self.show_left_bar:
+        if not self.show_left_bar and not skip_common_menu:
             links += self.create_common_wiki_menu(True,
                                                   admin_url +
                                                   'create_wiki_page',
