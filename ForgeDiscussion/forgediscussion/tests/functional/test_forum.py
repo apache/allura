@@ -45,9 +45,10 @@ class TestForumEmail(TestController):
         c.user = M.User.by_username('test-admin')
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = 'testforum'
-        r.forms[1]['add_forum.name'] = 'Test Forum'
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
         self.email_address = c.user.email_addresses[0]
@@ -130,14 +131,16 @@ class TestForumAsync(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = 'testforum'
-        r.forms[1]['add_forum.name'] = 'Test Forum'
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum' in r
-        r.forms[1]['add_forum.shortname'] = 'test1'
-        r.forms[1]['add_forum.name'] = 'Test Forum 1'
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'test1'
+        form['add_forum.name'] = 'Test Forum 1'
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
         h.set_context('test', 'discussion', neighborhood='Projects')
@@ -270,19 +273,21 @@ class TestForum(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = 'testforum'
-        r.forms[1]['add_forum.name'] = 'Test Forum'
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         frm = FM.Forum.query.get(shortname='testforum')
         assert 'testforum' in r
         h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = 'childforum'
-        r.forms[1]['add_forum.name'] = 'Child Forum'
-        r.forms[1]['add_forum.parent'] = str(frm._id)
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'childforum'
+        form['add_forum.name'] = 'Child Forum'
+        form['add_forum.parent'] = str(frm._id)
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'childforum' in r
 
@@ -315,19 +320,20 @@ class TestForum(TestController):
 
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = u'téstforum'.encode('utf-8')
-        r.forms[1]['add_forum.name'] = u'Tést Forum'.encode('utf-8')
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
+        form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert u'téstforum'.encode('utf-8') in r
 
     def test_markdown_description(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = 'tester'
-        r.forms[1]['add_forum.name'] = 'Tester'
-        r.forms[1][
-            'add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = 'tester'
+        form['add_forum.name'] = 'Tester'
+        form['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
+        form.submit()
         r = self.app.get('/discussion/')
         assert_equal(len(r.html.findAll('a', rel='nofollow')), 1)
 
@@ -823,9 +829,10 @@ class TestForum(TestController):
 
     def test_create_topic_unicode(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[1]['add_forum.shortname'] = u'téstforum'.encode('utf-8')
-        r.forms[1]['add_forum.name'] = u'Tést Forum'.encode('utf-8')
-        r.forms[1].submit()
+        form = r.forms[2]
+        form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
+        form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert u'téstforum'.encode('utf-8') in r
         r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))

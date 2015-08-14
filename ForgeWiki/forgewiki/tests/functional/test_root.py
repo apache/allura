@@ -678,8 +678,9 @@ class TestRootController(TestController):
         assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get(
             '/p/test/wiki/')
         req = self.app.get('/p/test/wiki/Home/edit')
-        req.forms[1]['title'].value = 'new_title'
-        req.forms[1].submit()
+        form = req.forms[3]
+        form['title'].value = 'new_title'
+        form.submit()
         assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get(
             '/p/test/wiki/')
 

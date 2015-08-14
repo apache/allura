@@ -1397,7 +1397,7 @@ class TestFunctionalController(TrackerTestController):
             'sort': ''})
         assert err in r
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.form
+        edit_form = r.forms[1]
         edit_form['bins-2.summary'] = 'Original'
         edit_form['bins-2.terms'] = 'label:foo'
         r = edit_form.submit()
@@ -1421,7 +1421,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_edit_saved_search(self):
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.form
+        edit_form = r.forms[1]
         edit_form['bins-2.summary'] = 'Original'
         edit_form['bins-2.terms'] = 'aaa'
         edit_form.submit()
@@ -1429,7 +1429,7 @@ class TestFunctionalController(TrackerTestController):
         assert sidebar_contains(r, 'Original')
         assert not sidebar_contains(r, 'New')
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.form
+        edit_form = r.forms[1]
         edit_form['bins-2.summary'] = 'New'
         edit_form.submit()
         r = self.app.get('/bugs/')
