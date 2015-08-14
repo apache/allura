@@ -51,7 +51,7 @@ from allura.lib.widgets.search import SearchResults, SearchHelp
 # Local imports
 from forgewiki import model as WM
 from forgewiki import version
-from forgewiki.widgets.wiki import CreatePageWidget
+from forgewiki.widgets.wiki import CreatePageWidget, WikiSubscribeForm
 
 log = logging.getLogger(__name__)
 
@@ -279,6 +279,17 @@ The wiki uses [Markdown](%s) syntax.
     def sidebar_menu(self):
         return self.create_common_wiki_menu(has_access(self, 'create'), c.app.url, 'add_wiki_page')
 
+    @h.exceptionless([], log)
+    def sidebar_menu_widgets(self):
+        widgets = super(ForgeWikiApp, self).sidebar_menu_widgets()
+        widgets.append(W.create_page_lightbox)
+        if not c.user.is_anonymous():
+            form = WikiSubscribeForm(
+                action=self.url + 'subscribe',
+                subscribed=M.Mailbox.subscribed())
+            widgets.append(form)
+        return widgets
+
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
@@ -336,7 +347,6 @@ The wiki uses [Markdown](%s) syntax.
 class RootController(BaseController, DispatchIndex, FeedController):
 
     def __init__(self):
-        c.create_page_lightbox = W.create_page_lightbox
         self._discuss = AppDiscussionController()
 
     def _check_security(self):
@@ -483,9 +493,6 @@ class PageController(BaseController, FeedController):
             app_config_id=c.app.config._id, title=self.title)
         if self.page is not None:
             self.attachment = WikiAttachmentsController(self.page)
-        c.create_page_lightbox = W.create_page_lightbox
-        if not c.user.is_anonymous():
-            c.subscribed = M.Mailbox.subscribed()
 
     def _check_security(self):
         if self.page:

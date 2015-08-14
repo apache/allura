@@ -581,6 +581,13 @@ class Application(object):
         """
         return ""
 
+    def sidebar_menu_widgets(self):
+        """Return widgets needed by the sidebar menu of this Application.
+
+        :return: a list of widgets
+        """
+        return []
+
     @LazyProperty
     def _webhooks(self):
         """A list of webhooks that can be triggered by this app.
