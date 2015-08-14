@@ -711,9 +711,14 @@ class Application(object):
                 'label': self.config.options.mount_label}
 
 
+class AdminControllerMixin(object):
+    """Provides common functionality admin controllers need"""
+    def _before(self, *remainder, **params):
+        # Display app's sidebar on admin page, instead of :class:`AdminApp`'s
+        c.app = self.app
 
 
-class DefaultAdminController(BaseController):
+class DefaultAdminController(BaseController, AdminControllerMixin):
 
     """Provides basic admin functionality for an :class:`Application`.
 
@@ -927,7 +932,7 @@ class DefaultAdminController(BaseController):
         redirect(request.referer)
 
 
-class WebhooksLookup(BaseController):
+class WebhooksLookup(BaseController, AdminControllerMixin):
 
     def __init__(self, app):
         super(WebhooksLookup, self).__init__()
