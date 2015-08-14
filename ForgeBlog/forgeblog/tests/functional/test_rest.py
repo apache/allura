@@ -243,7 +243,7 @@ class TestBlogApi(TestRestApiBase):
 
     def test_has_access(self):
         r = self.api_get(
-            '/rest/p/test/blog/has_access?user=test-admin&perm=post',
+            '/rest/p/test/blog/has_access?user=test-admin&perm=post&access_token=ABCDEF',
             user='root')
         assert_equal(r.status_int, 200)
         assert_equal(r.json['result'], True)
