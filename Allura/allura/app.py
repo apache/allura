@@ -623,6 +623,13 @@ class Application(object):
             links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
         return links
 
+    def admin_menu_widgets(self):
+        """Return widgets needed by the admin menu of this Application.
+
+        :return: a list of widgets
+        """
+        return []
+
     def handle_message(self, topic, message):
         """Handle incoming email msgs addressed to this tool.
         Default is a no-op.

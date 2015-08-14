@@ -109,6 +109,9 @@
                 {% if not app.uninstallable %}
                   <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
                 {% endif %}
+                {% for w in app.admin_menu_widgets() %}
+                  {{ w.display() }}
+                {% endfor %}
             </div>
         {% endif %}
         {% if 'sub' in mount and not mount['sub'].deleted %}

@@ -244,7 +244,7 @@ The wiki uses [Markdown](%s) syntax.
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                     small=pending_mod_count))
         if not c.user.is_anonymous():
-            subscribed = M.Mailbox.subscribed()
+            subscribed = M.Mailbox.subscribed(app_config_id=self.config._id)
             subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
             subscribe_title = '{}{}'.format(
                 subscribe_action.capitalize(),
@@ -273,6 +273,16 @@ The wiki uses [Markdown](%s) syntax.
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
+
+    @h.exceptionless([], log)
+    def admin_menu_widgets(self):
+        widgets = super(ForgeWikiApp, self).admin_menu_widgets()
+        if not c.user.is_anonymous():
+            form = WikiSubscribeForm(
+                action=self.url + 'subscribe',
+                subscribed=M.Mailbox.subscribed(app_config_id=self.config._id))
+            widgets.append(form)
+        return widgets
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
