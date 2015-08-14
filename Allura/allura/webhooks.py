@@ -35,6 +35,7 @@ from webob import exc
 from pymongo.errors import DuplicateKeyError
 from paste.deploy.converters import asint, aslist
 
+from allura.app import AdminControllerMixin
 from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post, task
@@ -97,7 +98,7 @@ class WebhookControllerMeta(type):
         return type.__call__(cls, sender, app, *args, **kw)
 
 
-class WebhookController(BaseController):
+class WebhookController(BaseController, AdminControllerMixin):
     __metaclass__ = WebhookControllerMeta
     create_form = WebhookCreateForm
     edit_form = WebhookEditForm

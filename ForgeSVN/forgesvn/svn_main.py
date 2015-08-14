@@ -33,7 +33,7 @@ from allura.controllers import BaseController
 from allura.controllers.repository import RepoRootController
 from allura.lib.decorators import require_post
 from allura.lib.repository import RepositoryApp, RepoAdminController
-from allura.app import SitemapEntry, ConfigOption
+from allura.app import SitemapEntry, ConfigOption, AdminControllerMixin
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura import model as M
@@ -144,7 +144,7 @@ class SVNRepoAdminController(RepoAdminController):
             flash("Invalid external checkout URL: %s" % c.form_errors['external_checkout_url'], "error")
 
 
-class SVNImportController(BaseController):
+class SVNImportController(BaseController, AdminControllerMixin):
     import_form = widgets.ImportForm()
 
     def __init__(self, app):

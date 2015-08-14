@@ -46,7 +46,13 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
-from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
+from allura.app import (
+    Application,
+    SitemapEntry,
+    DefaultAdminController,
+    AdminControllerMixin,
+    ConfigOption,
+)
 from allura.lib.search import search_artifact, SearchError
 from allura.lib.solr import escape_solr_arg
 from allura.lib.decorators import require_post
@@ -1104,7 +1110,7 @@ class RootController(BaseController, FeedController):
         }
 
 
-class BinController(BaseController):
+class BinController(BaseController, AdminControllerMixin):
 
     def __init__(self, summary=None, app=None):
         if summary is not None:
@@ -1640,7 +1646,6 @@ class TrackerAdminController(DefaultAdminController):
     @expose('jinja:forgetracker:templates/tracker/admin_fields.html')
     def fields(self, **kw):
         c.form = W.field_admin
-        c.app = self.app
         columns = dict((column, get_label(column))
                        for column in self.app.globals['show_in_search'].keys())
         return dict(app=self.app, globals=self.app.globals, columns=columns)
