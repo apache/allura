@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "properties": {
+    "topic": {
+      "id": "topic",
+      "type": "object",
+      "properties": {
+        "_id": {
+          "id": "_id",
+          "type": "string"
+        },
+        "posts": {
+          "id": "posts",
+          "type": "array",
+          "items": {
+            "id": "1",
+            "type": "object",
+            "properties": {
+              "text": {
+                "id": "text",
+                "type": "string"
+              },
+              "attachments": {
+                "id": "attachments",
+                "type": "array",
+                "items": {}
+              },
+              "author": {
+                "id": "author",
+                "type": "string"
+              },
+              "timestamp": {
+                "id": "timestamp",
+                "type": "string"
+              },
+              "last_edited": {
+                "id": "last_edited",
+                "type": "null"
+              },
+              "slug": {
+                "id": "slug",
+                "type": "string"
+              },
+              "subject": {
+                "id": "subject",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "discussion_id": {
+          "id": "discussion_id",
+          "type": "string"
+        },
+        "subject": {
+          "id": "subject",
+          "type": "string"
+        }
+      }
+    },
+    "count": {
+      "id": "count",
+      "type": "integer"
+    },
+    "limit": {
+      "id": "limit",
+      "type": "integer"
+    },
+    "page": {
+      "id": "page",
+      "type": "integer"
+    }
+  }
+}

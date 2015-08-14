@@ -15,6 +15,10 @@ baseUriParameters:
     example: "forge-allura.apache.org"
     default: "forge-allura.apache.org"
 
+documentation:
+  - title: Api Overview
+    content: !include docs.md
+
 /{neighborhood}:
     description: |
       Neighborhoods are groups of logically related projects, which have the same default options.
@@ -341,9 +345,8 @@ baseUriParameters:
             Represents a forum within a Discussion tool.
           type: {
             generic: {
-              # FIXME
-              example: !include examples/page.json,
-              schema: !include schemas/page.json
+              example: !include examples/forum.json,
+              schema: !include schemas/forum.json
             }
           }
           displayName: forum

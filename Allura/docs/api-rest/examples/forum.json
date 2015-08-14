@@ -1,0 +1,32 @@
+{
+  "topic": {
+    "_id": "a7528751",
+    "posts": [
+      {
+        "text": "How to fix anything!",
+        "attachments": [
+        ],
+        "author": "root",
+        "timestamp": "2015-07-20 16:36:18.019000",
+        "last_edited": null,
+        "slug": "c920",
+        "subject": "Tech Support"
+      },
+      {
+        "text": "fdas",
+        "attachments": [
+        ],
+        "author": "hs2",
+        "timestamp": "2015-07-22 15:41:58.522000",
+        "last_edited": null,
+        "slug": "b8fa",
+        "subject": "Tech Support"
+      }
+    ],
+    "discussion_id": "5568f6684d212236d1eaed07",
+    "subject": "Tech Support"
+  },
+  "count": 2,
+  "limit": 25,
+  "page": 0
+}
