@@ -454,7 +454,7 @@ class GitImplementation(M.RepositoryImplementation):
                     # merge commits don't have any --name-status output
                     if len(commit_lines) > 1:
                         name_stat_parts = commit_lines[1].split(' ')
-                        if name_stat_parts[0] in ['R100', 'R096']:
+                        if name_stat_parts[0] == 'R100':
                             renamed['from'] = name_stat_parts[1]
                             renamed['to'] = name_stat_parts[2]
                     yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
