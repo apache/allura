@@ -78,6 +78,9 @@ nose==1.3.4
 pyflakes==0.8.1
 WebTest==1.4.0
 testfixtures==3.0.0
+pylint==1.4.4
+astroid==1.3.8
+logilab-common==1.0.2
 q==2.3
 WebError==0.10.3
 -e git://github.com/brondsem/sphinx-argparse.git#egg=sphinx-argparse   # pending merge requests
