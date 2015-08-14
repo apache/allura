@@ -103,3 +103,7 @@ def test_no_prints():
 def test_no_tabs():
     if run(find_py + " | xargs grep '	' ") not in [1, 123]:
         raise Exception('These should not use tab chars')
+
+def test_linters():
+    if run(find_py + ' | xargs pylint -E --disable=all --enable=exposed-api-needs-kwargs --load-plugins alluratest.pylint_checkers') != 0:
+        raise Exception('Custom Allura pylint errors found.')
