@@ -204,7 +204,7 @@ class ShortURLAdminController(DefaultAdminController):
 
     @without_trailing_slash
     @expose('json:')
-    def remove(self, shorturl):
+    def remove(self, shorturl, **kw):
         require_access(self.app, 'update')
         ShortUrl.query.remove({
             'app_config_id': self.app.config._id,

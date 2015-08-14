@@ -1093,7 +1093,7 @@ class RootController(BaseController, FeedController):
     @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
-    def subscribe(self, subscribe=None, unsubscribe=None):
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:
             M.Mailbox.subscribe(type='direct')
         elif unsubscribe:
@@ -1418,7 +1418,7 @@ class TicketController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def delete(self):
+    def delete(self, **kw):
         require_access(self.ticket, 'delete')
         M.Shortlink.query.remove(dict(ref_id=self.ticket.index_id()))
         self.ticket.deleted = True
@@ -1431,7 +1431,7 @@ class TicketController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def undelete(self):
+    def undelete(self, **kw):
         require_access(self.ticket, 'delete')
         self.ticket.deleted = False
         self.ticket.summary = re.sub(
@@ -1527,7 +1527,7 @@ class TicketController(BaseController, FeedController):
     @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
-    def subscribe(self, subscribe=None, unsubscribe=None):
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:
             self.ticket.subscribe(type='direct')
         elif unsubscribe:
@@ -1540,7 +1540,7 @@ class TicketController(BaseController, FeedController):
 
     @expose('json:')
     @require_post()
-    def vote(self, vote):
+    def vote(self, vote, **kw):
         require_authenticated()
         require_access(self.ticket, 'post')
         status = 'ok'

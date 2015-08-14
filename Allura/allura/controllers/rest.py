@@ -265,7 +265,7 @@ def rest_has_access(obj, user, perm):
 
 class AppRestControllerMixin(object):
     @expose('json:')
-    def has_access(self, user, perm):
+    def has_access(self, user, perm, **kw):
         return rest_has_access(c.app, user, perm)
 
 
@@ -275,7 +275,7 @@ class NeighborhoodRestController(object):
         self._neighborhood = neighborhood
 
     @expose('json:')
-    def has_access(self, user, perm):
+    def has_access(self, user, perm, **kw):
         return rest_has_access(self._neighborhood, user, perm)
 
     @expose()
@@ -335,5 +335,5 @@ class ProjectRestController(object):
         return c.project.__json__()
 
     @expose('json:')
-    def has_access(self, user, perm):
+    def has_access(self, user, perm, **kw):
         return rest_has_access(c.project, user, perm)

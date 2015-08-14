@@ -165,7 +165,7 @@ class WebhookController(BaseController):
 
     @expose('json:')
     @require_post()
-    def delete(self, webhook):
+    def delete(self, webhook, **kw):
         form = self.edit_form(self.sender, self.app)
         try:
             wh = form.fields['webhook'].to_python(webhook)

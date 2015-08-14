@@ -199,7 +199,7 @@ class NeighborhoodController(object):
         return {}
 
     @expose('json:')
-    def verify_phone(self, number):
+    def verify_phone(self, number, **kw):
         p = plugin.ProjectRegistrationProvider.get()
         result = p.verify_phone(c.user, number)
         request_id = result.pop('request_id', None)
@@ -214,7 +214,7 @@ class NeighborhoodController(object):
         return result
 
     @expose('json:')
-    def check_phone_verification(self, pin):
+    def check_phone_verification(self, pin, **kw):
         p = plugin.ProjectRegistrationProvider.get()
         request_id = session.get('phone_verification.request_id')
         number_hash = session.get('phone_verification.number_hash')
@@ -225,7 +225,7 @@ class NeighborhoodController(object):
         return res
 
     @expose('json:')
-    def suggest_name(self, project_name=''):
+    def suggest_name(self, project_name='', **kw):
         provider = plugin.ProjectRegistrationProvider.get()
         return dict(suggested_name=provider.suggest_name(project_name,
                                                          self.neighborhood))
@@ -295,7 +295,7 @@ class NeighborhoodController(object):
         return icon.serve()
 
     @expose('json:')
-    def users(self):
+    def users(self, **kw):
         p = self.neighborhood.neighborhood_project
         return {
             'options': [{
@@ -380,7 +380,7 @@ class ProjectController(FeedController):
         self._list = ToolListController()
 
     @expose('json:')
-    def _nav(self):
+    def _nav(self, **kw):
         menu = []
         for s in c.project.grouped_navbar_entries():
             entry = dict(name=s.label, url=s.url,
@@ -480,7 +480,7 @@ class ProjectController(FeedController):
             redirect(g.forge_static('images/user.png'))
 
     @expose('json:')
-    def user_search(self, term=''):
+    def user_search(self, term='', **kw):
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
         named_roles = RoleCache(
@@ -501,7 +501,7 @@ class ProjectController(FeedController):
                 for u in users])
 
     @expose('json:')
-    def users(self):
+    def users(self, **kw):
         users = c.project.users()
         if c.user and c.user in users:
             users.remove(c.user)
@@ -604,7 +604,7 @@ class NeighborhoodAdminController(object):
         return dict(neighborhood=self.neighborhood)
 
     @expose('json:')
-    def project_search(self, term=''):
+    def project_search(self, term='', **kw):
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
         project_regex = re.compile('(?i)%s' % re.escape(term))

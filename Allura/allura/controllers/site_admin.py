@@ -434,7 +434,7 @@ class TaskManagerController(object):
         redirect('../view/%s' % task._id)
 
     @expose('json:')
-    def task_doc(self, task_name):
+    def task_doc(self, task_name, **kw):
         """Return a task's docstring"""
         error, doc = None, None
         try:
