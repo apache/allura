@@ -657,6 +657,13 @@ class Application(object):
                     'data-mount-point': self.config.options.mount_point,
                 })
 
+    def admin_menu_widgets(self):
+        """Return widgets needed by the admin menu of this Application.
+
+        :return: a list of widgets
+        """
+        return []
+
     def handle_message(self, topic, message):
         """Handle incoming email msgs addressed to this tool.
         Default is a no-op.
