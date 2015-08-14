@@ -469,15 +469,15 @@ class MergeRequestController(object):
         redirect(self.req.url())
 
     @expose('json:')
-    def merge_task_status(self):
+    def merge_task_status(self, **kw):
         return {'status': self.req.merge_task_status()}
 
     @expose('json:')
-    def can_merge_task_status(self):
+    def can_merge_task_status(self, **kw):
         return {'status': self.req.can_merge_task_status()}
 
     @expose('json:')
-    def can_merge_result(self):
+    def can_merge_result(self, **kw):
         """Return result from the cache. Used by js, after task was completed."""
         return {'can_merge': self.req.can_merge()}
 

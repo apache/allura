@@ -747,7 +747,7 @@ class DefaultAdminController(BaseController):
 
     @expose('json:')
     @require_post()
-    def block_user(self, username, perm, reason=None):
+    def block_user(self, username, perm, reason=None, **kw):
         if not username or not perm:
             return dict(error='Enter username')
         user = model.User.by_username(username)
@@ -764,7 +764,7 @@ class DefaultAdminController(BaseController):
                    perm=V.UnicodeString()))
     @expose('json:')
     @require_post()
-    def unblock_user(self, user_id=None, perm=None):
+    def unblock_user(self, user_id=None, perm=None, **kw):
         try:
             user_id = map(ObjectId, user_id)
         except InvalidId:

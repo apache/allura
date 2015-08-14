@@ -587,7 +587,7 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def delete(self):
+    def delete(self, **kw):
         require_access(self.page, 'delete')
         self.page.delete()
         return dict(location='../' + self.page.title + '/?deleted=True')
@@ -595,7 +595,7 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def undelete(self):
+    def undelete(self, **kw):
         require_access(self.page, 'delete')
         self.page.deleted = False
         M.Shortlink.from_artifact(self.page)
