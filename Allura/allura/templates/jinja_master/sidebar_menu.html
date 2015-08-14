@@ -66,6 +66,11 @@
       </ul>
       {% do ul_active.append(False) %}
     {% endif %}
+    {% if c.app and c.app.sidebar_menu_widgets() %}
+      {% for w in c.app.sidebar_menu_widgets() %}
+        {{ w.display() }}
+      {% endfor %}
+    {% endif %}
     {% if c.app and c.app.sidebar_menu_js() %}
       <script>
         {{c.app.sidebar_menu_js()|safe}}

@@ -17,9 +17,11 @@
 
 import ew.jinja2_ew as ew
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.forms import ForgeForm
 
 
 class CreatePageWidget(ffw.Lightbox):
+    content_template='forgewiki:templates/wiki/create_page_widget.html'
 
     def resources(self):
         for r in super(CreatePageWidget, self).resources():
@@ -31,3 +33,17 @@ class CreatePageWidget(ffw.Lightbox):
                 return false;
             });
         });''')
+
+
+class WikiSubscribeForm(ForgeForm):
+    template='jinja:forgewiki:templates/wiki/wiki_subscribe_form.html'
+    defaults = dict(ForgeForm.defaults, subscribed=False)
+
+    def resources(self):
+        for r in super(WikiSubscribeForm, self).resources():
+            yield r
+        yield ew.JSScript("""
+            $('a[href$="#toggle-subscribe"]').click(function() {
+                $('#wiki_subscribe_form').submit();
+                return false;
+            })""")

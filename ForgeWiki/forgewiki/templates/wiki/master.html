@@ -34,15 +34,6 @@
 {% endblock %}
 
 {% block extra_js %}
-  {{c.create_page_lightbox.display(content='''
-    <h1>Add a Wiki Page</h1>
-    <form class="grid-10">
-        <label class="grid-2">Name</label>
-        <div class="grid-7"><input type="text" name="name"></div>
-        <label class="grid-2">&nbsp;</label>
-        <div class="grid-7"><input type="submit" value="Create page"></div>
-    </form>
-  ''')}}
     <script type="text/javascript">
         $('.post-link').click(function () {
             var version = $(this).data("dialog-id");
