@@ -88,4 +88,18 @@ tr.rev div.markdown_content p {
     height: 320px;
 }
 
-#sidebar-admin-header { cursor: pointer; }
+/* give some space after sidebar admin link (except for its own section which starts with <div> instead of <ul>) */
+#sidebar-admin-header ~ ul:first-of-type {
+    margin-top: 20px;
+}
+/* expand/collapse indicator */
+#sidebar-admin-header h3::before {
+    content: '▸ ';
+}
+#sidebar-admin-header.expanded h3::before {
+    content: '▾ ';
+}
+#sidebar-admin-header h3 {
+    padding-left: 2px;
+}
+
