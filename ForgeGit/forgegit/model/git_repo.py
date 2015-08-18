@@ -647,18 +647,18 @@ class GitImplementation(M.RepositoryImplementation):
 
     def paged_diffs(self, commit_id, start=0, end=None):
         result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': []}
+        cmd_args = ['--no-commit-id',
+                    '--name-status',
+                    '--no-abbrev',
+                    '--root',
+                    # show tree entry itself as well as subtrees (Commit.added_paths relies on this)
+                    '-t',
+                    '-z'  # don't escape filenames and use \x00 as fields delimiter
+                    ]
+        if asbool(tg.config.get('scm.commits.detect_copies', False)):
+            cmd_args += ['-M', '-C']
 
-        cmd_output = self._git.git.diff_tree(
-            '--no-commit-id',
-            '-M',  # detect renames
-            '-C',  # detect copies
-            '--name-status',
-            '--no-abbrev',
-            '--root',
-            # show tree entry itself as well as subtrees (Commit.added_paths relies on this)
-            '-t',
-            '-z',  # don't escape filenames and use \x00 as fields delimiter
-            commit_id).split('\x00')[:-1]
+        cmd_output = self._git.git.diff_tree(commit_id, *cmd_args).split('\x00')[:-1]  # don't escape filenames and use \x00 as fields delimiter
 
         ''' cmd_output will be like:
         [
@@ -668,7 +668,7 @@ class GitImplementation(M.RepositoryImplementation):
         'another filename',
         'M',
         'po',
-        'R100',
+        'R100',  # <-- These next three lines would only show up with 'detect_copies' enabled
         'po/sr.po',
         'po/sr_Latn.po',
         ]
