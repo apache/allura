@@ -655,7 +655,7 @@ class GitImplementation(M.RepositoryImplementation):
                     '-t',
                     '-z'  # don't escape filenames and use \x00 as fields delimiter
                     ]
-        if asbool(tg.config.get('scm.commits.detect_copies', False)):
+        if asbool(tg.config.get('scm.commit.git.detect_copies', False)):
             cmd_args += ['-M', '-C']
 
         cmd_output = self._git.git.diff_tree(commit_id, *cmd_args).split('\x00')[:-1]  # don't escape filenames and use \x00 as fields delimiter
@@ -687,7 +687,7 @@ class GitImplementation(M.RepositoryImplementation):
                 }))
                 x += 3
             else:
-                files.append((status, h.really_unicode(cmd_output[x+1])))
+                files.append((status, h.really_unicode(cmd_output[x + 1])))
                 x += 2
 
         for status, name in files[start:end]:
@@ -701,6 +701,7 @@ class GitImplementation(M.RepositoryImplementation):
             change_list.append(name)
 
         result['total'] = len(files)
+
         return result
 
     @contextmanager

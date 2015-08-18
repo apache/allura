@@ -650,6 +650,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tempfile.mkdtemp.return_value,
             ignore_errors=True)
 
+    @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'false'})
     @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
     def test_paged_diffs(self):
         # setup
@@ -720,6 +721,64 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'renamed': [],
             'changed': [],
             'total': 2,
+        }
+        assert_equals(diffs, expected)
+        diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
+        expected = {
+            'added': [u'README.copy'],
+            'removed': [],
+            'copied': [],
+            'renamed': [],
+            'changed': [u'README'],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+        diffs = repo.paged_diffs('3cb2bbcd7997f89060a14fe8b1a363f01883087f')  # Test rename
+        expected = {
+            'added': [u'README'],
+            'removed': [u'README-copy.md'],
+            'copied': [],
+            'renamed': [],
+            'changed': [],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+
+    @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'true'})
+    @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
+    def test_paged_diffs_with_detect_copies(self):
+        # setup
+        h.set_context('test', 'src-weird', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        repo = GM.Repository(
+            name='weird-chars.git',
+            fs_path=repo_dir,
+            url_path='/src-weird/',
+            tool='git',
+            status='creating')
+        repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+        diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
+        expected = {
+            'added': [],
+            'removed': [],
+            'copied': [{'new': u'README.copy', 'old': u'README', 'ratio': 1.0}],
+            'renamed': [],
+            'changed': [u'README'],
+            'total': 2,
+        }
+        assert_equals(diffs, expected)
+        diffs = repo.paged_diffs('3cb2bbcd7997f89060a14fe8b1a363f01883087f')  # Test rename
+        expected = {
+            'added': [],
+            'removed': [],
+            'copied': [],
+            'renamed': [{'new': u'README', 'old': u'README-copy.md', 'ratio': 1.0}],
+            'changed': [],
+            'total': 1,
         }
         assert_equals(diffs, expected)
 
