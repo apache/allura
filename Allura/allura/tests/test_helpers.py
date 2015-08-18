@@ -449,6 +449,17 @@ class TestUrlOpen(TestCase):
         self.assertEqual(urlopen.call_count, 4)
 
     @patch('allura.lib.helpers.urllib2.urlopen')
+    def test_socket_reset(self, urlopen):
+        import socket
+        import errno
+
+        def side_effect(url, timeout=None):
+            raise socket.error(errno.ECONNRESET, 'Connection reset by peer')
+        urlopen.side_effect = side_effect
+        self.assertRaises(socket.error, h.urlopen, 'myurl')
+        self.assertEqual(urlopen.call_count, 4)
+
+    @patch('allura.lib.helpers.urllib2.urlopen')
     def test_handled_http_error(self, urlopen):
         from urllib2 import HTTPError
 
