@@ -851,6 +851,7 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
         assert "2 lines (1 with data), 10 Bytes" in resp
 
+    @patch.dict(h.tg.config, {'scm.commit.git.detect_copies': 'true'})
     def test_commit(self):
         # get the rename commit itself
         resp = self.app.get('/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/')
