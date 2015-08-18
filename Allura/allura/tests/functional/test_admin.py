@@ -324,6 +324,7 @@ class TestProjectAdmin(TestController):
                 tag for tag in r.html.findAll('input')
                 if (
                     tag.get('type') == 'hidden' and
+                    tag.get('name') and
                     tag['name'].startswith('card-') and
                     tag['name'].endswith('.id'))]
             assert len(cards) == len(app.permissions), cards
