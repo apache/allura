@@ -47,6 +47,8 @@ class NexmoPhoneService(PhoneService):
             'api_key': self.api_key,
             'api_secret': self.api_secret,
         }
+        if self.config.get('phone.lang'):
+            common['lg'] = self.config['phone.lang']
         return dict(params, **common)
 
     def error(self, code=None, msg=None, number=''):
