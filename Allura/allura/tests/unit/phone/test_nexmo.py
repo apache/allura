@@ -40,6 +40,11 @@ class TestPhoneService(object):
                     'api_secret': 'test-api-secret'}
         assert_equal(expected, res)
 
+        self.phone.config['phone.lang'] = 'it-it'
+        res = self.phone.add_common_params(params)
+        expected['lg'] = 'it-it'
+        assert_equal(expected, res)
+
     def test_error(self):
         res = self.phone.error()
         expected = {'status': 'error',
