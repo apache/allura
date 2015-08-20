@@ -285,8 +285,12 @@ that this documentation also covers some SourceForge features that are not part 
 Public API Documentation
 ========================
 
-Allura's web api is currently documented at https://sourceforge.net/p/forge/documentation/Allura%20API/
+All url endpoints are prefixed with /rest/ and the path to the project and tool.
 
+For example, in order to access a wiki installed in the 'test' project with the mount point 'docs' the API endpoint would be /rest/p/test/docs.
+
+`Explore Allura's REST API documentation here. <https://anypoint.mulesoft.com/apiplatform/forge-allura/#/portals/organizations/86c00a85-31e6-4302-b36d-049ca5d042fd/apis/32370/versions/33732>`_
+You can also try the API live there.
 
 Client Scripts
 ==============

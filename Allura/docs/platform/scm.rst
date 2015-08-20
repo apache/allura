@@ -103,8 +103,8 @@ Last Commit Logic
 Determining which commit was the last to touch a given set of files or
 directories can be complicated, depending on the specific SCM tool.
 Git and Mercurial require manually walking up the commit history to
-discover this information, while SVN can return it all from a singlle
-`info2` command (though the SVN call will be signficantly slower than
+discover this information, while SVN can return it all from a single
+`info2` command (though the SVN call will be significantly slower than
 any individual call to Git or Mercurial).  Because this can sometimes
 be costly to generate, it is cached via the `allura.model.repository.LastCommit`
 model.  This will generate the data on demand by calling the underlying
