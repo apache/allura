@@ -23,7 +23,7 @@ import allura
 import json
 
 import PIL
-from nose.tools import assert_true, assert_equal, assert_in, assert_not_equal
+from nose.tools import assert_true, assert_equal, assert_in, assert_not_equal, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 from tg import config
@@ -823,10 +823,16 @@ class TestRootController(TestController):
     def test_sidebar_admin_menu(self):
         r = self.app.get('/p/test/wiki/Home/')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
+        assert_equal(menu.attrMap['class'], 'hidden')  # (not expanded)
         menu = [li.find('span').getText() for li in menu.findAll('li')]
         assert_equal(
             menu,
             ['Set Home', 'Permissions', 'Options', 'Label', 'Delete'])
+
+    def test_sidebar_admin_menu_is_expanded(self):
+        r = self.app.get('/p/test/admin/wiki/permissions')
+        menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
+        assert_not_in('hidden', menu.attrMap.get('class', ''))  # expanded
 
     def test_sidebar_admin_menu_invisible_to_not_admin(self):
         def assert_invisible_for(username):
