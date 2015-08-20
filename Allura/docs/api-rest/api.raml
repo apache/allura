@@ -16,7 +16,7 @@ baseUriParameters:
     default: "forge-allura.apache.org"
 
 documentation:
-  - title: Api Overview
+  - title: API Overview
     content: !include docs.md
 
 /{neighborhood}:
@@ -652,7 +652,7 @@ documentation:
 
 /u/{username}:
     description: |
-      Represents a user (returns a project-like response).
+      Represents a user.  This returns a project-like response, since users all automatically have a personal project.  Like a project, any tool within a user-project is available through the API as well at /u/{username}/{tool}
 
       Most often you'll use the /profile suffix to return user data.
     type: {
