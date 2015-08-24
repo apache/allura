@@ -571,7 +571,9 @@ class GitImplementation(M.RepositoryImplementation):
 
         if threshold is not None and time_taken > threshold:
             setattr(self._repo, cache_name, refs)
-            session(self._repo).flush(self._repo)
+            sess = session(self._repo)
+            if sess:
+                sess.flush(self._repo)
 
         return refs
 
