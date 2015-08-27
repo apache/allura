@@ -172,103 +172,6 @@ documentation:
           description: |
             Get a list of tickets
 
-        /_discuss/thread/{threadId}:
-          uriParameters:
-           threadId:
-             displayName: Thread ID
-             type: string
-             example: f78b98a0
-
-          get:
-            description: |
-              returns summary information about a thread, including the posts in a thread
-            is: [ bearerAuth ]
-          /{slug}:
-            uriParameters:
-             slug:
-               displayName: Slug
-               type: string
-               example: 9133
-            get:
-              description: |
-                returns detailed information about a post
-              is: [ bearerAuth ]
-            /reply:
-              description: |
-                create a threaded reply to the given post
-              post:
-                is: [ bearerAuth ]
-                body:
-                  application/x-www-form-urlencoded:
-                    formParameters:
-                      text:
-                        description: the text of the reply
-                        example: |
-                          I *agree* with you.
-                        required: true
-                        type: string
-          /new:
-            description: |
-              create a post in the given thread
-            post:
-              is: [ bearerAuth ]
-              body:
-                application/x-www-form-urlencoded:
-                  formParameters:
-                    text:
-                      description: The text of the new post
-                      example: |
-                        This is a new post!
-                      required: true
-                      type: string
-
-        /search:
-          type: {
-            searchableCollection: {
-            queryParamName: q,
-            schema: !include schemas/searchedTickets.json,
-            example: !include examples/searchedTickets.json
-            }
-          }
-          is: [ pageable]
-
-        /new:
-          description: |
-            Creates a new ticket.
-          post:
-            is: [ bearerAuth ]
-            body:
-              application/x-www-form-urlencoded:
-                formParameters:
-                  access_token:
-                    description: "The access token provided by the authentication application"
-                    required: true
-                    type: string
-                  ticket_form.summary:
-                    description: Ticket title
-                    type: string
-                    required: false
-                  ticket_form.description:
-                    description: ticket description
-                    type: string
-                    required: false
-                  ticket_form.assigned_to::
-                    type: string
-                    required: false
-                    description: username of ticket assignee
-                  ticket_form.labels:
-                    type: string
-                    required: false
-                    description:  comma-separated list of ticket labels
-                  ticket_form.attachment:
-                    type: file
-                    description:  (optional) attachment
-                    required: false
-                  ticket_form.custom field name:
-                    description:  custom field value
-                    type: string
-                    required: false
-
         /{ticketNumber}:
           type: {
             generic: {
@@ -321,6 +224,103 @@ documentation:
                       description:  custom field value
                       type: string
                       required: false
+
+        /search:
+          type: {
+            searchableCollection: {
+            queryParamName: q,
+            schema: !include schemas/searchedTickets.json,
+            example: !include examples/searchedTickets.json
+            }
+          }
+          is: [ pageable]
+
+        /new:
+          description: |
+            Creates a new ticket.
+          post:
+            is: [ bearerAuth ]
+            body:
+              application/x-www-form-urlencoded:
+                formParameters:
+                  access_token:
+                    description: "The access token provided by the authentication application"
+                    required: true
+                    type: string
+                  ticket_form.summary:
+                    description: Ticket title
+                    type: string
+                    required: false
+                  ticket_form.description:
+                    description: ticket description
+                    type: string
+                    required: false
+                  ticket_form.assigned_to::
+                    type: string
+                    required: false
+                    description: username of ticket assignee
+                  ticket_form.labels:
+                    type: string
+                    required: false
+                    description:  comma-separated list of ticket labels
+                  ticket_form.attachment:
+                    type: file
+                    description:  (optional) attachment
+                    required: false
+                  ticket_form.custom field name:
+                    description:  custom field value
+                    type: string
+                    required: false
+
+        /_discuss/thread/{threadId}:
+          uriParameters:
+           threadId:
+             displayName: Thread ID
+             type: string
+             example: f78b98a0
+
+          get:
+            description: |
+              returns summary information about a thread, including the posts in a thread
+            is: [ bearerAuth ]
+          /{slug}:
+            uriParameters:
+             slug:
+               displayName: Slug
+               type: string
+               example: 9133
+            get:
+              description: |
+                returns detailed information about a post
+              is: [ bearerAuth ]
+            /reply:
+              description: |
+                create a threaded reply to the given post
+              post:
+                is: [ bearerAuth ]
+                body:
+                  application/x-www-form-urlencoded:
+                    formParameters:
+                      text:
+                        description: the text of the reply
+                        example: |
+                          I *agree* with you.
+                        required: true
+                        type: string
+          /new:
+            description: |
+              create a post in the given thread
+            post:
+              is: [ bearerAuth ]
+              body:
+                application/x-www-form-urlencoded:
+                  formParameters:
+                    text:
+                      description: The text of the new post
+                      example: |
+                        This is a new post!
+                      required: true
+                      type: string
 
         /has_access:
           type: permission
