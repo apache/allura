@@ -228,9 +228,11 @@ documentation:
         /search:
           type: {
             searchableCollection: {
-            queryParamName: q,
-            schema: !include schemas/searchedTickets.json,
-            example: !include examples/searchedTickets.json
+              queryParamName: q,
+              queryParamExample: 'example',
+              queryRequired: true,
+              schema: !include schemas/searchedTickets.json,
+              example: !include examples/searchedTickets.json
             }
           }
           is: [ pageable]
