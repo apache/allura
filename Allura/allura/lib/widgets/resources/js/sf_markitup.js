@@ -37,14 +37,16 @@ $(window).load(function() {
                     tool = {
                       name: tool.name,
                       action: show_help,
-                      className: tool.className
+                      className: tool.className,
+                      title: 'Formatting Help'
                     };
                     break;
                   case 'preview':
                     tool = {
                       name: tool.name,
                       action: show_preview,
-                      className: tool.className
+                      className: tool.className,
+                      title: 'Preview'
                     };
                     break;
                 }
