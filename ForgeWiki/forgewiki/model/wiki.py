@@ -245,6 +245,11 @@ class Page(VersionedArtifact, ActivityObject):
         }).all()
 
     def delete(self):
+        subject = '%s removed page %s' % (
+            context.user.username, self.title)
+        description = self.text
+        Notification.post(
+            artifact=self, topic='metadata', text=description, subject=subject)
         Shortlink.query.remove(dict(ref_id=self.index_id()))
         self.deleted = True
         suffix = " {:%Y-%m-%d %H:%M:%S.%f}".format(datetime.utcnow())
