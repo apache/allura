@@ -396,6 +396,8 @@ class Globals(object):
 
     def highlight(self, text, lexer=None, filename=None):
         if not text:
+            if lexer == 'diff':
+                return h.html.literal('<em>File contents unchanged</em>')
             return h.html.literal('<em>Empty file</em>')
         # Don't use line numbers for diff highlight's, as per [#1484]
         if lexer == 'diff':
