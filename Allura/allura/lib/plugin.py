@@ -819,11 +819,9 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname.replace('u/', '', 1)
         else:
             check_shortname = shortname
-        self.shortname_validator.to_python(
-            check_shortname, neighborhood=neighborhood)
+        self.shortname_validator.to_python(check_shortname, neighborhood=neighborhood)
 
-        p = M.Project.query.get(
-            shortname=shortname, neighborhood_id=neighborhood._id)
+        p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict(
                 '%s already exists in nbhd %s' % (shortname, neighborhood._id))

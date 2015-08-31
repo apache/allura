@@ -287,16 +287,15 @@ class ProjectImporter(BaseController):
         message indicating that some data will not be available immediately.
         """
         try:
-            c.project = self.neighborhood.register_project(
-                kw['project_shortname'],
-                project_name=kw['project_name'])
+            with h.push_config(config, **{'project.verify_phone': 'false'}):
+                c.project = self.neighborhood.register_project(
+                    kw['project_shortname'],
+                    project_name=kw['project_name'])
         except exceptions.ProjectOverlimitError:
-            flash(
-                "You have exceeded the maximum number of projects you are allowed to create", 'error')
+            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
             redirect('.')
         except exceptions.ProjectRatelimitError:
-            flash(
-                "Project creation rate limit exceeded.  Please try again later.", 'error')
+            flash("Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('.')
         except Exception:
             log.error('error registering project: %s',
