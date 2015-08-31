@@ -20,14 +20,14 @@
 {% do g.register_forge_css('css/hilite.css') %}
 {% do g.register_app_css('css/tracker.css') %}
 
-{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Saved Search Bins{% endblock %}
+{% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Saved Searches{% endblock %}
 
 {% block head %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
 {% endblock %}
 
-{% block header %}Saved Search Bins{% endblock %}
+{% block header %}Saved Searches{% endblock %}
 
 {% block content %}
   <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/bins/update_bins" method="post" class="update_bins">
@@ -41,7 +41,7 @@
       </thead>
       <tbody class="bin-list">
         {% if not bins %}
-          <tr><td colspan="3">No saved search bins have been created yet.</td></tr>
+          <tr><td colspan="3">No saved searches have been created yet.</td></tr>
         {% endif %}
         {% for bin in bins %}
           <tr{% if loop.index0 % 2 == 0 %} class="even"{% endif %}>
@@ -77,7 +77,7 @@
         </tr>
       </tbody>
     </table>
-    <div class="grid-16"><a href="#" class="btn add_bin grid-3" {% if errors %}style="display:none"{% endif %}>Add Bin</a></div>
+    <div class="grid-16"><a href="#" class="btn add_bin grid-3" {% if errors %}style="display:none"{% endif %}>Add Search</a></div>
     <div class="grid-16 save_controls" {% if not errors %}style="display:none"{% endif %}>
       <input type="submit" value="Save">
       {% if errors %}

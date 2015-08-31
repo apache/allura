@@ -16,14 +16,14 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}       
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="post" action="{{action}}">
   {% for field in hidden_fields -%}
     {% set ctx=widget.context_for(field) -%}
     {{field.display(**ctx)}}
   {%- endfor %}
   <div class="grid-7">
-    <label class="simple">Bin Name: </label>
+    <label class="simple">Saved Search Name: </label>
     <input type="text" name="summary" value="{{h.really_unicode(value.summary)}}"/>
   </div>
   <div class="grid-7">

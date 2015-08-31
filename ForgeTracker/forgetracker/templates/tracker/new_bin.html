@@ -18,9 +18,9 @@
 -#}
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / New bin for {{q}}{% endblock %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / New search for {{q}}{% endblock %}
 
-{% block header %}New bin for {{q}}{% endblock %}
+{% block header %}New search for {{q}}{% endblock %}
 
 {% block content %}
 {{c.bin_form.display(value=dict(summary=q,terms=q), action='save_bin')}}
