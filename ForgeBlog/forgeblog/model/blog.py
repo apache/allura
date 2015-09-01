@@ -253,14 +253,15 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 description = self.text
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
-            elif v1.title != v2.title:
-                activity('renamed', self)
-                subject = '%s renamed post %s to %s' % (
-                    c.user.username, v1.title, v2.title)
-            else:
-                activity('modified', self)
-                subject = '%s modified post %s' % (
-                    c.user.username, self.title)
+            elif v2.state == 'published':
+                if v1.title != v2.title:
+                    activity('renamed', self)
+                    subject = '%s renamed post %s to %s' % (
+                        c.user.username, v1.title, v2.title)
+                else:
+                    activity('modified', self)
+                    subject = '%s modified post %s' % (
+                        c.user.username, self.title)
         else:
             description = self.text
             subject = '%s created post %s' % (
