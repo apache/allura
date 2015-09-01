@@ -28,31 +28,25 @@ $(window).load(function() {
             var $help_contents = $('div.markdown_help_contents', $container);
 
             // Override action for "preview" & "guide" tools
-            var toolbar = [];
-            for (var i in SimpleMDE.toolbar) {
-              var tool = SimpleMDE.toolbar[i];
-              if (tool !== null && typeof tool === 'object') {
-                switch (tool.name) {
-                  case 'guide':
-                    tool = {
-                      name: tool.name,
-                      action: show_help,
-                      className: tool.className,
-                      title: 'Formatting Help'
-                    };
-                    break;
-                  case 'preview':
-                    tool = {
-                      name: tool.name,
-                      action: show_preview,
-                      className: tool.className,
-                      title: 'Preview'
-                    };
-                    break;
-                }
+            var toolbar = [
+              "bold", "italic", "heading", "|",
+              "quote", "unordered-list", "ordered-list", "horizontal-rule", "|",
+              "link", "image", "|",
+              {
+                  name: 'preview',
+                  action: show_preview,
+                  className: 'fa fa-eye',
+                  title: 'Preview'
+              },
+              //"side-by-side",
+              "fullscreen",
+              tool = {
+                name: 'guide',
+                action: show_help,
+                className: 'fa fa-question-circle',
+                title: 'Formatting Help'
               }
-              toolbar.push(tool);
-            }
+            ];
 
             var editor = new SimpleMDE({
               element: $textarea[0],
@@ -100,23 +94,23 @@ $(window).load(function() {
                * but rendered text is fetched from the server (see the comment bellow)
                * https://github.com/NextStepWebs/simplemde-markdown-editor/blob/1.2.1/source%20files/markdownify.js#L218-L249
                */
-              var toolbar_div = document.getElementsByClassName('editor-toolbar')[0];
-              var toolbar = editor.toolbarElements.preview;
-              var parse = editor.constructor.markdown;
               var cm = editor.codemirror;
               var wrapper = cm.getWrapperElement();
+              var toolbar_div = wrapper.previousSibling;
+              var toolbar = editor.toolbarElements.preview;
+              var parse = editor.constructor.markdown;
               var preview = wrapper.lastChild;
-              if (!/editor-preview/.test(preview.className)) {
+              if(!/editor-preview/.test(preview.className)) {
                 preview = document.createElement('div');
                 preview.className = 'editor-preview';
                 wrapper.appendChild(preview);
               }
-              if (/editor-preview-active/.test(preview.className)) {
+              if(/editor-preview-active/.test(preview.className)) {
                 preview.className = preview.className.replace(
                   /\s*editor-preview-active\s*/g, ''
                 );
                 toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview*/g, '');
+                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
               } else {
                 /* When the preview button is clicked for the first time,
                  * give some time for the transition from editor.css to fire and the view to slide from right to left,
