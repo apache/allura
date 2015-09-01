@@ -72,6 +72,8 @@
       queryParameters:
         <<queryParamName>>:
           description: Return <<resourcePathName>> that have their <<queryParamName>> matching the given value
+          example: <<queryParamExample>>
+          required: <<queryRequired>>
       responses:
         200:
           body:
