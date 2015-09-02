@@ -58,6 +58,12 @@ $(window).load(function() {
               tabSize: 4,
               toolbar: toolbar,
               previewRender: previewRender,
+              parsingConfig: {
+                highlightFormatting: true,
+                allowAtxHeaderWithoutSpace: true,
+                strikethrough: false,
+                taskLists: false,
+              }
             });
             editor.render();
 
