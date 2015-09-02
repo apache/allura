@@ -71,3 +71,15 @@ span.arw.preview-active {
 .markdown_edit.preview-active .editor-toolbar.disabled-for-preview a {
   background-color: transparent;
 }
+
+.CodeMirror .CodeMirror-code .cm-comment {
+  font-family: monospace;
+  background: inherit;
+  color: #888;
+}
+.CodeMirror .CodeMirror-code .cm-link {
+  color: #33a;
+}
+.CodeMirror .CodeMirror-code .cm-url {
+  color: #33d;
+}
