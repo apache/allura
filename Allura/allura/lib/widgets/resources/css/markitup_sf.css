@@ -50,27 +50,6 @@
 .markdown_edit .editor-preview pre {
   font-family: monospace;
 }
-.markdown_edit .editor-preview-active {
-  background-color: transparent;
-  position: relative;
-  padding: 0;
-}
-.markdown_edit.preview-active {
-  background-color: transparent;
-}
-.markdown_edit.preview-active .CodeMirror:not(.CodeMirror-fullscreen),
-.markdown_edit.preview-active .editor-toolbar:not(.fullscreen) {
-  background-color: transparent;
-  border: 0;
-}
-.markdown_edit.preview-active .CodeMirror-scroll,
-.markdown_edit.preview-active .editor-statusbar,
-span.arw.preview-active {
-  display: none;
-}
-.markdown_edit.preview-active .editor-toolbar.disabled-for-preview a {
-  background-color: transparent;
-}
 
 .CodeMirror .CodeMirror-code .cm-comment {
   font-family: monospace;

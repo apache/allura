@@ -39,12 +39,7 @@ $(window).load(function() {
               },
               "horizontal-rule", "|",
               "link", "image", "|",
-              {
-                  name: 'preview',
-                  action: show_preview,
-                  className: 'fa fa-eye',
-                  title: 'Preview'
-              },
+              "preview",
               //"side-by-side",
               "fullscreen",
               tool = {
@@ -61,7 +56,8 @@ $(window).load(function() {
               spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
               indentWithTabs: false,
               tabSize: 4,
-              toolbar: toolbar
+              toolbar: toolbar,
+              previewRender: previewRender,
             });
             editor.render();
 
@@ -94,49 +90,7 @@ $(window).load(function() {
               $help_area.lightbox_me();
             }
 
-            function show_preview(editor) {
-              /*
-               * This is pretty much the same as original SimpleMDE.togglePreview,
-               * but rendered text is fetched from the server (see the comment bellow)
-               * https://github.com/NextStepWebs/simplemde-markdown-editor/blob/1.2.1/source%20files/markdownify.js#L218-L249
-               */
-              var cm = editor.codemirror;
-              var wrapper = cm.getWrapperElement();
-              var toolbar_div = wrapper.previousSibling;
-              var toolbar = editor.toolbarElements.preview;
-              var parse = editor.constructor.markdown;
-              var preview = wrapper.lastChild;
-              if(!/editor-preview/.test(preview.className)) {
-                preview = document.createElement('div');
-                preview.className = 'editor-preview';
-                wrapper.appendChild(preview);
-              }
-              if(/editor-preview-active/.test(preview.className)) {
-                preview.className = preview.className.replace(
-                  /\s*editor-preview-active\s*/g, ''
-                );
-                toolbar.className = toolbar.className.replace(/\s*active\s*/g, '');
-                toolbar_div.className = toolbar_div.className.replace(/\s*disabled-for-preview\s*/g, '');
-              } else {
-                /* When the preview button is clicked for the first time,
-                 * give some time for the transition from editor.css to fire and the view to slide from right to left,
-                 * instead of just appearing.
-                 */
-                setTimeout(function() {
-                  preview.className += ' editor-preview-active';
-                }, 1);
-                toolbar.className += ' active';
-                toolbar_div.className += ' disabled-for-preview';
-                /* Code modified by Allura is here */
-                var text = cm.getValue();
-                get_rendered_text(preview, text);
-              }
-              $container.toggleClass('preview-active');
-              $container.siblings('span.arw').toggleClass('preview-active');
-            }
-
-            function get_rendered_text(preview, text) {
-              preview.innerHTML = 'Loading...';
+            function previewRender(text, preview) {
               var cval = $.cookie('_session_id');
               $.post('/nf/markdown_to_html', {
                 markdown: text,
@@ -148,6 +102,7 @@ $(window).load(function() {
               function(resp) {
                 preview.innerHTML = resp;
               });
+              return 'Loading...';
             }
 
             $('.close', $help_area).bind('click', function() {
