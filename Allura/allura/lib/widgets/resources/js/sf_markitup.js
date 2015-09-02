@@ -30,7 +30,14 @@ $(window).load(function() {
             // Override action for "preview" & "guide" tools
             var toolbar = [
               "bold", "italic", "heading", "|",
-              "quote", "unordered-list", "ordered-list", "horizontal-rule", "|",
+              "quote", "unordered-list", "ordered-list",
+              {
+                name: 'table',
+                action: drawTable,
+                className: 'fa fa-table',
+                title: 'Insert Table'
+              },
+              "horizontal-rule", "|",
               "link", "image", "|",
               {
                   name: 'preview',
@@ -67,6 +74,15 @@ $(window).load(function() {
               toolbar: toolbar
             });
             editor.render();
+
+            function drawTable(editor) {
+              var cm = editor.codemirror;
+              _replaceSelection(cm, false, '',
+                'First Header  | Second Header | Third Header\n' +
+                '------------- | ------------- | ------------- \n' +
+                'Content Cell  | Content Cell  | Content Cell \n' +
+                'Content Cell  | Content Cell  | Content Cell ');
+            }
 
             function show_help(editor) {
               $help_contents.html('Loading...');
