@@ -58,17 +58,7 @@ $(window).load(function() {
             var editor = new SimpleMDE({
               element: $textarea[0],
               autofocus: false,
-              /*
-               * spellChecker: false is important!
-               * It's enabled by default and consumes a lot of memory and CPU
-               * if you have more than one editor on the page. In Allura we
-               * usually have a lot of (hidden) editors on the page (e.g.
-               * comments). On my machine it consumes ~1G of memory for a page
-               * with ~10 comments.
-               * We're using bleeding age 1.4.0, we might want to
-               * re-check when more stable version will be available.
-               */
-              spellChecker: false,
+              spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
               indentWithTabs: false,
               tabSize: 4,
               toolbar: toolbar
