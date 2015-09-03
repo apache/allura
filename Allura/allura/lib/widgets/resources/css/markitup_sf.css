@@ -50,6 +50,9 @@
 .markdown_edit .editor-preview pre {
   font-family: monospace;
 }
+.editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns)::before {
+  color: #BBB;
+}
 
 .CodeMirror .CodeMirror-code .cm-comment {
   font-family: monospace;
