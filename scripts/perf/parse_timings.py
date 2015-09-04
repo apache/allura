@@ -24,8 +24,10 @@ import sys
 
 
 parser = argparse.ArgumentParser(description='Parse TimerMiddleware json lines (e.g. stats.log), filter them, output tab-delimited')
-parser.add_argument('-f', '--filter-category', type=str, nargs='+', metavar='CAT')
-parser.add_argument('-t', '--timings', type=str, nargs='+', metavar='TIMING')
+parser.add_argument('-f', '--filter-category', type=str, nargs='+', metavar='CAT',
+                    help='e.g. tickets, or discussion, etc')
+parser.add_argument('-t', '--timings', type=str, nargs='+', metavar='TIMING', required=True,
+                    help='e.g. total ming mongo sidebar jinja ...')
 parser.add_argument('-i', '--input-file', type=argparse.FileType('r'), nargs='?', default=sys.stdin,
                     help='Filename, or use stdin by default')
 args = parser.parse_args()
@@ -38,7 +40,7 @@ for line in args.input_file:
     except KeyError:
         #print 'No category', data['message']['url']
         pass
-    if typ not in args.filter_category:
+    if args.filter_category and typ not in args.filter_category:
         continue
 
     time = datetime.strptime(data['time'], '%Y-%m-%d %H:%M:%S,%f')
