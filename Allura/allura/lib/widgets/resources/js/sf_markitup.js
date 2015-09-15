@@ -193,7 +193,9 @@ $(window).load(function() {
                   ch: 99999999999999
                 });
                 cur_start.ch--;
-                cur_end.ch--;
+                if (cur_start !== cur_end) {
+                  cur_end.ch--;
+                }
                 cm.setSelection(cur_start, cur_end);
                 cm.focus();
               } else if (is_code === 'fenced') {
