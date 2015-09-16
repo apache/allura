@@ -97,13 +97,13 @@
         </div>
         <div class="options grid-3">
         {% if h.has_access(value.thread, 'post')() %}
-          <a href="" class="reply_post btn"{%if value.status == 'pending'%} style="display:none"{%endif%}><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
+          <a href="#" class="reply_post btn"{%if value.status == 'pending'%} style="display:none"{%endif%}><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         {% endif %}
         <div style="clear:both">
             <div class="little_link">
                 <a href="{{shortlink_url}}" class="little_link shortlink"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Link</span></a><br/>
                 {% if h.has_access(value, 'moderate')()%}
-                    <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
+                    <a href="#" class="edit_post little_link"><span>Edit</span></a><br/>
                 {% endif %}
             </div>
             {% if h.has_access(value.thread, 'moderate')() %}
