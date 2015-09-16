@@ -350,6 +350,16 @@ class Post(HierWidget):
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function (ele) {
                         $('.display_post', post).hide();
+
+                        // remove the options column, but have to adjust the width of the middle section which is
+                        // already hard-coded
+                        var $opts = $('.options:first', post);
+                        var opts_width = $opts.outerWidth(true);
+                        $opts.hide();
+                        var $post_middle = $('div.grid-14:first', post);
+                        $post_middle.data('original-width', $post_middle.width());
+                        $post_middle.width($post_middle.width() + opts_width);
+
                         var $edit_post_form = $('.edit_post_form', post);
                         var cm = get_cm($edit_post_form);
                         $edit_post_form.show();
@@ -359,7 +369,10 @@ class Post(HierWidget):
                     });
                     $("a.cancel_edit_post", post).click(function(evt){
                         $('.display_post', post).show();
+                        $('.options', post).show();
                         $('.edit_post_form', post).hide();
+                        var $post_middle = $('div.grid-14:first', post);
+                        $post_middle.width($post_middle.data('original-width'));
                     });
                 }
                 if($('.reply_post', post)){
