@@ -315,9 +315,9 @@ class Post(HierWidget):
             $('div.discussion-post').each(function () {
                 var post = this;
                 $('.submit', post).button();
-                $('.flag_post', post).click(function (ele) {
+                $('.flag_post', post).click(function (evt) {
+                    evt.preventDefault();
                     this.parentNode.submit();
-                    return false;
                 });
                 $('.moderate_post', post).click(function(e){
                     e.preventDefault();
@@ -348,7 +348,8 @@ class Post(HierWidget):
                 function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }
 
                 if($('a.edit_post', post)){
-                    $('a.edit_post', post).click(function (ele) {
+                    $('a.edit_post', post).click(function (evt) {
+                        evt.preventDefault();
                         $('.display_post', post).hide();
 
                         // remove the options column, but have to adjust the width of the middle section which is
@@ -365,7 +366,6 @@ class Post(HierWidget):
                         $edit_post_form.show();
                         cm.refresh();
                         cm.focus();
-                        return false;
                     });
                     $("a.cancel_edit_post", post).click(function(evt){
                         $('.display_post', post).show();
@@ -376,19 +376,19 @@ class Post(HierWidget):
                     });
                 }
                 if($('.reply_post', post)){
-                    $('.reply_post', post).click(function (ele) {
+                    $('.reply_post', post).click(function (evt) {
+                        evt.preventDefault();
                         var $reply_post_form = $('.reply_post_form', post);
                         var cm = get_cm($reply_post_form);
                         $reply_post_form.show();
                         cm.focus();
-                        return false;
                     });
                     $('.reply_post', post).button();
                 }
                 if($('.add_attachment', post)){
-                    $('.add_attachment', post).click(function (ele) {
+                    $('.add_attachment', post).click(function (evt) {
+                        evt.preventDefault();
                         $('.add_attachment_form', post).show();
-                        return false;
                     });
                 }
                 if($('.shortlink', post)){
