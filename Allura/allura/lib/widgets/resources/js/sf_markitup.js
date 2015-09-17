@@ -106,10 +106,10 @@ $(window).load(function() {
             function drawTable(editor) {
               var cm = editor.codemirror;
               _replaceSelection(cm, false, '',
-                'First Header  | Second Header | Third Header\n' +
-                '------------- | ------------- | ------------- \n' +
-                'Content Cell  | Content Cell  | Content Cell \n' +
-                'Content Cell  | Content Cell  | Content Cell ');
+                'Header | Header | Header\n' +
+                '---------- | ---------- | ------ \n' +
+                'Cell      | Cell       | Cell \n' +
+                'Cell      | Cell       | Cell ');
             }
 
             function toggleCodeBlock(editor, fenceCharsToInsert) {
