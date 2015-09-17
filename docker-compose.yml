@@ -18,7 +18,7 @@
 web:
   build: .
   working_dir: /allura
-  command: bash -c 'cd Allura && paster serve docker-dev.ini --reload'
+  command: bash -c 'cd Allura && gunicorn --paste docker-dev.ini --reload'
   ports:
     - "8080:8080"
   volumes:

@@ -209,9 +209,8 @@ access handler, e.g.:
         AuthBasicAuthoritative off
         # Change this path if needed:
         PythonOption ALLURA_VIRTUALENV /home/vagrant/env-allura
-        # This routes back to the allura webapp, port 8080 if running with paster server (~/start_allura)
-        # In a production environment, run allura with a real WSGI server, and
-        # change the IP address and port number as appropriate.
+        # This routes back to the allura webapp
+        # In a production environment, change the IP address and port number as appropriate.
         # And use https if possible, since the username and password are otherwise
         # sent in the clear to Allura.
         PythonOption ALLURA_AUTH_URL http://127.0.0.1:8080/auth/do_login
