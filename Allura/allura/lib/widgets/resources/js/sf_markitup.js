@@ -292,6 +292,7 @@ $(window).load(function() {
                 for (var i = block_start; i <= block_end; i++) {
                   cm.indentLine(i, 'subtract'); // TODO: this doesn't get tracked in the history, so can't be undone :(
                 }
+                cm.focus();
               } else {
                 // insert code formatting
                 var no_sel_and_starting_of_line = (cur_start.line === cur_end.line && cur_start.ch === cur_end.ch && cur_start.ch === 0);
