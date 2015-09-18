@@ -381,7 +381,8 @@ By default all admins of "allura" project in "Projects" neighborhood are treated
 Change default configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the :file:`development.ini`:
+The :file:`development.ini` file is geared towards development, so you will want to review
+carefully and make changes for production use.
 
 Change `[handler_console]` section, so that logs go to a file and will include background tasks info.
 
@@ -407,11 +408,46 @@ You can use the following command to generate a good key:
 
     ~$ python -c 'import os; l = 20; print "%.2x" * l % tuple(map(ord, os.urandom(l)))'
 
+Production-quality web server
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are running on a public facing server, you should check out some of the additional gunicorn configuration options at http://gunicorn.org/.
+For example, you'll want multiple worker processes to handle simultaneous requests, proxy behind nginx for added protection, etc.
+
+If you'd like to use another webserver, here are a few options:
+
+`uWSGI <http://uwsgi-docs.readthedocs.org/en/latest/>`_
+
+.. code-block:: bash
+
+    ~$ pip install uwsgi  # or install via system packages
+    ~$ uwsgi --ini-paste-logged development.ini --virtualenv /PATH/TO/VIRTUALENV --http 0.0.0.0:8080
+
+
+`mod_wsgi-express <https://pypi.python.org/pypi/mod_wsgi>`_
+
+.. code-block:: bash
+
+    ~$ pip install mod_wsgi  # requires httpd2 devel libraries installed in the system
+    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python2.7/site-packages/
+
+For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need a wsgi callable set up like this:
+
+.. code-block:: python
+
+    from paste.deploy import loadapp
+    from paste.script.util.logging_config import fileConfig
+
+    config_file = '/PATH/TO/Allura/development.ini'
+    fileConfig(config_file)
+    application = loadapp('config:%s' % config_file)
+
+
+
 Configuring Optional Features
 -----------------------------
 
-The :file:`development.ini` file has many options you can explore and configure.  It is geared towards development, so you will want to review
-carefully and make changes for production use.
+The :file:`development.ini` file has many options you can explore and configure.
 
 To run SVN and Git services, see the :doc:`scm_host` page.
 
