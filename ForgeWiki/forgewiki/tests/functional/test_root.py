@@ -705,12 +705,12 @@ class TestRootController(TestController):
     def test_page_delete(self):
         self.app.post('/wiki/aaa/update', params={
             'title': 'aaa',
-            'text': '',
+            'text': '111',
             'labels': '',
             'viewable_by-0.id': 'all'})
         self.app.post('/wiki/bbb/update', params={
             'title': 'bbb',
-            'text': '',
+            'text': '222',
             'labels': '',
             'viewable_by-0.id': 'all'})
         response = self.app.get('/wiki/browse_pages/')
@@ -720,6 +720,8 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert '?deleted=True">bbb' in response
+        n = M.Notification.query.get(subject="[test:wiki] test-admin removed page bbb")
+        assert '222' in n.text
 
     def test_mailto_links(self):
         self.app.get('/wiki/test_mailto/')
