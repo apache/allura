@@ -17,8 +17,6 @@
        under the License.
 */
 $(function() {
-    var cval = $.cookie('_session_id');
-    var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
     var $popup_title = $('#admin_modal_title');
     var $popup_contents = $('#admin_modal_contents');
     $('a.admin_modal').click(function () {
@@ -28,7 +26,12 @@ $(function() {
         $.get(link.href, function (data) {
             $popup_title.html($(link).html());
             $popup_contents.html(data);
-            $popup_contents.find('form').append(csrf_input);
+            var csrf_exists = $popup_contents.find('form > input[name="_session_id"]').length;
+            if (!csrf_exists) {
+              var cval = $.cookie('_session_id');
+              var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
+              $popup_contents.find('form').append(csrf_input);
+            }
         });
     });
 });
