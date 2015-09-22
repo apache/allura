@@ -15,7 +15,16 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import json
+from datadiff.tools import assert_equal
+
 from alluratest.controller import TestController
+from allura.tests.decorators import with_tool
+
+from forgechat import model as CM
+
+
+with_chat = with_tool('test', 'Chat', 'chat', 'Chat')
 
 
 class TestRootController(TestController):
@@ -23,3 +32,16 @@ class TestRootController(TestController):
     def test_root_index(self):
         response = self.app.get('/chat/').follow()
         assert 'Log for' in response
+
+    @with_chat
+    def test_admin_configure(self):
+        self.app.get('/')  # establish session
+        data = {'channel': 'test channel',
+                '_session_id': self.app.cookies['_session_id']}
+        ch = CM.ChatChannel.query.get()
+        assert_equal(ch.channel, '')
+        resp = self.app.post('/p/test/admin/chat/configure', data)
+        expected = {'status': 'ok', 'message': 'Chat options updated'}
+        assert_equal(json.loads(self.webflash(resp)), expected)
+        ch = CM.ChatChannel.query.get()
+        assert_equal(ch.channel, 'test channel')
