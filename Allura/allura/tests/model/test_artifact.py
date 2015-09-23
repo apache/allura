@@ -118,29 +118,28 @@ def test_artifact_index():
 @with_setup(setUp, tearDown)
 def test_artifactlink():
     pg = WM.Page(title='TestPage2')
-    q = M.Shortlink.query.find(dict(
+    q_shortlink = M.Shortlink.query.find(dict(
         project_id=c.project._id,
         app_config_id=c.app.config._id,
         link=pg.shorthand_id()))
-    assert q.count() == 0
+    assert q_shortlink.count() == 0
+
     ThreadLocalORMSession.flush_all()
     M.MonQTask.run_ready()
     ThreadLocalORMSession.flush_all()
-    assert q.count() == 1
+    assert q_shortlink.count() == 1
+
     assert M.Shortlink.lookup('[TestPage2]')
     assert M.Shortlink.lookup('[wiki:TestPage2]')
     assert M.Shortlink.lookup('[test:wiki:TestPage2]')
     assert not M.Shortlink.lookup('[test:wiki:TestPage2:foo]')
     assert not M.Shortlink.lookup('[Wiki:TestPage2]')
     assert not M.Shortlink.lookup('[TestPage2_no_such_page]')
-    c.project.uninstall_app('wiki')
-    ThreadLocalORMSession.flush_all()
-    assert not M.Shortlink.lookup('[wiki:TestPage2]')
+
     pg.delete()
-    ThreadLocalORMSession.flush_all()
-    M.MonQTask.run_ready()
-    ThreadLocalORMSession.flush_all()
-    assert q.count() == 0
+    c.project.uninstall_app('wiki')
+    assert not M.Shortlink.lookup('[wiki:TestPage2]')
+    assert q_shortlink.count() == 0
 
 
 @with_setup(setUp, tearDown)
