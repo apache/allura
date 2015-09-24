@@ -227,8 +227,52 @@ Extra
 Using Docker
 ------------
 
-General info
-^^^^^^^^^^^^
+First run
+^^^^^^^^^
+
+`Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
+
+Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
+
+Build/fetch all required images (run these in allura source directory):
+
+.. code-block:: bash
+
+    docker-compose build
+
+Install requirements:
+
+.. code-block:: bash
+
+    docker-compose run web pip install -r requirements.txt
+
+Install Allura packages:
+
+.. code-block:: bash
+
+    docker-compose run web ./rebuild-all.bash
+
+Initialize database with test data:
+
+.. code-block:: bash
+
+    docker-compose run web bash -c 'cd Allura && paster setup-app docker-dev.ini'
+
+.. note::
+
+   If you want to skip test data creation you can instead run: :code:`docker-compose run web bash -c 'cd Allura && ALLURA_TEST_DATA=False paster setup-app docker-dev.ini'`
+
+Start containers in the background:
+
+.. code-block:: bash
+
+    docker-compose up -d
+
+You're up and running!  Visit localhost:8080 or on a Mac or Windows, whatever IP address Docker Toolbox is using.  Then
+see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
+
+Containers
+^^^^^^^^^^
 
 Allura runs on the following docker containers:
 
@@ -268,49 +312,6 @@ Ports, exposed to host system
 - 8825 - incoming mail listener
 - 27017 - mongodb
 
-First run
-^^^^^^^^^
-
-`Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
-
-Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
-
-Build/fetch all required images (run these in allura source directory):
-
-.. code-block:: bash
-
-    ~$ docker-compose build
-
-Install requirements:
-
-.. code-block:: bash
-
-    ~$ docker-compose run web pip install -r requirements.txt
-
-Install Allura packages:
-
-.. code-block:: bash
-
-    ~$ docker-compose run web ./rebuild-all.bash
-
-Initialize database with test data:
-
-.. code-block:: bash
-
-    ~$ docker-compose run web bash -c 'cd Allura && paster setup-app docker-dev.ini'
-
-If you want to skip test data creation you can instead run:
-
-.. code-block:: bash
-
-    ~$ docker-compose run web bash -c 'cd Allura && ALLURA_TEST_DATA=False paster setup-app docker-dev.ini'
-
-Start containers in the background:
-
-.. code-block:: bash
-
-    ~$ docker-compose up -d
-
 Useful commands
 ^^^^^^^^^^^^^^^
 
@@ -318,48 +319,48 @@ Restarting all containers:
 
 .. code-block:: bash
 
-    ~$ docker-compose up -d
+    docker-compose up -d
 
 View logs from all services:
 
 .. code-block:: bash
 
-    ~$ docker-compose logs
+    docker-compose logs
 
 You can specify one or more services to view logs only from them, e.g. to see
 outgoing mail:
 
 .. code-block:: bash
 
-    ~$ docker-compose logs outmail
+    docker-compose logs outmail
 
 Update requirements and reinstall apps:
 
 .. code-block:: bash
 
-    ~$ docker-compose run web pip install -r requirements.txt
-    ~$ docker-compose run web ./rebuild-all.bash
+    docker-compose run web pip install -r requirements.txt
+    docker-compose run web ./rebuild-all.bash
 
 You may want to restart at least "taskd" container after that in order for it to
-pick up changes.
+pick up changes.  Run :code:`docker-compose restart taskd`
 
 Running all tests:
 
 .. code-block:: bash
 
-    ~$ docker-compose run web ./run_tests
+    docker-compose run web ./run_tests
 
 Running subset of tests:
 
 .. code-block:: bash
 
-    ~$ docker-compose run web bash -c 'cd ForgeGit && nosetests forgegit.tests.functional.test_controllers:TestFork'
+    docker-compose run web bash -c 'cd ForgeGit && nosetests forgegit.tests.functional.test_controllers:TestFork'
 
 Connecting to mongo using a container:
 
 .. code-block:: bash
 
-    ~$ docker-compose run mongo mongo --host mongo
+    docker-compose run mongo mongo --host mongo
 
 
 .. _post-setup-instructions:
