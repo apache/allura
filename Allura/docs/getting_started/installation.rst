@@ -264,7 +264,7 @@ Ports, exposed to host system
 - 8080 - webapp
 - 8983 - SOLR admin panel (http://localhost:8983/solr/)
 - 8825 - incoming mail listener
-
+- 27017 - mongodb
 
 First run
 ^^^^^^^^^
@@ -353,7 +353,7 @@ Running subset of tests:
 
     ~$ docker-compose run web bash -c 'cd ForgeGit && nosetests forgegit.tests.functional.test_controllers:TestFork'
 
-Connecting to mongo directly:
+Connecting to mongo using a container:
 
 .. code-block:: bash
 

@@ -58,8 +58,8 @@ solr:
 
 mongo:
   image: mongo:2.6
-  expose:
-    - "27017"
+  ports:
+    - "27017:27017"
   volumes:
     - /allura-data/mongo:/data/db
   command: mongod --smallfiles
