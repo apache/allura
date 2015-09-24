@@ -41,6 +41,7 @@ prompt VERSION "Version" "$VERSION"
 RELEASE_BASE=allura-$VERSION
 RELEASE_DIR=$RELEASE_DIR_BASE/$RELEASE_BASE
 RELEASE_FILENAME=$RELEASE_BASE.tar.gz
+RELEASE_FILE_EXTRACTED=$RELEASE_DIR/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
 RELEASE_TAG=asf_release_$VERSION
 CLOSE_DATE=`date -d '+72 hours' +%F`
@@ -67,6 +68,17 @@ COMMIT_SHA=`git rev-parse $RELEASE_TAG`
 
 mkdir -p $RELEASE_DIR
 git archive -o $RELEASE_FILE --prefix $RELEASE_BASE/ $RELEASE_TAG
+
+# expand archive, run broccoli in it, rebuild archive
+cd $RELEASE_DIR
+tar xzf $RELEASE_FILE
+cd $RELEASE_FILE_EXTRACTED
+npm install >/dev/null
+BROCCOLI_ENV=production broccoli build Allura/allura/public/nf/js/build/
+rm -rf node_modules
+cd ..
+tar czf $RELEASE_FILE $RELEASE_BASE
+rm -rf $RELEASE_FILE_EXTRACTED
 
 gpg --default-key $KEY --armor --output $RELEASE_FILE.asc --detach-sig $RELEASE_FILE
 MD5_CHECKSUM=`cd $RELEASE_DIR ; md5sum $RELEASE_FILENAME` ; echo "$MD5_CHECKSUM" > $RELEASE_FILE.md5

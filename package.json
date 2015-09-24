@@ -1,0 +1,23 @@
+{
+  "name": "allura",
+  "version": "0.0.0",
+  "description": "",
+  "main": "Brocfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-wip-us.apache.org/repos/asf/allura.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "broccoli": "^0.16.8",
+    "broccoli-babel-transpiler": "^5.4.5",
+    "broccoli-concat": "0.0.13",
+    "broccoli-funnel": "^0.2.8",
+    "broccoli-source-map": "^0.2.3",
+    "broccoli-uglify-js": "^0.1.3"
+  }
+}

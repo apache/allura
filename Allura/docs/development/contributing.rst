@@ -100,7 +100,15 @@ the Allura source already.
 `Jinja <http://jinja.pocoo.org/>`_ - HTML template library used by Allura.
 
 If you want to work on the front end of Allura, you'll also need some CSS and
-Javascript skills, and basic knowledge of JQuery.
+Javascript skills, and basic knowledge of JQuery.  We are also using React and ES6.
+To transpile those files as soon as you edit them:
+
+.. code-block:: bash
+
+    ~$ npm install -g broccoli-timepiece
+    ~$ cd ~/src/allura
+    ~$ broccoli-timepiece Allura/allura/public/nf/js/build/
+
 
 Finding Something to Work On
 ----------------------------
