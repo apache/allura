@@ -26,11 +26,13 @@ var/
 .noseids
 env
 env-docker
+Allura/allura/public/nf/js/build/
 Allura/allura/templates/home
 Allura/allura/templates/var
 Allura/production.ini
 Allura/forced_upgrade.ini
 scripts/teamforge-export/
+/node_modules
 report.clonedigger
 .ropeproject
 .idea

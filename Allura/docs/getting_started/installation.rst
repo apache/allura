@@ -178,6 +178,22 @@ Allura uses a background task service called "taskd" to do async tasks like send
     (env-allura)~$ cd ~/src/allura/Allura
     (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > /var/log/allura/taskd.log 2>&1 &
 
+
+A few more steps, if using git
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're using a released version of Allura, these are already done for you.  This transpiles JS into a version all browsers support:
+
+.. code-block:: bash
+
+    (env-allura)~$ sudo aptitude install nodejs npm
+    (env-allura)~$ sudo ln -s /usr/bin/nodejs /usr/bin/node
+    (env-allura)~$ cd ~/src/allura
+    (env-allura)~$ npm install -g broccoli-cli
+    (env-allura)~$ npm install
+    (env-allura)~$ broccoli build Allura/allura/public/nf/js/build/
+
+
 The application server
 ~~~~~~~~~~~~~~~~~~~~~~
 

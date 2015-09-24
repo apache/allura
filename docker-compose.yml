@@ -18,7 +18,17 @@
 web:
   build: .
   working_dir: /allura
-  command: bash -c 'cd Allura && gunicorn --paste docker-dev.ini --reload'
+  # specialized command (and working_dir) to run broccoli
+  # since it depends on files from the shared volume, it can't be run as part of the Dockerfile build :(
+  command: >
+    sh -c '
+    if [ ! -e Allura/allura/public/nf/js/build/transpiled.js ]; then
+      npm install &&
+      rm -rf Allura/allura/public/nf/js/build/ &&
+      broccoli build Allura/allura/public/nf/js/build/;
+    fi;
+    gunicorn --paste Allura/docker-dev.ini --reload
+    '
   ports:
     - "8080:8080"
   volumes:

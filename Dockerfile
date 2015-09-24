@@ -29,7 +29,10 @@ RUN apt-get update && apt-get install -y \
     python-pip \
     zip \
     subversion \
-    python-svn
+    python-svn \
+    npm
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+RUN npm install -g broccoli-cli
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8
@@ -39,4 +42,5 @@ ENV LANG en_US.UTF-8
 # tests). If this is not set, it uses os.getlogin, which fails inside docker.
 ENV USER root
 
-WORKDIR /allura
+WORKDIR /allura/Allura
+CMD gunicorn --paste docker-dev.ini --reload
