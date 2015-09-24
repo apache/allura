@@ -24,8 +24,8 @@ web:
   volumes:
     - .:/allura
     # mount env to allow update and sharing with taskd container
-    - env-docker/python:/usr/local/lib/python2.7
-    - env-docker/bin:/usr/local/bin
+    - /allura-data/env-docker/python:/usr/local/lib/python2.7
+    - /allura-data/env-docker/bin:/usr/local/bin
     # mounting it separatelly to create git, svn, hg directories automatically
     - /allura-data/scm/git:/allura-data/scm/git
     - /allura-data/scm/hg:/allura-data/scm/hg

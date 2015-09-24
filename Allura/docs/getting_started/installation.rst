@@ -244,12 +244,14 @@ Host-mounted volumes
 
 These are created on first run.
 
-Current directory mounted as :file:`/allura` inside containers.
+Current directory mounted as :file:`/allura` inside containers.  This means your current source code in your host
+environment is shared with the containers.  You can edit Allura code directly, and the containers will reflect your
+changes.
 
 Python environment:
 
-- :file:`env-docker/python`
-- :file:`env-docker/bin`
+- :file:`/allura-data/env-docker/python`
+- :file:`/allura-data/env-docker/bin`
 
 Services data:
 
