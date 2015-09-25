@@ -222,3 +222,27 @@ def test_last_updated_disabled(_datetime):
         assert_equal(c.project.last_updated, datetime(2014, 1, 1))
     finally:
         M.artifact_orm_session._get().skip_last_updated = False
+
+
+@with_setup(setUp, tearDown)
+def test_get_discussion_thread_dupe():
+    artif = WM.Page(title='TestSomeArtifact')
+    thr1 = artif.get_discussion_thread()[0]
+    thr1.post('thr1-post1')
+    thr1.post('thr1-post2')
+    thr2 = M.Thread.new(ref_id=thr1.ref_id)
+    thr2.post('thr2-post1')
+    thr2.post('thr2-post2')
+    thr2.post('thr2-post3')
+    thr3 = M.Thread.new(ref_id=thr1.ref_id)
+    thr3.post('thr3-post1')
+    thr4 = M.Thread.new(ref_id=thr1.ref_id)
+
+    thread_q = M.Thread.query.find(dict(ref_id=artif.index_id()))
+    assert_equal(thread_q.count(), 4)
+
+    thread = artif.get_discussion_thread()[0]  # force cleanup
+    threads = thread_q.all()
+    assert_equal(len(threads), 1)
+    assert_equal(len(thread.posts), 6)
+    assert not any(p.deleted for p in thread.posts)  # normal thread deletion propagates to children, make sure that doesn't happen
