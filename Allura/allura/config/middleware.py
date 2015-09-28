@@ -158,7 +158,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         # compress=True,
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'),
-        extra_headers=eval(app_conf.get('ew.extra_headers', 'None')))
+        extra_headers=eval(app_conf.get('ew.extra_headers', 'None')),
+        cache_max_age=asint(app_conf.get('ew.cache_header_seconds', 60*60*24*365)),
+    )
     # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     # Handle setup and flushing of Ming ORM sessions
