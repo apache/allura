@@ -70,7 +70,7 @@ class W:
     attachment_add = ffw.AttachmentAdd()
     attachment_list = ffw.AttachmentList()
     preview_post_form = widgets.PreviewPostForm()
-    subscribe_form = SubscribeForm()
+    subscribe_form = SubscribeForm(thing='post')
     search_results = SearchResults()
     help_modal = SearchHelp()
 

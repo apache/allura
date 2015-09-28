@@ -27,7 +27,9 @@
     <a href="edit" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
   <a href="history" title="History"><b data-icon="{{g.icons['history'].char}}" class="ico {{g.icons['history'].css}}"></b></a>
-  {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  {% if c.user and c.user != c.user.anonymous() %}
+    {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
+  {% endif %}
   <a href="feed" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% endblock %}
 
