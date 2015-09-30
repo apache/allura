@@ -38,7 +38,6 @@ from alluratest.controller import setup_trove_categories
 
 
 class TestNeighborhood(TestController):
-
     def test_home_project(self):
         r = self.app.get('/adobe/wiki/')
         assert r.location.endswith('/adobe/wiki/Home/')
@@ -120,9 +119,9 @@ class TestNeighborhood(TestController):
 
     def test_prohibited_tools(self):
         self.app.post('/p/_admin/update',
-                          params=dict(name='Projects',
-                          prohibited_tools='wiki, tickets'),
-                          extra_environ=dict(username='root'))
+                      params=dict(name='Projects',
+                                  prohibited_tools='wiki, tickets'),
+                      extra_environ=dict(username='root'))
 
         r = self.app.get('/p/_admin/overview', extra_environ=dict(username='root'))
         assert 'wiki, tickets' in r
@@ -133,7 +132,7 @@ class TestNeighborhood(TestController):
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
-                          prohibited_tools='wiki, test'),
+                                      prohibited_tools='wiki, test'),
                           extra_environ=dict(username='root'))
         assert 'error' in self.webflash(r), self.webflash(r)
 
@@ -361,8 +360,8 @@ class TestNeighborhood(TestController):
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
         assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
         assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
-        assert "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:#444;} "\
-               ".pad h2.dark small b.ico {background-image: "\
+        assert "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:#444;} " \
+               ".pad h2.dark small b.ico {background-image: " \
                "url('/nf/_ew_/theme/allura/images/neo-icon-set-ffffff-256x350.png');}" in neighborhood.css
 
     def test_max_projects(self):
@@ -647,8 +646,8 @@ class TestNeighborhood(TestController):
     def test_project_template(self):
         setup_trove_categories()
         icon_url = 'file://' + \
-            os.path.join(allura.__path__[0], 'nf', 'allura',
-                         'images', 'neo-icon-set-454545-256x350.png')
+                   os.path.join(allura.__path__[0], 'nf', 'allura',
+                                'images', 'neo-icon-set-454545-256x350.png')
         test_groups = [{
             "name": "Viewer",  # group will be created, all params are valid
             "permissions": ["read"],
@@ -670,7 +669,9 @@ class TestNeighborhood(TestController):
             "permissions": ["admin"]
         }]
         r = self.app.post('/adobe/_admin/update', params=dict(name='Mozq1',
-                                                              css='', homepage='# MozQ1!\n[Root]', project_template="""{
+                                                              css='',
+                                                              homepage='# MozQ1!\n[Root]',
+                                                              project_template="""{
                 "private":true,
                 "icon":{
                     "url":"%s",
@@ -717,22 +718,14 @@ class TestNeighborhood(TestController):
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div', {'id': 'top_nav'})
-        assert top_nav.contents[1].contents[1].contents[
-            1]['href'] == '/adobe/testtemp/wiki/'
-        assert 'Wiki' in top_nav.contents[
-            1].contents[1].contents[1].contents[0]
-        assert top_nav.contents[1].contents[3].contents[
-            1]['href'] == '/adobe/testtemp/discussion/'
-        assert 'Discussion' in top_nav.contents[
-            1].contents[3].contents[1].contents[0]
-        assert top_nav.contents[1].contents[5].contents[
-            1]['href'] == '/adobe/testtemp/news/'
-        assert 'News' in top_nav.contents[
-            1].contents[5].contents[1].contents[0]
-        assert top_nav.contents[1].contents[7].contents[
-            1]['href'] == '/adobe/testtemp/admin/'
-        assert 'Admin' in top_nav.contents[
-            1].contents[7].contents[1].contents[0]
+        assert top_nav.contents[1].contents[1].contents[1]['href'] == '/adobe/testtemp/wiki/'
+        assert 'Wiki' in top_nav.contents[1].contents[1].contents[1].contents[0]
+        assert top_nav.contents[1].contents[3].contents[1]['href'] == '/adobe/testtemp/discussion/'
+        assert 'Discussion' in top_nav.contents[1].contents[3].contents[1].contents[0]
+        assert top_nav.contents[1].contents[5].contents[1]['href'] == '/adobe/testtemp/news/'
+        assert 'News' in top_nav.contents[1].contents[5].contents[1].contents[0]
+        assert top_nav.contents[1].contents[7].contents[1]['href'] == '/adobe/testtemp/admin/'
+        assert 'Admin' in top_nav.contents[1].contents[7].contents[1].contents[0]
         # make sure project is private
         r = self.app.get(
             '/adobe/testtemp/wiki/',
@@ -804,7 +797,7 @@ class TestNeighborhood(TestController):
                 },
                 "tool_order":["wiki","admin"],
 
-                }""" ),
+                }"""),
                           extra_environ=dict(username='root'))
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.anchored_tools = 'wiki:Wiki'
@@ -835,7 +828,8 @@ class TestNeighborhood(TestController):
             r = self.app.get(
                 '/p/check_names?neighborhood=Projects&project_unixname=%s' % name)
             assert_equal(
-                r.json, {'project_unixname': 'Please use only small letters, numbers, and dashes 3-15 characters long.'})
+                r.json,
+                {'project_unixname': 'Please use only small letters, numbers, and dashes 3-15 characters long.'})
         r = self.app.get(
             '/p/check_names?neighborhood=Projects&project_unixname=mymoz')
         assert_equal(r.json, {})
@@ -895,8 +889,8 @@ class TestNeighborhood(TestController):
         image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
-                params=dict(grant='FOO', recipient='adobe-1',
-                            url='http://award.org', comment='Winner!'),
+                      params=dict(grant='FOO', recipient='adobe-1',
+                                  url='http://award.org', comment='Winner!'),
                       extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/accolades',
                          extra_environ=dict(username='root'))
@@ -960,7 +954,6 @@ class TestNeighborhood(TestController):
 
 
 class TestPhoneVerificationOnProjectRegistration(TestController):
-
     def test_phone_verification_fragment_renders(self):
         self.app.get('/p/phone_verification_fragment', status=200)
         self.app.get('/adobe/phone_verification_fragment', status=200)

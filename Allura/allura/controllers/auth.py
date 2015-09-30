@@ -51,6 +51,7 @@ from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
+
 class F(object):
     login_form = LoginForm()
     password_change_form = forms.PasswordChangeForm(action='/auth/preferences/change_password')
@@ -183,19 +184,18 @@ class AuthController(BaseController):
         user_record = M.User.by_email_address(email)
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
-
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash('Enter email in correct format!','error')
             redirect('/auth/forgotten_password')
 
         if not allow_non_primary_email_reset:
-            message = 'If the given email address is on record, a password reset email has been sent to the account\'s primary email address.'
+            message = 'If the given email address is on record, '\
+                      'a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
                                                     confirmed=True)
         else:
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
             email_record = M.EmailAddress.get(email=email, confirmed=True)
-
 
         if user_record and email_record and email_record.confirmed:
             hash = h.nonce(42)
@@ -459,10 +459,8 @@ class PreferencesController(BaseController):
         # not using **kw in method signature, to ensure 'admin' can't be passed in via a form submit
         kw = form_params
         addr = kw.pop('addr', None)
-        new_addr= kw.pop('new_addr', None)
+        new_addr = kw.pop('new_addr', None)
         primary_addr = kw.pop('primary_addr', None)
-        oid = kw.pop('oid', None)
-        new_oid = kw.pop('new_oid', None)
         provider = plugin.AuthenticationProvider.get(request)
         for i, (old_a, data) in enumerate(zip(user.email_addresses, addr or [])):
             obj = user.address_object(old_a)
@@ -1011,7 +1009,7 @@ class OAuthController(BaseController):
             validation_pin=h.nonce(20),
             is_bearer=True,
         )
-        access_token = M.OAuthAccessToken(
+        M.OAuthAccessToken(
             consumer_token_id=consumer_token._id,
             request_token_id=c.user._id,
             user_id=request_token.user_id,

@@ -22,7 +22,6 @@ import time
 import unittest
 import datetime as dt
 from ming.odm import session
-import model as M
 from os import path
 
 from webob import Request
@@ -169,12 +168,12 @@ class TestTruthyCallable(unittest.TestCase):
             return utils.TruthyCallable(predicate)
         true_predicate = wrapper_func(True)
         false_predicate = wrapper_func(False)
-        assert true_predicate(True) == True
-        assert false_predicate(False) == False
-        assert true_predicate() == True
-        assert false_predicate() == False
-        assert bool(true_predicate) == True
-        assert bool(false_predicate) == False
+        assert true_predicate(True) is True
+        assert false_predicate(False) is False
+        assert true_predicate() is True
+        assert false_predicate() is False
+        assert bool(true_predicate) is True
+        assert bool(false_predicate) is False
 
 
 class TestCaseInsensitiveDict(unittest.TestCase):
@@ -260,7 +259,8 @@ class TestHTMLSanitizer(unittest.TestCase):
         assert_equal(self.simple_tag_list(p), ['div', 'div'])
 
     def test_html_sanitizer_youtube_iframe(self):
-        p = utils.ForgeHTMLSanitizer('<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        p = utils.ForgeHTMLSanitizer(
+            '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         assert_equal(
             self.simple_tag_list(p), ['div', 'iframe', 'div'])
 
@@ -272,6 +272,7 @@ def test_ip_address():
     assert_equal(utils.ip_address(req),
                  '1.2.3.4')
 
+
 def test_ip_address_header():
     req = Mock()
     req.remote_addr = '1.2.3.4'
@@ -279,6 +280,7 @@ def test_ip_address_header():
     with h.push_config(config, **{'ip_address_header': 'X_FORWARDED_FOR'}):
         assert_equal(utils.ip_address(req),
                      '5.6.7.8')
+
 
 def test_ip_address_header_not_set():
     req = Mock()
@@ -329,5 +331,5 @@ def test_phone_number_hash():
 
 def test_skip_mod_date():
     with utils.skip_mod_date(M.Artifact):
-        assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) == True
-    assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) == False
+        assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) is True
+    assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) is False

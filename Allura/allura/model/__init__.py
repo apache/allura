@@ -22,7 +22,8 @@
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, TroveCategory, ProjectFile, AppConfig
 from .index import ArtifactReference, Shortlink
-from .artifact import Artifact, MovedArtifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant, VotableArtifact
+from .artifact import Artifact, MovedArtifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant
+from .artifact import VotableArtifact
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, EmailAddress, OldProjectRole
@@ -48,3 +49,15 @@ from . import repo_refresh
 
 from ming.orm import Mapper
 Mapper.compile_all()
+
+__all__ = [
+    'Neighborhood', 'NeighborhoodFile', 'Project', 'ProjectCategory', 'TroveCategory', 'ProjectFile', 'AppConfig',
+    'ArtifactReference', 'Shortlink', 'Artifact', 'MovedArtifact', 'Message', 'VersionedArtifact', 'Snapshot', 'Feed',
+    'AwardFile', 'Award', 'AwardGrant', 'VotableArtifact', 'Discussion', 'Thread', 'PostHistory', 'Post',
+    'DiscussionAttachment', 'BaseAttachment', 'AuthGlobals', 'User', 'ProjectRole', 'EmailAddress', 'OldProjectRole',
+    'AuditLog', 'audit_log', 'AlluraUserProperty', 'File', 'Notification', 'Mailbox', 'Repository',
+    'RepositoryImplementation', 'MergeRequest', 'GitLikeTree', 'Stats', 'OAuthToken', 'OAuthConsumerToken',
+    'OAuthRequestToken', 'OAuthAccessToken', 'MonQTask', 'Webhook', 'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS',
+    'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session', 'project_doc_session', 'project_orm_session',
+    'artifact_orm_session', 'repository_orm_session', 'task_orm_session', 'ArtifactSessionExtension', 'repository',
+    'repo_refresh', ]

@@ -22,3 +22,8 @@ from smtp_server import SMTPServerCommand
 from create_neighborhood import CreateNeighborhoodCommand, UpdateNeighborhoodCommand
 from create_trove_categories import CreateTroveCategoriesCommand
 from set_neighborhood_features import SetNeighborhoodFeaturesCommand
+
+__all__ = [
+    'Command', 'ShowModelsCommand', 'ReindexCommand', 'EnsureIndexCommand', 'ScriptCommand', 'SetToolAccessCommand',
+    'SMTPServerCommand', 'CreateNeighborhoodCommand', 'UpdateNeighborhoodCommand', 'CreateTroveCategoriesCommand',
+    'SetNeighborhoodFeaturesCommand']

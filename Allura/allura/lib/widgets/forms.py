@@ -18,7 +18,6 @@
 import logging
 import warnings
 
-from collections import defaultdict
 from pylons import app_globals as g, tmpl_context as c
 from formencode import validators as fev
 import formencode
@@ -686,13 +685,12 @@ class SelectSubCategoryForm(ForgeForm):
     def display(self, **kw):
         categories = kw.get('categories')
 
-        self.fields['selected_category'].options = \
-            [ew.Option(py_value=el.trove_cat_id, label=el.fullname)
-             for el in categories]
-        self.fields['selected_category'].validator = \
-            validator = formencode.All(
-                V.OneOfValidator(categories),
-                fev.UnicodeString(not_empty=True))
+        self.fields['selected_category'].options = [
+            ew.Option(py_value=el.trove_cat_id, label=el.fullname) for el in categories
+        ]
+        self.fields['selected_category'].validator = formencode.All(
+            V.OneOfValidator(categories),
+            fev.UnicodeString(not_empty=True))
         return super(ForgeForm, self).display(**kw)
 
 
@@ -830,18 +828,19 @@ class NeighborhoodOverviewForm(ForgeForm):
                 empty_val = False
                 if inp['value'] is None or inp['value'] == '':
                     empty_val = True
-                display += '<tr><td class="left"><label>%(label)s</label></td>'\
-                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'\
-                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'\
-                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '\
-                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {'ctx_id': ctx['id'],
-                                                                                                                      'ctx_name': ctx['name'],
-                                                                                                                      'inp_name': inp['name'],
-                                                                                                                      'inp_value': inp['value'],
-                                                                                                                      'label': inp['label'],
-                                                                                                                      'inp_type': inp['type'],
-                                                                                                                      'def_checked': 'checked="checked"' if empty_val else '',
-                                                                                                                      'inp_additional': additional_inputs}
+                display += '<tr><td class="left"><label>%(label)s</label></td>' \
+                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>' \
+                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">' \
+                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" ' \
+                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {
+                               'ctx_id': ctx['id'],
+                               'ctx_name': ctx['name'],
+                               'inp_name': inp['name'],
+                               'inp_value': inp['value'],
+                               'label': inp['label'],
+                               'inp_type': inp['type'],
+                               'def_checked': 'checked="checked"' if empty_val else '',
+                               'inp_additional': additional_inputs}
             display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
@@ -1104,7 +1103,6 @@ class AwardGrantForm(ForgeForm):
         self._awards = kw.pop('awards', [])
         self._project_select_url = kw.pop('project_select_url', '')
         super(AwardGrantForm, self).__init__(*args, **kw)
-
 
     def award_options(self):
         return [ew.Option(py_value=a.short, label=a.short) for a in self._awards]

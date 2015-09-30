@@ -35,14 +35,6 @@ from alluratest.controller import TestController
 
 from forgewiki import model
 
-#---------x---------x---------x---------x---------x---------x---------x
-# RootController methods exposed:
-#     index, new_page, search
-# PageController methods exposed:
-#     index, edit, history, diff, raw, revert, update
-# CommentController methods exposed:
-#     reply, delete
-
 
 class TestRootController(TestController):
 
@@ -184,7 +176,8 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': 'test label',
                 'viewable_by-0.id': 'all'}).follow()
-        assert '''<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>''' in response
+        assert_in('<a href="/p/test/wiki/search/?q=labels_t:%22test label%22&parser=standard">test label (1)</a>',
+                  response)
 
     def test_title_slashes(self):
         # forward slash not allowed in wiki page title - converted to dash
@@ -335,9 +328,13 @@ class TestRootController(TestController):
                                             **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
-        assert '# Now fix <del> permissons. </del> <ins> permissions. </ins> Wrong permissions may cause <ins> a </ins> massive slowdown!' in response
+        assert_in('# Now fix <del> permissons. </del> <ins> permissions. </ins> '
+                  'Wrong permissions may cause <ins> a </ins> massive slowdown!',
+                  response)
         response = self.app.get('/wiki/testdiff/diff?v1=2&v2=1')
-        assert '# Now fix <del> permissions. </del> <ins> permissons. </ins> Wrong permissions may cause <del> a </del> massive slowdown!' in response
+        assert_in('# Now fix <del> permissions. </del> <ins> permissons. </ins> '
+                  'Wrong permissions may cause <del> a </del> massive slowdown!',
+                  response)
 
     def test_page_raw(self):
         self.app.post(
@@ -763,7 +760,7 @@ class TestRootController(TestController):
         assert inp is not None
         # subscribe
         self.app.post('/p/test/wiki/subscribe', {'subscribe': True},
-                     extra_environ={'username': str(user.username)}).follow()
+                      extra_environ={'username': str(user.username)}).follow()
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})
@@ -771,7 +768,7 @@ class TestRootController(TestController):
         assert inp is not None
         # unsubscribe
         self.app.post('/p/test/wiki/subscribe', {'unsubscribe': True},
-                     extra_environ={'username': str(user.username)}).follow()
+                      extra_environ={'username': str(user.username)}).follow()
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get('/p/test/wiki/Home/', extra_environ={'username': str(user.username)})

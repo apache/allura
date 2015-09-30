@@ -42,7 +42,6 @@ from forgegit import model as GM
 
 
 class _TestCase(TestController):
-
     def setUp(self):
         super(_TestCase, self).setUp()
         self.setup_with_tools()
@@ -50,8 +49,7 @@ class _TestCase(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit.git'
@@ -67,8 +65,7 @@ class _TestCase(TestController):
     @with_tool('test', 'Git', 'testgit-index', 'Git', type='git')
     def setup_testgit_index_repo(self):
         h.set_context('test', 'testgit-index', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit_index.git'
@@ -79,13 +76,10 @@ class _TestCase(TestController):
 
 
 class TestRootController(_TestCase):
-
-
     @with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
     def _setup_weird_chars_repo(self):
         h.set_context('test', 'weird-chars', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'weird-chars.git'
@@ -135,41 +129,34 @@ class TestRootController(_TestCase):
              u'message': u'Add README', u'row': 2})
 
     def test_log(self):
-        resp = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert 'Initial commit' in resp
         assert '<div class="markdown_content"><p>Change README</div>' in resp
         assert 'tree/README?format=raw">Download</a>' not in resp
-        assert 'Tree' in resp.html.findAll(
-            'td')[2].text, resp.html.findAll('td')[2].text
+        assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
         assert 'byRick Copeland' in resp.html.findAll('td')[0].text, resp.html.findAll('td')[0].text
-        resp = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert 'View' in resp.html.findAll('td')[2].text
         assert 'Change README' in resp
         assert 'tree/README?format=raw">Download</a>' in resp
         assert 'Add README' in resp
         assert "Initial commit " not in resp
-        resp = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/a/b/c/')
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/a/b/c/')
         assert 'Remove file' in resp
         assert 'Initial commit' in resp
         assert 'Add README' not in resp
         assert 'Change README' not in resp
-        resp = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/not/exist')
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/not/exist')
         assert 'No (more) commits' in resp
 
     def test_diff_ui(self):
-        r = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' in r
         assert '<input type="checkbox" class="revision"' in r
         assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' in r
         assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' in r
 
-        r = self.app.get(
-            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' not in r
         assert '<input type="checkbox" class="revision"' not in r
         assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' not in r
@@ -247,10 +234,8 @@ class TestRootController(_TestCase):
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp.html.find(
-            'h2', {'class': 'dark title'}).contents[2]
-        content = str(
-            resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        assert 'README' in resp.html.find('h2', {'class': 'dark title'}).contents[2]
+        content = str(resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
@@ -261,16 +246,14 @@ class TestRootController(_TestCase):
         url = ci + 'tree/' + h.urlquote(u'привіт.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in(u'Привіт!\nWhich means Hello!', resp.body.decode('utf-8'))
-        assert_equal(
-            resp.headers.get('Content-Disposition').decode('utf-8'),
-            u'attachment;filename="привіт.txt"')
+        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
+                     u'attachment;filename="привіт.txt"')
 
         url = ci + 'tree/' + h.urlquote(u'with space.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in(u'with space', resp.body.decode('utf-8'))
-        assert_equal(
-            resp.headers.get('Content-Disposition').decode('utf-8'),
-            u'attachment;filename="with space.txt"')
+        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
+                     u'attachment;filename="with space.txt"')
 
     def test_invalid_file(self):
         ci = self._get_ci()
@@ -278,8 +261,7 @@ class TestRootController(_TestCase):
 
     def test_diff(self):
         ci = self._get_ci()
-        resp = self.app.get(
-            ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        resp = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
 
@@ -287,8 +269,7 @@ class TestRootController(_TestCase):
         ci = self._get_ci()
         fn = 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a'
         r = self.app.get(ci + fn + '&diformat=regular')
-        assert fn + \
-            '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
+        assert fn + '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
 
         r = self.app.get(ci + fn + '&diformat=sidebyside')
         assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
@@ -297,8 +278,7 @@ class TestRootController(_TestCase):
     def test_refresh(self):
         notification = M.Notification.query.find({'subject': '[test:src-git] 5 new commits to Git'}).first()
         assert notification
-        domain = '.'.join(
-            reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config['forgemail.domain']
         email = 'noreply@%s%s' % (domain, common_suffix)
         assert_in(email, notification['reply_to_address'])
@@ -306,8 +286,7 @@ class TestRootController(_TestCase):
     def test_file_force_display(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')
-        content = str(
-            resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        content = str(resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content
 
@@ -320,8 +299,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/index.html')
         header = r.html.find('h2', {'class': 'dark title'}).contents[2]
         assert 'index.html' in header, header
-        content = str(
-            r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index.html'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
@@ -335,8 +313,7 @@ class TestRootController(_TestCase):
         header = r.html.find('h2', {'class': 'dark title'})
         assert 'index' in header.contents[3], header.contents[3]
         assert 'index.htm' in header.contents[4], header.contents[4]
-        content = str(
-            r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index/index.htm'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
@@ -387,9 +364,7 @@ class TestRootController(_TestCase):
         assert not '<div id="access_urls"' in r
         r = self.app.get('/src-git/fork')
         assert not '<div id="access_urls"' in r
-        r = self.app.get(
-            ci +
-            'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        r = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
         assert not '<div id="access_urls"' in r
         r = self.app.get(ci + 'tree/README')
         assert not '<div id="access_urls"' in r
@@ -419,8 +394,7 @@ class TestRootController(_TestCase):
         self.setup_testgit_index_repo()
         r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
         form = r.html.find('form', 'tarball')
-        assert_equal(
-            form.get('action'), '/p/test/testgit-index/ci/master/tarball')
+        assert_equal(form.get('action'), '/p/test/testgit-index/ci/master/tarball')
         assert_equal(form.input.get('value'), '/index')
 
     def test_default_branch(self):
@@ -466,7 +440,6 @@ class TestRootController(_TestCase):
 
 
 class TestRestController(_TestCase):
-
     def test_index(self):
         self.app.get('/rest/p/test/src-git/', status=200)
 
@@ -475,7 +448,6 @@ class TestRestController(_TestCase):
 
 
 class TestHasAccessAPI(TestRestApiBase):
-
     def setUp(self):
         super(TestHasAccessAPI, self).setUp()
         self.setup_with_tools()
@@ -485,9 +457,9 @@ class TestHasAccessAPI(TestRestApiBase):
         pass
 
     def test_has_access_no_params(self):
-        r = self.api_get('/rest/p/test/src-git/has_access', status=404)
-        r = self.api_get('/rest/p/test/src-git/has_access?user=root', status=404)
-        r = self.api_get('/rest/p/test/src-git/has_access?perm=read', status=404)
+        self.api_get('/rest/p/test/src-git/has_access', status=404)
+        self.api_get('/rest/p/test/src-git/has_access?user=root', status=404)
+        self.api_get('/rest/p/test/src-git/has_access?perm=read', status=404)
 
     def test_has_access_unknown_params(self):
         """Unknown user and/or permission always False for has_access API"""
@@ -526,7 +498,6 @@ class TestHasAccessAPI(TestRestApiBase):
 
 
 class TestFork(_TestCase):
-
     def setUp(self):
         super(TestFork, self).setUp()
         to_project = M.Project.query.get(
@@ -575,7 +546,8 @@ class TestFork(_TestCase):
         return r
 
     def _find_request_merge_form(self, resp):
-        cond = lambda f: f.action == 'do_request_merge'
+        def cond(f):
+            return f.action == 'do_request_merge'
         return self.find_form(resp, cond)
 
     def _request_merge(self, **kw):
@@ -684,8 +656,7 @@ class TestFork(_TestCase):
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
     def test_merge_request_default_branches(self):
-        _select_val = lambda r, n: r.html.find(
-            'select', {'name': n}).find(selected=True).string
+        _select_val = lambda r, n: r.html.find('select', {'name': n}).find(selected=True).string
         r = self.app.get('/p/test2/code/request_merge')
         assert_equal(_select_val(r, 'source_branch'), 'master')
         assert_equal(_select_val(r, 'target_branch'), 'master')
@@ -719,11 +690,12 @@ class TestFork(_TestCase):
 
     def test_merge_request_edit(self):
         r = self.app.post('/p/test2/code/do_request_merge',
-            params={
-                'source_branch': 'zz',
-                'target_branch': 'master',
-                'summary': 'summary',
-                'description': 'description'}).follow()
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'master',
+                              'summary': 'summary',
+                              'description': 'description',
+                          }).follow()
         assert '<a href="edit" title="Edit"><b data-icon="p" class="ico ico-pencil" title="Edit"></b></a>' in r
         r = self.app.get('/p/test/src-git/merge-requests/1/edit')
         assert 'value="summary"' in r
@@ -732,20 +704,24 @@ class TestFork(_TestCase):
         assert md_edit is not None, 'MarkdownEdit widget not found'
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
-            params={
-                'source_branch': 'zz',
-                'target_branch': 'master',
-                'summary': 'changed summary',
-                'description': 'changed description'},
-                extra_environ=dict(username='*anonymous'), status=302).follow()
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'master',
+                              'summary': 'changed summary',
+                              'description': 'changed description'
+                          },
+                          extra_environ=dict(username='*anonymous'),
+                          status=302,
+                          ).follow()
         assert 'Login' in r
 
         r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
-            params={
-                'source_branch': 'master',
-                'target_branch': 'master',
-                'summary': 'changed summary',
-                'description': 'changed description'}).follow()
+                          params={
+                              'source_branch': 'master',
+                              'target_branch': 'master',
+                              'summary': 'changed summary',
+                              'description': 'changed description',
+                          }).follow()
 
         assert '[5c4724]' not in r
         assert '<p>changed description</p' in r
@@ -786,7 +762,6 @@ class TestFork(_TestCase):
 
 
 class TestDiff(TestController):
-
     def setUp(self):
         super(TestDiff, self).setUp()
         self.setup_with_tools()
@@ -794,8 +769,7 @@ class TestDiff(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testmime.git'
@@ -805,19 +779,18 @@ class TestDiff(TestController):
         ThreadLocalORMSession.flush_all()
 
     def test_diff(self):
-        r = self.app.get(
-            '/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?barediff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png'
+                         '?barediff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
         assert 'alt="2ce83a2..."' in r
         assert 'alt="d961abb..."' in r
 
-        r = self.app.get(
-            '/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png'
+                         '?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
         assert 'alt="2ce83a2..."' in r
         assert 'alt="d961abb..."' in r
 
 
 class TestGitRename(TestController):
-
     def setUp(self):
         super(TestGitRename, self).setUp()
         self.setup_with_tools()
@@ -862,8 +835,9 @@ class TestGitRename(TestController):
 
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert '<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt">f.txt</a>to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt">f2.txt</a>'.replace(' ','') \
-               in resp_no_ws
+        assert_in('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt">f.txt</a>'
+                  'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt">f2.txt</a>'
+                  .replace(' ', ''), resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
 
@@ -875,8 +849,7 @@ class TestGitBranch(TestController):
     @with_git
     def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
-        repo_dir = pkg_resources.resource_filename(
-            'forgegit', 'tests/data')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
         c.app.repo.name = 'test_branch.git'
@@ -892,7 +865,6 @@ class TestGitBranch(TestController):
 
 
 class TestIncludeMacro(_TestCase):
-
     def setUp(self):
         super(TestIncludeMacro, self).setUp()
         setup_global_objects()

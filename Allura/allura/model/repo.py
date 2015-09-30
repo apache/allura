@@ -24,3 +24,8 @@ from .repository import QSIZE, README_RE, VIEWABLE_EXTENSIONS, PYPELINE_EXTENSIO
 from .repository import CommitDoc, TreeDoc, LastCommitDoc, TreesDoc, CommitRunDoc
 from .repository import RepoObject, Commit, Tree, Blob, LastCommit
 from .repository import ModelCache
+
+__all__ = [
+    'SUser', 'SObjType', 'QSIZE', 'README_RE', 'VIEWABLE_EXTENSIONS', 'PYPELINE_EXTENSIONS',
+    'DIFF_SIMILARITY_THRESHOLD', 'CommitDoc', 'TreeDoc', 'LastCommitDoc', 'TreesDoc', 'CommitRunDoc', 'RepoObject',
+    'Commit', 'Tree', 'Blob', 'LastCommit', 'ModelCache']

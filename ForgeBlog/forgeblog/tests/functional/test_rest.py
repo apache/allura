@@ -214,9 +214,9 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.json['page'], 2)
 
     def test_has_access_no_params(self):
-        r = self.api_get('/rest/p/test/blog/has_access', status=404)
-        r = self.api_get('/rest/p/test/blog/has_access?user=root', status=404)
-        r = self.api_get('/rest/p/test/blog/has_access?perm=read', status=404)
+        self.api_get('/rest/p/test/blog/has_access', status=404)
+        self.api_get('/rest/p/test/blog/has_access?user=root', status=404)
+        self.api_get('/rest/p/test/blog/has_access?perm=read', status=404)
 
     def test_has_access_unknown_params(self):
         """Unknown user and/or permission always False for has_access API"""

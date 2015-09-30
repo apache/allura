@@ -22,7 +22,6 @@ import os
 import sys
 import logging
 import shutil
-from collections import defaultdict
 from textwrap import dedent
 
 import tg
@@ -110,7 +109,7 @@ def bootstrap(command, conf, vars):
     log.info('Initializing search')
 
     log.info('Registering root user & default neighborhoods')
-    anonymous = M.User(
+    M.User(
         _id=None,
         username='*anonymous',
         display_name='Anonymous')
@@ -172,7 +171,8 @@ def bootstrap(command, conf, vars):
         [[projects show_total=yes]]
         '''))
     set_nbhd_wiki_content(p_users, dedent('''
-        This is the "Users" neighborhood.  All users automatically get a user-project created for them, using their username.
+        This is the "Users" neighborhood.
+        All users automatically get a user-project created for them, using their username.
 
         [Neighborhood administration](/u/admin)
 
@@ -208,19 +208,19 @@ def bootstrap(command, conf, vars):
             make_user('Test User %d' % unum)
 
     log.info('Creating basic project categories')
-    cat1 = M.ProjectCategory(name='clustering', label='Clustering')
+    M.ProjectCategory(name='clustering', label='Clustering')
     cat2 = M.ProjectCategory(name='communications', label='Communications')
-    cat2_1 = M.ProjectCategory(
+    M.ProjectCategory(
         name='synchronization', label='Synchronization', parent_id=cat2._id)
-    cat2_2 = M.ProjectCategory(
+    M.ProjectCategory(
         name='streaming', label='Streaming', parent_id=cat2._id)
-    cat2_3 = M.ProjectCategory(name='fax', label='Fax', parent_id=cat2._id)
-    cat2_4 = M.ProjectCategory(name='bbs', label='BBS', parent_id=cat2._id)
+    M.ProjectCategory(name='fax', label='Fax', parent_id=cat2._id)
+    M.ProjectCategory(name='bbs', label='BBS', parent_id=cat2._id)
 
     cat3 = M.ProjectCategory(name='database', label='Database')
-    cat3_1 = M.ProjectCategory(
+    M.ProjectCategory(
         name='front_ends', label='Front-Ends', parent_id=cat3._id)
-    cat3_2 = M.ProjectCategory(
+    M.ProjectCategory(
         name='engines_servers', label='Engines/Servers', parent_id=cat3._id)
 
     if create_test_data:
@@ -244,12 +244,12 @@ def bootstrap(command, conf, vars):
             p_projects.add_user(u_admin, ['Admin'])
             p_users.add_user(u_admin, ['Admin'])
 
-            p_allura = n_projects.register_project('allura', u_admin, 'Allura')
-        u1 = make_user('Test User')
-        p_adobe1 = n_adobe.register_project('adobe-1', u_admin, 'Adobe project 1')
+            n_projects.register_project('allura', u_admin, 'Allura')
+        make_user('Test User')
+        n_adobe.register_project('adobe-1', u_admin, 'Adobe project 1')
         p_adobe.add_user(u_admin, ['Admin'])
         p0 = n_projects.register_project('test', u_admin, 'Test Project')
-        p1 = n_projects.register_project('test2', u_admin, 'Test 2')
+        n_projects.register_project('test2', u_admin, 'Test 2')
         p0._extra_tool_status = ['alpha', 'beta']
 
     sess = session(M.Neighborhood)  # all the sessions are the same
@@ -279,11 +279,11 @@ def bootstrap(command, conf, vars):
             log.info('Registering initial apps')
             with h.push_config(c, user=u_admin):
                 p0.install_apps([{'ep_name': ep_name}
-                    for ep_name, app in g.entry_points['tool'].iteritems()
-                    if app._installable(tool_name=ep_name,
-                                        nbhd=n_projects,
-                                        project_tools=[])
-                ])
+                                 for ep_name, app in g.entry_points['tool'].iteritems()
+                                 if app._installable(tool_name=ep_name,
+                                                     nbhd=n_projects,
+                                                     project_tools=[])
+                                 ])
 
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()

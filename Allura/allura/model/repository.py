@@ -30,7 +30,7 @@ from urlparse import urljoin
 from threading import Thread
 from Queue import Queue
 from itertools import chain
-from difflib import SequenceMatcher, unified_diff
+from difflib import SequenceMatcher
 
 import tg
 from paste.deploy.converters import asint, asbool
@@ -56,7 +56,7 @@ from .timeline import ActivityObject
 from .monq_model import MonQTask
 from .project import AppConfig
 from .session import main_doc_session
-from .session import repository_orm_session, artifact_orm_session
+from .session import repository_orm_session
 
 
 log = logging.getLogger(__name__)
@@ -78,18 +78,20 @@ SObjType = S.OneOf('blob', 'tree', 'submodule')
 # Used for when we're going to batch queries using $in
 QSIZE = 100
 BINARY_EXTENSIONS = frozenset([
-    ".3ds", ".3g2", ".3gp", ".7z", ".a", ".aac", ".adp", ".ai", ".aif", ".apk", ".ar", ".asf", ".au", ".avi",
-    ".bak", ".bin", ".bk", ".bmp", ".btif", ".bz2", ".cab", ".caf", ".cgm", ".cmx", ".cpio", ".cr2", ".dat", ".deb", ".djvu", ".dll",
-    ".dmg", ".dng", ".doc", ".docx", ".dra", ".DS_Store", ".dsk", ".dts", ".dtshd", ".dvb", ".dwg", ".dxf", ".ecelp4800",
-    ".ecelp7470", ".ecelp9600", ".egg", ".eol", ".eot", ".epub", ".exe", ".f4v", ".fbs", ".fh", ".fla", ".flac", ".fli", ".flv",
-    ".fpx", ".fst", ".fvt", ".g3", ".gif", ".gz", ".h261", ".h263", ".h264", ".ico", ".ief", ".img", ".ipa", ".iso", ".jar", ".jpeg",
-    ".jpg", ".jpgv", ".jpm", ".jxr", ".ktx", ".lvp", ".lz", ".lzma", ".lzo", ".m3u", ".m4a", ".m4v", ".mar", ".mdi", ".mid", ".mj2",
-    ".mka", ".mkv", ".mmr", ".mng", ".mov", ".movie", ".mp3", ".mp4", ".mp4a", ".mpeg", ".mpg", ".mpga", ".mxu", ".nef", ".npx", ".o",
-    ".oga", ".ogg", ".ogv", ".otf", ".pbm", ".pcx", ".pdf", ".pea", ".pgm", ".pic", ".png", ".pnm", ".ppm", ".psd", ".pya", ".pyc",
-    ".pyo", ".pyv", ".qt", ".rar", ".ras", ".raw", ".rgb", ".rip", ".rlc", ".rz", ".s3m", ".s7z", ".scpt", ".sgi", ".shar", ".sil",
-    ".smv", ".so", ".sub", ".swf", ".tar", ".tbz2", ".tga", ".tgz", ".tif", ".tiff", ".tlz", ".ts", ".ttf", ".uvh", ".uvi", ".uvm",
-    ".uvp", ".uvs", ".uvu", ".viv", ".vob", ".war", ".wav", ".wax", ".wbmp", ".wdp", ".weba", ".webm", ".webp", ".whl", ".wm", ".wma",
-    ".wmv", ".wmx", ".woff", ".woff2", ".wvx", ".xbm", ".xif", ".xm", ".xpi", ".xpm", ".xwd", ".xz", ".z", ".zip", ".zipx"
+    ".3ds", ".3g2", ".3gp", ".7z", ".a", ".aac", ".adp", ".ai", ".aif", ".apk", ".ar", ".asf", ".au", ".avi", ".bak",
+    ".bin", ".bk", ".bmp", ".btif", ".bz2", ".cab", ".caf", ".cgm", ".cmx", ".cpio", ".cr2", ".dat", ".deb", ".djvu",
+    ".dll", ".dmg", ".dng", ".doc", ".docx", ".dra", ".DS_Store", ".dsk", ".dts", ".dtshd", ".dvb", ".dwg", ".dxf",
+    ".ecelp4800", ".ecelp7470", ".ecelp9600", ".egg", ".eol", ".eot", ".epub", ".exe", ".f4v", ".fbs", ".fh", ".fla",
+    ".flac", ".fli", ".flv", ".fpx", ".fst", ".fvt", ".g3", ".gif", ".gz", ".h261", ".h263", ".h264", ".ico", ".ief",
+    ".img", ".ipa", ".iso", ".jar", ".jpeg", ".jpg", ".jpgv", ".jpm", ".jxr", ".ktx", ".lvp", ".lz", ".lzma", ".lzo",
+    ".m3u", ".m4a", ".m4v", ".mar", ".mdi", ".mid", ".mj2", ".mka", ".mkv", ".mmr", ".mng", ".mov", ".movie", ".mp3",
+    ".mp4", ".mp4a", ".mpeg", ".mpg", ".mpga", ".mxu", ".nef", ".npx", ".o", ".oga", ".ogg", ".ogv", ".otf", ".pbm",
+    ".pcx", ".pdf", ".pea", ".pgm", ".pic", ".png", ".pnm", ".ppm", ".psd", ".pya", ".pyc", ".pyo", ".pyv", ".qt",
+    ".rar", ".ras", ".raw", ".rgb", ".rip", ".rlc", ".rz", ".s3m", ".s7z", ".scpt", ".sgi", ".shar", ".sil", ".smv",
+    ".so", ".sub", ".swf", ".tar", ".tbz2", ".tga", ".tgz", ".tif", ".tiff", ".tlz", ".ts", ".ttf", ".uvh", ".uvi",
+    ".uvm", ".uvp", ".uvs", ".uvu", ".viv", ".vob", ".war", ".wav", ".wax", ".wbmp", ".wdp", ".weba", ".webm", ".webp",
+    ".whl", ".wm", ".wma", ".wmv", ".wmx", ".woff", ".woff2", ".wvx", ".xbm", ".xif", ".xm", ".xpi", ".xpm", ".xwd",
+    ".xz", ".z", ".zip", ".zipx"
 ])
 
 PYPELINE_EXTENSIONS = frozenset(utils.MARKDOWN_EXTENSIONS + ['.rst'])
@@ -895,7 +897,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
             'task_name': 'allura.tasks.repo_tasks.merge',
             'args': [self._id],
-            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)}, # constrain on index further
+            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)},  # constrain on index further
         }).sort('_id', -1).limit(1).first()
         if task:
             return task.state
@@ -906,7 +908,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
             'task_name': 'allura.tasks.repo_tasks.can_merge',
             'args': [self._id],
-            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)}, # constrain on index further
+            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)},  # constrain on index further
         }).sort('_id', -1).limit(1).first()
         if task:
             return task.state
