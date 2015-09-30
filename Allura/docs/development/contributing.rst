@@ -107,7 +107,7 @@ To transpile those files as soon as you edit them:
 
     ~$ npm install -g broccoli-timepiece
     ~$ cd ~/src/allura
-    ~$ broccoli-timepiece Allura/allura/public/nf/js/build/
+    ~$ npm run watch
 
 
 Finding Something to Work On

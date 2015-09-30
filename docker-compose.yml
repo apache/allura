@@ -24,8 +24,7 @@ web:
     sh -c '
     if [ ! -e Allura/allura/public/nf/js/build/transpiled.js ]; then
       npm install &&
-      rm -rf Allura/allura/public/nf/js/build/ &&
-      broccoli build Allura/allura/public/nf/js/build/;
+      npm run build;
     fi;
     gunicorn --paste Allura/docker-dev.ini --reload
     '
