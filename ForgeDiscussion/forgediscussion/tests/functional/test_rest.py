@@ -55,9 +55,8 @@ class TestDiscussionApiBase(TestRestApiBase):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         params[f.find('select')['name']] = forum
         params[f.find('input', {'style': 'width: 90%'})['name']] = subject
@@ -250,9 +249,9 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(r.json['forums'][0]['shortname'], 'general')
 
     def test_has_access_no_params(self):
-        r = self.api_get('/rest/p/test/discussion/has_access', status=404)
-        r = self.api_get('/rest/p/test/discussion/has_access?user=root', status=404)
-        r = self.api_get('/rest/p/test/discussion/has_access?perm=read', status=404)
+        self.api_get('/rest/p/test/discussion/has_access', status=404)
+        self.api_get('/rest/p/test/discussion/has_access?user=root', status=404)
+        self.api_get('/rest/p/test/discussion/has_access?perm=read', status=404)
 
     def test_has_access_unknown_params(self):
         """Unknown user and/or permission always False for has_access API"""

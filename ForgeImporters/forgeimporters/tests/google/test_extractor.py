@@ -182,7 +182,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     @without_module('html2text')
     def test_get_issue_basic_fields(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
 
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
@@ -222,7 +223,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     @skipif(module_not_available('html2text'))
     def test_get_issue_basic_fields_html2text(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
         self.assertEqual(gpe.get_issue_creator().url,
@@ -303,8 +305,9 @@ class TestGoogleCodeProjectExtractor(TestCase):
         attachments = gpe.get_issue_attachments()
         self.assertEqual(len(attachments), 1)
         self.assertEqual(attachments[0].filename, 'at1.txt')
-        self.assertEqual(
-            attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
+        self.assertEqual(attachments[0].url,
+                         'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt'
+                         '&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
 
     def test_get_issue_ids(self):
@@ -367,8 +370,10 @@ class TestWithSetupForComments(TestCase):
     # These tests use iter_comments and 2 HTML pages of comments.
 
     def _create_extractor(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue-first-page.html')).read()
-        test_issue_older = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue-prev-page.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue-first-page.html')).read()
+        test_issue_older = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue-prev-page.html')).read()
 
         class LocalTestExtractor(google.GoogleCodeProjectExtractor):
             def urlopen(self, url, **kw):
@@ -442,7 +447,8 @@ class TestWithSetupForComments(TestCase):
                 'author.name': 'john...@gmail.com',
                 'author.url': 'http://code.google.com/u/101557263855536553789/',
                 'created_date': 'Thu Aug  8 15:36:57 2013',
-                'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'body': 'Oh, I forgot one \\(with an inter\\-project reference to '
+                        '[issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
                 'updates': {'Labels:': 'OpSys-OSX'},
                 'attachments': [],
             },
@@ -511,7 +517,8 @@ class TestWithSetupForComments(TestCase):
                 'author.name': 'john...@gmail.com',
                 'author.url': 'http://code.google.com/u/101557263855536553789/',
                 'created_date': 'Thu Aug  8 15:36:57 2013',
-                'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'body': 'Oh, I forgot one \\(with an inter-project reference to '
+                        '[issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
                 'updates': {'Labels:': 'OpSys-OSX'},
                 'attachments': [],
             },

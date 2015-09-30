@@ -188,9 +188,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'secret text'
         params[f.find('select')['name']] = 'secret'
         params[f.find('input', {'style': 'width: 90%'})
@@ -243,9 +242,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
@@ -269,9 +267,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
@@ -299,9 +296,8 @@ class TestForumAdmin(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
@@ -309,7 +305,8 @@ class TestForumAdmin(TestController):
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert 'Sent from localhost because email@monitoring.com is subscribed to http://localhost/p/test/discussion/testforum/' in email_tasks[
+        assert 'Sent from localhost because email@monitoring.com is subscribed '\
+               'to http://localhost/p/test/discussion/testforum/' in email_tasks[
             0].kwargs['text'], email_tasks[0].kwargs['text']
         assert 'a project admin can change settings at http://localhost/p/test/admin/discussion/forums' in email_tasks[
             0].kwargs['text']

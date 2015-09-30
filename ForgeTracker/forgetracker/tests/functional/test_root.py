@@ -67,11 +67,13 @@ class TrackerTestController(TestController):
         pass
 
     def _find_new_ticket_form(self, resp):
-        cond = lambda f: f.action.endswith('/save_ticket')
+        def cond(f):
+            return f.action.endswith('/save_ticket')
         return self.find_form(resp, cond)
 
     def _find_update_ticket_form(self, resp):
-        cond = lambda f: f.action.endswith('/update_ticket_from_widget')
+        def cond(f):
+            return f.action.endswith('/update_ticket_from_widget')
         return self.find_form(resp, cond)
 
     def new_ticket(self, mount_point='/bugs/', extra_environ=None, **kw):
@@ -363,8 +365,8 @@ class TestFunctionalController(TrackerTestController):
         assert 'test new ticket form description' in response
 
     def test_mass_edit(self):
-        ticket_view = self.new_ticket(summary='First Ticket').follow()
-        ticket_view = self.new_ticket(summary='Second Ticket').follow()
+        self.new_ticket(summary='First Ticket').follow()
+        self.new_ticket(summary='Second Ticket').follow()
         M.MonQTask.run_ready()
         first_ticket = tm.Ticket.query.find({'summary': 'First Ticket'}).first()
         second_ticket = tm.Ticket.query.find({'summary': 'Second Ticket'}).first()
@@ -627,7 +629,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/feed.atom', extra_environ=env)
         assert 'Private Ticket' not in r
         # ... or in the API ...
-        r = self.app.get('/rest/p/test/bugs/2/', extra_environ=env, status=401)
+        self.app.get('/rest/p/test/bugs/2/', extra_environ=env, status=401)
         r = self.app.get('/rest/p/test/bugs/', extra_environ=env)
         assert 'Private Ticket' not in r
 
@@ -870,8 +872,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -881,7 +883,7 @@ class TestFunctionalController(TrackerTestController):
                       upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get('/bugs/1/', dict(page=1))
         assert '<input class="submit delete_attachment file" type="submit" value="X"/>' in r
-        form = r.forms[5].submit()
+        r.forms[5].submit()
         r = self.app.get('/bugs/1/', dict(page=1))
         assert '<input class="submit delete_attachment" type="submit" value="X"/>' not in r
 
@@ -917,7 +919,7 @@ class TestFunctionalController(TrackerTestController):
         file_data = file(file_path).read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
-        ticket_editor = self.app.post('/bugs/1/update_ticket', {
+        self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
         ticket = tm.Ticket.query.find({'ticket_num': 1}).first()
@@ -1116,8 +1118,8 @@ class TestFunctionalController(TrackerTestController):
             open_status_names='aa bb',
             closed_status_names='cc',
         )
-        r = self.app.post('/admin/bugs/set_custom_fields',
-                          params=variable_encode(params))
+        self.app.post('/admin/bugs/set_custom_fields',
+                      params=variable_encode(params))
         kw = {'custom_fields._number': ''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         assert '<strong>Number</strong>:  --&gt;' not in ticket_view
@@ -1191,7 +1193,7 @@ class TestFunctionalController(TrackerTestController):
         assert 'Milestone' in ticket_view
         assert '1.0' in ticket_view
         assert 'zzzé' not in ticket_view
-        r = self.app.post('/bugs/update_milestones', {
+        self.app.post('/bugs/update_milestones', {
             'field_name': '_milestone',
             'milestones-0.old_name': '1.0',
             'milestones-0.new_name': 'zzzé',
@@ -1357,7 +1359,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test first ticket')
         self.new_ticket(summary='test second ticket')
         p = M.Project.query.get(shortname='test')
-        tracker = p.app_instance('bugs')
+        p.app_instance('bugs')
         t = tm.Ticket.query.get(summary='test first ticket')
         t.reported_by_id = M.User.by_username('test-user-0')._id
         t = tm.Ticket.query.get(summary='test second ticket')
@@ -1422,8 +1424,8 @@ class TestFunctionalController(TrackerTestController):
             'sort': ''}).follow()
         r = self.app.get('/bugs/')
         assert sidebar_contains(r, 'This is not too long.')
-        r = self.app.post('/admin/bugs/bins/save_bin', {
-            'summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous.',
+        self.app.post('/admin/bugs/bins/save_bin', {
+            'summary': 'This will be truncated because it is too long to show in the sidebar without being ridiculous',
             'terms': 'aaa',
             'old_summary': '',
             'sort': ''}).follow()
@@ -1457,8 +1459,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1473,8 +1475,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1492,8 +1494,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1520,8 +1522,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -1534,8 +1536,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
@@ -1559,7 +1561,8 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
-        expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed&sort=snippet_s+asc&limit=25&filter=&page=0"
+        expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed"\
+                        "&sort=snippet_s+asc&limit=25&filter=&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
@@ -2139,8 +2142,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
@@ -2317,7 +2320,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_tags(self):
         p = M.Project.query.get(shortname='test')
-        tracker = p.app_instance('bugs')
+        p.app_instance('bugs')
         self.new_ticket(summary='a', labels='tag1,tag2')
         self.new_ticket(summary='b', labels='tag2')
         self.new_ticket(summary='c', labels='42cc,test')
@@ -2336,8 +2339,8 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
@@ -2392,7 +2395,9 @@ class TestFunctionalController(TrackerTestController):
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
-            assert_in('<p><strong> <a class="alink" href="http://localhost:8080/p/test/bugs/1/">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>', body)
+            assert_in('<p><strong> <a class="alink" href="http://localhost:8080/p/test/bugs/1/">[bugs:#1]</a>'
+                      ' test &lt;h2&gt; ticket</strong></p>',
+                      body)
 
     @patch('forgetracker.search.query_filter_choices')
     def test_multiselect(self, query_filter_choices):
@@ -2623,7 +2628,7 @@ class TestEmailMonitoring(TrackerTestController):
             if (('thread' in f['action']) and ('post' in f['action'])):
                 params = {i['name']: i.get('value', '')
                           for i in f.findAll('input')
-                          if i.has_key('name')}
+                          if i.has_key('name')}  # nopep8 - beautifulsoup3 actually uses has_key
                 params[f.find('textarea')['name']] = 'foobar'
                 self.app.post(str(f['action']), params)
                 break  # Do it only once if many forms met
@@ -2869,7 +2874,7 @@ class TestBulkMove(TrackerTestController):
         original_p = M.Project.query.get(shortname='test')
         tracker = p.app_instance('bugs')
         original_tracker = original_p.app_instance('bugs')
-        r = self.app.post('/p/test/bugs/move_tickets', {
+        self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
             '__ticket_ids': [t._id for t in tickets],
             '__search': '',
@@ -2907,7 +2912,7 @@ class TestBulkMove(TrackerTestController):
         tickets[0].subscribe(user=first_user)
         tickets[1].subscribe(user=second_user)
         M.MonQTask.query.remove()
-        r = self.app.post('/p/test/bugs/move_tickets', {
+        self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
             '__ticket_ids': [t._id for t in tickets],
             '__search': '',
@@ -2970,7 +2975,7 @@ class TestBulkMove(TrackerTestController):
         p = M.Project.query.get(shortname='test2')
         tracker = p.app_instance('bugs2')
         M.MonQTask.query.remove()
-        r = self.app.post('/p/test/bugs/move_tickets', {
+        self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
             '__ticket_ids': [t._id for t in tickets],
             '__search': '',

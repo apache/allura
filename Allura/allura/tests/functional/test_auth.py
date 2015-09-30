@@ -1063,7 +1063,7 @@ class TestPreferences(TestController):
                               weekday=weekday2,
                               starttime=starttime2.strftime('%H:%M'),
                               endtime=endtime2.strftime('%H:%M'),
-                            _session_id=self.app.cookies['_session_id'],
+                              _session_id=self.app.cookies['_session_id'],
                           ))
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2,
@@ -1159,14 +1159,14 @@ class TestPreferences(TestController):
         skill_cat = M.TroveCategory.query.get(show_as_skill=True)
         level = 'low'
         comment = 'test comment'
-        result = self.app.get('/auth/user_info/skills/')
-        r = self.app.post('/auth/user_info/skills/save_skill',
-                          params=dict(
-                              level=level,
-                              comment=comment,
-                              selected_skill=str(skill_cat.trove_cat_id),
-                              _session_id=self.app.cookies['_session_id'],
-                          ))
+        self.app.get('/auth/user_info/skills/')
+        self.app.post('/auth/user_info/skills/save_skill',
+                      params=dict(
+                          level=level,
+                          comment=comment,
+                          selected_skill=str(skill_cat.trove_cat_id),
+                          _session_id=self.app.cookies['_session_id'],
+                      ))
         user = M.User.query.get(username='test-admin')
         skilldict = dict(category_id=skill_cat._id,
                          comment=comment, level=level)
@@ -1175,14 +1175,14 @@ class TestPreferences(TestController):
         # Add again the same skill
         level = 'medium'
         comment = 'test comment 2'
-        result = self.app.get('/auth/user_info/skills/')
-        r = self.app.post('/auth/user_info/skills/save_skill',
-                          params=dict(
-                              level=level,
-                              comment=comment,
-                              selected_skill=str(skill_cat.trove_cat_id),
-                              _session_id=self.app.cookies['_session_id'],
-                          ))
+        self.app.get('/auth/user_info/skills/')
+        self.app.post('/auth/user_info/skills/save_skill',
+                      params=dict(
+                          level=level,
+                          comment=comment,
+                          selected_skill=str(skill_cat.trove_cat_id),
+                          _session_id=self.app.cookies['_session_id'],
+                      ))
         user = M.User.query.get(username='test-admin')
         skilldict = dict(category_id=skill_cat._id,
                          comment=comment, level=level)
@@ -1191,13 +1191,13 @@ class TestPreferences(TestController):
         # Add an invalid skill
         level2 = 'not a level'
         comment2 = 'test comment 2'
-        r = self.app.post('/auth/user_info/skills/save_skill',
-                          params=dict(
-                              level=level2,
-                              comment=comment2,
-                              selected_skill=str(skill_cat.trove_cat_id),
-                              _session_id=self.app.cookies['_session_id'],
-                          ))
+        self.app.post('/auth/user_info/skills/save_skill',
+                      params=dict(
+                          level=level2,
+                          comment=comment2,
+                          selected_skill=str(skill_cat.trove_cat_id),
+                          _session_id=self.app.cookies['_session_id'],
+                      ))
         user = M.User.query.get(username='test-admin')
         # Check that everything is as it was before
         assert len(user.skills) == 1 and skilldict in user.skills
@@ -1450,13 +1450,13 @@ class TestOAuth(TestController):
     def test_interactive(self, Request, Server):
         M.OAuthConsumerToken.consumer = mock.Mock()
         user = M.User.by_username('test-admin')
-        consumer_token = M.OAuthConsumerToken(
+        M.OAuthConsumerToken(
             api_key='api_key',
             user_id=user._id,
             description='ctok_desc',
         )
         ThreadLocalORMSession.flush_all()
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_callback': 'http://my.domain.com/callback',
         }
@@ -1467,7 +1467,7 @@ class TestOAuth(TestController):
         r = r.forms[0].submit('yes')
         assert r.location.startswith('http://my.domain.com/callback')
         pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': rtok,
             'oauth_verifier': pin,
@@ -1502,10 +1502,10 @@ class TestOAuth(TestController):
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_request_token_no_consumer_token(self, Request, Server):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key'}
-        r = self.app.post('/rest/oauth/request_token',
-                          params={'key': 'value'}, status=403)
+        self.app.post('/rest/oauth/request_token',
+                      params={'key': 'value'}, status=403)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1513,12 +1513,12 @@ class TestOAuth(TestController):
         Server().verify_request.side_effect = ValueError
         M.OAuthConsumerToken.consumer = mock.Mock()
         user = M.User.by_username('test-user')
-        consumer_token = M.OAuthConsumerToken(
+        M.OAuthConsumerToken(
             api_key='api_key',
             user_id=user._id,
         )
         ThreadLocalORMSession.flush_all()
-        req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
+        Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
         self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=403)
 
     def test_authorize_ok(self):
@@ -1528,7 +1528,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='oob',
@@ -1549,7 +1549,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='oob',
@@ -1567,7 +1567,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='oob',
@@ -1584,7 +1584,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback',
@@ -1601,7 +1601,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
@@ -1613,7 +1613,7 @@ class TestOAuth(TestController):
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_no_consumer(self, Request):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': 'api_key',
             'oauth_verifier': 'good',
@@ -1622,13 +1622,13 @@ class TestOAuth(TestController):
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_no_request(self, Request):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': 'api_key',
             'oauth_verifier': 'good',
         }
         user = M.User.by_username('test-admin')
-        ctok = M.OAuthConsumerToken(
+        M.OAuthConsumerToken(
             api_key='api_key',
             user_id=user._id,
             description='ctok_desc',
@@ -1638,7 +1638,7 @@ class TestOAuth(TestController):
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_bad_pin(self, Request):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': 'api_key',
             'oauth_verifier': 'bad',
@@ -1649,7 +1649,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
@@ -1662,7 +1662,7 @@ class TestOAuth(TestController):
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_bad_sig(self, Request, Server):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': 'api_key',
             'oauth_verifier': 'good',
@@ -1673,7 +1673,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
@@ -1687,7 +1687,7 @@ class TestOAuth(TestController):
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_ok(self, Request, Server):
-        req = Request.from_request.return_value = {
+        Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key',
             'oauth_token': 'api_key',
             'oauth_verifier': 'good',
@@ -1698,7 +1698,7 @@ class TestOAuth(TestController):
             user_id=user._id,
             description='ctok_desc',
         )
-        rtok = M.OAuthRequestToken(
+        M.OAuthRequestToken(
             api_key='api_key',
             consumer_token_id=ctok._id,
             callback='http://my.domain.com/callback?myparam=foo',
@@ -1735,8 +1735,8 @@ class TestDisableAccount(TestController):
 
     def test_bad_password(self):
         self.app.get('/')  # establish session
-        r = self.app.post('/auth/disable/do_disable',{'password': 'bad',
-                                                      '_session_id': self.app.cookies['_session_id'],})
+        r = self.app.post('/auth/disable/do_disable', {'password': 'bad',
+                                                       '_session_id': self.app.cookies['_session_id'], })
         assert_in('Invalid password', r)
         user = M.User.by_username('test-admin')
         assert_equal(user.disabled, False)
@@ -1744,7 +1744,7 @@ class TestDisableAccount(TestController):
     def test_disable(self):
         self.app.get('/')  # establish session
         r = self.app.post('/auth/disable/do_disable', {'password': 'foo',
-                                                       '_session_id': self.app.cookies['_session_id'],})
+                                                       '_session_id': self.app.cookies['_session_id'], })
         assert_equal(r.status_int, 302)
         assert_equal(r.location, 'http://localhost/')
         flash = json.loads(self.webflash(r))
@@ -1866,8 +1866,8 @@ class TestPasswordExpire(TestController):
             self.assert_redirects()
             user = M.User.by_username('test-user')
             user.set_tool_data('AuthPasswordReset',
-                          hash="generated_hash_value",
-                          hash_expiry="04-08-2020")
+                               hash="generated_hash_value",
+                               hash_expiry="04-08-2020")
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
             assert_equal(hash, 'generated_hash_value')
@@ -1889,7 +1889,6 @@ class TestPasswordExpire(TestController):
 
             assert_equal(hash, '')
             assert_equal(hash_expiry, '')
-
 
     def check_validation(self, oldpw, pw, pw2):
         user = M.User.by_username('test-user')
@@ -1950,7 +1949,6 @@ class TestPasswordExpire(TestController):
 
 
 class TestCSRFProtection(TestController):
-
     def test_blocks_invalid(self):
         # so test-admin isn't automatically logged in for all requests
         self.app.extra_environ = {'disable_auth_magic': 'True'}
@@ -1980,4 +1978,3 @@ class TestCSRFProtection(TestController):
     def test_token_present_on_first_request(self):
         r = self.app.get('/auth/')
         assert_true(r.form['_session_id'].value)
-

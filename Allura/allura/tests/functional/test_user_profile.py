@@ -194,9 +194,9 @@ class TestUserProfileHasAccessAPI(TestRestApiBase):
 
     @td.with_user_project('test-admin')
     def test_has_access_no_params(self):
-        r = self.api_get('/rest/u/test-admin/profile/has_access', status=404)
-        r = self.api_get('/rest/u/test-admin/profile/has_access?user=root', status=404)
-        r = self.api_get('/rest/u/test-admin/profile/has_access?perm=read', status=404)
+        self.api_get('/rest/u/test-admin/profile/has_access', status=404)
+        self.api_get('/rest/u/test-admin/profile/has_access?user=root', status=404)
+        self.api_get('/rest/u/test-admin/profile/has_access?perm=read', status=404)
 
     @td.with_user_project('test-admin')
     def test_has_access_unknown_params(self):

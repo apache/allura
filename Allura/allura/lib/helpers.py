@@ -133,8 +133,10 @@ def make_safe_path_portion(ustr, relaxed=True):
     s = s.replace('--', '-')
     return s
 
+
 def escape_json(data):
     return json.dumps(data).replace('<', '\u003C')
+
 
 def monkeypatch(*objs):
     def patchem(func):
@@ -695,9 +697,9 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     return limit, page
 
 
-def _add_inline_line_numbers_to_text(text):
+def _add_inline_line_numbers_to_text(txt):
     markup_text = '<div class="codehilite"><pre>'
-    for line_num, line in enumerate(text.splitlines(), 1):
+    for line_num, line in enumerate(txt.splitlines(), 1):
         markup_text = markup_text + \
             '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (
                 line_num, line_num, line)
@@ -705,7 +707,7 @@ def _add_inline_line_numbers_to_text(text):
     return markup_text
 
 
-def _add_table_line_numbers_to_text(text):
+def _add_table_line_numbers_to_text(txt):
     def _prepend_whitespaces(num, max_num):
         num, max_num = str(num), str(max_num)
         diff = len(max_num) - len(num)
@@ -715,7 +717,7 @@ def _add_table_line_numbers_to_text(text):
         max_num = l + start
         return '\n'.join(map(_prepend_whitespaces, range(start, max_num), [max_num] * l))
 
-    lines = text.splitlines(True)
+    lines = txt.splitlines(True)
     linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + \
         _len_to_str_column(len(lines)) + '</pre></div></td>'
     markup_text = '<table class="codehilitetable"><tbody><tr>' + \
@@ -731,28 +733,28 @@ INLINE = 'inline'
 TABLE = 'table'
 
 
-def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
+def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
     """
     renders markdown using allura enhacements if file is in markdown format
     renders any other markup format using the pypeline
     Returns jinja-safe text
     """
-    if text == '':
-        text = '<p><em>Empty File</em></p>'
+    if txt == '':
+        txt = '<p><em>Empty File</em></p>'
     else:
         fmt = g.pypeline_markup.can_render(name)
         if fmt == 'markdown':
-            text = g.markdown.convert(text)
+            txt = g.markdown.convert(txt)
         else:
-            text = g.pypeline_markup.render(name, text)
+            txt = g.pypeline_markup.render(name, txt)
         if not fmt:
             if code_mode and linenumbers_style == INLINE:
-                text = _add_inline_line_numbers_to_text(text)
+                txt = _add_inline_line_numbers_to_text(txt)
             elif code_mode and linenumbers_style == TABLE:
-                text = _add_table_line_numbers_to_text(text)
+                txt = _add_table_line_numbers_to_text(txt)
             else:
-                text = '<pre>%s</pre>' % text
-    return Markup(text)
+                txt = '<pre>%s</pre>' % txt
+    return Markup(txt)
 
 # copied from jinja2 dev
 # latest release, 2.6, implements this incorrectly
@@ -1053,28 +1055,28 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
                 raise e
 
 
-def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False):
+def plain2markdown(txt, preserve_multiple_spaces=False, has_html_entities=False):
     if not has_html_entities:
         # prevent &foo; and &#123; from becoming HTML entities
-        text = re_amp.sub('&amp;', text)
+        txt = re_amp.sub('&amp;', txt)
     # avoid accidental 4-space indentations creating code blocks
     if preserve_multiple_spaces:
-        text = text.replace('\t', ' ' * 4)
-        text = re_preserve_spaces.sub('&nbsp;', text)
+        txt = txt.replace('\t', ' ' * 4)
+        txt = re_preserve_spaces.sub('&nbsp;', txt)
     else:
-        text = re_leading_spaces.sub('', text)
+        txt = re_leading_spaces.sub('', txt)
     try:
         # try to use html2text for most of the escaping
         import html2text
         html2text.BODY_WIDTH = 0
-        text = html2text.escape_md_section(text, snob=True)
+        txt = html2text.escape_md_section(txt, snob=True)
     except ImportError:
         # fall back to just escaping any MD-special chars
-        text = md_chars_matcher_all.sub(r"\\\1", text)
+        txt = md_chars_matcher_all.sub(r"\\\1", txt)
     # prevent < and > from becoming tags
-    text = re_angle_bracket_open.sub('&lt;', text)
-    text = re_angle_bracket_close.sub('&gt;', text)
-    return text
+    txt = re_angle_bracket_open.sub('&lt;', txt)
+    txt = re_angle_bracket_close.sub('&gt;', txt)
+    return txt
 
 
 def iter_entry_points(group, *a, **kw):
@@ -1166,7 +1168,7 @@ def login_overlay(exceptions=None):
     """
     try:
         yield
-    except HTTPUnauthorized as e:
+    except HTTPUnauthorized:
         if exceptions:
             for exception in exceptions:
                 if request.path.rstrip('/').endswith('/%s' % exception):
@@ -1251,7 +1253,6 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
     now = datetime.utcnow()
     for rate, count in rate_limits.items():
         age = now - start_date
-        age = (age.microseconds +
-                (age.seconds + age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+        age = (age.microseconds + (age.seconds + age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
         if age < int(rate) and artifact_count >= count:
             raise exception()

@@ -233,7 +233,7 @@ class CreateTroveCategoriesCommand(base.Command):
                                "User Interface :: Toolkits/Libraries :: ClanLib", True))
         self.create_trove_cat(
             (516, 500, "db_group_objmap", "Project is a relational object mapper",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a relational object mapper",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a relational object mapper",  # nopep8
              True))
         self.create_trove_cat(
             (487, 458, "ui_ggi", "GGI", "User Interface :: Toolkits/Libraries :: GGI", True))
@@ -245,7 +245,7 @@ class CreateTroveCategoriesCommand(base.Command):
                                "User Interface :: Toolkits/Libraries :: wxWidgets", True))
         self.create_trove_cat(
             (511, 500, "db_group_mgmt", "Project is a database management tool",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database management tool",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database management tool",  # nopep8
              True))
         self.create_trove_cat(
             (479, 458, "ui_qt", "Qt", "User Interface :: Toolkits/Libraries :: Qt", True))
@@ -253,7 +253,7 @@ class CreateTroveCategoriesCommand(base.Command):
             (477, 458, "ui_gtk", "GTK+", "User Interface :: Toolkits/Libraries :: GTK+", True))
         self.create_trove_cat(
             (513, 500, "db_group_netdbms", "Project is a network-based DBMS (database system)",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a network-based DBMS (database system)",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a network-based DBMS (database system)",  # nopep8
              True))
         self.create_trove_cat(
             (228, 458, "newt", "Newt", "User Interface :: Toolkits/Libraries :: Newt", True))
@@ -261,7 +261,7 @@ class CreateTroveCategoriesCommand(base.Command):
                                "User Interface :: Toolkits/Libraries :: Curses/Ncurses", True))
         self.create_trove_cat(
             (515, 500, "db_group_conv", "Project is a database conversion tool",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database conversion tool",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database conversion tool",  # nopep8
              True))
         self.create_trove_cat(
             (478, 458, "ui_tk", "Tk", "User Interface :: Toolkits/Libraries :: Tk", True))
@@ -271,7 +271,7 @@ class CreateTroveCategoriesCommand(base.Command):
                                "Topic :: Communications :: Email :: Post-Office", True))
         self.create_trove_cat(
             (514, 500, "db_group_propfmt", "Project is a tool for a proprietary database file format",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a tool for a proprietary database file format",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a tool for a proprietary database file format",  # nopep8
              True))
         self.create_trove_cat(
             (482, 458, "ui_aalib", "AAlib", "User Interface :: Toolkits/Libraries :: AAlib", True))
@@ -279,7 +279,7 @@ class CreateTroveCategoriesCommand(base.Command):
             (484, 458, "ui_fltk", "FLTK", "User Interface :: Toolkits/Libraries :: FLTK", True))
         self.create_trove_cat(
             (512, 500, "db_group_filedbms", "Project is a file-based DBMS (database system)",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a file-based DBMS (database system)",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a file-based DBMS (database system)",  # nopep8
              True))
         self.create_trove_cat(
             (486, 458, "ui_plib", "Plib", "User Interface :: Toolkits/Libraries :: Plib", True))
@@ -287,7 +287,7 @@ class CreateTroveCategoriesCommand(base.Command):
             (488, 458, "ui_glide", "Glide", "User Interface :: Toolkits/Libraries :: Glide", True))
         self.create_trove_cat(
             (510, 500, "db_group_api", "Project is a database abstraction layer (API)",
-             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database abstraction layer (API)",
+             "Database Environment :: Grouping and Descriptive Categories (DB) :: Project is a database abstraction layer (API)",  # nopep8
              True))
         self.create_trove_cat(
             (490, 458, "ui_glut", "GLUT", "User Interface :: Toolkits/Libraries :: GLUT", True))
@@ -828,14 +828,14 @@ class CreateTroveCategoriesCommand(base.Command):
             (441, 315, "ecos", "eCos", "Operating System :: Handheld/Embedded Operating Systems :: eCos", True))
         self.create_trove_cat(
             (
-            443, 315, "vxworks", "VxWorks", "Operating System :: Handheld/Embedded Operating Systems :: VxWorks", True))
+            443, 315, "vxworks", "VxWorks", "Operating System :: Handheld/Embedded Operating Systems :: VxWorks", True))  # nopep8
         self.create_trove_cat((444, 315, "symbianos", "SymbianOS",
                                "Operating System :: Handheld/Embedded Operating Systems :: SymbianOS", True))
         self.create_trove_cat(
             (442, 315, "qnx", "QNX", "Operating System :: Handheld/Embedded Operating Systems :: QNX", True))
         self.create_trove_cat(
             (
-            440, 315, "uclinux", "uClinux", "Operating System :: Handheld/Embedded Operating Systems :: uClinux", True))
+            440, 315, "uclinux", "uClinux", "Operating System :: Handheld/Embedded Operating Systems :: uClinux", True))  # nopep8
         self.create_trove_cat(
             (418, 199, "modern_oses", "Modern (Vendor-Supported) Desktop Operating Systems",
              "Operating System :: Modern (Vendor-Supported) Desktop Operating Systems", True))
@@ -871,13 +871,13 @@ class CreateTroveCategoriesCommand(base.Command):
             (634, 236, "console-platforms", "Console-based Platforms",
              "Operating System :: Other Operating Systems :: Console-based Platforms", True))
         self.create_trove_cat((637, 634, "sega-dreamcast", "Sega Dreamcast",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sega Dreamcast",
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sega Dreamcast",  # nopep8
                                True))
         self.create_trove_cat((635, 634, "xbox", "Microsoft Xbox",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Microsoft Xbox",
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Microsoft Xbox",  # nopep8
                                True))
         self.create_trove_cat((636, 634, "sony-ps2", "Sony Playstation 2",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony Playstation 2",
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony Playstation 2",  # nopep8
                                True))
         self.create_trove_cat(
             (422, 236, "mswin_98", "Win98", "Operating System :: Other Operating Systems :: Win98", True))
@@ -923,11 +923,11 @@ class CreateTroveCategoriesCommand(base.Command):
              "Operating System :: Grouping and Descriptive Categories :: Project is OS Distribution-Specific", True))
         self.create_trove_cat(
             (449, 432, "eightbit_oses", "Classic 8-bit Operating Systems (Apple, Atari, Commodore, etc.)",
-             "Operating System :: Grouping and Descriptive Categories :: Classic 8-bit Operating Systems (Apple, Atari, Commodore, etc.)",
+             "Operating System :: Grouping and Descriptive Categories :: Classic 8-bit Operating Systems (Apple, Atari, Commodore, etc.)",  # nopep8
              True))
         self.create_trove_cat(
             (436, 432, "os_portable", "OS Portable (Source code to work with many OS platforms)",
-             "Operating System :: Grouping and Descriptive Categories :: OS Portable (Source code to work with many OS platforms)",
+             "Operating System :: Grouping and Descriptive Categories :: OS Portable (Source code to work with many OS platforms)",  # nopep8
              True))
         self.create_trove_cat(
             (438, 432, "os_projectdistro", "Project is an Operating System Distribution",
@@ -935,7 +935,7 @@ class CreateTroveCategoriesCommand(base.Command):
              True))
         self.create_trove_cat(
             (235, 432, "independent", "OS Independent (Written in an interpreted language)",
-             "Operating System :: Grouping and Descriptive Categories :: OS Independent (Written in an interpreted language)",
+             "Operating System :: Grouping and Descriptive Categories :: OS Independent (Written in an interpreted language)",  # nopep8
              True))
         self.create_trove_cat(
             (200, 432, "posix", "All POSIX (Linux/BSD/UNIX-like OSes)",
@@ -945,7 +945,7 @@ class CreateTroveCategoriesCommand(base.Command):
              "Operating System :: Grouping and Descriptive Categories :: 32-bit MS Windows (NT/2000/XP)", True))
         self.create_trove_cat(
             (202, 432, "bsd", "All BSD Platforms (FreeBSD/NetBSD/OpenBSD/Apple Mac OS X)",
-             "Operating System :: Grouping and Descriptive Categories :: All BSD Platforms (FreeBSD/NetBSD/OpenBSD/Apple Mac OS X)",
+             "Operating System :: Grouping and Descriptive Categories :: All BSD Platforms (FreeBSD/NetBSD/OpenBSD/Apple Mac OS X)",  # nopep8
              True))
         self.create_trove_cat(
             (435, 432, "mswin_all32bit", "All 32-bit MS Windows (95/98/NT/2000/XP)",
@@ -1107,7 +1107,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat((57, 55, "kde", "K Desktop Environment (KDE)",
                                "Topic :: Desktop Environment :: K Desktop Environment (KDE)", True))
         self.create_trove_cat(
-            (61, 57, "themes", "Themes", "Topic :: Desktop Environment :: K Desktop Environment (KDE) :: Themes", True))
+            (61, 57, "themes", "Themes", "Topic :: Desktop Environment :: K Desktop Environment (KDE) :: Themes", True))  # nopep8
         self.create_trove_cat(
             (58, 55, "gnome", "Gnome", "Topic :: Desktop Environment :: Gnome", True))
         self.create_trove_cat((62, 55, "screensavers", "Screen Savers",
@@ -1473,7 +1473,7 @@ class CreateTroveCategoriesCommand(base.Command):
              "Operating System :: Modern (Vendor-Supported) Desktop Operating Systems :: Windows 7", True))
         self.create_trove_cat(
             (
-            728, 315, "android", "Android", "Operating System :: Handheld/Embedded Operating Systems :: Android", True))
+            728, 315, "android", "Android", "Operating System :: Handheld/Embedded Operating Systems :: Android", True))  # nopep8
         self.create_trove_cat((780, 315, "ios", "Apple iPhone",
                                "Operating System :: Handheld/Embedded Operating Systems :: Apple iPhone", True))
         self.create_trove_cat((863, 534, "architects", "Architects",
@@ -1564,7 +1564,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat((673, 576, "bsm", "Business Service Management",
                                "Topic :: Office/Business :: Enterprise :: Business Service Management"))
         self.create_trove_cat((674, 673, "servicesupport", "Service Support",
-                               "Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Support"))
+                               "Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Support"))  # nopep8
         self.create_trove_cat(
             (675, 673, "serviceassurance", "Service Assurance",
              "Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Assurance"))
@@ -1593,14 +1593,14 @@ class CreateTroveCategoriesCommand(base.Command):
              "License :: OSI-Approved Open Source :: Simple Public License 2.0"))
         self.create_trove_cat(
             (687, 673, "cmdb", "Configuration Management Database (CMDB)",
-             "Topic :: Office/Business :: Enterprise :: Business Service Management :: Configuration Management Database (CMDB)"))
+             "Topic :: Office/Business :: Enterprise :: Business Service Management :: Configuration Management Database (CMDB)"))  # nopep8
         self.create_trove_cat(
             (688, 18, "mobileapps", "Mobile", "Topic :: Mobile"))
         self.create_trove_cat((689, 315, "winmobile", "Windows Mobile",
                                "Operating System :: Handheld/Embedded Operating Systems :: Windows Mobile"))
         self.create_trove_cat(
             (690, 315, "brew", "BREW (Binary Runtime Environment for Wireless)",
-             "Operating System :: Handheld/Embedded Operating Systems :: BREW (Binary Runtime Environment for Wireless)"))
+             "Operating System :: Handheld/Embedded Operating Systems :: BREW (Binary Runtime Environment for Wireless)"))  # nopep8
         self.create_trove_cat(
             (691, 315, "j2me", "J2ME (Java Platform, Micro Edition)",
              "Operating System :: Handheld/Embedded Operating Systems :: J2ME (Java Platform, Micro Edition)"))
@@ -1658,16 +1658,16 @@ class CreateTroveCategoriesCommand(base.Command):
             (717, 160, "proglangmeta", "Project is a programming language",
              "Programming Language :: Project is a programming language"))
         self.create_trove_cat((718, 634, "msxb360", "Microsoft Xbox 360",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Microsoft Xbox 360"))
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Microsoft Xbox 360"))  # nopep8
         self.create_trove_cat((719, 634, "nintendogc", "Nintendo GameCube",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo GameCube"))
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo GameCube"))  # nopep8
         self.create_trove_cat((720, 634, "nintendowii", "Nintendo Wii",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo Wii"))
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo Wii"))  # nopep8
         self.create_trove_cat((721, 634, "sonyps3", "Sony PlayStation 3",
-                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation 3"))
+                               "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation 3"))  # nopep8
         self.create_trove_cat(
             (722, 634, "sonypsp", "Sony PlayStation Portable (PSP)",
-             "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation Portable (PSP)"))
+             "Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation Portable (PSP)"))  # nopep8
         self.create_trove_cat(
             (723, 160, "scilab", "Scilab", "Programming Language :: Scilab"))
         self.create_trove_cat(
@@ -1685,10 +1685,10 @@ class CreateTroveCategoriesCommand(base.Command):
             (730, 274, "basque", "Basque (Euskara)", "Translations :: Basque (Euskara)"))
         self.create_trove_cat(
             (731, 14, "classpath", "GNU General Public License with Classpath exception (Classpath::License)",
-             "License :: OSI-Approved Open Source :: GNU General Public License with Classpath exception (Classpath::License)"))
+             "License :: OSI-Approved Open Source :: GNU General Public License with Classpath exception (Classpath::License)"))  # nopep8
         self.create_trove_cat(
             (732, 727, "caddcam", "Computer-aided technologies (CADD/CAM/CAE)",
-             "Topic :: Scientific/Engineering :: Mechanical and Civil Engineering :: Computer-aided technologies (CADD/CAM/CAE)"))
+             "Topic :: Scientific/Engineering :: Mechanical and Civil Engineering :: Computer-aided technologies (CADD/CAM/CAE)"))  # nopep8
         self.create_trove_cat((733, 576, "humanresources", "Human Resources",
                                "Topic :: Office/Business :: Enterprise :: Human Resources"))
         self.create_trove_cat(
@@ -1983,7 +1983,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.update_trove_cat(
             16, dict(
                 fullname="GNU Library or Lesser General Public License version 2.0 (LGPLv2)",
-                fullpath="License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 2.0 (LGPLv2)"))
+                fullpath="License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 2.0 (LGPLv2)"))  # nopep8
         self.update_trove_cat(
             15, dict(fullname="GNU General Public License version 2.0 (GPLv2)",
                      fullpath="License :: OSI-Approved Open Source :: GNU General Public License version 2.0 (GPLv2)"))
@@ -1995,16 +1995,16 @@ class CreateTroveCategoriesCommand(base.Command):
              "License :: Creative Commons Attribution License"))
         self.create_trove_cat(
             (869, 868, "ccaslv2", "Creative Commons Attribution ShareAlike License V2.0",
-             "License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V2.0"))
+             "License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V2.0"))  # nopep8
         self.create_trove_cat(
             (870, 868, "ccaslv3", "Creative Commons Attribution ShareAlike License V3.0",
-             "License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V3.0"))
+             "License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V3.0"))  # nopep8
         self.create_trove_cat(
             (871, 868, "ccanclv2", "Creative Commons Attribution Non-Commercial License V2.0",
-             "License :: Creative Commons Attribution License :: Creative Commons Attribution Non-Commercial License V2.0"))
+             "License :: Creative Commons Attribution License :: Creative Commons Attribution Non-Commercial License V2.0"))  # nopep8
         self.create_trove_cat(
             (680, 14, "lgplv3", "GNU Library or Lesser General Public License version 3.0 (LGPLv3)",
-             "License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 3.0 (LGPLv3)"))
+             "License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 3.0 (LGPLv3)"))  # nopep8
         self.create_trove_cat(
             (679, 14, "gplv3", "GNU General Public License version 3.0 (GPLv3)",
              "License :: OSI-Approved Open Source :: GNU General Public License version 3.0 (GPLv3)"))

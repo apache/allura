@@ -26,7 +26,7 @@ from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 from pylons import tmpl_context as c
-from nose.tools import assert_equal, assert_in, assert_not_in
+from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false
 import feedparser
 
 from allura import model as M
@@ -147,9 +147,8 @@ class TestForumAsync(TestController):
         self.user = M.User.query.get(username='root')
 
     def test_has_access(self):
-        assert False == c.app.has_access(M.User.anonymous(), 'testforum')
-        assert True == c.app.has_access(
-            M.User.query.get(username='root'), 'testforum')
+        assert_false(c.app.has_access(M.User.anonymous(), 'testforum'))
+        assert_true(c.app.has_access(M.User.query.get(username='root'), 'testforum'))
 
     def test_post(self):
         self._post('testforum', 'Test Thread', 'Nothing here')
@@ -209,9 +208,8 @@ class TestForumAsync(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params['subject'] = 'New Subject'
         params['text'] = 'Asdf'
         r = self.app.post(url, params=params)
@@ -221,9 +219,8 @@ class TestForumAsync(TestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key(
-                    'value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'text'
         r = self.app.post(url + 'reply', params=params)
         self._post('testforum', 'Test Reply', 'Nothing here, either',
@@ -317,7 +314,6 @@ class TestForum(TestController):
                 form[field.name] = 'Test_Description'
         return form
 
-
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms[3]
@@ -375,9 +371,8 @@ class TestForum(TestController):
             params = dict()
             inputs = f.findAll('input')
             for field in inputs:
-                if field.has_key('name'):
-                    params[field['name']] = field.has_key(
-                        'value') and field['value'] or ''
+                if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                    params[field['name']] = field.get('value') or ''
             params[f.find('textarea')['name']] = '1st post in Zero Posts thread'
             params[f.find('select')['name']] = 'testforum'
             params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Zero Posts'
@@ -419,8 +414,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'This is a *test thread*'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
@@ -443,8 +438,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = "this is <h2> o'clock"
@@ -477,8 +472,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
@@ -503,8 +498,7 @@ class TestForum(TestController):
         assert 'Post content' in r
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')
-        link = '<a href="%s">[%s]</a>' % (post.thread.url()
-                                          + '?limit=25#' + post.slug, post.shorthand_id())
+        link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
         assert link in r, link
 
     def test_thread(self):
@@ -514,8 +508,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -528,8 +522,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -550,8 +544,8 @@ class TestForum(TestController):
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         r = self.app.get(thread_url)
@@ -565,8 +559,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Post text'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Post subject'
@@ -579,8 +573,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name') and 'subscription' not in field['name']:
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         self.app.post(str(subscribe_url), params=params)
         self.app.post('/discussion/general/subscribe_to_forum', {'subscribe': True})
         f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
@@ -588,8 +582,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Reply 2'
         self.app.post(str(rep_url), params=params)
         assert M.Notification.query.find(
@@ -613,8 +607,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAAA'
@@ -666,8 +660,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -680,8 +674,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic2'
@@ -731,8 +725,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic1'
@@ -746,8 +740,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
         thread = self.app.get(url)
@@ -779,8 +773,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -803,8 +797,8 @@ class TestForum(TestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'aaa'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
@@ -847,7 +841,7 @@ class TestForum(TestController):
         timestamp_before = M.Project.query.get(shortname='test').last_updated
 
         # View the thread and make sure project last_updated is not updated
-        thread = self.app.get(url)
+        self.app.get(url)
         timestamp_after = M.Project.query.get(shortname='test').last_updated
         assert_equal(timestamp_before, timestamp_after)
 

@@ -18,6 +18,10 @@
 #       under the License.
 
 """Controllers for the allura application."""
-from .discuss import DiscussionController, AppDiscussionController, ThreadController, PostController, ModerationController
-from .discuss import AppDiscussionRestController
+from .discuss import DiscussionController, AppDiscussionController, ThreadController, PostController
+from .discuss import ModerationController, AppDiscussionRestController
 from .base import BaseController, DispatchIndex
+
+__all__ = [
+    'DiscussionController', 'AppDiscussionController', 'ThreadController', 'PostController', 'ModerationController',
+    'AppDiscussionRestController', 'BaseController', 'DispatchIndex']

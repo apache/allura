@@ -305,18 +305,7 @@ def convert_project_shortname(teamforge_path):
 
 # FIXME hardcoded
 skip_perms_usernames = set([
-    'faisal_saeed', 'dsarkisian', 'debonairamit', 'nishanthiremath', 'Bhuvnesh', 'bluetooth', 'cnkurzke', 'makow2', 'jannes1', 'Joel_Hegberg', 'Farroc', 'brian_chen', 'eirikur',
-    'dmitry_flyorov', 'bipingm', 'MornayJo', 'ibv', 'b_weisshaar', 'k9srb', 'johnmmills', 'a_gomolitsky', 'filim', 'kapoor', 'ljzegers', 'jrukes', 'dwilson9', 'jlin', 'quickie',
-    'johnbell', 'nnikolenko', 'Gaetan', 'Giannetta', 'Katia', 'jackhan', 'jacobwangus', 'adwankar', 'dinobrusco', 'qbarnes', 'ilmojung', 'clifford_chan', 'nbaig', 'fhutchi1',
-    'rinofarina', 'baiyanbin', 'muralidhar', 'duanyiruo', 'bredding', 'mkolkey', 'manvith', 'nanduk', 'engyihan', 'deepsie', 'dabon', 'dino_jiang', 'mattrose', 'peter_j_wilhelm',
-    'emx2500', 'jmcguire', 'lfilimowski', 'guruppandit', 'abhilashisme', 'edwinhm', 'rabbi', 'ferrans', 'guna', 'kevin_robinson', 'adathiruthi', 'kochen', 'onehap', 'kalanithi',
-    'jamesn', 'obu001', 'chetanv', 'Avinash', 'HugoBoss', 'Han_Wei', 'mhooper', 'g16872', 'mfcarignano', 'jim_burke', 'kevin', 'arunkarra', 'adam_feng', 'pavan_scm', 'kostya_katz',
-    'ppazderka', 'eileenzhuang', 'pyammine', 'judyho', 'ashoykh', 'rdemento', 'ibrahim', 'min_wang', 'arvind_setlur', 'moorthy_karthik', 'daniel_nelson', 'dms', 'esnmurthy',
-    'rasa_bonyadlou', 'prashantjoshi', 'edkeating', 'billsaez', 'cambalindo', 'jims', 'bozkoyun', 'andry_deltsov', 'bpowers', 'manuel_milli', 'maryparsons', 'spriporov', 'yutianli',
-    'xiebin', 'tnemeth1', 'udayaps', 'zzzzuser', 'timberger', 'sbarve1', 'zarman', 'rwallace67', 'thangavelu_arum', 'yuhuaixie', 'tingup', 'sekchai', 'sasanplus', 'rupal', 'sebastien_hertz',
-    'sab8123', 'rony_lim', 'slava_kirillin', 'smwest', 'wendydu_yq', 'sco002', 'RonFred', 'spatnala', 'vd', 'Sunny', 'tthompson', 'sunijams', 'slaw', 'rodovich', 'zhangqingqi82', 'venki',
-    'yuntaom', 'xiaojin', 'walterciocosta', 'straus', 'Thomas', 'stupka', 'wangyu', 'yaowang', 'wisekb', 'tyler_louie', 'smartgarfield', 'shekar_mahalingam',
-    'venkata_akella', 'v_yellapragada', 'vavasthi', 'rpatel', 'zhengfang', 'sweetybala', 'vap', 'sergey', 'ymhuang', 'spatel78745'
+    'username1', 'username2', 'username3'
 ])
 
 
@@ -583,9 +572,9 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                                 parent=p.parent, timestamp=create_date)
                             p.slug = slug
                             p.full_slug = full_slug
-                            if oldest_post == None or oldest_post.timestamp > create_date:
+                            if oldest_post is None or oldest_post.timestamp > create_date:
                                 oldest_post = p
-                            if newest_post == None or newest_post.timestamp < create_date:
+                            if newest_post is None or newest_post.timestamp < create_date:
                                 newest_post = p
                             ThreadLocalORMSession.flush_all()
                     to.num_replies = to_num_replies
@@ -901,7 +890,8 @@ def _dir_sql(created_on, project, dir_name, rel_path):
       AND pfs_type = 'd'
       AND pfs_name = '%s'
       AND parent_directory = %s;
-    """ % (created_on, convert_project_shortname(project.path), options.neighborhood_shortname, dir_name, parent_directory)
+    """ % (created_on, convert_project_shortname(project.path), options.neighborhood_shortname,
+           dir_name, parent_directory)
     return sql
 
 

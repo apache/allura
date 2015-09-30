@@ -33,9 +33,9 @@ class TestActivityHasAccessAPI(TestRestApiBase):
         config['activitystream.enabled'] = self._enabled
 
     def test_has_access_no_params(self):
-        r = self.api_get('/rest/p/test/activity/has_access', status=404)
-        r = self.api_get('/rest/p/test/activity/has_access?user=root', status=404)
-        r = self.api_get('/rest/p/test/activity/has_access?perm=read', status=404)
+        self.api_get('/rest/p/test/activity/has_access', status=404)
+        self.api_get('/rest/p/test/activity/has_access?user=root', status=404)
+        self.api_get('/rest/p/test/activity/has_access?perm=read', status=404)
 
     def test_has_access_unknown_params(self):
         """Unknown user and/or permission always False for has_access API"""

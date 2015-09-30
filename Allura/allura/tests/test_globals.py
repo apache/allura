@@ -48,6 +48,7 @@ from allura.tests import decorators as td
 from forgewiki import model as WM
 from forgeblog import model as BM
 
+
 def squish_spaces(text):
     return re.sub(r'\s+', ' ', text)
 
@@ -171,7 +172,9 @@ def test_macro_gittip_button():
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[gittip_button username=test]]')
     assert_equal(
-        r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe>\n</p></div>')
+        r,
+        u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" '
+        u'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe>\n</p></div>')
 
 
 def test_macro_neighborhood_feeds():
@@ -213,7 +216,7 @@ def test_macro_members():
     p_test.add_user(M.User.by_username('test-user'), ['Developer'])
     p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
     ThreadLocalORMSession.flush_all()
-    r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t','').replace('\n','')
+    r = g.markdown_wiki.convert('[[members limit=2]]').replace('\t', '').replace('\n', '')
     assert_equal(r,
                  '<div class="markdown_content"><h6>Project Members:</h6>'
                  '<ul class="md-users-list">'
@@ -258,7 +261,7 @@ def test_macro_project_admins_one_br():
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
 
-    assert not '</a><br/><br/><a href=' in r, r
+    assert '</a><br/><br/><a href=' not in r, r
     assert '</a></li><li><a href=' in r, r
 
 
@@ -292,6 +295,7 @@ def test_macro_include_no_extra_br():
 </div>
 <p></p></div>'''
     assert_equal(squish_spaces(html), squish_spaces(expected_html))
+
 
 @with_setup(setUp, tearDown)
 @td.with_wiki
@@ -330,11 +334,13 @@ def test_macro_include_permissions():
 @patch('oembed.OEmbedEndpoint.fetch')
 def test_macro_embed(oembed_fetch):
     oembed_fetch.return_value = {
-        "html": '<iframe width="480" height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" frameborder="0" allowfullscreen></iframe>)',
+        "html": '<iframe width="480" height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" '
+                'frameborder="0" allowfullscreen></iframe>)',
         "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
     }
     r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<div class="grid-20"><iframe height="270" src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
+    assert_in('<div class="grid-20"><iframe height="270" '
+              'src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
               r.replace('\n', ''))
 
 
@@ -484,13 +490,20 @@ def test_markdown_invalid_tagslash():
     r = g.markdown.convert('<div/onload><img src=x onerror=alert(document.cookie)>')
     assert_not_in('onerror', r)
 
+
 def test_markdown_invalid_script_in_link():
     r = g.markdown.convert('[xss](http://"><a onmouseover=prompt(document.domain)>xss</a>)')
-    assert_equal('''<div class="markdown_content"><p><a class="" href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' rel="nofollow">xss</a></p></div>''', r)
+    assert_equal('<div class="markdown_content"><p><a class="" '
+                 '''href='http://"&gt;&lt;a%20onmouseover=prompt(document.domain)&gt;xss&lt;/a&gt;' '''
+                 'rel="nofollow">xss</a></p></div>', r)
+
 
 def test_markdown_invalid_script_in_link2():
     r = g.markdown.convert('[xss](http://"><img src=x onerror=alert(document.cookie)>)')
-    assert_equal('''<div class="markdown_content"><p><a class="" href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' rel="nofollow">xss</a></p></div>''', r)
+    assert_equal('<div class="markdown_content"><p><a class="" '
+                 '''href='http://"&gt;&lt;img%20src=x%20onerror=alert(document.cookie)&gt;' '''
+                 'rel="nofollow">xss</a></p></div>', r)
+
 
 @td.with_wiki
 def test_macro_include():
@@ -629,7 +642,8 @@ def test_hideawards_macro():
 
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert_in('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">Award short</a> </div>',
+        assert_in('<div class="feature"> <a href="http://award.org" rel="nofollow" title="Winner!">'
+                  'Award short</a> </div>',
                   squish_spaces(r))
 
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
@@ -642,7 +656,7 @@ def get_project_names(r):
     """
     # projects short names are in h2 elements without any attributes
     # there is one more h2 element, but it has `class` attribute
-    #re_proj_names = re.compile('<h2><a[^>]>(.+)<\/a><\/h2>')
+    # re_proj_names = re.compile('<h2><a[^>]>(.+)<\/a><\/h2>')
     re_proj_names = re.compile('<h2><a[^>]+>(.+)<\/a><\/h2>')
     return [e for e in re_proj_names.findall(r)]
 
@@ -754,8 +768,10 @@ class TestHandlePaging(unittest.TestCase):
     def setUp(self):
         prefs = {}
         c.user = Mock()
+
         def get_pref(name):
             return prefs.get(name)
+
         def set_pref(name, value):
             prefs[name] = value
         c.user.get_pref = get_pref
