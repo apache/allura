@@ -191,7 +191,7 @@ If you're using a released version of Allura, these are already done for you.  T
     (env-allura)~$ cd ~/src/allura
     (env-allura)~$ npm install -g broccoli-cli
     (env-allura)~$ npm install
-    (env-allura)~$ broccoli build Allura/allura/public/nf/js/build/
+    (env-allura)~$ npm run build
 
 
 The application server

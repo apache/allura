@@ -74,7 +74,7 @@ cd $RELEASE_DIR
 tar xzf $RELEASE_FILE
 cd $RELEASE_FILE_EXTRACTED
 npm install >/dev/null
-BROCCOLI_ENV=production broccoli build Allura/allura/public/nf/js/build/
+BROCCOLI_ENV=production npm run build
 rm -rf node_modules
 cd ..
 tar czf $RELEASE_FILE $RELEASE_BASE
