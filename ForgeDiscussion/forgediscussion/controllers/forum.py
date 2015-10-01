@@ -107,12 +107,15 @@ class ForumController(DiscussionController):
         c.subscribed = M.Mailbox.subscribed(artifact=self.discussion)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('last_post_date', pymongo.DESCENDING)])
-        response = super(
-            ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(),
-                                         limit=limit, page=page, count=threads.count(), **kw)
+        c.discussion = self.W.discussion
         c.discussion_header = self.W.discussion_header
         c.whole_forum_subscription_form = self.W.subscribe_form
-        return response
+        return dict(
+            discussion=self.discussion,
+            count=threads.count(),
+            threads=threads.skip(start).limit(int(limit)).all(),
+            limit=limit,
+            page=page)
 
     @expose()
     def icon(self):

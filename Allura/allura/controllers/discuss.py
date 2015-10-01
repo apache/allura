@@ -89,18 +89,12 @@ class DiscussionController(BaseController, FeedController):
         if not hasattr(self, 'moderate'):
             self.moderate = ModerationController(self)
 
-    @with_trailing_slash
-    @expose('jinja:allura:templates/discussion/index.html')
-    def index(self, threads=None, limit=None, page=0, count=0, **kw):
-        c.discussion = self.W.discussion
-        c.discussion_header = self.W.discussion_header
-        if threads is None:
-            threads = self.discussion.threads
-        return dict(discussion=self.discussion, limit=limit, page=page, count=count, threads=threads)
+    def error_handler(self, *args, **kwargs):
+        redirect(request.referer)
 
     @h.vardec
     @expose()
-    @validate(pass_validator, error_handler=index)
+    @validate(pass_validator, error_handler=error_handler)
     def subscribe(self, **kw):
         threads = kw.pop('threads', [])
         for t in threads:
@@ -528,7 +522,3 @@ class ThreadRestController(ThreadController):
 class AppDiscussionRestController(AppDiscussionController):
     ThreadController = ThreadRestController
     PostController = PostRestController
-
-    @expose('json:')
-    def index(self, **kw):
-        return dict(discussion=self.discussion)
