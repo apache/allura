@@ -179,22 +179,13 @@ class TestRestDiscussion(TestTrackerApiBase):
         ticket_view = self.create_ticket()
         self.ticket_args = ticket_view.json['ticket']
 
-    def test_index(self):
-        r = self.api_get('/rest/p/test/bugs/_discuss/')
-        assert len(r.json['discussion']['threads']) == 1, r.json
-        for t in r.json['discussion']['threads']:
-            r = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
-                             t['_id'])
-            assert len(r.json['thread']['posts']) == 0, r.json
-
     def test_post(self):
-        discussion = self.api_get(
-            '/rest/p/test/bugs/_discuss/').json['discussion']
+        r = self.api_get('/rest/p/test/bugs/1/')
+        thread_id = r.json['ticket']['discussion_thread']['_id']
         post = self.api_post(
-            '/rest/p/test/bugs/_discuss/thread/%s/new' % discussion['threads'][0]['_id'],
+            '/rest/p/test/bugs/_discuss/thread/%s/new' % thread_id,
             text='This is a comment', wrap_args=None)
-        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
-                              discussion['threads'][0]['_id'])
+        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)
         assert len(thread.json['thread']['posts']) == 1, thread.json
         assert post.json['post']['text'] == 'This is a comment', post.json
         reply = self.api_post(
@@ -202,8 +193,7 @@ class TestRestDiscussion(TestTrackerApiBase):
                                                                ['_id'], post.json['post']['slug']),
             text='This is a reply', wrap_args=None)
         assert reply.json['post']['text'] == 'This is a reply', reply.json
-        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
-                              discussion['threads'][0]['_id'])
+        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % thread_id)
         assert len(thread.json['thread']['posts']) == 2, thread.json
 
 
