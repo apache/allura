@@ -17,9 +17,8 @@
   "devDependencies": {
     "broccoli": "^0.16.8",
     "broccoli-babel-transpiler": "^5.4.5",
-    "broccoli-concat": "0.0.13",
     "broccoli-funnel": "^0.2.8",
-    "broccoli-source-map": "^0.2.3",
+    "broccoli-sourcemap-concat": "^2.0.1",
     "broccoli-uglify-js": "^0.1.3"
   }
 }
