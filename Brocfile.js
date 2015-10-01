@@ -17,8 +17,7 @@
        under the License.
 */
 var babelTranspiler = require("broccoli-babel-transpiler");
-var sourceMap = require('broccoli-source-map');
-var concat = require('broccoli-concat');
+var sourceMapConcat = require('broccoli-sourcemap-concat');
 var funnel = require('broccoli-funnel');
 var uglifyJavaScript = require('broccoli-uglify-js');
 
@@ -31,11 +30,10 @@ tree = babelTranspiler(tree, {
     sourceMaps: 'inline',  // external doesn't work, have to use extract below
     comments: false,
 });
-tree = concat(tree, {
-  inputFiles: ['**/*.js'],
+tree = sourceMapConcat(tree, {
+  inputFiles: ['**/*'],
   outputFile: '/transpiled.js'
 });
-tree = sourceMap.extract(tree);
 
 if (process.env.BROCCOLI_ENV === 'production') {
     /* can't use this for dev mode, since it drops the sourcemap comment even if we set  output: {comments: true}
