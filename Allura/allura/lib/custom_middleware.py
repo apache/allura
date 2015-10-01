@@ -322,7 +322,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('urlopen', urllib2, 'urlopen'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
-            Timer('unified_diff', allura.model.repository, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
         try:
