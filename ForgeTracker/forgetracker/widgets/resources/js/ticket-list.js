@@ -150,7 +150,10 @@
     });
 
     function select_active_filter() {
-      /* this 'filter' var is set in HTML */
+      /* this 'filter' var is set in HTML on list pages (if there are tickets) */
+      if (typeof filter === 'undefined') {
+          return;
+      }
       for (var name in filter) {
         var fname = 'filter-' + name;
         var $select = $('select[name="' + fname + '"]');
