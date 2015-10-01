@@ -17,48 +17,51 @@
 
 import os
 from mock import patch
-from nose.tools import assert_in, assert_not_in, assert_equal
+from nose.tools import assert_in, assert_not_in, assert_equal, assert_false, assert_true
 
 from ming.odm import session
 
 from allura.tests import TestController
 from allura import model as M
 
+class TestDiscussBase(TestController):
 
-class TestDiscuss(TestController):
+    def _thread_link(self):
+        home = self.app.get('/wiki/Home/')
+        new_post = home.html.find('div', {'id': 'new_post_holder'})
+        thread_link = new_post.find('form', {'id': 'edit_post'}).get('action')
+        return thread_link.rstrip('post')
+
+    def _thread_id(self):
+        home = self.app.get('/wiki/Home/')
+        new_post = home.html.find('div', {'id': 'new_post_holder'})
+        thread_link = new_post.find('form', {'id': 'edit_post'}).get('action')
+        return thread_link.split('/')[-2]
+
+
+class TestDiscuss(TestDiscussBase):
+
+    def _is_subscribed(self, username, thread_id):
+        user_id = str(M.User.by_username(username)._id)
+        thread = M.Thread.query.get(_id=thread_id)
+        return thread.subscriptions.get(user_id)
 
     def test_subscribe_unsubscribe(self):
-        home = self.app.get('/wiki/_discuss/')
-        subscribed = [i for i in home.html.findAll('input')
-                      if i.get('type') == 'checkbox'][0]
-        assert 'checked' not in subscribed.attrMap
-        link = [a for a in home.html.findAll('a')
-                if 'thread' in a['href']][0]
+        user = 'test-admin'
+        thread_id = self._thread_id()
+        assert_false(self._is_subscribed(user, thread_id))
+        link = self._thread_link()
         params = {
-            'threads-0._id': link['href'][len('/p/test/wiki/_discuss/thread/'):-1],
+            'threads-0._id': thread_id,
             'threads-0.subscription': 'on'}
-        r = self.app.post('/wiki/_discuss/subscribe',
-                          params=params,
-                          headers={'Referer': '/wiki/_discuss/'})
-        r = r.follow()
-        subscribed = [i for i in r.html.findAll('input')
-                      if i.get('type') == 'checkbox'][0]
-        assert 'checked' in subscribed.attrMap
-        params = {
-            'threads-0._id': link['href'][len('/p/test/wiki/_discuss/thread/'):-1]
-        }
-        r = self.app.post('/wiki/_discuss/subscribe',
-                          params=params,
-                          headers={'Referer': '/wiki/_discuss/'})
-        r = r.follow()
-        subscribed = [i for i in r.html.findAll('input')
-                      if i.get('type') == 'checkbox'][0]
-        assert 'checked' not in subscribed.attrMap
+        r = self.app.post('/wiki/_discuss/subscribe', params=params)
+        assert_true(self._is_subscribed(user, thread_id))
+        params = {'threads-0._id': thread_id}
+        r = self.app.post('/wiki/_discuss/subscribe', params=params)
+        assert_false(self._is_subscribed(user, thread_id))
 
     def _make_post(self, text):
-        home = self.app.get('/wiki/_discuss/')
-        thread_link = [a for a in home.html.findAll('a')
-                       if 'thread' in a['href']][0]['href']
+        thread_link = self._thread_link()
         thread = self.app.get(thread_link)
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
@@ -78,9 +81,7 @@ class TestDiscuss(TestController):
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_post(self, submit_spam):
-        home = self.app.get('/wiki/_discuss/')
-        thread_link = [a for a in home.html.findAll('a')
-                       if 'thread' in a['href']][0]['href']
+        thread_link = self._thread_link()
         r = self._make_post('This is a post')
         assert 'This is a post' in r, r
         post_link = str(
@@ -124,9 +125,7 @@ class TestDiscuss(TestController):
             'This is a new post',), submit_spam.call_args[0]
 
     def test_permissions(self):
-        home = self.app.get('/wiki/_discuss/')
-        thread_url = [a for a in home.html.findAll('a')
-                      if 'thread' in a['href']][0]['href']
+        thread_url = self._thread_link()
         thread_id = thread_url.rstrip('/').split('/')[-1]
         thread = M.Thread.query.get(_id=thread_id)
 
@@ -154,8 +153,7 @@ class TestDiscuss(TestController):
     def test_spam_link(self):
         r = self._make_post('Test post')
         assert '<span>Spam</span>' in r
-        r = self.app.get('/wiki/_discuss/',
-                         extra_environ={'username': 'test-user-1'})
+        r = self.app.get('/wiki/Home/', extra_environ={'username': 'test-user-1'})
         assert '<span>Spam</span>' not in r, 'User without moderate perm must not see Spam link'
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
@@ -195,9 +193,7 @@ class TestDiscuss(TestController):
         assert_in('Post needs moderation!', r)
 
     def test_post_paging(self):
-        home = self.app.get('/wiki/_discuss/')
-        thread_link = [a for a in home.html.findAll('a')
-                       if 'thread' in a['href']][0]['href']
+        thread_link = self._thread_link()
         # just make sure it doesn't 500
         self.app.get('%s?limit=50&page=0' % thread_link)
 
@@ -243,14 +239,11 @@ class TestDiscuss(TestController):
         r = self.app.get(post_link, status=404)
 
 
-class TestAttachment(TestController):
+class TestAttachment(TestDiscussBase):
 
     def setUp(self):
         super(TestAttachment, self).setUp()
-        home = self.app.get('/wiki/_discuss/')
-        self.thread_link = [a['href'].encode("utf-8")
-                            for a in home.html.findAll('a')
-                            if 'thread' in a['href']][0]
+        self.thread_link = self._thread_link()
         thread = self.app.get(self.thread_link)
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
@@ -264,7 +257,7 @@ class TestAttachment(TestController):
                     'value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'].encode('utf-8'), params=params,
-                          headers={'Referer': self.thread_link})
+                          headers={'Referer': self.thread_link.encode('utf-8')})
         r = r.follow()
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
