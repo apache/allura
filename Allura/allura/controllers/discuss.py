@@ -65,11 +65,9 @@ class WidgetConfig(object):
     post_filter = DW.PostFilter()
     moderate_posts = DW.ModeratePosts()
     # Other widgets
-    discussion = DW.Discussion()
     thread = DW.Thread()
     post = DW.Post()
     thread_header = DW.ThreadHeader()
-    discussion_header = DW.DiscussionHeader()
 
 # Controllers
 
