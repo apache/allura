@@ -76,6 +76,10 @@ Scripts are in the `scripts/` directory and run slightly differently, via `paste
 
      paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
 
+To run these when using docker, prefix with :code:`docker-compose run web` and use :code:`docker-dev.ini` like::
+
+    docker-compose run taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
+
 Tasks can be run via the web interface at http://MYSITE/nf/admin/task_manager  You must know
 the full task name, e.g. :code:`allura.tasks.admin_tasks.install_app`  You can
 optionally provide a username and project and app which will get set on the

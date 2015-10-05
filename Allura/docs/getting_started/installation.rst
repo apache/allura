@@ -182,12 +182,12 @@ Allura uses a background task service called "taskd" to do async tasks like send
 A few more steps, if using git
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're using a released version of Allura, these are already done for you.  This transpiles JS into a version all browsers support:
+If you're using a released version of Allura, these are already done for you.  This transpiles JS into a version all browsers support.
+For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/ for other options to replace the first line here:
 
 .. code-block:: bash
 
-    (env-allura)~$ sudo aptitude install nodejs npm
-    (env-allura)~$ sudo ln -s /usr/bin/nodejs /usr/bin/node
+    (env-allura)~$ curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash -
     (env-allura)~$ cd ~/src/allura
     (env-allura)~$ npm install -g broccoli-cli
     (env-allura)~$ npm install
@@ -256,7 +256,7 @@ Build/fetch all required images (run these in allura source directory):
 
     docker-compose build
 
-Install requirements:
+Install requirements (and first containers started):
 
 .. code-block:: bash
 
@@ -272,11 +272,11 @@ Initialize database with test data:
 
 .. code-block:: bash
 
-    docker-compose run web bash -c 'cd Allura && paster setup-app docker-dev.ini'
+    docker-compose run taskd paster setup-app docker-dev.ini
 
 .. note::
 
-   If you want to skip test data creation you can instead run: :code:`docker-compose run web bash -c 'cd Allura && ALLURA_TEST_DATA=False paster setup-app docker-dev.ini'`
+   If you want to skip test data creation you can instead run: :code:`docker-compose run -e ALLURA_TEST_DATA=False taskd paster setup-app docker-dev.ini`
 
 Start containers in the background:
 
@@ -284,8 +284,14 @@ Start containers in the background:
 
     docker-compose up -d
 
-You're up and running!  Visit localhost:8080 or on a Mac or Windows, whatever IP address Docker Toolbox is using.  Then
+You're up and running!  Visit localhost:8080, or on a Mac or Windows whatever IP address Docker Toolbox is using.  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
+
+.. note::
+
+   If running from git source, it will take a few minutes during the first time running "up", to set up JS build tools
+   before the webapp is actually running on port 8080.  Watch the progress with :code:`docker-compose logs web`.
+
 
 Containers
 ^^^^^^^^^^
