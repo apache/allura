@@ -726,11 +726,16 @@ class ProjectRegistrationProvider(object):
             return True
         return bool(user.get_tool_data('phone_verification', 'number_hash'))
 
-    def verify_phone(self, user, number):
+    def verify_phone(self, user, number, allow_reuse=False):
+        from allura import model as M
         ok = {'status': 'ok'}
         if not asbool(config.get('project.verify_phone')):
             return ok
         number = utils.clean_phone_number(number)
+        number_hash = utils.phone_number_hash(number)
+        if not allow_reuse and M.User.query.find({'tool_data.phone_verification.number_hash': number_hash}).count():
+            return {'status': 'error',
+                    'error': 'That phone number has already been used.'}
         return g.phone_service.verify(number)
 
     def check_phone_verification(self, user, request_id, pin, number_hash):

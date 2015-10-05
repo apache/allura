@@ -24,7 +24,7 @@ import PIL
 from mock import patch
 from tg import config
 from nose.tools import assert_equal, assert_in, assert_not_equal
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm.ormsession import ThreadLocalORMSession, session
 from paste.httpexceptions import HTTPFound
 from pylons import app_globals as g
 
@@ -33,6 +33,7 @@ from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
+from allura.lib import utils
 from alluratest.controller import setup_trove_categories
 
 
@@ -1005,6 +1006,19 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             'error': u'&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
         }
         assert_equal(r.json, expected)
+
+    @patch.object(g, 'phone_service', autospec=True)
+    def test_verify_phone_already_used(self, phone_service):
+        with h.push_config(config, **{'project.verify_phone': 'true'}):
+            u = M.User.register(dict(username='existing-user'), make_project=False)
+            u.set_tool_data('phone_verification', number_hash=utils.phone_number_hash('1-555-444-9999'))
+            session(u).flush(u)
+            phone_service.verify.return_value = {'request_id': 'request-id', 'status': 'ok'}
+            r = self.app.get('/p/verify_phone', {'number': '1-555-444-9999'})
+            assert_equal(r.json, {
+                'status': 'error',
+                'error': u'That phone number has already been used.'
+            })
 
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
