@@ -282,24 +282,22 @@ class EnsureIndexCommand(base.Command):
             base.log.info('...... ensure %s:%s', collection.name, idx)
             while True:
                 try:
-                    collection.ensure_index(idx.index_spec, unique=True)
+                    collection.ensure_index(idx.index_spec, **idx.index_options)
                     break
                 except DuplicateKeyError, err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
         for keys, idx in indexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
-            collection.ensure_index(idx.index_spec, background=True)
+            collection.ensure_index(idx.index_spec, background=True, **idx.index_options)
         # Drop obsolete indexes
         for iname, keys in prev_indexes.iteritems():
             if keys not in indexes:
-                base.log.info('...... drop index %s:%s',
-                              collection.name, iname)
+                base.log.info('...... drop index %s:%s', collection.name, iname)
                 collection.drop_index(iname)
         for iname, keys in prev_uindexes.iteritems():
             if keys not in uindexes:
-                base.log.info('...... drop index %s:%s',
-                              collection.name, iname)
+                base.log.info('...... drop index %s:%s', collection.name, iname)
                 collection.drop_index(iname)
 
     def _recreate_index(self, collection, iname, keys, **creation_options):

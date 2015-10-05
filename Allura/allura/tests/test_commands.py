@@ -187,7 +187,8 @@ class TestEnsureIndexCommand(object):
             '_foo_bar': {'key': [('foo', 1), ('bar', 1)]},
         }
         indexes = [
-            Mock(unique=False, index_spec=[('foo', 1)]),
+            Mock(unique=False, index_spec=[('foo', 1)],
+                 index_options={'unique': False, 'sparse': False}),
         ]
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd._update_indexes(collection, indexes)
@@ -216,8 +217,10 @@ class TestEnsureIndexCommand(object):
             '_foo_baz': {'key': [('foo', 1), ('baz', 1)]},
         }
         indexes = [
-            Mock(index_spec=[('foo', 1), ('bar', 1)], unique=False, ),
-            Mock(index_spec=[('foo', 1), ('baz', 1)], unique=True, ),
+            Mock(index_spec=[('foo', 1), ('bar', 1)], unique=False,
+                 index_options={'unique': False, 'sparse': False}),
+            Mock(index_spec=[('foo', 1), ('baz', 1)], unique=True,
+                 index_options={'unique': True, 'sparse': False}),
         ]
 
         cmd = show_models.EnsureIndexCommand('ensure_index')
@@ -235,8 +238,8 @@ class TestEnsureIndexCommand(object):
             call.drop_index('_foo_baz'),
             call.ensure_index([('foo', 1), ('baz', 1)], unique=True),
             call.drop_index('_foo_baz_temporary_extra_field_for_indexing'),
-            call.ensure_index([('foo', 1), ('baz', 1)], unique=True),
-            call.ensure_index([('foo', 1), ('bar', 1)], background=True)
+            call.ensure_index([('foo', 1), ('baz', 1)], unique=True, sparse=False),
+            call.ensure_index([('foo', 1), ('bar', 1)], unique=False, sparse=False, background=True)
         ])
 
 

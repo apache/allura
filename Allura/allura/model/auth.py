@@ -272,6 +272,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session = main_orm_session
         indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
+        custom_indexes = [
+            dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
+        ]
 
     type_s = 'User'
 
