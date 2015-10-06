@@ -796,14 +796,13 @@ class ProjectAdminRestController(BaseController):
         return {'status': 'ok'}
 
     @expose('json:')
-    def tools(self, **kw):
+    def installable_tools(self, **kw):
         """ List of installable tools
-
         """
         response.content_type = 'application/json'
-        tools_names = [t['name'] for t in AdminApp.installable_tools_for(c.project)]
+        tools = [t['name'] for t in AdminApp.installable_tools_for(c.project)]
 
-        return {'status': 'ok'}
+        return {'tools': tools}
 
     @expose('json:')
     @require_post()
