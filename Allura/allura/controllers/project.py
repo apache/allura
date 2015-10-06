@@ -380,16 +380,8 @@ class ProjectController(FeedController):
         self._list = ToolListController()
 
     @expose('json:')
-    def _nav(self, **kw):
-        menu = []
-        for s in c.project.grouped_navbar_entries():
-            entry = dict(name=s.label, url=s.url,
-                         icon=s.ui_icon, tool_name=s.tool_name)
-            if s.children:
-                entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon, tool_name=child.tool_name)
-                                     for child in s.children]
-            menu.append(entry)
-        return dict(menu=menu)
+    def _nav(self):
+        return c.project.json_nav()
 
     @expose()
     def _lookup(self, name, *remainder):
