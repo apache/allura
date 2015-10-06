@@ -667,6 +667,15 @@ documentation:
                     required: false
                     description: |
                       "first", "last", or "alpha_tool" for position with respect to existing tools (or existing tools of the same type for "alpha_tool")
+        /tools:
+          description: |
+            Gets a list of installable tools for a project
+
+            returns dict with two fields:
+            success: False if error is occurred, otherwise True
+            info: success or error message
+          get:
+
 
 /u/{username}:
     description: |
