@@ -21,7 +21,7 @@ from urlparse import urlparse
 import json
 from operator import itemgetter
 import pkg_resources
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c, app_globals as g, response
 from pylons import request
 from paste.deploy.converters import asbool, aslist
 from tg import expose, redirect, flash, validate, config, jsonify
