@@ -762,6 +762,51 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     @require_post()
+    def mount_order(self, subs=None, tools=None, **kw):
+        if kw:
+            for ordinal, mount_point in kw.iteritems():
+                try:
+                    c.project.app_config(mount_point).options.ordinal = int(ordinal)
+                except AttributeError as e:
+                    # Handle subproject
+                    print("Handle subproject", mount_point)
+                    p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
+                                            neighborhood_id=c.project.neighborhood_id)
+                    if p:
+                        p.ordinal = int(ordinal)
+        M.AuditLog.log('Updated NavBar mount order for {}'.format(c.project.name))
+        return {'status': 'ok'}
+
+
+    @expose('json:')
+    @require_post()
+    def configure_tool_grouping(self, grouping_threshold='1', **kw):
+        try:
+            grouping_threshold = int(grouping_threshold)
+            if grouping_threshold < 1:
+                raise ValueError('Invalid threshold')
+            c.project.set_tool_data(
+                'allura', grouping_threshold=grouping_threshold)
+        except ValueError:
+            return {
+                'status': 'error',
+                'msg': 'Invalid threshold'
+            }
+        M.AuditLog.log('Updated grouping threshold for {}'.format(c.project.name))
+        return {'status': 'ok'}
+
+    @expose('json:')
+    def tools(self, **kw):
+        """ List of installable tools
+
+        """
+        response.content_type = 'application/json'
+        tools_names = [t['name'] for t in AdminApp.installable_tools_for(c.project)]
+
+        return {'status': 'ok'}
+
+    @expose('json:')
+    @require_post()
     def export(self, tools=None, send_email=False, **kw):
         """
         Initiate a bulk export of the project data.
