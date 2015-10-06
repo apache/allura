@@ -1,0 +1,14 @@
+{
+    "esnext": true,
+    "globalstrict": true,
+    "latedef": true,
+    "supernew": true,
+    "jquery": true,
+    "globals": {
+        "React": true,
+        "$": true,
+        "window": true,
+        "_": true,
+        "ReactReorderable": true
+    }
+}
