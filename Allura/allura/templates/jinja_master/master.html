@@ -22,8 +22,14 @@
 {% if g.theme.jinja_macros %}
     {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
+{% set is_admin = c.project and h.has_access(c.project, 'admin')() %}
 {% do g.register_forge_js('js/jquery-base.js', location='head_js') %}
 {% do g.register_forge_js('js/jquery.notify.js') %}
+{% do g.register_forge_js('js/browser-polyfill.js') %}
+{% do g.register_forge_js('js/underscore-min.js') %}
+{% do g.register_forge_js('js/react-with-addons.min.js') %}
+{% do g.register_forge_js("js/react-drag.js") %}
+{% do g.register_forge_js('js/react-reorderable.js') %}
 {% do g.register_forge_js('js/jquery.tooltipster.js') %}
 {% do g.register_forge_js('js/modernizr.js') %}
 {% do g.register_forge_js('js/sylvester.js') %}
@@ -32,6 +38,7 @@
 {% do g.register_forge_js('js/build/transpiled.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_forge_css('css/forge/tooltipster.css') %}
+{% if is_admin %}{% do g.register_forge_css('css/navbar.css') %}{% endif %}
 {% do g.register_forge_css('css/font-awesome.min.css', compress=False) %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
@@ -180,5 +187,16 @@
         });
     })
 </script>
+{% if is_admin %}
+    <script>
+        'use strict';
+        $(document).ready(function () {
+            React.render(React.createElement(Main, {
+                initialData: {{ c.project.json_nav()|safe }}
+            }), document.getElementById("top_nav_admin"));
+        });
+    </script>
+{% endif %}
+{% do g.register_forge_js('/') %}
 </body>
 </html>
