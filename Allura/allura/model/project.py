@@ -28,6 +28,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
 import formencode as fe
+import json
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -601,6 +602,39 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 i += 1
         return new_tools
 
+    def json_nav(self):
+        grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
+        anchored_tools = self.neighborhood.get_anchored_tools()
+        children = []
+        i = 0
+        for s in self.grouped_navbar_entries():
+            _offset = -2 if s.url.endswith("/") else -1
+            mount_point = s.url.split('/')[_offset]
+            entry = dict(name=s.label,
+                         url=s.url,
+                         icon=s.ui_icon or 'tool-admin',
+                         tool_name=s.tool_name or 'sub',
+                         mount_point=mount_point,
+                         is_anchored=s.tool_name in anchored_tools.keys(),
+                         ordinal=i)
+            i += 1
+            if s.children:
+                entry['child_count'] = len(s.children)
+                entry['children'] = [dict(name=child.label,
+                                          url=child.url,
+                                          icon=child.ui_icon or 'tool-admin',
+                                          mount_point=child.url.split('/')[-2],
+                                          tool_name=child.tool_name or 'sub',
+                                          is_anchored=child.tool_name in anchored_tools.keys(),
+                                          ordinal=x + i)
+                                     for x, child in enumerate(s.children)]
+                i += len(s.children)
+            children.append(entry)
+
+        return json.dumps(dict(grouping_threshold=grouping_threshold,
+                               children=children,
+                               child_count=i))
+
     def grouped_navbar_entries(self):
         """Return a :class:`~allura.app.SitemapEntry` list suitable for rendering
         the project navbar with tools grouped together by tool type.
@@ -801,7 +835,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
         for sub in self.direct_subprojects:
             result.append(
-                {'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
+                {'ordinal': int(sub.ordinal + i), 'sub': sub})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
@@ -809,11 +843,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     ordinal = anchored_tools.keys().index(ac.tool_name.lower())
                 else:
                     ordinal = int(ac.options.get('ordinal', 0)) + i
-                rank = 0 if ac.options.get(
-                    'mount_point', None) == 'home' else 1
-                result.append(
-                    {'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
-        return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
+                result.append({'ordinal': int(ordinal), 'ac': ac})
+
+        return sorted(result, key=lambda e: (e['ordinal']))
 
     def first_mount_visible(self, user):
         mounts = self.ordered_mounts()
@@ -1271,8 +1303,10 @@ class AppConfig(MappedClass, ActivityObject):
             (self.options.mount_point, self.url())]
 
     def __json__(self):
+        options = self.options._deinstrument()
+        options['url'] = self.project.url() + self.options.mount_point + '/'
         return dict(
             _id=self._id,
             # strip away the ming instrumentation
-            options=self.options._deinstrument(),
+            options=options,
         )
