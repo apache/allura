@@ -190,6 +190,18 @@ class SitemapEntry(object):
         return self.url in request.upath_info or any([
             url in request.upath_info for url in self.matching_urls])
 
+    def __json__(self):
+        return dict(
+            label=self.label,
+            className=self.className,
+            url=self.url,
+            small=self.small,
+            ui_icon=self.ui_icon,
+            children=self.children,
+            tool_name=self.tool_name,
+            matching_urls=self.matching_urls,
+            extra_html_attrs=self.extra_html_attrs,
+        )
 
 class Application(object):
 
@@ -757,9 +769,15 @@ class Application(object):
 
         Returns dict that will be included in project's API under tools key.
         """
-        return {'name': self.config.tool_name,
-                'mount_point': self.config.options.mount_point,
-                'label': self.config.options.mount_label}
+        return {
+            'name': self.config.tool_name,
+            'mount_point': self.config.options.mount_point,
+            'url': self.config.url(),
+            'icons': self.icons,
+            'installable': self.installable,
+            'tool_label': self.tool_label,
+            'mount_label': self.config.options.mount_label
+        }
 
 
 class AdminControllerMixin(object):
