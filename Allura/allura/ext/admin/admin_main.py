@@ -800,7 +800,18 @@ class ProjectAdminRestController(BaseController):
         """ List of installable tools
         """
         response.content_type = 'application/json'
-        tools = [t['name'] for t in AdminApp.installable_tools_for(c.project)]
+        tools = []
+        for tool in AdminApp.installable_tools_for(c.project):
+            tools.append({
+                'name': tool['name'],
+                'description': " ".join(tool['app'].tool_description.split()),
+                'icons': tool['app'].icons,
+                'defaults': {
+                    'default_options': tool['app'].default_options(),
+                    'default_mount_label': tool['app'].default_mount_label,
+                    'default_mount_point': tool['app'].default_mount_point,
+                }
+            })
 
         return {'tools': tools}
 
