@@ -21,8 +21,9 @@
 import logging
 
 import oauth2 as oauth
+from paste.util.converters import asbool
 from webob import exc
-from tg import expose, flash, redirect
+from tg import expose, flash, redirect, config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 
@@ -117,7 +118,8 @@ class OAuthNegotiator(object):
             # handle bearer tokens
             # skip https check if auth invoked from tests
             testing = request.environ.get('paste.testing', False)
-            if not testing and request.scheme != 'https':
+            debug = asbool(config.get('debug', False))
+            if not testing and request.scheme != 'https' and not debug:
                 request.environ['pylons.status_code_redirect'] = True
                 raise exc.HTTPForbidden
             access_token = M.OAuthAccessToken.query.get(api_key=access_token)
