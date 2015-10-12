@@ -58,17 +58,23 @@ class _SubscriptionTable(ew.TableField):
 class SubscriptionForm(CsrfForm):
     defaults = dict(
         ew.SimpleForm.defaults,
+        id='user-subs-form',
         submit_text='Save')
 
-    class fields(ew_core.NameList):
-        subscriptions = _SubscriptionTable()
-        email_format = ew.SingleSelectField(
-            name='email_format',
-            label='Email Format',
-            options=[
-                ew.Option(py_value='plain', label='Plain Text'),
-                ew.Option(py_value='html', label='HTML'),
-                ew.Option(py_value='both', label='Combined')])
+    template = 'jinja:allura:templates/widgets/user_subs_form.html'
+
+    @property
+    def fields(self):
+        return [
+            _SubscriptionTable(name='subscriptions'),
+            ew.SingleSelectField(
+                name='email_format',
+                show_label=False,
+                options=[
+                    ew.Option(py_value='plain', label='Plain Text'),
+                    ew.Option(py_value='html', label='HTML'),
+                    ew.Option(py_value='both', label='Combined')]),
+        ]
 
 
 class SubscribeForm(ew.SimpleForm):
