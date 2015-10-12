@@ -301,10 +301,15 @@ ul.dropdown .hover, ul.dropdown li:hover {
     color: rgb(85, 85, 85);
 }
 
+#add_tool_menu{
+    position: relative;
+    z-index: 1000;
+}
+
 .tool-card {
     width: 800px;
-    margin-left: 25px;
-    background-color: white;
+    /* margin-left: 25px; */
+    background-color: #CB6666;
     display: block;
     border: 1px solid #777;
     border-radius: 2px 2px 5px 5px;
@@ -313,6 +318,7 @@ ul.dropdown .hover, ul.dropdown li:hover {
     overflow: auto;
     right: 0;
     min-height: 21rem;
+    z-index: inherit;
 }
 
 .box-title {
@@ -382,7 +388,7 @@ ul.dropdown .hover, ul.dropdown li:hover {
 }
 
 .tool-info-right {
-    background: rgba(239, 239, 239, .7);
+    background: rgba(239, 239, 239, 1);
     width: 40%;
     height: 100%;
     right: 0;
