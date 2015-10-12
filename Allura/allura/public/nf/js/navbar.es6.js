@@ -10,7 +10,7 @@
 function _getProjectUrl(rest = true) {
     var [nbhd, proj] = window.location.pathname.split('/').slice(1, 3);
     var base = `${window.location.protocol}//${window.location.host}`;
-    return rest ? `${base}/rest/${nbhd}/${proj}/` : `${base}/${nbhd}/${proj}/`;
+    return rest ? `${base}/rest/${nbhd}/${proj}` : `${base}/${nbhd}/${proj}`;
 }
 
 /**
@@ -19,26 +19,28 @@ function _getProjectUrl(rest = true) {
  * @param {NavBarItem} node - Return a "rest" version of the url.
  * @returns {string}
  */
-function getLabel(node) {
-    return node.props.children.props.children.props.name;
+function getMountPoint(node) {
+    return node.props.children.props.children.props.mount_point;
 }
 
-var ToolsPropType = {
-    name: React.PropTypes.string.isRequired,
-    url: React.PropTypes.string.isRequired,
-    isSubmenu: React.PropTypes.bool,
-    tools: React.PropTypes.arrayOf(
-        React.PropTypes.shape({
-            ordinal: React.PropTypes.number,
-            mount_point: React.PropTypes.string,
-            name: React.PropTypes.string,
-            url: React.PropTypes.string,
-            is_anchored: React.PropTypes.bool,
-            tool_name: React.PropTypes.string,
-            icon: React.PropTypes.string
-        })
-    ).isRequired
-};
+function ToolsPropType() {
+    return {
+        name: React.PropTypes.string.isRequired,
+        url: React.PropTypes.string.isRequired,
+        isSubmenu: React.PropTypes.bool,
+        tools: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                ordinal: React.PropTypes.number,
+                mount_point: React.PropTypes.string,
+                name: React.PropTypes.string,
+                url: React.PropTypes.string,
+                is_anchored: React.PropTypes.bool,
+                tool_name: React.PropTypes.string,
+                icon: React.PropTypes.string
+            })
+        ).isRequired
+    };
+}
 
 /**
  * A NavBar link, the most basic component of the NavBar.
@@ -80,7 +82,7 @@ var ToolSubMenu = React.createClass({
             return (
                 <div className={ 'draggable-element ' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
                     <div className='draggable-handle' key={ 'handleId-' + _.uniqueId() }>
-                        <NavBarItem {..._this.props} data={ item } name={ item.mount_point } url={ item.url } data-id={ i }/>
+                        <NavBarItem data={ item } name={ item.mount_point } url={ item.url } data-id={ i }/>
                     </div>
                 </div>
             );
@@ -106,6 +108,7 @@ var NavBarItem = React.createClass({
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
         isSubmenu: React.PropTypes.bool,
+        children: React.PropTypes.array.isRequired,
         tools: ToolsPropType
     },
     generateLink: function () {
@@ -113,12 +116,12 @@ var NavBarItem = React.createClass({
     },
 
     generateSubmenu: function () {
-        return <ToolSubMenu {...this.props} tools={ this.props.data.children } key={ `submenu-${_.uniqueId()}` } isSubmenu={ true }/>;
+        return <ToolSubMenu {...this.props} tools={ this.props.children } key={ `submenu-${_.uniqueId()}` } isSubmenu={ true }/>;
     },
 
     generateContent: function () {
         var content = [this.generateLink()];
-        if (this.props.data.children) {
+        if (this.props.children) {
             content.push(this.generateSubmenu());
         }
 
@@ -129,6 +132,7 @@ var NavBarItem = React.createClass({
         var content = this.generateContent();
         var classes = this.props.editMode ? 'tb-item tb-item-edit' : 'tb-item';
         classes = this.props.is_anchored ? `${classes} anchored` : classes;
+
 
         return (
             <div className={ classes }>
@@ -223,8 +227,6 @@ var NormalNavBar = React.createClass({
  */
 var AdminNav = React.createClass({
     propTypes: {
-        name: React.PropTypes.string.isRequired,
-        url: React.PropTypes.string.isRequired,
         isSubmenu: React.PropTypes.bool,
         tools: ToolsPropType
     },
@@ -609,12 +611,12 @@ var Main = React.createClass({
         };
 
         data.map(function (tool, i) {
-            var name = getLabel(tool);
+            var mount_point = getMountPoint(tool);
             var index = tools.children.findIndex(
-                    x => x.mount_point === name
+                x => x.mount_point === mount_point
             );
             tools.children[index].ordinal = i;
-            params[i] = name;
+            params[i] = mount_point;
         });
 
         this.setState({
