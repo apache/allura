@@ -399,7 +399,7 @@ var InstallNewToolForm = React.createClass({
 var NewToolInfo = React.createClass({
     propTypes: {
         name: React.PropTypes.string,
-        description: React.PropTypes.description,
+        description: React.PropTypes.string,
         handleAddButton: React.PropTypes.func
     },
 
@@ -439,6 +439,7 @@ var NewToolMain = React.createClass({
 
     componentDidMount: function () {
         let _this = this;
+        console.log(_getProjectUrl() + "/admin/installable_tools/");
         $.get(_getProjectUrl(true) + "/admin/installable_tools/", function (result) {
             if (this.isMounted()) {
                 console.log('hit is mounted', result['tools']);
@@ -520,14 +521,6 @@ var NewToolMain = React.createClass({
             handleAddButton={this.handleAddButton}/>;
     }
 });
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////
@@ -678,7 +671,6 @@ var Main = React.createClass({
         );
     }
 });
-
 
    React.render(React.createElement(NewToolMain, {
         }), document.getElementById("add_tool_menu"));
