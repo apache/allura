@@ -10,7 +10,7 @@
 function _getProjectUrl(rest = true) {
     var [nbhd, proj] = window.location.pathname.split('/').slice(1, 3);
     var base = `${window.location.protocol}//${window.location.host}`;
-    return rest ? `${base}/rest/${nbhd}/${proj}` : `${base}/${nbhd}/${proj}`;
+    return rest ? `${base}/rest/${nbhd}/${proj}/` : `${base}/${nbhd}/${proj}/`;
 }
 
 /**
@@ -292,6 +292,246 @@ var ToggleAdminButton = React.createClass({
     }
 });
 
+//////////////////
+// Add New Tool //
+//////////////////
+
+var NewToolButton = React.createClass({
+    render: function () {
+        return (
+            <button id='new-tool-btn' onClick={ this.props.handleAddButton } className=''>
+                <i className={ classes }></i>
+            </button>
+        );
+    }
+});
+
+
+/**
+ * Menu for adding a new tool.
+ * @constructor
+ */
+var NewToolMenu = React.createClass({
+    propTypes: {
+        tools: React.PropTypes.array,
+        onPushAddButton: React.PropTypes.func,
+        onSetActive: React.PropTypes.func,
+        formData: React.PropTypes.object,
+        visible: React.PropTypes.bool
+    },
+
+    render: function () {
+        var _this = this;
+
+        var tools = this.props.tools.map(function (tool, i) {
+            var classes;
+            if (_this.props.active && _this.props.active.name === tool.name) {
+                classes = " selected-tool"
+            }
+            else {
+                classes = ""
+            }
+            return (
+                <li className={classes}
+                    id={"add-new-" + tool.name}
+                    key={`new-tool-btn-${i}`}
+                    onClick={_this.props.handleChangeTool}>
+                    {tool.name}
+                </li>
+            )
+        });
+
+        return (
+            <div className="tool-card">
+                <div className="box-title">Add a new tool
+                </div>
+                <div id="installable-items">
+                    <ul className="installable-tool-box">
+                        {tools}
+                    </ul>
+                </div>
+                <div className="tool-partition"></div>
+                <NewToolInfo {...this.props}
+                    name={this.props.active.name}
+                    description={this.props.active.description}
+                    handleAddButton={this.props.handleAddButton}/>
+            </div>
+        );
+    }
+});
+
+var InstallNewToolForm = React.createClass({
+    render: function () {
+        console.log(this.props.active.name);
+        if (this.props.active.name === "Add a tool"){
+
+            return(<div></div>);
+        }
+        var default_mount_point = this.props.active.defaults.default_mount_point;
+        var default_mount_label = this.props.active.defaults.default_mount_label;
+
+        return (
+            <form id="add-tool-form">
+                <label htmlFor="mount_label">Label</label>
+                <input id="mount_label" onChange={this.props.handleChangeForm} value={default_mount_label} />
+
+                <label htmlFor="mount_point">Url Path</label>
+                <input id="mount_point"
+                       onChange={this.props.handleChangeForm}
+                       onBlur={this.props.validateMountPoint}
+                       value={this.props.formData.mount_point}/>
+
+                <p style={{"color": "grey"}}><small>http://hs/p/finna/</small><strong style={{"color": "orange"}}>
+                    {this.props.formData.mount_point}
+                </strong></p>
+
+                <button id="new-tool-submit"
+                        onClick={this.props.handleAddButton}
+                        className="add-tool-button">
+                    Add Tool
+                </button>
+            </form>
+        );
+    }
+});
+
+
+var NewToolInfo = React.createClass({
+    propTypes: {
+        name: React.PropTypes.string,
+        description: React.PropTypes.description,
+        handleAddButton: React.PropTypes.func
+    },
+
+
+    render: function () {
+        return (
+            <div className="tool-info">
+                <div className="tool-info-left">
+                    <h1>{this.props.name}</h1>
+                    <p>{this.props.description}</p>
+                </div>
+                <div className="tool-info-right">
+                    <InstallNewToolForm {...this.props} />
+                </div>
+            </div>
+        );
+    }
+});
+
+var NewToolMain = React.createClass({
+    getInitialState: function () {
+        let toolPlaceHolder = {
+            name: "Add a tool",
+            description: "click on one of the tools shown above to add it to your project."
+        };
+
+        return {
+            installableTools: [toolPlaceHolder],
+            active: toolPlaceHolder,
+            new_tool: {
+                mount_point: "",
+                mount_label: ""
+            }
+        };
+    },
+
+
+    componentDidMount: function () {
+        let _this = this;
+        $.get(_getProjectUrl(true) + "/admin/installable_tools/", function (result) {
+            if (this.isMounted()) {
+                console.log('hit is mounted', result['tools']);
+                this.setState({
+                    installableTools: result['tools']
+                });
+            }
+        }.bind(this));
+    },
+    handleAddButton: function (e) {
+        e.preventDefault();
+        console.log('Add new too button pushed');
+        console.log('e.target.name', e);
+        console.log(e.target.textContent);
+
+    },
+    handleChangeTool: function (e) {
+        console.log(`Changed tool to: ${e.target.textContent}`);
+        this._setActiveByName(e.target.textContent);
+
+    },
+    _setActiveByName: function (name) {
+        var index = this.state.installableTools.findIndex(
+            x => x.name === name
+        );
+        this.setState({
+            active: this.state.installableTools[index]
+        });
+    },
+
+    handleChangeForm: function (e) {
+        console.log(e.target.value);
+        var _new_tool = this.state.new_tool;
+
+        console.log(e.target.id);
+        _new_tool[e.target.id] = e.target.value;
+
+        this.setState({
+            new_tool: _new_tool
+        });
+
+    },
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var nextItems = this.state.items.concat([this.state.text]);
+        var nextText = '';
+        this.setState({items: nextItems, text: nextText});
+    },
+
+    validateMountPoint: function (e) {
+        e.preventDefault();
+        let url = _getProjectUrl(true) + '/admin/mount_point/';
+
+        let data = {
+            'mount_point': e.target.value,
+            '_session_id': $.cookie('_session_id')
+        };
+
+        let d = $.post(url, data).done(function (result) {
+            console.log(result);
+        });
+
+        if(d.responseJSON.exists){
+            alert('exists');
+        }else{
+            alert('does not exist');
+        }
+
+    },
+
+    render: function () {
+        return <NewToolMenu
+            active={this.state.active}
+            tools={this.state.installableTools}
+            formData={this.state.new_tool}
+            handleChangeTool={this.handleChangeTool}
+            handleChangeForm={this.handleChangeForm}
+            validateMountPoint={this.validateMountPoint}
+            handleAddButton={this.handleAddButton}/>;
+    }
+});
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////
+
 /**
  * The main "controller view" of the NavBar.
  * @constructor
@@ -299,7 +539,8 @@ var ToggleAdminButton = React.createClass({
  */
 var Main = React.createClass({
     propTypes: {
-        initialData: ToolsPropType
+        initialData: ToolsPropType,
+        installableTools: React.PropTypes.array
     },
     getInitialState: function () {
         return {
@@ -321,6 +562,7 @@ var Main = React.createClass({
             }
         }.bind(this));
     },
+
 
     /**
      * Handles the locking and unlocking of the NavBar
@@ -436,3 +678,7 @@ var Main = React.createClass({
         );
     }
 });
+
+
+   React.render(React.createElement(NewToolMain, {
+        }), document.getElementById("add_tool_menu"));
