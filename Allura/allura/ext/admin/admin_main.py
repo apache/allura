@@ -797,7 +797,7 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     def installable_tools(self, **kw):
-        """ List of installable tools
+        """ List of installable tools and their default options.
         """
         response.content_type = 'application/json'
         tools = []
@@ -809,7 +809,8 @@ class ProjectAdminRestController(BaseController):
                 'defaults': {
                     'default_options': tool['app'].default_options(),
                     'default_mount_label': tool['app'].default_mount_label,
-                    'default_mount_point': tool['app'].default_mount_point,
+                    'default_mount_point': tool['app'].admin_menu_delete_button,
+                    'modal': tool['app'].admin_modal,
                 }
             })
 
@@ -860,6 +861,32 @@ class ProjectAdminRestController(BaseController):
         }
 
     @expose('json:')
+    @require_post()
+    def mount_point(self, mount_point=None, **kw):
+        """
+        Returns a tool from a given mount point
+        """
+        response.content_type = 'application/json'
+
+        tool = c.project.app_instance(mount_point)
+
+        if tool is None:
+            return {
+                'exists': False,
+                'info': 'Mount point does not exists.',
+            }
+
+        try:
+            info = json.dumps(tool)
+        except TypeError:
+            info = "Could not serialize tool."
+
+        return {
+            'exist': True,
+            'info': info
+        }
+
+    @expose('json:')
     def export_status(self, **kw):
         """
         Check the status of a bulk export.
@@ -900,6 +927,7 @@ class ProjectAdminRestController(BaseController):
 
         """
         controller = ProjectAdminController()
+        ordinal = 0
 
         if not tool or not mount_point or not mount_label:
             return {
