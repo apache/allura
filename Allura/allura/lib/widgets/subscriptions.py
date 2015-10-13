@@ -42,13 +42,7 @@ class _SubscriptionTable(ew.TableField):
         project_name = ffw.DisplayOnlyField(
             label='Project', show_label=True, with_hidden_input=False)
         mount_point = ffw.DisplayOnlyField(
-            label='App', show_label=True, with_hidden_input=False)
-        topic = ffw.DisplayOnlyField(
-            label='Topic', show_label=True, with_hidden_input=False)
-        type = ffw.DisplayOnlyField(
-            label='Type', show_label=True, with_hidden_input=False)
-        frequency = ffw.DisplayOnlyField(
-            label='Frequency', show_label=True, with_hidden_input=False)
+            label='Tool', show_label=True, with_hidden_input=False)
         artifact_title = ew.LinkField(
             label='Artifact', show_label=True, plaintext_if_no_href=True)
         # unsubscribe = SubmitButton()
