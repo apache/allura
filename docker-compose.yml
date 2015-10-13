@@ -17,16 +17,16 @@
 
 web:
   build: .
-  working_dir: /allura
-  # specialized command (and working_dir) to run broccoli
+  # specialized command to run broccoli
   # since it depends on files from the shared volume, it can't be run as part of the Dockerfile build :(
+  # and --no-bin-links necessary when Virtualbox is used since shared mount can't handle symlinks
   command: >
     sh -c '
     if [ ! -e Allura/allura/public/nf/js/build/transpiled.js ]; then
-      npm install &&
+      npm install --no-bin-links --loglevel http &&
       npm run build;
     fi;
-    gunicorn --paste Allura/docker-dev.ini --reload
+    gunicorn --paste Allura/docker-dev.ini --reload;
     '
   ports:
     - "8080:8080"

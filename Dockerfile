@@ -30,8 +30,13 @@ RUN apt-get update && apt-get install -y \
     zip \
     subversion \
     python-svn \
-    npm
-RUN ln -s /usr/bin/nodejs /usr/bin/node
+    curl
+
+# up-to-date version of node & npm
+RUN curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash - && \
+    apt-get install --yes nodejs
+
+# only do the global installation here.  All local packages are installed in the docker-compose.yml command, since they need the shared mount
 RUN npm install -g broccoli-cli
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
@@ -42,5 +47,5 @@ ENV LANG en_US.UTF-8
 # tests). If this is not set, it uses os.getlogin, which fails inside docker.
 ENV USER root
 
-WORKDIR /allura/Allura
-CMD gunicorn --paste docker-dev.ini --reload
+WORKDIR /allura
+CMD gunicorn --paste Allura/docker-dev.ini --reload

@@ -15,6 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
+
 from . import base
 
 from ming.orm import session
@@ -22,6 +24,8 @@ from bson import ObjectId
 
 from allura import model as M
 from allura.lib import plugin, exceptions
+
+log = logging.getLogger(__name__)
 
 
 class CreateNeighborhoodCommand(base.Command):
@@ -44,6 +48,7 @@ class CreateNeighborhoodCommand(base.Command):
                           google_analytics=False))
         project_reg = plugin.ProjectRegistrationProvider.get()
         project_reg.register_neighborhood_project(n, admins)
+        log.info('Successfully created neighborhood "{}"'.format(shortname))
 
 
 class UpdateNeighborhoodCommand(base.Command):
