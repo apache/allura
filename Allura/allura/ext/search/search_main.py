@@ -40,6 +40,7 @@ class SearchApp(Application):
     __version__ = version.__version__
     max_instances = 0
     hidden = True
+    has_notifications = False
     sitemap = []
 
     def __init__(self, project, config):

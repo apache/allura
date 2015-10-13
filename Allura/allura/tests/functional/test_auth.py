@@ -582,20 +582,20 @@ class TestAuth(TestController):
         subscriptions = M.Mailbox.query.find(dict(
             user_id=c.user._id, is_flash=False)).all()
         # make sure page actually lists all the user's subscriptions
-        assert len(
-            subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
+        assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
         for m in subscriptions:
             assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
 
         # make sure page lists all tools which user can subscribe
         user = M.User.query.get(username='test-admin')
-        tools = []
         for p in user.my_projects():
             for ac in p.app_configs:
                 if not M.Mailbox.subscribed(project_id=p._id, app_config_id=ac._id):
-                    tools.append(ac._id)
-        for tool_id in tools:
-            assert tool_id in r, "Page doesn't list tool with app_config_id = %s" % tool_id
+                    if ac.tool_name in ('activity', 'admin', 'search', 'userstats', 'profile'):
+                        # these have has_notifications=False
+                        assert ac._id not in r, "Page lists tool %s but it should not" % ac.tool_name
+                    else:
+                        assert ac._id in r, "Page doesn't list tool %s" % ac.tool_name
 
     def _find_subscriptions_form(self, r):
         form = None

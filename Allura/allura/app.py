@@ -216,6 +216,8 @@ class Application(object):
         can not be added to the project by the user. Default value is float("inf").
     :cvar bool hidden: Default is False, Application is not hidden from the
         list of a project's installed tools.
+    :cvar bool has_notifications: Default is True, if set to False then application will not
+        be listed on user subscriptions table.
     :cvar str tool_description: Text description of this Application.
     :cvar bool relaxed_mount_points: Set to True to relax the default mount point
         naming restrictions for this Application. Default is False. See
@@ -272,6 +274,7 @@ class Application(object):
     relaxed_mount_points = False
     ordinal = 0
     hidden = False
+    has_notifications = True
     icons = {
         24: 'images/admin_24.png',
         32: 'images/admin_32.png',

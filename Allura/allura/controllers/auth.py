@@ -868,15 +868,19 @@ class SubscriptionsController(BaseController):
                 continue
             if app_config is None:
                 continue
+            app = app_config.load()
+            if not app.has_notifications:
+                continue
 
             subscriptions.append(dict(
                 subscription_id=mb._id,
                 project_id=project._id,
                 app_config_id=mb.app_config_id,
                 project_name=project.name,
-                mount_point=app_config.options['mount_point'],
+                tool=app_config.options['mount_label'],
                 artifact_title=dict(
-                    text=mb.artifact_title, href=mb.artifact_url),
+                    text='Everything' if mb.artifact_title == 'All artifacts' else mb.artifact_title,
+                    href=mb.artifact_url),
                 topic=mb.topic,
                 type=mb.type,
                 frequency=mb.frequency.unit,
@@ -902,20 +906,23 @@ class SubscriptionsController(BaseController):
         for tool in my_tools:
             if tool['_id'] in my_tools_subscriptions:
                 continue  # We have already subscribed to this tool.
+            app = tool.load()
+            if not app.has_notifications:
+                continue
 
             subscriptions.append(
                 dict(tool_id=tool._id,
                      user_id=c.user._id,
                      project_id=tool.project_id,
                      project_name=my_projects[tool.project_id].name,
-                     mount_point=tool.options['mount_point'],
-                     artifact_title='No subscription',
+                     tool=tool.options['mount_label'],
+                     artifact_title='Everything',
                      topic=None,
                      type=None,
                      frequency=None,
                      artifact=None))
 
-        subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
+        subscriptions.sort(key=lambda d: (d['project_name'], d['tool']))
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
         return dict(

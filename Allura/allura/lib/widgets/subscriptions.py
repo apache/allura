@@ -41,10 +41,10 @@ class _SubscriptionTable(ew.TableField):
     class fields(ew_core.NameList):
         project_name = ffw.DisplayOnlyField(
             label='Project', show_label=True, with_hidden_input=False)
-        mount_point = ffw.DisplayOnlyField(
+        tool = ffw.DisplayOnlyField(
             label='Tool', show_label=True, with_hidden_input=False)
         artifact_title = ew.LinkField(
-            label='Artifact', show_label=True, plaintext_if_no_href=True)
+            label='Item(s)', show_label=True, plaintext_if_no_href=True)
         # unsubscribe = SubmitButton()
         subscribed = ew.Checkbox(suppress_label=True)
 

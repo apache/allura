@@ -59,6 +59,7 @@ class UserProfileApp(Application):
     __version__ = version.__version__
     tool_label = 'Profile'
     max_instances = 0
+    has_notifications = False
     icons = {
         24: 'images/home_24.png',
         32: 'images/home_32.png',

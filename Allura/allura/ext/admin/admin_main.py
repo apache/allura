@@ -86,6 +86,7 @@ class AdminApp(Application):
         48: 'images/admin_48.png'
     }
     exportable = True
+    has_notifications = False
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

@@ -52,6 +52,7 @@ class ForgeActivityApp(Application):
     default_mount_point = 'activity'
     max_instances = 0
     searchable = False
+    has_notifications = False
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)

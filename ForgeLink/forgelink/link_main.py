@@ -59,6 +59,7 @@ class ForgeLinkApp(Application):
     config_on_install = ['url']
     searchable = True
     exportable = True
+    has_notifications = False
     tool_label = 'External Link'
     default_mount_label = 'Link name'
     default_mount_point = 'link'

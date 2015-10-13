@@ -59,6 +59,7 @@ class ForgeChatApp(Application):
     config_options = Application.config_options + [
         ConfigOption('channel', str, ''),
     ]
+    has_notifications = False
     icons = {
         24: 'images/chat_24.png',
         32: 'images/chat_32.png',
