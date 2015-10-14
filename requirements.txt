@@ -21,7 +21,7 @@ httplib2==0.7.4
 iso8601==0.1.4
 Jinja2==2.6
 Markdown==2.2.0
-Ming==0.4.7
+Ming==0.5.2
 oauth2==1.5.170
 # tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
 Paste==1.7.5.1
@@ -30,7 +30,7 @@ PasteScript==1.7.4.2
 Pillow==2.9.0
 poster==0.8.1
 Pygments==2.0.2
-pymongo==2.4.2
+pymongo==2.8.1
 Pypeline==0.2
 pysolr==2.1.0-beta
 python-dateutil==1.5
