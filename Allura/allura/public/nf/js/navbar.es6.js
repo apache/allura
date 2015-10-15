@@ -24,9 +24,9 @@ function slugify(text)
 }
 
 /**
- * Get a tool label from a NavBarItem node.
+ * Get a mount point from a NavBarItem node.
  * @constructor
- * @param {NavBarItem} node - Return a "rest" version of the url.
+ * @param {NavBarItem} node
  * @returns {string}
  */
 function getMountPoint(node) {
@@ -52,26 +52,6 @@ function ToolsPropType() {
     };
 }
 
-/**
- * A NavBar link, the most basic component of the NavBar.
- * @constructor
- */
-var NavLink = React.createClass({
-    propTypes: {
-        name: React.PropTypes.string.isRequired,
-        url: React.PropTypes.string.isRequired,
-        style: React.PropTypes.object
-    },
-    render: function () {
-        var classes = this.props.subMenu ? ' subMenu' : '';
-        classes += this.props.classes;
-        return (
-            <a href={ this.props.url } key={ `link-${_.uniqueId()}` } className={ classes } style={ this.props.style }>
-                { this.props.name }
-            </a> // jshint ignore:line
-        );
-    }
-});
 
 /**
  * When the number of tools of the same type exceeds the grouping threshold,
@@ -83,7 +63,6 @@ var ToolSubMenu = React.createClass({
         isSubmenu: React.PropTypes.bool,
         tools: ToolsPropType
     },
-    handle: '.draggable-handle',
     mode: 'list',
     render: function () {
         var _this = this;
@@ -92,7 +71,7 @@ var ToolSubMenu = React.createClass({
             return (
                 <div className={ 'draggable-element ' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
                     <div className='draggable-handle' key={ 'handleId-' + _.uniqueId() }>
-                        <NavBarItem data={ item } name={ item.mount_point } url={ item.url } data-id={ i }/>
+                        <NavBarItem data={ item } name={ item.mount_point } url={ item.url }/>
                     </div>
                 </div>
             );
@@ -110,7 +89,7 @@ var ToolSubMenu = React.createClass({
 });
 
 /**
- * A single NavBar item. (A wrapper for NavLink).
+ * A single NavBar item.
  * @constructor
  */
 var NavBarItem = React.createClass({
@@ -118,11 +97,19 @@ var NavBarItem = React.createClass({
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
         isSubmenu: React.PropTypes.bool,
-        children: React.PropTypes.array.isRequired,
+        children: React.PropTypes.array,
         tools: ToolsPropType
     },
-    generateLink: function () {
-        return <NavLink url={ this.props.url } name={ this.props.name } key={ _.uniqueId() }/>;
+    generateItem: function () {
+        var controls = [<i className='config-tool fa fa-cog'></i>];
+        var arrow_classes = 'fa fa-arrows-h'
+        if (this.props.is_anchored) {
+            arrow_classes += ' anchored';
+        } else {
+            arrow_classes += ' draggable-handle';
+        }
+        controls.push(<i className={arrow_classes}></i>);
+        return <a>{ this.props.name }<br/>{ controls }</a>
     },
 
     generateSubmenu: function () {
@@ -130,7 +117,7 @@ var NavBarItem = React.createClass({
     },
 
     generateContent: function () {
-        var content = [this.generateLink()];
+        var content = [this.generateItem()];
         if (this.props.children) {
             content.push(this.generateSubmenu());
         }
@@ -140,10 +127,7 @@ var NavBarItem = React.createClass({
 
     render: function () {
         var content = this.generateContent();
-        var classes = this.props.editMode ? 'tb-item tb-item-edit' : 'tb-item';
-        classes = this.props.is_anchored ? `${classes} anchored` : classes;
-
-
+        var classes = 'tb-item tb-item-edit';
         return (
             <div className={ classes }>
                 { content }
@@ -200,7 +184,6 @@ var GroupingThreshold = React.createClass({
 var NormalNavBar = React.createClass({
     buildMenu: function (item) {
         var classes = ` ui-icon-${item.icon}-32`;
-        classes = item.is_anchored ? `${classes} anchored` : classes;
 
         var subMenu;
         if (item.children) {
@@ -240,7 +223,6 @@ var AdminNav = React.createClass({
         isSubmenu: React.PropTypes.bool,
         tools: ToolsPropType
     },
-    handle: '.draggable-handle',
     mode: 'grid',
     getInitialState: function () {
         return {
@@ -263,24 +245,34 @@ var AdminNav = React.createClass({
     render: function () {
         var _this = this;
         var subMenuClass = this.props.isSubmenu ? ' submenu ' : '';
-        var tools = this.props.tools.map(function (item, i) {
-            return (
+        var tools = [], anchored_tools = [], end_tools = [];
+        this.props.tools.forEach(function (item) {
+            var core_item = <NavBarItem onMouseOver={ _this.mouseOver } onMouseOut={ _this.mouseOut } {..._this.props} data={ item }
+                                mount_point={ item.mount_point }
+                                name={ item.name } url={ item.url }
+                                key={ 'tb-item-' + _.uniqueId() } is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
+            if (item.mount_point === 'admin') {
+                // force admin to end, just like 'Project.sitemap()' does
+                end_tools.push(core_item);
+            } else if (item.is_anchored) {
+                anchored_tools.push(core_item);
+            } else {
+                tools.push(
                 <div className={ 'draggable-element' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
-                    <div className='draggable-handle' key={ 'handleId-' + _.uniqueId() }>
-                        <NavBarItem onMouseOver={ _this.mouseOver } onMouseOut={ _this.mouseOut } {..._this.props} data={ item }
-                                    name={ item.mount_point } url={ item.url }
-                                    key={ 'tb-item-' + _.uniqueId() } is_anchored={ item.is_anchored } data-id={ i }/>
+                        { core_item }
                     </div>
-                </div>
             );
+            }
         });
 
         return (
             <div className='react-drag edit-mode'>
+                { anchored_tools }
                 <ReactReorderable key={ 'reorder-' + _.uniqueId() } handle='.draggable-handle' mode='grid' onDragStart={ this.onDragStart }
                                   onDrop={ this.props.onToolReorder } onChange={ this.onChange }>
                     { tools }
                 </ReactReorderable>
+                { end_tools }
             </div>
         );
     }
@@ -310,15 +302,10 @@ var ToggleAdminButton = React.createClass({
  */
 var ToggleAddNewTool = React.createClass({
     render: function () {
-        var classes = this.props.visible ? 'fa fa-unlock' : 'fa fa-lock';
         return (
             <div>
-                <div onClick={ this.props.handleToggleAddNewTool } className="add-tool-toggle">
-                    + Add new...
-                </div>
-                                {this.props.showMenu &&
-                <NewToolMain />
-                }
+                <div onClick={ this.props.handleToggleAddNewTool } className="add-tool-toggle"> + Add new...</div>
+                {this.props.showMenu && <NewToolMain />}
             </div>
         );
     }
@@ -567,7 +554,6 @@ var NewToolMain = React.createClass({
     toolFormIsValid: function (e) {
         e.preventDefault();
 
-        var isValid = true;
         var errors = {
             mount_point: []
         };
@@ -743,22 +729,14 @@ var Main = React.createClass({
         var navBarSwitch = (showAdmin) => {
             if (showAdmin) {
                 return (
-                    <AdminNav tools={ _this.state.data.children }
-                              data={ _this.state.data }
-                              onToolReorder={ _this.onToolReorder }
-                              onUpdateMountOrder={ _this.onUpdateMountOrder }
-                              editMode={ _this.state.visible }
-                        />
+                    <AdminNav tools={ _this.state.data.children } data={ _this.state.data } onToolReorder={ _this.onToolReorder }
+                              onUpdateMountOrder={ _this.onUpdateMountOrder } editMode={ _this.state.visible } />
                 );
             } else {
                 return (
                     <div>
                         <NormalNavBar items={ _this.state.data.children } key={ `normalNav-${_.uniqueId()}` }/>
-
-                        <ToggleAddNewTool
-                            handleToggleAddNewTool={this.handleToggleAddNewTool}
-                            showMenu={this.state.showAddToolMenu}
-                            />
+                        <ToggleAddNewTool handleToggleAddNewTool={this.handleToggleAddNewTool} showMenu={this.state.showAddToolMenu} />
                     </div>
                 )
             }
@@ -769,14 +747,10 @@ var Main = React.createClass({
             <div ref={ _.uniqueId() } className={ 'nav_admin ' + editMode }>
                 { navBar }
                 <div id='bar-config'>
-                    <GroupingThreshold onUpdateThreshold={ this.onUpdateThreshold } isHidden={ this.state.visible }
-                                       initialValue={ this.state.data.grouping_threshold }/>
+                    <GroupingThreshold onUpdateThreshold={ this.onUpdateThreshold } isHidden={ this.state.visible } initialValue={ this.state.data.grouping_threshold }/>
                 </div>
                 <ToggleAdminButton key={ _.uniqueId() } handleButtonPush={ this.handleToggleAdmin } visible={ this.state.visible }/>
             </div>
         );
     }
 });
-   //
-   //React.render(React.createElement(NewToolMain, {
-   //     }), document.getElementById("add_tool_menu"));
