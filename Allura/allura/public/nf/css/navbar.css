@@ -79,6 +79,7 @@ nav {
     display: flex;
 }
 
+
 #top_nav_admin {
     display: grid;
     flex-direction: row;
@@ -91,7 +92,6 @@ nav {
     border-radius: 4px;
     width: 940px;
 }
-
 .btn-bar {
     display: block;
     clear: both;
@@ -260,6 +260,10 @@ ul.dropdown .hover, ul.dropdown li:hover {
     cursor: not-allowed;
 }
 
+#add_tool_menu{
+    position: relative;
+}
+
 .tool-partition {
     height: 0;
     margin-top: 5px;
@@ -267,88 +271,116 @@ ul.dropdown .hover, ul.dropdown li:hover {
 }
 
 .installable-tool-box {
+    /* margin: 0 0 15px 50px; */
     list-style: none;
     display: flex;
     background-color: #FFFEFA;
     flex-wrap: wrap;
+    margin-bottom: 0;
+    margin-left: 0;
     justify-content: space-around;
 }
 
 .installable-tool-box li {
-    margin-top: 15px;
-
+    /* margin: 5px 10px 20px 60px; */
+    /* margin-left: 80px; */
+    margin-top: 5px;
+    clear: both;
     height: auto;
     border-radius: 4px;
+    /* vertical-align: middle; */
+    /* padding-bottom:10px; */
     padding: 10px;
     text-align: center;
-    font-size: x-large;
+    font-size: medium;
     list-style: none;
     cursor: pointer;
+        border: 1px solid transparent;
+        -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+
+}
+.selected-tool{
+    background: #09C;
+    color: white;
+
 }
 
 .installable-tool-box li:hover {
-    background: #09C;
-    color: white;
-}
-
-.selected-tool {
     background: white;
     border: 1px solid #09C;
 }
+
+
 
 .installable-tool-box li.selected-tool:hover {
     background: white;
     color: rgb(85, 85, 85);
 }
 
-#add_tool_menu{
-    position: relative;
+.tool-card {
+    width: 600px;
+    display: block;
+    border: 2px solid #4E4E4E;
+    border-radius: 2px 2px 5px 5px;
+    overflow-y: visible;
+    margin-bottom: 50px;
+    background: white;
+    right: 22px;
+    top: 94px;
+    position: absolute;
     z-index: 1000;
 }
 
-.tool-card {
-    width: 800px;
-    /* margin-left: 25px; */
-    background-color: #CB6666;
-    display: block;
-    border: 1px solid #777;
-    border-radius: 2px 2px 5px 5px;
-    height: auto;
+.tool-card::before {
+    content: "▲";/* left point triangle in escaped unicode */
+    color: #4E4E4E;
+    font-size: xx-large;
     position: absolute;
-    overflow: auto;
-    right: 0;
-    min-height: 21rem;
-    z-index: inherit;
+    right: 0px;
+    top: -14px;
+    overflow: visible;
+    float: right;
+    /* position: relative; */
+    height: 1.5rem;
 }
 
 .box-title {
-    width: 800px;
+    z-index: 60;
     height: auto;
-    font-size: large;
+    font-size: small;
     text-align: center;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    background: #606060;
-    color: white;
+    padding-bottom: 3px;
+    position: relative;
+    padding-top: 3px;
+    background: #4E4E4E;
+    color: #DEDEDE;
 }
 
 .tool-info {
-    min-height: 12rem;
-    padding: 35px 5px 5px 10px;
+    min-height: 15rem;
+    /* padding: 35px 5px 5px 10px; */
+    /* background-color: #40AFD4; */
     display: block;
+    clear: both;
 }
 
 .tool-info-left p {
     text-align: center;
-    padding-bottom: 0;
     vertical-align: text-top;
-    padding-top: 18px;
-    position: relative;
+    padding-top: 0;
     left: 0;
+    /* text-shadow: 1px 2px 1px  #444; */
     font-size: large;
     font-weight: 400;
-    margin: 2rem 80px 100px 90px;
+    margin: 2rem;
+    margin-left: 33px;
+    margin-right: 33px;
     color: #CCCBC8;
+    padding-bottom: 20px;
 }
 
 .tool-info-left h1 {
@@ -356,46 +388,53 @@ ul.dropdown .hover, ul.dropdown li:hover {
     padding-bottom: 0;
     vertical-align: text-top;
     padding-top: 18px;
-    position: relative;
+    /* text-shadow: 1px 2px 1px #C8C8C8; */
     left: 0;
-    font-size: xx-large;
-    background-color: #E7E7E7;
+    font-size: large;
+    background-color: #AEF4FF;
     color: #5B5B5B;
     height: 3rem;
 }
 
 .add-tool-button {
-    width: auto;
+    width: 140px;
     height: auto;
     background: white;
     min-width: 6rem;
     min-height: 2.6rem;
     font-size: large;
-    clear: both;
-    position: relative;
-    right: -4.8rem;
-    bottom: 0.1rem;
+    bottom: -0.3rem;
+    right: -30px;
 }
 
+
 .tool-info-left {
-    background: #727170;
+    background: #636363;
     width: 60%;
-    height: auto;
+    height: 260px;
     left: 0;
+    float: left;
     top: 0;
     color: white;
-    position: absolute;
 }
 
 .tool-info-right {
-    background: rgba(239, 239, 239, 1);
     width: 40%;
-    height: 100%;
-    right: 0;
+    float: right;
+    overflow: hidden;
+    position: relative;
     display: block;
-    clear: both;
     top: 0;
-    position: absolute;
+}
+
+.tool-info-right form {
+
+    /* display: grid; */
+    /* position: relative; */
+    /* padding-top: 30px; */
+
+
+
 }
 
 .tool-form {
@@ -408,14 +447,14 @@ ul.dropdown .hover, ul.dropdown li:hover {
     height: auto;
 }
 
-#add-tool-form > label {
+#add-tool-form > label{
     padding: 0;
     font-size: 13pt;
     position: absolute;
-    margin-left: 42px;
+    margin-left: 18px;
 }
 
-#add-tool-form > p {
+#add-tool-form > p{
     font-size: large;
 
 }
@@ -423,22 +462,58 @@ ul.dropdown .hover, ul.dropdown li:hover {
 #add-tool-form > input {
     padding-top: 10px;
     padding-left: 10px;
-    width: 63%;
-    margin: 22px 62px 10px 40px;
+    width: 77%;
+    margin: 23px 60px 11px 19px;
 }
 
-#add-tool-form {
-    position: absolute;
-    left: auto;
+#add-tool-form{
     padding-top: 20px;
+    /* clear: both; */
     padding-left: 25px;
-    display: block;
+    /* width: 20%; */
+    /* display: block; */
     padding-right: 25px;
 }
 
-.tool-form-fields {
+.tool-form-fields{
     clear: both;
     position: relative;
     display: flex;
     flex-direction: row;
 }
+
+#mount_point :invalid{
+    background: #333;
+}
+
+.add-tool-toggle{
+    background: rgba(255, 255, 255, 0.32);
+    clear: both;
+    float: right;
+    /* font-size: x-large; */
+    color: #777;
+    font-weight: 900;
+    /* position: absolute; */
+    padding: 3px;
+    margin: 1px;
+    padding-top: 5px;
+    right: 127px;
+    position: absolute;
+    padding-left: 5px;
+    padding-right: 5px;
+    border: 2px dashed #777;
+    top: 18px;
+    width: 5.7rem;
+    border-radius: 4px;
+    height: 1.5rem;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+.add-tool-toggle:hover{
+    background: #F4F4F4;
+}
+
