@@ -806,6 +806,7 @@ class ProjectAdminRestController(BaseController):
                 'name': tool['name'],
                 'description': " ".join(tool['app'].tool_description.split()),
                 'icons': tool['app'].icons,
+                'tool_label': tool['app'].tool_label,
                 'defaults': {
                     'default_options': tool['app'].default_options(),
                     'default_mount_label': tool['app'].default_mount_label,
