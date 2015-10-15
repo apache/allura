@@ -315,16 +315,6 @@ var ToggleAddNewTool = React.createClass({
 // Add New Tool //
 //////////////////
 
-var NewToolButton = React.createClass({
-    render: function () {
-        return (
-            <button id='new-tool-btn' onClick={ this.props.handleAddButton } className=''>
-                <i className={ classes }></i>
-            </button>
-        );
-    }
-});
-
 
 /**
  * Menu for adding a new tool.
@@ -384,10 +374,6 @@ var NewToolMenu = React.createClass({
 
 var InstallNewToolForm = React.createClass({
     render: function () {
-        //console.log(this.props.active.name);
-
-        //var default_mount_label = this.props.active.defaults.default_mount_label;
-
         return (
             <form id="add-tool-form">
                 <label htmlFor="mount_label">Label</label>
@@ -401,8 +387,8 @@ var InstallNewToolForm = React.createClass({
                        id="mount_point"
                        onChange={this.props.handleChangeForm}
                        onBlur={this.props.toolFormIsValid}
-                       placeholder={slugify(this.props.formData.mount_label)}
-                       value={this.props.formData.mount_point}/>
+                       value={slugify(this.props.formData.mount_label)}
+                       value={this.props.formData.mount_point.toLowerCase()}/>
                 <span>{this.props.validationErrors.mount_point}</span>
 
                 <p style={{"color": "grey"}}><small>http://hs/p/finna/</small><strong style={{"color": "orange"}}>
@@ -443,6 +429,16 @@ var NewToolInfo = React.createClass({
     }
 });
 
+
+var installableToolsCache = {};
+function loadTools(id, callback) {
+    if(!installableToolsCache[id]) {
+        installableToolsCache[id] = $.get(_getProjectUrl(true) + "/admin/installable_tools/").promise();
+    }
+    installableToolsCache[id].done(callback);
+}
+
+
 var NewToolMain = React.createClass({
     getInitialState: function () {
         let toolPlaceHolder = {
@@ -467,24 +463,14 @@ var NewToolMain = React.createClass({
         };
     },
 
-
     componentDidMount: function () {
-        let _this = this;
-        console.log(_getProjectUrl() + "/admin/installable_tools/");
-        $.get(_getProjectUrl(true) + "/admin/installable_tools/", function (result) {
+        let tools = loadTools('tools', function (result) {
             if (this.isMounted()) {
-                console.log('hit is mounted', result['tools']);
                 this.setState({
                     installableTools: result['tools']
-                });
+                })
             }
         }.bind(this));
-    },
-    handleAddButton: function (e) {
-        e.preventDefault();
-        console.log('current active tool', this.state.active);
-        console.log('new_tool', this.state.new_tool);
-
     },
     handleChangeTool: function (e) {
         console.log(`Changed tool to: ${e.target.textContent}`);
@@ -569,7 +555,6 @@ var NewToolMain = React.createClass({
 
         let result = $.post(_getProjectUrl() + '/admin/mount_point/', data);
             if (!result.responseJSON) {
-                console.log("ALREADY EXISTS", result);
                 errors.mount_point.push("Mount point already exists.");
             }
 
@@ -578,7 +563,6 @@ var NewToolMain = React.createClass({
     },
 
     render: function () {
-        //var visible =
         return <NewToolMenu
             active={this.state.active}
             tools={this.state.installableTools}
