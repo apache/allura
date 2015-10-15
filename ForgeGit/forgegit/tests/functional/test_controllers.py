@@ -696,7 +696,7 @@ class TestFork(_TestCase):
                               'summary': 'summary',
                               'description': 'description',
                           }).follow()
-        assert '<a href="edit" title="Edit"><b data-icon="p" class="ico ico-pencil" title="Edit"></b></a>' in r
+        assert '<a class="icon fa fa-edit" href="edit" title="Edit"><span>&nbsp;Edit</span></a>' in r
         r = self.app.get('/p/test/src-git/merge-requests/1/edit')
         assert 'value="summary"' in r
         assert '<option selected value="zz">zz</option>' in r

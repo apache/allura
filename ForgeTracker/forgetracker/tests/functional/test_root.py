@@ -736,7 +736,7 @@ class TestFunctionalController(TrackerTestController):
         # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
         create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
-        assert_equal(create_button['class'], 'sidebar-disabled')
+        assert_equal(create_button['class'], 'icon fa fa-plus-circle sidebar-disabled')
 
     def test_render_markdown_syntax(self):
         r = self.app.get('/bugs/markdown_syntax')
@@ -853,7 +853,7 @@ class TestFunctionalController(TrackerTestController):
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
         form = self._find_update_ticket_form(req)
-        file_link = BeautifulSoup(form.text).findAll('a')[1]
+        file_link = BeautifulSoup(form.text).findAll('a')[2]
         assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']), {
             'delete': 'True'
@@ -896,7 +896,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'zzz'
         }, upload_files=[upload]).follow()
         form = self._find_update_ticket_form(ticket_editor)
-        download = self.app.get(str(BeautifulSoup(form.text).findAll('a')[1]['href']))
+        download = self.app.get(str(BeautifulSoup(form.text).findAll('a')[2]['href']))
         assert_equal(download.body, file_data)
 
     def test_two_attachments(self):
@@ -1986,8 +1986,8 @@ class TestFunctionalController(TrackerTestController):
                             extra_environ=dict(username='*anonymous'))
         ticket_url = r.headers['Location']
         r = self.app.get(ticket_url, extra_environ=dict(username='*anonymous'))
-        a = r.html.find('a', {'class': 'edit_ticket'})
-        assert a.text == 'Edit'
+        a = r.html.find('a', {'class': 'icon fa fa-edit edit_ticket'})
+        assert_equal(a.text, '&nbsp;Edit')
 
     def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
         p = M.Project.query.get(shortname='test')
