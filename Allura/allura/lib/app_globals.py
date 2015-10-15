@@ -253,6 +253,8 @@ class Globals(object):
             secure=Icon('fa fa-lock', 'Lock'),
             unsecure=Icon('fa fa-unlock', 'Unlock'),
             star=Icon('fa fa-star', 'Star'),
+            expand=Icon('fa fa-expand', 'Maximize'),
+            restore=Icon('fa fa-compress', 'Restore'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
