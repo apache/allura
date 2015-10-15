@@ -869,3 +869,40 @@ class TestNeighborhoodCache(object):
         cache = NeighborhoodCache(30)
         assert_equal(cache._expired({'ts': _now - dt.timedelta(seconds=29)}), False)
         assert_equal(cache._expired({'ts': _now - dt.timedelta(seconds=30)}), True)
+
+
+class TestIconRender(object):
+
+    def setUp(self):
+        self.i = g.icons['edit']
+
+    def test_default(self):
+        html = u'<a class="icon fa fa-edit" href="#" title="Edit"></a>'
+        assert_equal(html, self.i.render())
+
+    def test_show_title(self):
+        html = u'<a class="icon fa fa-edit" href="#" title="Edit"><span>&nbsp;Edit</span></a>'
+        assert_equal(html, self.i.render(show_title=True))
+
+        html = u'<a class="icon fa fa-edit" href="#" title="&lt;script&gt;"><span>&nbsp;&lt;script&gt;</span></a>'
+        assert_equal(html, self.i.render(show_title=True, title="<script>"))
+
+    def test_extra_css(self):
+        html = u'<a class="icon fa fa-edit reply btn" href="#" title="Edit"></a>'
+        assert_equal(html, self.i.render(extra_css='reply btn'))
+
+    def test_no_closing_tag(self):
+        html = u'<a class="icon fa fa-edit" href="#" title="Edit">'
+        assert_equal(html, self.i.render(closing_tag=False))
+
+    def test_tag(self):
+        html = u'<div class="icon fa fa-edit" href="#" title="Edit"></div>'
+        assert_equal(html, self.i.render(tag='div'))
+
+    def test_kwargs(self):
+        html = u'<a class="icon fa fa-edit" data-id="123" href="#" title="Edit"></a>'
+        assert_equal(html, self.i.render(**{'data-id': '123'}))
+
+    def test_escaping(self):
+        html = u'<a class="icon fa fa-edit &#34;" data-url="&gt;" href="#" title="Edit"></a>'
+        assert_equal(html, self.i.render(extra_css='"', **{'data-url': '>'}))
