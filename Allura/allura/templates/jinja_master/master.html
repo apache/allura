@@ -188,16 +188,5 @@
         });
     })
 </script>
-{% if is_admin %}
-    <script>
-        'use strict';
-        $(document).ready(function () {
-            React.render(React.createElement(Main, {
-                initialData: {{ c.project.json_nav()|safe }}
-            }), document.getElementById("top_nav_admin"));
-        });
-    </script>
-{% endif %}
-{% do g.register_forge_js('/') %}
 </body>
 </html>

@@ -17,10 +17,7 @@
        under the License.
 -#}
 {% if c.project %}
-{% if h.has_access(c.project, 'admin')() %}
-    <div id="top_nav_admin"></div>
-    {#        {{ c.app.admin_modal.display() }}  <-- Currently Does not work on non-admin urls #}
-{% else %}
+<div id="top_nav_admin">
 <ul class="dropdown">
   {% for s in c.project.grouped_navbar_entries() %}
     <li class="{% if s.matches_url(request) %}selected{% endif %}">
@@ -38,5 +35,16 @@
     </li>
 	{% endfor %}
 </ul>
+</div>
+{% if h.has_access(c.project, 'admin')() %}
+    {#        {{ c.app.admin_modal.display() }}  <-- Currently Does not work on non-admin urls #}
+    <script>
+        'use strict';
+        $(document).ready(function () {
+            React.render(React.createElement(Main, {
+                initialData: {{ h.escape_json(c.project.nav_data())|safe }}
+            }), document.getElementById("top_nav_admin"));
+        });
+    </script>
 {% endif %}
 {% endif %}

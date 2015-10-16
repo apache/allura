@@ -602,7 +602,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 i += 1
         return new_tools
 
-    def json_nav(self):
+    def nav_data(self):
         grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
         anchored_tools = self.neighborhood.get_anchored_tools()
         children = []
@@ -619,7 +619,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                          ordinal=i)
             i += 1
             if s.children:
-                entry['child_count'] = len(s.children)
                 entry['children'] = [dict(name=child.label,
                                           url=child.url,
                                           icon=child.ui_icon or 'tool-admin',
@@ -631,9 +630,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 i += len(s.children)
             children.append(entry)
 
-        return json.dumps(dict(grouping_threshold=grouping_threshold,
-                               menu=children,
-                               child_count=i))
+        return dict(grouping_threshold=grouping_threshold,
+                    menu=children,
+                    )
 
     def grouped_navbar_entries(self):
         """Return a :class:`~allura.app.SitemapEntry` list suitable for rendering

@@ -4,9 +4,9 @@
     display: none;
 }
 
-.hidden {
-    display: none;
-}
+/*.hidden {*/
+/*display: none;*/
+/*}*/
 
 .submenu ul {
     list-style: none;
@@ -85,7 +85,7 @@ nav {
     -ms-border-radius: 4px;
     -khtml-border-radius: 4px;
     border-radius: 4px;
-    width: 918px;  /* 940px - 32px for toggle-admin-btn */
+    width: 918px; /* 940px - 32px for toggle-admin-btn */
 }
 
 #top_nav_admin .edit-mode .fa {
@@ -196,174 +196,29 @@ ul.dropdown .hover, ul.dropdown li:hover {
     color: gray;
 }
 
-.nav_admin{
+.nav_admin {
     height: auto;
 }
 
-.nav_admin > div > ul > li{
+.nav_admin > div > ul > li {
     height: 1.2rem;
     font-weight: inherit;
 }
 
 .tool-partition {
     height: 0;
-    /*padding-top: 5px;*/
     border-top: 3px solid #777;
 }
 
 .installable-tool-box {
-    /* position: relative; */
     display: flex;
     background-color: white;
-    background-image: 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.6)));
-    background-image: 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.6)));
+    background-image: -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
     background-image: linear-gradient(top, #ffffff 0%, #cccccc 100%);
     flex-wrap: wrap;
-    /*justify-content: flex-start;*/
     justify-content: space-around;
-    /*margin-left: 0;*/
     flex-direction: row;
-    /* padding-bottom: 5px; */
-    /* padding-top: 4px; */
-    /*display: -webkit-flex;*/
-    /*display: flex;*/
-    /*-webkit-flex-direction: row;*/
-    /*flex-direction: row;*/
-    /*margin-bottom: 8px;*/
 }
 
 .installable-tool-box div {
@@ -389,7 +244,6 @@ ul.dropdown .hover, ul.dropdown li:hover {
     user-select: none;
 }
 
-
 /*.installable-tool-box > div{
     color:blue;
     background: rgba(255, 255, 255, 0.8);
@@ -397,8 +251,7 @@ ul.dropdown .hover, ul.dropdown li:hover {
     border: 1px dashed orange;
 }*/
 
-
-.selected-tool{
+.selected-tool {
     background: #09C !important;
     color: white !important;
     height: 21px;
@@ -521,14 +374,14 @@ ul.dropdown .hover, ul.dropdown li:hover {
     height: auto;
 }
 
-#add-tool-form > label{
+#add-tool-form > label {
     padding: 0;
     font-size: 13pt;
     position: absolute;
     margin-left: 18px;
 }
 
-#add-tool-form > p{
+#add-tool-form > p {
     font-size: large;
 
 }
@@ -540,24 +393,24 @@ ul.dropdown .hover, ul.dropdown li:hover {
     margin: 23px 60px 11px 19px;
 }
 
-#add-tool-form{
+#add-tool-form {
     padding-top: 20px;
     padding-left: 25px;
     padding-right: 25px;
 }
 
-.tool-form-fields{
+.tool-form-fields {
     clear: both;
     position: relative;
     display: flex;
     flex-direction: row;
 }
 
-#mount_point :invalid{
+#mount_point :invalid {
     background: #333;
 }
 
-.add-tool-toggle{
+.add-tool-toggle {
     background: rgba(255, 255, 255, 0.32);
     /*clear: both;*/
     color: #8b8b8b;
@@ -584,21 +437,21 @@ ul.dropdown .hover, ul.dropdown li:hover {
     -o-user-select: none;
     user-select: none;
 }
-.add-tool-toggle:hover{
+
+.add-tool-toggle:hover {
     background: #F4F4F4;
     color: #777;
 }
 
-.active-nav-link{
+.active-nav-link {
     font-weight: bolder;
 }
 
-.add-tool-field{
+.add-tool-field {
     width: 50%;
 }
 
-
-.error-box{
+.error-box {
     background: rgba(255, 114, 114, 0.65);
     color: white;
     padding: 4px;

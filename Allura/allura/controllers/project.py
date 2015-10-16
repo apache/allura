@@ -381,7 +381,7 @@ class ProjectController(FeedController):
 
     @expose('json:')
     def _nav(self):
-        return c.project.json_nav()
+        return c.project.nav_data()
 
     @expose()
     def _lookup(self, name, *remainder):
