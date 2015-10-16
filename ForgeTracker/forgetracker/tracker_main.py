@@ -252,8 +252,8 @@ class ForgeTrackerApp(Application):
     searchable = True
     tool_label = 'Tickets'
     tool_description = """
-        Bugs, enhancements, tasks, etc., will help you plan and
-        manage your development.
+        Organize your project's bugs, enhancements, tasks, etc. with a ticket system.
+        You can track and search by status, assignee, milestone, labels, and custom fields.
     """
     default_mount_label = 'Tickets'
     default_mount_point = 'tickets'
