@@ -61,7 +61,8 @@ class ForgeSVNApp(RepositoryApp):
     })
     tool_label = 'SVN'
     tool_description = """
-        Enterprise-class centralized version control for the masses.
+        Subversion ("svn") is a centralized version control system.  In general, SVN is simpler to use
+        but not as powerful as distributed systems like Git and Mercurial.
     """
     ordinal = 4
     forkable = False

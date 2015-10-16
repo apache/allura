@@ -44,6 +44,10 @@ class ForgeLinkApp(Application):
 
     '''This is the Link app for PyForge'''
     __version__ = version.__version__
+    tool_description = """
+        A link to a URL of your choice, either on this site or somewhere else.
+        It will appear in your project menu alongside the other project tools.
+    """
     permissions = ['configure', 'read']
     permissions_desc = {
         'read': 'View link.',

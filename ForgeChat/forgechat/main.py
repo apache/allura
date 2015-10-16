@@ -47,6 +47,7 @@ log = logging.getLogger(__name__)
 class ForgeChatApp(Application):
     __version__ = version.__version__
     tool_label = 'Chat'
+    tool_description = 'IRC chat integration'
     status = 'alpha'
     default_mount_label = 'Chat'
     default_mount_point = 'chat'
