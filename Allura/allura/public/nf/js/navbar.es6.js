@@ -713,13 +713,13 @@ var Main = React.createClass({
         var navBarSwitch = (showAdmin) => {
             if (showAdmin) {
                 return (
-                    <AdminNav tools={ _this.state.data.children } data={ _this.state.data } onToolReorder={ _this.onToolReorder }
+                    <AdminNav tools={ _this.state.data.menu } data={ _this.state.data } onToolReorder={ _this.onToolReorder }
                               onUpdateMountOrder={ _this.onUpdateMountOrder } editMode={ _this.state.visible } />
                 );
             } else {
                 return (
                     <div>
-                        <NormalNavBar items={ _this.state.data.children } key={ `normalNav-${_.uniqueId()}` }/>
+                        <NormalNavBar items={ _this.state.data.menu } key={ `normalNav-${_.uniqueId()}` }/>
                         <ToggleAddNewTool handleToggleAddNewTool={this.handleToggleAddNewTool} showMenu={this.state.showAddToolMenu} />
                     </div>
                 )

@@ -632,7 +632,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             children.append(entry)
 
         return json.dumps(dict(grouping_threshold=grouping_threshold,
-                               children=children,
+                               menu=children,
                                child_count=i))
 
     def grouped_navbar_entries(self):
