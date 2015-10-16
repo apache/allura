@@ -72,7 +72,8 @@ class ForgeDiscussionApp(Application):
     exportable = True
     tool_label = 'Discussion'
     tool_description = """
-        Collaborate with your community in your forum.
+        Discussion forums are a place to talk about any topics related to your project.
+        You may set up multiple forums within the Discussion tool.
     """
     default_mount_label = 'Discussion'
     default_mount_point = 'discussion'

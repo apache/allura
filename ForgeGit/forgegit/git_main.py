@@ -47,9 +47,8 @@ class ForgeGitApp(RepositoryApp):
     __version__ = version.__version__
     tool_label = 'Git'
     tool_description = """
-        Git is a distributed version control system designed to
-        handle everything from small to very large projects with speed
-        and efficiency.
+        Git is a popular distributed version control system with broad functionality.
+        It is known for its speed, flexibility, and data integrity.
     """
     ordinal = 2
     forkable = True
