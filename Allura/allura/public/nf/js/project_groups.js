@@ -104,17 +104,16 @@ $(function() {
         var perm_link = perm_holder.find('a');
         if(!perm_holder.hasClass(item.has)){
           perm_holder.effect('highlight', {}, 2000);
-          var icon = perm_holder.find('b');
           perm_holder.attr('class',item.has);
           perm_link.attr('title',item.text);
           if(item.has=="yes"){
-            icon.attr('class','ico ico-check').attr('data-icon','3');
+            perm_link.attr('class','icon fa fa-check');
           }
           else if(item.has=="inherit"){
-            icon.attr('class','ico ico-checkcircle').attr('data-icon','2');
+            perm_link.attr('class','icon fa fa-check-circle');
           }
           else{
-            icon.attr('class','ico ico-noentry').attr('data-icon','d');
+            perm_link.attr('class','icon fa fa-ban');
           }
           perm_holder.find('span').remove();
           perm_link.show();
