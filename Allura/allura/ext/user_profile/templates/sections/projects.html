@@ -35,7 +35,7 @@
     {% for project in projects %}
         <li{% if loop.index > 5 %} class="hidden"{% endif %}>
             {% if project.icon -%}
-                <img src="{{project.url()}}/icon?{{project.icon._id.generation_time}}" alt="Project Logo" width="48" height="48"/>
+                <img src="{{project.url()}}icon?{{project.icon._id.generation_time}}" alt="Project Logo" width="48" height="48"/>
             {%- else -%}
                 <img src="{{g.forge_static('images/project_default.png')}}" alt="Project Logo" width="48" height="48"/>
             {%- endif -%}

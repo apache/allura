@@ -40,7 +40,7 @@
     <label class="grid-4">Icon</label>
     <div class="grid-14">
       {% if neighborhood.icon %}
-        <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle" alt=""/>
+        <img src="{{neighborhood.url()}}icon" style="vertical-align: middle" alt=""/>
       {% endif %}
       {{widget.display_field(widget.fields.icon)}}
     </div>
