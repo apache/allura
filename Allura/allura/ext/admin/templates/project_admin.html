@@ -28,8 +28,8 @@
 {% block content %}
   <p>{{config.site_name}} projects come with a number of Tools, which can be configured and adjusted to your needs.</p>
 
-  <div class="grid-2">
-    <img src="{{g.forge_static('images/project_default.png')}}" alt="">
+  <div class="grid-1">
+    &nbsp;
   </div>
   <div class="grid-13">
     <h3>Project Setup</h3>
@@ -40,8 +40,8 @@
   </div>
   <div style="clear:both"></div>
 
-  <div class="grid-2">
-    <img src="{{ g.theme.app_icon_url('Wiki', 48) }}" alt="">
+  <div class="grid-1">
+    &nbsp;
   </div>
   <div class="grid-13">
     <h3>Wikis</h3>
@@ -59,9 +59,9 @@
   <div style="clear:both"></div>
   {% if scm_tools %}
     {% set tool = scm_tools[0] %}
-    <div class="grid-2">
-        <img src="{{ g.theme.app_icon_url('Git', 48) }}" alt="">
-    </div>
+      <div class="grid-1">
+        &nbsp;
+      </div>
     <div class="grid-13">
       <h3>Code</h3>
       <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
@@ -73,8 +73,8 @@
   {% endif %}
   <div style="clear:both"></div>
 
-  <div class="grid-2">
-    <img src="{{ g.theme.app_icon_url('Tickets', 48) }}" alt="">
+  <div class="grid-1">
+    &nbsp;
   </div>
   <div class="grid-13">
   <h3>Tickets</h3>
@@ -92,8 +92,8 @@
   </div>
   <div style="clear:both"></div>
 
-  <div class="grid-2">
-    <img src="{{ g.theme.app_icon_url('Discussion', 48) }}" alt="">
+  <div class="grid-1">
+    &nbsp;
   </div>
   <div class="grid-13">
     <h3>Forums</h3>
@@ -108,4 +108,14 @@
       {% endif %}
     {% endfor %}
   </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .grid-20.pad .grid-1,
+    .grid-20.pad .grid-13,
+    .grid-20.pad .grid-4 {
+        margin-top: 2em;
+    }
+</style>
 {% endblock %}
