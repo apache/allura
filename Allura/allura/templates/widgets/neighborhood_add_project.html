@@ -53,7 +53,6 @@
         {% set _ctx = widget.context_for(widget.fields.tools) %}
         {% if tool.installable %}
         <div class="tool">
-            <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ opt.label }} icon">
             <input type="checkbox" value="{{ opt.html_value }}"
                    {% if _ctx['value'] and opt.html_value in _ctx['value'] %}checked{% endif %}
                    name="{{ _ctx['rendered_name'] }}"
@@ -66,7 +65,7 @@
     {% endif %}
     {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}
     <div style="margin-top:20px">
-        <div class="grid-16" style="padding-top:4px; padding-left:4px">
+        <div class="grid-16" style="padding-top:10px; padding-left:20px">
           {{widget.display_field(widget.fields.private_project)}}
             <label for="{{ widget.context_for(widget.fields.private_project)['id'] }}">
             Private? Private projects will be unreadable to non-project members and will

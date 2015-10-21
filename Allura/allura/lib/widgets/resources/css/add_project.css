@@ -106,12 +106,12 @@ div.welcome div.grid-3{
     border: 1px solid black;
 }
 div.button-row {
-    margin: 40px 0 100px 10px;
+    margin: 30px 0 100px 20px;
 }
 div.tool {
     float: left;
     position: relative;
-    padding: 10px 20px 10px 70px;
+    padding: 10px 20px 10px 10px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     -o-border-radius: 4px;
@@ -119,8 +119,8 @@ div.tool {
     -khtml-border-radius: 4px;
     border-radius: 4px;
     border: 1px solid #aaa;
-    width: 360px;
-    margin: 5px;
+    width: 395px;
+    margin: 5px 20px;
     background-color: whiteSmoke;
     height: 74px;
 }
