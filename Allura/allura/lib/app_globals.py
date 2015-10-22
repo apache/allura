@@ -602,10 +602,11 @@ class Icon(object):
     def render(self, show_title=False, extra_css=None, closing_tag=True, tag='a', **kw):
         title = kw.get('title') or self.title
         attrs = {
-            'href': '#',
             'title': title,
             'class': ' '.join(['icon', self.css, extra_css or '']).strip(),
         }
+        if tag == 'a':
+            attrs['href'] = '#'
         attrs.update(kw)
         attrs = ew._Jinja2Widget().j2_attrs(attrs)
         visible_title = u''

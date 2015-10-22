@@ -896,7 +896,7 @@ class TestIconRender(object):
         assert_equal(html, self.i.render(closing_tag=False))
 
     def test_tag(self):
-        html = u'<div class="icon fa fa-edit" href="#" title="Edit"></div>'
+        html = u'<div class="icon fa fa-edit" title="Edit"></div>'
         assert_equal(html, self.i.render(tag='div'))
 
     def test_kwargs(self):
