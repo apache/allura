@@ -112,10 +112,9 @@ class TestRootController(TestController):
             p.install_app('home', 'home', 'Home', ordinal=0)
 
         response = self.app.get('/adobe/')
-        projects = response.html.findAll('div', {'class': 'border card'})
-        assert len(projects) == 2
-        cat_links = response.html.find(
-            'div', {'id': 'sidebar'}).findAll('ul')[1].findAll('li')
+        projects = response.html.findAll('div', {'class': 'list card proj_icon'})
+        assert_equal(len(projects), 2)
+        cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'

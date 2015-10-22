@@ -2286,17 +2286,6 @@ div.attachment_thumb .file_type span {
   margin-top: 10px;
 }
 
-.border {
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -o-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -khtml-border-radius: 5px;
-  border-radius: 5px;
-  padding: 5px 10px;
-  border-bottom: 1px solid #fff;
-}
-
 .card {
   position: relative;
   -moz-border-radius: 4px;
@@ -2351,23 +2340,6 @@ div.attachment_thumb .file_type span {
 .card .desc {
   margin: 5px 0 0;
 }
-.card .quik {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-}
-.card .quik a {
-  margin: 0;
-  color: #000;
-  text-shadow: #fff 0 1px;
-  border: none;
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-}
-.card .quik a span {
-  display: none;
-}
 .card .feature {
   position: absolute;
   top: -1px;
@@ -2392,18 +2364,6 @@ div.attachment_thumb .file_type span {
   margin: -6px -11px 5px 0;
   background-image: -webkit-gradient(linear, 50% 100%, 100% 0%, color-stop(0.9, white), color-stop(0.9, #555555));
   background-image: -moz-linear-gradient(100% 25% 230deg, #555555, white, white 1%);
-}
-.card hr {
-  visibility: hidden;
-}
-.card.sm {
-  height: 46px;
-  width: 34px;
-}
-.card.sm .box {
-  height: 48px;
-  margin: 0 0 0 -7px;
-  padding: 0;
 }
 .list.card {
   width: 740px;

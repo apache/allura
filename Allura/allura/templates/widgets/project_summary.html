@@ -16,7 +16,6 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% if display_mode == 'list' %}
 <div class="list card{% if show_proj_icon%} proj_icon{% endif %}"
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
   {% if accolades %}
@@ -35,26 +34,3 @@
   <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
   {% if show_download_button %}{{g.markdown_wiki.convert('[[download_button]]')}}{% endif %}
 </div>
-{% else %}
-  <div class="border card">
-    {% if accolades %}
-      <div class="box notch sponsor">
-        <div class="feature">
-          <a href="{{accolades[0].award_url}}" title="{{accolades[0].comment}}">{{accolades[0].award.short}}</a>
-        </div>
-        {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
-      </div>
-    {% elif icon_url %}
-      <div class="box">
-        <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
-      </div>
-    {% endif %}
-    <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
-    <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
-    <div class="quik">
-      {% for s in sitemap %}
-      <a href="{{s.url}}" class="ui-icon-{{(s.ui_icon or 'admin').lower()}}-24" title="{{s.label}}"><span>{{s.label}}</span></a>
-      {% endfor %}
-    </div>
-  </div>
-{% endif %}
