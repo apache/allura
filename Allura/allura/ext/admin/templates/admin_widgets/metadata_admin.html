@@ -100,12 +100,13 @@
       {% if value.icon %}
         <div class="viewer" style="overflow: auto">
           <img src="{{value.url()}}icon?{{value.icon._id.generation_time}}" style="float:left; margin-right: 1em;" alt="">
-          <a id="edit-icon" href="#" title="Edit" style="display:inline-block;margin-top:15px"><b data-icon="p" class="ico ico-pencil"></b></a>
-          <a id="delete-icon" href="#" title="Remove" style="display:inline-block;margin-top:15px"><b data-icon="d" class="ico ico-delete"></b></a>
+          {{ g.icons['edit'].render(id='edit-icon', style='display:inline-block;margin-top:15px') }}
+          {{ g.icons['delete'].render(id='delete-icon', style='display:inline-block;margin-top:15px') }}
         </div>
       {% else %}
         <div class="viewer">
-          No {% if c.project.is_user_project %}user{% endif %} icon. <a id="edit-icon" href="#" title="Edit">Upload one <b data-icon="p" class="ico ico-pencil"></b></a>
+          No {% if c.project.is_user_project %}user{% endif %} icon.
+          {{ g.icons['edit'].render(id='edit-icon', title='Upload one', show_title=True) }}
         {% if c.project.is_user_project %}<br><small>
             Or a  <a href="http://gravatar.com/">gravatar.com</a> image will be used if available.</small>{% endif %}
         </div>
@@ -129,7 +130,7 @@
         {% elif value.removal == 'deleted' -%}
             Deleted
         {% endif %}
-        <a href="#" title="Edit"><b data-icon="p" class="ico ico-pencil"></b></a>
+        {{ g.icons['edit'].render() }}
         <div id="project-status-edit" class="{% if not c.form_errors %}hidden{% endif %}">
             <br>
             {% if c.form_errors.get('moved_to_url') %}

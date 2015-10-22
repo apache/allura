@@ -36,7 +36,7 @@
     // Setup editable widgets
     $('div.editable, span.editable, h1.editable')
         .find('.viewer')
-        .append('<a class="edit_btn btn"><b data-icon="p" class="ico ico-pencil"></b></a>')
+        .append('<a class="edit_btn btn"><b class="fa fa-edit"></b></a>')
         .end()
         .click(function(e){
             var editable = $(this).closest('.editable');

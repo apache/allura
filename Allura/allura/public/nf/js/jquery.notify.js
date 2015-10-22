@@ -158,7 +158,7 @@
         activeClass: 'notify-active',
         inactiveClass: 'notify-inactive',
         messageClass: 'message',
-        closeIcon: '<b title="Close" class="ico ico-close" data-icon="D"></b>'
+        closeIcon: '<b title="Close" class="fa fa-close" style="float:right;"></b>'
     };
     
 }(jQuery));

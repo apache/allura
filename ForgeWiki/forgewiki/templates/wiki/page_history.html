@@ -57,7 +57,7 @@
                   title='Revert to version {}'.format(p.version),
                   **{'data-dialog-id': p.version}) }}
               <div class="confirmation_dialog_{{p.version}}" style="display:none">
-                <b class="ico ico-close close" data-icon="D"></b>
+                {{ g.icons['close'].render(tag='b', extra_css='close') }}
                 <h1>Confirm revert to version {{p.version}}</h1>
                 <p>
                   Do you really want to revert page to version {{p.version}}?

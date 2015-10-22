@@ -25,10 +25,10 @@
 <div id="vote" class="gray">
   <span class="btn-set duo">
   <a href="" class="btn {% if voted == 1 %}active{% endif %} {% if can_vote %}js-vote-up{% endif %}" onclick="javascript:return false;">
-    <b data-icon="+" class="ico ico-vote-up"></b>
+    {{ g.icons['vote_up'].render(tag='b', style="color:green;") }}
   </a>
   <a href="" class="btn {% if voted == -1 %}active{% endif %} {% if can_vote %}js-vote-down{% endif %}" onclick="javascript:return false;">
-    <b data-icon="-" class="ico ico-vote-down"></b>
+    {{ g.icons['vote_down'].render(tag='b', style="color:red;") }}
   </a>
   </span>
   <div class="grid-8 vote-text">

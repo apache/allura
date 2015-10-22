@@ -48,7 +48,7 @@
   {% elif h.has_access(page, 'delete')() %}
     {{ g.icons['undelete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
-        <b class="ico ico-close close" data-icon="D"></b>
+        {{ g.icons['close'].render(tag='b', extra_css='close') }}
         <h1>Confirm page restoration</h1>
         <p>
             Do you really want to restore the page?

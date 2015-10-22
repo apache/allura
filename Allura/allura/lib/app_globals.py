@@ -255,6 +255,10 @@ class Globals(object):
             star=Icon('fa fa-star', 'Star'),
             expand=Icon('fa fa-expand', 'Maximize'),
             restore=Icon('fa fa-compress', 'Restore'),
+            check=Icon('fa fa-check-circle', 'Check'),
+            caution=Icon('fa fa-ban', 'Caution'),
+            vote_up=Icon('fa fa-plus', 'Vote Up'),
+            vote_down=Icon('fa fa-minus', 'Vote Down'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
