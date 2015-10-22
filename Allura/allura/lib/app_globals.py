@@ -260,6 +260,7 @@ class Globals(object):
             vote_up=Icon('fa fa-plus', 'Vote Up'),
             vote_down=Icon('fa fa-minus', 'Vote Down'),
             download=Icon('fa fa-download', 'Download'),
+            revert=Icon('fa fa-history', 'Revert'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
