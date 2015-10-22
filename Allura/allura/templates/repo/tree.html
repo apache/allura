@@ -59,20 +59,16 @@ form.tarball button:hover {
 {% if tarball_url %}
 <form class="tarball" action="{{ tarball_url }}" method="post">
   <input type="hidden" name="path" value="{{ path or '' }}" />
-  <button><b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"></b> Download Snapshot</button>
+  <button>{{ g.icons['download'].render(title='Download Snapshot', show_title=True) }}</button>
   {{lib.csrf_token()}}
 </form>
 {% endif %}
 
-<a href="{{commit.url()}}log/?path={{ path }}">
-  <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
-</a>
+{{ g.icons['history'].render(href='{}log/?path={}'.format(commit.url(), path), show_title=True) }}
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=tool_subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}
-<a href="{{c.app.url}}feed/">
-  <b data-icon="{{g.icons.feed.char}}" class="ico {{g.icons.feed.css}}" title="Feed"> </b>
-</a>
+{{ g.icons['feed'].render(href='{}feed/'.format(c.app.url)) }}
 {% endblock %}
 
 {% block content %}

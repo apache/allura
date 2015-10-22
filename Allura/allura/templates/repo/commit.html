@@ -32,9 +32,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 
 {% block actions %}
 {{ lib.maximize_content_button() }}
-<a href="{{commit.url()}}log/">
-  <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
-</a>
+{{ g.icons['history'].render(href='{}log/'.format(commit.url()), show_title=True) }}
 {% endblock %}
 
 {% block body_top_js %}

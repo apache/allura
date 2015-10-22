@@ -259,6 +259,7 @@ class Globals(object):
             caution=Icon('fa fa-ban', 'Caution'),
             vote_up=Icon('fa fa-plus', 'Vote Up'),
             vote_down=Icon('fa fa-minus', 'Vote Down'),
+            download=Icon('fa fa-download', 'Download'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
