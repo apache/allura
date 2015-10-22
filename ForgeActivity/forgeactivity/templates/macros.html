@@ -34,7 +34,7 @@
   {% else %}
     {{ g.icons['user'].render(
         tag='b',
-        style='font-size:{}px;'.format(size) if size else '',
+        style='font-size:{}px;text-align:center;'.format(size) if size else '',
         extra_css='emboss {}'.format(className or '')) }}
   {% endif %}
 {%- endmacro %}
