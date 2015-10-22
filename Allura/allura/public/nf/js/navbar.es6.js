@@ -1,8 +1,8 @@
 'use strict';
 
-
 /**
  * Gets the current url.
+
  * @constructor
  * @param {bool} rest - Return a "rest" version of the url.
  * @returns {string}
@@ -13,18 +13,44 @@ function _getProjectUrl(rest = true) {
     return rest ? `${base}/rest/${nbhd}/${proj}` : `${base}/${nbhd}/${proj}`;
 }
 
-function slugify(text)
-{
-  return text.toString().toLowerCase()
-    .replace(/\s+/g, '-')           // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-    .replace(/^-+/, '')             // Trim - from start of text
-    .replace(/-+$/, '');            // Trim - from end of text
+function slugify(text) {
+    return text.toString().toLowerCase()
+        .replace(/\s+/g,/\s+/g,/\s+/g,/\s+/g, '-')           // Replace spaces with -
+        .replace(/[^\w\-]+/g,/[^\w\-]+/g,/[^\w\-]+/g,/[^\w\-]+/g, '')       // Remove all non-word chars
+        .replace(/\-\-+/g,/\-\-+/g,/\-\-+/g,/\-\-+/g, '-')         // Replace multiple - with single -
+        .replace(/^-+/,/^-+/,/^-+/,/^-+/, '')             // Trim - from start of text
+        .replace(/-+$/,/-+$/,/-+$/,/-+$/, '');            // Trim - from end of text
 }
+/**
+ * Get the color for a tool type
 
+ * @constructor
+ * @label string 'The default mount label for a tool.  i.e. git and hg use 'Code' which returns 'blue'.
+ * @return {string}
+ */
+function _getToolColor(defaultLabel='standard') {
+    switch (defaultLabel) {
+    case 'Wiki':
+        return '#DDFFF0';
+    case 'Git':  // Git, svn, hg
+        return '#BBDEFB';
+    case 'Mercurial':  // Git, svn, hg
+        return '#BBDEFB';
+    case 'Tickets':
+        return '#D1C4E9';
+    case 'Discussion':
+        return '#DCEDC8';
+    case 'Blog':
+        return '#FFF9C4';
+    case 'Link':
+        return '#FFCDD2';
+    default:
+        return 'white';
+    }
+}
 /**
  * Get a mount point from a NavBarItem node.
+
  * @constructor
  * @param {NavBarItem} node
  * @returns {string}
@@ -52,85 +78,33 @@ function ToolsPropType() {
     };
 }
 
-
-/**
- * When the number of tools of the same type exceeds the grouping threshold,
- * they are placed in a group and this submenu is generated.
- * @constructor
- */
-var ToolSubMenu = React.createClass({
-    propTypes: {
-        isSubmenu: React.PropTypes.bool,
-        tools: ToolsPropType
-    },
-    mode: 'list',
-    render: function () {
-        var _this = this;
-        var subMenuClass = this.props.isSubmenu ? ' submenu ' : '';
-        var tools = this.props.tools.map(function (item, i) {
-            return (
-                <div className={ 'draggable-element ' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
-                    <div className='draggable-handle' key={ 'handleId-' + _.uniqueId() }>
-                        <NavBarItem data={ item } name={ item.mount_point } url={ item.url }/>
-                    </div>
-                </div>
-            );
-        });
-
-        return (
-            <div className='hidden' style={ {  display: 'none'} }>
-                <ReactReorderable handle='.draggable-handle' mode='grid' onDragStart={ this.onDragStart } onDrop={ this.props.onToolReorder }
-                                  onChange={ this.onChange }>
-                    { tools }
-                </ReactReorderable>
-            </div>
-        );
-    }
-});
-
 /**
  * A single NavBar item.
+
  * @constructor
  */
 var NavBarItem = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
-        isSubmenu: React.PropTypes.bool,
-        children: React.PropTypes.array,
-        tools: ToolsPropType
     },
-    generateItem: function () {
+
+    isAnchored: function() {
+        return this.props.is_anchored !== null;
+    },
+
+    render: function() {
         var controls = [<i className='config-tool fa fa-cog'></i>];
-        var arrow_classes = 'fa fa-arrows-h'
+        var arrow_classes = 'fa fa-arrows-h';
         if (this.props.is_anchored) {
             arrow_classes += ' anchored';
         } else {
             arrow_classes += ' draggable-handle';
         }
         controls.push(<i className={arrow_classes}></i>);
-        return <a>{ this.props.name }<br/>{ controls }</a>
-    },
-
-    generateSubmenu: function () {
-        return <ToolSubMenu {...this.props} tools={ this.props.children } key={ `submenu-${_.uniqueId()}` } isSubmenu={ true }/>;
-    },
-
-    generateContent: function () {
-        var content = [this.generateItem()];
-        if (this.props.children) {
-            content.push(this.generateSubmenu());
-        }
-
-        return content;
-    },
-
-    render: function () {
-        var content = this.generateContent();
-        var classes = 'tb-item tb-item-edit';
         return (
-            <div className={ classes }>
-                { content }
+            <div className="tb-item tb-item-edit">
+                <a>{this.props.name}<br/>{controls}</a>
             </div>
         );
     }
@@ -138,26 +112,27 @@ var NavBarItem = React.createClass({
 
 /**
  * An input component that updates the NavBar's grouping threshold.
+
  * @constructor
  */
 var GroupingThreshold = React.createClass({
     propTypes: {
         initialValue: React.PropTypes.number.isRequired
     },
-    getInitialState: function () {
+    getInitialState: function() {
         return {
             value: this.props.initialValue
         };
     },
 
-    handleChange: function (event) {
+    handleChange: function(event) {
         this.setState({
             value: event.target.value
         });
         this.props.onUpdateThreshold(event);
     },
 
-    render: function () {
+    render: function() {
         return (
             <div>
                 { !!this.props.isHidden &&
@@ -176,14 +151,14 @@ var GroupingThreshold = React.createClass({
     }
 });
 
-
 /**
  * The NavBar when in "Normal" mode.
+
  * @constructor
  */
 var NormalNavBar = React.createClass({
-    buildMenu: function (item) {
-        var classes = ` ui-icon-${item.icon}-32`;
+    buildMenu: function(item) {
+        let classes = window.location.pathname.startsWith(item.url) ? 'active-nav-link' : '';
 
         var subMenu;
         if (item.children) {
@@ -195,20 +170,26 @@ var NormalNavBar = React.createClass({
                 <a href={ item.url } key={ 'link-' + _.uniqueId() } className={ classes }>
                     { item.name }
                 </a>
-                <ul className={ item.children ? 'submenu' : '' }>
-                    { subMenu }
-                </ul>
+                {subMenu &&
+                    <ul className={ classes + ' submenu'}>
+                        { subMenu }
+                    </ul>
+                }
             </li>
         );
     },
 
-    render: function () {
+    render: function() {
         var listItems = this.props.items.map(this.buildMenu);
         var classes = 'dropdown';
-        classes = this.props.isSubmenu ? classes += ' submenu' : classes;
         return (
-            <ul className={ classes } key={ `toolList-${_.uniqueId()}` }>
+            <ul
+                className={ classes }
+                key={ `toolList-${_.uniqueId()}` }>
                 { listItems }
+                <ToggleAddNewTool
+                    handleToggleAddNewTool={this.props.handleToggleAddNewTool}
+                    showAddToolMenu={this.props.showAddToolMenu} />
             </ul>
         );
     }
@@ -224,33 +205,38 @@ var AdminNav = React.createClass({
         tools: ToolsPropType
     },
     mode: 'grid',
-    getInitialState: function () {
+    getInitialState: function() {
         return {
             hover: false
         };
     },
 
-    mouseOver: function () {
+    mouseOver: function() {
         this.setState({
             hover: true
         });
     },
 
-    mouseOut: function () {
+    mouseOut: function() {
         this.setState({
             hover: false
         });
     },
 
-    render: function () {
+    render: function() {
         var _this = this;
         var subMenuClass = this.props.isSubmenu ? ' submenu ' : '';
-        var tools = [], anchored_tools = [], end_tools = [];
-        this.props.tools.forEach(function (item) {
-            var core_item = <NavBarItem onMouseOver={ _this.mouseOver } onMouseOut={ _this.mouseOut } {..._this.props} data={ item }
+        var [tools, anchored_tools, end_tools] = [[], [], [],];
+        this.props.tools.forEach(function(item) {
+            var core_item = <NavBarItem
+                                onMouseOver={ _this.mouseOver }
+                                onMouseOut={ _this.mouseOut } {..._this.props}
+                                data={ item }
                                 mount_point={ item.mount_point }
-                                name={ item.name } url={ item.url }
-                                key={ 'tb-item-' + _.uniqueId() } is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
+                                name={ item.name }
+                                url={ item.url }
+                                key={ 'tb-item-' + _.uniqueId() }
+                                is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
             if (item.mount_point === 'admin') {
                 // force admin to end, just like 'Project.sitemap()' does
                 end_tools.push(core_item);
@@ -258,7 +244,7 @@ var AdminNav = React.createClass({
                 anchored_tools.push(core_item);
             } else {
                 tools.push(
-                <div className={ 'draggable-element' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
+                    <div className={ 'draggable-element' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
                         { core_item }
                     </div>
             );
@@ -268,8 +254,13 @@ var AdminNav = React.createClass({
         return (
             <div className='react-drag edit-mode'>
                 { anchored_tools }
-                <ReactReorderable key={ 'reorder-' + _.uniqueId() } handle='.draggable-handle' mode='grid' onDragStart={ this.onDragStart }
-                                  onDrop={ this.props.onToolReorder } onChange={ this.onChange }>
+                <ReactReorderable
+                    key={ 'reorder-' + _.uniqueId() }
+                    handle='.draggable-handle'
+                    mode='grid'
+                    onDragStart={ this.onDragStart }
+                    onDrop={ this.props.onToolReorder }
+                    onChange={ this.onChange }>
                     { tools }
                 </ReactReorderable>
                 { end_tools }
@@ -280,13 +271,14 @@ var AdminNav = React.createClass({
 
 /**
  * The button that toggles NavBar modes.
+
  * @constructor
  */
 var ToggleAdminButton = React.createClass({
     propTypes: {
         visible: React.PropTypes.bool
     },
-    render: function () {
+    render: function() {
         var classes = this.props.visible ? 'fa fa-unlock' : 'fa fa-lock';
         return (
             <button id='toggle-admin-btn' onClick={ this.props.handleButtonPush } className='admin-toolbar-right'>
@@ -297,290 +289,8 @@ var ToggleAdminButton = React.createClass({
 });
 
 /**
- * Add new tool button.
- * @constructor
- */
-var ToggleAddNewTool = React.createClass({
-    render: function () {
-        return (
-            <div>
-                <div onClick={ this.props.handleToggleAddNewTool } className="add-tool-toggle"> + Add new...</div>
-                {this.props.showMenu && <NewToolMain />}
-            </div>
-        );
-    }
-});
-
-//////////////////
-// Add New Tool //
-//////////////////
-
-
-/**
- * Menu for adding a new tool.
- * @constructor
- */
-var NewToolMenu = React.createClass({
-    propTypes: {
-        tools: React.PropTypes.array,
-        onPushAddButton: React.PropTypes.func,
-        onSetActive: React.PropTypes.func,
-        formData: React.PropTypes.object,
-        visible: React.PropTypes.bool
-    },
-
-    render: function () {
-        var _this = this;
-        var showInfo = this.props.active.name !== "Add a tool";
-
-        var tools = this.props.tools.map(function (tool, i) {
-            var classes;
-            if (_this.props.active && _this.props.active.name === tool.name) {
-                classes = " selected-tool"
-            }
-            else {
-                classes = ""
-            }
-            return (
-                <li className={classes}
-                    id={"add-new-" + tool.name}
-                    key={`new-tool-btn-${i}`}
-                    onClick={_this.props.handleChangeTool}>
-                    {tool.tool_label}
-                </li>
-            )
-        });
-
-        return (
-            <div className="tool-card">
-                <div className="box-title">Add a new ...</div>
-                <div id="installable-items">
-                    <ul className="installable-tool-box">
-                        {tools}
-                    </ul>
-                </div>
-                <div className="tool-partition"></div>
-
-                {showInfo &&
-                <NewToolInfo {...this.props}
-                    name={this.props.active.tool_label}
-                    description={this.props.active.description}
-                    handleAddButton={this.props.handleAddButton}/>
-                }
-            </div>
-        );
-    }
-});
-
-var InstallNewToolForm = React.createClass({
-    render: function () {
-        return (
-            <form id="add-tool-form">
-                <label htmlFor="mount_label">Label</label>
-                <input required
-                       id="mount_label"
-                       onChange={this.props.handleChangeForm}
-                       value={this.props.formData.mount_label} />
-
-                <label htmlFor="mount_point">Url Path</label>
-                <input required
-                       id="mount_point"
-                       onChange={this.props.handleChangeForm}
-                       onBlur={this.props.toolFormIsValid}
-                       value={slugify(this.props.formData.mount_label)}
-                       value={this.props.formData.mount_point.toLowerCase()}/>
-                <span>{this.props.validationErrors.mount_point}</span>
-
-                <p style={{"color": "grey"}}><small>http://hs/p/finna/</small><strong style={{"color": "orange"}}>
-                    {this.props.formData.mount_point}
-                </strong></p>
-
-                <button id="new-tool-submit"
-                        onClick={this.props.handleSubmit}
-                        className="add-tool-button">
-                    Add Tool
-                </button>
-            </form>
-        );
-    }
-});
-
-
-var NewToolInfo = React.createClass({
-    propTypes: {
-        name: React.PropTypes.string,
-        description: React.PropTypes.string,
-        handleAddButton: React.PropTypes.func
-    },
-
-
-    render: function () {
-        return (
-            <div className="tool-info">
-                <div className="tool-info-left">
-                    <h1>{this.props.name}</h1>
-                    <p>{this.props.description}</p>
-                </div>
-                <div className="tool-info-right">
-                    <InstallNewToolForm {...this.props} />
-                </div>
-            </div>
-        );
-    }
-});
-
-
-var installableToolsCache = {};
-function loadTools(id, callback) {
-    if(!installableToolsCache[id]) {
-        installableToolsCache[id] = $.get(_getProjectUrl(true) + "/admin/installable_tools/").promise();
-    }
-    installableToolsCache[id].done(callback);
-}
-
-
-var NewToolMain = React.createClass({
-    getInitialState: function () {
-        let toolPlaceHolder = {
-            name: "Add a tool",
-            tool_label: "Add a tool",
-            description: "click on one of the tools shown above to add it to your project."
-        };
-
-        return {
-            visible: false,
-            installableTools: [toolPlaceHolder],
-            active: toolPlaceHolder,
-            errors: {
-                mount_point: [],
-                mount_label: []
-            },
-            new_tool: {
-                mount_point: "",
-                tool_label: "",
-                mount_label: ""
-            }
-        };
-    },
-
-    componentDidMount: function () {
-        let tools = loadTools('tools', function (result) {
-            if (this.isMounted()) {
-                this.setState({
-                    installableTools: result['tools']
-                })
-            }
-        }.bind(this));
-    },
-    handleChangeTool: function (e) {
-        console.log(`Changed tool to: ${e.target.textContent}`);
-        this._setActiveByName(e.target.textContent);
-
-    },
-    _setActiveByName: function (tool_label) {
-        var index = this.state.installableTools.findIndex(
-            x => x.tool_label === tool_label
-        );
-        var active = this.state.installableTools[index];
-        var _new_tool = this.state.new_tool;
-
-        _new_tool['mount_label'] = active.defaults.default_mount_label;
-        _new_tool['mount_point'] = "";
-
-        this.setState({
-            active: active,
-            new_tool: _new_tool
-        });
-    },
-
-    handleChangeForm: function (e) {
-        console.log(e.target.value);
-        var _new_tool = this.state.new_tool;
-
-        console.log(e.target.id);
-        _new_tool[e.target.id] = e.target.value;
-
-        this.setState({
-            new_tool: _new_tool
-        });
-
-    },
-    handleSubmit: function (e) {
-        e.preventDefault();
-        var data = {
-            _session_id: $.cookie('_session_id'),
-            tool: this.state.active.name,
-            mount_label: this.state.new_tool.mount_label,
-            mount_point: this.state.new_tool.mount_point
-        };
-
-        var url = _getProjectUrl() + "/admin/install_tool/";
-
-         $.ajax({
-            type: 'POST',
-            url: url,
-            data: data,
-            success: function () {
-                $('#messages').notify('Tool created',
-                    {
-                        status: 'confirm'
-                    });
-            },
-
-            error: function () {
-                $('#messages').notify('Error creating tool.',
-                    {
-                        status: 'error'
-                    });
-            }
-        });
-
-    },
-
-    toolFormIsValid: function (e) {
-        e.preventDefault();
-
-        var errors = {
-            mount_point: []
-        };
-
-        if (this.state.new_tool.mount_point.length < 3) {
-            errors.mount_point.push("Mount point must have at least 3 characters.");
-        }
-
-        let data = {
-            'mount_point': e.target.value,
-            '_session_id': $.cookie('_session_id')
-        };
-
-        let result = $.post(_getProjectUrl() + '/admin/mount_point/', data);
-            if (!result.responseJSON) {
-                errors.mount_point.push("Mount point already exists.");
-            }
-
-        this.setState({errors: errors})
-
-    },
-
-    render: function () {
-        return <NewToolMenu
-            active={this.state.active}
-            tools={this.state.installableTools}
-            formData={this.state.new_tool}
-            handleChangeTool={this.handleChangeTool}
-            handleSubmit={this.handleSubmit}
-            handleChangeForm={this.handleChangeForm}
-            toolFormIsValid={this.toolFormIsValid}
-            validationErrors={this.state.errors}
-            handleAddButton={this.handleAddButton}/>;
-    }
-});
-
-
-////////////////////////////////////////////
-
-/**
  * The main "controller view" of the NavBar.
+
  * @constructor
  * @param {object} initialData - Consumes the _nav.json endpoint.
  */
@@ -589,7 +299,7 @@ var Main = React.createClass({
         initialData: ToolsPropType,
         installableTools: React.PropTypes.array
     },
-    getInitialState: function () {
+    getInitialState: function() {
         return {
             data: this.props.initialData,
             visible: false,
@@ -601,8 +311,8 @@ var Main = React.createClass({
     /**
      * When invoked, this updates the state with the latest data from the server.
      */
-    getNavJson: function () {
-        $.get(`${_getProjectUrl(false)}/_nav.json`, function (result) {
+    getNavJson: function() {
+        $.get(`${_getProjectUrl(false)}/_nav.json`, function(result) {
             if (this.isMounted()) {
                 this.setState({
                     data: result
@@ -610,12 +320,10 @@ var Main = React.createClass({
             }
         }.bind(this));
     },
-
-
     /**
      * Handles the locking and unlocking of the NavBar
      */
-    handleToggleAdmin: function () {
+    handleToggleAdmin: function() {
         this.setState({
             visible: !this.state.visible
         });
@@ -624,7 +332,13 @@ var Main = React.createClass({
     /**
      * Handles the the display of the "Add new tool" menu.
      */
-    handleToggleAddNewTool: function () {
+    handleToggleAddNewTool: function() {
+        $('body').click(function(e) { // click the background
+                if (e.target == this) {
+                    $(this).fadeOut();
+                }
+            });
+
         this.setState({
             showAddToolMenu: !this.state.showAddToolMenu
         });
@@ -632,9 +346,10 @@ var Main = React.createClass({
 
     /**
      * Handles the changing of the NavBars grouping threshold.
+
      * @param {object} event
      */
-    onUpdateThreshold: function (event) {
+    onUpdateThreshold: function(event) {
         var _this = this;
         var thres = event.target.value;
         var url = `${_getProjectUrl()}/admin/configure_tool_grouping`;
@@ -651,8 +366,8 @@ var Main = React.createClass({
         this.setState({
             in_progress: true
         });
-        $.post(url, data, function () {
-        }.bind(this)).always(function () {
+        $.post(url, data, function() {
+        }.bind(this)).always(function() {
             _this.setState({
                 in_progress: false
             });
@@ -664,15 +379,16 @@ var Main = React.createClass({
 
     /**
      * Handles the changing of the NavBars grouping threshold.
+
      * @param {array} data - Array of tools
      */
-    onToolReorder: function (data) {
+    onToolReorder: function(data) {
         var tools = this.state.data;
         var params = {
             _session_id: $.cookie('_session_id')
         };
 
-        data.map(function (tool, i) {
+        data.map(function(tool, i) {
             var mount_point = getMountPoint(tool);
             var index = tools.children.findIndex(
                 x => x.mount_point === mount_point
@@ -690,7 +406,7 @@ var Main = React.createClass({
             type: 'POST',
             url: url,
             data: params,
-            success: function () {
+            success: function() {
                 $('#messages').notify('Tool order updated',
                     {
                         status: 'confirm'
@@ -698,7 +414,7 @@ var Main = React.createClass({
                 _this.getNavJson();
             },
 
-            error: function () {
+            error: function() {
                 $('#messages').notify('Error saving tool order.',
                     {
                         status: 'error'
@@ -707,33 +423,47 @@ var Main = React.createClass({
         });
     },
 
-    render: function () {
+    render: function() {
         var editMode = this.state.visible ? 'edit-mode' : '';
         var _this = this;
         var navBarSwitch = (showAdmin) => {
             if (showAdmin) {
                 return (
-                    <AdminNav tools={ _this.state.data.menu } data={ _this.state.data } onToolReorder={ _this.onToolReorder }
-                              onUpdateMountOrder={ _this.onUpdateMountOrder } editMode={ _this.state.visible } />
+                    <AdminNav
+                        tools={ _this.state.data.menu }
+                        data={ _this.state.data }
+                        onToolReorder={ _this.onToolReorder }
+                        onUpdateMountOrder={ _this.onUpdateMountOrder }
+                        editMode={ _this.state.visible } />
                 );
             } else {
                 return (
                     <div>
-                        <NormalNavBar items={ _this.state.data.menu } key={ `normalNav-${_.uniqueId()}` }/>
-                        <ToggleAddNewTool handleToggleAddNewTool={this.handleToggleAddNewTool} showMenu={this.state.showAddToolMenu} />
+                        <NormalNavBar
+                            items={ _this.state.data.menu }
+                            handleToggleAddNewTool={this.handleToggleAddNewTool}
+                            showAddToolMenu={this.state.showAddToolMenu}/>
                     </div>
-                )
+                );
             }
         };
         var navBar = navBarSwitch(this.state.visible);
 
         return (
-            <div ref={ _.uniqueId() } className={ 'nav_admin ' + editMode }>
+            <div
+                ref={ _.uniqueId() }
+                className={ 'nav_admin ' + editMode }>
                 { navBar }
                 <div id='bar-config'>
-                    <GroupingThreshold onUpdateThreshold={ this.onUpdateThreshold } isHidden={ this.state.visible } initialValue={ this.state.data.grouping_threshold }/>
+                    <GroupingThreshold
+                        onUpdateThreshold={ this.onUpdateThreshold }
+                        isHidden={ this.state.visible }
+                        initialValue={ this.state.data.grouping_threshold }/>
                 </div>
-                <ToggleAdminButton key={ _.uniqueId() } handleButtonPush={ this.handleToggleAdmin } visible={ this.state.visible }/>
+                <ToggleAdminButton
+                    key={ _.uniqueId() }
+                    handleButtonPush={ this.handleToggleAdmin }
+                    visible={ this.state.visible }/>
             </div>
         );
     }
