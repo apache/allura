@@ -261,6 +261,7 @@ class Globals(object):
             vote_down=Icon('fa fa-minus', 'Vote Down'),
             download=Icon('fa fa-download', 'Download'),
             revert=Icon('fa fa-history', 'Revert'),
+            browse_commits=Icon('fa fa-list', 'Browse Commits'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
