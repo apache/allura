@@ -80,8 +80,6 @@
     <p><a href="?format=raw">Download this file</a></p>
     <div class="clip grid-19 codebrowser">
       <h3>
-        {{ g.icons['table'].render(title=h.really_unicode(blob.name), show_title=True) }}
-        &nbsp;&nbsp;
         {{ stats.line_count }} lines ({{ stats.data_line_count }} with data), {{ stats.code_size|filesizeformat }}
       </h3>
       {% if blob.has_pypeline_view %}
