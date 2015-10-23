@@ -44,8 +44,13 @@
     <tr>
       <td class="nowrap">
         <a href="{{h.urlquote(dirent.href)}}">
-          <b data-icon="{{dirent.kind == 'DIR' and 'o' or 'n'}}" class="ico {{dirent.kind == 'DIR' and 'folder' or 'table'}}"></b>
-          <span>{{h.really_unicode(dirent.name)}}</span>
+          {% if dirent.kind == 'DIR' %}
+            {% set icon_name = 'folder' %}
+          {% else %}
+            {% set icon_name = 'table' %}
+          {% endif %}
+          {{ g.icons[icon_name].render(tag='b', title=h.really_unicode(dirent.name)) }}
+          <span>{{ h.really_unicode(dirent.name) }}</span>
         </a>
       </td>
       <td class="nowrap">{{lib.abbr_date(dirent.last_commit.date)}}</td>
