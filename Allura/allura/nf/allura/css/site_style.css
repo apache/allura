@@ -662,29 +662,13 @@ blockquote {
 .message .content {
   margin: 0;
 }
-.message .ico-close {
-  float: right;
-  margin-top: -10px;
-  margin-right: -10px;
-  display: none;
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: #1a1a1a;
-}
 .message.error {
   background-color: #8a0f0f;
   border-color: #5c0a0a;
 }
-.message.error .ico-close {
-  color: #5c0a0a;
-}
 .message.confirm {
   background-color: #0f8a0f;
   border-color: #0a5c0a;
-}
-.message.confirm .ico-close {
-  color: #0a5c0a;
 }
 .message.warning {
   background-color: #d9d926;
@@ -696,12 +680,6 @@ blockquote {
 }
 .message.warning header {
   text-shadow: none;
-}
-.message.warning .ico-close {
-  color: #adad1f;
-}
-.message:hover .ico-close {
-  display: block;
 }
 
 .no-js #messages {
@@ -1150,56 +1128,16 @@ button.btn.link, button.btn.link:hover {
 }
 
 /* icons */
-.ico, .ico-l:before, .ico-r:after {
-  font: normal 16px/4px "Pictos";
-  text-decoration: none;
-  width: 16px;
-  height: 16px;
-  display: inline-block;
-}
-
-.ico:before, .ico-l:before, .ico-r:after {
-  content: attr(data-icon);
-}
-
-.ico {
-  line-height: 4px;
-}
-
-.btn em, .ico + em {
+.btn em {
   text-indent: -9999px;
   position: absolute;
 }
 
-.ico-l:before {
-  margin-right: 10px;
-}
-
-.ico-r:after {
-  margin-left: 10px;
-}
-
-.ico.active, a.active {
+a.active {
   color: #0077aa !important;
   text-shadow: white 0 1px 0, #0099cc 0 1px 6px;
 }
 
-.ico.reverse {
-  color: #fff !important;
-  text-shadow: #333333 0 1px 0, #0099cc 0 1px 10px !important;
-}
-
-a .ico:active {
-  opacity: 1;
-}
-
-a .ico:hover {
-  opacity: .7;
-}
-
-nav .ico {
-  text-transform: none;
-}
 
 .x16 {font-size: 16px; width: 16px; height: 16px;}
 .x24 {font-size: 24px; width: 24px; height: 24px;}
@@ -3452,11 +3390,6 @@ ul.dropdown ul li:first-child a {
 /* end of User Profile styles from _user_profile.scss */
 /* Use the right icon set for the User Activity and Send Message action buttons on User Profile */
 .profile-section.activity h3 b.ico,
-#user-message b.ico {
-    background-image: url('../images/neo-icon-set-ffffff-256x350.png');
-    width: 16px;
-    height: 16px;
-}
 #user-message {
     top: 10px;
 }
