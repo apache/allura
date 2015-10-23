@@ -44,7 +44,11 @@ class NewForgeController(object):
 
     @expose()
     def tool_icon_css(self, *args, **kw):
-        """Serve stylesheet containing icon urls for every installed tool.
+        """
+        Serve stylesheet containing icon urls for every installed tool.
+
+        If you want to use this, include it in your theme like:
+            g.register_css('/nf/tool_icon_css?' + g.build_key, compress=False)
 
         """
         css, md5 = g.tool_icon_css
