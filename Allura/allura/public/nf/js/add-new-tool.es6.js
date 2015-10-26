@@ -111,7 +111,7 @@ var FormField = React.createClass({
         });
         console.log('result', result);
         return (
-            <div className="error-box">
+            <div className="add-tool-error-box">
                 {result}
             </div>
         );
