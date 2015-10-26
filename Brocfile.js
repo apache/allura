@@ -20,9 +20,13 @@ var babelTranspiler = require("broccoli-babel-transpiler");
 var sourceMapConcat = require('broccoli-sourcemap-concat');
 var funnel = require('broccoli-funnel');
 var uglifyJavaScript = require('broccoli-uglify-js');
+var mergeTrees = require('broccoli-merge-trees');
 
+var production = (process.env.BROCCOLI_ENV === 'production');
+
+/* main output tree */
 var tree = funnel('Allura/allura/public/nf/js', {
-  include: ['*.es6.js'],
+    include: ['*.es6.js'],
 });
 tree = babelTranspiler(tree, {
     browserPolyfill: true,
@@ -30,22 +34,43 @@ tree = babelTranspiler(tree, {
     sourceMaps: 'inline',  // external doesn't work, have to use extract below
     comments: false,
 });
-tree = sourceMapConcat(tree, {
-  inputFiles: ['**/*'],
-  outputFile: '/transpiled.js'
+
+/* exactly what's needed for the navbar, so separate apps may use it too */
+var react_file = 'react-with-addons' + (production ? '.min' : '') + '.js';
+var navbar_deps = funnel('Allura/allura/public/nf/js', {
+    include: ['underscore-min.js',
+              react_file,
+              'react-drag.js',
+              'react-reorderable.js',
+    ],
+});
+navbar = mergeTrees([navbar_deps, tree]);
+navbar = sourceMapConcat(navbar, {
+    // headerFiles & footerFiles used to specify some that must come before or after others
+    headerFiles: [react_file],
+    inputFiles: ['*.js'],
+    footerFiles: ['add-new-tool.es6.js','navbar.es6.js',],
+    outputFile: '/navbar.js',
 });
 
-if (process.env.BROCCOLI_ENV === 'production') {
+tree = sourceMapConcat(tree, {
+    inputFiles: ['**/*'],
+    outputFile: '/transpiled.js'
+});
+
+var output = mergeTrees([tree, navbar]);
+
+if (production) {
     /* can't use this for dev mode, since it drops the sourcemap comment even if we set  output: {comments: true}
      https://github.com/mishoo/UglifyJS2/issues/653
      https://github.com/mishoo/UglifyJS2/issues/754
      https://github.com/mishoo/UglifyJS2/issues/780
      https://github.com/mishoo/UglifyJS2/issues/520
      */
-    tree = uglifyJavaScript(tree, {
+    output = uglifyJavaScript(output, {
         mangle: false,
         compress: false
     });
 }
 
-module.exports = tree;
+module.exports = output;
