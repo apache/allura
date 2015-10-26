@@ -101,10 +101,11 @@ var NavBarItem = React.createClass({
         } else {
             arrow_classes += ' draggable-handle';
         }
-        controls.push(<i className={arrow_classes}></i>);
+//controls.push(<i className={arrow_classes}></i>);
         return (
             <div className="tb-item tb-item-edit">
-                <a>{this.props.name}<br/>{controls}</a>
+                <a>{controls}
+                    <span className="draggable-handle">{this.props.name}</span></a>
             </div>
         );
     }
@@ -184,6 +185,7 @@ var NormalNavBar = React.createClass({
         var classes = 'dropdown';
         return (
             <ul
+                id="admin-toolbar-list"
                 className={ classes }
                 key={ `toolList-${_.uniqueId()}` }>
                 { listItems }
