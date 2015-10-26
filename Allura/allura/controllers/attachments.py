@@ -25,6 +25,17 @@ from allura.lib.security import require_access
 from .base import BaseController
 
 
+# text/html, script, flash, image/svg+xml, etc are NOT secure to display directly in the browser
+SAFE_CONTENT_TYPES = (
+    'image/png', 'image/x-png',
+    'image/jpeg', 'image/pjpeg', 'image/jpg',
+    'image/gif',
+    'image/bmp',
+    'image/tiff',
+    'image/x-icon',
+)
+
+
 class AttachmentsController(BaseController):
     AttachmentControllerClass = None
 
@@ -91,7 +102,7 @@ class AttachmentController(BaseController):
         if self.artifact.deleted:
             raise exc.HTTPNotFound
         embed = False
-        if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
+        if self.attachment.content_type and self.attachment.content_type in SAFE_CONTENT_TYPES:
             embed = True
         return self.attachment.serve(embed=embed)
 

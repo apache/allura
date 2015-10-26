@@ -273,10 +273,28 @@ class TestAttachment(TestDiscussBase):
         assert '<div class="attachment_thumb">' in r
         alink = self.attach_link()
         r = self.app.get(alink)
+        assert r.content_type == 'text/plain'
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
+
+    def test_attach_svg(self):
+        r = self.app.post(self.post_link + 'attach',
+                          upload_files=[('file_info', 'test.svg', '<svg onclick="prompt(document.domain)"></svg>')])
+        alink = self.attach_link()
+        r = self.app.get(alink)
+        assert r.content_type == 'image/svg+xml'
+        assert r.content_disposition == 'attachment;filename="test.svg"', 'Attachments should force download'
+
+    def test_attach_img(self):
+        r = self.app.post(self.post_link + 'attach',
+                          upload_files=[('file_info', 'handtinyblack.gif',
+                                         'GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;')])
+        alink = self.attach_link()
+        r = self.app.get(alink)
+        assert r.content_type == 'image/gif'
+        assert r.content_disposition is None
 
     @patch('allura.model.discuss.Post.notify')
     def test_reply_attach(self, notify):
