@@ -116,10 +116,7 @@
 <script type="text/javascript">
   // these icons are used in the js, so set them up now
   var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
-  {% set perm_delete_ico = g.icons['perm_delete'].render(
-                title='',
-                show_title=True,
-                extra_css='deleter') %}
+  {% set perm_delete_ico = g.icons['perm_delete'].render(title='', extra_css='deleter') %}
   var perm_delete_ico = '{{perm_delete_ico}}';
 </script>
 {% endblock %}

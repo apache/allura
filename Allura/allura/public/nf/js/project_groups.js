@@ -89,7 +89,7 @@ $(function() {
       else{
         holder.attr('data-user', data.username).addClass('deleter');
         holder.html(perm_delete_ico);
-        holder.find('span').html('&nbsp;' + data.displayname + ' (' + data.username + ')');
+        holder.find('.fa').after('&nbsp;' + data.displayname + ' (' + data.username + ')');
         holder.children('a.deleter').click(delete_user);
       }
     });
@@ -102,18 +102,19 @@ $(function() {
         var item = data[k][i];
         var perm_holder = group_holder.find('li[data-permission='+item.name+']');
         var perm_link = perm_holder.find('a');
+        var perm_icon = perm_link.find('.fa');
         if(!perm_holder.hasClass(item.has)){
           perm_holder.effect('highlight', {}, 2000);
           perm_holder.attr('class',item.has);
           perm_link.attr('title',item.text);
           if(item.has=="yes"){
-            perm_link.attr('class','icon fa fa-check');
+            perm_icon.attr('class','fa fa-check');
           }
           else if(item.has=="inherit"){
-            perm_link.attr('class','icon fa fa-check-circle');
+            perm_icon.attr('class','fa fa-check-circle');
           }
           else{
-            perm_link.attr('class','icon fa fa-ban');
+            perm_icon.attr('class','fa fa-ban');
           }
           perm_holder.find('span').remove();
           perm_link.show();
