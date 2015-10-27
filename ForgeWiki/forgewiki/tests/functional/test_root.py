@@ -136,7 +136,7 @@ class TestRootController(TestController):
 
     def test_search_help(self):
         r = self.app.get('/wiki/search?q=test')
-        btn = r.html.find('a', attrs={'class': 'icon fa fa-question-circle btn search_help_modal'})
+        btn = r.html.find('a', attrs={'class': 'icon btn search_help_modal'})
         assert btn is not None, "Can't find a help button"
         div = r.html.find('div', attrs={'id': 'lightbox_search_help_modal'})
         assert div is not None, "Can't find help text"

@@ -414,13 +414,13 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/src-git/').follow().follow()
         assert '<span class="scm-branch-label">zz</span>' in r
         # 'bad' is a file name which in zz, but not in master
-        assert_in('<span>bad</span>', r)
+        assert_in('bad</a>', r)
 
         self.app.post('/p/test/admin/src-git/set_default_branch_name',
                       params={'branch_name': 'master'})
         r = self.app.get('/p/test/src-git/').follow().follow()
-        assert_not_in('<span>bad</span>', r)
-        assert_in('<span>README</span>', r)
+        assert_not_in('bad</a>', r)
+        assert_in('README</a>', r)
 
     def test_set_checkout_url(self):
         r = self.app.get('/p/test/admin/src-git/checkout_url')
@@ -696,7 +696,7 @@ class TestFork(_TestCase):
                               'summary': 'summary',
                               'description': 'description',
                           }).follow()
-        assert '<a class="icon fa fa-edit" href="edit" title="Edit"><span>&nbsp;Edit</span></a>' in r
+        assert '<a class="icon" href="edit" title="Edit"><i class="fa fa-edit"></i>&nbsp;Edit</a>' in r
         r = self.app.get('/p/test/src-git/merge-requests/1/edit')
         assert 'value="summary"' in r
         assert '<option selected value="zz">zz</option>' in r
@@ -860,7 +860,7 @@ class TestGitBranch(TestController):
 
     def test_exotic_default_branch(self):
         r = self.app.get('/src-git/').follow().follow()
-        assert '<span>README</span>' in r
+        assert 'README</a>' in r
         assert_equal(c.app.repo.get_default_branch('master'), 'test')
 
 

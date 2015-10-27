@@ -736,7 +736,7 @@ class TestFunctionalController(TrackerTestController):
         # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
         create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
-        assert_equal(create_button['class'], 'icon fa fa-plus-circle sidebar-disabled')
+        assert_equal(create_button['class'], 'icon sidebar-disabled')
 
     def test_render_markdown_syntax(self):
         r = self.app.get('/bugs/markdown_syntax')
@@ -1986,7 +1986,7 @@ class TestFunctionalController(TrackerTestController):
                             extra_environ=dict(username='*anonymous'))
         ticket_url = r.headers['Location']
         r = self.app.get(ticket_url, extra_environ=dict(username='*anonymous'))
-        a = r.html.find('a', {'class': 'icon fa fa-edit edit_ticket'})
+        a = r.html.find('a', {'class': 'icon edit_ticket'})
         assert_equal(a.text, '&nbsp;Edit')
 
     def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
