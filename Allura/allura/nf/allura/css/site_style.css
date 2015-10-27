@@ -1790,7 +1790,6 @@ a.active {
   -o-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
   border: medium none;
-  font-family: sans-serif;
   position: absolute;
   right: 5px;
   top: 4px;
@@ -1811,9 +1810,6 @@ a.active {
   color: #555555;
   display: block;
   padding: 5px 10px;
-}
-#sidebar li > a.fa {
-  padding: 8px 10px;
 }
 #sidebar li > a:hover {
   background: rgba(229, 229, 229, 0.9);
@@ -3384,7 +3380,7 @@ ul.dropdown ul li:first-child a {
   width: 26px;
   height: 26px;
 }
-#user-message span {
+#user-message i {
   display: block;
 }
 /* end of User Profile styles from _user_profile.scss */

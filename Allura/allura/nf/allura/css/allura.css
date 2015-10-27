@@ -22,17 +22,7 @@
     width: 110px;
     height: 24px;
 }
-a.fa,
-a.fa:hover {
-  text-decoration: none;
-  color: rgb(85, 85, 85);
-}
-.modal .fa {
-  color: white;
-  float: right;
-}
-a.btn.fa { font-family: FontAwesome; }
-a.fa > span { font-family: sans-serif; }
+.modal .icon.close { float: right; }
 
 #ticket_search_results_holder{
     overflow: auto;
@@ -80,5 +70,5 @@ tr.rev div.markdown_content p {
 
 #usergroup_admin td.group {
   text-align: center;
-  line-height: 3em;
+  line-height: 2em;
 }
