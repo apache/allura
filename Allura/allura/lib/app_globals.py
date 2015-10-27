@@ -246,7 +246,7 @@ class Globals(object):
             pin=Icon('fa fa-mail-pin', 'Pin'),
             folder=Icon('fa fa-folder', 'Folder'),
             fork=Icon('fa fa-code-fork', 'Fork'),
-            merge=Icon('fa fa-code-fork', 'Merge'),  # TODO: use something else here
+            merge=Icon('fa fa-code-fork upside-down', 'Merge'),
             conversation=Icon('fa fa-comments', 'Conversation'),
             group=Icon('fa fa-group', 'Group'),
             user=Icon('fa fa-user', 'User'),

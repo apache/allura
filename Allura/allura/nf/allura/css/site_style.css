@@ -1128,6 +1128,11 @@ button.btn.link, button.btn.link:hover {
 }
 
 /* icons */
+.fa.upside-down {
+  transform: scale(1, -1);
+  -moz-transform: scale(1, -1);
+  -webkit-transform: scale(1, -1);
+}
 .btn em {
   text-indent: -9999px;
   position: absolute;
