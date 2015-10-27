@@ -37,7 +37,7 @@
   </ul>
 {% endmacro %}
 {% macro group_icon(icon) %}
-<p style="padding-bottom: 0">{{ g.icons[icon].render(tag='b', style='font-size:24px;') }}</p>
+<p style="padding-bottom: 0">{{ g.icons[icon].render(tag='span', extra_css='x24') }}</p>
 {% endmacro %}
 
 {% block content %}

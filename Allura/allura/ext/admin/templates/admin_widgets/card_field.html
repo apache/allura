@@ -27,7 +27,7 @@
           extra_css='admin_modal',
           title='{} Settings'.format(name)) }}
       {% endif %}
-      <p style="padding-bottom: 0">{{ g.icons[icon_name].render(tag='b', style='font-size:24px;') }}</p>
+      <p style="padding-bottom: 0">{{ g.icons[icon_name].render(tag='span', extra_css='x24') }}</p>
       {% if desc %}
       <p>{{ desc }}</p>
       {% endif %}

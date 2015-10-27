@@ -61,9 +61,9 @@
          class="emboss{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}">
   {% else %}
     {{ g.icons['user'].render(
-        tag='b',
-        style='font-size:{}px;text-align:center;'.format(size) if size else '',
-        extra_css='emboss {}'.format(className or '')) }}
+        tag='span',
+        style='text-align:center;',
+        extra_css='emboss {} x{}'.format(className or '', size or '')) }}
   {% endif %}
 {%- endmacro %}
 
@@ -82,9 +82,9 @@
          class="emboss {% if size %} x{{size}}{% endif %}">
   {% else %}
     {{ g.icons['user'].render(
-        tag='b',
-        style='font-size:{}px;text-align:center;'.format(size) if size else '',
-        extra_css='emboss') }}
+        tag='span',
+        style='text-align:center;',
+        extra_css='emboss x{}'.format(size or '')) }}
   {% endif %}
 {%- endmacro %}
 
