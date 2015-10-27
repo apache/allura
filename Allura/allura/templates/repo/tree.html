@@ -42,7 +42,6 @@ form.tarball button {
     box-shadow: none;
     text-shadow: none;
     color:  #fff;
-    font-family: "Ubuntu", sans-serif;
     font-weight: normal;;
     padding: 0;
     margin-bottom: 0;
@@ -59,7 +58,7 @@ form.tarball button:hover {
 {% if tarball_url %}
 <form class="tarball" action="{{ tarball_url }}" method="post">
   <input type="hidden" name="path" value="{{ path or '' }}" />
-  <button>{{ g.icons['download'].render(title='Download Snapshot', show_title=True) }}</button>
+  <button>{{ g.icons['download'].render(tag='span', title='Download Snapshot', show_title=True) }}</button>
   {{lib.csrf_token()}}
 </form>
 {% endif %}
