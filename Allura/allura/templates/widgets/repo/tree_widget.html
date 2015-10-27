@@ -43,15 +43,15 @@
     {% for dirent in tree.ls() %}
     <tr>
       <td class="nowrap">
-        <a href="{{h.urlquote(dirent.href)}}">
-          {% if dirent.kind == 'DIR' %}
-            {% set icon_name = 'folder' %}
-          {% else %}
-            {% set icon_name = 'table' %}
-          {% endif %}
-          {{ g.icons[icon_name].render(tag='b', title=h.really_unicode(dirent.name)) }}
-          <span>{{ h.really_unicode(dirent.name) }}</span>
-        </a>
+        {% if dirent.kind == 'DIR' %}
+          {% set icon_name = 'folder' %}
+        {% else %}
+          {% set icon_name = 'file' %}
+        {% endif %}
+        {{ g.icons[icon_name].render(
+            href=h.urlquote(dirent.href),
+            title=h.really_unicode(dirent.name),
+            show_title=True) }}
       </td>
       <td class="nowrap">{{lib.abbr_date(dirent.last_commit.date)}}</td>
       <td class="nowrap">

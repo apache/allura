@@ -262,6 +262,7 @@ class Globals(object):
             download=Icon('fa fa-download', 'Download'),
             revert=Icon('fa fa-history', 'Revert'),
             browse_commits=Icon('fa fa-list', 'Browse Commits'),
+            file=Icon('fa fa-file-o', 'File'),
             # Permissions
             perm_read=Icon('fa fa-eye', 'Read'),
             perm_update=Icon('fa fa-rotate-left', 'Update'),
