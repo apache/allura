@@ -606,7 +606,7 @@ class Icon(object):
         title = kw.get('title') or self.title
         attrs = {
             'title': title,
-            'class': ' '.join(['icon', self.css, extra_css or '']).strip(),
+            'class': ' '.join(['icon', extra_css or '']).strip(),
         }
         if tag == 'a':
             attrs['href'] = '#'
@@ -614,7 +614,7 @@ class Icon(object):
         attrs = ew._Jinja2Widget().j2_attrs(attrs)
         visible_title = u''
         if show_title:
-            visible_title = u'<span>&nbsp;{}</span>'.format(Markup.escape(title))
+            visible_title = u'&nbsp;{}'.format(Markup.escape(title))
         closing_tag = u'</{}>'.format(tag) if closing_tag else u''
-        icon = u'<{} {}>{}{}'.format(tag, attrs, visible_title, closing_tag)
+        icon = u'<{} {}><i class="{}"></i>{}{}'.format(tag, attrs, self.css, visible_title, closing_tag)
         return Markup(icon)

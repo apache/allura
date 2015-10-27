@@ -877,32 +877,32 @@ class TestIconRender(object):
         self.i = g.icons['edit']
 
     def test_default(self):
-        html = u'<a class="icon fa fa-edit" href="#" title="Edit"></a>'
+        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render())
 
     def test_show_title(self):
-        html = u'<a class="icon fa fa-edit" href="#" title="Edit"><span>&nbsp;Edit</span></a>'
+        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>&nbsp;Edit</a>'
         assert_equal(html, self.i.render(show_title=True))
 
-        html = u'<a class="icon fa fa-edit" href="#" title="&lt;script&gt;"><span>&nbsp;&lt;script&gt;</span></a>'
+        html = u'<a class="icon" href="#" title="&lt;script&gt;"><i class="fa fa-edit"></i>&nbsp;&lt;script&gt;</a>'
         assert_equal(html, self.i.render(show_title=True, title="<script>"))
 
     def test_extra_css(self):
-        html = u'<a class="icon fa fa-edit reply btn" href="#" title="Edit"></a>'
+        html = u'<a class="icon reply btn" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(extra_css='reply btn'))
 
     def test_no_closing_tag(self):
-        html = u'<a class="icon fa fa-edit" href="#" title="Edit">'
+        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>'
         assert_equal(html, self.i.render(closing_tag=False))
 
     def test_tag(self):
-        html = u'<div class="icon fa fa-edit" title="Edit"></div>'
+        html = u'<div class="icon" title="Edit"><i class="fa fa-edit"></i></div>'
         assert_equal(html, self.i.render(tag='div'))
 
     def test_kwargs(self):
-        html = u'<a class="icon fa fa-edit" data-id="123" href="#" title="Edit"></a>'
+        html = u'<a class="icon" data-id="123" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(**{'data-id': '123'}))
 
     def test_escaping(self):
-        html = u'<a class="icon fa fa-edit &#34;" data-url="&gt;" href="#" title="Edit"></a>'
+        html = u'<a class="icon &#34;" data-url="&gt;" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(extra_css='"', **{'data-url': '>'}))
