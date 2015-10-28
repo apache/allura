@@ -22,7 +22,6 @@
     width: 110px;
     height: 24px;
 }
-.modal .icon.close { float: right; }
 
 #ticket_search_results_holder{
     overflow: auto;
