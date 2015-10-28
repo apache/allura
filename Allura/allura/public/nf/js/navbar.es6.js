@@ -56,7 +56,10 @@ function _getToolColor(defaultLabel='standard') {
  * @returns {string}
  */
 function getMountPoint(node) {
-    return node.props.children.props.children.props.mount_point;
+    if(node.hasOwnProperty('mount_point') && node.mount_point !== null){
+        return node['mount_point'];
+    }
+    return node.props.children[0].props.mount_point;
 }
 
 function ToolsPropType() {
@@ -99,13 +102,13 @@ var NavBarItem = React.createClass({
         if (this.props.is_anchored) {
             arrow_classes += ' anchored';
         } else {
-            arrow_classes += ' draggable-handle';
+            arrow_classes += this.props.handleType;
         }
 //controls.push(<i className={arrow_classes}></i>);
         return (
             <div className="tb-item tb-item-edit">
                 <a>{controls}
-                    <span className="draggable-handle">{this.props.name}</span></a>
+                    <span className={this.props.handleType.slice(1)}>{this.props.name}</span></a>
             </div>
         );
     }
@@ -225,40 +228,56 @@ var AdminNav = React.createClass({
         });
     },
 
-    render: function() {
+    buildMenu: function (item, isSubMenu=false) {
         var _this = this;
-        var subMenuClass = this.props.isSubmenu ? ' submenu ' : '';
-        var [tools, anchored_tools, end_tools] = [[], [], [],];
-        this.props.tools.forEach(function(item) {
-            var core_item = <NavBarItem
-                                onMouseOver={ _this.mouseOver }
-                                onMouseOut={ _this.mouseOut } {..._this.props}
-                                data={ item }
-                                mount_point={ item.mount_point }
-                                name={ item.name }
-                                url={ item.url }
-                                key={ 'tb-item-' + _.uniqueId() }
-                                is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
-            if (item.mount_point === 'admin') {
-                // force admin to end, just like 'Project.sitemap()' does
-                end_tools.push(core_item);
-            } else if (item.is_anchored) {
-                anchored_tools.push(core_item);
-            } else {
-                tools.push(
-                    <div className={ 'draggable-element' + subMenuClass } key={ 'draggable-' + _.uniqueId() }>
-                        { core_item }
-                    </div>
-            );
+        var [tools, anchored_tools, end_tools] = [[], [], []];
+        var subMenu;
+        if (item.children) {
+            subMenu = [];
+            for(let subItem of item.children){
+                subMenu.push(this.buildMenu(subItem, true));
             }
-        });
+            //subMenu = item.children.map(_this.buildMenu);
+        }
 
+
+        var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
+
+        var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
+        var core_item = <NavBarItem
+            onMouseOver={ _this.mouseOver }
+            onMouseOut={ _this.mouseOut } {..._this.props}
+            data={ item }
+            mount_point={ item.mount_point }
+            name={ item.name }
+            handleType={_handle}
+            url={ item.url }
+            key={ 'tb-item-' + _.uniqueId() }
+            is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
+        if (item.mount_point === 'admin') {
+            // force admin to end, just like 'Project.sitemap()' does
+            end_tools.push(core_item);
+        } else if (item.is_anchored) {
+            anchored_tools.push(core_item);
+        } else {
+            tools.push(
+                <div className={classes}>
+                    { core_item }
+                    {subMenu &&
+                        <div className="tb-sub-menu">
+                            {subMenu}
+                        </div>
+                        }
+                </div>
+            );
+        }
+        var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
         return (
             <div className='react-drag edit-mode'>
                 { anchored_tools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
-                    handle='.draggable-handle'
+                    handle={_handle}
                     mode='grid'
                     onDragStart={ this.onDragStart }
                     onDrop={ this.props.onToolReorder }
@@ -266,6 +285,15 @@ var AdminNav = React.createClass({
                     { tools }
                 </ReactReorderable>
                 { end_tools }
+            </div>
+        );
+    },
+
+    render: function () {
+        var tools = this.props.tools.map(this.buildMenu);
+        return (
+            <div>
+                {tools}
             </div>
         );
     }
@@ -389,13 +417,12 @@ var Main = React.createClass({
         var params = {
             _session_id: $.cookie('_session_id')
         };
-
-        data.map(function(tool, i) {
+        tools.menu.map(function(tool, i) {
             var mount_point = getMountPoint(tool);
-            var index = tools.children.findIndex(
+            var index = tools.menu.findIndex(
                 x => x.mount_point === mount_point
             );
-            tools.children[index].ordinal = i;
+            tools.menu[index].ordinal = i;
             params[i] = mount_point;
         });
 
