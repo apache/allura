@@ -87,6 +87,7 @@ class SiteAdminController(object):
             SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
             SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
             SitemapEntry('Search Projects', base_url + 'search_projects', ui_icon=g.icons['search']),
+            SitemapEntry('Delete Projects', base_url + 'delete_projects', ui_icon=g.icons['delete']),
             SitemapEntry('Search Users', base_url + 'search_users', ui_icon=g.icons['search']),
         ]
         for ep_name in sorted(g.entry_points['site_admin']):
@@ -315,6 +316,25 @@ class SiteAdminController(object):
             aslist(tg.config.get('search.project.additional_display_fields'), ',')
         r['provider'] = ProjectRegistrationProvider.get()
         return r
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/site_admin_delete_projects.html')
+    @validate(validators=dict(projects=validators.UnicodeString(if_empty=None)))
+    def delete_projects(self, projects=None, **kw):
+        if request.method == "POST":
+            if not projects:
+                flash(u'No projects specified', 'warning')
+                redirect('delete_projects')
+            provider = ProjectRegistrationProvider.get()
+            projects = projects.split()
+            log.info('Got projects for delete: %s', projects)
+            projects = [provider.project_from_url(p.strip()) for p in projects]
+            projects = [p for p in projects if p]
+            log.info('Parsed projects: %s', projects)
+            # TODO: fire delete project task
+            flash(u'Delete scheduled for %s' % projects, 'ok')
+            redirect('delete_projects')
+        return {}
 
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_search.html')

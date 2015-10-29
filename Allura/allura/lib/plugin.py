@@ -26,6 +26,7 @@ import string
 import crypt
 import random
 from urllib2 import urlopen
+from urlparse import urlparse
 from cStringIO import StringIO
 from random import randint
 from hashlib import sha256
@@ -1008,6 +1009,20 @@ class ProjectRegistrationProvider(object):
             (project.url() + 'admin/groups/', 'Members'),
             (project.url() + 'admin/audit/', 'Audit Trail'),
         ]
+
+    def project_from_url(self, url):
+        '''Return pair where (n, p) parsed from project url
+        where n is neighborhood's url_prefix and p is project's shortname
+
+        Return None if url can't be parsed
+        '''
+        if url is None:
+            return None
+        url = urlparse(url)
+        url = [u for u in url.path.split('/') if u]
+        if len(url) < 2:
+            return None
+        return (u'/{}/'.format(url[0]), url[1])
 
 
 class ThemeProvider(object):
