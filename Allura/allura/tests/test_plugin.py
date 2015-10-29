@@ -89,6 +89,16 @@ class TestProjectRegistrationProvider(object):
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
+    def test_project_from_url(self):
+        parse = self.provider.project_from_url
+        assert_is_none(parse(None))
+        assert_is_none(parse(''))
+        assert_is_none(parse('/p/'))
+        assert_equal(('/p/', 'test'), parse('/p/test/'))
+        assert_equal(('/p/', 'test'), parse('/p/test/tickets/1'))
+        assert_equal(('/adobe/', 'adobe-1'), parse('/adobe/adobe-1'))
+        assert_equal(('/p/', 'test'), parse('http://localhost:8080/p/test/wiki'))
+
 
 class UserMock(object):
     def __init__(self):
