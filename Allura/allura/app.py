@@ -21,6 +21,7 @@ from urllib import basejoin
 from cStringIO import StringIO
 from collections import defaultdict
 from xml.etree import ElementTree as ET
+from copy import copy
 
 import pkg_resources
 from tg import expose, redirect, flash, validate
@@ -564,10 +565,15 @@ class Application(object):
         """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         to display in the main project nav for this Application.
 
-        Default implementation returns :attr:`sitemap`.
+        Default implementation returns :attr:`sitemap` without any children.
 
         """
-        return self.sitemap
+        sitemap_without_children = []
+        for sm in self.sitemap:
+            sm_copy = copy(sm)
+            sm_copy.children = []
+            sitemap_without_children.append(sm_copy)
+        return sitemap_without_children
 
     def sidebar_menu(self):
         """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`

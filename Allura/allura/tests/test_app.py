@@ -23,6 +23,7 @@ from formencode import validators as fev
 
 from alluratest.controller import setup_unit_test
 from allura import app
+from allura.lib.app_globals import Icon
 
 
 def setUp():
@@ -90,6 +91,21 @@ def test_options_on_install():
 
     a = TestApp(c.project, c.app.config)
     assert_equal(a.options_on_install(), opts)
+
+
+def test_main_menu():
+    class TestApp(app.Application):
+        @property
+        def sitemap(self):
+            children = [app.SitemapEntry('New', 'new', ui_icon=Icon('some-icon')),
+                        app.SitemapEntry('Recent', 'recent'),
+                        ]
+            return [app.SitemapEntry('My Tool', '.')[children]]
+
+    a = TestApp(c.project, c.app.config)
+    main_menu = a.main_menu()
+    assert_equal(len(main_menu), 1)
+    assert_equal(main_menu[0].children, [])  # default main_menu implementation should drop the children from sitemap()
 
 
 def test_sitemap():
