@@ -63,6 +63,7 @@
     {% for blob in g.resource_manager.emit('head_js') %}
         {{ blob }}
     {% endfor %}
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.1/react-with-addons.js"#}
 
     {% if c.project and c.project.neighborhood.css %}
         <style type="text/css">

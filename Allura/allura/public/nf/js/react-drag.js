@@ -535,7 +535,7 @@
                 'react-drag-dragging': this.state.dragging
             });
             // Reuse the child provided
-            // This makes it flexible to use whatever element is wanted (div, ul, etc)
+            // This makes it flexible to use whatereact-reorderable-itemver element is wanted (div, ul, etc)
             return React.addons.cloneWithProps(
                 React.Children.only(this.props.children), {
                     style: style,
