@@ -22,7 +22,7 @@
 #top_nav_admin {
     overflow: hidden;
     min-height: 42px;
-    width: 918px; /* 940px - 32px for toggle-admin-btn */
+    width: 918px;/* 940px - 32px for toggle-admin-btn */
 }
 
 #admin-toolbar-list {
@@ -51,16 +51,16 @@
     display: none;
 }
 
-.react-reorderable-item {
-    display: block;
-    flex-direction: column;
-    float: left;
-}
+/*.react-reorderable-item {*/
+    /*display: block;*/
+    /*flex-direction: column;*/
+    /*float: left;*/
+/*}*/
 
 
-.react-reorderable-handle {
-    position: absolute;
-}
+/*.react-reorderable-handle {*/
+    /*position: absolute;*/
+/*}*/
 
 #top_nav_admin .tb-item a {
     margin: 10px 10px 10px 0;
@@ -76,6 +76,68 @@
     -o-user-select: none;
     user-select: none;
 }
+
+
+.tb-item-edit a {
+    margin-left: 2px;
+}
+
+.add-tool-toggle:hover {
+    background: #F4F4F4;
+    color: #777;
+}
+
+.add-tool-field {
+    width: 50%;
+}
+
+.tb-item-grouper > div.tb-sub-menu {
+    visibility: hidden;
+}
+
+.tb-item-grouper > div > div {
+    border-bottom: 1px solid #e5e5e5;
+
+}
+
+.tb-item-grouper:hover > div > div {
+    background: white;
+    visibility: visible;
+}
+
+#top_nav_admin .tb-sub-menu .tb-item a {
+    border-right: none;
+    margin: 3px 20px 0 2px;
+    padding: 5px;
+}
+
+#top_nav_admin .tb-sub-menu a:hover {
+    color: white;
+}
+
+.tb-sub-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 29px;
+    background: white;
+    z-index: 1620;
+}
+
+.tb-sub-menu .react-drag:hover {
+    background: #09c linear-gradient(#09c, #07a);
+    border-bottom-style: none;
+    color: white;
+
+}
+
+.tb-sub-menu .react-drag:hover a {
+    color: white;
+
+}
+/*Add new tool*/
+/*////////////*/
+
 
 .btn-bar {
     display: block;
@@ -254,61 +316,4 @@
     -ms-user-select: none;
     -o-user-select: none;
     user-select: none;
-}
-
-.tb-item-edit a {
-    margin-left: 2px;
-}
-
-.add-tool-toggle:hover {
-    background: #F4F4F4;
-    color: #777;
-}
-
-.add-tool-field {
-    width: 50%;
-}
-
-.tb-item-grouper > div.tb-sub-menu {
-    visibility: hidden;
-}
-
-.tb-item-grouper > div > div {
-    border-bottom: 1px solid #e5e5e5;
-
-}
-
-.tb-item-grouper:hover > div > div {
-    background: white;
-    visibility: visible;
-}
-
-#top_nav_admin .tb-sub-menu .tb-item a {
-    border-right: none;
-    margin: 3px 20px 0 2px;
-    padding: 5px;
-}
-
-#top_nav_admin .tb-sub-menu a:hover {
-    color: white;
-}
-
-.tb-sub-menu {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 36px;
-    background: white;
-    z-index: 600;
-}
-
-.tb-sub-menu .react-drag:hover {
-    background: #09c linear-gradient(#09c, #07a);
-    border-bottom-style: none;
-    color: white;
-
-}
-
-.tb-sub-menu .react-drag:hover a {
-    color: white;
 }
