@@ -181,19 +181,20 @@ var NormalNavItem = React.createClass({
 
  * @constructor
  */
-var ToggleButton = React.createClass({
+var ToggleAddNewTool = React.createClass({
     getInitialState: function() {
         return {
             visible: false
         };
     },
-    handleOnPush: function() {
+    handleToggle: function() {
         this.setState({
             visible: !this.state.visible
         });
     },
     render: function() {
-        return <ToggleAddNewTool showAddToolMenu={this.state.visible} />;
+        return <AddNewToolButton showAddToolMenu={this.state.visible}
+                                 handleToggleAddNewTool={this.handleToggle} />;
     }
 });
 
@@ -226,9 +227,7 @@ var NormalNavBar = React.createClass({
                 id="normal-nav-bar"
                 className="dropdown">
                 { listItems }
-                <ToggleAddNewTool
-                    handleToggleAddNewTool={this.props.handleToggleAddNewTool}
-                    showAddToolMenu={this.props.showAddToolMenu} />
+                <ToggleAddNewTool/>
             </ul>
         );
     }
@@ -377,8 +376,7 @@ var Main = React.createClass({
     getInitialState: function() {
         return {
             data: this.props.initialData,
-            visible: false,
-            showAddToolMenu: false,
+            visible: true,
             _session_id: $.cookie('_session_id')
         };
     },
@@ -401,21 +399,6 @@ var Main = React.createClass({
     handleToggleAdmin: function() {
         this.setState({
             visible: !this.state.visible
-        });
-    },
-
-    /**
-     * Handles the the display of the "Add new tool" menu.
-     */
-    handleToggleAddNewTool: function() {
-        $('body').click(function(e) { // click the background
-                if (e.target == this) {
-                    $(this).fadeOut();
-                }
-            });
-
-        this.setState({
-            showAddToolMenu: !this.state.showAddToolMenu
         });
     },
 
@@ -516,8 +499,7 @@ var Main = React.createClass({
                     <div>
                         <NormalNavBar
                             items={ _this.state.data.menu }
-                            handleToggleAddNewTool={this.handleToggleAddNewTool}
-                            showAddToolMenu={this.state.showAddToolMenu}/>
+                            />
                     </div>
                 );
             }

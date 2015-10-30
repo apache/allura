@@ -8,7 +8,7 @@
  * Add new tool button.
  * @constructor
  */
-var ToggleAddNewTool = React.createClass({
+var AddNewToolButton = React.createClass({
     render: function() {
         let _this = this;
 
