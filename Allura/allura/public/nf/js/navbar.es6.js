@@ -98,7 +98,7 @@ var NavBarItem = React.createClass({
 
     render: function() {
         var controls = [<i key={'admin-nav-item-' + _.uniqueId()} className='config-tool fa fa-cog '></i>];
-        var classes = ' fa ';
+        var classes = ' ';
         if (this.props.is_anchored) {
             classes += ' anchored';
         } else {
