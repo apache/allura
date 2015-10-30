@@ -40,6 +40,7 @@ var react_file = 'react-with-addons' + (production ? '.min' : '') + '.js';
 var navbar_deps = funnel('Allura/allura/public/nf/js', {
     include: ['underscore-min.js',
               react_file,
+              'react-dom.js',
               'react-drag.js',
               'react-reorderable.js',
     ],

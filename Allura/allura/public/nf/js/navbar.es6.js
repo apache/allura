@@ -177,6 +177,27 @@ var NormalNavItem = React.createClass({
 });
 
 /**
+ * Toggle Button
+
+ * @constructor
+ */
+var ToggleButton = React.createClass({
+    getInitialState: function() {
+        return {
+            visible: false
+        };
+    },
+    handleOnPush: function() {
+        this.setState({
+            visible: !this.state.visible
+        });
+    },
+    render: function() {
+        return <ToggleAddNewTool showAddToolMenu={this.state.visible} />;
+    }
+});
+
+/**
  * The NavBar when in "Normal" mode.
 
  * @constructor
@@ -248,8 +269,7 @@ var AdminNav = React.createClass({
         for (let item of items) {
             var subMenu;
             if (item.children) {
-
-                    subMenu.push(this.buildMenu(item.children, true));
+                this.buildMenu(item.children, true);
             }
 
             var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
