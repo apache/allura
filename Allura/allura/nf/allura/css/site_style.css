@@ -1150,7 +1150,7 @@ a.active {
 .x48 {font-size: 48px; width: 48px; height: 48px;}
 .x64 {font-size: 64px; width: 64px; height: 64px;}
 
-.modal b.close {
+.modal .close {
   position: absolute;
   top: 10px;
   right: 10px;
