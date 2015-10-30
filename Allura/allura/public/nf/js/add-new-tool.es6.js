@@ -10,27 +10,12 @@
  */
 var AddNewToolButton = React.createClass({
     render: function() {
-        let _this = this;
-
-        var content = (() => {
-            if (_this.props.showAddToolMenu) {
-                return (
-                    <div>
-                        <span onClick={ _this.props.handleToggleAddNewTool }
-                              className='add-tool-toggle'> + Add new...</span>
-                        <NewToolMain />
-                    </div>
-                );
-            } else {
-                return (
-                    <span onClick={ _this.props.handleToggleAddNewTool }
-                          className='add-tool-toggle'> + Add new...</span>
-                );
-            }
-        })();
-
-        return (<li>
-                {content}
+        return (
+            <li>
+            <a onClick={ this.props.handleToggleAddNewTool } className='add-tool-toggle'>
+                Add New...
+            </a>
+            { this.props.showAddToolMenu && <NewToolMain />}
             </li>
         );
     }
