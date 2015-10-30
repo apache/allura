@@ -219,7 +219,6 @@ var NormalNavBar = React.createClass({
  */
 var AdminNav = React.createClass({
     propTypes: {
-        isSubmenu: React.PropTypes.bool,
         tools: React.PropTypes.arrayOf(
             React.PropTypes.objectOf(ToolsPropType))
     },
@@ -242,55 +241,56 @@ var AdminNav = React.createClass({
         });
     },
 
-    buildMenu: function (item, isSubMenu=false) {
+    buildMenu: function (items, isSubMenu=false) {
         var _this = this;
         var [tools, anchored_tools, end_tools] = [[], [], []];
-        var subMenu;
-        if (item.children) {
-            subMenu = [];
-            for(let subItem of item.children){
-                subMenu.push(this.buildMenu(subItem, true));
+
+        for (let item of items) {
+            var subMenu;
+            if (item.children) {
+
+                    subMenu.push(this.buildMenu(item.children, true));
+            }
+
+            var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
+
+            //var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
+            var core_item = <NavBarItem
+                {..._this.props}
+                mount_point={ item.mount_point }
+                name={ item.name }
+                handleType={_handle}
+                url={ item.url }
+                key={ 'tb-item-' + _.uniqueId() }
+                is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
+            if (item.mount_point === 'admin') {
+                // force admin to end, just like 'Project.sitemap()' does
+                end_tools.push(core_item);
+            } else if (item.is_anchored) {
+                anchored_tools.push(core_item);
+            } else {
+                tools.push(
+                    <div className={" draggable-element "}>
+                        { core_item }
+
+                        {subMenu &&
+                        <AdminItemGroup key={'tb-group-' + _.uniqueId()}>
+                            {subMenu}
+                        </AdminItemGroup>
+
+                            }
+                    </div>
+                );
             }
         }
 
-        var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
-
-        //var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
-        var core_item = <NavBarItem
-            {..._this.props}
-            mount_point={ item.mount_point }
-            name={ item.name }
-            handleType={_handle}
-            url={ item.url }
-            key={ 'tb-item-' + _.uniqueId() }
-            is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
-        if (item.mount_point === 'admin') {
-            // force admin to end, just like 'Project.sitemap()' does
-            end_tools.push(core_item);
-        } else if (item.is_anchored) {
-            anchored_tools.push(core_item);
-        } else {
-            tools.push(
-                <div className={" draggable-element " }>
-                    { core_item }
-
-                    {subMenu &&
-                    <AdminItemGroup key={'tb-group-' + _.uniqueId()}>
-                        {subMenu}
-                    </AdminItemGroup>
-
-                        }
-                </div>
-            );
-        }
         return (
-            <div className='react-drag edit-mode'>
+        <div className='react-drag'>
                 { anchored_tools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
                     handle={_handle}
                     mode='grid'
-                    onDragStart={ _this.props.onDragStart }
                     onDrop={ _this.props.onToolReorder }
                     onChange={ _this.props.onChange }>
                     { tools }
@@ -301,7 +301,7 @@ var AdminNav = React.createClass({
     },
 
     render: function () {
-        var tools = this.props.tools.map(this.buildMenu);
+        var tools = this.buildMenu(this.props.tools);
         return (
             <div>
                 {tools}
@@ -438,6 +438,7 @@ var Main = React.createClass({
      * @param {array} data - Array of tools
      */
     onToolReorder: function(data) {
+        console.ll
         var tools = this.state.data;
         var params = {
             _session_id: $.cookie('_session_id')
@@ -480,7 +481,6 @@ var Main = React.createClass({
     },
 
     render: function() {
-        var editMode = this.state.visible ? 'edit-mode' : '';
         var _this = this;
         var navBarSwitch = (showAdmin) => {
             if (showAdmin) {
@@ -489,7 +489,6 @@ var Main = React.createClass({
                         tools={ _this.state.data.menu }
                         data={ _this.state.data }
                         onToolReorder={ _this.onToolReorder }
-                        onUpdateMountOrder={ _this.onUpdateMountOrder }
                         editMode={ _this.state.visible } />
                 );
             } else {
@@ -507,8 +506,7 @@ var Main = React.createClass({
 
         return (
             <div
-                ref={ _.uniqueId() }
-                className={ 'nav_admin ' + editMode }>
+                className={ 'nav_admin '}>
                 { navBar }
                 <div id='bar-config'>
                     <GroupingThreshold
