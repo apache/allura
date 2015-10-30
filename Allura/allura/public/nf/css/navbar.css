@@ -22,16 +22,11 @@
 #top_nav_admin {
     overflow: hidden;
     min-height: 42px;
-    width: 918px;/* 940px - 32px for toggle-admin-btn */
+    width: 918px; /* 940px - 32px for toggle-admin-btn */
 }
 
 #admin-toolbar-list {
     border-bottom: 1px solid transparent;
-}
-
-.anchored {
-    cursor: not-allowed;
-    color: gray;
 }
 
 .draggable-handle, .draggable-handle-sub {
@@ -40,8 +35,15 @@
     cursor: move;
 }
 
-.react-reorderable-item{
-    z-index:5000;
+#top_nav .anchored {
+    cursor: not-allowed;
+    color: gray;
+    float: left;
+}
+
+.anchored .draggable-handle {
+    cursor: not-allowed;
+    color: gray;
 }
 
 .react-reorderable-item-active {
@@ -59,7 +61,6 @@
     display: block;
     float: left;
 }
-
 
 .react-reorderable-handle {
     position: absolute;
@@ -80,7 +81,6 @@
     user-select: none;
 }
 
-
 .tb-item-edit a {
     margin-left: 2px;
 }
@@ -94,18 +94,16 @@
     width: 50%;
 }
 
-
-.tb-item-grouper{
+.tb-item-grouper {
     visibility: hidden;
     position: absolute;
     top: 32px;
 }
 
-.react-reorderable-item:hover .tb-item-grouper{
+.react-reorderable-item:hover .tb-item-grouper {
     background: white;
     visibility: visible;
 }
-
 
 .tb-item-grouper .react-reorderable-item-active {
     border: 3px dashed #9e9e9e;
@@ -129,13 +127,12 @@
     color: white;
 }
 
-
 .tb-item-grouper > div > div {
     border-bottom: 1px solid #e5e5e5;
 
 }
 
-.tb-item-grouper > div{
+.tb-item-grouper > div {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -154,9 +151,9 @@
     color: white;
 
 }
+
 /*Add new tool*/
 /*////////////*/
-
 
 .btn-bar {
     display: block;

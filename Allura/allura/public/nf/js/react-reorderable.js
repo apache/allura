@@ -183,7 +183,7 @@ var ReactReorderable = React.createClass({displayName: "ReactReorderable",
     }, this));
   },
   onDrag: function (e) {
-    var handle = this.refs.handle.getDOMNode();
+    var handle = ReactDOM.findDOMNode(this.refs.handle);
     var sibling = getSiblingNode(e, handle, this.props.mode);
 
     if (sibling && sibling.node) {

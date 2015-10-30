@@ -98,13 +98,13 @@ var NavBarItem = React.createClass({
 
     render: function() {
         var controls = [<i key={'admin-nav-item-' + _.uniqueId()} className='config-tool fa fa-cog '></i>];
-        var classes = ' fa fa-arrows-h ';
+        var classes = ' fa ';
         if (this.props.is_anchored) {
             classes += ' anchored';
         } else {
             classes += this.props.handleType.slice(1);
         }
-controls.push(<i className={classes}></i>);
+        controls.push(<i className={classes}></i>);
         return (
             <div className={classes + " tb-item tb-item-edit "}>
                 <a>{controls}
@@ -257,9 +257,7 @@ var AdminNav = React.createClass({
 
         //var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
         var core_item = <NavBarItem
-            onMouseOver={ _this.mouseOver }
-            onMouseOut={ _this.mouseOut } {..._this.props}
-            data={ item }
+            {..._this.props}
             mount_point={ item.mount_point }
             name={ item.name }
             handleType={_handle}
@@ -273,7 +271,7 @@ var AdminNav = React.createClass({
             anchored_tools.push(core_item);
         } else {
             tools.push(
-                <div className={"draggable-element" }>
+                <div className={" draggable-element " }>
                     { core_item }
 
                     {subMenu &&
@@ -290,11 +288,11 @@ var AdminNav = React.createClass({
                 { anchored_tools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
-                    handle='.draggable-handle'
+                    handle={_handle}
                     mode='grid'
                     onDragStart={ _this.props.onDragStart }
-                    onDrop={ this.props.onToolReorder }
-                    onChange={ this.onChange }>
+                    onDrop={ _this.props.onToolReorder }
+                    onChange={ _this.props.onChange }>
                     { tools }
                 </ReactReorderable>
                 { end_tools }
@@ -435,7 +433,7 @@ var Main = React.createClass({
     },
 
     /**
-     * Handles the changing of the NavBars grouping threshold.
+     * Handles the sending and updating tool ordinals.
 
      * @param {array} data - Array of tools
      */

@@ -426,7 +426,7 @@
             // Make it possible to attach event handlers on top of this one
             this.props.onMouseDown(e);
 
-            var node = this.getDOMNode();
+            var node = ReactDOM.findDOMNode(this);
 
             // Short circuit if handle or cancel prop was provided
             // and selector doesn't match
@@ -482,7 +482,7 @@
             var pageY = (this.state.startY +
             (dragPoint.pageY - this.state.offsetY));
             var pos =
-                getBoundPosition(pageX, pageY, this.props.bound, this.getDOMNode());
+                getBoundPosition(pageX, pageY, this.props.bound, ReactDOM.findDOMNode(this));
             pageX = pos.pageX;
             pageY = pos.pageY;
 
