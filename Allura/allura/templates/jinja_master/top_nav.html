@@ -33,16 +33,25 @@
             </ul>
         {% endif %}
     </li>
-	{% endfor %}
+  {% endfor %}
+  {% if h.has_access(c.project, 'admin')() %}
+    <div id="add-tool-container"></div>
+    <button id="toggle-admin-btn"><i class="fa fa-lock"></i></button>
+  {% endif %}
 </ul>
 </div>
 {% if h.has_access(c.project, 'admin')() %}
     {#        {{ c.app.admin_modal.display() }}  <-- Currently Does not work on non-admin urls #}
     <script>
         $(document).ready(function () {
-            ReactDOM.render(React.createElement(Main, {
-                initialData: {{ h.escape_json(c.project.nav_data())|safe }}
-            }), document.getElementById("top_nav_admin"));
+            $('#toggle-admin-btn').click(function() {
+                ReactDOM.render(React.createElement(Main, {
+                    initialData: {{ h.escape_json(c.project.nav_data())|safe }}
+                }), document.getElementById("top_nav_admin"));
+            });
+
+            ReactDOM.render(React.createElement(ToggleAddNewTool),
+                            document.getElementById('add-tool-container'));
         });
     </script>
 {% endif %}
