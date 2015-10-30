@@ -30,7 +30,6 @@
 }
 
 .draggable-handle, .draggable-handle-sub {
-    float: none;
     margin-left: 2px;
     cursor: move;
 }
@@ -53,6 +52,28 @@
     height: 24px;
 }
 
+.react-reorderable-item-active,
+.draggable-element {
+  /*min-width: 150px;*/
+  /*min-height: 70px;*/
+  /*margin-top: 5px;*/
+}
+.draggable-element {
+    /*opacity: 0.7;*/
+  /*border: 3px solid #444;*/
+  /*border-radius: 3px;*/
+}
+.draggable-handle {
+  /*background-color: grey;*/
+  /*width: 30px;*/
+  /*height: 50px;*/
+  /*float: left;*/
+  cursor: move;
+  /*color: white;*/
+  /*font-size: 60px;*/
+  /*padding: 10px;*/
+}
+
 .react-reorderable-item-active div {
     display: none;
 }
@@ -67,10 +88,10 @@
 }
 
 #top_nav_admin .tb-item a {
-    margin: 10px 10px 10px 0;
-    border-right: 1px solid #ccc;
-    padding-right: 10px;
-    padding-left: 4px;
+    margin: 10px;
+    /*border-right: 1px solid #ccc;*/
+    /*padding-right: 10px;*/
+    /*padding-left: 4px;*/
 }
 
 .react-drag {
@@ -117,7 +138,7 @@
 
 }
 
-#top_nav_admin .tb-sub-menu .tb-item a {
+#top_nav_admin .tb-sub-menu a {
     border-right: none;
     margin: 3px 20px 0 2px;
     padding: 5px;
@@ -333,3 +354,10 @@
     -o-user-select: none;
     user-select: none;
 }
+
+/*.react-drag{*/
+    /*display: block;*/
+    /*max-width: 150px;*/
+    /*float: left;*/
+    /*!*border: 1px solid black;*!*/
+/*}*/
