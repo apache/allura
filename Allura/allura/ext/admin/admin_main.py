@@ -751,7 +751,6 @@ class ProjectAdminController(BaseController):
             'status': c.project.bulk_export_status()
         }
 
-
 class ProjectAdminRestController(BaseController):
     """
     Exposes RESTful APi for project admin actions.
@@ -764,12 +763,13 @@ class ProjectAdminRestController(BaseController):
     @require_post()
     def mount_order(self, subs=None, tools=None, **kw):
         if kw:
-            for ordinal, mount_point in kw.iteritems():
+            for ordinal, mount_point in sorted(kw.items(), key=lambda x: int(x[0])):
+                print(ordinal, mount_point)
                 try:
                     c.project.app_config(mount_point).options.ordinal = int(ordinal)
                 except AttributeError as e:
                     # Handle subproject
-                    print("Handle subproject", mount_point)
+                    # print("Handle subproject", mount_point)
                     p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
                                             neighborhood_id=c.project.neighborhood_id)
                     if p:
