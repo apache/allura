@@ -39,9 +39,8 @@
 {% if h.has_access(c.project, 'admin')() %}
     {#        {{ c.app.admin_modal.display() }}  <-- Currently Does not work on non-admin urls #}
     <script>
-        'use strict';
         $(document).ready(function () {
-            React.render(React.createElement(Main, {
+            ReactDOM.render(React.createElement(Main, {
                 initialData: {{ h.escape_json(c.project.nav_data())|safe }}
             }), document.getElementById("top_nav_admin"));
         });
