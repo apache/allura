@@ -42,6 +42,7 @@ from allura.ext.admin.widgets import AuditLog
 from allura.lib.widgets import forms
 from allura import model as M
 from allura.command.show_models import dfs, build_model_inheritance_graph
+from allura.scripts.delete_projects import DeleteProjects
 import allura
 
 from urlparse import urlparse
@@ -331,7 +332,9 @@ class SiteAdminController(object):
             projects = [provider.project_from_url(p.strip()) for p in projects]
             projects = [p for p in projects if p]
             log.info('Parsed projects: %s', projects)
-            # TODO: fire delete project task
+            task_params = [u'{}/{}'.format(n.strip('/'), p) for (n, p) in projects]
+            task_params = u' '.join(task_params)
+            DeleteProjects.post(task_params)
             flash(u'Delete scheduled for %s' % projects, 'ok')
             redirect('delete_projects')
         return {}
