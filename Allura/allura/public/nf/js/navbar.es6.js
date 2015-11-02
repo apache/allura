@@ -227,7 +227,7 @@ var NormalNavBar = React.createClass({
                 id="normal-nav-bar"
                 className="dropdown">
                 { listItems }
-                <ToggleAddNewTool/>
+                <li><ToggleAddNewTool/></li>
             </ul>
         );
     }
