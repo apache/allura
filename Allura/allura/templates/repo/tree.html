@@ -63,7 +63,7 @@ form.tarball button:hover {
 </form>
 {% endif %}
 
-{{ g.icons['history'].render(href='{}log/?path={}'.format(commit.url(), path), show_title=True) }}
+{{ g.icons['history'].render(href='%slog/?path=%s' % (commit.url(), path), show_title=True) }}
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=tool_subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}

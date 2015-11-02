@@ -20,7 +20,7 @@
 {{ g.icons[icon].render(
     href=action,
     extra_css='artifact_follow{}'.format(' active' if following else ''),
-    title='{} {}'.format(
+    title='%s %s' % (
       'Stop {}ing'.format(action_label) if following else action_label.capitalize(),
       thing),
     **{'data-following': h.really_unicode(following).lower(),

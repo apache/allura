@@ -33,7 +33,7 @@
 
 {% block actions %}
 {{ lib.maximize_content_button() }}
-{{ g.icons['history'].render(href='{}log/?path={}'.format(blob.commit.url(), blob.path()), show_title=True) }}
+{{ g.icons['history'].render(href='%slog/?path=%s' % (blob.commit.url(), blob.path()), show_title=True) }}
 {% endblock %}
 
 {% block extra_js %}
