@@ -1,16 +1,27 @@
 'use strict';
 
 /**
- * Gets the current url.
+ * Gets the current project url.
 
  * @constructor
  * @param {bool} rest - Return a "rest" version of the url.
  * @returns {string}
  */
 function _getProjectUrl(rest = true) {
-    var [nbhd, proj] = window.location.pathname.split('/').slice(1, 3);
-    var base = `${window.location.protocol}//${window.location.host}`;
-    return rest ? `${base}/rest/${nbhd}/${proj}` : `${base}/${nbhd}/${proj}`;
+    var nbhd, proj, nbhd_proj;
+    var ident_classes = document.getElementById('page-body').className.split(' ');
+    for (var cls of ident_classes) {
+        if (cls.indexOf('project-') === 0) {
+            proj = cls.slice('project-'.length);
+        }
+    }
+    nbhd = window.location.pathname.split('/')[1];
+    if (proj === '--init--') {
+        nbhd_proj = nbhd;
+    } else {
+        nbhd_proj = `${nbhd}/${proj}`;
+    }
+    return (rest ? '/rest/' : '/') + nbhd_proj;
 }
 
 function slugify(text) {

@@ -76,8 +76,9 @@ class NeighborhoodController(object):
         self.neighborhood = neighborhood
         self.neighborhood_name = self.neighborhood.name
         self.prefix = self.neighborhood.shortname_prefix
-        self.browse = NeighborhoodProjectBrowseController(
-            neighborhood=self.neighborhood)
+        self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
+        # 'admin' without underscore will pass through to _lookup which will find the regular "admin" tool mounted
+        # on the --init-- Project record for this neighborhood.
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
         self.import_project = ProjectImporterController(self.neighborhood)
@@ -375,17 +376,18 @@ class ToolListController(object):
 class ProjectController(FeedController):
 
     def __init__(self):
-        setattr(self, '_nav.json', self._nav)
         self.screenshot = ScreenshotsController()
         self._list = ToolListController()
 
     @expose('json:')
-    def _nav(self):
+    def _nav(self, **kw):
         return c.project.nav_data()
 
     @expose()
     def _lookup(self, name, *remainder):
         name = unquote(name)
+        if name == '_nav.json':
+            return self, ['_nav']
         subproject = M.Project.query.get(
             shortname=c.project.shortname + '/' + name,
             neighborhood_id=c.project.neighborhood_id)
