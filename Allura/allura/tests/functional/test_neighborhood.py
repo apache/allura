@@ -949,6 +949,9 @@ class TestNeighborhood(TestController):
         assert 'View More Projects' in str(link)
         assert link['href'] == '/adobe/'
 
+    def test_nav_json(self):
+        self.app.get('/p/_nav.json')
+
 
 class TestPhoneVerificationOnProjectRegistration(TestController):
     def test_phone_verification_fragment_renders(self):
