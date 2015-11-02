@@ -567,10 +567,19 @@ To reset your password on %s, please visit the following URL:
 
 class TestDeleteProjects(TestController):
 
+    def form(self, r):
+        return self.find_form(r, lambda f: f.action == 'delete_projects')
+
+    def test_projects_populated_from_get_params(self):
+        r = self.app.get('/nf/admin/delete_projects')
+        assert_equal(self.form(r)['projects'].value, u'')
+        r = self.app.get('/nf/admin/delete_projects?projects=/p/test/+/adobe/adobe-1/%20/p/test2/')
+        assert_equal(self.form(r)['projects'].value, u'/p/test/\n/adobe/adobe-1/\n/p/test2/')
+
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_task_fires(self, dp):
         r = self.app.get('/nf/admin/delete_projects')
-        form = self.find_form(r, lambda f: f.action == 'delete_projects')
+        form = self.form(r)
         form['projects'] = '/p/test http://localhost:8080/adobe/adobe-1 p/test2'
         form.submit()
         dp.post.assert_called_once_with('p/test adobe/adobe-1 p/test2')

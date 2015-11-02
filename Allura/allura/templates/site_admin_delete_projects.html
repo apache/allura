@@ -30,7 +30,7 @@
     <p class="warning">Be carefull. This will delete all projects data!</p>
     <form action="delete_projects" method="POST">
       <div class="grid-18">
-        <textarea id="projects-to-delete" name="projects"></textarea>
+        <textarea id="projects-to-delete" name="projects">{{ projects }}</textarea>
       </div>
       <div class="grid-18">
         <input type="submit" value="Delete">

@@ -56,7 +56,7 @@
     {% for p in projects %}
     <tr>
       <td class="narrow">
-        <input type="checkbox" class="js-select-project" data-shortname="{{ p.shortname }}" />
+        <input type="checkbox" class="js-select-project" data-shortname="{{ p.shortname }}" data-url="{{ p.url() }}" />
       </td>
       <td class="narrow">
         <small>{{ p._id.generation_time.strftime('%Y-%m-%d %H:%M:%S') }}</small>
@@ -72,6 +72,7 @@
   </table>
   {{ _paging() }}
   <div id="selected-projects"></div>
+  <div id="delete-projects-url" class="grid-19"></div>
 {% endblock %}
 
 {% block extra_css %}
