@@ -577,6 +577,24 @@ class TestDeleteProjects(TestController):
         assert_equal(self.form(r)['projects'].value, u'/p/test/\n/adobe/adobe-1/\n/p/test2/')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
+    def test_reason_passed_to_task(self, dp):
+        r = self.app.get('/nf/admin/delete_projects')
+        form = self.form(r)
+        form['projects'] = 'p/test2'
+        form['reason'] = 'Because "I can and want"'
+        form.submit()
+        dp.post.assert_called_once_with('-r \'Because "I can and want"\' p/test2')
+
+    @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
+    def test_multiline_reason_passed_to_task(self, dp):
+        r = self.app.get('/nf/admin/delete_projects')
+        form = self.form(r)
+        form['projects'] = 'p/test2'
+        form['reason'] = 'Because\nI want'
+        form.submit()
+        dp.post.assert_called_once_with('-r \'Because\nI want\' p/test2')
+
+    @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_task_fires(self, dp):
         r = self.app.get('/nf/admin/delete_projects')
         form = self.form(r)

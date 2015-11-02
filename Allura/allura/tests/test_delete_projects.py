@@ -78,4 +78,17 @@ class TestDeleteProjects(TestController):
     def test_event_is_fired(self, post_event):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
         self.run_script(['p/{}'.format(self.p_shortname)])
-        post_event.assert_called_once_with('project_deleted', project_id=pid)
+        post_event.assert_called_once_with('project_deleted', project_id=pid, reason=None)
+
+    @patch.object(delete_projects.g, 'post_event', autospec=True)
+    @patch('allura.scripts.delete_projects.log', autospec=True)
+    def test_delete_with_reason(self, log, post_event):
+        p = M.Project.query.get(shortname=self.p_shortname)
+        pid = p._id
+        assert p is not None, 'Can not find project to delete'
+        self.run_script(['-r', 'The Reason', 'p/{}'.format(p.shortname)])
+        session(p).expunge(p)
+        p = M.Project.query.get(shortname=p.shortname)
+        assert p is None, 'Project is not deleted'
+        log.info.assert_called_once_with('Purging %s%s. Reason: %s', '/p/', 'test-delete', 'The Reason')
+        post_event.assert_called_once_with('project_deleted', project_id=pid, reason='The Reason')

@@ -36,8 +36,10 @@ class DeleteProjects(ScriptTask):
         for proj in options.projects:
             proj = cls.get_project(proj)
             if proj:
-                log.info('Purging %s%s', proj.neighborhood.url_prefix, proj.shortname)
+                log.info('Purging %s%s. Reason: %s', proj.neighborhood.url_prefix, proj.shortname, options.reason)
+                pid = proj._id
                 cls.purge_project(proj)
+                g.post_event('project_deleted', project_id=pid, reason=options.reason)
 
     @classmethod
     def get_project(cls, proj):
@@ -67,13 +69,14 @@ class DeleteProjects(ScriptTask):
                 cls.query.remove(dict(app_config_id={'$in': app_config_ids}))
         project.delete()
         session(project).flush()
-        g.post_event('project_deleted', project_id=pid)
 
     @classmethod
     def parser(cls):
         parser = argparse.ArgumentParser(description='Completely delete projects')
         parser.add_argument('projects', metavar='nbhd/project', type=str, nargs='+',
                             help='Project to delete in a form nbhd_prefix/shortname')
+        parser.add_argument('-r', '--reason', type=str,
+                            help='Reason why these projects being deleted')
         return parser
 
 
