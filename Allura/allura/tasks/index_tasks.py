@@ -121,6 +121,11 @@ def del_artifacts(ref_ids):
 
 
 @task
+def solr_del_project_artifacts(project_id):
+    g.solr.delete(q='project_id_s:%s' % project_id)
+
+
+@task
 def commit():
     g.solr.commit()
 
