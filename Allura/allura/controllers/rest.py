@@ -281,7 +281,10 @@ class NeighborhoodRestController(object):
         return rest_has_access(self._neighborhood, user, perm)
 
     @expose()
-    def _lookup(self, name, *remainder):
+    def _lookup(self, name=None, *remainder):
+
+        # TODO: make this match NeighborhoodController._lookup so that /rest/p/admin/configure_tool_grouping works
+
         provider = plugin.ProjectRegistrationProvider.get()
         try:
             provider.shortname_validator.to_python(
@@ -291,6 +294,7 @@ class NeighborhoodRestController(object):
         name = self._neighborhood.shortname_prefix + name
         project = M.Project.query.get(
             shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
+        log.info('nbhd rest proj=%s ... %s', project, name)
         if not project:
             raise exc.HTTPNotFound, name
 
