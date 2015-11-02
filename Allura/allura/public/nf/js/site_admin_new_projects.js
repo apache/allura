@@ -18,6 +18,20 @@
 */
 
 $(document).ready(function() {
+  function rebuild_delete_url() {
+    var urls = [];
+    $('.js-select-project:checked').each(function(idx, val) {
+      urls.push($(val).attr('data-url'));
+    });
+    if (urls.length > 0) {
+      var url = '/nf/admin/delete_projects?projects=' + urls.join(' ');
+      var url = $('<a>Delete selected projects</a>').attr('href', url);
+      $('#delete-projects-url').html(url);
+    } else {
+      $('#delete-projects-url').text('');
+    }
+  }
+
   $('.js-select-project').change(function() {
     var shortname = $(this).attr('data-shortname');
     if ($(this).is(':checked')) {
@@ -30,6 +44,7 @@ $(document).ready(function() {
       shortnames.splice(i, 1);
       $('#selected-projects').text(shortnames.join(' '));
     }
+    rebuild_delete_url();
   });
 
   $('tr').click(function(event) {
