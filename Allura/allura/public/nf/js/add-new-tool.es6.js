@@ -11,12 +11,12 @@
 var AddNewToolButton = React.createClass({
     render: function() {
         return (
-            <li>
+            <div>
             <a onClick={ this.props.handleToggleAddNewTool } className='add-tool-toggle'>
                 Add New...
             </a>
             { this.props.showAddToolMenu && <NewToolMain />}
-            </li>
+            </div>
         );
     }
 });
