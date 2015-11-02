@@ -337,7 +337,7 @@ class SiteAdminController(object):
             DeleteProjects.post(task_params)
             flash(u'Delete scheduled for %s' % projects, 'ok')
             redirect('delete_projects')
-        return {}
+        return {'projects': u'\n'.join(projects.split()) if projects else u''}
 
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_search.html')
