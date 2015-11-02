@@ -18,6 +18,7 @@
 import re
 import logging
 from datetime import datetime, timedelta
+import pipes
 
 from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -320,8 +321,9 @@ class SiteAdminController(object):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_delete_projects.html')
-    @validate(validators=dict(projects=validators.UnicodeString(if_empty=None)))
-    def delete_projects(self, projects=None, **kw):
+    @validate(validators=dict(projects=validators.UnicodeString(if_empty=None),
+                              reason=validators.UnicodeString(if_empty=None)))
+    def delete_projects(self, projects=None, reason=None, **kw):
         if request.method == "POST":
             if not projects:
                 flash(u'No projects specified', 'warning')
@@ -334,6 +336,8 @@ class SiteAdminController(object):
             log.info('Parsed projects: %s', projects)
             task_params = [u'{}/{}'.format(n.strip('/'), p) for (n, p) in projects]
             task_params = u' '.join(task_params)
+            if reason:
+                task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
             DeleteProjects.post(task_params)
             flash(u'Delete scheduled for %s' % projects, 'ok')
             redirect('delete_projects')
