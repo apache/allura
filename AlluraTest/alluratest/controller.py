@@ -155,6 +155,7 @@ class TestController(object):
         """Method called by nose before running each test"""
         self.app = ValidatingTestApp(
             setup_functional_test(app_name=self.application_under_test))
+        self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
         if asbool(tg.config.get('smtp.mock')):
@@ -196,7 +197,6 @@ class TestRestApiBase(TestController):
 
     def setUp(self):
         super(TestRestApiBase, self).setUp()
-        setup_global_objects()
         self._use_token = None
         self._token_cache = {}
 
