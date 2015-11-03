@@ -19,13 +19,12 @@ import json
 import re
 
 from pylons import tmpl_context as c
+from nose.tools import assert_equal, assert_not_in, assert_in
+from ming.orm import ThreadLocalORMSession
 
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
-from ming.orm import ThreadLocalORMSession
-
-from nose.tools import assert_equal, assert_not_in
 
 
 class TestProjectHome(TestController):
@@ -37,6 +36,7 @@ class TestProjectHome(TestController):
         assert re.search(r'<!-- Server: \S+ -->',
                          str(root.html)), 'Missing Server comment'
         nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
+        nav_links = [nl for nl in nav_links if nl['class'] != 'add-tool-toggle']
         assert len(nav_links) == len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
@@ -53,10 +53,10 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wikis = menu[-2]['children']
         assert_equal(len(wikis), 2)
-        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon':
-                u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
-        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon':
-                u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
+        assert_in({'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 3}, wikis)
+        assert_in({'url': '/p/test/wiki2/', 'name': 'wiki2', 'mount_point': 'wiki2',
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 4}, wikis)
 
     def test_sitemap_limit_per_tool(self):
         """Test that sitemap is limited to max of 10 items per tool type."""
@@ -85,8 +85,10 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wiki_menu = [m for m in menu if m['tool_name'] == 'wiki'][0]
         assert_equal(len(wiki_menu['children']), 10)
-        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...',
-                u'icon': u'tool-wiki', 'tool_name': 'wiki'} in wiki_menu['children']
+        for child in wiki_menu['children']:
+            child.pop('ordinal')
+        assert_in({'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': '_list',
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_menu['children'])
 
     @td.with_wiki
     def test_neighborhood_home(self):

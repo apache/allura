@@ -35,7 +35,7 @@
     </li>
   {% endfor %}
   {% if h.has_access(c.project, 'admin')() %}
-    <li id="add-tool-container"><a class="add-tool-toggle">Add New...</a></li>
+    <li id="add-tool-container"><a href='#' class="add-tool-toggle">Add New...</a></li>
     <button id="toggle-admin-btn"><i class="fa fa-lock"></i></button>
   {% endif %}
 </ul>
