@@ -383,7 +383,13 @@ class AntiSpam(object):
                 new_params = cls.validate_request(params=params)
                 params.update(new_params)
             except (ValueError, TypeError, binascii.Error):
-                raise Invalid(error_msg, params, None)
+                testing = pylons.request.environ.get('paste.testing', False)
+                if testing:
+                    # re-raise so we can see problems more easily
+                    raise
+                else:
+                    # regular antispam failure handling
+                    raise Invalid(error_msg, params, None)
         return before_validate(antispam_hook)
 
 
