@@ -862,7 +862,7 @@ class ProjectAdminRestController(BaseController):
         }
 
     @expose('json:')
-    @require_post()
+    @require_post() # FIXME
     def mount_point(self, mount_point=None, **kw):
         """
         Returns a tool from a given mount point
@@ -879,6 +879,7 @@ class ProjectAdminRestController(BaseController):
 
         try:
             info = json.dumps(tool)
+            # FIXME
         except TypeError:
             info = "Could not serialize tool."
 

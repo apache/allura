@@ -248,6 +248,21 @@ class TestRestHome(TestRestApiBase):
         assert_equal(r.status_int, 200)
         assert_equal(r.json['result'], False)
 
+    def test_neighborhood(self):
+        self.api_get('/rest/p/', status=404)
+
+    def test_neighborhood_tools(self):
+        r = self.api_get('/rest/p/wiki/Home/')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json['title'], 'Home')
+
+        r = self.api_get('/rest/p/admin/installable_tools')
+        assert_equal(r.status_int, 403)
+
+        r = self.api_get('/rest/p/admin/installable_tools', user='root')
+        assert_equal(r.status_int, 200)
+        assert [t for t in r.json['tools'] if t['tool_label'] == 'Wiki'], r.json
+
     def test_project_has_access_no_params(self):
         self.api_get('/rest/p/test/has_access', status=404)
         self.api_get('/rest/p/test/has_access?user=root', status=404)

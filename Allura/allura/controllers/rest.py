@@ -19,6 +19,7 @@
 
 """REST Controller"""
 import logging
+from urllib import unquote
 
 import oauth2 as oauth
 from paste.util.converters import asbool
@@ -36,6 +37,7 @@ from allura.lib import security
 from allura.lib import plugin
 from allura.lib.exceptions import Invalid
 from allura.lib.decorators import require_post
+from allura.lib.security import has_access
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
@@ -271,6 +273,61 @@ class AppRestControllerMixin(object):
         return rest_has_access(c.app, user, perm)
 
 
+def nbhd_lookup_first_path(nbhd, name, current_user, *remainder):
+    """
+    Resolve first part of a neighborhood url.  May raise 404, redirect, or do other side effects.
+
+    Shared between NeighborhoodController and NeighborhoodRestController
+
+    :param nbhd: neighborhood
+    :param name: project or tool name (next part of url)
+    :param current_user: a User
+    :param remainder: remainder of url
+
+    :return: project (to be set as c.project)
+    :return: remainder (possibly modified)
+    """
+
+    prefix = nbhd.shortname_prefix
+    pname = unquote(name)
+    provider = plugin.ProjectRegistrationProvider.get()
+    try:
+        provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=nbhd)
+    except Invalid:
+        project = None
+    else:
+        project = M.Project.query.get(shortname=prefix + pname, neighborhood_id=nbhd._id)
+    if project is None and prefix == 'u/':
+        # create user-project if it is missing
+        user = M.User.query.get(username=pname, disabled=False, pending=False)
+        if user:
+            project = user.private_project()
+            if project.shortname != prefix + pname:
+                # might be different URL than the URL requested
+                # e.g. if username isn't valid project name and user_project_shortname() converts the name
+                redirect(project.url())
+    if project is None:
+        # look for neighborhood tools matching the URL
+        project = nbhd.neighborhood_project
+        return project, (pname,) + remainder  # include pname in new remainder, it is actually the nbhd tool path
+    if project and prefix == 'u/':
+        # make sure user-projects are associated with an enabled user
+        user = project.user_project_of
+        if not user or user.disabled or user.pending:
+            raise exc.HTTPNotFound
+    if project.database_configured is False:
+        if remainder == ('user_icon',):
+            redirect(g.forge_static('images/user.png'))
+        elif current_user.username == pname:
+            log.info('Configuring %s database for access to %r', pname, remainder)
+            project.configure_project(is_user_project=True)
+        else:
+            raise exc.HTTPNotFound, pname
+    if project is None or (project.deleted and not has_access(project, 'update')()):
+        raise exc.HTTPNotFound, pname
+    return project, remainder
+
+
 class NeighborhoodRestController(object):
 
     def __init__(self, neighborhood):
@@ -282,29 +339,9 @@ class NeighborhoodRestController(object):
 
     @expose()
     def _lookup(self, name=None, *remainder):
-
-        # TODO: make this match NeighborhoodController._lookup so that /rest/p/admin/configure_tool_grouping works
-
-        provider = plugin.ProjectRegistrationProvider.get()
-        try:
-            provider.shortname_validator.to_python(
-                name, check_allowed=False, neighborhood=self._neighborhood)
-        except Invalid:
-            raise exc.HTTPNotFound, name
-        name = self._neighborhood.shortname_prefix + name
-        project = M.Project.query.get(
-            shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
-        log.info('nbhd rest proj=%s ... %s', project, name)
-        if not project:
-            raise exc.HTTPNotFound, name
-
-        if project and name and name.startswith('u/'):
-            # make sure user-projects are associated with an enabled user
-            user = project.user_project_of
-            if not user or user.disabled:
-                raise exc.HTTPNotFound
-
-        c.project = project
+        if not name:
+            raise exc.HTTPNotFound
+        c.project, remainder = nbhd_lookup_first_path(self._neighborhood, name, c.user, *remainder)
         return ProjectRestController(), remainder
 
 
