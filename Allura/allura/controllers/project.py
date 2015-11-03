@@ -19,7 +19,6 @@ import re
 import logging
 from datetime import datetime, timedelta
 from urllib import unquote
-from hashlib import sha1
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, config, session
@@ -29,7 +28,6 @@ from paste.deploy.converters import asbool
 from webob import exc
 import jinja2
 import pymongo
-from formencode.api import Invalid
 
 from ming.utils import LazyProperty
 
@@ -42,7 +40,8 @@ from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
 from allura.controllers.feed import FeedArgs, FeedController
-from allura.lib.security import require_access, has_access
+from allura.controllers.rest import nbhd_lookup_first_path
+from allura.lib.security import require_access
 from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
@@ -58,8 +57,7 @@ log = logging.getLogger(__name__)
 class W:
     resize_editor = ffw.AutoResizeTextarea()
     project_summary = plw.ProjectSummary()
-    add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(
-        antispam=True)
+    add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     project_select = ffw.NeighborhoodProjectSelect
@@ -75,7 +73,6 @@ class NeighborhoodController(object):
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.neighborhood_name = self.neighborhood.name
-        self.prefix = self.neighborhood.shortname_prefix
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         # 'admin' without underscore will pass through to _lookup which will find the regular "admin" tool mounted
         # on the --init-- Project record for this neighborhood.
@@ -92,47 +89,7 @@ class NeighborhoodController(object):
 
     @expose()
     def _lookup(self, pname, *remainder):
-        pname = unquote(pname)
-        provider = plugin.ProjectRegistrationProvider.get()
-        try:
-            provider.shortname_validator.to_python(
-                pname, check_allowed=False, neighborhood=self.neighborhood)
-        except Invalid:
-            project = None
-        else:
-            project = M.Project.query.get(
-                shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
-        if project is None and self.prefix == 'u/':
-            # create user-project if it is missing
-            user = M.User.query.get(username=pname, disabled=False, pending=False)
-            if user:
-                project = user.private_project()
-                if project.shortname != self.prefix + pname:
-                    # might be different URL than the URL requested
-                    # e.g. if username isn't valid project name and user_project_shortname() converts the name
-                    redirect(project.url())
-        if project is None:
-            # look for neighborhood tools matching the URL
-            project = self.neighborhood.neighborhood_project
-            c.project = project
-            return ProjectController()._lookup(pname, *remainder)
-        if project and self.prefix == 'u/':
-            # make sure user-projects are associated with an enabled user
-            user = project.user_project_of
-            if not user or user.disabled or user.pending:
-                raise exc.HTTPNotFound
-        if project.database_configured == False:
-            if remainder == ('user_icon',):
-                redirect(g.forge_static('images/user.png'))
-            elif c.user.username == pname:
-                log.info('Configuring %s database for access to %r',
-                         pname, remainder)
-                project.configure_project(is_user_project=True)
-            else:
-                raise exc.HTTPNotFound, pname
-        c.project = project
-        if project is None or (project.deleted and not has_access(c.project, 'update')()):
-            raise exc.HTTPNotFound, pname
+        c.project, remainder = nbhd_lookup_first_path(self.neighborhood, pname, c.user, *remainder)
         return ProjectController(), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
