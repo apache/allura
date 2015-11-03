@@ -39,6 +39,7 @@ from alluratest.controller import TestRestApiBase, setup_trove_categories
 from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.plugin import AdminExtension
+from allura.lib import helpers as h
 from allura.ext.admin.admin_main import AdminApp
 
 from forgetracker.tracker_main import ForgeTrackerApp
@@ -1286,7 +1287,9 @@ class TestRestInstallTool(TestRestApiBase):
                 'mount_point': 'ticketsmount1',
                 'mount_label': 'tickets_label1'
             }
-            c.project.install_app('tickets', mount_point=data['mount_point'])
+            project = M.Project.query.get(shortname='test')
+            with h.push_config(c, user=M.User.query.get()):
+                project.install_app('tickets', mount_point=data['mount_point'])
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert_equals(r.json['success'], False)
             assert_equals(r.json['info'], 'Mount point already exists.')

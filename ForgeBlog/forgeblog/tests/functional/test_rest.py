@@ -18,7 +18,7 @@
 #       under the License.
 from datetime import date
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from allura import model as M
@@ -51,7 +51,7 @@ class TestBlogApi(TestRestApiBase):
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
         assert_equal(r.json['posts'][0]['title'], 'test')
-        assert_equal(r.json['posts'][0]['url'], h.absurl(url))
+        assert_in(url, r.json['posts'][0]['url'])
 
         r = self.api_get(url)
         assert_equal(r.json['title'], data['title'])
