@@ -714,7 +714,7 @@ class TestNeighborhood(TestController):
             status=302).follow()
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
-        top_nav = r.html.find('div', {'id': 'top_nav'})
+        top_nav = r.html.find('div', {'id': 'top_nav'}).contents[1]
         assert top_nav.contents[1].contents[1].contents[1]['href'] == '/adobe/testtemp/wiki/'
         assert 'Wiki' in top_nav.contents[1].contents[1].contents[1].contents[0]
         assert top_nav.contents[1].contents[3].contents[1]['href'] == '/adobe/testtemp/discussion/'
