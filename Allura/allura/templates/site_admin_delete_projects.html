@@ -38,6 +38,10 @@
         <textarea name="reason"></textarea>
       </div>
       <div class="grid-18">
+        <input id="disable_users" name="disable_users" type="checkbox">
+        <label for="disable_users">Disable all project members</label>
+      </div>
+      <div class="grid-18">
         <input type="submit" value="Delete">
       </div>
       {{lib.csrf_token()}}
