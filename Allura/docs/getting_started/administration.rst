@@ -35,6 +35,7 @@ The admin interface allows you to:
 
 * View newly registered projects
 * Search for projects
+* :ref:`Delete projects <delete-projects>`
 * View neighborhood total stats
 * Search for users, view user details, update user status, email address, and reset their password
 * View background task statuses, and submit new background tasks
@@ -76,7 +77,7 @@ Scripts are in the `scripts/` directory and run slightly differently, via `paste
 
      paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
 
-To run these when using docker, prefix with :code:`docker-compose run web` and use :code:`docker-dev.ini` like::
+To run these when using docker, prefix with :code:`docker-compose run taskd` and use :code:`docker-dev.ini` like::
 
     docker-compose run taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
 
@@ -173,6 +174,21 @@ disable_users.py
     :module: allura.scripts.disable_users
     :func: get_parser
     :prog: paster script development.ini allura/scripts/disable_users.py --
+
+
+.. _delete-projects-py:
+
+delete_projects.py
+------------------
+
+*Can be run as a background task using task name:* :code:`allura.scripts.delete_projects.DeleteProjects`
+
+More convenient way to delete project is :ref:`this site admin page <delete-projects>`. It uses this script under the hood.
+
+.. argparse::
+    :module: allura.scripts.delete_projects
+    :func: get_parser
+    :prog: paster script development.ini allura/scripts/delete_projects.py --
 
 
 refreshrepo.py
@@ -274,6 +290,32 @@ indefinitely (until closed).  The notification content can contain HTML.  Only t
 most recent notification will be shown, unless it has `active:false`, in which case
 no notification will be shown.
 
+.. _delete-projects:
+
+Deleting projects
+=================
+
+Site administrators can delete projects using web interface. This is running
+:ref:`delete_projects.py script <delete-projects-py>` under the hood. You can
+access it choosing "Delete projects" from the left sidebar on the :ref:`site
+admin interface <site-admin-interface>`.
+
+**Be careful, projects and all related data are actually deleted from the database!**
+
+Just copy and paste URLs of the project you want to delete into "Projects"
+field. You can also use :code:`nbhd_prefix/project_shortname` format, e.g.
+
+
+.. code-block:: text
+
+  http://MYSITE/p/test/wiki/
+  p/test2
+
+will delete projects :code:`test` and :code:`test2`.
+
+The "Reason" field allows you to specify a reason for deletion, which will be logged to disk.
+
+"Disable all project members" checkbox disables all users belonging to groups "Admin" and "Developer" in these projects. The reason will be also recorded in the users' audit logs if this option is checked.
 
 Using Projects and Tools
 ========================
