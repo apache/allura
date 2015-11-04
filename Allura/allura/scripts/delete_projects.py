@@ -96,11 +96,11 @@ class DeleteProjects(ScriptTask):
     def parser(cls):
         parser = argparse.ArgumentParser(description='Completely delete projects')
         parser.add_argument('projects', metavar='nbhd/project', type=str, nargs='+',
-                            help='Project to delete in a form nbhd_prefix/shortname')
+                            help='List of projects to delete in a form nbhd_prefix/shortname')
         parser.add_argument('-r', '--reason', type=str,
-                            help='Reason why these projects being deleted')
+                            help='Reason why these projects are being deleted')
         parser.add_argument('--disable-users', action='store_true', default=False,
-                            help='Disable all project members')
+                            help='Disable all users belonging to groups Admin and Developer in these projects.')
         return parser
 
 
