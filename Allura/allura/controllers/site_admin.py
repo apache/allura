@@ -322,8 +322,9 @@ class SiteAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_delete_projects.html')
     @validate(validators=dict(projects=validators.UnicodeString(if_empty=None),
-                              reason=validators.UnicodeString(if_empty=None)))
-    def delete_projects(self, projects=None, reason=None, **kw):
+                              reason=validators.UnicodeString(if_empty=None),
+                              disable_users=validators.StringBool(if_empty=False)))
+    def delete_projects(self, projects=None, reason=None, disable_users=False, **kw):
         if request.method == "POST":
             if not projects:
                 flash(u'No projects specified', 'warning')
@@ -338,6 +339,8 @@ class SiteAdminController(object):
             task_params = u' '.join(task_params)
             if reason:
                 task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
+            if disable_users:
+                task_params = u'--disable-users {}'.format(task_params)
             DeleteProjects.post(task_params)
             flash(u'Delete scheduled for %s' % projects, 'ok')
             redirect('delete_projects')

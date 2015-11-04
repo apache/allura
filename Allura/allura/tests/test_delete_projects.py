@@ -15,11 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ming.odm import session, Mapper
+from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
+from pylons import app_globals as g
 
 from alluratest.controller import TestController
-
+from allura.tests.decorators import audits, out_audits
 from allura import model as M
 from allura.scripts import delete_projects
 
@@ -31,7 +32,7 @@ class TestDeleteProjects(TestController):
         n = M.Neighborhood.query.get(name='Projects')
         admin = M.User.by_username('test-admin')
         self.p_shortname = 'test-delete'
-        n.register_project(self.p_shortname, admin)
+        self.proj = n.register_project(self.p_shortname, admin)
 
     def run_script(self, options):
         cls = delete_projects.DeleteProjects
@@ -92,3 +93,29 @@ class TestDeleteProjects(TestController):
         assert p is None, 'Project is not deleted'
         log.info.assert_called_once_with('Purging %s%s. Reason: %s', '/p/', 'test-delete', 'The Reason')
         post_event.assert_called_once_with('project_deleted', project_id=pid, reason='The Reason')
+
+    def _disable_users(self, disable):
+        dev = M.User.by_username('test-user')
+        self.proj.add_user(dev, ['Developer'])
+        ThreadLocalODMSession.flush_all()
+        g.credentials.clear()
+        proj = u'p/{}'.format(self.p_shortname)
+        msg = u'Account disabled because project /{} is deleted. Reason: The Reason'.format(proj)
+        opts = ['-r', 'The Reason', proj]
+        if disable:
+            opts.insert(0, '--disable-users')
+        _audit = audits if disable else out_audits
+        with _audit(msg):
+            self.run_script(opts)
+        admin = M.User.by_username('test-admin')
+        dev = M.User.by_username('test-user')
+        assert admin.disabled is disable
+        assert dev.disabled is disable
+
+    @patch('allura.model.auth.request', autospec=True)
+    def test_disable_users(self, req):
+        req.url = None
+        self._disable_users(disable=True)
+
+    def test_not_disable_users(self):
+        self._disable_users(disable=False)

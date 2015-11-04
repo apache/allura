@@ -602,6 +602,15 @@ class TestDeleteProjects(TestController):
         form.submit()
         dp.post.assert_called_once_with('p/test adobe/adobe-1 p/test2')
 
+    @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
+    def test_admins_and_devs_are_disabled(self, dp):
+        r = self.app.get('/nf/admin/delete_projects')
+        form = self.form(r)
+        form['projects'] = 'p/test p/test2'
+        form['disable_users'] = True
+        form.submit()
+        dp.post.assert_called_once_with('--disable-users p/test p/test2')
+
 
 @task
 def test_task(*args, **kw):
