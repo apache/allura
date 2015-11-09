@@ -383,15 +383,14 @@ class ForumRestController(BaseController):
     @expose('json:')
     def index(self, limit=None, page=0, **kw):
         limit, page, start = g.handle_paging(limit, int(page))
-        topics = model.Forum.thread_class().query.find(
-            dict(discussion_id=self.forum._id))
+        topics = model.Forum.thread_class().query.find(dict(discussion_id=self.forum._id))
         topics = topics.sort([('flags', pymongo.DESCENDING),
                               ('last_post_date', pymongo.DESCENDING)])
         topics = topics.skip(start).limit(limit)
         count = topics.count()
         json = {}
-        json['forum'] = self.forum.__json__()
-        # it appears that topics replace threads here
+        json['forum'] = self.forum.__json__(limit=1)  # small limit since we're going to "del" the threads anyway
+        # topics replace threads here
         del json['forum']['threads']
         json['forum']['topics'] = [dict(_id=t._id,
                                         subject=t.subject,

@@ -122,8 +122,8 @@ class Page(VersionedArtifact, ActivityObject):
         d.update(summary=self.title)
         return d
 
-    def __json__(self):
-        return dict(super(Page, self).__json__(),
+    def __json__(self, posts_limit=None):
+        return dict(super(Page, self).__json__(posts_limit=posts_limit),
                     title=self.title,
                     text=self.text,
                     labels=list(self.labels),

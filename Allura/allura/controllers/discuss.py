@@ -440,11 +440,8 @@ class ModerationController(BaseController):
             query['flags'] = {'$gte': int(flag)}
         q = self.PostModel.query.find(query)
         count = q.count()
-        if not page:
-            page = 0
-        page = int(page)
-        limit = int(limit)
-        q = q.skip(page)
+        limit, page, start = g.handle_paging(limit, page or 0, default=50)
+        q = q.skip(start)
         q = q.limit(limit)
         pgnum = (page // limit) + 1
         pages = (count // limit) + 1
@@ -486,7 +483,7 @@ class PostRestController(PostController):
 
     @expose('json:')
     def index(self, **kw):
-        return dict(post=self.post)
+        return dict(post=self.post.__json__())
 
     @h.vardec
     @expose()
@@ -503,8 +500,9 @@ class PostRestController(PostController):
 class ThreadRestController(ThreadController):
 
     @expose('json:')
-    def index(self, **kw):
-        return dict(thread=self.thread)
+    def index(self, limit=25, page=None, **kw):
+        limit, page = h.paging_sanitizer(limit, page)
+        return dict(thread=self.thread.__json__(limit=limit, page=page))
 
     @h.vardec
     @expose()

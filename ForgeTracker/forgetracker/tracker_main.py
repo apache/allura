@@ -1865,7 +1865,7 @@ class TicketRestController(BaseController):
 
     @expose('json:')
     def index(self, **kw):
-        return dict(ticket=self.ticket)
+        return dict(ticket=self.ticket.__json__(posts_limit=10))
 
     @expose()
     @h.vardec

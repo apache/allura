@@ -47,7 +47,7 @@
         type: integer
         required: false
         example: 10
-        default: 10
+        default: 25
 - permissionTestable:
     description: |
       **Endpoints**

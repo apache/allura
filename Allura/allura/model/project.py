@@ -1091,9 +1091,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                         for u in self.users_with_role('Developer')],
             tools=[self.app_instance(t) for t in self.app_configs if h.has_access(t, 'read')],
             labels=list(self.labels),
-            categories={
-                n: [t.__json__(
-                ) for t in ts] for n, ts in self.all_troves().items()},
+            categories={n: [t.__json__() for t in ts]
+                        for n, ts in self.all_troves().items()},
             icon_url=h.absurl(self.url() + 'icon') if self.icon else None,
             screenshots=[
                 dict(

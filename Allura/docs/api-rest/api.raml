@@ -284,7 +284,7 @@ documentation:
           get:
             description: |
               returns summary information about a thread, including the posts in a thread
-            is: [ bearerAuth ]
+            is: [ bearerAuth, pageable ]
           /{slug}:
             uriParameters:
              slug:

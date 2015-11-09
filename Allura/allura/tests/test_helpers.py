@@ -227,7 +227,10 @@ def test_paging_sanitizer():
         (5, '-1', 25): (5, 0),
         ('5', -1, 25, False): (5, 1),
         (5, '3', 25): (5, 3),
-        ('5', 3, 25, False): (5, 3)
+        ('5', 3, 25, False): (5, 3),
+        (9999999, 0, 0): (500, 0),
+        (10, None, 0): (10, 0),
+        (10, 0): (10, 0),
     }
     for input, output in test_data.iteritems():
         assert (h.paging_sanitizer(*input)) == output

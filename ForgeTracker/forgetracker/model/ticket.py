@@ -1106,11 +1106,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             ticket.discussion_thread.add_post(text=message, notify=notify)
         return ticket
 
-    def __json__(self):
+    def __json__(self, posts_limit=None):
         parents_json = {}
         for parent in reversed(type(self).mro()):
             if parent != type(self) and hasattr(parent, '__json__'):
-                parents_json.update(parent.__json__(self))
+                kwargs = {}
+                if parent == VersionedArtifact:
+                    kwargs['posts_limit'] = posts_limit
+                parents_json.update(parent.__json__(self, **kwargs))
 
         return dict(parents_json,
                     created_date=self.created_date,

@@ -110,8 +110,8 @@ class ForgeActivityController(BaseController):
             actor_only = False
 
         following = g.director.is_connected(c.user, followee)
-        page = asint(kw.get('page', 0))
-        limit = extra_limit = asint(kw.get('limit', 100))
+        limit, page = h.paging_sanitizer(kw.get('limit', 100), kw.get('page', 0))
+        extra_limit = limit
         # get more in case perm check filters some out
         if page == 0 and limit <= 10:
             extra_limit = limit * 20

@@ -53,7 +53,7 @@ from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
 from jinja2.filters import contextfilter, escape
-from paste.deploy.converters import asbool, aslist
+from paste.deploy.converters import asbool, aslist, asint
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 from webob.exc import HTTPUnauthorized
@@ -684,16 +684,17 @@ class log_action(object):
             return result
 
 
-def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
+def paging_sanitizer(limit, page, total_count=sys.maxint, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to
     valid ranges based on total_count.
 
     Useful for sanitizing limit and page query params.
     """
     limit = max(int(limit), 1)
+    limit = min(limit, asint(tg.config.get('limit_param_max', 500)))
     max_page = (total_count / limit) + (1 if total_count % limit else 0)
     max_page = max(0, max_page - (1 if zero_based_pages else 0))
-    page = min(max(int(page), (0 if zero_based_pages else 1)), max_page)
+    page = min(max(int(page or 0), (0 if zero_based_pages else 1)), max_page)
     return limit, page
 
 

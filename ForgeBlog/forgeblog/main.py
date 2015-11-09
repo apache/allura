@@ -536,7 +536,7 @@ class PostRestController(BaseController):
         else:
             if self.post.state == 'draft':
                 require_access(self.post, 'write')
-            return self.post.__json__()
+            return self.post.__json__(posts_limit=10)
 
     def _update_post(self, **post_data):
         require_access(self.post, 'write')
@@ -552,4 +552,4 @@ class PostRestController(BaseController):
         if 'labels' in post_data:
             self.post.labels = post_data['labels'].split(',')
         self.post.commit()
-        return self.post.__json__()
+        return self.post.__json__(posts_limit=10)

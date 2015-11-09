@@ -833,7 +833,7 @@ class PageRestController(BaseController):
             return self._update_page(self.title, **kw)
         if self.page is None:
             raise exc.HTTPNotFound()
-        return self.page.__json__()
+        return self.page.__json__(posts_limit=10)
 
     def _update_page(self, title, **post_data):
         with h.notifications_disabled(c.project):

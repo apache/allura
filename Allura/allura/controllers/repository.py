@@ -367,6 +367,7 @@ class MergeRequestController(object):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
         c.mr_dispose_form = self.mr_dispose_form
+        limit, page = h.paging_sanitizer(limit, page)
         with self.req.push_downstream_context():
             downstream_app = c.app
         result = dict(
@@ -613,6 +614,7 @@ class CommitBrowser(BaseController):
         is_file = False
         if path:
             is_file = c.app.repo.is_file(path, self._commit._id)
+        limit, _ = h.paging_sanitizer(limit, 0)
         commits = list(islice(c.app.repo.log(
             revs=self._commit._id,
             path=path,

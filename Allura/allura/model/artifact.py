@@ -103,7 +103,7 @@ class Artifact(MappedClass, SearchIndexable):
     import_id = FieldProperty(None, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
 
-    def __json__(self):
+    def __json__(self, posts_limit=None):
         """Return a JSON-encodable :class:`dict` representation of this
         Artifact.
 
@@ -113,7 +113,7 @@ class Artifact(MappedClass, SearchIndexable):
             mod_date=self.mod_date,
             labels=list(self.labels),
             related_artifacts=[a.url() for a in self.related_artifacts()],
-            discussion_thread=self.discussion_thread.__json__(),
+            discussion_thread=self.discussion_thread.__json__(limit=posts_limit),
             discussion_thread_url=h.absurl('/rest%s' %
                                            self.discussion_thread.url()),
         )
@@ -867,7 +867,7 @@ class Feed(MappedClass):
 
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
-             since=None, until=None, offset=None, limit=None):
+             since=None, until=None, page=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
         d = dict(title=title, link=h.absurl(link),
                  description=description, language=u'en',
@@ -876,6 +876,7 @@ class Feed(MappedClass):
             feed = FG.Atom1Feed(**d)
         elif feed_type == 'rss':
             feed = RssFeed(**d)
+        limit, page = h.paging_sanitizer(limit or 10, page)
         query = defaultdict(dict)
         query.update(q)
         if since is not None:
@@ -884,11 +885,8 @@ class Feed(MappedClass):
             query['pubdate']['$lte'] = until
         cur = cls.query.find(query)
         cur = cur.sort('pubdate', pymongo.DESCENDING)
-        if limit is None:
-            limit = 10
-        query = cur.limit(limit)
-        if offset is not None:
-            query = cur.offset(offset)
+        cur = cur.limit(limit)
+        cur = cur.skip(limit * page)
         for r in cur:
             feed.add_item(title=r.title,
                           link=h.absurl(r.link.encode('utf-8')),

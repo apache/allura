@@ -110,7 +110,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
                     assigned_to=self.ticket_args['assigned_to_id'] or '')
         for bad_key in ('ticket_num', 'assigned_to_id', 'created_date',
-                        'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
+                        'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down', 'discussion_thread'):
             del args[bad_key]
         args['private'] = str(args['private'])
         args['discussion_disabled'] = str(args['discussion_disabled'])
