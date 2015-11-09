@@ -1,13 +1,10 @@
-(function(root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    define(['React', 'ReactDrag'], factory);
-  } else if (typeof exports === 'object') {
-    module.exports = factory(require('react/addons'), require('react-drag'));
-  } else {
-    root.ReactReorderable = factory(root.React, root.ReactDrag);
-  }
-}(this, function(React, ReactDrag) {
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.ReactReorderable = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
 'use strict';
+
+var React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null);
+var findDOMNode = (typeof window !== "undefined" ? window['ReactDOM'] : typeof global !== "undefined" ? global['ReactDOM'] : null).findDOMNode;
+var ReactDrag = (typeof window !== "undefined" ? window['ReactDrag'] : typeof global !== "undefined" ? global['ReactDrag'] : null);
 
 function getClosestReorderable(el) {
   while (el) {
@@ -110,10 +107,11 @@ function indexChildren(children) {
   for (var i = 0; i < children.length; i += 1) {
     var id = prefix + (i + 1);
     ids.push(id);
-    children[i] = React.createElement("div", {className: "react-reorderable-item", 
-         key: id, "data-reorderable-key": id}, 
-        children[i]
-      );
+    children[i] = React.createElement('div', {
+      className: 'react-reorderable-item',
+      key: id,
+      'data-reorderable-key': id
+    }, children[i]);
     map[id] = children[i];
   }
   return { map: map, ids: ids };
@@ -144,7 +142,7 @@ function getNodesOrder(current, sibling, order) {
 }
 
 
-var ReactReorderable = React.createClass({displayName: "ReactReorderable",
+var ReactReorderable = React.createClass({
   componentWillMount: function () {
     window.addEventListener('mouseup', this._mouseupHandler = function () {
       this.setState({
@@ -183,7 +181,7 @@ var ReactReorderable = React.createClass({displayName: "ReactReorderable",
     }, this));
   },
   onDrag: function (e) {
-    var handle = ReactDOM.findDOMNode(this.refs.handle);
+    var handle = findDOMNode(this.refs.handle);
     var sibling = getSiblingNode(e, handle, this.props.mode);
 
     if (sibling && sibling.node) {
@@ -263,7 +261,11 @@ var ReactReorderable = React.createClass({displayName: "ReactReorderable",
       if (this.state.activeItem === id) {
         className += 'react-reorderable-item-active';
       }
-      return React.addons.cloneWithProps(
+      var oldClass = this.state.reorderableMap[id].props.className || '';
+      if (oldClass) {
+        className = oldClass + ' ' + className;
+      }
+      return React.cloneElement(
         this.state.reorderableMap[id], {
           key: 'reaorderable-' + id,
           ref: 'active',
@@ -277,24 +279,26 @@ var ReactReorderable = React.createClass({displayName: "ReactReorderable",
     var handle;
     if (this.state.activeItem) {
       var pos = this.state.startPosition;
-      handle = React.addons.cloneWithProps(
+      var className = 'react-reorderable-handle';
+      var oldClass = this.state.reorderableMap[this.state.activeItem].props.className || '';
+      if (oldClass) {
+        className = oldClass + ' ' + className;
+      }
+      handle = React.cloneElement(
         this.state.reorderableMap[this.state.activeItem], {
-          className: 'react-reorderable-handle'
+          className: className
       });
       handle =
-        React.createElement(ReactDrag, {onStop: this.onDragStop, 
-          onDrag: this.onDrag, 
-          ref: "handle", 
-          start: { x: pos.x, y: pos.y}}, 
-          handle
-        );
+        React.createElement(ReactDrag, {
+          onStop: this.onDragStop,
+          onDrag: this.onDrag,
+          ref: 'handle',
+          start: { x: pos.x, y: pos.y }
+        }, handle);
     }
-    return (
-      React.createElement("div", {ref: "wrapper"}, 
-        children, 
-        handle
-      )
-    );
+    return React.createElement('div', {
+        ref: 'wrapper'
+      }, children, handle);
   }
 });
 
@@ -312,5 +316,9 @@ ReactReorderable.defaultProps = {
   onChange: function () {}
 };
 
-return ReactReorderable;
-}));
+module.exports = ReactReorderable;
+
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}]},{},[1])(1)
+});
