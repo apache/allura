@@ -441,12 +441,11 @@ var Main = React.createClass({
      * @param {array} data - Array of tools
      */
     onToolReorder: function(data) {
-        console.ll
         var tools = this.state.data;
         var params = {
             _session_id: $.cookie('_session_id')
         };
-        tools.menu.map(function(tool, i) {
+        data.map(function(tool, i) {
             var mount_point = getMountPoint(tool);
             var index = tools.menu.findIndex(
                 x => x.mount_point === mount_point
