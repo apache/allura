@@ -73,6 +73,20 @@ function getMountPoint(node) {
     return node.props.children[0].props.mount_point;
 }
 
+/**
+ * Get a url from a NavBarItem node.
+
+ * @constructor
+ * @param {NavBarItem} node
+ * @returns {string}
+ */
+function getUrlByNode(node) {
+    if(node.hasOwnProperty('url') && node.url !== null){
+        return node['url'];
+    }
+    return node.props.children[0].props.url;
+}
+
 function ToolsPropType() {
     return {
         name: React.PropTypes.string.isRequired,
@@ -279,10 +293,11 @@ var AdminNav = React.createClass({
         for (let item of items) {
             var subMenu;
             if (item.children) {
-                this.buildMenu(item.children, true);
+                console.log(`${item.name} has ${item.children.length} children: ${item.children}`)
+                subMenu = this.buildMenu(item.children, true);
             }
 
-            var _handle = subMenu ? ".draggable-handle-sub" : '.draggable-handle';
+            var _handle = isSubMenu ? ".draggable-handle-sub" : '.draggable-handle';
 
             //var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
             var core_item = <NavBarItem
@@ -302,12 +317,10 @@ var AdminNav = React.createClass({
                 tools.push(
                     <div className={" draggable-element "}>
                         { core_item }
-
                         {subMenu &&
                         <AdminItemGroup key={'tb-group-' + _.uniqueId()}>
                             {subMenu}
                         </AdminItemGroup>
-
                             }
                     </div>
                 );
@@ -347,7 +360,7 @@ var AdminNav = React.createClass({
 var AdminItemGroup = React.createClass({
     render: function () {
         return (
-            <div className="tb-item-grouper" key={_.uniqueId()}>
+            <div className="tb-item-grouper">
                 {this.props.children}
             </div>
         );
@@ -456,12 +469,31 @@ var Main = React.createClass({
         var params = {
             _session_id: $.cookie('_session_id')
         };
+            console.table(tools.menu);
+
         data.map(function(tool, i) {
             var mount_point = getMountPoint(tool);
+            var _url = getUrlByNode(tool);
+            var isGroup = _url.split('/').slice(-2)[0] === "_list";
+
+            if(isGroup){
+                console.log(`${mount_point} is a group.`);
+
+                let _index = tools.menu.findIndex(
+                    x => x.mount_point === mount_point
+                ) + 1;
+
+                mount_point = tools.menu[_index].mount_point;
+                console.log("New mount point: ", mount_point);
+            }
+
             var index = tools.menu.findIndex(
                 x => x.mount_point === mount_point
             );
+
+            console.log("index, tools.menu[index]", index, tools.menu[index]); 
             tools.menu[index].ordinal = i;
+            console.log('tools.menu[index]', tools.menu[index].mount_point);
             params[i] = mount_point;
         });
 
