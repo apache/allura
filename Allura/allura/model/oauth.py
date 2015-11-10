@@ -22,8 +22,9 @@ from pylons import tmpl_context as c, app_globals as g
 
 from paste.deploy.converters import aslist
 from tg import config
+import pymongo
 from ming import schema as S
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, session
 from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
@@ -78,6 +79,20 @@ class OAuthConsumerToken(OAuthToken):
     def consumer(self):
         '''OAuth compatible consumer object'''
         return oauth.Consumer(self.api_key, self.secret_key)
+
+    @classmethod
+    def upsert(cls, name, user):
+        params = dict(name=name, user_id=user._id)
+        t = cls.query.get(**params)
+        if t is not None:
+            return t
+        try:
+            t = cls(**params)
+            session(t).flush(t)
+        except pymongo.errors.DuplicateKeyError:
+            session(t).expunge(t)
+            t = cls.query.get(**params)
+        return t
 
     @classmethod
     def for_user(cls, user=None):
