@@ -39,7 +39,9 @@ function slugify(text) {
  * @label string 'The default mount label for a tool.  i.e. git and hg use 'Code' which returns 'blue'.
  * @return {string}
  */
+
 function _getToolColor(defaultLabel='standard') {
+    // Replace with css... (if we even want to keep the color)
     switch (defaultLabel) {
     case 'Wiki':
         return '#DDFFF0';
@@ -67,7 +69,7 @@ function _getToolColor(defaultLabel='standard') {
  * @returns {string}
  */
 function getMountPoint(node) {
-    if(node.hasOwnProperty('mount_point') && node.mount_point !== null){
+    if(node.hasOwnProperty('mount_point') && node['mount_point'] !== null){
         return node['mount_point'];
     }
     return node.props.children[0].props.mount_point;
@@ -81,7 +83,7 @@ function getMountPoint(node) {
  * @returns {string}
  */
 function getUrlByNode(node) {
-    if(node.hasOwnProperty('url') && node.url !== null){
+    if(node.hasOwnProperty('url') && node['url'] !== null){
         return node['url'];
     }
     return node.props.children[0].props.url;
@@ -122,18 +124,25 @@ var NavBarItem = React.createClass({
     },
 
     render: function() {
-        var controls = [<i key={'admin-nav-item-' + _.uniqueId()} className='config-tool fa fa-cog '></i>];
+        var controls = [<i className='config-tool fa fa-cog '></i>];
         var classes = ' ';
+        var spanClasses = this.props.handleType.slice(1) + " ordinal-item";
         if (this.props.is_anchored) {
             classes += ' anchored';
         } else {
             classes += this.props.handleType.slice(1);
         }
+        if(this.props.isGrouper){
+            spanClasses += " toolbar-grouper";
+        }else{
+            spanClasses += " "
+        }
+
         controls.push(<i className={classes}></i>);
         return (
             <div className={classes + " tb-item tb-item-edit "}>
                 <a>{controls}
-                    <span className={this.props.handleType.slice(1)}>{this.props.name}</span></a>
+                    <span className={spanClasses} data-mount-point={this.props.mount_point}>{this.props.name}</span></a>
             </div>
         );
     }
@@ -293,18 +302,17 @@ var AdminNav = React.createClass({
         for (let item of items) {
             var subMenu;
             if (item.children) {
-                console.log(`${item.name} has ${item.children.length} children: ${item.children}`)
                 subMenu = this.buildMenu(item.children, true);
             }
 
             var _handle = isSubMenu ? ".draggable-handle-sub" : '.draggable-handle';
 
-            //var classes = subMenu ? 'draggable-element tb-item-grouper' : 'draggable-element';
             var core_item = <NavBarItem
                 {..._this.props}
                 mount_point={ item.mount_point }
                 name={ item.name }
                 handleType={_handle}
+                isGrouper={item.children && item.children.length > 0}
                 url={ item.url }
                 key={ 'tb-item-' + _.uniqueId() }
                 is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
@@ -318,7 +326,7 @@ var AdminNav = React.createClass({
                     <div className={" draggable-element "}>
                         { core_item }
                         {subMenu &&
-                        <AdminItemGroup key={'tb-group-' + _.uniqueId()}>
+                        <AdminItemGroup key={_.uniqueId()}>
                             {subMenu}
                         </AdminItemGroup>
                             }
@@ -334,8 +342,7 @@ var AdminNav = React.createClass({
                     key={ 'reorder-' + _.uniqueId() }
                     handle={_handle}
                     mode='grid'
-                    onDrop={ _this.props.onToolReorder }
-                    onChange={ _this.props.onChange }>
+                    onDrop={ _this.props.onToolReorder }>
                     { tools }
                 </ReactReorderable>
                 { end_tools }
@@ -469,33 +476,12 @@ var Main = React.createClass({
         var params = {
             _session_id: $.cookie('_session_id')
         };
-            console.table(tools.menu);
 
-        data.map(function(tool, i) {
-            var mount_point = getMountPoint(tool);
-            var _url = getUrlByNode(tool);
-            var isGroup = _url.split('/').slice(-2)[0] === "_list";
+        var toolNodes = $("#top_nav_admin").find('span.ordinal-item').not(".toolbar-grouper");
 
-            if(isGroup){
-                console.log(`${mount_point} is a group.`);
-
-                let _index = tools.menu.findIndex(
-                    x => x.mount_point === mount_point
-                ) + 1;
-
-                mount_point = tools.menu[_index].mount_point;
-                console.log("New mount point: ", mount_point);
-            }
-
-            var index = tools.menu.findIndex(
-                x => x.mount_point === mount_point
-            );
-
-            console.log("index, tools.menu[index]", index, tools.menu[index]); 
-            tools.menu[index].ordinal = i;
-            console.log('tools.menu[index]', tools.menu[index].mount_point);
-            params[i] = mount_point;
-        });
+        for(var i=0; i < toolNodes.length; i++){
+            params[i] = toolNodes[i].dataset.mountPoint;
+        }
 
         this.setState({
             data: tools
