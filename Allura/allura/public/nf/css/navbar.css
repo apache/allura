@@ -6,6 +6,7 @@
 
 #toggle-admin-btn {
     position: absolute;
+    background: white;
     right: -11px;
     top: -1px;
     width: 1.8rem;
@@ -21,8 +22,24 @@
 
 #top_nav_admin {
     overflow: hidden;
-    min-height: 42px;
+    min-height: 44px;
     width: 918px; /* 940px - 32px for toggle-admin-btn */
+}
+
+
+#top_nav{
+    border-bottom: 1px solid #ccc;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 1px 1px #ccc;
+}
+#normal-nav-bar, #top_nav_admin > ul.dropdown {
+    border: none;
+    box-shadow: none;
+}
+
+.config-tool{
+    color: #555;
 }
 
 #admin-toolbar-list {
@@ -96,13 +113,14 @@
 }
 
 .tb-item-grouper {
-    visibility: hidden;
+    display:none ;
     position: absolute;
     top: 32px;
 }
 
 .react-reorderable-item:hover .tb-item-grouper {
     background: white;
+    display: block;
     visibility: visible;
 }
 
@@ -115,7 +133,6 @@
 
 #top_nav_admin .tb-item-grouper a {
     border-right: 1px transparent;
-
 }
 
 #top_nav_admin .tb-sub-menu a {
