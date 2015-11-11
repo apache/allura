@@ -124,29 +124,27 @@ var NavBarItem = React.createClass({
     },
 
     render: function() {
-        var controls = [<i className='config-tool fa fa-cog '></i>];
-        var classes = ' ';
-        var spanClasses = this.props.handleType.slice(1) + " ordinal-item";
-        if (this.props.is_anchored) {
-            classes += ' anchored';
-        } else {
-            classes += this.props.handleType.slice(1);
-        }
-        if(this.props.isGrouper){
-            spanClasses += " toolbar-grouper";
-        }else{
-            spanClasses += " "
-        }
+        var handle = this.props.handleType.slice(1);
+        var _base = handle + " ordinal-item";
+        var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
+        var classes = this.props.is_anchored ? "anchored " : handle;
 
-        controls.push(<i className={classes}></i>);
         return (
-            <div className={classes + " tb-item tb-item-edit "}>
-                <a>{controls}
-                    <span className={spanClasses} data-mount-point={this.props.mount_point}>{this.props.name}</span></a>
+            <div className={classes + " tb-item tb-item-edit ordinal-item"}>
+                <a>
+                    {!this.props.isGrouper && <i className='config-tool fa fa-cog'></i>}
+                    <span
+                        className={spanClasses}
+                        data-mount-point={this.props.mount_point}>
+                        {this.props.name}
+                    </span>
+                </a>
             </div>
         );
     }
 });
+
+
 
 /**
  * An input component that updates the NavBar's grouping threshold.
@@ -322,15 +320,7 @@ var AdminNav = React.createClass({
             } else if (item.is_anchored) {
                 anchored_tools.push(core_item);
             } else {
-                tools.push(
-                    <div className={" draggable-element "}>
-                        { core_item }
-                        {subMenu &&
-                        <AdminItemGroup key={_.uniqueId()}>
-                            {subMenu}
-                        </AdminItemGroup>
-                            }
-                    </div>
+                tools.push(<DraggableTool key={_.uniqueId()} tool={core_item} subMenu={subMenu} />
                 );
             }
         }
@@ -352,13 +342,29 @@ var AdminNav = React.createClass({
 
     render: function () {
         var tools = this.buildMenu(this.props.tools);
+        return <div>{tools}</div>;
+    }
+});
+
+/**
+ * A wrapper for non-anchored tools
+ * @constructor
+ */
+var DraggableTool = React.createClass({
+    render: function () {
         return (
-            <div>
-                {tools}
+            <div className={" draggable-element "}>
+                { this.props.tool }
+                {this.props.subMenu &&
+                <AdminItemGroup key={_.uniqueId()}>
+                    {this.props.subMenu}
+                </AdminItemGroup>
+                    }
             </div>
         );
     }
 });
+
 
 /**
  * The NavBar when in "Admin" mode.
@@ -466,26 +472,20 @@ var Main = React.createClass({
         return false;
     },
 
+
+
     /**
      * Handles the sending and updating tool ordinals.
 
      * @param {array} data - Array of tools
      */
-    onToolReorder: function(data) {
-        var tools = this.state.data;
-        var params = {
-            _session_id: $.cookie('_session_id')
-        };
-
+    onToolReorder: function() {
+        var params = {_session_id: $.cookie('_session_id')};
         var toolNodes = $("#top_nav_admin").find('span.ordinal-item').not(".toolbar-grouper");
-
-        for(var i=0; i < toolNodes.length; i++){
+        for (var i = 0; i < toolNodes.length; i++) {
             params[i] = toolNodes[i].dataset.mountPoint;
         }
 
-        this.setState({
-            data: tools
-        });
         var _this = this;
         var url = _getProjectUrl() + '/admin/mount_order';
         $.ajax({
