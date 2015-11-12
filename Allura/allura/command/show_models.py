@@ -211,8 +211,8 @@ class EnsureIndexCommand(base.Command):
         main_session_classes = [M.main_orm_session, M.repository_orm_session,
                                 M.task_orm_session]
         if asbool(self.config.get('activitystream.recording.enabled', False)):
-            from activitystream.storage.mingstorage import activity_orm_session
-            main_session_classes.append(activity_orm_session)
+            from activitystream.storage.mingstorage import activity_odm_session
+            main_session_classes.append(activity_odm_session)
         self.basic_setup()
         # by db, then collection name
         main_indexes = defaultdict(lambda: defaultdict(list))
