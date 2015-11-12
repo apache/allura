@@ -774,7 +774,7 @@ class ProjectAdminRestController(BaseController):
                                             neighborhood_id=c.project.neighborhood_id)
                     if p:
                         p.ordinal = int(ordinal)
-        M.AuditLog.log('Updated NavBar mount order for {}'.format(c.project.name))
+        M.AuditLog.log('Updated tool order')
         return {'status': 'ok'}
 
 
@@ -792,7 +792,7 @@ class ProjectAdminRestController(BaseController):
                 'status': 'error',
                 'msg': 'Invalid threshold'
             }
-        M.AuditLog.log('Updated grouping threshold for {}'.format(c.project.name))
+        M.AuditLog.log('Updated tool grouping threshold')
         return {'status': 'ok'}
 
     @expose('json:')
