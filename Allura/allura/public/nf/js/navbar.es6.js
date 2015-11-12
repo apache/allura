@@ -116,7 +116,9 @@ function ToolsPropType() {
 var NavBarItem = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
-        url: React.PropTypes.string.isRequired
+        url: React.PropTypes.string.isRequired,
+        currentOptionMenu: React.PropTypes.string,
+        onOptionClick: React.PropTypes.func.isRequired
     },
 
     isAnchored: function() {
@@ -132,19 +134,61 @@ var NavBarItem = React.createClass({
         return (
             <div className={classes + " tb-item tb-item-edit"}>
                 <a>
-                    {!this.props.isGrouper && <i className='config-tool fa fa-cog'></i>}
+                    {!this.props.isGrouper && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}>
                         {this.props.name}
                     </span>
                 </a>
+                {this.props.currentOptionMenu === this.props.mount_point && <OptionsMenu toolMountPoint={this.props.mount_point}/>}
             </div>
         );
+    },
+
+    handleOptionClick: function(event) {
+        this.props.onOptionClick(this.props.mount_point);
     }
 });
 
 
+/**
+ * Options "context" menu
+
+ * @constructor
+ */
+var OptionsMenu = React.createClass({
+    propTypes: {
+        toolMountPoint: React.PropTypes.string.isRequired
+    },
+
+    componentWillMount: function() {
+        $('body').on('click.optionMenu', function() {
+            // TODO: .not('.option_menu')
+            console.log('todo: set current options menu state to null');
+        });
+    },
+
+    componentWillUnmount: function() {
+        $('body').off('click.optionMenu');
+    },
+
+    render: function() {
+        var options = [
+            {href: '#', text: 'Permissions'},
+            {href: '#', text: 'Options'},
+            {href: '#', text: 'Label'},
+            {href: '#', text: 'Delete'},
+        ];
+        return (<div className="option_menu">
+            <ul>
+                {options.map((o, i) =>
+                    <li key={i}><a href={o.href}>{o.text}</a></li>
+                )}
+            </ul>
+        </div>)
+    }
+});
 
 /**
  * An input component that updates the NavBar's grouping threshold.
@@ -272,7 +316,9 @@ var NormalNavBar = React.createClass({
 var AdminNav = React.createClass({
     propTypes: {
         tools: React.PropTypes.arrayOf(
-            React.PropTypes.objectOf(ToolsPropType))
+            React.PropTypes.objectOf(ToolsPropType)),
+        currentOptionMenu: React.PropTypes.string,
+        onOptionClick: React.PropTypes.func.isRequired
     },
     mode: 'grid',
     getInitialState: function() {
@@ -414,7 +460,8 @@ var Main = React.createClass({
         return {
             data: this.props.initialData,
             visible: true,
-            _session_id: $.cookie('_session_id')
+            _session_id: $.cookie('_session_id'),
+            currentOptionMenu: null
         };
     },
 
@@ -436,6 +483,12 @@ var Main = React.createClass({
     handleToggleAdmin: function() {
         this.setState({
             visible: !this.state.visible
+        });
+    },
+
+    handleShowOptionMenu: function(mount_point) {
+        this.setState({
+            currentOptionMenu: mount_point
         });
     },
 
@@ -520,7 +573,10 @@ var Main = React.createClass({
                         tools={ _this.state.data.menu }
                         data={ _this.state.data }
                         onToolReorder={ _this.onToolReorder }
-                        editMode={ _this.state.visible } />
+                        editMode={ _this.state.visible }
+                        currentOptionMenu={ _this.state.currentOptionMenu }
+                        onOptionClick={ _this.handleShowOptionMenu }
+                    />
                 );
             } else {
                 return (
