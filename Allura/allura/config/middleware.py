@@ -99,7 +99,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Configure ActivityStream
     if asbool(app_conf.get('activitystream.recording.enabled', False)):
-        activitystream.configure(**app_conf)
+        activitystream.configure(**h.convert_bools(app_conf, prefix='activitystream.'))
 
     # Configure EW variable provider
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)

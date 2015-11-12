@@ -29,7 +29,7 @@ import activitystream
 import ming
 from allura.config.environment import load_environment
 from allura.lib.decorators import task
-from allura.lib.helpers import iter_entry_points
+from allura.lib import helpers as h
 
 log = None
 
@@ -103,14 +103,14 @@ class Command(command.Command):
             M = model
             ming.configure(**conf)
             if asbool(conf.get('activitystream.recording.enabled', False)):
-                activitystream.configure(**conf)
+                activitystream.configure(**h.convert_bools(conf, prefix='activitystream.'))
             pylons.tmpl_context.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
             conf = pylons.config
         self.tools = pylons.app_globals.entry_points['tool'].values()
-        for ep in iter_entry_points('allura.command_init'):
+        for ep in h.iter_entry_points('allura.command_init'):
             log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
         log.info('Loaded tools')
