@@ -88,9 +88,14 @@
 }
 
 #top_nav_admin .tb-item a {
-    margin: 10px;
+    border-right: 1px solid #ccc;
+    padding-right: 10px;
+    margin: 10px 10px 10px 0;
 }
 
+#top_nav_admin > div {
+    margin-left: 10px;
+}
 .react-drag {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -116,6 +121,7 @@
     display:none ;
     position: absolute;
     top: 32px;
+    z-index: 2100;
 }
 
 .react-reorderable-item:hover .tb-item-grouper {
