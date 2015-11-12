@@ -564,6 +564,7 @@ class TestIterEntryPoints(TestCase):
                                 'Multiple entry points with name "myapp".',
                                 list, h.iter_entry_points('allura'))
 
+
 def test_get_user_status():
     user = M.User.by_username('test-admin')
     assert_equals(h.get_user_status(user), 'enabled')
@@ -576,3 +577,12 @@ def test_get_user_status():
 
     user = Mock(disabled=True, pending=True)  # not an expected combination
     assert_equals(h.get_user_status(user), 'disabled')
+
+
+def test_convert_bools():
+    assert_equals(h.convert_bools({'foo': 'bar', 'baz': 'false', 'abc': 0, 'def': 1, 'ghi': True}),
+                  {'foo': 'bar', 'baz': False, 'abc': 0, 'def': 1, 'ghi': True})
+    assert_equals(h.convert_bools({'foo': 'true', 'baz': ' TRUE '}),
+                  {'foo': True, 'baz': True})
+    assert_equals(h.convert_bools({'foo': 'true', 'baz': ' TRUE '}, prefix='ba'),
+                  {'foo': 'true', 'baz': True})

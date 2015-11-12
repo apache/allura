@@ -348,6 +348,29 @@ def vardec(fun):
     return fun
 
 
+def convert_bools(conf, prefix=''):
+    '''
+    For a given dict, automatically convert any true/false string values into bools.
+    Only applies to keys starting with the prefix.
+
+    :param dict conf:
+    :param str prefix:
+    :return: dict
+    '''
+    def convert_value(val):
+        if isinstance(val, basestring):
+            if val.strip().lower() == 'true':
+                return True
+            elif val.strip().lower() == 'false':
+                return False
+        return val
+
+    return {
+        k: (convert_value(v) if k.startswith(prefix) else v)
+        for k, v in conf.iteritems()
+    }
+
+
 def nonce(length=4):
     return sha1(ObjectId().binary + os.urandom(10)).hexdigest()[:length]
 
