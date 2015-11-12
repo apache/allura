@@ -130,7 +130,7 @@ var NavBarItem = React.createClass({
         var classes = this.props.is_anchored ? "anchored " : handle;
 
         return (
-            <div className={classes + " tb-item tb-item-edit ordinal-item"}>
+            <div className={classes + " tb-item tb-item-edit"}>
                 <a>
                     {!this.props.isGrouper && <i className='config-tool fa fa-cog'></i>}
                     <span
@@ -542,7 +542,7 @@ var Main = React.createClass({
                     <GroupingThreshold
                         onUpdateThreshold={ this.onUpdateThreshold }
                         isHidden={ this.state.visible }
-                        initialValue={ this.state.data.grouping_threshold }/>
+                        initialValue={ parseInt(this.state.data.grouping_threshold) }/>
                 </div>
                 <ToggleAdminButton
                     handleButtonPush={ this.handleToggleAdmin }
