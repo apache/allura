@@ -23,6 +23,7 @@ from alluratest.controller import TestController
 from allura.tests.decorators import audits, out_audits
 from allura import model as M
 from allura.scripts import delete_projects
+from allura.lib import plugin
 
 
 class TestDeleteProjects(TestController):
@@ -69,19 +70,19 @@ class TestDeleteProjects(TestController):
         things = self.things_related_to_project(pid)
         assert len(things) == 0, 'Not all things are deleted: %s' % things
 
-    @patch('allura.scripts.delete_projects.solr_del_project_artifacts', autospec=True)
+    @patch('allura.lib.plugin.solr_del_project_artifacts', autospec=True)
     def test_solr_index_is_deleted(self, del_solr):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
         self.run_script(['p/{}'.format(self.p_shortname)])
         del_solr.post.assert_called_once_with(pid)
 
-    @patch.object(delete_projects.g, 'post_event', autospec=True)
+    @patch.object(plugin.g, 'post_event', autospec=True)
     def test_event_is_fired(self, post_event):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
         self.run_script(['p/{}'.format(self.p_shortname)])
         post_event.assert_called_once_with('project_deleted', project_id=pid, reason=None)
 
-    @patch.object(delete_projects.g, 'post_event', autospec=True)
+    @patch.object(plugin.g, 'post_event', autospec=True)
     @patch('allura.scripts.delete_projects.log', autospec=True)
     def test_delete_with_reason(self, log, post_event):
         p = M.Project.query.get(shortname=self.p_shortname)

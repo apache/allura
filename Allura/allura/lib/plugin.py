@@ -44,17 +44,18 @@ import pkg_resources
 import tg
 from tg import config, request, redirect, response
 from pylons import tmpl_context as c, app_globals as g
-from webob import exc
+from webob import exc, Request
 from paste.deploy.converters import asbool, asint
 
 from ming.utils import LazyProperty
 from ming.orm import state
-from ming.orm import ThreadLocalORMSession, session
+from ming.orm import ThreadLocalORMSession, session, Mapper
 
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
 from allura.lib import utils
+from allura.tasks.index_tasks import solr_del_project_artifacts
 
 log = logging.getLogger(__name__)
 
@@ -988,6 +989,43 @@ class ProjectRegistrationProvider(object):
         project.deleted = False
         for sp in project.subprojects:
             self.undelete_project(sp, user)
+
+    def purge_project(self, project, disable_users=False, reason=None):
+        from allura.model import AppConfig
+        pid = project._id
+        solr_del_project_artifacts.post(pid)
+        if disable_users:
+            # Disable users if necessary BEFORE removing all project-related documents
+            self.disable_project_users(project, reason)
+        app_config_ids = [ac._id for ac in AppConfig.query.find(dict(project_id=pid))]
+        for m in Mapper.all_mappers():
+            mcls = m.mapped_class
+            if 'project_id' in m.property_index:
+                # Purge the things directly related to the project
+                mcls.query.remove(dict(project_id=pid))
+            elif 'app_config_id' in m.property_index:
+                # ... and the things related to its apps
+                mcls.query.remove(dict(app_config_id={'$in': app_config_ids}))
+        project.delete()
+        session(project).flush()
+        g.post_event('project_deleted', project_id=pid, reason=reason)
+
+    def disable_project_users(self, project, reason=None):
+        from allura.model import AuditLog
+        provider = AuthenticationProvider.get(Request.blank('/'))
+        users = project.admins() + project.users_with_role('Developer')
+        for user in users:
+            if user.disabled:
+                continue
+            provider.disable_user(user, audit=False)
+            msg = u'Account disabled because project {}{} is deleted. Reason: {}'.format(
+                project.neighborhood.url_prefix,
+                project.shortname,
+                reason)
+            AuditLog.log_user(msg, user=user)
+            # `users` can contain duplicates. Make sure changes are visible
+            # to next iterations, so that `user.disabled` check works.
+            session(user).expunge(user)
 
     def best_download_url(self, project):
         '''This is the url needed to render a download button.
