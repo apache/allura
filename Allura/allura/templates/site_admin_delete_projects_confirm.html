@@ -17,27 +17,14 @@
        under the License.
 -#}
 
-{% set page = 'delete_projects' %}
-
-{% extends 'allura:templates/site_admin.html' %}
-
-{% block title %}Delete Projects{% endblock %}
-{% block header %}Delete Projects{% endblock %}
+{% extends 'allura:templates/site_admin_delete_projects.html' %}
 
 {% block content %}
   <div class="grid-19">
-    <p>Put project URLs separated by newline (anything after "#" is considered comment and ignored)</p>
-    {% set form_step = 'delete' %}
+    <p class="warning">Be carefull. This will delete all projects data!</p>
+    TODO: Add table with parsed projects and edit button
+    {% set form_step = 'confirm' %}
     {% include 'allura:templates/site_admin_delete_projects_form.html' %}
   </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-#delete_projects textarea {
-  width: 90%;
-  height: 100px;
-}
-.warning { color: red; }
-</style>
-{% endblock %}

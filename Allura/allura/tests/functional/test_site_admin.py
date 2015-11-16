@@ -567,19 +567,36 @@ To reset your password on %s, please visit the following URL:
 
 class TestDeleteProjects(TestController):
 
-    def form(self, r):
-        return self.find_form(r, lambda f: f.action == 'delete_projects')
+    def confirm_form(self, r):
+        return self.find_form(r, lambda f: f.action == 'really_delete')
+
+    def delete_form(self, r):
+        return self.find_form(r, lambda f: f.action == 'confirm')
 
     def test_projects_populated_from_get_params(self):
-        r = self.app.get('/nf/admin/delete_projects')
-        assert_equal(self.form(r)['projects'].value, u'')
-        r = self.app.get('/nf/admin/delete_projects?projects=/p/test/+/adobe/adobe-1/%20/p/test2/')
-        assert_equal(self.form(r)['projects'].value, u'/p/test/\n/adobe/adobe-1/\n/p/test2/')
+        r = self.app.get('/nf/admin/delete_projects/')
+        assert_equal(self.delete_form(r)['projects'].value, u'')
+        r = self.app.get('/nf/admin/delete_projects/?projects=/p/test/+/adobe/adobe-1/%20/p/test2/')
+        assert_equal(self.delete_form(r)['projects'].value, u'/p/test/\n/adobe/adobe-1/\n/p/test2/')
+
+    def test_confirm_step_values(self):
+        r = self.app.get('/nf/admin/delete_projects/')
+        form = self.delete_form(r)
+        form['projects'] = 'p/test\ndne/dne'
+        form['reason'] = 'The Reason'
+        form['disable_users'] = True
+        r = form.submit()
+        confirm_form = self.confirm_form(r)
+        for f in ['projects', 'reason', 'disable_users']:
+            assert_equal(confirm_form[f].value, form[f].value)
+
+    def test_confirm(self):
+        assert False
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_reason_passed_to_task(self, dp):
-        r = self.app.get('/nf/admin/delete_projects')
-        form = self.form(r)
+        r = self.app.get('/nf/admin/confirm/')
+        form = self.confirm_form(r)
         form['projects'] = 'p/test2'
         form['reason'] = 'Because "I can and want"'
         form.submit()
@@ -587,8 +604,8 @@ class TestDeleteProjects(TestController):
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_multiline_reason_passed_to_task(self, dp):
-        r = self.app.get('/nf/admin/delete_projects')
-        form = self.form(r)
+        r = self.app.get('/nf/admin/confirm/')
+        form = self.confirm_form(r)
         form['projects'] = 'p/test2'
         form['reason'] = 'Because\nI want'
         form.submit()
@@ -596,16 +613,25 @@ class TestDeleteProjects(TestController):
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_task_fires(self, dp):
-        r = self.app.get('/nf/admin/delete_projects')
-        form = self.form(r)
+        r = self.app.get('/nf/admin/confirm/')
+        form = self.confirm_form(r)
         form['projects'] = '/p/test http://localhost:8080/adobe/adobe-1 p/test2'
         form.submit()
         dp.post.assert_called_once_with('p/test adobe/adobe-1 p/test2')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
+    def test_comments_are_ignored(self, dp):
+        r = self.app.get('/nf/admin/confirm/')
+        form = self.confirm_form(r)
+        form['projects'] = '''/p/test    # comment
+                              /p/test2   # comment 2'''
+        form.submit()
+        dp.post.assert_called_once_with('p/test p/test2')
+
+    @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_admins_and_devs_are_disabled(self, dp):
-        r = self.app.get('/nf/admin/delete_projects')
-        form = self.form(r)
+        r = self.app.get('/nf/admin/confirm/')
+        form = self.confirm_form(r)
         form['projects'] = 'p/test p/test2'
         form['disable_users'] = True
         form.submit()
