@@ -134,7 +134,7 @@ var NavBarItem = React.createClass({
         return (
             <div className={classes + " tb-item tb-item-edit"}>
                 <a>
-                    {!this.props.isGrouper && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
+                    {!this.props.isGrouper || !this.props.options && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}>
