@@ -137,7 +137,7 @@ div.draggable-handle-sub{
 .tb-item-grouper .react-reorderable-item-active {
     border: 3px dashed #9e9e9e;
     background: #c9c9c9;
-    /*width: 100%;*/
+    width: 100%;
     height: 24px;
 }
 
@@ -169,13 +169,15 @@ div.draggable-handle-sub{
 .react-reorderable-item .tb-item-grouper > div > div{
     display: flex;
     flex-direction: column;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    border-radius: 3px;
+    min-width: 150px;
 }
 
 .tb-sub-menu .react-drag:hover {
     background: #09c linear-gradient(#09c, #07a);
     border-bottom-style: none;
     color: white;
-
 }
 
 .tb-sub-menu .react-drag:hover a {
