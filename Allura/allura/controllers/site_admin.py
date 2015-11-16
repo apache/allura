@@ -65,6 +65,7 @@ class SiteAdminController(object):
         self.task_manager = TaskManagerController()
         c.site_admin_sidebar_menu = self.sidebar_menu()
         self.user = AdminUserDetailsController()
+        self.delete_projects = DeleteProjectsController()
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
@@ -320,33 +321,6 @@ class SiteAdminController(object):
         return r
 
     @without_trailing_slash
-    @expose('jinja:allura:templates/site_admin_delete_projects.html')
-    @validate(validators=dict(projects=validators.UnicodeString(if_empty=None),
-                              reason=validators.UnicodeString(if_empty=None),
-                              disable_users=validators.StringBool(if_empty=False)))
-    def delete_projects(self, projects=None, reason=None, disable_users=False, **kw):
-        if request.method == "POST":
-            if not projects:
-                flash(u'No projects specified', 'warning')
-                redirect('delete_projects')
-            provider = ProjectRegistrationProvider.get()
-            projects = projects.split()
-            log.info('Got projects for delete: %s', projects)
-            projects = [provider.project_from_url(p.strip()) for p in projects]
-            projects = [p for p in projects if p]
-            log.info('Parsed projects: %s', projects)
-            task_params = [u'{}/{}'.format(n.strip('/'), p) for (n, p) in projects]
-            task_params = u' '.join(task_params)
-            if reason:
-                task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
-            if disable_users:
-                task_params = u'--disable-users {}'.format(task_params)
-            DeleteProjects.post(task_params)
-            flash(u'Delete scheduled for %s' % projects, 'ok')
-            redirect('delete_projects')
-        return {'projects': u'\n'.join(projects.split()) if projects else u''}
-
-    @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_search.html')
     @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
                               limit=validators.Int(if_invalid=None),
@@ -361,6 +335,64 @@ class SiteAdminController(object):
             aslist(tg.config.get('search.user.additional_display_fields'), ',')
         r['provider'] = AuthenticationProvider.get(request)
         return r
+
+
+class DeleteProjectsController(object):
+    delete_form_validators = dict(
+        projects=validators.UnicodeString(if_empty=None),
+        reason=validators.UnicodeString(if_empty=None),
+        disable_users=validators.StringBool(if_empty=False))
+
+    def remove_comments(self, lines):
+        return [l.split('#', 1)[0] for l in lines]
+
+    def parse_projects(self, projects):
+        provider = ProjectRegistrationProvider.get()
+        projects = projects.splitlines()
+        projects = self.remove_comments(projects)
+        projects = [provider.project_from_url(p.strip()) for p in projects]
+        projects = [p for p in projects if p]
+        return projects
+
+    def format_projects(self, projects):
+        return u'\n'.join(projects.split()) if projects else u''
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/site_admin_delete_projects.html')
+    @validate(validators=delete_form_validators)
+    def index(self, projects=None, reason=None, disable_users=False, **kw):
+        return {'projects': self.format_projects(projects)}
+
+    @expose('jinja:allura:templates/site_admin_delete_projects_confirm.html')
+    @require_post()
+    @without_trailing_slash
+    @validate(validators=delete_form_validators)
+    def confirm(self, projects=None, reason=None, disable_users=False, **kw):
+        if not projects:
+            flash(u'No projects specified', 'warning')
+            redirect('.')
+        return {'projects': self.format_projects(projects),
+                'reason': reason,
+                'disable_users': disable_users}
+
+    @expose()
+    @require_post()
+    @without_trailing_slash
+    @validate(validators=delete_form_validators)
+    def really_delete(self, projects=None, reason=None, disable_users=False, **kw):
+        if not projects:
+            flash(u'No projects specified', 'warning')
+            redirect('.')
+        projects = self.parse_projects(projects)
+        task_params = [u'{}/{}'.format(n.strip('/'), p) for (n, p) in projects]
+        task_params = u' '.join(task_params)
+        if reason:
+            task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
+        if disable_users:
+            task_params = u'--disable-users {}'.format(task_params)
+        DeleteProjects.post(task_params)
+        flash(u'Delete scheduled for %s' % projects, 'ok')
+        redirect('.')
 
 
 class TaskManagerController(object):
