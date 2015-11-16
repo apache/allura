@@ -130,11 +130,12 @@ var NavBarItem = React.createClass({
         var _base = handle + " ordinal-item";
         var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
         var classes = this.props.is_anchored ? "anchored " : handle;
+        var hasOptions = !this.props.is_anchored && !this.props.isGrouper;
 
         return (
             <div className={classes + " tb-item tb-item-edit"}>
                 <a>
-                    {!this.props.isGrouper || !this.props.options && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
+                    {hasOptions && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}>
