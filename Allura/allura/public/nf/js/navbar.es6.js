@@ -117,7 +117,7 @@ var NavBarItem = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
-        currentOptionMenu: React.PropTypes.string,
+        currentOptionMenu: React.PropTypes.object,
         onOptionClick: React.PropTypes.func.isRequired
     },
 
@@ -141,7 +141,13 @@ var NavBarItem = React.createClass({
                         {this.props.name}
                     </span>
                 </a>
-                {this.props.currentOptionMenu === this.props.mount_point && <OptionsMenu toolMountPoint={this.props.mount_point}/>}
+                {this.props.currentOptionMenu.tool === this.props.mount_point &&
+                    <OptionsMenu
+                        {...this.props}
+                        toolMountPoint={this.props.mount_point}
+                        options={this.props.currentOptionMenu.options}
+                        onOptionClick={this.props.onOptionClick}
+                    />}
             </div>
         );
     },
@@ -151,6 +157,21 @@ var NavBarItem = React.createClass({
     }
 });
 
+
+/**
+ * Caches the ajax requests
+
+ * @constructor
+ */
+var toolOptionsCache = {};
+function loadToolOptions(mount_point, callback) {
+    if (!toolOptionsCache[mount_point]) {
+        let url = _getProjectUrl(true) + '/admin/admin_options/';
+        let params = { _session_id: $.cookie('_session_id'), mount_point: mount_point};
+        toolOptionsCache[mount_point] = $.post(url, params).promise();
+    }
+    toolOptionsCache[mount_point].done(callback);
+}
 
 /**
  * Options "context" menu
@@ -163,26 +184,21 @@ var OptionsMenu = React.createClass({
     },
 
     componentWillMount: function() {
-        $('body').on('click.optionMenu', function() {
-            // TODO: .not('.option_menu')
-            console.log('todo: set current options menu state to null');
+        var _this = this;
+        $('body').on('click.optionMenu', $("body:not(.optionMenu)"), function() {
+            // TODO: .not('.optionMenu')
+            _this.props.onOptionClick("");
         });
     },
 
     componentWillUnmount: function() {
-        $('body').off('click.optionMenu');
+        $("body:not(.optionMenu)").off('click.optionMenu');
     },
 
     render: function() {
-        var options = [
-            {href: '#', text: 'Permissions'},
-            {href: '#', text: 'Options'},
-            {href: '#', text: 'Label'},
-            {href: '#', text: 'Delete'},
-        ];
-        return (<div className="option_menu">
+        return (<div className="optionMenu">
             <ul>
-                {options.map((o, i) =>
+               {this.props.options.map((o, i) =>
                     <li key={i}><a href={o.href}>{o.text}</a></li>
                 )}
             </ul>
@@ -317,7 +333,7 @@ var AdminNav = React.createClass({
     propTypes: {
         tools: React.PropTypes.arrayOf(
             React.PropTypes.objectOf(ToolsPropType)),
-        currentOptionMenu: React.PropTypes.string,
+        currentOptionMenu: React.PropTypes.object,
         onOptionClick: React.PropTypes.func.isRequired
     },
     mode: 'grid',
@@ -461,7 +477,14 @@ var Main = React.createClass({
             data: this.props.initialData,
             visible: true,
             _session_id: $.cookie('_session_id'),
-            currentOptionMenu: null
+            currentOptionMenu: {
+                tool: null,
+                options: [{
+                    url: "",
+                    label: ""
+                }
+                ]
+            }
         };
     },
 
@@ -469,7 +492,7 @@ var Main = React.createClass({
      * When invoked, this updates the state with the latest data from the server.
      */
     getNavJson: function() {
-        $.get(`${_getProjectUrl(false)}/_nav.json`, function(result) {
+        $.post(`${_getProjectUrl(false)}/_nav.json`, function(result) {
             if (this.isMounted()) {
                 this.setState({
                     data: result
@@ -486,10 +509,15 @@ var Main = React.createClass({
         });
     },
 
-    handleShowOptionMenu: function(mount_point) {
-        this.setState({
-            currentOptionMenu: mount_point
-        });
+    handleShowOptionMenu: function (mount_point) {
+        loadToolOptions(mount_point, function (result) {
+            this.setState({
+                currentOptionMenu: {
+                    tool: mount_point,
+                    options: result.options
+                }
+            });
+        }.bind(this));
     },
 
     /**
@@ -524,8 +552,6 @@ var Main = React.createClass({
         _this.getNavJson();
         return false;
     },
-
-
 
     /**
      * Handles the sending and updating tool ordinals.
@@ -576,6 +602,7 @@ var Main = React.createClass({
                         editMode={ _this.state.visible }
                         currentOptionMenu={ _this.state.currentOptionMenu }
                         onOptionClick={ _this.handleShowOptionMenu }
+                        currentToolOptions={this.state.currentToolOptions}
                     />
                 );
             } else {

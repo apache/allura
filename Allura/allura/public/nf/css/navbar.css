@@ -40,6 +40,7 @@
 
 .config-tool{
     color: #555;
+    cursor: context-menu;
 }
 
 #admin-toolbar-list {
@@ -49,6 +50,11 @@
 .draggable-handle, .draggable-handle-sub {
     margin-left: 2px;
     cursor: move;
+}
+
+div.draggable-handle-sub{
+    border: 1px solid #e5e5e5;
+    border-bottom: none;
 }
 
 #top_nav .anchored {
@@ -80,7 +86,6 @@
 .react-reorderable-item {
     display: block;
     float: left;
-    z-index: 2000;
 }
 
 .react-reorderable-handle {
@@ -118,16 +123,15 @@
 }
 
 .tb-item-grouper {
-    display:none ;
+    display: none;
+    background: white;
     position: absolute;
     top: 32px;
-    z-index: 2100;
+    /*z-index: 2100;*/
 }
 
 .react-reorderable-item:hover .tb-item-grouper {
-    background: white;
     display: block;
-    visibility: visible;
 }
 
 .tb-item-grouper .react-reorderable-item-active {
@@ -372,3 +376,39 @@
     /*float: left;*/
     /*!*border: 1px solid black;*!*/
 /*}*/
+
+
+/* Options Menu */
+
+
+.optionMenu {
+    background: #E5E5E5;
+    border: 1px solid #999;
+    box-shadow: -2px 2px 6px #555;
+    overflow: auto;
+    position: absolute;
+    top: 40px;
+    border-radius: 4px;
+    z-index: 20200;
+    clear: both;
+    overflow: auto;
+    /*clear: both;*/
+}
+
+
+.react-reorderable-item .optionMenu {
+    background: lightgrey;
+    position: absolute;
+    /*top: 270px;*/
+}
+
+.optionMenu ul {
+    list-style: none;
+    border: none;
+    margin-left: 10px;
+}
+.tool_option > a{
+    border-right: none !important;
+}
+
+
