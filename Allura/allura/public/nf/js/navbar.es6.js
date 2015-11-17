@@ -130,7 +130,7 @@ var NavBarItem = React.createClass({
         var _base = handle + " ordinal-item";
         var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
         var classes = this.props.is_anchored ? "anchored " : handle;
-        var hasOptions = !this.props.is_anchored && !this.props.isGrouper;
+        var hasOptions = !(this.props.is_anchored || this.props.isGrouper);
 
         return (
             <div className={classes + " tb-item tb-item-edit"}>
@@ -200,7 +200,7 @@ var OptionsMenu = React.createClass({
         return (<div className="optionMenu">
             <ul>
                {this.props.options.map((o, i) =>
-                    <li key={i}><a href={o.href}>{o.text}</a></li>
+                    <li key={i}><a href={o.href} className="context-link">{o.text}</a></li>
                 )}
             </ul>
         </div>)
