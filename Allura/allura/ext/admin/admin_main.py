@@ -907,7 +907,7 @@ class ProjectAdminRestController(BaseController):
 
         return {
             'valid': True,
-            'options': [dict(text=m.label, href=m.url) for m in tool.admin_menu()]
+            'options': [dict(text=m.label, href=m.url, is_modal=m.className is not None) for m in tool.admin_menu()]
         }
 
     @expose('json:')
