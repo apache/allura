@@ -399,17 +399,28 @@ div.draggable-handle-sub{
 
 
 .react-reorderable-item .optionMenu {
-    background: lightgrey;
+    background: #f0f0f0;
     position: absolute;
     /*top: 270px;*/
 }
 
-.optionMenu ul {
+.optionMenu > ul {
     list-style: none;
     border: none;
     margin-left: 10px;
 }
-.tool_option > a{
+#top_nav_admin .optionMenu > ul > li > a{
+    margin: 4px;
+    border-right: none;
+}
+
+#top_nav_admin .tb-item a {
+    border-right: 1px solid #ccc;
+    padding-right: 10px;
+    margin: 10px 10px 10px 0;
+}
+
+#top_nav_admin .tool_option > a{
     border-right: none !important;
 }
 
