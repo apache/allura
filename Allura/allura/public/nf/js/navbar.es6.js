@@ -618,15 +618,27 @@ var Main = React.createClass({
         };
         var navBar = navBarSwitch(this.state.visible);
 
+        var max_tool_count = _.chain(this.state.data.menu)
+                             .map((item) => {
+                                 return item.children ? _.pluck(item.children, 'tool_name') : item.tool_name
+                             })
+                             .flatten()
+                             .countBy()
+                             .values()
+                             .max()
+                             .value();
+        var show_grouping_threshold = max_tool_count > 1;
+
         return (
             <div
                 className={ 'nav_admin '}>
                 { navBar }
                 <div id='bar-config'>
+                    {show_grouping_threshold &&
                     <GroupingThreshold
                         onUpdateThreshold={ this.onUpdateThreshold }
                         isHidden={ this.state.visible }
-                        initialValue={ parseInt(this.state.data.grouping_threshold) }/>
+                        initialValue={ parseInt(this.state.data.grouping_threshold) }/> }
                 </div>
                 <ToggleAdminButton
                     handleButtonPush={ this.handleToggleAdmin }
