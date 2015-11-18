@@ -130,7 +130,7 @@ var NavBarItem = React.createClass({
         var _base = handle + " ordinal-item";
         var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
         var classes = this.props.is_anchored ? "anchored " : handle;
-        var hasOptions = !(this.props.is_anchored || this.props.isGrouper);
+        var hasOptions = !this.props.isGrouper;
 
         return (
             <div className={classes + " tb-item tb-item-edit"}>
@@ -259,7 +259,7 @@ var NormalNavItem = React.createClass({
     render: function() {
 
         return (
-            <li  key={`tb-norm-${_.uniqueId()}`}>
+            <li key={`tb-norm-${_.uniqueId()}`}>
                 <a href={ this.props.url } className={ this.props.classes }>
                     { this.props.name }
                 </a>
@@ -359,15 +359,29 @@ var AdminNav = React.createClass({
     buildMenu: function (items, isSubMenu=false) {
         var _this = this;
         var [tools, anchored_tools, end_tools] = [[], [], []];
+        var subMenu;
 
         for (let item of items) {
-            var subMenu;
             if (item.children) {
                 subMenu = this.buildMenu(item.children, true);
+            } else {
+                subMenu = null;
             }
 
             var _handle = isSubMenu ? ".draggable-handle-sub" : '.draggable-handle';
 
+            var tool_list, is_anchored;
+            if (item.mount_point === 'admin') {
+                // force admin to end, just like 'Project.sitemap()' does
+                tool_list = end_tools;
+                is_anchored = true;
+            } else if (item.is_anchored) {
+                tool_list = anchored_tools;
+                is_anchored = true;
+            } else {
+                tool_list = tools;
+                is_anchored = false;
+            }
             var core_item = <NavBarItem
                 {..._this.props}
                 mount_point={ item.mount_point }
@@ -376,20 +390,16 @@ var AdminNav = React.createClass({
                 isGrouper={item.children && item.children.length > 0}
                 url={ item.url }
                 key={ 'tb-item-' + _.uniqueId() }
-                is_anchored={ item.is_anchored || item.mount_point === 'admin'}/>;
-            if (item.mount_point === 'admin') {
-                // force admin to end, just like 'Project.sitemap()' does
-                end_tools.push(core_item);
-            } else if (item.is_anchored) {
-                anchored_tools.push(core_item);
+                is_anchored={ is_anchored }/>;
+            if (subMenu) {
+                tool_list.push(<NavBarItemWithSubMenu key={_.uniqueId()} tool={core_item} subMenu={subMenu}/>);
             } else {
-                tools.push(<DraggableTool key={_.uniqueId()} tool={core_item} subMenu={subMenu} />
-                );
+                tool_list.push(core_item);
             }
         }
 
         return (
-        <div className='react-drag'>
+            <div className='react-drag'>
                 { anchored_tools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
@@ -409,14 +419,10 @@ var AdminNav = React.createClass({
     }
 });
 
-/**
- * A wrapper for non-anchored tools
- * @constructor
- */
-var DraggableTool = React.createClass({
+var NavBarItemWithSubMenu = React.createClass({
     render: function () {
         return (
-            <div className={" draggable-element "}>
+            <div className="tb-item-container">
                 { this.props.tool }
                 {this.props.subMenu &&
                 <AdminItemGroup key={_.uniqueId()}>

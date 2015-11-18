@@ -60,10 +60,10 @@ div.draggable-handle-sub{
 #top_nav .anchored {
     cursor: not-allowed;
     color: gray;
-    float: left;
 }
 
-.anchored .draggable-handle {
+.anchored .draggable-handle,
+.anchored .draggable-handle-sub {
     cursor: not-allowed;
     color: gray;
 }
@@ -75,16 +75,11 @@ div.draggable-handle-sub{
     height: 24px;
 }
 
-.draggable-handle {
-  cursor: move;
-}
-
 .react-reorderable-item-active div {
     display: none;
 }
 
 .react-reorderable-item {
-    display: block;
     float: left;
 }
 
@@ -130,7 +125,11 @@ div.draggable-handle-sub{
     /*z-index: 2100;*/
 }
 
-.react-reorderable-item:hover .tb-item-grouper {
+.tb-item-container {
+    float: left;
+}
+
+.tb-item-container:hover .tb-item-grouper {
     display: block;
 }
 
