@@ -576,8 +576,13 @@ class TestDeleteProjects(TestController):
     def test_projects_populated_from_get_params(self):
         r = self.app.get('/nf/admin/delete_projects/')
         assert_equal(self.delete_form(r)['projects'].value, u'')
-        r = self.app.get('/nf/admin/delete_projects/?projects=/p/test/+/adobe/adobe-1/%20/p/test2/')
-        assert_equal(self.delete_form(r)['projects'].value, u'/p/test/\n/adobe/adobe-1/\n/p/test2/')
+        link = '/nf/admin/delete_projects/?projects=/p/test/++++%23+comment%0A/adobe/adobe-1/%0A/p/test2/'
+        link += '&reason=The%0AReason&disable_users=True'
+        r = self.app.get(link)
+        form = self.delete_form(r)
+        assert_equal(form['projects'].value, u'/p/test/    # comment\n/adobe/adobe-1/\n/p/test2/')
+        assert_equal(form['reason'].value, u'The\nReason')
+        assert_equal(form['disable_users'].value, u'on')
 
     def test_confirm_step_values(self):
         r = self.app.get('/nf/admin/delete_projects/')
@@ -587,54 +592,58 @@ class TestDeleteProjects(TestController):
         form['disable_users'] = True
         r = form.submit()
         confirm_form = self.confirm_form(r)
-        for f in ['projects', 'reason', 'disable_users']:
+        for f in ['reason', 'disable_users']:
             assert_equal(confirm_form[f].value, form[f].value)
+        assert_equal(confirm_form['projects'].value, 'p/test    # OK: /p/test/\ndne/dne    # Neighborhood not found')
 
-    def test_confirm(self):
-        assert False
+        confirm_data = r.html.find('table').findAll('td')
+        assert_equal(len(confirm_data), 4)  # 2 projects == 2 rows (2 columns each)
+        assert_equal(confirm_data[0].getText(), 'p/test')
+        assert_equal(confirm_data[1].find('a').get('href'), '/p/test/')
+        assert_equal(confirm_data[1].getText(), '/p/test/')
+        assert_equal(confirm_data[2].getText(), 'dne/dne')
+        assert_equal(confirm_data[3].getText(), 'Neighborhood not found')
+
+    def test_confirm_step_edit_link(self):
+        r = self.app.get('/nf/admin/delete_projects/')
+        form = self.delete_form(r)
+        form['projects'] = 'p/test\np/dne'
+        form['reason'] = 'The Reason\nMultiline'
+        form['disable_users'] = True
+        r = form.submit()
+        expected_href = './?projects=p/test++++%23+OK:+/p/test%0Ap/dne++++%23+Project not found'
+        expected_href += '&reason=The+Reason%0AMultiline&disable_users=True'
+        assert r.html.findAll('a', {'href': expected_href}) is not None
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_reason_passed_to_task(self, dp):
-        r = self.app.get('/nf/admin/confirm/')
-        form = self.confirm_form(r)
-        form['projects'] = 'p/test2'
-        form['reason'] = 'Because "I can and want"'
-        form.submit()
+        data = {'projects': 'p/test2', 'reason': 'Because "I can and want"'}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('-r \'Because "I can and want"\' p/test2')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_multiline_reason_passed_to_task(self, dp):
-        r = self.app.get('/nf/admin/confirm/')
-        form = self.confirm_form(r)
-        form['projects'] = 'p/test2'
-        form['reason'] = 'Because\nI want'
-        form.submit()
+        data = {'projects': 'p/test2', 'reason': 'Because\nI want'}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('-r \'Because\nI want\' p/test2')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_task_fires(self, dp):
-        r = self.app.get('/nf/admin/confirm/')
-        form = self.confirm_form(r)
-        form['projects'] = '/p/test http://localhost:8080/adobe/adobe-1 p/test2'
-        form.submit()
+        data = {'projects': '/p/test\nhttp://localhost:8080/adobe/adobe-1\np/test2'}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('p/test adobe/adobe-1 p/test2')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_comments_are_ignored(self, dp):
-        r = self.app.get('/nf/admin/confirm/')
-        form = self.confirm_form(r)
-        form['projects'] = '''/p/test    # comment
-                              /p/test2   # comment 2'''
-        form.submit()
+        data = {'projects': '''/p/test    # comment
+                               /p/test2   # comment 2'''}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('p/test p/test2')
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_admins_and_devs_are_disabled(self, dp):
-        r = self.app.get('/nf/admin/confirm/')
-        form = self.confirm_form(r)
-        form['projects'] = 'p/test p/test2'
-        form['disable_users'] = True
-        form.submit()
+        data = {'projects': '/p/test\np/test2', 'disable_users': True}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('--disable-users p/test p/test2')
 
 
