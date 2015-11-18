@@ -347,21 +347,32 @@ class DeleteProjectsController(object):
         return [l.split('#', 1)[0] for l in lines]
 
     def parse_projects(self, projects):
+        """Takes projects from user input and returns a list of tuples (input, project, error)"""
         provider = ProjectRegistrationProvider.get()
         projects = projects.splitlines()
         projects = self.remove_comments(projects)
-        projects = [provider.project_from_url(p.strip()) for p in projects]
-        projects = [p for p in projects if p]
-        return projects
+        parsed_projects = []
+        for input in projects:
+            if input.strip():
+                p, error = provider.project_from_url(input.strip())
+                parsed_projects.append((input, p, error))
+        return parsed_projects
 
-    def format_projects(self, projects):
-        return u'\n'.join(projects.split()) if projects else u''
+    def format_parsed_projects(self, projects):
+        template = u'{}    # {}'
+        lines = []
+        for input, p, error in projects:
+            comment = u'OK: {}'.format(p.url()) if p else error
+            lines.append(template.format(input, comment))
+        return u'\n'.join(lines)
 
     @with_trailing_slash
     @expose('jinja:allura:templates/site_admin_delete_projects.html')
     @validate(validators=delete_form_validators)
     def index(self, projects=None, reason=None, disable_users=False, **kw):
-        return {'projects': self.format_projects(projects)}
+        return {'projects': projects,
+                'reason': reason,
+                'disable_users': disable_users}
 
     @expose('jinja:allura:templates/site_admin_delete_projects_confirm.html')
     @require_post()
@@ -371,7 +382,15 @@ class DeleteProjectsController(object):
         if not projects:
             flash(u'No projects specified', 'warning')
             redirect('.')
-        return {'projects': self.format_projects(projects),
+        parsed_projects = self.parse_projects(projects)
+        projects = self.format_parsed_projects(parsed_projects)
+        edit_link = u'./?projects={}&reason={}&disable_users={}'.format(
+            h.urlquoteplus(projects),
+            h.urlquoteplus(reason),
+            h.urlquoteplus(disable_users))
+        return {'projects': projects,
+                'parsed_projects': parsed_projects,
+                'edit_link': edit_link,
                 'reason': reason,
                 'disable_users': disable_users}
 
@@ -384,14 +403,17 @@ class DeleteProjectsController(object):
             flash(u'No projects specified', 'warning')
             redirect('.')
         projects = self.parse_projects(projects)
-        task_params = [u'{}/{}'.format(n.strip('/'), p) for (n, p) in projects]
+        task_params = [u'{}/{}'.format(p.neighborhood.url_prefix.strip('/'), p.shortname) for (_, p, _) in projects if p]
+        if not task_params:
+            flash(u'Unable to parse at least one project from your input', 'warning')
+            redirect('.')
         task_params = u' '.join(task_params)
         if reason:
             task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
         if disable_users:
             task_params = u'--disable-users {}'.format(task_params)
         DeleteProjects.post(task_params)
-        flash(u'Delete scheduled for %s' % projects, 'ok')
+        flash(u'Delete scheduled', 'ok')
         redirect('.')
 
 

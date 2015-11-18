@@ -21,8 +21,30 @@
 
 {% block content %}
   <div class="grid-19">
-    <p class="warning">Be carefull. This will delete all projects data!</p>
-    TODO: Add table with parsed projects and edit button
+    <p class="warning">Be careful. This will delete all projects data!</p>
+    <p>You're trying to delete the following projects {% if disable_users %} and <strong>disable all projects' users</strong>{% endif %}</p>
+    <p>Because of: {{ reason }}</p>
+    <p><a href="{{ edit_link }}">Edit</a></p>
+    <table>
+      <thead>
+      <tr>
+        <th>Your input</th>
+        <th>Parsed project</th>
+      </tr>
+      </thead>
+      {% for input, p, error in parsed_projects %}
+      <tr>
+        <td>{{ input }}</td>
+        <td>
+          {% if p %}
+            <a href="{{ p.url() }}">{{ p.url() }}</a>
+          {% else %}
+            {{ error }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
     {% set form_step = 'confirm' %}
     {% include 'allura:templates/site_admin_delete_projects_form.html' %}
   </div>
