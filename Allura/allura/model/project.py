@@ -612,8 +612,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         children = []
         i = 0
         for s in self.grouped_navbar_entries():
-            _offset = -2 if s.url.endswith("/") else -1
-            mount_point = s.url.split('/')[_offset]
+            if s.children:
+                mount_point = None
+            else:
+                _offset = -2 if s.url.endswith("/") else -1
+                mount_point = s.url.split('/')[_offset]
             entry = dict(name=s.label,
                          url=s.url,
                          icon=s.ui_icon or 'tool-admin',
