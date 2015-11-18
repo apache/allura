@@ -92,10 +92,16 @@ div.draggable-handle-sub{
     padding-right: 10px;
     margin: 10px 10px 10px 0;
 }
+#top_nav_admin .tb-item.anchored:last-child a,
+#top_nav_admin .tb-item-grouper a {
+    border-right: 1px transparent;
+}
 
-#top_nav_admin > div {
+#top_nav_admin > div > div > div {
+    /* match the site_style.css ul.dropdown margin */
     margin-left: 10px;
 }
+
 .react-drag {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -140,10 +146,6 @@ div.draggable-handle-sub{
     height: 24px;
 }
 
-#top_nav_admin .tb-item-grouper a {
-    border-right: 1px transparent;
-}
-
 #top_nav_admin .tb-sub-menu a {
     border-right: none;
     margin: 3px 20px 0 2px;
@@ -152,11 +154,6 @@ div.draggable-handle-sub{
 
 #top_nav_admin .tb-sub-menu a:hover {
     color: white;
-}
-
-.tb-item-grouper > div > div {
-    border-bottom: 1px solid #e5e5e5;
-
 }
 
 .react-reorderable-item .tb-item-grouper > div{
@@ -411,12 +408,6 @@ div.draggable-handle-sub{
 #top_nav_admin .optionMenu > ul > li > a{
     margin: 4px;
     border-right: none;
-}
-
-#top_nav_admin .tb-item a {
-    border-right: 1px solid #ccc;
-    padding-right: 10px;
-    margin: 10px 10px 10px 0;
 }
 
 #top_nav_admin .tool_option > a{
