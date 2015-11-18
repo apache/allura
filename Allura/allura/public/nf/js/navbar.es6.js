@@ -142,7 +142,7 @@ var NavBarItem = React.createClass({
                         {this.props.name}
                     </span>
                 </a>
-                {this.props.currentOptionMenu.tool === this.props.mount_point &&
+                {this.props.currentOptionMenu.tool && this.props.currentOptionMenu.tool === this.props.mount_point &&
                     <OptionsMenu
                         {...this.props}
                         toolMountPoint={this.props.mount_point}
@@ -186,14 +186,28 @@ var OptionsMenu = React.createClass({
 
     componentWillMount: function() {
         var _this = this;
-        $('body').on('click.optionMenu', $("body:not(.optionMenu)"), function() {
-            // TODO: .not('.optionMenu')
-            _this.props.onOptionClick("");
+        var mount_point;
+        $('body').on('click.optionMenu', function(evt) {
+            /* the :not filter should've worked as a 2nd param to .on() instead of this,
+               but clicks in the page gutter were being delayed for some reason */
+            if ($(evt.target).is(':not(.optionMenu)')) {
+
+                /* if clicking directly onto another gear, set it directly.
+                   this is necessary since sometimes our jquery events seem to interfere with the react event
+                   that is supposed to handle this kind of thing */
+                if ($(evt.target).is('.config-tool')) {
+                    mount_point = $(evt.target).next().data('mount-point');
+                } else {
+                    // no current option menu
+                    mount_point = "";
+                }
+                _this.props.onOptionClick(mount_point);
+            }
         });
     },
 
     componentWillUnmount: function() {
-        $("body:not(.optionMenu)").off('click.optionMenu');
+        $("body").off('click.optionMenu');  // de-register our specific click handler
     },
 
     render: function() {
@@ -338,28 +352,11 @@ var AdminNav = React.createClass({
         onOptionClick: React.PropTypes.func.isRequired
     },
     mode: 'grid',
-    getInitialState: function() {
-        return {
-            hover: false
-        };
-    },
-
-    mouseOver: function() {
-        this.setState({
-            hover: true
-        });
-    },
-
-    mouseOut: function() {
-        this.setState({
-            hover: false
-        });
-    },
 
     buildMenu: function (items, isSubMenu=false) {
         var _this = this;
         var [tools, anchored_tools, end_tools] = [[], [], []];
-        var subMenu;
+        var subMenu, childOptionsOpen;
 
         for (let item of items) {
             if (item.children) {
@@ -392,7 +389,8 @@ var AdminNav = React.createClass({
                 key={ 'tb-item-' + _.uniqueId() }
                 is_anchored={ is_anchored }/>;
             if (subMenu) {
-                tool_list.push(<NavBarItemWithSubMenu key={_.uniqueId()} tool={core_item} subMenu={subMenu}/>);
+                childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'), this.props.currentOptionMenu.tool);
+                tool_list.push(<NavBarItemWithSubMenu key={_.uniqueId()} tool={core_item} subMenu={subMenu} childOptionsOpen={childOptionsOpen}/>);
             } else {
                 tool_list.push(core_item);
             }
@@ -422,7 +420,7 @@ var AdminNav = React.createClass({
 var NavBarItemWithSubMenu = React.createClass({
     render: function () {
         return (
-            <div className="tb-item-container">
+            <div className={"tb-item-container" + (this.props.childOptionsOpen ? " child-options-open" : "")}>
                 { this.props.tool }
                 {this.props.subMenu &&
                 <AdminItemGroup key={_.uniqueId()}>

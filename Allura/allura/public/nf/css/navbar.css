@@ -137,7 +137,8 @@ div.draggable-handle-sub{
     float: left;
 }
 
-.tb-item-container:hover .tb-item-grouper {
+.tb-item-container:hover .tb-item-grouper,
+.tb-item-container.child-options-open .tb-item-grouper {
     display: block;
 }
 

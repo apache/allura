@@ -51,7 +51,10 @@ class TestProjectHome(TestController):
 
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
-        wikis = menu[-2]['children']
+        wiki_group = menu[-2]
+        wikis = wiki_group.pop('children')
+        assert_equal({'url': '/p/test/_list/wiki', 'name': u'Wiki \u25be', 'mount_point': None,
+                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 2}, wiki_group)
         assert_equal(len(wikis), 2)
         assert_in({'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
                    'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 3}, wikis)
