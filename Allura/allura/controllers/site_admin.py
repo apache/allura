@@ -386,7 +386,7 @@ class DeleteProjectsController(object):
         projects = self.format_parsed_projects(parsed_projects)
         edit_link = u'./?projects={}&reason={}&disable_users={}'.format(
             h.urlquoteplus(projects),
-            h.urlquoteplus(reason),
+            h.urlquoteplus(reason or ''),
             h.urlquoteplus(disable_users))
         return {'projects': projects,
                 'parsed_projects': parsed_projects,

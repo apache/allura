@@ -24,7 +24,7 @@ $(document).ready(function() {
       urls.push($(val).attr('data-url'));
     });
     if (urls.length > 0) {
-      var url = '/nf/admin/delete_projects?projects=' + urls.join(' ');
+      var url = '/nf/admin/delete_projects/?projects=' + encodeURIComponent(urls.join('\n'));
       var url = $('<a>Delete selected projects</a>').attr('href', url);
       $('#delete-projects-url').html(url);
     } else {
