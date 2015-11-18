@@ -1049,18 +1049,31 @@ class ProjectRegistrationProvider(object):
         ]
 
     def project_from_url(self, url):
-        '''Return pair where (n, p) parsed from project url
-        where n is neighborhood's url_prefix and p is project's shortname
+        '''Returns a tuple (project, error).
 
-        Return None if url can't be parsed
+        Where project is the Project instane parsed from url or None if project
+        can't be parsed. In that case error will be a string describing the error.
         '''
+        from allura.model import Project, Neighborhood
         if url is None:
-            return None
+            return None, u'Empty url'
         url = urlparse(url)
         url = [u for u in url.path.split('/') if u]
-        if len(url) < 2:
-            return None
-        return (u'/{}/'.format(url[0]), url[1])
+        if len(url) == 0:
+            return None, u'Empty url'
+        if len(url) == 1:
+            q = Project.query.find(dict(shortname=url[0]))
+            cnt = q.count()
+            if cnt == 0:
+                return None, u'Project not found'
+            if cnt == 1:
+                return q.first(), None
+            return None, u'Too many matches for project: {}'.format(cnt)
+        n = Neighborhood.query.get(url_prefix=u'/{}/'.format(url[0]))
+        if not n:
+            return None, u'Neighborhood not found'
+        p = Project.query.get(neighborhood_id=n._id, shortname=url[1])
+        return (p, u'Project not found' if p is None else None)
 
 
 class ThemeProvider(object):

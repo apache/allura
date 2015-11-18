@@ -89,15 +89,48 @@ class TestProjectRegistrationProvider(object):
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
-    def test_project_from_url(self):
-        parse = self.provider.project_from_url
-        assert_is_none(parse(None))
-        assert_is_none(parse(''))
-        assert_is_none(parse('/p/'))
-        assert_equal(('/p/', 'test'), parse('/p/test/'))
-        assert_equal(('/p/', 'test'), parse('/p/test/tickets/1'))
-        assert_equal(('/adobe/', 'adobe-1'), parse('/adobe/adobe-1'))
-        assert_equal(('/p/', 'test'), parse('http://localhost:8080/p/test/wiki'))
+
+class TestProjectRegistrationProviderParseProjectFromUrl(object):
+
+    def setUp(self):
+        setup_basic_test()
+        ThreadLocalORMSession.close_all()
+        setup_global_objects()
+        self.provider = ProjectRegistrationProvider()
+        self.parse = self.provider.project_from_url
+
+    def test_empty_url(self):
+        assert_equal((None, u'Empty url'), self.parse(None))
+        assert_equal((None, u'Empty url'), self.parse(''))
+        assert_equal((None, u'Empty url'), self.parse('/'))
+
+    def test_neighborhood_not_found(self):
+        assert_equal((None, u'Neighborhood not found'), self.parse('/nbhd/project'))
+
+    def test_project_not_found(self):
+        assert_equal((None, u'Project not found'), self.parse('/p/project'))
+        assert_equal((None, u'Project not found'), self.parse('project'))
+
+    def test_ok_full(self):
+        p = M.Project.query.get(shortname='test')
+        adobe = M.Project.query.get(shortname='adobe-1')
+        assert_equal((p, None), self.parse('p/test'))
+        assert_equal((p, None), self.parse('/p/test'))
+        assert_equal((p, None), self.parse('/p/test/tickets/1'))
+        assert_equal((p, None), self.parse('http://localhost:8080/p/test/tickets/1'))
+        assert_equal((adobe, None), self.parse('/adobe/adobe-1/'))
+
+    def test_only_shortname_multiple_projects_matched(self):
+        adobe_n = M.Neighborhood.query.get(url_prefix='/adobe/')
+        M.Project(shortname='test', neighborhood_id=adobe_n._id)
+        ThreadLocalORMSession.flush_all()
+        assert_equal((None, u'Too many matches for project: 2'), self.parse('test'))
+
+    def test_only_shortname_ok(self):
+        p = M.Project.query.get(shortname='test')
+        adobe = M.Project.query.get(shortname='adobe-1')
+        assert_equal((p, None), self.parse('test'))
+        assert_equal((adobe, None), self.parse('adobe-1'))
 
 
 class UserMock(object):
@@ -394,6 +427,7 @@ class TestLocalAuthenticationProvider(object):
             self.provider.disable_user(user)
             ThreadLocalORMSession.flush_all()
         assert_equal(user.disabled, True)
+
 
 class TestAuthenticationProvider(object):
 
