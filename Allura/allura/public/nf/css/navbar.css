@@ -40,6 +40,7 @@
 
 .config-tool{
     color: #555;
+    cursor: pointer;
     cursor: context-menu;
 }
 
@@ -47,7 +48,8 @@
     border-bottom: 1px solid transparent;
 }
 
-.draggable-handle, .draggable-handle-sub {
+/* FIXME why do we have draggable-handle class on a div and also a span? */
+span.draggable-handle, span.draggable-handle-sub {
     margin-left: 2px;
     cursor: move;
 }
@@ -380,34 +382,27 @@ div.draggable-handle-sub{
 
 
 .optionMenu {
-    background: #E5E5E5;
+    background: #f0f0f0;
     border: 1px solid #999;
     box-shadow: -2px 2px 6px #555;
     overflow: auto;
     position: absolute;
-    top: 40px;
+    margin-top: 20px;
+    margin-left: 5px;
     border-radius: 4px;
     z-index: 20200;
     clear: both;
-    overflow: auto;
-    /*clear: both;*/
-}
-
-
-.react-reorderable-item .optionMenu {
-    background: #f0f0f0;
-    position: absolute;
-    /*top: 270px;*/
 }
 
 .optionMenu > ul {
     list-style: none;
     border: none;
-    margin-left: 10px;
+    margin-left: 2px;
 }
 #top_nav_admin .optionMenu > ul > li > a{
     margin: 4px;
     border-right: none;
+    clear: both;
 }
 
 #top_nav_admin .tool_option > a{
