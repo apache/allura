@@ -567,7 +567,7 @@ var Main = React.createClass({
      */
     onToolReorder: function() {
         var params = {_session_id: $.cookie('_session_id')};
-        var toolNodes = $("#top_nav_admin").find('span.ordinal-item').not(".toolbar-grouper");
+        var toolNodes = $(ReactDOM.findDOMNode(this)).find('span.ordinal-item').not(".toolbar-grouper");
         for (var i = 0; i < toolNodes.length; i++) {
             params[i] = toolNodes[i].dataset.mountPoint;
         }
@@ -585,7 +585,6 @@ var Main = React.createClass({
                         interval: 500,
                         timer: 2000
                     });
-                _this.getNavJson();
             },
 
             error: function() {
