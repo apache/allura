@@ -303,19 +303,34 @@ admin interface <site-admin-interface>`.
 **Be careful, projects and all related data are actually deleted from the database!**
 
 Just copy and paste URLs of the project you want to delete into "Projects"
-field. You can also use :code:`nbhd_prefix/project_shortname` format, e.g.
+field, separated by newlines. You can also use :code:`nbhd_prefix/project_shortname`
+or just :code:`project_shortname` format, e.g.
 
 
 .. code-block:: text
 
-  http://MYSITE/p/test/wiki/
+  http://MYSITE/p/test3/wiki/
   p/test2
+  test
 
-will delete projects :code:`test` and :code:`test2`.
+will delete projects :code:`test3`, :code:`test2` and :code:`test`.
+
+**NOTE:** if you omit neighborhood prefix project will be matched only if
+project with such short name are unique across all neighborhoods, i.e. if you
+have project with short name :code:`test` in :code:`p2` neighborhood and
+project with the same short name in :code:`p` neighborhood project will not be
+deleted. In this case you should specify neighborhood explicitly to
+disambiguate it.
 
 The "Reason" field allows you to specify a reason for deletion, which will be logged to disk.
 
-"Disable all project members" checkbox disables all users belonging to groups "Admin" and "Developer" in these projects. The reason will be also recorded in the users' audit logs if this option is checked.
+"Disable all project members" checkbox disables all users belonging to groups
+"Admin" and "Developer" in these projects. The reason will be also recorded in
+the users' audit logs if this option is checked.
+
+After clicking "Delete" you will see a confirmation page. It shows which
+projects are going to be deleted and which are failed to parse, so you can go
+back and edit your input.
 
 Using Projects and Tools
 ========================
