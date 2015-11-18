@@ -33,11 +33,11 @@
   <div class="{{ '' if fields_visible else 'hidden' }}">
     <div class="grid-18">
       <label for="projects">Projects:</label><br>
-      <textarea name="projects">{{ projects or '' }}</textarea>
+      <textarea name="projects" placeholder="http://localhost:8080/p/test/wiki/">{{ projects or '' }}</textarea>
     </div>
     <div class="grid-18">
       <label for="reason">Reason:</label><br>
-      <textarea name="reason">{{ reason or '' }}</textarea>
+      <textarea name="reason" placeholder="The Reason">{{ reason or '' }}</textarea>
     </div>
     <div class="grid-18">
       <input id="disable_users" name="disable_users" type="checkbox" {% if disable_users %}checked{% endif %}>

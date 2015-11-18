@@ -23,7 +23,7 @@
   <div class="grid-19">
     <p class="warning">Be careful. This will delete all projects data!</p>
     <p>You're trying to delete the following projects {% if disable_users %} and <strong>disable all projects' users</strong>{% endif %}</p>
-    <p>Because of: {{ reason }}</p>
+    <p>Because of: {{ reason or ''|nl2br }}</p>
     <p><a href="{{ edit_link }}">Edit</a></p>
     <table>
       <thead>
@@ -45,6 +45,7 @@
       </tr>
       {% endfor %}
     </table>
+    <p><a href="{{ edit_link }}">Edit</a></p>
     {% set form_step = 'confirm' %}
     {% include 'allura:templates/site_admin_delete_projects_form.html' %}
   </div>
