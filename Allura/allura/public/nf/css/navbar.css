@@ -48,15 +48,9 @@
     border-bottom: 1px solid transparent;
 }
 
-/* FIXME why do we have draggable-handle class on a div and also a span? */
-span.draggable-handle, span.draggable-handle-sub {
+.draggable-handle, .draggable-handle-sub {
     margin-left: 2px;
     cursor: move;
-}
-
-div.draggable-handle-sub{
-    border: 1px solid #e5e5e5;
-    border-bottom: none;
 }
 
 #top_nav .anchored {
@@ -172,6 +166,13 @@ div.draggable-handle-sub{
     border-radius: 3px;
     min-width: 150px;
 }
+
+.tb-item-grouper .tb-item {
+    border: 1px solid #e5e5e5;
+    border-bottom: none;
+    overflow: hidden;
+}
+
 
 .tb-sub-menu .react-drag:hover {
     background: #09c linear-gradient(#09c, #07a);

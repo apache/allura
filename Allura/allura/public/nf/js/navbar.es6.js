@@ -119,13 +119,17 @@ var NavBarItem = React.createClass({
     },
 
     render: function() {
-        var handle = this.props.handleType.slice(1);
-        var _base = handle + " ordinal-item";
-        var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
-        var classes = this.props.is_anchored ? "anchored " : handle;
+        var divClasses = "tb-item tb-item-edit";
+        if (this.props.is_anchored) {
+            divClasses += " anchored";
+        }
+        var spanClasses = this.props.handleType + " ordinal-item";
+        if (this.props.isGrouper) {
+            spanClasses += " toolbar-grouper"
+        }
 
         return (
-            <div className={classes + " tb-item tb-item-edit"}>
+            <div className={ divClasses }>
                 <a>
                     {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
                     <span
@@ -340,7 +344,7 @@ var AdminNav = React.createClass({
                 subMenu = null;
             }
 
-            var _handle = isSubMenu ? ".draggable-handle-sub" : '.draggable-handle';
+            var _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
 
             var tool_list, is_anchored;
             if (item.mount_point === 'admin') {
@@ -378,7 +382,7 @@ var AdminNav = React.createClass({
                 { anchored_tools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
-                    handle={_handle}
+                    handle={"." + _handle}
                     mode='grid'
                     onDrop={ _this.props.onToolReorder }>
                     { tools }
