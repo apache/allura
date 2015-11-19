@@ -29,6 +29,7 @@ from pylons import request
 from paste.deploy.converters import asbool
 import formencode as fe
 import json
+from webob import exc
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -606,35 +607,37 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 i += 1
         return new_tools
 
-    def nav_data(self):
+    def nav_data(self, admin_options=False):
+        from allura.ext.admin.admin_main import ProjectAdminRestController
+
         grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
         anchored_tools = self.neighborhood.get_anchored_tools()
         children = []
-        i = 0
-        for s in self.grouped_navbar_entries():
-            if s.children:
-                mount_point = None
-            else:
-                _offset = -2 if s.url.endswith("/") else -1
-                mount_point = s.url.split('/')[_offset]
+
+        def make_entry(s, mount_point):
             entry = dict(name=s.label,
                          url=s.url,
                          icon=s.ui_icon or 'tool-admin',
                          tool_name=s.tool_name or 'sub',
                          mount_point=mount_point,
                          is_anchored=s.tool_name in anchored_tools.keys(),
-                         ordinal=i)
-            i += 1
+                         )
+            if admin_options and s.tool_name and mount_point:
+                try:
+                    entry['admin_options'] = ProjectAdminRestController().admin_options(mount_point)['options']
+                except exc.HTTPNotFound:
+                    log.debug('Could not get admin_options mount_point for tool: %s', s.url)
+            return entry
+
+        for s in self.grouped_navbar_entries():
             if s.children:
-                entry['children'] = [dict(name=child.label,
-                                          url=child.url,
-                                          icon=child.ui_icon or 'tool-admin',
-                                          mount_point=child.url.split('/')[-2],
-                                          tool_name=child.tool_name or 'sub',
-                                          is_anchored=child.tool_name in anchored_tools.keys(),
-                                          ordinal=x + i)
-                                     for x, child in enumerate(s.children)]
-                i += len(s.children)
+                mount_point = None
+            else:
+                _offset = -2 if s.url.endswith("/") else -1
+                mount_point = s.url.split('/')[_offset]
+            entry = make_entry(s, mount_point=mount_point)
+            if s.children:
+                entry['children'] = [make_entry(child, mount_point=child.url.split('/')[-2]) for child in s.children]
             children.append(entry)
 
         return dict(grouping_threshold=grouping_threshold,

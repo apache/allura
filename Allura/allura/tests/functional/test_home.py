@@ -54,12 +54,12 @@ class TestProjectHome(TestController):
         wiki_group = menu[-2]
         wikis = wiki_group.pop('children')
         assert_equal({'url': '/p/test/_list/wiki', 'name': u'Wiki \u25be', 'mount_point': None,
-                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 2}, wiki_group)
+                      'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_group)
         assert_equal(len(wikis), 2)
         assert_in({'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 3}, wikis)
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wikis)
         assert_in({'url': '/p/test/wiki2/', 'name': 'wiki2', 'mount_point': 'wiki2',
-                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False, 'ordinal': 4}, wikis)
+                   'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wikis)
 
     def test_sitemap_limit_per_tool(self):
         """Test that sitemap is limited to max of 10 items per tool type."""
@@ -88,8 +88,6 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wiki_menu = [m for m in menu if m['tool_name'] == 'wiki'][0]
         assert_equal(len(wiki_menu['children']), 10)
-        for child in wiki_menu['children']:
-            child.pop('ordinal')
         assert_in({'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': '_list',
                    'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_menu['children'])
 
