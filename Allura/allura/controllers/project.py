@@ -337,8 +337,8 @@ class ProjectController(FeedController):
         self._list = ToolListController()
 
     @expose('json:')
-    def _nav(self, **kw):
-        return c.project.nav_data()
+    def _nav(self, admin_options=False, **kw):
+        return c.project.nav_data(admin_options=admin_options)
 
     @expose()
     def _lookup(self, name, *remainder):

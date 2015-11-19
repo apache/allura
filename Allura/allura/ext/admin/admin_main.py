@@ -889,25 +889,16 @@ class ProjectAdminRestController(BaseController):
         }
 
     @expose('json:')
-    @require_post() # FIXME
     def admin_options(self, mount_point=None, **kw):
         """
         Returns the admin options for a given mount_point
         """
-        response.content_type = 'application/json'
         tool = c.project.app_instance(mount_point)
-
-        # TODO: account for sub project
-
         if not mount_point or tool is None:
-            return {
-                'valid': False,
-                'message': "Invalid mount point",
-            }
-
+            raise exc.HTTPNotFound
         return {
-            'valid': True,
-            'options': [dict(text=m.label, href=m.url, is_modal=m.className is not None) for m in tool.admin_menu()]
+            'options': [dict(text=m.label, href=m.url, is_modal=m.className == 'admin_modal')
+                        for m in tool.admin_menu()]
         }
 
     @expose('json:')

@@ -89,24 +89,16 @@ function getUrlByNode(node) {
     return node.props.children[0].props.url;
 }
 
-function ToolsPropType() {
-    return {
-        name: React.PropTypes.string.isRequired,
-        url: React.PropTypes.string.isRequired,
-        isSubmenu: React.PropTypes.bool,
-        tools: React.PropTypes.arrayOf(
-            React.PropTypes.shape({
-                ordinal: React.PropTypes.number,
-                mount_point: React.PropTypes.string,
-                name: React.PropTypes.string,
-                url: React.PropTypes.string,
-                is_anchored: React.PropTypes.bool,
-                tool_name: React.PropTypes.string,
-                icon: React.PropTypes.string
-            })
-        ).isRequired
-    };
-}
+var ToolsPropType = React.PropTypes.shape({
+    mount_point: React.PropTypes.string,
+    name: React.PropTypes.string.isRequired,
+    url: React.PropTypes.string.isRequired,
+    is_anchored: React.PropTypes.bool.isRequired,
+    tool_name: React.PropTypes.string.isRequired,
+    icon: React.PropTypes.string,
+    children: React.PropTypes.array,
+    admin_options: React.PropTypes.array
+});
 
 /**
  * A single NavBar item.
@@ -118,7 +110,8 @@ var NavBarItem = React.createClass({
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
         currentOptionMenu: React.PropTypes.object,
-        onOptionClick: React.PropTypes.func.isRequired
+        onOptionClick: React.PropTypes.func.isRequired,
+        options: React.PropTypes.array
     },
 
     isAnchored: function() {
@@ -130,12 +123,11 @@ var NavBarItem = React.createClass({
         var _base = handle + " ordinal-item";
         var spanClasses = this.props.isGrouper ? _base += " toolbar-grouper": _base;
         var classes = this.props.is_anchored ? "anchored " : handle;
-        var hasOptions = !this.props.isGrouper;
 
         return (
             <div className={classes + " tb-item tb-item-edit"}>
                 <a>
-                    {hasOptions && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
+                    {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}>
@@ -145,8 +137,7 @@ var NavBarItem = React.createClass({
                 {this.props.currentOptionMenu.tool && this.props.currentOptionMenu.tool === this.props.mount_point &&
                     <OptionsMenu
                         {...this.props}
-                        toolMountPoint={this.props.mount_point}
-                        options={this.props.currentOptionMenu.options}
+                        options={this.props.options}
                         onOptionClick={this.props.onOptionClick}
                     />}
             </div>
@@ -158,22 +149,6 @@ var NavBarItem = React.createClass({
     }
 });
 
-
-/**
- * Caches the ajax requests
-
- * @constructor
- */
-var toolOptionsCache = {};
-function loadToolOptions(mount_point, callback) {
-    if (!toolOptionsCache[mount_point]) {
-        let url = _getProjectUrl(true) + '/admin/admin_options/';
-        let params = { _session_id: $.cookie('_session_id'), mount_point: mount_point};
-        toolOptionsCache[mount_point] = $.post(url, params).promise();
-    }
-    toolOptionsCache[mount_point].done(callback);
-}
-
 /**
  * Options "context" menu
 
@@ -181,7 +156,8 @@ function loadToolOptions(mount_point, callback) {
  */
 var OptionsMenu = React.createClass({
     propTypes: {
-        toolMountPoint: React.PropTypes.string.isRequired
+        options: React.PropTypes.array.isRequired,
+        onOptionClick: React.PropTypes.func.isRequired
     },
 
     componentWillMount: function() {
@@ -346,8 +322,7 @@ var NormalNavBar = React.createClass({
  */
 var AdminNav = React.createClass({
     propTypes: {
-        tools: React.PropTypes.arrayOf(
-            React.PropTypes.objectOf(ToolsPropType)),
+        tools: React.PropTypes.arrayOf(ToolsPropType),
         currentOptionMenu: React.PropTypes.object,
         onOptionClick: React.PropTypes.func.isRequired
     },
@@ -387,7 +362,9 @@ var AdminNav = React.createClass({
                 isGrouper={item.children && item.children.length > 0}
                 url={ item.url }
                 key={ 'tb-item-' + _.uniqueId() }
-                is_anchored={ is_anchored }/>;
+                is_anchored={ is_anchored }
+                options={ item.admin_options }
+            />;
             if (subMenu) {
                 childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'), this.props.currentOptionMenu.tool);
                 tool_list.push(<NavBarItemWithSubMenu key={_.uniqueId()} tool={core_item} subMenu={subMenu} childOptionsOpen={childOptionsOpen}/>);
@@ -470,11 +447,14 @@ var ToggleAdminButton = React.createClass({
  * The main "controller view" of the NavBar.
 
  * @constructor
- * @param {object} initialData - Consumes the _nav.json endpoint.
+ * @param {object} initialData
  */
 var Main = React.createClass({
     propTypes: {
-        initialData: React.PropTypes.objectOf(ToolsPropType),
+        initialData: React.PropTypes.shape({
+            menu: React.PropTypes.arrayOf(ToolsPropType),
+            grouping_threshold: React.PropTypes.number.isRequired
+        }),
         installableTools: React.PropTypes.array
     },
     getInitialState: function() {
@@ -483,12 +463,7 @@ var Main = React.createClass({
             visible: true,
             _session_id: $.cookie('_session_id'),
             currentOptionMenu: {
-                tool: null,
-                options: [{
-                    url: "",
-                    label: ""
-                }
-                ]
+                tool: null
             }
         };
     },
@@ -515,14 +490,11 @@ var Main = React.createClass({
     },
 
     handleShowOptionMenu: function (mount_point) {
-        loadToolOptions(mount_point, function (result) {
-            this.setState({
-                currentOptionMenu: {
-                    tool: mount_point,
-                    options: result.options
-                }
-            });
-        }.bind(this));
+        this.setState({
+            currentOptionMenu: {
+                tool: mount_point,
+            }
+        });
     },
 
     /**
