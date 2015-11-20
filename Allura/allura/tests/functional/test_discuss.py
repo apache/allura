@@ -332,3 +332,41 @@ class TestAttachment(TestDiscussBase):
         session(post).flush(post)
         self.app.get(alink, status=404)
         self.app.get(thumblink, status=404)
+
+    def test_unmoderated_post_attachments(self):
+        ordinary_user = {'username': 'test-user'}
+        moderator = {'username': 'test-admin'}
+        # set up attachment
+        f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        with open(f) as f:
+            pic = f.read()
+        self.app.post(
+            self.post_link + 'attach',
+            upload_files=[('file_info', 'user.png', pic)])
+        # ... make sure ordinary user can see it
+        r = self.app.get(self.thread_link, extra_environ=ordinary_user)
+        assert '<div class="attachment_thumb">' in r
+        alink = self.attach_link()
+        thumblink = alink + '/thumb'
+        # ... and access it
+        self.app.get(alink, status=200, extra_environ=ordinary_user)
+        self.app.get(thumblink, status=200, extra_environ=ordinary_user)
+
+        # make post unmoderated
+        _, slug = self.post_link.rstrip('/').rsplit('/', 1)
+        post = M.Post.query.get(slug=slug)
+        assert post, 'Could not find post for {} {}'.format(slug, self.post_link)
+        post.status = 'pending'
+        session(post).flush(post)
+        # ... make sure attachment is not visible to ordinary user
+        r = self.app.get(self.thread_link, extra_environ=ordinary_user)
+        assert '<div class="attachment_thumb">' not in r, 'Attachment is visible on unmoderated post'
+        # ... but visible to moderator
+        r = self.app.get(self.thread_link, extra_environ=moderator)
+        assert '<div class="attachment_thumb">' in r
+        # ... and ordinary user can't access it
+        self.app.get(alink, status=403, extra_environ=ordinary_user)
+        self.app.get(thumblink, status=403, extra_environ=ordinary_user)
+        # ... but moderator can
+        self.app.get(alink, status=200, extra_environ=moderator)
+        self.app.get(thumblink, status=200, extra_environ=moderator)

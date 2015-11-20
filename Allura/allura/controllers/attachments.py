@@ -59,6 +59,9 @@ class AttachmentController(BaseController):
 
     def _check_security(self):
         require_access(self.artifact, 'read')
+        status = getattr(self.artifact, 'status', None)
+        if status == 'pending':
+            require_access(self.artifact, 'moderate')
 
     def __init__(self, filename, artifact):
         self.filename = filename

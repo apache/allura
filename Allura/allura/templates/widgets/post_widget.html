@@ -41,9 +41,11 @@
         <small>{{lib.abbr_date(value.timestamp)}}</small>
        </p>
       </div>
+      {% set pending = value.status == 'pending' %}
+      {% set moderator = h.has_access(value, 'moderator')() %}
       <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
-        <div class="display_post{%if (value.status == 'pending') and h.has_access(value, 'moderate')()%} moderate{%endif%}">
-          {% if (value.status == 'pending') and not h.has_access(value, 'moderate')() %}
+        <div class="display_post{% if pending and moderator %} moderate{% endif %}">
+          {% if pending and not moderator %}
             <b>Post awaiting moderation.</b>
           {% else %}
             {% if show_subject %}
@@ -66,7 +68,7 @@
             {{widgets.attach_post.display(value=value, action=value.url() + 'attach')}}
         </div>
         {% endif %}
-        {% if value.attachments %}
+        {% if value.attachments and (not pending or moderator) %}
         <div>
           <strong>Attachments</strong>
           <div class="clear"></div>
