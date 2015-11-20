@@ -40,7 +40,7 @@ function set_state(new_state) {
 
 function render(state) {
   /* Mount top-level component into the DOM */
-  React.render(
+  ReactDOM.render(
     dom(PhoneVerificationForm, {state: state}),
     document.getElementById('phone-verification-form')
   );
@@ -86,10 +86,10 @@ var FormStepMixin = {
   },
 
   componentDidMount: function() {
-    React.findDOMNode(this.refs.mainInput).focus();
+    ReactDOM.findDOMNode(this.refs.mainInput).focus();
   },
   componentDidUpdate: function() {
-    React.findDOMNode(this.refs.mainInput).focus();
+    ReactDOM.findDOMNode(this.refs.mainInput).focus();
   },
 
   getErrorHtml: function() {

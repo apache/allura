@@ -89,7 +89,7 @@ SubscriptionForm = React.createClass({
     return false;
   },
 
-  getLinkNode: function() { return React.findDOMNode(this.refs.link); },
+  getLinkNode: function() { return ReactDOM.findDOMNode(this.refs.link); },
 
   componentDidMount: function() {
     var link = this.getLinkNode();
@@ -117,7 +117,7 @@ function set_state(new_state) {
 function render(state) {
   var props = {};
   for (var key in state) { props[key] = state[key]; }
-  React.render(
+  ReactDOM.render(
     dom(SubscriptionForm, props),
     document.getElementById('subscription-form')
   );

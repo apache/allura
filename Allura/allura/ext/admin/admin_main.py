@@ -764,7 +764,6 @@ class ProjectAdminRestController(BaseController):
     def mount_order(self, subs=None, tools=None, **kw):
         if kw:
             for ordinal, mount_point in sorted(kw.items(), key=lambda x: int(x[0])):
-                print(ordinal, mount_point)
                 try:
                     c.project.app_config(mount_point).options.ordinal = int(ordinal)
                 except AttributeError as e:
