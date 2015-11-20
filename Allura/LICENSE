@@ -251,7 +251,20 @@ Modernizr, which is available under the MIT license.
 For details, see allura/public/nf/js/modernizr.js
 
 React.js, which is available under the BSD license.
-For details, see allura/public/nf/js/react.min.js
+For details, see:
+    allura/public/nf/js/react-dom.js
+    allura/public/nf/js/react-with-addons.js
+    allura/public/nf/js/react-with-addons.min.js
+
+React plugins, which are available under the MIT license.
+For details, see:
+    allura/public/nf/js/react-drag.js
+    allura/public/nf/js/react-drag.min.js
+    allura/public/nf/js/react-reorderable.js
+    allura/public/nf/js/react-reorderable.min.js
+
+Underscore, which is available under the MIT license.
+For details, see allura/public/nf/js/underscore-min.js
 
 Font Awesome is available under the MIT license (for the code) and SIL OFL 1.1 (for the fonts).
 Source code available at http://fortawesome.github.io/Font-Awesome/
