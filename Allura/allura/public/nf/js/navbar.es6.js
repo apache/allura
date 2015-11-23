@@ -360,7 +360,6 @@ var AdminNav = React.createClass({
         currentOptionMenu: React.PropTypes.object,
         onOptionClick: React.PropTypes.func.isRequired
     },
-    mode: 'grid',
 
     buildMenu: function (items, isSubMenu=false) {
         var _this = this;
@@ -413,7 +412,7 @@ var AdminNav = React.createClass({
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
                     handle={"." + _handle}
-                    mode='grid'
+                    mode={ isSubMenu ? 'list' : 'grid' }
                     onDrop={ _this.props.onToolReorder }>
                     { tools }
                 </ReactReorderable>
