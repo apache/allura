@@ -298,8 +298,8 @@ var ToggleAddNewTool = React.createClass({
         });
     },
     render: function() {
-        return <AddNewToolButton showAddToolMenu={this.state.visible}
-                                 handleToggleAddNewTool={this.handleToggle} />;
+        return <AddNewToolButton {...this.props} showAddToolMenu={this.state.visible}
+                                                 handleToggleAddNewTool={this.handleToggle} />;
     }
 });
 
@@ -327,12 +327,24 @@ var NormalNavBar = React.createClass({
 
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
+
+        var mount_points = [];
+        for(let item of this.props.items){
+            if(item.hasOwnProperty('mount_point') && item.mount_point !== null){
+                mount_points.push(item.mount_point);
+            } else if(item.hasOwnProperty('children')){
+                for(let child of item.children){
+                    mount_points.push(child.mount_point)
+                }
+            }
+        }
+
         return (
             <ul
                 id="normal-nav-bar"
                 className="dropdown">
                 { listItems }
-                <li><ToggleAddNewTool/></li>
+                <li><ToggleAddNewTool existingMounts={mount_points}/></li>
             </ul>
         );
     }
