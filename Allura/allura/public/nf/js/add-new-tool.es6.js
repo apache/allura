@@ -33,7 +33,7 @@ var AddNewToolButton = React.createClass({
             <a onClick={ this.props.handleToggleAddNewTool } className='add-tool-toggle'>
                 Add New...
             </a>
-            { this.props.showAddToolMenu && <NewToolMain />}
+            { this.props.showAddToolMenu && <NewToolMain {...this.props} />}
             </div>
         );
     }
@@ -143,6 +143,7 @@ var InstallNewToolForm = React.createClass({
         return (
             <form id='add-tool-form'>
                 <FormField
+                    key="new-tool-mount-label"
                     id="mount_label"
                     handleOnChange={this.props.handleChangeForm}
                     handleOnBlur={this.props.toolFormIsValid}
@@ -152,6 +153,7 @@ var InstallNewToolForm = React.createClass({
                     />
 
                 <FormField
+                    key="new-tool-mount-point"
                     id="mount_point"
                     handleOnChange={this.props.handleChangeForm}
                     handleOnBlur={this.props.toolFormIsValid}
@@ -243,20 +245,14 @@ var NewToolMain = React.createClass({
         }.bind(this));
     },
     handleChangeTool: function(e) {
-        console.log("HANDLE CHANGE -->", e.target.textContent);
         this._setActiveByLabel(e.target.textContent);
     },
     _setActiveByLabel: function(tool_label) {
         var index = this.state.installableTools.findIndex(
             x => x.tool_label === tool_label
         );
-        console.log('index for tool_label: ', index);
         var active = this.state.installableTools[index];
-
-        console.log('new active: ', active);
-
         var _new_tool = this.state.new_tool;
-        console.log('new _new_tool: ', _new_tool);
 
         _new_tool.mount_label = active.defaults.default_mount_label;
         _new_tool.mount_point = '';
@@ -314,13 +310,8 @@ var NewToolMain = React.createClass({
         if (this.state.new_tool.mount_point.length < 3) {
             errors.mount_point.push('Mount point must have at least 3 characters.');
         }
-        let data = {
-            'mount_point': e.target.value,
-            '_session_id': $.cookie('_session_id')
-        };
 
-        let result = $.post(_getProjectUrl() + '/admin/mount_point/', data);
-        if (!result.responseJSON) {
+        if(this.props.existingMounts.indexOf(e.target.value) !== -1){
             errors.mount_point.push('Mount point already exists.');
         }
 
