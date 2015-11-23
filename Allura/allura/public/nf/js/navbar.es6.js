@@ -401,6 +401,7 @@ var AdminNav = React.createClass({
                     key={ 'reorder-' + _.uniqueId() }
                     handle={"." + _handle}
                     mode={ isSubMenu ? 'list' : 'grid' }
+                    onDragStart={ _this.props.onToolDragStart }
                     onDrop={ _this.props.onToolReorder }>
                     { tools }
                 </ReactReorderable>
@@ -557,6 +558,8 @@ var Main = React.createClass({
      * @param {array} data - Array of tools
      */
     onToolReorder: function() {
+        $('.react-drag.dragging').removeClass('dragging');
+
         var params = {_session_id: $.cookie('_session_id')};
         var toolNodes = $(ReactDOM.findDOMNode(this)).find('span.ordinal-item').not(".toolbar-grouper");
         for (var i = 0; i < toolNodes.length; i++) {
@@ -588,6 +591,14 @@ var Main = React.createClass({
         });
     },
 
+    onToolDragStart: function(obj) {
+        // this is done with jQuery instead of rendering different HTML with react
+        // because that means you re-render the HTML while the drag is happening
+        // and the actual dragging doesn't work any more
+        var dragging_mount_point = obj.props.children.props.mount_point;
+        $(`[data-mount-point=${dragging_mount_point}]`).closest('.react-drag').addClass('dragging');
+    },
+
     render: function() {
         var _this = this;
         var navBarSwitch = (showAdmin) => {
@@ -597,6 +608,7 @@ var Main = React.createClass({
                         tools={ _this.state.data.menu }
                         data={ _this.state.data }
                         onToolReorder={ _this.onToolReorder }
+                        onToolDragStart={ _this.onToolDragStart }
                         editMode={ _this.state.visible }
                         currentOptionMenu={ _this.state.currentOptionMenu }
                         onOptionClick={ _this.handleShowOptionMenu }
