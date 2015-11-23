@@ -25,6 +25,7 @@ Allura/allura/public/nf/css/forge/tooltipster.css
 Allura/allura/public/nf/css/forge/ui.daterangepicker.css
 Allura/allura/public/nf/css/smoothness/jquery-ui-1.8.4.custom.css
 Allura/allura/public/nf/fonts/
+Allura/allura/public/nf/js/dummy.es6.js
 Allura/allura/public/nf/js/jquery-base.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
 Allura/allura/public/nf/js/jquery.flot.js
