@@ -103,18 +103,13 @@
 
 #top_nav_admin .tb-item a {
     border-right: 1px solid #ccc;
-    padding-right: 10px;
-    margin: 10px 10px 10px 0;
+    padding: 0 10px;
+    margin: 10px 0;
 }
 
 #top_nav_admin .tb-item.anchored:last-child a,
 #top_nav_admin .tb-item-grouper a {
     border-right: 1px transparent;
-}
-
-#top_nav_admin > div > div > div {
-    /* match the site_style.css ul.dropdown margin */
-    margin-left: 10px;
 }
 
 .react-drag {
