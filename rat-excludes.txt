@@ -37,11 +37,15 @@ Allura/allura/public/nf/js/react.min.js
 Allura/allura/public/nf/js/sylvester.js
 Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
+Allura/docs/make.bat
+Allura/docs/Makefile
 Allura/docs/_build/
 Allura/run/dummy.txt
 AlluraTest/jslint/
 CHANGES
 ForgeGit/forgegit/data/post-receive_tmpl
+ForgeImporters/docs/make.bat
+ForgeImporters/docs/Makefile
 ForgeImporters/forgeimporters/tests/data/google/empty-issue.html
 ForgeImporters/forgeimporters/tests/data/google/test-issue-first-page.html
 ForgeImporters/forgeimporters/tests/data/google/test-issue-prev-page.html
