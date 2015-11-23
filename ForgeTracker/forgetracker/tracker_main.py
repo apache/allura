@@ -215,7 +215,6 @@ class W:
     ticket_form = TicketForm()
     subscribe_form = SubscribeForm()
     auto_resize_textarea = ffw.AutoResizeTextarea()
-    file_chooser = ffw.FileChooser()
     ticket_subscribe_form = SubscribeForm(thing='ticket')
     field_admin = TrackerFieldAdmin()
     field_display = TrackerFieldDisplay()

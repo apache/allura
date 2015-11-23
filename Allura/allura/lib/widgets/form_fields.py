@@ -346,41 +346,6 @@ class PageSize(ew_core.Widget):
                 this.form.submit();});''')
 
 
-class FileChooser(ew.InputField):
-    template = 'jinja:allura:templates/widgets/file_chooser.html'
-    validator = fev.FieldStorageUploadConverter()
-    defaults = dict(
-        ew.InputField.defaults,
-        name=None)
-
-    def resources(self):
-        for r in super(FileChooser, self).resources():
-            yield r
-        yield ew.JSLink('js/jquery.file_chooser.js')
-        yield onready('''
-            var num_files = 0;
-            var chooser = $('input.file_chooser').file();
-            chooser.choose(function (e, input) {
-                var holder = document.createElement('div');
-                holder.style.clear = 'both';
-                e.target.parentNode.appendChild(holder);
-                $(holder).append(input.val());
-                $(holder).append(input);
-                input.attr('name', e.target.id + '-' + num_files);
-                input.hide();
-                ++num_files;
-                var delete_link = document.createElement('a');
-                delete_link.className = 'btn';
-                var icon = document.createElement('b');
-                icon.className = 'ico delete';
-                delete_link.appendChild(icon);
-                $(delete_link).click(function () {
-                    this.parentNode.parentNode.removeChild(this.parentNode);
-                });
-                $(holder).append(delete_link);
-            });''')
-
-
 class JQueryMixin(object):
     js_widget_name = None
     js_plugin_file = None
