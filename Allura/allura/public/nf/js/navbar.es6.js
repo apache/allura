@@ -494,7 +494,7 @@ var Main = React.createClass({
      * When invoked, this updates the state with the latest data from the server.
      */
     getNavJson: function() {
-        $.post(`${_getProjectUrl(false)}/_nav.json`, function(result) {
+        $.post(`${_getProjectUrl(false)}/_nav.json?admin_options=1`, function(result) {
             if (this.isMounted()) {
                 this.setState({
                     data: result
@@ -577,6 +577,7 @@ var Main = React.createClass({
                         interval: 500,
                         timer: 2000
                     });
+                _this.getNavJson();
             },
 
             error: function() {
