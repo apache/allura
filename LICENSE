@@ -264,9 +264,7 @@ For details, see:
 
 React plugins, which are available under the MIT license.
 For details, see:
-    Allura/allura/public/nf/js/react-drag.js
     Allura/allura/public/nf/js/react-drag.min.js
-    Allura/allura/public/nf/js/react-reorderable.js
     Allura/allura/public/nf/js/react-reorderable.min.js
 
 Underscore, which is available under the MIT license.

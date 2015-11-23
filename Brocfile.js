@@ -41,8 +41,8 @@ var navbar_deps = funnel('Allura/allura/public/nf/js', {
     include: ['underscore-min.js',
               react_file,
               'react-dom.js',
-              'react-drag.js',
-              'react-reorderable.js',
+              'react-drag.min.js',
+              'react-reorderable.min.js',
     ],
 });
 navbar = mergeTrees([navbar_deps, tree]);
