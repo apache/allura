@@ -43,13 +43,12 @@ taskd:
     - outmail
 
 solr:
-  build: solr_config
-  working_dir: /solr/solr-4.2.1/example
-  command: java -jar start.jar
+  image: solr:5.3.1
   ports:
     - "8983:8983"
   volumes:
-    - /allura-data/solr:/solr/solr-4.2.1/example/solr/collection1/data
+    - solr_config/allura:/opt/solr/server/solr/allura
+    - /allura-data/solr:/opt/solr/server/solr/allura/data
 
 mongo:
   image: mongo:2.6
