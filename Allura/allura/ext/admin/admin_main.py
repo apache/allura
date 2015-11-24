@@ -1002,8 +1002,13 @@ class ProjectAdminRestController(BaseController):
             'mount_point': mount_point,
             'mount_label': mount_label
         }
+        params = {
+            'new': data
+        }
+        if kw:
+            params.update(**kw)
         try:
-            controller._update_mounts(new=data)
+            controller._update_mounts(**params)
         except forge_exc.ForgeError as e:
             return {
                 'success': False,

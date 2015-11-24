@@ -51,7 +51,6 @@ var NewToolMenu = React.createClass({
         formData: React.PropTypes.object,
         visible: React.PropTypes.bool
     },
-
     render: function() {
         var _this = this;
         var showInfo = this.props.active.name !== 'Add a tool';
@@ -96,20 +95,25 @@ var FormField = React.createClass({
     propTypes: {
         id: React.PropTypes.string,
         handleOnChange: React.PropTypes.func,
-        value: React.PropTypes.func,
-        errors: React.PropTypes.array
+        inputType: React.PropTypes.string,
+        value: React.PropTypes.string,
+        errors: React.PropTypes.object
     },
-
+    getDefaultProps: function () {
+        return {
+            inputType: "text",
+            errors: {}
+        };
+    },
     getErrors: function() {
-        if (!this.props.errors.hasOwnProperty(this.props.id) || this.props.errors[this.props.id].length === 0) {
+        if (!this.props.errors.hasOwnProperty(this.props.id)
+            || this.props.errors[this.props.id].length === 0) {
             return;
         }
 
         let errorList = [].concat(this.props.errors[this.props.id]);
 
         var result = errorList.map(function(e) {
-            console.log('eeeee', e);
-            console.dir(e);
             return <span>{e}</span>;
         });
         console.log('result', result);
@@ -121,11 +125,10 @@ var FormField = React.createClass({
     },
     render: function () {
         let errors = this.getErrors();
-        console.log('val e', errors);
         return (
             <div className="add-tool-field">
                 <label htmlFor={this.props.id}>{this.props.label}</label>
-                <input required
+                <input type={this.props.inputType} required
                        id={this.props.id}
                        onBlur={this.props.handleOnBlur}
                        onChange={this.props.handleOnChange}
@@ -161,6 +164,18 @@ var InstallNewToolForm = React.createClass({
                     label="Url Path"
                     errors={this.props.validationErrors}
                 />
+
+                {this.props.toolLabel ===  'External Link' &&
+                <FormField
+                    key="external-url-field"
+                    id="options_url"
+                    handleOnChange={this.props.handleChangeForm}
+                    value={this.props.formData.external_link}
+                    label="External Url"
+                    inputType="url"
+                />
+
+                }
 
                 <div id={'add-tool-url-preview'}>
                     <p>
@@ -230,7 +245,8 @@ var NewToolMain = React.createClass({
             new_tool: {
                 mount_point: '',
                 tool_label: '',
-                mount_label: ''
+                mount_label: '',
+                options: {}
             }
         };
     },
@@ -256,6 +272,7 @@ var NewToolMain = React.createClass({
 
         _new_tool.mount_label = active.defaults.default_mount_label;
         _new_tool.mount_point = '';
+        _new_tool.options = {};
 
         this.setState({
             active: active,
@@ -265,7 +282,12 @@ var NewToolMain = React.createClass({
 
     handleChangeForm: function(e) {
             var _new_tool = this.state.new_tool;
-            _new_tool[e.target.id] = e.target.value;
+            var field_id = e.target.id;
+            _new_tool[field_id] = e.target.value;
+
+        if(field_id !== 'mount_point' && field_id !== 'mount_label'){
+            _new_tool.options[field_id] = e.target.value;
+        }
 
             this.setState({
                 new_tool: _new_tool
@@ -273,14 +295,31 @@ var NewToolMain = React.createClass({
 
         },
 
+    getOption: function(option_id){
+        return option_id.split('options_').slice(-1)[0];
+    },
+
     handleSubmit: function(e) {
         e.preventDefault();
+
+        console.log(e);
         var data = {
             _session_id: $.cookie('_session_id'),
             tool: this.state.active.name,
             mount_label: this.state.new_tool.mount_label,
-            mount_point: this.state.new_tool.mount_point
+            mount_point: this.state.new_tool.mount_point,
         };
+
+
+        if(this.state.active.name === 'link'){
+            let options = this.state.new_tool.options;
+            for(let k of Object.keys(options)){
+                if(k.startsWith('options_')) {
+                    data[this.getOption(k)] = options[k];
+                }
+            }
+
+        }
 
         $.ajax({
             type: 'POST',
@@ -303,19 +342,27 @@ var NewToolMain = React.createClass({
     },
     toolFormIsValid: function(e) {
         e.preventDefault();
+        if(!e.target.value){
+            return
+        }
         var errors = {
             mount_point: []
         };
 
-        if (this.state.new_tool.mount_point.length < 3) {
-            errors.mount_point.push('Mount point must have at least 3 characters.');
-        }
+            try{
+            if (this.state.new_tool.mount_point.length < 3) {
+                errors.mount_point.push('Mount point must have at least 3 characters.');
+            }
 
-        if(this.props.existingMounts.indexOf(e.target.value) !== -1){
-            errors.mount_point.push('Mount point already exists.');
-        }
+            if(this.props.existingMounts.indexOf(e.target.value) !== -1){
+                errors.mount_point.push('Mount point already exists.');
+            }
 
-        this.setState({errors: errors});
+            this.setState({errors: errors});
+                }
+        catch (err){
+            console.log('caught: ', err);
+        }
 
     },
 
