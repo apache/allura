@@ -45,19 +45,19 @@
     width: 918px; /* 940px - 32px for toggle-admin-btn */
 }
 
-
-#top_nav{
+#top_nav {
     border-bottom: 1px solid #ccc;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
     box-shadow: 0 1px 1px #ccc;
 }
+
 #normal-nav-bar, #top_nav_admin > ul.dropdown {
     border: none;
     box-shadow: none;
 }
 
-.config-tool{
+.config-tool {
     color: #555;
     cursor: pointer;
     cursor: context-menu;
@@ -107,6 +107,7 @@
     padding-right: 10px;
     margin: 10px 10px 10px 0;
 }
+
 #top_nav_admin .tb-item.anchored:last-child a,
 #top_nav_admin .tb-item-grouper a {
     border-right: 1px transparent;
@@ -172,16 +173,16 @@
     color: white;
 }
 
-.react-reorderable-item .tb-item-grouper > div{
+.react-reorderable-item .tb-item-grouper > div {
     position: relative;
     background: white;
     /*z-index: 1620;*/
 }
 
-.react-reorderable-item .tb-item-grouper > div > div{
+.react-reorderable-item .tb-item-grouper > div > div {
     display: flex;
     flex-direction: column;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
     border-radius: 3px;
     min-width: 150px;
 }
@@ -191,7 +192,6 @@
     border-bottom: none;
     overflow: hidden;
 }
-
 
 .tb-sub-menu .react-drag:hover {
     background: #09c linear-gradient(#09c, #07a);
@@ -226,22 +226,24 @@
 .installable-tool-box {
     display: flex;
     background-color: white;
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.6)));
+    color: #757575;
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.42)));
     background-image: -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
     background-image: linear-gradient(top, #ffffff 0%, #cccccc 100%);
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: inherit;
     flex-direction: row;
 }
 
 .installable-tool-box div {
     margin-bottom: 0;
     margin-left: 0;
+    padding-top: 10px;
+    padding: 5px 10px 5px 10px;
     border-radius: 0 0 4px 4px;
-    padding: 4px 5px 2px;
-    text-align: center;
-    font-size: small;
-    font-weight: 400;
+    /* text-align: center; */
+    font-size: 1rem;
+    font-weight: 700;
     list-style: none;
     cursor: pointer;
     min-width: 40px;
@@ -275,7 +277,7 @@
     border: 2px solid #4E4E4E;
     border-radius: 2px 2px 5px 5px;
     margin-bottom: 0;
-    background: white;
+    background: #636363;
     right: 10px;
     top: 50px;
     position: absolute;
@@ -283,13 +285,13 @@
 }
 
 .tool-card::before {
-    content: "^";
+    content: "▴";
     color: #4E4E4E;
-    font-size: xx-large;
+    font-size: 69px;
     position: absolute;
-    right: 0;
-    top: -14px;
-    overflow: visible;
+    right: 8px;
+    top: -21px;
+    overflow: auto;
     float: right;
     height: 1.5rem;
 }
@@ -313,7 +315,7 @@
 .tool-info-left {
     background: #636363;
     width: 60%;
-    height: 206px;
+    height: auto;
     left: 0;
     float: left;
     top: 0;
@@ -350,6 +352,8 @@
     float: right;
     position: relative;
     top: 0;
+    background: whitesmoke;
+    box-shadow: -1px 2px 8px #898989;
 }
 
 #add-tool-form {
@@ -386,21 +390,20 @@
     -o-user-select: none;
     user-select: none;
 }
+
 #top_nav .add-tool-toggle:hover {
     color: #0099cc;
     text-decoration: underline;
 }
 
 /*.react-drag{*/
-    /*display: block;*/
-    /*max-width: 150px;*/
-    /*float: left;*/
-    /*!*border: 1px solid black;*!*/
+/*display: block;*/
+/*max-width: 150px;*/
+/*float: left;*/
+/*!*border: 1px solid black;*!*/
 /*}*/
 
-
 /* Options Menu */
-
 
 .optionMenu {
     background: #f0f0f0;
@@ -420,13 +423,14 @@
     border: none;
     margin-left: 2px;
 }
-#top_nav_admin .optionMenu > ul > li > a{
+
+#top_nav_admin .optionMenu > ul > li > a {
     margin: 4px;
     border-right: none;
     clear: both;
 }
 
-#top_nav_admin .tool_option > a{
+#top_nav_admin .tool_option > a {
     border-right: none !important;
 }
 
