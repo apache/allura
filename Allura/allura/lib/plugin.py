@@ -1073,6 +1073,11 @@ class ProjectRegistrationProvider(object):
         if not n:
             return None, u'Neighborhood not found'
         p = Project.query.get(neighborhood_id=n._id, shortname=url[1])
+        if len(url) > 2:
+            # Maybe subproject
+            subp = Project.query.get(neighborhood_id=n._id, shortname='{}/{}'.format(*url[1:3]))
+            if subp:
+                return (subp, None)
         return (p, u'Project not found' if p is None else None)
 
 
