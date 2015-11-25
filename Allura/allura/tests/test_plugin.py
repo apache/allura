@@ -132,6 +132,17 @@ class TestProjectRegistrationProviderParseProjectFromUrl(object):
         assert_equal((p, None), self.parse('test'))
         assert_equal((adobe, None), self.parse('adobe-1'))
 
+    def test_subproject(self):
+        p = M.Project.query.get(shortname='test/sub1')
+        assert_equal((p, None), self.parse('p/test/sub1'))
+        assert_equal((p, None), self.parse('p/test/sub1/something'))
+        assert_equal((p, None), self.parse('http://localhost:8080/p/test/sub1'))
+        assert_equal((p, None), self.parse('http://localhost:8080/p/test/sub1/something'))
+
+    def test_subproject_not_found(self):
+        p = M.Project.query.get(shortname='test')
+        assert_equal((p, None), self.parse('http://localhost:8080/p/test/not-a-sub'))
+
 
 class UserMock(object):
     def __init__(self):

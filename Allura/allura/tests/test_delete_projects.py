@@ -18,6 +18,7 @@
 from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
 from pylons import app_globals as g
+from nose.tools import assert_equal
 
 from alluratest.controller import TestController
 from allura.tests.decorators import audits, out_audits
@@ -69,6 +70,28 @@ class TestDeleteProjects(TestController):
         self.run_script(['p/{}'.format(self.p_shortname)])
         things = self.things_related_to_project(pid)
         assert len(things) == 0, 'Not all things are deleted: %s' % things
+
+    def test_subproject_is_deleted(self):
+        p = M.Project.query.get(shortname='test/sub1')
+        assert p is not None, 'Can not find subproject to delete'
+        self.run_script(['p/test/sub1'])
+        session(p).expunge(p)
+        p = M.Project.query.get(shortname='test/sub1')
+        assert p is None, 'Project is not deleted'
+        p = M.Project.query.get(shortname='test')
+        assert p is not None, 'Parent project should not be deleted'
+
+    def test_subproject_artifacts_are_deleted(self):
+        parent_pid = M.Project.query.get(shortname='test')._id
+        pid = M.Project.query.get(shortname='test/sub1')._id
+        things = self.things_related_to_project(pid)
+        assert len(things) > 0, 'No things related to subproject to begin with'
+        parent_things_before = self.things_related_to_project(parent_pid)
+        self.run_script(['p/test/sub1'])
+        things = self.things_related_to_project(pid)
+        assert len(things) == 0, 'Not all things are deleted: %s' % things
+        parent_things_after = self.things_related_to_project(parent_pid)
+        assert_equal(len(parent_things_before), len(parent_things_after))
 
     @patch('allura.lib.plugin.solr_del_project_artifacts', autospec=True)
     def test_solr_index_is_deleted(self, del_solr):
