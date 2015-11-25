@@ -549,7 +549,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 log.exception('AppConfig %s references invalid tool %s',
                               ac._id, ac.tool_name)
                 continue
-            app = App(self, ac)
+            if c.app and c.app.config._id == ac._id:
+                # slight performance gain (depending on the app) by using the current app if we're on it
+                app = c.app
+            else:
+                app = App(self, ac)
             if app.is_visible_to(c.user):
                 for sm in app.main_menu():
                     entry = sm.bind_app(app)
