@@ -96,12 +96,14 @@ var FormField = React.createClass({
         id: React.PropTypes.string,
         handleOnChange: React.PropTypes.func,
         inputType: React.PropTypes.string,
+        pattern: React.PropTypes.string,
         value: React.PropTypes.string,
         errors: React.PropTypes.object
     },
     getDefaultProps: function () {
         return {
             inputType: "text",
+            pattern: "",
             errors: {}
         };
     },
@@ -113,8 +115,8 @@ var FormField = React.createClass({
 
         let errorList = [].concat(this.props.errors[this.props.id]);
 
-        var result = errorList.map(function(e) {
-            return <span>{e}</span>;
+        var result = errorList.map(function(error_list, i) {
+            return <span key={"error-" + i}>{error_list}</span>;
         });
         console.log('result', result);
         return (
@@ -127,9 +129,10 @@ var FormField = React.createClass({
         let errors = this.getErrors();
         return (
             <div className="add-tool-field">
-                <label htmlFor={this.props.id}>{this.props.label}</label>
+                <label className="tool-form-input" htmlFor={this.props.id}>{this.props.label}</label>
                 <input type={this.props.inputType} required
                        id={this.props.id}
+                       pattern={this.props.pattern}
                        onBlur={this.props.handleOnBlur}
                        onChange={this.props.handleOnChange}
                        value={this.props.value}/>
@@ -142,6 +145,11 @@ var FormField = React.createClass({
 });
 
 var InstallNewToolForm = React.createClass({
+        getDefaultProps: function () {
+        return {
+            canSubmit: false
+        };
+    },
     render: function() {
         return (
             <form id='add-tool-form'>
@@ -166,17 +174,16 @@ var InstallNewToolForm = React.createClass({
                 />
 
                 {this.props.toolLabel ===  'External Link' &&
-                <FormField
-                    key="external-url-field"
-                    id="options_url"
-                    handleOnChange={this.props.handleChangeForm}
-                    value={this.props.formData.external_link}
-                    label="External Url"
-                    inputType="url"
-                />
-
+                    <FormField
+                        key="external-url-field"
+                        id="options_url"
+                        handleOnChange={this.props.handleChangeForm}
+                        value={this.props.formData.options.options_url}
+                        label="External Url"
+                        pattern="https?://.+"
+                        inputType="url"
+                    />
                 }
-
                 <div id={'add-tool-url-preview'}>
                     <p>
                         <small>{_getProjectUrl(false)}/</small>
@@ -184,7 +191,7 @@ var InstallNewToolForm = React.createClass({
                     </p>
                 </div>
                 <div>
-                <button id='new-tool-submit'
+                <button disabled={!this.props.canSubmit} id='new-tool-submit'
                         onClick={this.props.handleSubmit}
                         className='add-tool-button'>
                     Add Tool
@@ -238,6 +245,7 @@ var NewToolMain = React.createClass({
             visible: false,
             installableTools: [toolPlaceHolder],
             active: toolPlaceHolder,
+            canSubmit: false,
             errors: {
                 mount_point: [],
                 mount_label: []
@@ -250,7 +258,11 @@ var NewToolMain = React.createClass({
             }
         };
     },
-
+    getDefaultProps: function () {
+        return {
+            existingMounts: []
+        };
+    },
     componentDidMount: function() {
         let tools = loadTools('tools', function(result) {
             if (this.isMounted()) {
@@ -284,32 +296,38 @@ var NewToolMain = React.createClass({
             var _new_tool = this.state.new_tool;
             var field_id = e.target.id;
             _new_tool[field_id] = e.target.value;
-
         if(field_id !== 'mount_point' && field_id !== 'mount_label'){
             _new_tool.options[field_id] = e.target.value;
         }
-
             this.setState({
                 new_tool: _new_tool
             });
-
         },
 
     getOption: function(option_id){
         return option_id.split('options_').slice(-1)[0];
     },
 
+    enableButton: function () {
+      this.setState({
+        canSubmit: true
+      });
+        console.log("enabledButton hit");
+    },
+    disableButton: function () {
+      this.setState({
+        canSubmit: false
+      });
+    },
     handleSubmit: function(e) {
         e.preventDefault();
-
-        console.log(e);
+        var _this = this;
         var data = {
             _session_id: $.cookie('_session_id'),
             tool: this.state.active.name,
             mount_label: this.state.new_tool.mount_label,
             mount_point: this.state.new_tool.mount_point,
         };
-
 
         if(this.state.active.name === 'link'){
             let options = this.state.new_tool.options;
@@ -318,9 +336,7 @@ var NewToolMain = React.createClass({
                     data[this.getOption(k)] = options[k];
                 }
             }
-
         }
-
         $.ajax({
             type: 'POST',
             url: _getProjectUrl() + '/admin/install_tool/',
@@ -330,6 +346,7 @@ var NewToolMain = React.createClass({
                     .notify('Tool created', {
                         status: 'confirm'
                     });
+                _this.disableButton();
             },
 
             error: function() {
@@ -349,19 +366,17 @@ var NewToolMain = React.createClass({
             mount_point: []
         };
 
-            try{
-            if (this.state.new_tool.mount_point.length < 3) {
-                errors.mount_point.push('Mount point must have at least 3 characters.');
-            }
-
-            if(this.props.existingMounts.indexOf(e.target.value) !== -1){
-                errors.mount_point.push('Mount point already exists.');
-            }
-
+        if (this.state.new_tool.mount_point.length < 3) {
+            errors.mount_point.push('Mount point must have at least 3 characters.');
+        }
+        if (this.props.existingMounts.indexOf(e.target.value) !== -1) {
+            errors.mount_point.push('Mount point already exists.');
+        }
+        if (errors) {
             this.setState({errors: errors});
-                }
-        catch (err){
-            console.log('caught: ', err);
+        } else {
+            this.enableButton();
+
         }
 
     },
@@ -377,6 +392,7 @@ var NewToolMain = React.createClass({
                         tools={this.state.installableTools}
                         formData={this.state.new_tool}
                         handleChangeTool={this.handleChangeTool}
+                        canSubmit={this.state.canSubmit}
                         handleSubmit={this.handleSubmit}
                         handleChangeForm={this.handleChangeForm}
                         toolFormIsValid={this.toolFormIsValid}
