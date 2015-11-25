@@ -117,9 +117,6 @@ class ForumController(DiscussionController):
             limit=limit,
             page=page)
 
-    @expose()
-    def icon(self):
-        return self.discussion.icon.serve()
 
     @expose('jinja:forgediscussion:templates/discussionforums/deleted.html')
     def deleted(self):

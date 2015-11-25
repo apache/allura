@@ -76,7 +76,6 @@ class AddForum(ff.AdminForm):
                          validator=fev.UnicodeString()),
             ew.TextField(name='monitoring_email',
                          label='Monitoring Email', validator=fev.Email()),
-            ffw.FileChooser(name='icon', label='Icon'),
             ew.Checkbox(name="members_only", label="Developer Only"),
             ew.Checkbox(name="anon_posts", label="Allow Anonymous Posts")
         ]

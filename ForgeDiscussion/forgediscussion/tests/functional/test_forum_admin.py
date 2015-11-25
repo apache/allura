@@ -119,28 +119,6 @@ class TestForumAdmin(TestController):
         r = r.forms[3].submit()
         assert 'error' in r
 
-    def test_forum_icon(self):
-        file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(
-            allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = file(file_path).read()
-        upload = ('add_forum.icon', file_name, file_data)
-
-        h.set_context('test', 'discussion', neighborhood='Projects')
-        r = self.app.get('/admin/discussion/forums')
-        app_id = r.forms[3]['add_forum.app_id'].value
-        r = self.app.post('/admin/discussion/add_forum',
-                          params={'add_forum.shortname': 'testforum',
-                                  'add_forum.app_id': app_id,
-                                  'add_forum.name': 'Test Forum',
-                                  'add_forum.description': '',
-                                  'add_forum.parent': '',
-                                  },
-                          upload_files=[upload]),
-        r = self.app.get('/discussion/testforum/icon')
-        image = PIL.Image.open(StringIO(r.body))
-        assert image.size == (48, 48)
-
     def test_delete_undelete(self):
         r = self.app.get('/admin/discussion/forums')
         r = self.app.get('/admin/discussion/forums')

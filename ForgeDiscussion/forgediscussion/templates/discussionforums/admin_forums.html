@@ -28,7 +28,6 @@
   <table id="forums">
     <thead>
       <tr>
-        <th></th>
         <th>Forum</th><th>Topics</th><th>Posts</th><th>Last Post</th>
         <th></th>
       </tr>
@@ -36,18 +35,6 @@
     <tbody>
       {% for forum in app.forums if not forum.deleted %}
       <tr class="{{loop.index0%2 and ' even' or ''}}">
-        <td>
-          <div class="editable viewing">
-            <span class="viewer">
-              {% if forum.icon %}
-                <img src="{{forum.url()}}icon" alt="Forum icon"/>
-              {% else %}
-                <img src="{{g.forge_static('images/project_default.png')}}" alt="Forum icon"/>
-              {% endif %}
-            </span>
-            <span class="editor">{{lib.file_field('forum-%s.icon' % loop.index0, '')}}</span>
-          </div>
-        </td>
         <td>
           <div class="editable viewing">
             <span class="viewer"><a href="{{forum.url()}}">{{h.really_unicode(forum.name)}}</a></span>

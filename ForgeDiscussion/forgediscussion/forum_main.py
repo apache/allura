@@ -310,8 +310,6 @@ class ForumAdminController(DefaultAdminController):
                     forum.acl = [M.ACE.allow(role_anon, 'post')]
                 else:
                     forum.acl = []
-                if 'icon' in f and f['icon'] is not None and f['icon'] != '':
-                    self.save_forum_icon(forum, f['icon'])
         flash('Forums updated')
         redirect(request.referrer)
 

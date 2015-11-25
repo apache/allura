@@ -15,4 +15,4 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from forum import Forum, ForumFile, ForumThread, ForumPost, ForumAttachment
+from forum import Forum, ForumThread, ForumPost, ForumAttachment

@@ -135,10 +135,6 @@ class Forum(M.Discussion):
     def discussion_thread(self):
         return None
 
-    @property
-    def icon(self):
-        return ForumFile.query.get(forum_id=self._id)
-
     def get_mail_footer(self, notification, toaddr):
         if toaddr and toaddr == self.monitoring_email:
             return MailFooter.monitored(
@@ -148,10 +144,6 @@ class Forum(M.Discussion):
                     self.project.url(),
                     self.app.config.options.mount_point)))
         return super(Forum, self).get_mail_footer(notification, toaddr)
-
-
-class ForumFile(M.File):
-    forum_id = FieldProperty(schema.ObjectId)
 
 
 class ForumThread(M.Thread):

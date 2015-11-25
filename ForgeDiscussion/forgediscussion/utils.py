@@ -24,15 +24,6 @@ from allura.model import ProjectRole, ACE, ALL_PERMISSIONS, DENY_ALL
 from forgediscussion import model as DM
 
 
-def save_forum_icon(forum, icon):
-    if forum.icon:
-        forum.icon.delete()
-    DM.ForumFile.save_image(
-        icon.filename, icon.file, content_type=icon.type,
-        square=True, thumbnail_size=(48, 48),
-        thumbnail_meta=dict(forum_id=forum._id))
-
-
 def create_forum(app, new_forum):
     if 'parent' in new_forum and new_forum['parent']:
         parent_id = ObjectId(str(new_forum['parent']))
@@ -66,6 +57,4 @@ def create_forum(app, new_forum):
         f.acl = [ACE.allow(role_anon, 'post')]
     else:
         f.acl = []
-    if 'icon' in new_forum and new_forum['icon'] is not None and new_forum['icon'] != '':
-        save_forum_icon(f, new_forum['icon'])
     return f
