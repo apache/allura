@@ -188,8 +188,9 @@ For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/
 .. code-block:: bash
 
     (env-allura)~$ curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash -
+    (env-allura)~$ sudo apt-get install nodejs
     (env-allura)~$ cd ~/src/allura
-    (env-allura)~$ npm install -g broccoli-cli
+    (env-allura)~$ sudo npm install -g broccoli-cli
     (env-allura)~$ npm install
     (env-allura)~$ npm run build
 
