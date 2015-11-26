@@ -144,13 +144,14 @@ We have a custom config ready for use.
 
 .. code-block:: bash
 
-    (env-allura)~$ cd ~/src
-    (env-allura)~/src$ wget -nv http://archive.apache.org/dist/lucene/solr/4.2.1/solr-4.2.1.tgz
-    (env-allura)~/src$ tar xf solr-4.2.1.tgz && rm -f solr-4.2.1.tgz
-    (env-allura)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
+    (env-allura)~$ cd tmp
+    (env-allura)/tmp$ wget -nv http://archive.apache.org/dist/lucene/solr/5.3.1/solr-5.3.1.tgz
+    (env-allura)/tmp$ tar xvf solr-5.3.1.tgz solr-5.3.1/bin/install_solr_service.sh --strip-components=2
+    (env-allura)/tmp$ sudo ./install_solr_service.sh solr-5.3.1.tgz
 
-    (env-allura)~/src$ cd solr-4.2.1/example/
-    (env-allura)~/src/apache-solr-4.2.1/example/$ nohup java -jar start.jar > /var/log/allura/solr.log &
+    (env-allura)/tmp$ cd ~/src/allura
+    (env-allura)~/src/allura$ sudo -H -u solr bash -c 'cp -R solr_config/allura/ /var/solr/data/'
+    (env-allura)~/src/allura$ sudo service solr start
 
 
 Create code repo directories
