@@ -73,7 +73,6 @@ var NewToolMenu = React.createClass({
 
         return (
             <div className='tool-card'>
-                <div className='box-title'>Add a new ...</div>
                 <div id='installable-items'>
                     <div className='installable-tool-box'>
                         {tools}
@@ -128,7 +127,7 @@ var FormField = React.createClass({
     render: function () {
         let errors = this.getErrors();
         return (
-            <div className="add-tool-field">
+            <div className="add-new-tool-field">
                 <label className="tool-form-input" htmlFor={this.props.id}>{this.props.label}</label>
                 <input type={this.props.inputType} required
                        id={this.props.id}
@@ -184,19 +183,16 @@ var InstallNewToolForm = React.createClass({
                         inputType="url"
                     />
                 }
-                <div id={'add-tool-url-preview'}>
-                    <p>
+                    <p id="add-tool-url-preview">
                         <small>{_getProjectUrl(false)}/</small>
                         <strong>{this.props.formData.mount_point}</strong>
                     </p>
-                </div>
-                <div>
-                <button disabled={!this.props.canSubmit} id='new-tool-submit'
+                <button disabled={!this.props.canSubmit}
+                        id='new-tool-submit'
                         onClick={this.props.handleSubmit}
                         className='add-tool-button'>
                     Add Tool
                 </button>
-                </div>
             </form>
         );
     }
@@ -211,12 +207,12 @@ var NewToolInfo = React.createClass({
 
     render: function() {
         return (
-            <div className='tool-info'>
-                <div className='tool-info-left'>
-                    <h1 className={this.props.toolLabel.toLowerCase() + "-tool"}>{this.props.toolLabel}</h1>
+            <div id='tool-info'>
+                <h1 className={this.props.toolLabel.toLowerCase() + "-tool"}>{this.props.toolLabel}</h1>
+                <div id='tool-info-left'>
                     <p>{this.props.description}</p>
                 </div>
-                <div className='tool-info-right'>
+                <div id="tool-info-right">
                     <InstallNewToolForm {...this.props} />
                 </div>
             </div>
@@ -287,8 +283,13 @@ var NewToolMain = React.createClass({
 
         this.setState({
             active: active,
-            new_tool: _new_tool
+            new_tool: _new_tool,
+                            errors: {
+                    mount_point: [],
+                    mount_label: []
+                }
         });
+        this.disableButton();
     },
 
     handleChangeForm: function(e) {
@@ -299,7 +300,7 @@ var NewToolMain = React.createClass({
             _new_tool.options[field_id] = e.target.value;
         }
             this.setState({
-                new_tool: _new_tool
+                new_tool: _new_tool,
             });
         },
 
@@ -371,8 +372,9 @@ var NewToolMain = React.createClass({
         if (this.props.existingMounts.indexOf(e.target.value) !== -1) {
             errors.mount_point.push('Mount point already exists.');
         }
-        if (errors) {
+        if (errors.mount_point.length > 0) {
             this.setState({errors: errors});
+            this.disableButton();
         } else {
             this.enableButton();
 
