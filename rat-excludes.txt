@@ -2,6 +2,7 @@
 **/*.git/
 **/*.json
 **/*.log
+**/*.pyc
 **/.coverage
 **/MANIFEST.in
 **/nosetests.xml
@@ -9,6 +10,7 @@
 Allura/allura/etc/mime.types
 Allura/allura/lib/AsciiDammit.py
 Allura/allura/lib/widgets/resources/css/autocomplete.css
+Allura/allura/lib/widgets/resources/css/colorPicker.css
 Allura/allura/lib/widgets/resources/css/jqfontselector.css
 Allura/allura/lib/widgets/resources/css/jquery.tagsinput.css
 Allura/allura/lib/widgets/resources/css/jquery.ui.datepicker.css
@@ -34,6 +36,7 @@ Allura/allura/public/nf/js/jquery.tablesorter.js
 Allura/allura/public/nf/js/jquery.tooltipster.js
 Allura/allura/public/nf/js/jquery.viewport.js
 Allura/allura/public/nf/js/modernizr.js
+Allura/allura/public/nf/js/pb.transformie.min.js
 Allura/allura/public/nf/js/react.min.js
 Allura/allura/public/nf/js/sylvester.js
 Allura/allura/tests/data/genshi_hello_tmpl
@@ -56,7 +59,7 @@ ForgeImporters/forgeimporters/trac/tests/data/test-list.html
 ForgeSVN/forgesvn/tests/data/
 ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
 ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
-node_modules/*
+node_modules/**
 rat-excludes.txt
 requirements*
 
