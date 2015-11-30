@@ -210,11 +210,10 @@ var NewToolInfo = React.createClass({
     },
 
     render: function() {
-        var titleStyle = {background: _getToolColor(this.props.toolLabel)};
         return (
             <div className='tool-info'>
                 <div className='tool-info-left'>
-                    <h1 style={titleStyle}>{this.props.toolLabel}</h1>
+                    <h1 className={this.props.toolLabel.toLowerCase() + "-tool"}>{this.props.toolLabel}</h1>
                     <p>{this.props.description}</p>
                 </div>
                 <div className='tool-info-right'>
