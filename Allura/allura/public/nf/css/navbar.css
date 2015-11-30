@@ -124,6 +124,7 @@
 .nav_admin > div > .react-drag > div:not(.tb-item):not(.tb-item-container) {
     float: left;
 }
+
 .react-drag.dragging > div:not(.tb-item):not(.tb-item-container) {
     background: #ccc;
 }
@@ -132,8 +133,52 @@
     margin-left: 2px;
 }
 
-.add-tool-field {
-    width: 50%;
+.add-new-tool-field {
+    width: 170px;
+    margin-bottom: 10px;
+}
+
+.add-new-tool-field label {
+    /*float: left;*/
+    color: #7C7C7C;
+}
+
+#add-tool-url-preview {
+    font-size: large;
+    width: 171px;
+    position: absolute;
+    text-align: left;
+    right: 24px;
+    bottom: 127px;
+}
+
+#add-tool-url-preview strong {
+    color: orange;
+}
+
+#new-tool-submit {
+    /* float: left; */
+    width: 138px;
+    font-size: larger;
+    margin-left: 15px;
+    min-height: 1.6rem;
+    position: relative;
+    margin-bottom: 32px;
+}
+
+#installable-items {
+    width: 18%;
+    float: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.add-tool-field input {
+    width: 100px;
+    height: 18px;
+    font-size: large;
+    color: #555;
+    margin: 15px;
 }
 
 .tb-item-grouper {
@@ -222,35 +267,32 @@
 }
 
 .installable-tool-box {
-    display: flex;
-    background-color: white;
+    background-color: whitesmoke;
     color: #757575;
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.42)));
+    border-right: 2px solid #AAAAAA;
+    /* background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.42))); */
     background-image: -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
     background-image: linear-gradient(top, #ffffff 0%, #cccccc 100%);
-    flex-wrap: wrap;
-    justify-content: inherit;
-    flex-direction: row;
+    /* margin: auto; */
 }
 
 .installable-tool-box div {
-    margin-bottom: 0;
-    margin-left: 0;
-    padding-top: 10px;
-    padding: 5px 10px 5px 10px;
     border-radius: 0 0 4px 4px;
     /* text-align: center; */
     font-size: 1rem;
-    font-weight: 700;
+    /* font-weight: 700; */
     list-style: none;
+    text-align: right;
     cursor: pointer;
-    min-width: 40px;
-    border: 1px solid transparent;
+    /* min-width: 40px; */
+    border: 1px solid rgba(77, 77, 77, 0.07);
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     -o-user-select: none;
     user-select: none;
+    margin: 0;
+    padding: 10px;
 }
 
 .tool-card .selected-tool {
@@ -270,28 +312,15 @@
 }
 
 .tool-card {
-    width: 500px;
-    display: block;
-    border: 2px solid #4E4E4E;
+    width: 90%;
+    margin-left: 88px;
+    border: 1px solid #646464;
     border-radius: 2px 2px 5px 5px;
-    margin-bottom: 0;
-    background: #636363;
-    right: 10px;
-    top: 50px;
-    position: absolute;
-    z-index: 1000;
-}
-
-.tool-card::before {
-    content: "▴";
-    color: #4E4E4E;
-    font-size: 69px;
-    position: absolute;
-    right: 8px;
-    top: -21px;
+    margin-bottom: 41px;
+    position: relative;
     overflow: auto;
-    float: right;
-    height: 1.5rem;
+    top: 15px;
+    box-shadow: -2px 5px 7px #8F8F8F;
 }
 
 .box-title {
@@ -306,66 +335,56 @@
     color: #DEDEDE;
 }
 
-.tool-info {
-    display: block;
-}
-
-.tool-info-left {
-    background: #636363;
-    width: 60%;
-    height: auto;
-    left: 0;
+#tool-info {
     float: left;
-    top: 0;
-    color: white;
+    width: 82%;
 }
 
-.tool-info-left p {
+#tool-info-left {
+    background: #636363;
+    width: 40%;
+    color: white;
+    float: left;
+    margin: auto;
+    height: 267px;
+}
+
+#tool-info-left p {
     text-align: center;
     vertical-align: text-top;
     padding-top: 0;
     left: 0;
     font-size: 11pt;
-    font-weight: 400;
+    font-weight: 700;
     color: #F9F9F9;
     padding-bottom: 20px;
     margin: 20px;
 }
 
-.tool-info-left h1 {
-    text-align: center;
-    padding-bottom: 0;
-    vertical-align: text-top;
-    padding-top: 0;
-    left: 0;
-    font-size: large;
-    color: #5B5B5B;
-    height: 2.4rem;
+#tool-info h1 {
+    padding: 10px;
+    font-size: xx-large;
     margin: 0;
+    border-bottom: 1px solid #999;
 }
 
-.tool-info-right {
-    width: 40%;
-    float: right;
-    position: relative;
-    top: 0;
+.add-tool-error-box {
+    background: #ffc5ca;
+    border: 1px solid #888;
+    width: 135px;
+    margin-left: 17px;
+}
+
+#tool-info-right {
+    width: 60%;
+    float: left;
     background: whitesmoke;
-    box-shadow: -1px 2px 8px #898989;
 }
 
 #add-tool-form {
     padding-top: 20px;
-    padding-left: 25px;
-    padding-right: 25px;
-}
-
-.add-tool-button {
-    width: 140px;
-    height: auto;
-    min-height: 1.6rem;
-    font-size: small;
-    bottom: 0.7rem;
-    right: -10px;
+    /* padding: 12px; */
+    margin-left: 30px;
 }
 
 #mount_point :invalid {
@@ -375,6 +394,7 @@
 #top_nav #add-tool-container {
     padding-bottom: 0;
 }
+
 #top_nav .add-tool-toggle {
     border: 1px dashed #B9B9B9;
     color: #0077aa;
@@ -435,24 +455,30 @@
     border-right: none !important;
 }
 
-.wiki-tool{
-    background: #DDFFF0;
+.wiki-tool {
+    background: #DFDFDF;
 }
-.git-tool{
-    background: #BBDEFB;
+
+.git-tool {
+    background: #DFDFDF;
 }
-.mercurial-tool{
-    background: #BBDEFB;
+
+.mercurial-tool {
+    background: #DFDFDF;
 }
-.tickets-tool{
-    background: #D1C4E9;
+
+.tickets-tool {
+    background: #DFDFDF;
 }
-.discussion-tool{
-    background: #DCEDC8;
+
+.discussion-tool {
+    background: #DFDFDF;
 }
-.blog-tool{
-    background: #FFF9C4;
+
+.blog-tool {
+    background: #DFDFDF;
 }
-.link-tool{
-    background: #FFCDD2;
+
+.link-tool {
+    background: #DFDFDF;
 }
