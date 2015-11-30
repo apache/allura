@@ -904,7 +904,7 @@ class ProjectAdminRestController(BaseController):
         if not mount_point or tool is None:
             raise exc.HTTPNotFound
         return {
-            'options': [dict(text=m.label, href=m.url, is_modal=m.className == 'admin_modal')
+            'options': [dict(text=m.label, href=m.url, className=m.className)
                         for m in tool.admin_menu()]
         }
 
