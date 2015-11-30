@@ -273,6 +273,7 @@ class AuthController(BaseController):
             h.auditlog_user('Email address verified: %s',  addr.email, user=user)
             if user.pending:
                 plugin.AuthenticationProvider.get(request).activate_user(user)
+                user.set_pref('email_address', addr.email)
         else:
             flash('Unknown verification link', 'error')
 

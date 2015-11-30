@@ -755,6 +755,7 @@ class TestAuth(TestController):
             em = M.EmailAddress.get(email='test@example.com')
             assert not user.pending
             assert em.confirmed
+            assert user.get_pref('email_address')
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
