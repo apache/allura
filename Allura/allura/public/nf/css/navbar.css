@@ -339,7 +339,6 @@
     padding-top: 0;
     left: 0;
     font-size: large;
-    background-color: #AEF4FF;
     color: #5B5B5B;
     height: 2.4rem;
     margin: 0;
@@ -436,4 +435,24 @@
     border-right: none !important;
 }
 
-
+.wiki-tool{
+    background: #DDFFF0;
+}
+.git-tool{
+    background: #BBDEFB;
+}
+.mercurial-tool{
+    background: #BBDEFB;
+}
+.tickets-tool{
+    background: #D1C4E9;
+}
+.discussion-tool{
+    background: #DCEDC8;
+}
+.blog-tool{
+    background: #FFF9C4;
+}
+.link-tool{
+    background: #FFCDD2;
+}
