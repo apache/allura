@@ -312,7 +312,6 @@ var NewToolMain = React.createClass({
       this.setState({
         canSubmit: true
       });
-        console.log("enabledButton hit");
     },
     disableButton: function () {
       this.setState({
@@ -347,6 +346,10 @@ var NewToolMain = React.createClass({
                         status: 'confirm'
                     });
                 _this.disableButton();
+                // Redirect to new tool
+                if (_this.state.active.name !== 'link') {
+                    window.location.href = _getProjectUrl(false) + "/" + _this.state.new_tool.mount_point;
+                }
             },
 
             error: function() {
@@ -377,7 +380,7 @@ var NewToolMain = React.createClass({
             this.disableButton();
         } else {
             this.enableButton();
-
+            this.setState({errors: {}});
         }
 
     },
