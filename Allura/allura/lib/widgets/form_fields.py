@@ -489,14 +489,13 @@ class Lightbox(ew_core.Widget):
         yield ew.JSLink('js/jquery.lightbox_me.js')
         yield onready('''
             var $lightbox = $('#lightbox_%s');
-            var $trigger = $('%s');
-            $trigger.bind('click', function(e) {
+            $('body').on('click', '%s', function(e) {
+                e.preventDefault();
                 $lightbox.lightbox_me(%s);
-                return false;
             });
-            $($lightbox).delegate('.close', 'click', function(e) {
+            $lightbox.on('click', '.close', function(e) {
+                e.preventDefault();
                 $lightbox.trigger('close');
-                return false;
             });
         ''' % (self.name, self.trigger, self.options))
 

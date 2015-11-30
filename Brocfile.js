@@ -36,20 +36,22 @@ tree = babelTranspiler(tree, {
 });
 
 /* exactly what's needed for the navbar, so separate apps may use it too */
-var react_file = 'react-with-addons' + (production ? '.min' : '') + '.js';
-var navbar_deps = funnel('Allura/allura/public/nf/js', {
-    include: ['underscore-min.js',
+var react_file = 'public/nf/js/react-with-addons' + (production ? '.min' : '') + '.js';
+var navbar_deps = funnel('Allura/allura', {
+    include: ['public/nf/js/underscore-min.js',
               react_file,
-              'react-dom.js',
-              'react-drag.min.js',
-              'react-reorderable.min.js',
+              'public/nf/js/react-dom.js',
+              'public/nf/js/react-drag.min.js',
+              'public/nf/js/react-reorderable.min.js',
+              'lib/widgets/resources/js/jquery.lightbox_me.js',
+              'lib/widgets/resources/js/admin_modal.js',
     ],
 });
 navbar = mergeTrees([navbar_deps, tree]);
 navbar = sourceMapConcat(navbar, {
     // headerFiles & footerFiles used to specify some that must come before or after others
     headerFiles: [react_file],
-    inputFiles: ['*.js'],
+    inputFiles: ['**/*.js'],
     footerFiles: ['navbar.es6.js',],
     outputFile: '/navbar.js',
 });

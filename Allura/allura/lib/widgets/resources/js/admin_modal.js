@@ -19,7 +19,8 @@
 $(function() {
     var $popup_title = $('#admin_modal_title');
     var $popup_contents = $('#admin_modal_contents');
-    $('a.admin_modal').click(function () {
+    $('body').on('click', 'a.admin_modal', function(e) {
+        e.preventDefault();
         var link = this;
         $popup_title.html('');
         $popup_contents.html('Loading...');
