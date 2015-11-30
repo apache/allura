@@ -814,6 +814,15 @@ class ProjectAdminRestController(BaseController):
                 }
             })
 
+        tools.append({
+            'name': 'subproject',
+            'description': "With a Sub Project you can add an entire project just like any other tool.",
+            'tool_label': 'Sub Project',
+            'defaults': {
+                'default_mount_label': 'Sub',
+                'default_mount_point': 'sub',
+            }
+        })
         return {'tools': tools}
 
     @expose('json:')
