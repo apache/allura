@@ -598,6 +598,10 @@ class Globals(object):
     def build_key(self):
         return config.get('build_key', '')
 
+    @LazyProperty
+    def global_nav(self):
+        return json.loads(config.get('global_nav'))
+
 
 class Icon(object):
 
