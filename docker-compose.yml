@@ -17,29 +17,14 @@
 
 web:
   build: .
-  # specialized command to run broccoli
-  # since it depends on files from the shared volume, it can't be run as part of the Dockerfile build :(
-  # and --no-bin-links necessary when Virtualbox is used since shared mount can't handle symlinks
-  command: >
-    sh -c '
-    if [ ! -e Allura/allura/public/nf/js/build/transpiled.js ]; then
-      npm install --no-bin-links --loglevel http &&
-      npm run build;
-    fi;
-    gunicorn --paste Allura/docker-dev.ini --reload;
-    '
+  environment: &env
+    # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
+    - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   ports:
     - "8080:8080"
   volumes:
-    - .:/allura
-    # mount env to allow update and sharing with taskd container
-    - /allura-data/env-docker/python:/usr/local/lib/python2.7
-    - /allura-data/env-docker/bin:/usr/local/bin
-    # mounting it separatelly to create git, svn, hg directories automatically
-    - /allura-data/scm/git:/allura-data/scm/git
-    - /allura-data/scm/hg:/allura-data/scm/hg
-    - /allura-data/scm/svn:/allura-data/scm/svn
-    - /allura-data/scm/snapshots:/allura-data/scm/snapshots
+    - .:/allura  # Allura source code from local host
+    - /allura-data:/allura-data  # for virtualenv, scm repos, etc
   links:
     - mongo
     - solr
@@ -48,6 +33,7 @@ web:
 taskd:
   image: allura_web
   working_dir: /allura/Allura
+  environment: *env
   command: paster taskd docker-dev.ini
   volumes_from:
     - web
@@ -82,6 +68,7 @@ outmail:
 inmail:
   image: allura_web
   working_dir: /allura/Allura
+  environment: *env
   command: paster smtp_server docker-dev.ini
   volumes_from:
     - web

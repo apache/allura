@@ -256,17 +256,11 @@ Build/fetch all required images (run these in allura source directory):
 
     docker-compose build
 
-Install requirements (and first containers started):
+Python and JS package setup (and first containers started):
 
 .. code-block:: bash
 
-    docker-compose run web pip install -r requirements.txt
-
-Install Allura packages:
-
-.. code-block:: bash
-
-    docker-compose run web ./rebuild-all.bash
+    docker-compose run web scripts/init-docker-dev.sh
 
 Initialize database with test data:
 
