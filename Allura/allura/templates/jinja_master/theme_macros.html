@@ -27,7 +27,12 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- macro header(login_url, logout_url) %}
 <header id="site-header">
     <div class="wrapper">
-        <nav>
+        <nav class="nav-left">
+          {% for nav_link in g.global_nav %}
+            <a href="{{ nav_link['url'] }}">{{ nav_link['title'] }}</a>
+          {% endfor %}
+        </nav>
+        <nav class="nav-right">
           {% if c.user._id %}
             <a href="/auth/preferences/">Account</a>
             <a href="{{c.user.url()}}">{{name}}</a>
