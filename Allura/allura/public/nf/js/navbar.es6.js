@@ -212,7 +212,9 @@ var OptionsMenu = React.createClass({
         return (<div className="optionMenu">
             <ul>
                {this.props.options.map((o, i) =>
-                    <li key={i}><a href={o.href} className="context-link">{o.text}</a></li>
+                    <li key={i}>
+                        <ToolTipLink href={o.href} classes={['context-link']} toolTip={this.props.toolTip} text={o.text}/>
+                    </li>
                 )}
             </ul>
         </div>)
