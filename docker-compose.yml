@@ -15,42 +15,32 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-web:
+base:
   build: .
-  # specialized command to run broccoli
-  # since it depends on files from the shared volume, it can't be run as part of the Dockerfile build :(
-  # and --no-bin-links necessary when Virtualbox is used since shared mount can't handle symlinks
-  command: >
-    sh -c '
-    if [ ! -e Allura/allura/public/nf/js/build/transpiled.js ]; then
-      npm install --no-bin-links --loglevel http &&
-      npm run build;
-    fi;
-    gunicorn --paste Allura/docker-dev.ini --reload;
-    '
+  environment:
+    # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
+    - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  volumes:
+    - .:/allura  # Allura source code from local host
+    - /allura-data:/allura-data  # for virtualenv, scm repos, etc
+
+web:
+  extends:
+    service: base
+  image: allura_base  # specify and image so that base's "build" doesn't run again
   ports:
     - "8080:8080"
-  volumes:
-    - .:/allura
-    # mount env to allow update and sharing with taskd container
-    - /allura-data/env-docker/python:/usr/local/lib/python2.7
-    - /allura-data/env-docker/bin:/usr/local/bin
-    # mounting it separatelly to create git, svn, hg directories automatically
-    - /allura-data/scm/git:/allura-data/scm/git
-    - /allura-data/scm/hg:/allura-data/scm/hg
-    - /allura-data/scm/svn:/allura-data/scm/svn
-    - /allura-data/scm/snapshots:/allura-data/scm/snapshots
   links:
     - mongo
     - solr
     - outmail
 
 taskd:
-  image: allura_web
+  extends:
+    service: base
+  image: allura_base  # specify and image so that base's "build" doesn't run again
   working_dir: /allura/Allura
   command: paster taskd docker-dev.ini
-  volumes_from:
-    - web
   links:
     - mongo
     - solr
@@ -74,17 +64,17 @@ mongo:
   command: mongod --smallfiles
 
 outmail:
-  image: allura_web
+  image: allura_base
   command: python -m smtpd -n -c DebuggingServer 0.0.0.0:8826
   expose:
     - "8826"
 
 inmail:
-  image: allura_web
+  extends:
+    service: base
+  image: allura_base  # specify and image so that base's "build" doesn't run again
   working_dir: /allura/Allura
   command: paster smtp_server docker-dev.ini
-  volumes_from:
-    - web
   ports:
     - "8825:8825"
   links:

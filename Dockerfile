@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
 RUN curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash - && \
     apt-get install --yes nodejs
 
-# only do the global installation here.  All local packages are installed in the docker-compose.yml command, since they need the shared mount
+# only do the global installation here.  All local packages are installed in init-docker-dev.sh, since they need the shared mount
 RUN npm install -g broccoli-cli
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
