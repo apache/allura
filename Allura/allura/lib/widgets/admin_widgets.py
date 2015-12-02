@@ -20,20 +20,6 @@ import ew.jinja2_ew as ew
 from allura.lib.widgets import form_fields as ffw
 
 
-class AdminModal(ffw.Lightbox):
-    defaults = dict(
-        ffw.Lightbox.defaults,
-        name='admin_modal',
-        trigger='a.admin_modal',
-        content='<h1 id="admin_modal_title"></h1>'
-                '<div id="admin_modal_contents"></div>')
-
-    def resources(self):
-        for r in super(AdminModal, self).resources():
-            yield r
-        yield ew.JSLink('js/admin_modal.js')
-
-
 class AdminToolDeleteModal(ffw.Lightbox):
     defaults = dict(
         ffw.Lightbox.defaults,

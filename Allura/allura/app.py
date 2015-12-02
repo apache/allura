@@ -308,11 +308,6 @@ class Application(object):
         self.admin = DefaultAdminController(self)
 
     @LazyProperty
-    def admin_modal(self):
-        """Returns modal dialog widget for app's admin options"""
-        return admin_widgets.AdminModal()
-
-    @LazyProperty
     def admin_tool_delete_modal(self):
         """Returns modal dialog widget for app's delete workflow"""
         return admin_widgets.AdminToolDeleteModal()

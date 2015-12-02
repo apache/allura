@@ -55,7 +55,6 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    admin_modal = admin_widgets.AdminModal()
     mount_delete = admin_widgets.AdminToolDeleteModal()
     install_modal = ffw.Lightbox(
         name='install_modal', trigger='a.install_trig')
@@ -270,7 +269,6 @@ class ProjectAdminController(BaseController):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
         c.mount_delete = W.mount_delete
-        c.admin_modal = W.admin_modal
         c.install_modal = W.install_modal
         c.page_list = W.page_list
         mounts = c.project.ordered_mounts()
@@ -809,7 +807,6 @@ class ProjectAdminRestController(BaseController):
                     'default_options': tool['app'].default_options(),
                     'default_mount_label': tool['app'].default_mount_label,
                     'default_mount_point': tool['app'].admin_menu_delete_button,
-                    'modal': tool['app'].admin_modal,
                 }
             })
 
@@ -1164,7 +1161,6 @@ class GroupsController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_groups.html')
     def index(self, **kw):
-        c.admin_modal = W.admin_modal
         c.card = W.group_card
         permissions_by_role = self._map_group_permissions()
         auth_role = M.ProjectRole.authenticated()
