@@ -70,21 +70,25 @@ def apply():
     @h.monkeypatch(tg, tg.decorators)
     @decorator
     def without_trailing_slash(func, *args, **kwargs):
-        '''Monkey-patched to use 301 redirects for SEO'''
+        '''Monkey-patched to use 301 redirects for SEO, and handle query strings'''
         response_type = getattr(request, 'response_type', None)
-        if (request.method == 'GET' and request.path.endswith('/')
-                and not response_type and len(request.params) == 0):
-            raise webob.exc.HTTPMovedPermanently(location=request.url[:-1])
+        if (request.method == 'GET' and request.path.endswith('/') and not response_type):
+            location = request.path_url[:-1]
+            if request.query_string:
+                location += '?' + request.query_string
+            raise webob.exc.HTTPMovedPermanently(location=location)
         return func(*args, **kwargs)
 
     @h.monkeypatch(tg, tg.decorators)
     @decorator
     def with_trailing_slash(func, *args, **kwargs):
-        '''Monkey-patched to use 301 redirects for SEO'''
+        '''Monkey-patched to use 301 redirects for SEO, and handle query strings'''
         response_type = getattr(request, 'response_type', None)
-        if (request.method == 'GET' and not(request.path.endswith('/'))
-                and not response_type and len(request.params) == 0):
-            raise webob.exc.HTTPMovedPermanently(location=request.url + '/')
+        if (request.method == 'GET' and not request.path.endswith('/') and not response_type):
+            location = request.path_url + '/'
+            if request.query_string:
+                location += '?' + request.query_string
+            raise webob.exc.HTTPMovedPermanently(location=location)
         return func(*args, **kwargs)
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
