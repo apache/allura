@@ -602,6 +602,10 @@ class Globals(object):
     def global_nav(self):
         return json.loads(config.get('global_nav'))
 
+    @LazyProperty
+    def logo_path(self):
+        return config.get('logo_path')
+
 
 class Icon(object):
 
