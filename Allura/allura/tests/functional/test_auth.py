@@ -87,12 +87,12 @@ class TestAuth(TestController):
         f['password'] = 'foo'
         r = f.submit().follow()
         logged_in_session = r.session['_id']
-        assert_equal(r.html.nav('a')[-1].string, "Log Out")
+        assert_equal(r.html.findAll('nav')[1]('a')[-1].string, "Log Out")
 
         r = self.app.get('/auth/logout').follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
-        assert_equal(r.html.nav('a')[-1].string, 'Log In')
+        assert_equal(r.html.findAll('nav')[1]('a')[-1].string, 'Log In')
 
     def test_track_login(self):
         user = M.User.by_username('test-user')
