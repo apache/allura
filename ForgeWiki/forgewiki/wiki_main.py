@@ -52,7 +52,6 @@ from allura.lib.widgets.search import SearchResults, SearchHelp
 # Local imports
 from forgewiki import model as WM
 from forgewiki import version
-from forgewiki.widgets.wiki import CreatePageWidget, WikiSubscribeForm
 
 log = logging.getLogger(__name__)
 
@@ -61,8 +60,6 @@ class W:
     thread = w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
-    create_page_lightbox = CreatePageWidget(
-        name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
     markdown_editor = ffw.MarkdownEdit()
     confirmation = ffw.Lightbox(name='confirm',
                                 trigger='a.post-link',
@@ -218,16 +215,12 @@ The wiki uses [Markdown](%s) syntax.
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]]]
 
-    def create_common_wiki_menu(self,
-                                has_create_access,
-                                create_page_url,
-                                create_page_class,
-                                admin_menu=False):
+    def create_common_wiki_menu(self, has_create_access, admin_menu=False):
         links = []
         if has_create_access:
-            links += [SitemapEntry('Create Page', create_page_url,
+            links += [SitemapEntry('Create Page', self.admin_url + 'create_wiki_page',
                                    ui_icon=g.icons['add'],
-                                   className=create_page_class)]
+                                   className='admin_modal')]
         if not admin_menu:
             links += [SitemapEntry(''),
                       SitemapEntry('Wiki Home', self.url, className='wiki_home')]
@@ -244,15 +237,14 @@ The wiki uses [Markdown](%s) syntax.
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
                     small=pending_mod_count))
-        if not c.user.is_anonymous():
+        if not c.user.is_anonymous() and not admin_menu:
             subscribed = M.Mailbox.subscribed(app_config_id=self.config._id)
             subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
             subscribe_title = '{}{}'.format(
                 subscribe_action.capitalize(),
                 '' if subscribed else ' to wiki')
-            subscribe_url = '{}#toggle-subscribe'.format(self.url)
-            if not admin_menu:
-                links.append(SitemapEntry(None))
+            subscribe_url = '{}#toggle-{}'.format(self.url + 'subscribe', subscribe_action)
+            links.append(SitemapEntry(None))
             links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail']))
         if not admin_menu:
             links += [SitemapEntry(''),
@@ -260,46 +252,49 @@ The wiki uses [Markdown](%s) syntax.
         return links
 
     def admin_menu(self, skip_common_menu=False):
-        admin_url = c.project.url() + \
-            'admin/' + \
-            self.config.options.mount_point + '/'
         links = [SitemapEntry('Set Home',
-                              admin_url + 'home',
+                              self.admin_url + 'home',
                               className='admin_modal')]
 
         if not self.show_left_bar and not skip_common_menu:
-            links += self.create_common_wiki_menu(True,
-                                                  admin_url +
-                                                  'create_wiki_page',
-                                                  'admin_modal', admin_menu=True)
+            links += self.create_common_wiki_menu(has_create_access=True, admin_menu=True)
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
 
     @h.exceptionless([], log)
-    def admin_menu_widgets(self):
-        widgets = super(ForgeWikiApp, self).admin_menu_widgets()
-        if not c.user.is_anonymous():
-            form = WikiSubscribeForm(
-                action=self.url + 'subscribe',
-                subscribed=M.Mailbox.subscribed(app_config_id=self.config._id))
-            widgets.append(form)
-        return widgets
-
-    @h.exceptionless([], log)
     def sidebar_menu(self):
-        return self.create_common_wiki_menu(has_access(self, 'create'), c.app.url, 'add_wiki_page')
+        return self.create_common_wiki_menu(has_create_access=has_access(self, 'create'))
 
-    @h.exceptionless([], log)
-    def sidebar_menu_widgets(self):
-        widgets = super(ForgeWikiApp, self).sidebar_menu_widgets()
-        widgets.append(W.create_page_lightbox)
-        if not c.user.is_anonymous():
-            form = WikiSubscribeForm(
-                action=self.url + 'subscribe',
-                subscribed=M.Mailbox.subscribed())
-            widgets.append(form)
-        return widgets
+    def sidebar_menu_js(self):
+        return '''
+        $('#sidebar').on('click', 'a[href$="#toggle-subscribe"]', function(e) {
+            e.preventDefault();
+            var link = this;
+            var data = {
+                _session_id: $.cookie('_session_id'),
+                subscribe: '1',
+            }
+            $.post(this.href, data, function(){
+                $('#messages').notify('Subscribed to wiki.');
+                $('span', link).text('Unsubscribe');
+                $(link).attr('href', $(link).attr('href').replace('-subscribe','-unsubscribe'));
+            });
+        });
+        $('#sidebar').on('click', 'a[href$="#toggle-unsubscribe"]', function(e) {
+            e.preventDefault();
+            var link = this;
+            var data = {
+                _session_id: $.cookie('_session_id'),
+                unsubscribe: '1',
+            }
+            $.post(this.href, data, function(){
+                $('#messages').notify('Unsubscribed.');
+                $('span', link).text('Subscribe to wiki');
+                $(link).attr('href', $(link).attr('href').replace('-unsubscribe','-subscribe'));
+            });
+        });
+        '''
 
     def install(self, project):
         'Set up any default permissions and roles here'

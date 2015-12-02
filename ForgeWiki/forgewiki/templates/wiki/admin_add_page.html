@@ -20,7 +20,7 @@
     $(function () {
         $("form").submit(function () {
             location.href = '{{ app.url }}' +
-                    encodeURIComponent($('input[name=name]', $(this)).val().replace('/', '-')) + '/edit';
+                    encodeURIComponent($('input[name=name]', $(this)).val().replace(new RegExp('/', 'g'), '-')) + '/edit';
             return false;
         });
     });
