@@ -44,7 +44,7 @@ var navbar_deps = funnel('Allura/allura', {
               'public/nf/js/react-drag.min.js',
               'public/nf/js/react-reorderable.min.js',
               'lib/widgets/resources/js/jquery.lightbox_me.js',
-              'lib/widgets/resources/js/admin_modal.js',
+              'public/nf/js/admin_modal.js',
     ],
 });
 navbar = mergeTrees([navbar_deps, tree]);
