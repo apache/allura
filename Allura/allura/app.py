@@ -602,13 +602,6 @@ class Application(object):
         """
         return ""
 
-    def sidebar_menu_widgets(self):
-        """Return widgets needed by the sidebar menu of this Application.
-
-        :return: a list of widgets
-        """
-        return []
-
     @LazyProperty
     def _webhooks(self):
         """A list of webhooks that can be triggered by this app.
@@ -677,13 +670,6 @@ class Application(object):
                 extra_html_attrs={
                     'data-mount-point': self.config.options.mount_point,
                 })
-
-    def admin_menu_widgets(self):
-        """Return widgets needed by the admin menu of this Application.
-
-        :return: a list of widgets
-        """
-        return []
 
     def handle_message(self, topic, message):
         """Handle incoming email msgs addressed to this tool.
