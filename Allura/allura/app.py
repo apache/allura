@@ -45,7 +45,6 @@ from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
-from allura.lib.widgets import admin_widgets
 from allura import model as M
 
 log = logging.getLogger(__name__)
@@ -306,11 +305,6 @@ class Application(object):
         self.project = project
         self.config = app_config_object
         self.admin = DefaultAdminController(self)
-
-    @LazyProperty
-    def admin_tool_delete_modal(self):
-        """Returns modal dialog widget for app's delete workflow"""
-        return admin_widgets.AdminToolDeleteModal()
 
     @LazyProperty
     def sitemap(self):
@@ -660,11 +654,9 @@ class Application(object):
         if self.uninstallable and not anchored:
             return SitemapEntry(
                 label='Delete',
-                url='#',
-                className='admin_tool_delete_modal',
-                extra_html_attrs={
-                    'data-mount-point': self.config.options.mount_point,
-                })
+                url=self.admin_url + 'delete',
+                className='admin_modal',
+            )
 
     def handle_message(self, topic, message):
         """Handle incoming email msgs addressed to this tool.
@@ -898,6 +890,10 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         return dict(
             app=self.app,
             allow_config=has_access(self.app, 'configure')())
+
+    @expose('jinja:allura:templates/app_admin_delete.html')
+    def delete(self):
+        return dict(app=self.app)
 
     @expose()
     @require_post()

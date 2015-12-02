@@ -173,6 +173,7 @@ class TestNeighborhood(TestController):
 
         r = self.app.get('/p/test/admin/tools')
         assert '<div class="fleft isnt_sorted">' in r
+        # FIXME
         delete_tool = r.html.findAll('a', {'class': 'admin_tool_delete_modal'})
         assert_equal(len(delete_tool), 1)
 
