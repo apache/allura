@@ -62,5 +62,8 @@
                     }), document.getElementById('add-tool-container'));
         });
     </script>
+
+    {# hidden modal, ready to be used by any admin functionality (top_nav, sidebar, admin page, etc) #}
+    {{ c.app.admin_modal.display() }}
 {% endif %}
 {% endif %}

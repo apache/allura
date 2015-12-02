@@ -19,26 +19,6 @@
 
 $(function() {
   var cval = $.cookie('_session_id');
-  // add a group
-  var csrf_input = $('<input>', {name: '_session_id', 'type': 'hidden', value: cval});
-  var $popup_title = $('#popup_title');
-  var $popup_contents = $('#popup_contents');
-  $('a.admin_modal').click(function(evt){
-    evt.preventDefault();
-    evt.stopPropagation();
-    var link = this;
-    $popup_title.html('');
-    $popup_contents.html('Loading...');
-    $.get(link.href, function (data) {
-      $popup_title.html(link.title);
-      $popup_contents.html(data);
-      $popup_contents.find('form').append(csrf_input);
-      $('.btn.link.close').click(function(){
-          $(this).trigger('close');
-          return false;
-      });
-    });
-  });
   // delete a group
   $('a.delete_group').click(function(evt){
     evt.preventDefault();
