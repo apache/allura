@@ -44,7 +44,6 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.tasks import export_tasks
 from allura.lib.widgets.project_list import ProjectScreenshots
-from allura.lib.widgets import admin_widgets
 
 from . import widgets as aw
 
@@ -55,7 +54,6 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    mount_delete = admin_widgets.AdminToolDeleteModal()
     install_modal = ffw.Lightbox(
         name='install_modal', trigger='a.install_trig')
     explain_export_modal = ffw.Lightbox(
@@ -268,7 +266,6 @@ class ProjectAdminController(BaseController):
     def tools(self, page=None, limit=200, **kw):
         c.markdown_editor = W.markdown_editor
         c.label_edit = W.label_edit
-        c.mount_delete = W.mount_delete
         c.install_modal = W.install_modal
         c.page_list = W.page_list
         mounts = c.project.ordered_mounts()
@@ -900,9 +897,12 @@ class ProjectAdminRestController(BaseController):
         tool = c.project.app_instance(mount_point)
         if not mount_point or tool is None:
             raise exc.HTTPNotFound
+        admin_menu = tool.admin_menu()
+        if tool.admin_menu_delete_button:
+            admin_menu.append(tool.admin_menu_delete_button)
         return {
             'options': [dict(text=m.label, href=m.url, className=m.className)
-                        for m in tool.admin_menu()]
+                        for m in admin_menu]
         }
 
     @expose('json:')

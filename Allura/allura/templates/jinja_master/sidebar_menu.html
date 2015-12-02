@@ -75,9 +75,6 @@
             {{sidebar_item(c.app.admin_menu_delete_button)}}
             {{sidebar_item(None)}}
           </div>
-          {% if c.app.admin_menu_delete_button %}
-            {{c.app.admin_tool_delete_modal.display()}}
-          {% endif %}
         {% endif %}
       {% endif %}
       {% for s in c.app.sidebar_menu() %}
