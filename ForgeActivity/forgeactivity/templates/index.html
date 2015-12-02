@@ -23,12 +23,7 @@
 {% block title %}{{c.project.name}} Activity{% endblock %}
 
 {% block header %}
-    Activity for
-    {% if c.project.is_user_project %}
-        {{c.project.user_project_of.display_name}}
-    {% else %}
-        {{c.project.name}}
-    {% endif %}
+    {{header_text}}
 {% endblock %}
 
 {% block actions %}

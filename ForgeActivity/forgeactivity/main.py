@@ -126,13 +126,21 @@ class ForgeActivityController(BaseController):
         else:
             # if we did ask for extra, check filtered result
             has_more = len(filtered_timeline) == limit
+
+        if c.project.is_user_project:
+            header_text = 'Activity %s follows' % \
+                c.project.user_project_of.display_name
+        else:
+            header_text = 'Activity for %s' % c.project.name
+
         return dict(
             followee=followee,
             following=following,
             timeline=filtered_timeline,
             page=page,
             limit=limit,
-            has_more=has_more)
+            has_more=has_more,
+            header_text=header_text)
 
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
