@@ -603,8 +603,25 @@ class Globals(object):
         return json.loads(config.get('global_nav'))
 
     @LazyProperty
-    def logo_path(self):
-        return config.get('logo_path')
+    def nav_logo(self):
+        logo = json.loads(config.get('logo'))
+        image_path = logo.get('image_path', False)
+        if not image_path:
+            return {}
+        allura_path = os.path.dirname(os.path.dirname(__file__))
+        image_full_path = '%s/public/nf/images/%s' % (
+            allura_path, image_path)
+
+        if not os.path.exists(image_full_path):
+            return {}
+
+        if not logo.get('redirect_link', False):
+            logo['redirect_url'] = '/'
+        path = 'images/%s' % logo['image_path']
+        return {
+            "image_path": self.forge_static(path),
+            "redirect_link": logo['redirect_link']
+        }
 
 
 class Icon(object):
