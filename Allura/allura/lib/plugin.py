@@ -1316,6 +1316,8 @@ class ThemeProvider(object):
         note = SiteNotification.current()
         if note is None:
             return None
+        if note.user_role is not None and not c.user.my_projects_by_role_name(note.user_role).first():
+            return None
         cookie = request.cookies.get('site-notification', '').split('-')
         if len(cookie) == 3 and cookie[0] == str(note._id):
             views = asint(cookie[1]) + 1

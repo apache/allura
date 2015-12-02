@@ -713,6 +713,7 @@ class SiteNotification(MappedClass):
     active = FieldProperty(bool, if_missing=True)
     impressions = FieldProperty(
         int, if_missing=lambda: config.get('site_notification.impressions', 0))
+    user_role = FieldProperty(str, if_missing=None)
 
     @classmethod
     def current(cls):
