@@ -798,7 +798,6 @@ class ProjectAdminRestController(BaseController):
     def installable_tools(self, **kw):
         """ List of installable tools and their default options.
         """
-        response.content_type = 'application/json'
         tools = []
         for tool in AdminApp.installable_tools_for(c.project):
             tools.append({

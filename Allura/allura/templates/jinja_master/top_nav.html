@@ -48,15 +48,19 @@
     {% do g.register_forge_js('js/react-reorderable.min.js') %}
     {% do g.register_forge_js('js/build/transpiled.js') %} {# if we do more es6, we'll need to register this in other places, or maybe even global #}
     <script>
+    'use strict';
+    let _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe  }};
         $(document).ready(function () {
-            $('#toggle-admin-btn').click(function() {
+            console.table({{_data }});
+            $('#toggle-admin-btn').click(function () {
                 ReactDOM.render(React.createElement(Main, {
-                    initialData: {{ h.escape_json(c.project.nav_data(admin_options=True))|safe }}
+                    initialData: _data
                 }), document.getElementById("top_nav_admin"));
             });
 
-            ReactDOM.render(React.createElement(ToggleAddNewTool),
-                            document.getElementById('add-tool-container'));
+            ReactDOM.render(React.createElement(ToggleAddNewTool, {
+                        installableTools: _data.installable_tools
+                    }), document.getElementById('add-tool-container'));
         });
     </script>
 {% endif %}

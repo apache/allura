@@ -640,9 +640,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 entry['children'] = [make_entry(child, mount_point=child.url.split('/')[-2]) for child in s.children]
             children.append(entry)
 
-        return dict(grouping_threshold=grouping_threshold,
-                    menu=children,
-                    )
+        response = dict(grouping_threshold=grouping_threshold, menu=children)
+        if admin_options:
+            response['installable_tools'] =[dict(text=t['tool_label'], href='#', tooltip=t['description'])
+                                             for t in ProjectAdminRestController().installable_tools()['tools']]
+
+        return response
 
     def grouped_navbar_entries(self):
         """Return a :class:`~allura.app.SitemapEntry` list suitable for rendering
