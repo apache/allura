@@ -244,155 +244,6 @@
 
 .tb-sub-menu .react-drag:hover a {
     color: white;
-
-}
-
-/*Add new tool*/
-/*////////////*/
-
-.btn-bar {
-    display: block;
-    padding: 0 10px 0 10px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -o-border-radius: 4px;
-    -ms-border-radius: 4px;
-    -khtml-border-radius: 4px;
-    border-radius: 4px;
-    text-decoration: none;
-    min-width: 1em;
-    text-align: center;
-    position: relative;
-    margin: 0 0 20px;
-}
-
-.installable-tool-box {
-    background-color: whitesmoke;
-    color: #757575;
-    border-right: 2px solid #AAAAAA;
-    /* background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, rgba(204, 204, 204, 0.42))); */
-    background-image: -moz-linear-gradient(top, #ffffff 0%, #cccccc 100%);
-    background-image: linear-gradient(top, #ffffff 0%, #cccccc 100%);
-    /* margin: auto; */
-}
-
-.installable-tool-box div {
-    border-radius: 0 0 4px 4px;
-    /* text-align: center; */
-    font-size: 1rem;
-    /* font-weight: 700; */
-    list-style: none;
-    text-align: right;
-    cursor: pointer;
-    /* min-width: 40px; */
-    border: 1px solid rgba(77, 77, 77, 0.07);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-    margin: 0;
-    padding: 10px;
-}
-
-.tool-card .selected-tool {
-    background: #09C !important;
-    color: white !important;
-    height: 21px;
-}
-
-.installable-tool-box div:hover {
-    background: white;
-    border: 1px solid #09C;
-}
-
-.installable-tool-box div.selected-tool:hover {
-    background: white;
-    color: rgb(85, 85, 85);
-}
-
-.tool-card {
-    width: 90%;
-    margin-left: 88px;
-    border: 1px solid #646464;
-    border-radius: 2px 2px 5px 5px;
-    margin-bottom: 41px;
-    position: relative;
-    overflow: auto;
-    top: 15px;
-    box-shadow: -2px 5px 7px #8F8F8F;
-}
-
-.box-title {
-    z-index: 60;
-    height: auto;
-    font-size: small;
-    text-align: center;
-    padding-bottom: 3px;
-    position: relative;
-    padding-top: 3px;
-    background: #4E4E4E;
-    color: #DEDEDE;
-}
-
-#tool-info {
-    float: left;
-    width: 82%;
-}
-
-#tool-info-left {
-    background: #636363;
-    width: 40%;
-    color: white;
-    float: left;
-    margin: auto;
-    height: 267px;
-}
-
-#tool-info-left p {
-    text-align: center;
-    vertical-align: text-top;
-    padding-top: 0;
-    left: 0;
-    font-size: 11pt;
-    font-weight: 700;
-    color: #F9F9F9;
-    padding-bottom: 20px;
-    margin: 20px;
-}
-
-#tool-info h1 {
-    padding: 10px;
-    font-size: xx-large;
-    margin: 0;
-    border-bottom: 1px solid #999;
-}
-
-.add-tool-error-box {
-    background: #ffc5ca;
-    border: 1px solid #888;
-    width: 135px;
-    margin-left: 17px;
-}
-
-#tool-info-right {
-    width: 60%;
-    float: left;
-    background: whitesmoke;
-}
-
-#add-tool-form {
-    padding-top: 20px;
-    /* padding: 12px; */
-    margin-left: 30px;
-}
-
-#mount_point :invalid {
-    background: #333;
-}
-
-#top_nav #add-tool-container {
-    padding-bottom: 0;
 }
 
 #top_nav .add-tool-toggle {
@@ -417,16 +268,7 @@
     text-decoration: underline;
 }
 
-/*.react-drag{*/
-/*display: block;*/
-/*max-width: 150px;*/
-/*float: left;*/
-/*!*border: 1px solid black;*!*/
-/*}*/
-
-/* Options Menu */
-
-.optionMenu {
+.contextMenu {
     background: #f0f0f0;
     border: 1px solid #999;
     box-shadow: -2px 2px 6px #555;
@@ -439,13 +281,14 @@
     clear: both;
 }
 
-.optionMenu > ul {
+.contextMenu > ul {
     list-style: none;
     border: none;
     margin-left: 2px;
+    visibility: visible !important;
 }
 
-#top_nav_admin .optionMenu > ul > li > a {
+#top_nav_admin .contextMenu > ul > li > a {
     margin: 4px;
     border-right: none;
     clear: both;
@@ -453,32 +296,4 @@
 
 #top_nav_admin .tool_option > a {
     border-right: none !important;
-}
-
-.wiki-tool {
-    background: #DFDFDF;
-}
-
-.git-tool {
-    background: #DFDFDF;
-}
-
-.mercurial-tool {
-    background: #DFDFDF;
-}
-
-.tickets-tool {
-    background: #DFDFDF;
-}
-
-.discussion-tool {
-    background: #DFDFDF;
-}
-
-.blog-tool {
-    background: #DFDFDF;
-}
-
-.link-tool {
-    background: #DFDFDF;
 }
