@@ -25,13 +25,13 @@ class ContextMenu extends React.Component {
     }
 
     static propTypes = {
-        classes: React.PropTypes.array,
+        classes: React.PropTypes.array.isRequired,
         items: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         onOptionClick: React.PropTypes.func.isRequired
     };
 
     static defaultOptions = {
-        classes: []
+        classes: ['context-link']
     };
 
     componentWillMount() {
@@ -61,6 +61,7 @@ class ContextMenu extends React.Component {
     }
 
     render() {
+        let _this = this;
         return (
             <div className="contextMenu">
                 <ul>{
@@ -68,7 +69,7 @@ class ContextMenu extends React.Component {
                         return (<li key={i}>
                             <ToolTipLink
                                 href={o.href}
-                                classes={['context-link', o.className]}
+                                classes={_this.props.classes.concat([o.className])}
                                 toolTip={o.tooltip}
                                 text={o.text}/>
                         </li>)

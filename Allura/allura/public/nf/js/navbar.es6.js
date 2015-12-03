@@ -122,6 +122,7 @@ var NavBarItem = React.createClass({
                 {this.props.currentOptionMenu.tool && this.props.currentOptionMenu.tool === this.props.mount_point &&
                     <ContextMenu
                         {...this.props}
+                        classes={['tool-options']}
                         items={this.props.options}
                         onOptionClick={this.props.onOptionClick}
                     />}
@@ -212,10 +213,11 @@ var ToggleAddNewTool = React.createClass({
             visible: !this.state.visible
         });
     },
-
-    onOptionClick: function(e) {
-        console.log("e", e);
+        handleOptionClick: function(event) {
+            console.log('event', event);
+        //this.props.onOptionClick(this.props.mount_point);
     },
+
     render: function () {
         return (
             <div>
@@ -225,7 +227,8 @@ var ToggleAddNewTool = React.createClass({
                 {this.state.visible &&
                 <ContextMenu
                     {...this.props}
-                    onOptionClick={this.onOptionClick}
+                    classes={['alt-context']}
+                    onOptionClick={this.handleOptionClick}
                     items={this.props.installableTools} />
                 }
             </div>
