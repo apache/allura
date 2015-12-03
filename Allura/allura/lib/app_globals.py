@@ -600,11 +600,14 @@ class Globals(object):
 
     @LazyProperty
     def global_nav(self):
+        if not config.get('global_nav', False):
+            return []
+
         return json.loads(config.get('global_nav'))
 
     @LazyProperty
     def nav_logo(self):
-        logo = json.loads(config.get('logo'))
+        logo = json.loads(config.get('logo').replace("\'", '"'))
         image_path = logo.get('image_path', False)
         if not image_path:
             return {}

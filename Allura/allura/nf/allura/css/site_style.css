@@ -495,16 +495,15 @@ blockquote {
 }
 
 /* nav */
-.nav-left {
+nav .link-left {
   float: left;
 }
-.nav-right {
+nav .link-right {
   float: right;
 }
-.nav-logo {
-  vertical-align: top;
-  margin-bottom: 5px;
-}
+/*.link-right, .link-left {
+  line-height: 45px;
+}*/
 
 /* logo */
 .logo {
