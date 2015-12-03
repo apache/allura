@@ -18,7 +18,6 @@
 */
 'use strict';
 
-
 /**
  * React Tooltip (tooltipster) Base class
 
@@ -29,9 +28,39 @@ class ToolTip extends React.Component {
         super(props);
     }
 
+    static propTypes = {
+        animation: React.PropTypes.string,
+        speed: React.PropTypes.number,
+        position: React.PropTypes.string,
+        contentAsHTML: React.PropTypes.bool,
+        delay: React.PropTypes.number,
+        theme: React.PropTypes.string,
+        maxWidth: React.PropTypes.number,
+        trigger: React.PropTypes.string,
+        multiple: React.PropTypes.bool,
+        classes: React.PropTypes.array,
+        text: React.PropTypes.string.isRequired,
+        href: React.PropTypes.string.isRequired,
+        toolTip: React.PropTypes.string
+    };
+
+    static defaultProps = {
+        animation: 'fade',
+        speed: 150,
+        delay: 0,
+        maxWidth: 300,
+        multiple: true,
+        contentAsHTML: false,
+        position: 'left',
+        trigger: 'hover',
+        classes: [],
+        theme: 'tooltipster-light'
+    };
+
+
     componentDidMount() {
         var _this = this;
-        $(".tooltip-link").tooltipster({
+        $(".react-tooltip").tooltipster({
             animation: _this.props.animation,
             speed: _this.props.speed,
             delay: _this.props.delay,
@@ -41,42 +70,11 @@ class ToolTip extends React.Component {
             position: _this.props.position,
             multiple: _this.props.multiple,
             iconCloning: false,
-            maxWidth: this.props.maxWidth
-        }).focus(function () {
-            $(this).tooltipster('show');
-        }).blur(function () {
-            $(this).tooltipster('hide');
-        });
+            maxWidth: _this.props.maxWidth
+        })
     }
 
 }
-ToolTip.propTypes = {
-    animation: React.PropTypes.string,
-    speed: React.PropTypes.number,
-    position: React.PropTypes.string,
-    contentAsHTML: React.PropTypes.bool,
-    delay: React.PropTypes.number,
-    theme: React.PropTypes.string,
-    maxWidth: React.PropTypes.number,
-    trigger: React.PropTypes.string,
-    multiple: React.PropTypes.bool,
-    classes: React.PropTypes.array,
-    text: React.PropTypes.string.isRequired,
-    href: React.PropTypes.string.isRequired,
-    toolTip: React.PropTypes.string
-};
-
-ToolTip.defaultProps = {
-    animation: 'fade',
-    speed: 150,
-    delay: 0,
-    maxWidth: 300,
-    multiple: false,
-    contentAsHTML: false,
-    position: 'left',
-    trigger: 'hover',
-    theme: 'tooltipster-light'
-};
 
 /**
  * Tooltip Link
@@ -89,7 +87,7 @@ class ToolTipLink extends ToolTip {
     }
 
     render() {
-        var classes = this.props.classes.join(' ') + " tooltip-link";
+        var classes = this.props.classes.join(' ') + " react-tooltip";
         return <a href={this.props.href} className={classes} title={this.props.toolTip}>{this.props.text}</a>
     }
 }
