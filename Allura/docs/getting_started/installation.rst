@@ -494,7 +494,7 @@ Just be sure the port matches the `smtp_port` from your `development.ini` (8826 
 
 .. code-block:: bash
 
-    python -m smtpd -n -c DebuggingServer localhost:8826
+    python -u -m smtpd -n -c DebuggingServer localhost:8826
 
 This will create a new debugging server that discards messages and prints them to stdout.
 
