@@ -31,7 +31,7 @@ class ContextMenu extends React.Component {
     };
 
     static defaultOptions = {
-        classes: ['context-link']
+        classes: []
     };
 
     componentWillMount() {
