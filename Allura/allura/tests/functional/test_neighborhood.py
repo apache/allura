@@ -173,9 +173,9 @@ class TestNeighborhood(TestController):
 
         r = self.app.get('/p/test/admin/tools')
         assert '<div class="fleft isnt_sorted">' in r
-        # FIXME
-        delete_tool = r.html.findAll('a', {'class': 'admin_tool_delete_modal'})
-        assert_equal(len(delete_tool), 1)
+        delete_tool = [link for link in r.html.findAll('a', {'class': 'admin_modal'})
+                       if link['href'].endswith('/delete')]
+        assert_equal(len(delete_tool), 0)  # wiki not deletable
 
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview',

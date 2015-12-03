@@ -261,7 +261,7 @@ class TestWebhookController(TestController):
         assert_equal(M.Webhook.query.find().count(), 2)
         wh1 = M.Webhook.query.get(hook_url=data1['url'])
         r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
-        form = r.forms[1]
+        form = r.forms[0]
         assert_equal(form['url'].value, data1['url'])
         assert_equal(form['secret'].value, data1['secret'])
         assert_equal(form['webhook'].value, unicode(wh1._id))
@@ -283,7 +283,7 @@ class TestWebhookController(TestController):
 
         # Duplicates
         r = self.app.get(self.url + '/repo-push/%s' % wh1._id)
-        form = r.forms[1]
+        form = r.forms[0]
         form['url'] = data2['url']
         r = form.submit()
         self.find_error(r, '_the_form',

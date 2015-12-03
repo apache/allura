@@ -18,41 +18,14 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
-<form method="POST"
-      action="{{c.project.url()}}admin/update_mounts"
-      id="admin-tool-delete-modal-form">
+<form method="POST" action="{{c.project.url()}}admin/update_mounts">
 <p>Warning: This will destroy all data in the '{{ app.config.options.mount_point }}' tool and is irreversible!</p>
 <hr>
 <p>
-  <input type="button" value="Delete" class="delete-tool">
+  <input type="submit" value="Delete" class="delete-tool">
   <input type="button" value="Cancel" class="close">
 </p>
-<input type="hidden" class="mount_point">
-<input type="hidden" value="Delete" class="delete-input">
+<input type="hidden" name="tool-0.mount_point" value="{{ app.config.options.mount_point }}">
+<input type="hidden" name="tool-0.delete" value="Delete">
 {{lib.csrf_token()}}
 </form>
-
-
-<script type="text/javascript">
-$(function() {
-    var $form = $('#admin-tool-delete-modal-form');
-    var mount_point = '{{ app.config.options.mount_point }}';
-    var is_sub = $(this).data('subproject');
-
-    var prefix = is_sub ? 'subproject-0' : 'tool-0';
-    var mount_point_name = prefix + (is_sub ? '.shortname' : '.mount_point');
-    var delete_name = prefix + '.delete';
-    $form.find('.mount_point')
-         .attr('name', mount_point_name)
-         .val(mount_point);
-    $form.find('.delete-input').attr('name', delete_name);
-
-    $form.find('.delete-tool').click(function() {
-        if ($form.find('.mount_point').val()) {
-            $form.submit();
-        } else {
-            console.log('Do not know which tool to delete!');
-        }
-    });
-});
-</script>
