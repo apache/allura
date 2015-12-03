@@ -7,6 +7,8 @@
 **/MANIFEST.in
 **/nosetests.xml
 **/setup.cfg
+.jscsrc
+.jshintrc
 Allura/allura/etc/mime.types
 Allura/allura/lib/AsciiDammit.py
 Allura/allura/lib/widgets/resources/css/autocomplete.css
@@ -38,7 +40,13 @@ Allura/allura/public/nf/js/jquery.viewport.js
 Allura/allura/public/nf/js/modernizr.js
 Allura/allura/public/nf/js/pb.transformie.min.js
 Allura/allura/public/nf/js/react.min.js
+Allura/allura/public/nf/js/react-dom.js
+Allura/allura/public/nf/js/react-drag.min.js
+Allura/allura/public/nf/js/react-reorderable.min.js
+Allura/allura/public/nf/js/react-with-addons.js
+Allura/allura/public/nf/js/react-with-addons.min.js
 Allura/allura/public/nf/js/sylvester.js
+Allura/allura/public/nf/js/underscore-min.js
 Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
 Allura/docs/make.bat
