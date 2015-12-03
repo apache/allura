@@ -120,11 +120,6 @@
     user-select: none;
 }
 
-/* selecting the top level ReactReorderable component */
-.nav_admin > div > .react-drag > div:not(.tb-item):not(.tb-item-container) {
-    float: left;
-}
-
 .react-drag.dragging > div:not(.tb-item):not(.tb-item-container) {
     background: #ccc;
 }
