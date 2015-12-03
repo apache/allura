@@ -384,12 +384,24 @@ class TestThemeProvider(object):
     def test_get_site_notification_with_role(self, SiteNotification, User):
         note = SiteNotification.current.return_value
         note.user_role = 'Test'
-        first = User.my_projects_by_role_name.return_value.first
-        first.return_value = True
+        projects = User.my_projects_by_role_name.return_value
+
+        User.is_anonymous.return_value = True
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        User.is_anonymous.return_value = False
+        projects.count.return_value = 0
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        projects.count.return_value = 1
+        projects.first.return_value.is_user_project = True
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        projects.first.return_value.is_user_project = False
         assert_is(ThemeProvider().get_site_notification(), note)
 
-        first.return_value = False
-        assert_is(ThemeProvider().get_site_notification(), None)
+        projects.count.return_value = 2
+        assert_is(ThemeProvider().get_site_notification(), note)
 
     @patch('allura.model.notification.SiteNotification')
     def test_get_site_notification_without_role(self, SiteNotification):
