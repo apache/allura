@@ -68,7 +68,7 @@ class ContextMenu extends React.Component {
                         return (<li key={i}>
                             <ToolTipLink
                                 href={o.href}
-                                classes={['context-link']}
+                                classes={['context-link', o.className]}
                                 toolTip={o.tooltip}
                                 text={o.text}/>
                         </li>)
