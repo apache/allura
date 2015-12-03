@@ -50,35 +50,7 @@ function slugify(text) {
         .replace(/^-+/,/^-+/,/^-+/,/^-+/, '')             // Trim - from start of text
         .replace(/-+$/,/-+$/,/-+$/,/-+$/, '');            // Trim - from end of text
 }
-/**
- * Get the color for a tool type
 
- * @constructor
- * @label string 'The default mount label for a tool.  i.e. git and hg use 'Code' which returns 'blue'.
- * @return {string}
- */
-
-function _getToolColor(defaultLabel='standard') {
-    // Replace with css... (if we even want to keep the color)
-    switch (defaultLabel) {
-    case 'Wiki':
-        return '#DDFFF0';
-    case 'Git':  // Git, svn, hg
-        return '#BBDEFB';
-    case 'Mercurial':  // Git, svn, hg
-        return '#BBDEFB';
-    case 'Tickets':
-        return '#D1C4E9';
-    case 'Discussion':
-        return '#DCEDC8';
-    case 'Blog':
-        return '#FFF9C4';
-    case 'Link':
-        return '#FFCDD2';
-    default:
-        return 'white';
-    }
-}
 /**
  * Get a mount point from a NavBarItem node.
 
@@ -157,9 +129,9 @@ var NavBarItem = React.createClass({
                     </span>
                 </a>
                 {this.props.currentOptionMenu.tool && this.props.currentOptionMenu.tool === this.props.mount_point &&
-                    <OptionsMenu
+                    <ContextMenu
                         {...this.props}
-                        options={this.props.options}
+                        items={this.props.options}
                         onOptionClick={this.props.onOptionClick}
                     />}
             </div>
@@ -171,55 +143,55 @@ var NavBarItem = React.createClass({
     }
 });
 
-/**
- * Options "context" menu
-
- * @constructor
- */
-var OptionsMenu = React.createClass({
-    propTypes: {
-        options: React.PropTypes.array.isRequired,
-        onOptionClick: React.PropTypes.func.isRequired
-    },
-
-    componentWillMount: function() {
-        var _this = this;
-        var mount_point;
-        $('body').on('click.optionMenu', function(evt) {
-            /* the :not filter should've worked as a 2nd param to .on() instead of this,
-               but clicks in the page gutter were being delayed for some reason */
-            if ($(evt.target).is(':not(.optionMenu)')) {
-
-                /* if clicking directly onto another gear, set it directly.
-                   this is necessary since sometimes our jquery events seem to interfere with the react event
-                   that is supposed to handle this kind of thing */
-                if ($(evt.target).is('.config-tool')) {
-                    mount_point = $(evt.target).next().data('mount-point');
-                } else {
-                    // no current option menu
-                    mount_point = "";
-                }
-                _this.props.onOptionClick(mount_point);
-            }
-        });
-    },
-
-    componentWillUnmount: function() {
-        $("body").off('click.optionMenu');  // de-register our specific click handler
-    },
-
-    render: function() {
-        return (<div className="optionMenu">
-            <ul>
-               {this.props.options.map((o, i) =>
-                    <li key={i}>
-                        <ToolTipLink href={o.href} classes={['context-link']} toolTip={this.props.toolTip} text={o.text}/>
-                    </li>
-                )}
-            </ul>
-        </div>)
-    }
-});
+///**
+// * Options "context" menu
+//
+// * @constructor
+// */
+//var OptionsMenu = React.createClass({
+//    propTypes: {
+//        options: React.PropTypes.array.isRequired,
+//        onOptionClick: React.PropTypes.func.isRequired
+//    },
+//
+//    componentWillMount: function() {
+//        var _this = this;
+//        var mount_point;
+//        $('body').on('click.optionMenu', function(evt) {
+//            /* the :not filter should've worked as a 2nd param to .on() instead of this,
+//               but clicks in the page gutter were being delayed for some reason */
+//            if ($(evt.target).is(':not(.optionMenu)')) {
+//
+//                /* if clicking directly onto another gear, set it directly.
+//                   this is necessary since sometimes our jquery events seem to interfere with the react event
+//                   that is supposed to handle this kind of thing */
+//                if ($(evt.target).is('.config-tool')) {
+//                    mount_point = $(evt.target).next().data('mount-point');
+//                } else {
+//                    // no current option menu
+//                    mount_point = "";
+//                }
+//                _this.props.onOptionClick(mount_point);
+//            }
+//        });
+//    },
+//
+//    componentWillUnmount: function() {
+//        $("body").off('click.optionMenu');  // de-register our specific click handler
+//    },
+//
+//    render: function() {
+//        return (<div className="optionMenu">
+//            <ul>
+//               {this.props.options.map((o, i) =>
+//                    <li key={i}>
+//                        <ToolTipLink href={o.href} classes={['context-link']} toolTip={this.props.toolTip} text={o.text}/>
+//                    </li>
+//                )}
+//            </ul>
+//        </div>)
+//    }
+//});
 
 /**
  * An input component that updates the NavBar's grouping threshold.
@@ -299,11 +271,24 @@ var ToggleAddNewTool = React.createClass({
             visible: !this.state.visible
         });
     },
-    render: function() {
-        return <AddNewToolButton
-            {...this.props}
-            showAddToolMenu={this.state.visible}
-            handleToggleAddNewTool={this.handleToggle} />;
+
+    onOptionClick: function(e) {
+        console.log("e", e);
+    },
+    render: function () {
+        return (
+            <div>
+                <a onClick={ this.handleToggle } className="add-tool-toggle">
+                    Add New...
+                </a>
+                {this.state.visible &&
+                <ContextMenu
+                    {...this.props}
+                    onOptionClick={this.onOptionClick}
+                    items={this.props.installableTools} />
+                }
+            </div>
+        )
     }
 });
 
@@ -329,6 +314,9 @@ var NormalNavBar = React.createClass({
         );
     },
 
+    onOptionClick: function(e){
+        console.log(e);
+    },
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
 
@@ -348,7 +336,12 @@ var NormalNavBar = React.createClass({
                 id="normal-nav-bar"
                 className="dropdown">
                 { listItems }
-                <li id="add-tool-container"><ToggleAddNewTool existingMounts={mount_points} /></li>
+                <li id="add-tool-container">
+                    <ToggleAddNewTool
+                        {...this.props}
+                        items={this.props.installableTools}
+                        onOptionClick={this.onOptionClick} />
+                </li>
             </ul>
         );
     }
@@ -491,6 +484,7 @@ var Main = React.createClass({
     propTypes: {
         initialData: React.PropTypes.shape({
             menu: React.PropTypes.arrayOf(ToolsPropType),
+            installableTools: React.PropTypes.array,
             grouping_threshold: React.PropTypes.number.isRequired
         }),
         installableTools: React.PropTypes.array
@@ -622,6 +616,7 @@ var Main = React.createClass({
                 return (
                     <AdminNav
                         tools={ _this.state.data.menu }
+                        installableTools={ _this.state.data.installable_tools }
                         data={ _this.state.data }
                         onToolReorder={ _this.onToolReorder }
                         onToolDragStart={ _this.onToolDragStart }
@@ -636,6 +631,7 @@ var Main = React.createClass({
                     <div>
                         <NormalNavBar
                             items={ _this.state.data.menu }
+                            installableTools={ _this.state.data.installable_tools }
                             />
                     </div>
                 );
