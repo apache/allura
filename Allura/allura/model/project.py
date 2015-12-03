@@ -644,7 +644,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         if admin_options:
             response['installable_tools'] =[dict(text=t['tool_label'], href='#', tooltip=t['description'])
                                              for t in ProjectAdminRestController().installable_tools()['tools']]
-
         return response
 
     def grouped_navbar_entries(self):

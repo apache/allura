@@ -42,15 +42,6 @@ function _getProjectUrl(rest = true) {
     return (rest ? '/rest/' : '/') + nbhd_proj;
 }
 
-function slugify(text) {
-    return text.toString().toLowerCase()
-        .replace(/\s+/g,/\s+/g,/\s+/g,/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g,/[^\w\-]+/g,/[^\w\-]+/g,/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g,/\-\-+/g,/\-\-+/g,/\-\-+/g, '-')         // Replace multiple - with single -
-        .replace(/^-+/,/^-+/,/^-+/,/^-+/, '')             // Trim - from start of text
-        .replace(/-+$/,/-+$/,/-+$/,/-+$/, '');            // Trim - from end of text
-}
-
 /**
  * Get a mount point from a NavBarItem node.
 
@@ -79,7 +70,7 @@ function getUrlByNode(node) {
     return node.props.children[0].props.url;
 }
 
-var ToolsPropType = React.PropTypes.shape({
+const ToolsPropType = React.PropTypes.shape({
     mount_point: React.PropTypes.string,
     name: React.PropTypes.string.isRequired,
     url: React.PropTypes.string.isRequired,
@@ -142,56 +133,6 @@ var NavBarItem = React.createClass({
         this.props.onOptionClick(this.props.mount_point);
     }
 });
-
-///**
-// * Options "context" menu
-//
-// * @constructor
-// */
-//var OptionsMenu = React.createClass({
-//    propTypes: {
-//        options: React.PropTypes.array.isRequired,
-//        onOptionClick: React.PropTypes.func.isRequired
-//    },
-//
-//    componentWillMount: function() {
-//        var _this = this;
-//        var mount_point;
-//        $('body').on('click.optionMenu', function(evt) {
-//            /* the :not filter should've worked as a 2nd param to .on() instead of this,
-//               but clicks in the page gutter were being delayed for some reason */
-//            if ($(evt.target).is(':not(.optionMenu)')) {
-//
-//                /* if clicking directly onto another gear, set it directly.
-//                   this is necessary since sometimes our jquery events seem to interfere with the react event
-//                   that is supposed to handle this kind of thing */
-//                if ($(evt.target).is('.config-tool')) {
-//                    mount_point = $(evt.target).next().data('mount-point');
-//                } else {
-//                    // no current option menu
-//                    mount_point = "";
-//                }
-//                _this.props.onOptionClick(mount_point);
-//            }
-//        });
-//    },
-//
-//    componentWillUnmount: function() {
-//        $("body").off('click.optionMenu');  // de-register our specific click handler
-//    },
-//
-//    render: function() {
-//        return (<div className="optionMenu">
-//            <ul>
-//               {this.props.options.map((o, i) =>
-//                    <li key={i}>
-//                        <ToolTipLink href={o.href} classes={['context-link']} toolTip={this.props.toolTip} text={o.text}/>
-//                    </li>
-//                )}
-//            </ul>
-//        </div>)
-//    }
-//});
 
 /**
  * An input component that updates the NavBar's grouping threshold.

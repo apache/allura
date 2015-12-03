@@ -50,7 +50,7 @@ navbar = sourceMapConcat(navbar, {
     // headerFiles & footerFiles used to specify some that must come before or after others
     headerFiles: [react_file],
     inputFiles: ['*.js'],
-    footerFiles: ['add-new-tool.es6.js','navbar.es6.js',],
+    footerFiles: ['navbar.es6.js',],
     outputFile: '/navbar.js',
 });
 
