@@ -61,7 +61,7 @@ mongo:
 
 outmail:
   image: allura_web
-  command: python -m smtpd -n -c DebuggingServer 0.0.0.0:8826
+  command: python -u -m smtpd -n -c DebuggingServer 0.0.0.0:8826
   expose:
     - "8826"
 
