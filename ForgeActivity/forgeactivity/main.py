@@ -128,8 +128,11 @@ class ForgeActivityController(BaseController):
             has_more = len(filtered_timeline) == limit
 
         if c.project.is_user_project:
-            header_text = 'Activity %s follows' % \
-                c.project.user_project_of.display_name
+            if not actor_only:
+                header_text = 'Activity %s follows' % \
+                    c.project.user_project_of.display_name
+            else:
+                header_text = 'Activity from your followers'
         else:
             header_text = 'Activity for %s' % c.project.name
 
