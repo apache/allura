@@ -446,7 +446,7 @@ blockquote {
   color: #555555;
 }
 #site-header a:first-child, #site-footer a:first-child {
-  margin-left: 0;
+  margin-left: 1em;
 }
 
 /* site header */
@@ -495,15 +495,12 @@ blockquote {
 }
 
 /* nav */
-nav .link-left {
+.nav-left, .nav-logo  {
   float: left;
 }
-nav .link-right {
+.nav-main {
   float: right;
 }
-/*.link-right, .link-left {
-  line-height: 45px;
-}*/
 
 /* logo */
 .logo {

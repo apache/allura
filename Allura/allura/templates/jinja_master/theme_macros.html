@@ -27,13 +27,17 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- macro header(login_url, logout_url) %}
 <header id="site-header">
     <div class="wrapper">
-        <nav>
+        <div class="nav-logo">
           {% if g.nav_logo %}
             <a class="link-left" href="{{ g.nav_logo['redirect_link'] }}"><img class="nav-logo" src="{{ g.nav_logo['image_path'] }}" /></a>
           {% endif %}
+        </div>
+        <nav class="nav-left">
           {% for nav_link in g.global_nav %}
             <a class="link-left" href="{{ nav_link['url'] }}">{{ nav_link['title'] }}</a>
           {% endfor %}
+        </nav>
+        <nav class="nav-main">
           {% if c.user._id %}
             <a class="link-right" href="/auth/preferences/">Account</a>
             <a class="link-right" href="{{c.user.url()}}">{{name}}</a>
