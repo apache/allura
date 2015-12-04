@@ -18,35 +18,7 @@
 */
 
 (function() {
-    // Install popup
-    var install_popup = $('#lightbox_install_modal');
-    var install_form = $('#install_form');
-    var new_ep_name = install_form.find('input.new_ep_name');
-    var new_mount_point = install_form.find('input.new_mount_point');
-    var new_mount_label = install_form.find('input.new_mount_label');
-    var install_tool_label = $('#install_tool_label');
-    var mount_point_rule_names = $('#install_form .mount-point-rule-names');
-    var install_options = $('#install_options');
-    install_popup.append(install_form.show());
-    $('a.install_trig').click(function () {
-        var datatool = $(this).data('tool');
-        if (datatool) {
-            var tool = defaults[datatool];
-            install_options.html('Loading options...');
-            $.get(install_options_url, {tool_name: datatool}, function (data) {
-                install_options.html(data);
-            });
-            install_tool_label.html(tool.default_label);
-            new_ep_name.val(datatool);
-            new_mount_point.val(tool.default_mount);
-            new_mount_label.val(tool.default_label);
-        } else {
-            install_tool_label.html("Subproject");
-            new_ep_name.val('');
-            new_mount_point.val('');
-            new_mount_label.val('');
-        }
-    });
+
     // sorting
     $('#sortable').sortable({items: ".fleft:not(.isnt_sorted)"}).bind( "sortupdate", function (e) {
         var sortables = $('#sortable .fleft');

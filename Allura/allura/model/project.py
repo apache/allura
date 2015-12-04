@@ -643,8 +643,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             children.append(entry)
 
         response = dict(grouping_threshold=grouping_threshold, menu=children)
+
         if admin_options:
-            response['installable_tools'] =[dict(text=t['tool_label'], href='#', tooltip=t['description'])
+            _href = '{}admin/install_tool?tool_name={}'
+            response['installable_tools'] = [dict(text=t['tool_label'],
+                                                  href=_href.format(self.url(), t['name']),
+                                                  tooltip=t['description'])
                                              for t in ProjectAdminRestController().installable_tools()['tools']]
         return response
 

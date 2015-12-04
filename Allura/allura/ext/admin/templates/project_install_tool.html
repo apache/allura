@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{% set full_url = h.absurl(c.project.url()) %}
+
+<h1> Installing {{ tool.tool_label }} </h1>
+
+<form method="post" action="{{ full_url }}/admin/update_mounts" id="install_form">
+    <input type="hidden" name="new.ordinal" value="{{ total_mounts }}"/>
+    <input type="hidden" name="new.ep_name" class="new_ep_name" value="{{ tool_name }}">
+    <label class="grid-13" for="new.mount_label">Label</label>
+    <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"
+                                title="This will be the name displayed in your project toolbar."
+                                value="{{ tool.default_mount_label }}">
+    </div>
+    <label class="grid-13" for="new.mount_point">Url Path</label>
+    <div class="grid-13">
+        <input id="id_url_input" type="text" name="new.mount_point"
+               title="The url for this tool relative to {{ full_url }} " class="new_mount_point"
+               value="{{ tool.default_mount_point }}">
+        <p><span id="full-url-preview" data-url="{{ full_url }}"></span></p>
+    </div>
+    <div id="install_options">
+        {% for o in options %}
+          <label class="grid-13" for="{{o.name}}">{{o.label}}</label>
+          <div class="grid-13">
+            {% if o.ming_type.__name__ == 'bool' %}
+              <input {{o.render_attrs()}}id="{{o.name}}" name="{{o.name}}" type="checkbox"{{ ' checked="checked"' if o.default}}>
+            {% else %}
+              <input {{o.render_attrs()}} id="{{o.name}}" name="{{o.name}}" value="{{o.default or ''}}">
+            {% endif %}
+          </div>
+          {% if o.help_text %}
+            <div class="grid-13"><small>{{o.help_text}}</small></div>
+          {% endif %}
+        {% endfor %}
+    </div>
+    <div class="grid-13">&nbsp;</div>
+    <hr>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+        <input type="submit" value="Save" name="new.install"> <a href="#" class="close btn link">Cancel</a>
+    </div>
+    {{lib.csrf_token()}}
+</form>
+
+
+<script>
+    $('#admin_modal_title').hide();
+    var url_preview = $('#full-url-preview'); // "Preview Url Path" displayed on when creating a new tool.
+
+    var full_url = $(url_preview).data().url; // Full url path of current project.
+
+    // Update the url path preview as they type.
+    $('#id_url_input').keyup(function(){
+        url_preview.html(full_url + '<strong style="color:orange">' + $(this).val() + "</strong>");
+    }).keyup();
+
+    // Set url_preview to the Url Path Defaults when creating a new tool.
+    // Add the link tool's 'nice name'.
+{#    defaults['external link'] = defaults.link#}
+{#    var tool_name = $.trim($(this).text().toLowerCase());#}
+{##}
+{#    // If a tool has a default url path, use it for an initial preview.#}
+{#    if (defaults[tool_name]) {#}
+{#        url_preview.html(full_url + '<strong class="url-keyword">' + defaults[tool_name].default_mount + "</strong>");#}
+{#    }#}
+{#    else {#}
+{#        // No defaults for this tool, so we use the base url to ensure the url_preview is reset.#}
+{#        url_preview.html(full_url);#}
+{#    }#}
+</script>

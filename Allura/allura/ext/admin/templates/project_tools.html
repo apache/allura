@@ -124,44 +124,6 @@
 </form>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    var defaults = {
-        {% for tool in installable_tools %}
-        '{{tool.name}}':{'default_label':'{{tool.app.default_mount_label}}','default_mount':'{{tool.app.default_mount_point}}'}{% if not loop.last %},{% endif %}
-        {% endfor %}
-    };
-    var install_options_url = "{{ c.project.url().rstrip('/') }}/admin/options_on_install";
-</script>
-<script>
-/* Real-time preview of a Url Path (aka mount point). */
-
-    var url_preview = $('#full-url-preview'); // "Preview Url Path" displayed on when creating a new tool.
-    var full_url = $(url_preview).data().url; // Full url path of current project.
-
-    // Update the url path preview as they type.
-    $('#id_url_input').keyup(function(){
-        url_preview.html(full_url + '<strong class="url-keyword">' + $(this).val() + "</strong>");
-    });
-
-    // Set url_preview to the Url Path Defaults when creating a new tool.
-    $('.installable_tool').find('a').on('click', function () {
-        // Add the link tool's 'nice name'.
-        defaults['external link'] = defaults.link
-        var tool_name = $.trim($(this).text().toLowerCase());
-
-        // If a tool has a default url path, use it for an initial preview.
-        if (defaults[tool_name]) {
-            url_preview.html(full_url + '<strong class="url-keyword">' + defaults[tool_name].default_mount + "</strong>");
-        }
-        else {
-            // No defaults for this tool, so we use the base url to ensure the url_preview is reset.
-            url_preview.html(full_url);
-        }
-    });
-</script>
-{% endblock %}
-
 {% block extra_css %}
 <style type="text/css">
 .pad .fourcol .fleft {

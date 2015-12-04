@@ -213,10 +213,6 @@ var ToggleAddNewTool = React.createClass({
             visible: !this.state.visible
         });
     },
-        handleOptionClick: function(event) {
-            console.log('event', event);
-        //this.props.onOptionClick(this.props.mount_point);
-    },
 
     render: function () {
         return (
@@ -227,8 +223,8 @@ var ToggleAddNewTool = React.createClass({
                 {this.state.visible &&
                 <ContextMenu
                     {...this.props}
-                    classes={['alt-context']}
-                    onOptionClick={this.handleOptionClick}
+                    classes={['admin_modal']}
+                    onOptionClick={this.handleToggle}
                     items={this.props.installableTools} />
                 }
             </div>
@@ -258,9 +254,9 @@ var NormalNavBar = React.createClass({
         );
     },
 
-    onOptionClick: function(e){
-        console.log(e);
-    },
+    //onOptionClick: function(e){
+    //    console.log(e);
+    //},
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
 
@@ -274,7 +270,6 @@ var NormalNavBar = React.createClass({
                 }
             }
         }
-        console.log("mount_points", mount_points);
         return (
             <ul
                 id="normal-nav-bar"

@@ -295,15 +295,6 @@ class ProjectAdminController(BaseController):
             flash('Invalid threshold', 'error')
         redirect('tools?limit=%s&page=%s' % (limit, page))
 
-    @expose('jinja:allura:templates/app_admin_options_on_install.html')
-    def options_on_install(self, tool_name):
-        """Renders form fields for options configuration on install"""
-        tool = [t['app'] for t in AdminApp.installable_tools_for(c.project)
-                if t['name'].lower() == tool_name.lower()]
-        if len(tool) == 1:
-            return {'options': tool[0].options_on_install()}
-        raise exc.HTTPNotFound
-
     @expose()
     @require_post()
     def update_labels(self, labels=None, **kw):
@@ -342,9 +333,27 @@ class ProjectAdminController(BaseController):
         redirect('tools')
 
     @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
-    def groups(self, **kw):
-        return dict()
+    @expose('jinja:allura.ext.admin:templates/project_install_tool.html')
+    def install_tool(self, tool_name=None, **kw):
+        if tool_name == 'subproject':
+            return dict(
+                    tool_name=tool_name,
+                    tool={
+                        'tool_label': 'Sub Project',
+                        'default_mount_label': 'SubProject',
+                        'default_mount_point': 'subproject'
+                    },
+                    total_mounts=999,  # FIXME
+                    options=[],
+            )
+
+        tool = g.entry_points['tool'][tool_name]
+        return dict(
+                tool_name=tool_name,
+                tool=tool,
+                total_mounts=999,  # FIXME
+                options=tool.options_on_install(),
+        )
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -352,6 +361,12 @@ class ProjectAdminController(BaseController):
         if app is None:
             raise exc.HTTPNotFound, name
         return app.admin, remainder
+
+
+    @without_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
+    def groups(self, **kw):
+        return dict()
 
     @expose()
     @require_post()
@@ -715,6 +730,8 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def update_mounts(self, subproject=None, tool=None, new=None, page=0, limit=200, **kw):
+        if new and new['ep_name'] == u'subproject':
+            new['ep_name'] = ""
         try:
             new_app = self._update_mounts(subproject, tool, new, **kw)
             if new_app:
