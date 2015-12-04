@@ -607,16 +607,16 @@ class Globals(object):
 
     @LazyProperty
     def nav_logo(self):
-        logo = json.loads(config.get('logo').replace("\'", '"'))
+        logo = json.loads(config.get('logo'))
         image_path = logo.get('image_path', False)
         if not image_path:
-            return {}
+            return False
         allura_path = os.path.dirname(os.path.dirname(__file__))
         image_full_path = '%s/public/nf/images/%s' % (
             allura_path, image_path)
 
-        if not os.path.exists(image_full_path):
-            return {}
+        if not os.path.isfile(image_full_path):
+            return False
 
         if not logo.get('redirect_link', False):
             logo['redirect_url'] = '/'
