@@ -1324,6 +1324,14 @@ class ThemeProvider(object):
                 only_user_project = projects.count() == 1 and projects.first().is_user_project
                 if projects.count() == 0 or only_user_project:
                     return None
+        tool_matching = False
+        url_matching = False
+        if note.page_tool_type is None or c.app is not None and c.app.config.tool_name.lower() == note.page_tool_type.lower():
+            tool_matching = True
+        if note.page_regex is None or re.search(note.page_regex, request.url):
+            tool_matching = True
+        if not tool_matching and not url_matching:
+            return None
         cookie = request.cookies.get('site-notification', '').split('-')
         if len(cookie) == 3 and cookie[0] == str(note._id):
             views = asint(cookie[1]) + 1
