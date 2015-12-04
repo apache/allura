@@ -714,6 +714,9 @@ class SiteNotification(MappedClass):
     impressions = FieldProperty(
         int, if_missing=lambda: config.get('site_notification.impressions', 0))
     user_role = FieldProperty(str, if_missing=None)
+    page_regex = FieldProperty(str, if_missing=None)
+    page_tool_type = FieldProperty(str, if_missing=None)
+
 
     @classmethod
     def current(cls):
