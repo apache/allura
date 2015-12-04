@@ -17,13 +17,11 @@ class TestNavigation(TestController):
     def setUp(self):
         super(TestNavigation, self).setUp()
         self.logo_pattern = ('div', {'class': 'nav-logo'})
-        self.global_nav_pattent = ('nav', {'class': 'nav-left'})
+        self.global_nav_pattern = ('nav', {'class': 'nav-left'})
         self.nav_data = {
             "title": "Link Test", "url": "http://example.com"}
         self.logo_data = {
             "redirect_link": "/", "image_path": "test_image.png"}
-
-    def tearDown(self):
         g._Globals__shared_state.pop('global_nav', None)
         g._Globals__shared_state.pop('nav_logo', None)
 
@@ -36,7 +34,7 @@ class TestNavigation(TestController):
     def test_global_nav_links_present(self):
         with h.push_config(config, **self._set_config()):
             response = self.app.get('/')
-        nav_left = response.html.find(*self.global_nav_pattent)
+        nav_left = response.html.find(*self.global_nav_pattern)
         assert len(nav_left.findAll('a')) == 1
         assert nav_left.a.get('href') == self.nav_data['url']
         assert nav_left.a.text == self.nav_data['title']
@@ -45,7 +43,7 @@ class TestNavigation(TestController):
     def test_global_nav_links_absent(self, global_nav):
         with h.push_config(config, **self._set_config()):
             response = self.app.get('/')
-        nav_left = response.html.find(*self.global_nav_pattent)
+        nav_left = response.html.find(*self.global_nav_pattern)
         assert len(nav_left.findAll('a')) == 0
 
     def test_logo_absent_if_not_image_path(self):
