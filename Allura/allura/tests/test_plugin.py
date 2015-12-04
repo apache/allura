@@ -271,6 +271,8 @@ class TestThemeProvider(object):
     def test_get_site_notification_closed(self, request, response, SiteNotification):
         SiteNotification.current.return_value._id = 'deadbeef'
         SiteNotification.current.return_value.user_role = None
+        SiteNotification.current.return_value.page_regex = None
+        SiteNotification.current.return_value.page_tool_type = None
         request.cookies = {'site-notification': 'deadbeef-1-true'}
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
@@ -283,6 +285,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 2
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {'site-notification': 'deadbeef-3-false'}
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
@@ -295,6 +299,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 2
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {'site-notification': 'deadbeef-1-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
@@ -308,6 +314,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 0
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {'site-notification': 'deadbeef-1000-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
 
@@ -319,6 +327,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 1
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {'site-notification': '0ddba11-1000-true'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
@@ -332,6 +342,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 0
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
@@ -345,6 +357,8 @@ class TestThemeProvider(object):
         note._id = 'deadbeef'
         note.impressions = 0
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
@@ -384,6 +398,8 @@ class TestThemeProvider(object):
     def test_get_site_notification_with_role(self, SiteNotification, User):
         note = SiteNotification.current.return_value
         note.user_role = 'Test'
+        note.page_regex = None
+        note.page_tool_type = None
         projects = User.my_projects_by_role_name.return_value
 
         User.is_anonymous.return_value = True
@@ -407,8 +423,69 @@ class TestThemeProvider(object):
     def test_get_site_notification_without_role(self, SiteNotification):
         note = SiteNotification.current.return_value
         note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
         assert_is(ThemeProvider().get_site_notification(), note)
 
+    @patch('re.search')
+    @patch('allura.model.notification.SiteNotification')
+    def test_get_site_notification_with_page_regex(self, SiteNotification, search):
+        note = SiteNotification.current.return_value
+        note.user_role = None
+        note.page_regex = 'test'
+        note.page_tool_type = None
+
+        search.return_value = True
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        search.return_value = False
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+    @patch('allura.model.notification.SiteNotification')
+    def test_get_site_notification_with_page_tool_type(self, SiteNotification):
+        note = SiteNotification.current.return_value
+        note.user_role = None
+        note.page_regex = None
+        c.app = Mock()
+        note.page_tool_type.lower.return_value = 'test1'
+
+        c.app.config.tool_name.lower.return_value = 'test1'
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        c.app.config.tool_name.lower.return_value = 'test2'
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        c.app = None
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+    @patch('re.search')
+    @patch('allura.model.notification.SiteNotification')
+    def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, search):
+        note = SiteNotification.current.return_value
+        note.user_role = None
+        note.page_regex = 'test'
+        c.app = Mock()
+        note.page_tool_type.lower.return_value = 'test1'
+
+        search.return_value = False
+        c.app.config.tool_name.lower.return_value = 'test2'
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        search.return_value = True
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        search.return_value = False
+        c.app.config.tool_name.lower.return_value = 'test1'
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        search.return_value = True
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        c.app = None
+        assert_is(ThemeProvider().get_site_notification(), note)
+
+        search.return_value = False
+        assert_is(ThemeProvider().get_site_notification(), None)
 
 
 class TestLocalAuthenticationProvider(object):
