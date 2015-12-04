@@ -621,7 +621,7 @@ class Globals(object):
             return False
 
         if not logo.get('redirect_link', False):
-            logo['redirect_url'] = '/'
+            logo['redirect_link'] = '/'
         path = 'images/%s' % logo['image_path']
         return {
             "image_path": self.forge_static(path),
