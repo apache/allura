@@ -1,6 +1,7 @@
 import mock
 import json
 from tg import config
+from pylons import app_globals as g
 
 from allura.tests import TestController
 from allura.lib import helpers as h
@@ -15,42 +16,33 @@ class TestNavigation(TestController):
 
     def setUp(self):
         super(TestNavigation, self).setUp()
+        self.logo_pattern = ('div', {'class': 'nav-logo'})
+        self.global_nav_pattent = ('nav', {'class': 'nav-left'})
+        self.nav_data = {
+            "title": "Link Test", "url": "http://example.com"}
+        self.logo_data = {
+            "redirect_link": "/", "image_path": "test_image.png"}
+        self.config_data = {
+            "global_nav": json.dumps([self.nav_data]),
+            "logo": json.dumps(self.logo_data)
+        }
 
     def test_global_nav_links_present(self):
-        data = {"title": "Link Test", "url": "http://example.com"}
-        with h.push_config(config, **{"global_nav": json.dumps([data])}):
+        with h.push_config(config, **self.config_data):
             response = self.app.get('/')
-            assert response.html.nav('a')[0].text == \
-                data['title']
-            assert response.html.nav('a')[0].attrs[-1][-1] == \
-                data['url']
+        nav_left = response.html.find(*self.global_nav_pattent)
+        assert len(nav_left.findAll('a')) == 1
+        assert nav_left.a.get('href') == self.nav_data['url']
+        assert nav_left.a.text == self.nav_data['title']
 
     def test_logo_absent_if_not_image_path(self):
-        data = {"redirect_link": "/", "image_path": "bad_image.png"}
-        with h.push_config(config, **{"logo": json.dumps(data)}):
+        with h.push_config(config, **self.config_data):
             response = self.app.get('/')
-            self.logo = json.loads(config.get('logo'))
-        main_page_link = response.html.nav('a')[0].attrs[-1][-1]
-        assert main_page_link != self.logo['redirect_link']
+        nav_logo = response.html.find(*self.logo_pattern)
+        assert len(nav_logo.findAll('a')) == 0
 
-    # @mock.patch('allura.lib.app_globals.os.path.exists')
-    # def test_logo_present(self, path_exists):
-    #     path_exists.return_value = True
-    #     data = {"redirect_link": "/", "image_path": "user123.png"}
-    #     with h.push_config(config, **{"logo": json.dumps(data)}):
-    #         response = self.app.get('/')
-    #         self.logo = json.loads(config.get('logo'))
-    #     main_page_link = response.html.nav('a')[0].attrs[-1][-1]
-    #     image_link = response.html.html.nav('a')[0].img.attrs[-1][-1]
-    #     assert main_page_link == self.logo['redirect_link']
-    #     assert self.logo['image_path'] in image_link
-
-    # @mock.patch("allura.lib.app_globals.config")
-    # def test_logo_redirect_url_absent_and_set_default(self, _config):
-    #     _config.get('logo').return_value = str({
-    #         "redirect_link": "/",
-    #         "image_path": "a.png"
-    #     })
-    #     response = self.app.get('/')
-    #     main_page_link = response.html.findAll('nav')[0]('a')[0].attrs[-1][-1]
-    #     assert main_page_link == '/'
+    @mock.patch.object(g, 'nav_logo')
+    def test_logo_present(self, glogo):
+        response = self.app.get('/')
+        nav_logo = response.html.find(*self.logo_pattern)
+        assert len(nav_logo.findAll('img')) == 1

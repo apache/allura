@@ -81,18 +81,21 @@ class TestAuth(TestController):
 
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
+        nav_pattern = ('nav', {'class': 'nav-main'})
         r = self.app.get('/auth/')
         f = r.forms[0]
         f['username'] = 'test-user'
         f['password'] = 'foo'
         r = f.submit().follow()
         logged_in_session = r.session['_id']
-        assert_equal(r.html.nav('a')[-1].string, "Log Out")
+        links = r.html.find(*nav_pattern).findAll('a')
+        assert_equal(links[-1].string, "Log Out")
 
         r = self.app.get('/auth/logout').follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
-        assert_equal(r.html.nav('a')[-1].string, 'Log In')
+        links = r.html.find(*nav_pattern).findAll('a')
+        assert_equal(links[-1].string, 'Log In')
 
     def test_track_login(self):
         user = M.User.by_username('test-user')
