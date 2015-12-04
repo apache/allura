@@ -44,7 +44,7 @@ RELEASE_FILENAME=$RELEASE_BASE.tar.gz
 RELEASE_FILE_EXTRACTED=$RELEASE_DIR/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
 RELEASE_TAG=asf_release_$VERSION
-CLOSE_DATE=`date -d '+72 hours' +%F`
+CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`
 
 scripts/changelog.py asf_release_$PREV_VERSION HEAD $VERSION > .changelog.tmp
 echo >> .changelog.tmp
@@ -116,12 +116,15 @@ The release has been signed with key ($KEY):
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
   Tag:    asf_release_$VERSION (pending successful vote)
-  Browse: https://forge-allura.apache.org/p/allura/git/ci/$COMMIT_SHA/log/?path=
+  Browse: https://forge-allura.apache.org/p/allura/git/ci/$COMMIT_SHA/log/
+
+Changes for this version are listed at:
+  https://forge-allura.apache.org/p/allura/git/ci/$COMMIT_SHA/tree/CHANGES
 
 The RAT license report is available at:
   $RAT_LOG_PASTEBIN_URL
 
-Vote will be open for at least 72 hours ($CLOSE_DATE 12PM IST).  Votes from Allura PMC members are binding,
+Vote will be open for at least 72 hours ($CLOSE_DATE).  Votes from Allura PMC members are binding,
 but we welcome all community members to vote as well.
 
 [ ] +1 approve
