@@ -14,6 +14,8 @@
   },
   "author": "Apache Allura team",
   "license": "Apache-2.0",
+
+  "//": "When broccoli-babel-transpiler moves to babel 6, we'll need to add babel-plugin-transform-class-properties to our deps",
   "devDependencies": {
     "broccoli": "^0.16.8",
     "broccoli-babel-transpiler": "^5.4.5",
