@@ -607,6 +607,8 @@ class Globals(object):
 
     @LazyProperty
     def nav_logo(self):
+        if not config.get('logo', False):
+            return False
         logo = json.loads(config.get('logo'))
         image_path = logo.get('image_path', False)
         if not image_path:
