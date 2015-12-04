@@ -1,3 +1,72 @@
+Version 1.3.2  (December 2015)
+
+Upgrade Instructions
+
+ To enable faster commit views, by skipping copy detection, update the development.ini file to set
+ scm.commit.git.detect_copies and scm.commit.hg.detect_copies to false.
+
+New Features
+
+ * [#6797] Move API docs from sf.net wiki to RAML.  Browse at https://forge-allura.apache.org/p/allura/rest-api-docs
+ * [#7922] Add "admin" section to the left sidebar of all tools
+ * [#7924] Update icon set to FontAwesome
+ * [#7999] Admin page to really delete projects
+ * [#8004] Cleaner project nav, tool icons removed
+ * [#7955] Add more formatting support to markdown editor
+
+Security
+
+ * [#5694] Set max limit on limit param
+ * [#8011] Served SVG images can execute JS
+
+Bug Fixes & Minor Improvements
+
+ Documentation:
+ * [#7957] Document how to run allura with gunicorn/uwsgi/mod_wsgi
+ * [#7995] Some docker config & doc improvements
+ Tickets:
+ * [#7911] Remove "bin" terminology from saved searches pages
+ Code Repositories:
+ * [#7403] [Allura|Bug] - Typo found in initial Git command description.
+ * [#7538] If diff is empty, it shouldn't show "empty file" [ss7532]
+ * [#7913] Handle parsing of the output from git 2.4.0+
+ * [#7925] Speed up diff processing with binary files
+ * [#7963] Speed up commit view by disabling copy detection with option
+ Blog:
+ * [#7822] Should not show draft blog post changes in activity stream
+ Wiki:
+ * [#7871] Send email notifiction on wiki page delete
+ Admin:
+ * [#7923] Left sidebar should show appropriate links when viewing tool options
+ General:
+ * [#7943] Limit the "_discuss" results from the tickets api.
+ * [#7948] Cursor position often wrong in new markdown editor
+ * [#7950] Markdown editor should have max height
+ * [#7970] Expand urlopen retry conditions
+ * [#7994] Fix comments split across two threads, not all comments showing
+ * [#8016] Dialog 'cancel' link in wrong place
+ Other:
+ * [#7946] Error setting channel in Chat's options
+ * [#7953] API endpoints error when using access_token as URL param
+ * [#7984] Fix layout at bottom of subscriptions page
+ * [#7990] Change link on new_projects admin page
+ * [#7997] image attachments visible on posts (replies) awaiting moderation
+ * [#8007] Broken icon images when running under gunicorn
+ * [#8014] Bug: removed upsert() method needed by TracWikiImporter
+ * [#7959] Need to set focus when phone validation overlay appears
+ * [#7960] clean_phone_number function is too eager to prepend 1-
+ * [#7969] Option to force phone validation language
+ * [#7979] Phone validation interfering with project import
+ * [#7991] Option to limit phone validation usage
+ For Developers:
+ * [#7976] JSX and ES6 support, via Broccoli toolchain
+ * [#8026] Remove jquery.file_chooser.js
+ * [#8027] Fix licensing of several files
+ * [#7964] test_merge_request_detail_view fails (intermittent)
+ * [#7980] Fix pep8 and pyflakes violations
+ * [#8015] Activitystream needs ming config option
+ * [#8028] Use virtualenv inside docker
+
 Version 1.3.1  (August 2015)
 
 Upgrade Instructions
