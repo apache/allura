@@ -241,7 +241,7 @@ class ForgeTrackerApp(Application):
         'delete': 'Delete and undelete tickets. View deleted tickets.',
     }
     config_options = Application.config_options + [
-        ConfigOption('EnableVoting', bool, False),
+        ConfigOption('EnableVoting', bool, True),
         ConfigOption('TicketMonitoringEmail', str, ''),
         ConfigOption('TicketMonitoringType',
                      schema.OneOf('NewTicketsOnly', 'AllTicketChanges',

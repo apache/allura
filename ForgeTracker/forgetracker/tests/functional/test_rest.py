@@ -137,7 +137,7 @@ class TestRestIndex(TestTrackerApiBase):
             'options']['mount_point'] == 'bugs'
         assert tickets.json['tracker_config']['options'][
             'TicketMonitoringType'] == 'AllTicketChanges'
-        assert not tickets.json['tracker_config']['options']['EnableVoting']
+        assert tickets.json['tracker_config']['options']['EnableVoting']
         assert tickets.json['tracker_config']['options'][
             'TicketMonitoringEmail'] == 'test@localhost'
         assert tickets.json['tracker_config'][
