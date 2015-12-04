@@ -281,14 +281,18 @@ manual mongo queries, however:
     > db.site_notification.insert({
     ... active: true,
     ... impressions: 10,
-    ... content: 'You can now reimport exported project data.'
+    ... content: 'You can now reimport exported project data.',
+    ... user_role: 'Developer',
+    ... page_regex: '/p/wiki/(home|browse_pages)/',
+    ... page_tool_type: 'wiki'
     ... })
 
 This will create a notification that will be shown for 10 page views or until the
-user closes it manually.  An `impressions` value of 0 will show the notification
-indefinitely (until closed).  The notification content can contain HTML.  Only the
-most recent notification will be shown, unless it has `active:false`, in which case
-no notification will be shown.
+user closes it manually.  This Notification will be shown only for users with Developer`s rights.
+And if url page is according to `/p/wiki/(home|browse_pages)/` or app tool name is equal to `wiki`.
+An `impressions` value of 0 will show the notification indefinitely (until closed).
+The notification content can contain HTML.  Only the most recent notification will be shown,
+unless it has `active:false`, in which case no notification will be shown.
 
 .. _delete-projects:
 
