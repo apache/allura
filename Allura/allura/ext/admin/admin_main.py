@@ -880,33 +880,6 @@ class ProjectAdminRestController(BaseController):
         }
 
     @expose('json:')
-    @require_post() # FIXME
-    def mount_point(self, mount_point=None, **kw):
-        """
-        Returns a tool from a given mount point
-        """
-        response.content_type = 'application/json'
-
-        tool = c.project.app_instance(mount_point)
-
-        if tool is None:
-            return {
-                'exists': False,
-                'info': 'Mount point does not exists.',
-            }
-
-        try:
-            info = json.dumps(tool)
-            # FIXME
-        except TypeError:
-            info = "Could not serialize tool."
-
-        return {
-            'exist': True,
-            'info': info
-        }
-
-    @expose('json:')
     def admin_options(self, mount_point=None, **kw):
         """
         Returns the admin options for a given mount_point
