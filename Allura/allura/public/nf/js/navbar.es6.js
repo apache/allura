@@ -70,6 +70,27 @@ function getUrlByNode(node) {
     return node.props.children[0].props.url;
 }
 
+/**
+ * Returns all existing mount points for a given project.
+
+ * @constructor
+ * @param {array} items
+ * @returns {array}
+ */
+function getMountPoints(items) {
+    var existingTools = [];
+    for (let item of items) {
+        if (item.hasOwnProperty('mount_point') && item.mount_point !== null) {
+            existingTools.push(item.mount_point);
+        } else if (item.hasOwnProperty('children')) {
+            for (let child of item.children) {
+                existingTools.push(child.mount_point)
+            }
+        }
+    }
+    return existingTools;
+}
+
 const ToolsPropType = React.PropTypes.shape({
     mount_point: React.PropTypes.string,
     name: React.PropTypes.string.isRequired,
@@ -280,16 +301,7 @@ var NormalNavBar = React.createClass({
 
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
-        var existingTools = [];
-        for(let item of this.props.installableTools){
-            if(item.hasOwnProperty('mount_point') && item.mount_point !== null){
-                existingTools.push(item.mount_point);
-            } else if(item.hasOwnProperty('children')){
-                for(let child of item.children){
-                    existingTools.push(child.mount_point)
-                }
-            }
-        }
+        var existingTools = getMountPoints(this.props.items);
         return (
             <ul
                 id="normal-nav-bar"

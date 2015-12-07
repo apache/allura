@@ -51,6 +51,7 @@
     'use strict';
     var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe  }};
         $(document).ready(function () {
+            var _existingTools = getMountPoints(_data['menu']);
             $('#toggle-admin-btn').click(function () {
                 ReactDOM.render(React.createElement(Main, {
                     initialData: _data
@@ -58,7 +59,9 @@
             });
 
             ReactDOM.render(React.createElement(ToggleAddNewTool, {
-                        installableTools: _data['installable_tools']
+                        installableTools: _data['installable_tools'],
+                        mountPointValidation:_existingTools
+
                     }), document.getElementById('add-tool-container'));
         });
     </script>
