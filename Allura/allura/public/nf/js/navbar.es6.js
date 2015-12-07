@@ -474,7 +474,6 @@ var Main = React.createClass({
      * @param {object} event
      */
     onUpdateThreshold: function(event) {
-        var _this = this;
         var thres = event.target.value;
         var url = `${_getProjectUrl()}/admin/configure_tool_grouping`;
         var csrf = $.cookie('_session_id');
@@ -482,22 +481,7 @@ var Main = React.createClass({
             _session_id: csrf,
             grouping_threshold: thres
         };
-        var _data = this.state.data;
-        _data.grouping_threshold = thres;
-        this.setState({
-            data: _data
-        });
-        this.setState({
-            in_progress: true
-        });
-        $.post(url, data, function() {
-        }.bind(this)).always(function() {
-            _this.setState({
-                in_progress: false
-            });
-        });
-
-        _this.getNavJson();
+        $.post(url, data, () => this.getNavJson());
         return false;
     },
 
