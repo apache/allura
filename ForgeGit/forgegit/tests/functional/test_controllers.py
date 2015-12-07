@@ -625,7 +625,7 @@ class TestFork(_TestCase):
 
     def test_merge_request_detail_noslash(self):
         self._request_merge()
-        r = self.app.get('/p/test/src-git/merge-requests/1', status=302)
+        r = self.app.get('/p/test/src-git/merge-requests/1', status=301)
         assert_equal(r.location, 'http://localhost/p/test/src-git/merge-requests/1/')
 
     def test_merge_request_with_deleted_repo(self):

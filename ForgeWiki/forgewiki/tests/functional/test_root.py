@@ -78,7 +78,7 @@ class TestRootController(TestController):
 
     def test_root_new_search(self):
         self.app.get(h.urlquote(u'/wiki/tést/'))
-        response = self.app.get('/wiki/search?q=' + h.urlquote(u'tést'))
+        response = self.app.get('/wiki/search/?q=' + h.urlquote(u'tést'))
         assert u'Search wiki: tést' in response
 
     def test_feed(self):
@@ -87,14 +87,14 @@ class TestRootController(TestController):
 
     @patch('allura.lib.search.search')
     def test_search(self, search):
-        r = self.app.get('/wiki/search?q=test')
+        r = self.app.get('/wiki/search/?q=test')
         assert_in(
-            '<a href="/wiki/search?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
+            '<a href="/wiki/search/?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
         assert_in(
-            '<a href="/wiki/search?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
+            '<a href="/wiki/search/?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
 
         p = M.Project.query.get(shortname='test')
-        r = self.app.get('/wiki/search?q=test&sort=score+asc')
+        r = self.app.get('/wiki/search/?q=test&sort=score+asc')
         solr_query = {
             'short_timeout': True,
             'ignore_errors': False,
@@ -118,14 +118,14 @@ class TestRootController(TestController):
         search.assert_called_with('test', **solr_query)
 
         r = self.app.get(
-            '/wiki/search?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
+            '/wiki/search/?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
         solr_query['fq'][
             3] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
         solr_query['fq'].remove('is_history_b:False')
         solr_query['sort'] = 'mod_date_dt desc'
         search.assert_called_with('test', **solr_query)
 
-        r = self.app.get('/wiki/search?q=test&parser=standard')
+        r = self.app.get('/wiki/search/?q=test&parser=standard')
         solr_query['sort'] = 'score desc'
         solr_query['fq'][3] = 'type_s:("WikiPage" OR "WikiPage Snapshot")'
         solr_query['fq'].append('is_history_b:False')
@@ -135,7 +135,7 @@ class TestRootController(TestController):
         search.assert_called_with('test', **solr_query)
 
     def test_search_help(self):
-        r = self.app.get('/wiki/search?q=test')
+        r = self.app.get('/wiki/search/?q=test')
         btn = r.html.find('a', attrs={'class': 'icon btn search_help_modal'})
         assert btn is not None, "Can't find a help button"
         div = r.html.find('div', attrs={'id': 'lightbox_search_help_modal'})

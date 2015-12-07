@@ -102,7 +102,7 @@ class Test(TestController):
 
     def test_root_new_search(self):
         self._post()
-        response = self.app.get('/blog/search?q=see')
+        response = self.app.get('/blog/search/?q=see')
         assert 'Search' in response
 
     def test_paging(self):
@@ -178,8 +178,8 @@ class Test(TestController):
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
-        self.app.get('/blog/%s/my-post?version=1' % d)
-        self.app.get('/blog/%s/my-post?version=foo' % d, status=404)
+        self.app.get('/blog/%s/my-post/?version=1' % d)
+        self.app.get('/blog/%s/my-post/?version=foo' % d, status=404)
 
     def test_post_diff(self):
         self._post()

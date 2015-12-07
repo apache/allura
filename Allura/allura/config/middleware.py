@@ -37,6 +37,17 @@ import formencode
 import ming
 from ming.orm.middleware import MingMiddleware
 
+# Must apply patches before other Allura imports to ensure all the patches are effective.
+# This file gets imported from paste/deploy/loadwsgi.py pretty early in the app execution
+from allura.lib import patches
+patches.apply()
+try:
+    import newrelic
+except ImportError:
+    pass
+else:
+    patches.newrelic()
+
 from allura.config.app_cfg import base_config
 from allura.config.environment import load_environment
 from allura.config.app_cfg import ForgeConfig
@@ -47,7 +58,6 @@ from allura.lib.custom_middleware import CSRFMiddleware
 from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
-from allura.lib import patches
 from allura.lib import helpers as h
 
 __all__ = ['make_app']
@@ -87,13 +97,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     mimetypes.init(
         [pkg_resources.resource_filename('allura', 'etc/mime.types')]
         + mimetypes.knownfiles)
-    patches.apply()
-    try:
-        import newrelic
-    except ImportError:
-        pass
-    else:
-        patches.newrelic()
+
     # Configure MongoDB
     ming.configure(**app_conf)
 

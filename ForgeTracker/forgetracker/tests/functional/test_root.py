@@ -1353,7 +1353,7 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         for ext in ['', '.rss', '.atom']:
             assert '<title>test first ticket</title>' in \
-                   self.app.get('/p/test/bugs/search_feed%s?q=test' % ext)
+                   self.app.get('/p/test/bugs/search_feed%s/?q=test' % ext)
 
     def test_search_current_user(self):
         self.new_ticket(summary='test first ticket')
@@ -2768,7 +2768,7 @@ class TestHelpTextOptions(TrackerTestController):
             search_txt='*bar*')
         r = self.app.get('/bugs/')
         assert '<em>bar</em>' in r
-        r = self.app.get('/bugs/search', params=dict(q='test'))
+        r = self.app.get('/bugs/search/', params=dict(q='test'))
         assert '<em>bar</em>' in r
         r = self.app.get('/bugs/milestone/1.0/')
         assert '<em>bar</em>' in r
@@ -2779,7 +2779,7 @@ class TestHelpTextOptions(TrackerTestController):
         r = self.app.get('/bugs/')
         assert len(
             r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
-        r = self.app.get('/bugs/search', params=dict(q='test'))
+        r = self.app.get('/bugs/search/', params=dict(q='test'))
         assert len(
             r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
         r = self.app.get('/bugs/milestone/1.0/')
@@ -2803,12 +2803,12 @@ class test_show_default_fields(TrackerTestController):
         assert '<td>Labels</td> <td><input type="checkbox" name="labels" ></td>' in r
         self.new_ticket(summary='test')
         M.MonQTask.run_ready()
-        r = self.app.get('/bugs/search', params=dict(q='test'))
+        r = self.app.get('/bugs/search/', params=dict(q='test'))
         assert '<td><a href="/p/test/bugs/1/">1</a></td>' in r
         p = M.Project.query.get(shortname='test')
         app = p.app_instance('bugs')
         app.globals.show_in_search['ticket_num'] = False
-        r = self.app.get('/bugs/search', params=dict(q='test'))
+        r = self.app.get('/bugs/search/', params=dict(q='test'))
         assert '<td><a href="/p/test/bugs/1/">1</a></td>' not in r
         self.app.post('/admin/bugs/allow_default_field',
                       params={'status': 'on'})
