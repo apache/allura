@@ -1,3 +1,9 @@
 {
-  "plugins": ["transform-class-properties"]
+  /*
+  With updated broccoli / babel (see package.json), we can be more precise with:
+    "plugins": ["transform-class-properties"],
+  Instead of "stage": 1.  Even now with babel 5.x, sometimes the plugins option works, but sometimes it doesn't :/
+   */
+
+   "stage": 1
 }
