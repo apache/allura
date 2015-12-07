@@ -438,8 +438,8 @@ class TestThemeProvider(object):
         search.return_value = True
         assert_is(ThemeProvider().get_site_notification(), note)
 
-        search.return_value = False
-        assert_is(ThemeProvider().get_site_notification(), note)
+        search.return_value = None
+        assert_is(ThemeProvider().get_site_notification(), None)
 
     @patch('allura.model.notification.SiteNotification')
     def test_get_site_notification_with_page_tool_type(self, SiteNotification):
@@ -453,10 +453,10 @@ class TestThemeProvider(object):
         assert_is(ThemeProvider().get_site_notification(), note)
 
         c.app.config.tool_name.lower.return_value = 'test2'
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(ThemeProvider().get_site_notification(), None)
 
         c.app = None
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(ThemeProvider().get_site_notification(), None)
 
     @patch('re.search')
     @patch('allura.model.notification.SiteNotification')
@@ -467,24 +467,24 @@ class TestThemeProvider(object):
         c.app = Mock()
         note.page_tool_type.lower.return_value = 'test1'
 
-        search.return_value = False
+        search.return_value = None
         c.app.config.tool_name.lower.return_value = 'test2'
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        search.return_value = True
+        assert_is(ThemeProvider().get_site_notification(), None)
+
+        search.return_value = None
+        c.app.config.tool_name.lower.return_value = 'test1'
         assert_is(ThemeProvider().get_site_notification(), None)
 
         search.return_value = True
         assert_is(ThemeProvider().get_site_notification(), note)
 
-        search.return_value = False
-        c.app.config.tool_name.lower.return_value = 'test1'
-        assert_is(ThemeProvider().get_site_notification(), note)
-
-        search.return_value = True
-        assert_is(ThemeProvider().get_site_notification(), note)
-
         c.app = None
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(ThemeProvider().get_site_notification(), None)
 
-        search.return_value = False
+        search.return_value = None
         assert_is(ThemeProvider().get_site_notification(), None)
 
 
