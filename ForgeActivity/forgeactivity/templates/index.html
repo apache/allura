@@ -23,10 +23,15 @@
 {% block title %}{{c.project.name}} Activity{% endblock %}
 
 {% block header %}
-    Activity for
     {% if c.project.is_user_project %}
-        {{c.project.user_project_of.display_name}}
+        {% if not actor_only %}
+            Activity from your followers
+        {% else %}
+            Activity for
+            {{c.project.user_project_of.display_name}}
+        {% endif %}
     {% else %}
+        Activity for
         {{c.project.name}}
     {% endif %}
 {% endblock %}

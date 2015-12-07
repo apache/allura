@@ -132,7 +132,8 @@ class ForgeActivityController(BaseController):
             timeline=filtered_timeline,
             page=page,
             limit=limit,
-            has_more=has_more)
+            has_more=has_more,
+            actor_only=actor_only)
 
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
