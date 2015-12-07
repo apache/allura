@@ -29,15 +29,18 @@ var tree = funnel('Allura/allura/public/nf/js', {
     include: ['*.es6.js'],
 });
 tree = babelTranspiler(tree, {
-    browserPolyfill: true,
     //filterExtensions:['es6.js'],
-    sourceMaps: 'inline',  // external doesn't work, have to use extract below
+    sourceMaps: 'inline',  // external doesn't work, but sourceMapConcat will extract them
     comments: false,
+});
+tree = sourceMapConcat(tree, {
+    inputFiles: ['**/*'],
+    outputFile: '/transpiled.js'
 });
 
 /* exactly what's needed for the navbar, so separate apps may use it too */
 var react_file = 'public/nf/js/react-with-addons' + (production ? '.min' : '') + '.js';
-var navbar_deps = funnel('Allura/allura', {
+var navbar = funnel('Allura/allura', {
     include: ['public/nf/js/underscore-min.js',
               react_file,
               'public/nf/js/react-dom.js',
@@ -45,22 +48,26 @@ var navbar_deps = funnel('Allura/allura', {
               'public/nf/js/react-reorderable.min.js',
               'lib/widgets/resources/js/jquery.lightbox_me.js',
               'public/nf/js/admin_modal.js',
+              'public/nf/js/jquery.tooltipster.js',
+              'public/nf/js/navbar.es6.js',
+              'public/nf/js/context-menu.es6.js',
+              'public/nf/js/tooltip.es6.js'
     ],
 });
-navbar = mergeTrees([navbar_deps, tree]);
-navbar = sourceMapConcat(navbar, {
+navbar = babelTranspiler(navbar, {
+    filterExtensions:['es6.js'],
+    sourceMaps: 'inline',  // external doesn't work, but sourceMapConcat will extract them
+    comments: false,
+});
+var navbar = sourceMapConcat(navbar, {
     // headerFiles & footerFiles used to specify some that must come before or after others
     headerFiles: [react_file],
     inputFiles: ['**/*.js'],
-    footerFiles: ['navbar.es6.js',],
+    footerFiles: ['public/nf/js/navbar.js',], // this used to be navbar.es6.js but the babel transpiler dropped the .es6
     outputFile: '/navbar.js',
 });
 
-tree = sourceMapConcat(tree, {
-    inputFiles: ['**/*'],
-    outputFile: '/transpiled.js'
-});
-
+// output both
 var output = mergeTrees([tree, navbar]);
 
 if (production) {
