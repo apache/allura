@@ -152,7 +152,10 @@
                     }, 
                     "summary": {
                         "type": "string"
-                    }, 
+                    },
+                    "description": {
+                        "type": "string"
+                    },
                     "assigned_to_id": {
                         "type": ["string", "null"]
                     }, 

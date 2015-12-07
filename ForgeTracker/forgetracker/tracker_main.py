@@ -1826,7 +1826,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
         def _convert_ticket(t):
             t = t.__json__()
             # just pop out all the heavy stuff
-            for field in ['description', 'discussion_thread']:
+            for field in ['discussion_thread']:
                 t.pop(field, None)
             return t
 
