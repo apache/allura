@@ -464,7 +464,6 @@ var Main = React.createClass({
         return {
             data: this.props.initialData,
             visible: true,
-            _session_id: $.cookie('_session_id'),
             currentOptionMenu: {
                 tool: null
             }
