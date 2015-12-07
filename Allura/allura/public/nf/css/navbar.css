@@ -201,16 +201,6 @@
     height: 24px;
 }
 
-#top_nav_admin .tb-sub-menu a {
-    border-right: none;
-    margin: 3px 20px 0 2px;
-    padding: 5px;
-}
-
-#top_nav_admin .tb-sub-menu a:hover {
-    color: white;
-}
-
 .react-reorderable-item .tb-item-grouper > div {
     position: relative;
     background: white;
@@ -232,16 +222,6 @@
 }
 #top_nav .tb-item-grouper a {
     text-align: left;
-}
-
-.tb-sub-menu .react-drag:hover {
-    background: #09c linear-gradient(#09c, #07a);
-    border-bottom-style: none;
-    color: white;
-}
-
-.tb-sub-menu .react-drag:hover a {
-    color: white;
 }
 
 #top_nav .add-tool-toggle {
