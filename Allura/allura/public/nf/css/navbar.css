@@ -230,6 +230,9 @@
     border-bottom: none;
     overflow: hidden;
 }
+#top_nav .tb-item-grouper a {
+    text-align: left;
+}
 
 .tb-sub-menu .react-drag:hover {
     background: #09c linear-gradient(#09c, #07a);
