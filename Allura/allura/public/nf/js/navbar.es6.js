@@ -112,16 +112,18 @@ var NavBarItem = React.createClass({
         return (
             <div className={ divClasses }>
                 <a>
-                    {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}></i>}
+                    {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog'
+                                                          onClick={this.handleOptionClick}> </i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}>
                         {this.props.name}
                     </span>
                 </a>
-                {this.props.currentOptionMenu.tool && this.props.currentOptionMenu.tool === this.props.mount_point &&
-                    <ContextMenu
-                        {...this.props}
+                {this.props.currentOptionMenu.tool
+                && this.props.currentOptionMenu.tool === this.props.mount_point
+                && <ContextMenu
+                    {...this.props}
                         classes={['tool-options']}
                         items={this.props.options}
                         onOptionClick={this.props.onOptionClick}
@@ -182,10 +184,13 @@ var GroupingThreshold = React.createClass({
  * @constructor
  */
 var NormalNavItem = React.createClass({
+    propTypes: {
+        name: React.PropTypes.string.isRequired,
+        url: React.PropTypes.string.isRequired,
+        classes: React.PropTypes.string
+    },
   mixins: [React.addons.PureRenderMixin],
-
     render: function() {
-
         return (
             <li key={`tb-norm-${_.uniqueId()}`}>
                 <a href={ this.props.url } className={ this.props.classes }>
@@ -203,6 +208,15 @@ var NormalNavItem = React.createClass({
  * @constructor
  */
 var ToggleAddNewTool = React.createClass({
+    propTypes: {
+        installableTools: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                text: React.PropTypes.string.isRequired,
+                href: React.PropTypes.string,
+                tooltip: React.PropTypes.string
+            })
+        ).isRequired
+    },
     getInitialState: function() {
         return {
             visible: false
@@ -213,7 +227,6 @@ var ToggleAddNewTool = React.createClass({
             visible: !this.state.visible
         });
     },
-
     render: function () {
         return (
             <div>
@@ -238,6 +251,17 @@ var ToggleAddNewTool = React.createClass({
  * @constructor
  */
 var NormalNavBar = React.createClass({
+    propTypes: {
+        items: React.PropTypes.arrayOf(ToolsPropType).isRequired,
+        installableTools: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                text: React.PropTypes.string.isRequired,
+                href: React.PropTypes.string,
+                tooltip: React.PropTypes.string
+            })
+        ).isRequired
+    },
+
     buildMenu: function(item, i) {
         let classes = window.location.pathname.startsWith(item.url) ? 'active-nav-link' : '';
 
@@ -254,19 +278,15 @@ var NormalNavBar = React.createClass({
         );
     },
 
-    //onOptionClick: function(e){
-    //    console.log(e);
-    //},
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
-
-        var mount_points = [];
-        for(let item of this.props.items){
+        var existingTools = [];
+        for(let item of this.props.installableTools){
             if(item.hasOwnProperty('mount_point') && item.mount_point !== null){
-                mount_points.push(item.mount_point);
+                existingTools.push(item.mount_point);
             } else if(item.hasOwnProperty('children')){
                 for(let child of item.children){
-                    mount_points.push(child.mount_point)
+                    existingTools.push(child.mount_point)
                 }
             }
         }
@@ -278,7 +298,7 @@ var NormalNavBar = React.createClass({
                 <li id="add-tool-container">
                     <ToggleAddNewTool
                         {...this.props}
-                        items={this.props.installableTools}
+                        mountPointValidation={existingTools}
                         onOptionClick={this.onOptionClick} />
                 </li>
             </ul>
@@ -407,7 +427,7 @@ var ToggleAdminButton = React.createClass({
         var classes = this.props.visible ? 'fa fa-unlock' : 'fa fa-lock';
         return (
             <button id='toggle-admin-btn' onClick={ this.props.handleButtonPush } className='admin-toolbar-right'>
-                <i className={ classes }></i>
+                <i className={ classes }> </i>
             </button>
         );
     }
@@ -463,7 +483,7 @@ var Main = React.createClass({
     handleShowOptionMenu: function (mount_point) {
         this.setState({
             currentOptionMenu: {
-                tool: mount_point,
+                tool: mount_point
             }
         });
     },
