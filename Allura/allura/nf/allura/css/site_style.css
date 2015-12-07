@@ -501,6 +501,9 @@ blockquote {
 .nav-main {
   float: right;
 }
+img.nav-logo {
+  margin-top: 13px;
+}
 
 /* logo */
 .logo {
