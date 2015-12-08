@@ -283,16 +283,19 @@ manual mongo queries, however:
     ... impressions: 10,
     ... content: 'You can now reimport exported project data.',
     ... user_role: 'Developer',
-    ... page_regex: '/p/wiki/(home|browse_pages)/',
+    ... page_regex: '(Home|browse_pages)',
     ... page_tool_type: 'wiki'
     ... })
 
-This will create a notification that will be shown for 10 page views or until the
-user closes it manually.  This Notification will be shown only for users with Developer`s rights.
-And if url page is according to `/p/wiki/(home|browse_pages)/` or app tool name is equal to `wiki`.
-An `impressions` value of 0 will show the notification indefinitely (until closed).
-The notification content can contain HTML.  Only the most recent notification will be shown,
-unless it has `active:false`, in which case no notification will be shown.
+This will create a notification that will be shown for 10 page views or until
+the user closes it manually.  The notification will be shown only for users
+which have role 'Developer' or higher in one of their projects.  And if url of
+the current page is matching regex :code:`(Home|browse_pages)` and app
+tool type is :code:`wiki`.  An :code:`impressions` value of 0 will show the
+notification indefinitely (until closed).  The notification content can contain
+HTML.  Only the most recent notification will be shown, unless it has
+:code:`active:false`, in which case no notification will be shown.
+:code:`user_role`, :code:`page_regex` and :code:`page_tool_type` are optional.
 
 .. _delete-projects:
 
