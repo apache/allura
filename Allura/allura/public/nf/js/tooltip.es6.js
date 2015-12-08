@@ -29,6 +29,7 @@ class ToolTip extends React.Component {
     }
 
     static propTypes = {
+        targetSelector: React.PropTypes.string.isRequired,
         animation: React.PropTypes.string,
         speed: React.PropTypes.number,
         position: React.PropTypes.string,
@@ -38,10 +39,6 @@ class ToolTip extends React.Component {
         maxWidth: React.PropTypes.number,
         trigger: React.PropTypes.string,
         multiple: React.PropTypes.bool,
-        classes: React.PropTypes.array,
-        text: React.PropTypes.string.isRequired,
-        href: React.PropTypes.string.isRequired,
-        toolTip: React.PropTypes.string
     };
 
     static defaultProps = {
@@ -60,7 +57,7 @@ class ToolTip extends React.Component {
 
     componentDidMount() {
         var _this = this;
-        $(".react-tooltip").tooltipster({
+        $(this.props.targetSelector).tooltipster({
             animation: _this.props.animation,
             speed: _this.props.speed,
             delay: _this.props.delay,
@@ -74,20 +71,8 @@ class ToolTip extends React.Component {
         })
     }
 
-}
-
-/**
- * Tooltip Link
-
- * @constructor
- */
-class ToolTipLink extends ToolTip {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
-        var classes = this.props.classes.join(' ') + " react-tooltip";
-        return <a href={this.props.href} className={classes} title={this.props.toolTip}>{this.props.text}</a>
+        return null;
     }
 }
+

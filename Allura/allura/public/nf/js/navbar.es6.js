@@ -187,11 +187,12 @@ var GroupingThreshold = React.createClass({
                 <div id='threshold-config'>
             <span>
               <label htmlFor='threshold-input'>Grouping Threshold</label>
-                <input type='number' name='threshold-input' className='tooltip'
-                       title='Number of tools allowed before grouping.'
+                <ToolTip targetSelector="#threshold-input" position="top" contentAsHTML={true}/>
+                <input type='number' name='threshold-input' id="threshold-input"
+                       title='When you have multiple tools of the same type, <u>this number</u> determines if they will fit in the navigation bar or be grouped into a dropdown.'
                        value={ this.state.value }
                        onChange={ this.handleChange }
-                       min='1' max='10'/>
+                       min='1' max='50'/>
               </span>
                 </div> }
             </div>
