@@ -64,14 +64,13 @@ class ContextMenu extends React.Component {
         let _this = this;
         return (
             <div className="contextMenu">
+                <ToolTip targetSelector='#top_nav_admin .contextMenu a'/>
                 <ul>{
                     this.props.items.map(function (o, i) {
                         return (<li key={i}>
-                            <ToolTipLink
-                                href={o.href}
-                                classes={_this.props.classes.concat([o.className])}
-                                toolTip={o.tooltip}
-                                text={o.text}/>
+                            <a href={o.href}
+                               classes={_this.props.classes.concat([o.className])}
+                               title={o.tooltip}>{o.text}</a>
                         </li>)
                     })}
                 </ul>
