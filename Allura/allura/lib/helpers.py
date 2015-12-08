@@ -68,16 +68,21 @@ from .security import has_access
 
 log = logging.getLogger(__name__)
 
+re_mount_points = {
+    're_project_name': r'^[a-z][-a-z0-9]{2,14}$',  # validates project, subproject, and user names
+    're_tool_mount_point': r'^[a-z][-a-z0-9]{0,62}$',  # validates tool mount point names
+    're_tool_mount_point_fragment': r'[a-z][-a-z0-9]*',
+    're_relaxed_tool_mount_point': r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$',
+    're_relaxed_tool_mount_point_fragment':  r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*'
+}
 # validates project, subproject, and user names
-re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,14}$')
+re_project_name = re.compile(re_mount_points['re_project_name'])
 
 # validates tool mount point names
-re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
-re_tool_mount_point_fragment = re.compile(r'[a-z][-a-z0-9]*')
-re_relaxed_tool_mount_point = re.compile(
-    r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$')
-re_relaxed_tool_mount_point_fragment = re.compile(
-    r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*')
+re_tool_mount_point = re.compile(re_mount_points['re_tool_mount_point'])
+re_tool_mount_point_fragment = re.compile(re_mount_points['re_tool_mount_point_fragment'])
+re_relaxed_tool_mount_point = re.compile(re_mount_points['re_relaxed_tool_mount_point'])
+re_relaxed_tool_mount_point_fragment = re.compile(re_mount_points['re_relaxed_tool_mount_point_fragment'])
 
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
