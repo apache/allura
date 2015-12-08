@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-
+{#<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>#}
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>#}
 {% set full_url = h.absurl(c.project.url()) %}
 
 <h1> Installing {{ tool.tool_label }} </h1>
+{% if tool_name == 'subproject' %}
+    {% set mount_point_re = h.re_mount_points['re_project_name']|safe %}
+{% else %}
+    {% set mount_point_re = h.re_mount_points['re_relaxed_tool_mount_point']|safe
+    if g.entry_points['tool'][tool_name].relaxed_mount_points
+    else h.re_mount_points['re_tool_mount_point']|safe %}
+{% endif %}
 
 <form method="post" action="{{ full_url }}admin/update_mounts" id="install_form">
     <input type="hidden" name="new.ordinal" value="{{ total_mounts }}"/>
@@ -11,62 +19,94 @@
     <label class="grid-13" for="new.mount_label">Label</label>
     <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"
                                 title="This will be the name displayed in your project toolbar."
-                                value="{{ tool.default_mount_label }}">
+                                value="{{ tool.default_mount_label }}" maxlength="100">
     </div>
     <label class="grid-13" for="new.mount_point">Url Path</label>
     <div class="grid-13">
         <input id="id_url_input" type="text" name="new.mount_point"
-               title="The url for this tool relative to {{ full_url }} " class="new_mount_point"
-               value="{{ tool.default_mount_point }}">
-        <p><span id="full-url-preview" data-url="{{ full_url }}"></span></p>
+               title="The url for this tool relative to {{ full_url }} " class="new_mount_point validate_input"
+               value="{{ tool.default_mount_point }}" data-regex="{{ mount_point_re }}"
+               maxlength="{% 14 if tool_name == 'subproject' else 62 %}">
+        <span id="url_error_message" class="modal-form-error"></span>
+        <p><span id="full-url-preview">
+            {{ full_url }} <strong style="color:orange">
+            <span id="input-safe-preview"></span> </strong>
+        </span></p>
     </div>
     <div id="install_options">
         {% for o in options %}
-          <label class="grid-13" for="{{o.name}}">{{o.label}}</label>
-          <div class="grid-13">
-            {% if o.ming_type.__name__ == 'bool' %}
-              <input {{o.render_attrs()}}id="{{o.name}}" name="{{o.name}}" type="checkbox"{{ ' checked="checked"' if o.default}}>
-            {% else %}
-              <input {{o.render_attrs()}} id="{{o.name}}" name="{{o.name}}" value="{{o.default or ''}}">
+            <label class="grid-13" for="{{ o.name }}">{{ o.label }}</label>
+            <div class="grid-13">
+                {% if o.ming_type.__name__ == 'bool' %}
+                    <input {{ o.render_attrs() }}id="{{ o.name }}" name="{{ o.name }}"
+                           type="checkbox"{{ ' checked="checked"' if o.default }}>
+                {% else %}
+                    <input {{ o.render_attrs() }} id="{{ o.name }}" name="{{ o.name }}" value="{{ o.default or '' }}">
+                {% endif %}
+            </div>
+            {% if o.help_text %}
+                <div class="grid-13">
+                    <small>{{ o.help_text }}</small>
+                </div>
             {% endif %}
-          </div>
-          {% if o.help_text %}
-            <div class="grid-13"><small>{{o.help_text}}</small></div>
-          {% endif %}
         {% endfor %}
     </div>
     <div class="grid-13">&nbsp;</div>
     <hr>
     <div class="grid-13">&nbsp;</div>
     <div class="grid-13">
-        <input type="submit" value="Save" name="new.install"> <a href="#" class="close btn link">Cancel</a>
+        <input type="submit" id="id-submit-install" value="Save" name="new.install">
+        <a href="#" class="close btn link">Cancel</a>
     </div>
-    {{lib.csrf_token()}}
+    {{ lib.csrf_token() }}
 </form>
 
 
 <script>
     $('#admin_modal_title').hide();
-    var url_preview = $('#full-url-preview'); // "Preview Url Path" displayed on when creating a new tool.
-
-    var full_url = $(url_preview).data().url; // Full url path of current project.
+    var mount_point = $('#id_url_input');
+    var _re = mount_point.data('regex');
+    var url_error = $("#url_error_message");
+    var submit_button = $("#id-submit-install");
+    var url_preview = $('#input-safe-preview');
 
     // Update the url path preview as they type.
-    $('#id_url_input').keyup(function(){
-        url_preview.html(full_url + '<strong style="color:orange">' + $(this).val() + "</strong>");
+    mount_point.keyup(function () {
+        url_preview.text($(this).val());
+        validateNewToolForm();
     }).keyup();
 
-    // Set url_preview to the Url Path Defaults when creating a new tool.
-    // Add the link tool's 'nice name'.
-{#    defaults['external link'] = defaults.link#}
-{#    var tool_name = $.trim($(this).text().toLowerCase());#}
-{##}
-{#    // If a tool has a default url path, use it for an initial preview.#}
-{#    if (defaults[tool_name]) {#}
-{#        url_preview.html(full_url + '<strong class="url-keyword">' + defaults[tool_name].default_mount + "</strong>");#}
-{#    }#}
-{#    else {#}
-{#        // No defaults for this tool, so we use the base url to ensure the url_preview is reset.#}
-{#        url_preview.html(full_url);#}
-{#    }#}
+    function validateNewToolForm() {
+        var mp = document.getElementById('id_url_input');
+        var v = $(mp).val();
+        var mp_exists = _.contains(document._existingTools, $(mp).val());
+
+        if(v.length > 61){
+            submit_button.attr('disabled', true);
+            $(url_error).text("The path entered is too long");
+            mp.setCustomValidity("Must be less than 63 characters");
+        }
+        else if (!v.match(_re)) {
+            submit_button.attr('disabled', true);
+            $(url_error).text("You have entered an invalid character");
+            mp.setCustomValidity("Invalid character");
+        }
+        else if (v.length < 3) {
+            submit_button.attr('disabled', true);
+            $(url_error).text("Must be at least 3 characters");
+            mp.setCustomValidity("Must be 3 or more letters");
+        }
+        else if (mp_exists) {
+            submit_button.attr('disabled', true);
+            var exists_msg = "";
+            $(url_error).text("A tool with that path already exists");
+            mp.setCustomValidity('Mount point already exists');
+            url_error.className = "modal-form-error";
+        } else {
+            // Everything looks good -- clear any validation errors.
+            $(url_error).text("");
+            submit_button.attr('disabled', false);
+            mp.setCustomValidity("");
+        }
+    }
 </script>
