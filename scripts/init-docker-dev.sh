@@ -27,6 +27,11 @@ echo -e "\nRunning scripts/init-docker-dev.sh\n"
 echo -e "Creating SCM directories\n"
 mkdir -p /allura-data/scm/{git,hg,svn,snapshots}
 
+echo -e "Creating directory for SOLR data\n"
+mkdir -p /allura-data/solr
+echo -e "Changing it's permissions to 777 so that container will have access to it\n"
+chmod 777 /allura-data/solr
+
 # share venv to allow update and sharing across containers
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"

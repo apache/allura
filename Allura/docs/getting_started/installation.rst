@@ -252,16 +252,6 @@ First run
 
 Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
 
-Setup directory and permissions for solr data:
-
-.. code-block:: bash
-
-    sudo mkdir -p /allura-data/solr
-    sudo chmod 777 /allura-data/solr
-
-We need this because Docker Compose creates directories with root as an owner,
-but solr container runs solr from the different user.
-
 Build/fetch all required images (run these in allura source directory):
 
 .. code-block:: bash
