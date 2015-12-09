@@ -177,15 +177,34 @@ class TestSiteAdmin(TestController):
         assert 'Login' in r
 
     def test_site_notifications(self):
+        M.notification.SiteNotification(active=True,
+                                        impressions=0,
+                                        content='test1',
+                                        user_role='test2',
+                                        page_regex='test3',
+                                        page_tool_type='test4')
+        ThreadLocalORMSession().flush_all()
+        assert M.notification.SiteNotification.query.find().count() == 1
+
         r = self.app.get('/nf/admin/site_notifications/', extra_environ=dict(
             username='root'))
-        headers = r.html.find('table').findAll('th')
+        table = r.html.find('table')
+        headers = table.findAll('th')
+        row = table.findAll('td')
+
         assert headers[0].contents[0] == 'Active'
         assert headers[1].contents[0] == 'Impressions'
         assert headers[2].contents[0] == 'Content'
         assert headers[3].contents[0] == 'User Role'
         assert headers[4].contents[0] == 'Page Regex'
-        assert headers[5].contents[0] == 'Page Type'
+        assert headers[5].contents[0] == 'Page Tool Type'
+
+        assert row[0].contents[0].contents[0] == 'True'
+        assert row[1].contents[0].contents[0] == '0'
+        assert row[2].contents[0].contents[0] == 'test1'
+        assert row[3].contents[0].contents[0] == 'test2'
+        assert row[4].contents[0].contents[0] == 'test3'
+        assert row[5].contents[0].contents[0] == 'test4'
 
 
 class TestProjectsSearch(TestController):

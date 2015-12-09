@@ -433,23 +433,16 @@ class SiteNotificationController(object):
         c.page_list = W.page_list
         c.page_size = W.page_size
 
-        try:
-            page_url = int(page)
-        except ValueError:
-            page_url = 0
-        try:
-            limit = int(limit)
-        except ValueError:
-            limit = 25
+        limit, page = h.paging_sanitizer(limit, page)
 
         query = M.notification.SiteNotification.query.find().sort('_id', -1)
         count = query.count()
-        notifications = paginate.Page(query.all(), page_url+1, limit)
+        notifications = paginate.Page(query.all(), page+1, limit)
 
         return {
             'notifications': notifications,
             'count': count,
-            'page_url': page_url,
+            'page_url': page,
             'limit': limit
         }
 
