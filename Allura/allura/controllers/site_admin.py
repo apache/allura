@@ -47,6 +47,7 @@ from allura.scripts.delete_projects import DeleteProjects
 import allura
 
 from urlparse import urlparse
+from webhelpers import paginate
 
 
 log = logging.getLogger(__name__)
@@ -66,6 +67,7 @@ class SiteAdminController(object):
         c.site_admin_sidebar_menu = self.sidebar_menu()
         self.user = AdminUserDetailsController()
         self.delete_projects = DeleteProjectsController()
+        self.site_notifications = SiteNotificationController()
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
@@ -92,6 +94,7 @@ class SiteAdminController(object):
             SitemapEntry('Search Projects', base_url + 'search_projects', ui_icon=g.icons['search']),
             SitemapEntry('Delete Projects', base_url + 'delete_projects', ui_icon=g.icons['delete']),
             SitemapEntry('Search Users', base_url + 'search_users', ui_icon=g.icons['search']),
+            SitemapEntry('Site Notifications', base_url + 'site_notifications', ui_icon=g.icons['admin']),
         ]
         for ep_name in sorted(g.entry_points['site_admin']):
             g.entry_points['site_admin'][ep_name]().update_sidebar_menu(links)
@@ -415,6 +418,40 @@ class DeleteProjectsController(object):
         DeleteProjects.post(task_params)
         flash(u'Delete scheduled', 'ok')
         redirect('.')
+
+
+class SiteNotificationController(object):
+
+    def _check_security(self):
+        with h.push_context(config.get('site_admin_project', 'allura'),
+                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
+            require_access(c.project, 'admin')
+
+    @expose('jinja:allura:templates/site_admin_site_notifications_list.html')
+    @with_trailing_slash
+    def index(self, page=0, limit=25):
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+
+        try:
+            page_url = int(page)
+        except ValueError:
+            page_url = 0
+        try:
+            limit = int(limit)
+        except ValueError:
+            limit = 25
+
+        query = M.notification.SiteNotification.query.find().sort('_id', -1)
+        count = query.count()
+        notifications = paginate.Page(query.all(), page_url+1, limit)
+
+        return {
+            'notifications': notifications,
+            'count': count,
+            'page_url': page_url,
+            'limit': limit
+        }
 
 
 class TaskManagerController(object):

@@ -169,6 +169,24 @@ class TestSiteAdmin(TestController):
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.body)['doc'] == 'test_task doc string'
 
+    def test_site_notifications_access(self):
+        self.app.get('/nf/admin/site_notifications', extra_environ=dict(
+            username='test_user'), status=403)
+        r = self.app.get('/nf/admin/site_notifications', extra_environ=dict(
+            username='*anonymous'), status=302).follow()
+        assert 'Login' in r
+
+    def test_site_notifications(self):
+        r = self.app.get('/nf/admin/site_notifications/', extra_environ=dict(
+            username='root'))
+        headers = r.html.find('table').findAll('th')
+        assert headers[0].contents[0] == 'Active'
+        assert headers[1].contents[0] == 'Impressions'
+        assert headers[2].contents[0] == 'Content'
+        assert headers[3].contents[0] == 'User Role'
+        assert headers[4].contents[0] == 'Page Regex'
+        assert headers[5].contents[0] == 'Page Type'
+
 
 class TestProjectsSearch(TestController):
 
