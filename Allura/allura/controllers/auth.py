@@ -234,7 +234,7 @@ class AuthController(BaseController):
             dict(username=username,
                  display_name=display_name,
                  password=pw,
-                 pending=require_email))
+                 pending=require_email),make_project=False)
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # else the first password set causes this session to be invalidated
         if require_email:
             em = user.claim_address(email)
@@ -275,6 +275,10 @@ class AuthController(BaseController):
                 user.set_pref('email_address', addr.email)
             if user.pending:
                 plugin.AuthenticationProvider.get(request).activate_user(user)
+                projectname = plugin.AuthenticationProvider.get(request).user_project_shortname(user)
+                n = M.Neighborhood.query.get(name='Users')
+                n.register_project(projectname,
+                               user=user, user_project=True)
         else:
             flash('Unknown verification link', 'error')
 
