@@ -123,6 +123,8 @@ class PostFilter(ff.ForgeForm):
                         label='Show posts with at least "n" flags',
                         css_class='text',
                         if_missing=0),
+            ew.InputField(name='username',
+                          label='Show post filtered by (username)'),
             ew.SubmitButton(label='Filter Posts')
         ])
     ]
