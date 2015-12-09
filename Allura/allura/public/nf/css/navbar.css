@@ -71,14 +71,9 @@
     cursor: move;
 }
 
-#top_nav .anchored {
-    cursor: not-allowed;
-    color: gray;
-}
-
 .anchored .draggable-handle,
 .anchored .draggable-handle-sub {
-    cursor: not-allowed;
+    cursor: default;
     color: gray;
 }
 
