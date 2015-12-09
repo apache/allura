@@ -31,6 +31,9 @@
     width: 1.8rem;
     height: 1.8rem;
 }
+#toggle-admin-btn:focus {
+    outline: none;
+}
 
 #threshold-config > span > input {
     width: 2rem;

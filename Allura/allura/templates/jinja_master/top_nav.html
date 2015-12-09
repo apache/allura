@@ -36,7 +36,9 @@
   {% endfor %}
   {% if h.has_access(c.project, 'admin')() %}
     <li id="add-tool-container"><a href='#' class="add-tool-toggle">Add New...</a></li>
-    <button id="toggle-admin-btn"><i class="fa fa-lock"></i></button>
+    <button id="toggle-admin-btn" title="Click to unlock the toolbar and configure your project's tools.">
+        <i class="fa fa-lock"></i>
+    </button>
   {% endif %}
 </ul>
 </div>
@@ -63,6 +65,12 @@
                         installableTools: _data['installable_tools'],
                         mountPointValidation:_existingTools
                     }), document.getElementById('add-tool-container'));
+
+            $("#toggle-admin-btn").tooltipster({
+                delay: 200,
+                theme: 'tooltipster-light',
+                position: 'top'
+            })
         });
     </script>
 {% endif %}
