@@ -113,11 +113,8 @@ var NavBarItem = React.createClass({
         url: React.PropTypes.string.isRequired,
         currentOptionMenu: React.PropTypes.object,
         onOptionClick: React.PropTypes.func.isRequired,
-        options: React.PropTypes.array
-    },
-
-    isAnchored: function() {
-        return this.props.is_anchored !== null;
+        options: React.PropTypes.array,
+        is_anchored: React.PropTypes.bool
     },
 
     render: function() {
@@ -127,17 +124,23 @@ var NavBarItem = React.createClass({
         }
         var spanClasses = this.props.handleType + " ordinal-item";
         if (this.props.isGrouper) {
-            spanClasses += " toolbar-grouper"
+            spanClasses += " toolbar-grouper";
         }
 
         return (
             <div className={ divClasses }>
+                <ToolTip targetSelector=".anchored .draggable-handle" position="top"
+                         theme="tooltipster-default" delay={250}/>
+                <ToolTip targetSelector=".anchored .draggable-handle-sub" position="right"
+                         theme="tooltipster-default" delay={250}/>
                 <a>
                     {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog'
                                                           onClick={this.handleOptionClick}> </i>}
                     <span
                         className={spanClasses}
-                        data-mount-point={this.props.mount_point}>
+                        data-mount-point={this.props.mount_point}
+                        title={this.props.is_anchored ? 'This item cannot be moved.' : ''}
+                        >
                         {this.props.name}
                     </span>
                 </a>
