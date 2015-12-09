@@ -148,7 +148,6 @@ var NavBarItem = React.createClass({
                 && this.props.currentOptionMenu.tool === this.props.mount_point
                 && <ContextMenu
                     {...this.props}
-                        classes={['tool-options']}
                         items={this.props.options}
                         onOptionClick={this.props.onOptionClick}
                     />}

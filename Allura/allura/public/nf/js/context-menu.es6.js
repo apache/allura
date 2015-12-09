@@ -25,12 +25,12 @@ class ContextMenu extends React.Component {
     }
 
     static propTypes = {
-        classes: React.PropTypes.array.isRequired,
+        classes: React.PropTypes.array,
         items: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         onOptionClick: React.PropTypes.func.isRequired
     };
 
-    static defaultOptions = {
+    static defaultProps = {
         classes: []
     };
 
@@ -69,7 +69,7 @@ class ContextMenu extends React.Component {
                     this.props.items.map(function (o, i) {
                         return (<li key={i}>
                             <a href={o.href}
-                               classes={_this.props.classes.concat([o.className])}
+                               className={_this.props.classes.concat([o.className]).join(' ')}
                                title={o.tooltip}>{o.text}</a>
                         </li>)
                     })}
