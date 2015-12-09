@@ -408,6 +408,31 @@ class TestForum(TestController):
             'delete': 'Delete Marked'})
         _check()
 
+    def test_user_filter(self):
+        username = 'test_username1'
+        r = self.app.get(
+            '/discussion/testforum/moderate?username=%s' % username)
+        input_field = r.html.fieldset.find('input', {'value': username})
+        assert input_field is not None
+
+        username = 341
+        r = self.app.get(
+            '/discussion/testforum/moderate?username=%s' % username)
+        input_field = r.html.fieldset.find('input', {'value': username})
+        assert input_field is not None
+
+        username = 123.43523
+        r = self.app.get(
+            '/discussion/testforum/moderate?username=%s' % username)
+        input_field = r.html.fieldset.find('input', {'value': username})
+        assert input_field is not None
+
+        username = None
+        r = self.app.get(
+            '/discussion/testforum/moderate?username=%s' % username)
+        input_field = r.html.fieldset.find('input', {'value': username})
+        assert input_field is None
+
     def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
