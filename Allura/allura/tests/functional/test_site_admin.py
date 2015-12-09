@@ -197,7 +197,7 @@ class TestSiteAdmin(TestController):
         assert headers[2].contents[0] == 'Content'
         assert headers[3].contents[0] == 'User Role'
         assert headers[4].contents[0] == 'Page Regex'
-        assert headers[5].contents[0] == 'Page Tool Type'
+        assert headers[5].contents[0] == 'Page Type'
 
         assert row[0].contents[0].contents[0] == 'True'
         assert row[1].contents[0].contents[0] == '0'

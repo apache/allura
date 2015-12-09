@@ -32,7 +32,7 @@
         <th>Content</th>
         <th>User Role</th>
         <th>Page Regex</th>
-        <th>Page Tool Type</th>
+        <th>Page Type</th>
         <th></th>
       </tr>
     </thead>
@@ -43,7 +43,7 @@
       <td><small class="tooltip" title="{{ note.content }}">{{ note.content|truncate(50) }}</small></td>
       <td><small>{{ note.user_role if note.user_role}}</small></td>
       <td><small class="tooltip" title="{{ note.page_regex }}">{{ note.page_regex|truncate(20) if note.page_regex}}</small></td>
-      <td><small class="tooltip" title="{{ note.page_tool_type }}">{{ note.page_tool_type|truncate(20) if note.page_tool_type}}</small></td>
+      <td><small>{{ note.page_tool_type if note.page_tool_type}}</small></td>
       <td>
           <a href="">Edit</a><br>
           <a href="">Delete</a>
