@@ -47,7 +47,7 @@ solr:
   ports:
     - "8983:8983"
   volumes:
-    - solr_config/allura:/opt/solr/server/solr/allura
+    - ./solr_config/allura:/opt/solr/server/solr/allura
     - /allura-data/solr:/opt/solr/server/solr/allura/data
 
 mongo:
