@@ -35,6 +35,7 @@ from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 
 from allura.lib.widgets import discuss as DW
+from allura.model.auth import User
 from .attachments import AttachmentsController, AttachmentController
 from .feed import FeedArgs, FeedController
 
@@ -427,6 +428,7 @@ class ModerationController(BaseController):
         page = kw.pop('page', 0)
         limit = kw.pop('limit', 50)
         status = kw.pop('status', 'pending')
+        username = kw.pop('username', None)
         flag = kw.pop('flag', None)
         c.post_filter = WidgetConfig.post_filter
         c.moderate_posts = WidgetConfig.moderate_posts
@@ -437,6 +439,9 @@ class ModerationController(BaseController):
             query['status'] = status
         if flag:
             query['flags'] = {'$gte': int(flag)}
+        if username:
+            filtered_user = User.query.get(username=username)
+            query['author_id'] = getattr(filtered_user, '_id', None)
         q = self.PostModel.query.find(query)
         count = q.count()
         limit, page, start = g.handle_paging(limit, page or 0, default=50)
@@ -446,7 +451,7 @@ class ModerationController(BaseController):
         pages = (count // limit) + 1
         return dict(discussion=self.discussion,
                     posts=q, page=page, limit=limit,
-                    status=status, flag=flag,
+                    status=status, flag=flag, username=username,
                     pgnum=pgnum, pages=pages)
 
     @h.vardec
