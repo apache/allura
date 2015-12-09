@@ -264,6 +264,12 @@ Python and JS package setup (and first containers started):
 
     docker-compose run web scripts/init-docker-dev.sh
 
+Restart SOLR container, so it will see changes from the command above and create index:
+
+.. code-block:: bash
+
+    docker-compose restart solr
+
 Initialize database with test data:
 
 .. code-block:: bash
