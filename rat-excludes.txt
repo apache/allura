@@ -62,4 +62,6 @@ ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
 node_modules/**
 rat-excludes.txt
 requirements*
-
+solr_config/allura/core.properties
+# tmp can have tons of files from the broccoli build process
+tmp/**
