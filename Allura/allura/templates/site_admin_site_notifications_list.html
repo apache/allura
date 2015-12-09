@@ -21,8 +21,9 @@
 
 {% extends 'allura:templates/site_admin.html' %}
 {% block content %}
+  <div class="grid-23"><a href="/nf/admin">Back to Site Admin Home</a></div>
+  <div class="grid-23"><a href="">Create a new notification</a></div>
   {{c.page_size.display(limit=limit, page=page_url, count=count)}}
-  <div class="grid-24"><a href="">Create a new notification</a></div>
   <table id="site_notifications">
     <thead>
       <tr>
@@ -31,7 +32,7 @@
         <th>Content</th>
         <th>User Role</th>
         <th>Page Regex</th>
-        <th>Page Type</th>
+        <th>Page Tool Type</th>
         <th></th>
       </tr>
     </thead>
@@ -57,31 +58,11 @@
 
 {% block extra_css %}
 <style type="text/css">
-    .paging {
-        float: right;
-        margin: 1em;
-    }
     .pad table {
       width: 915px;
     }
     td {
         max-width: 200px;
-    }
-    th.header {
-        background-image: url("{{g.forge_static('images/bg.gif')}}");
-        cursor: pointer;
-        font-weight: bold;
-        background-repeat: no-repeat;
-        background-position: center left;
-        padding-left: 20px;
-    }
-    th.headerSortUp {
-        background-image: url("{{g.forge_static('images/asc.gif')}}");
-        background-color: #6bb3fd;
-    }
-    th.headerSortDown {
-        background-image: url("{{g.forge_static('images/desc.gif')}}");
-        background-color: #6bb3fd;
     }
 </style>
 {% endblock %}
