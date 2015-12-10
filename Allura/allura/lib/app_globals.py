@@ -607,25 +607,33 @@ class Globals(object):
 
     @LazyProperty
     def nav_logo(self):
-        if not config.get('logo', False):
+        logo = dict(
+            redirect_link=config.get('logo.link', False),
+            image_path=config.get('logo.path', False),
+            image_width=config.get('logo.width', False),
+            image_height=config.get('logo.height', False)
+        )
+        if not logo['redirect_link']:
+            logo['redirect_link'] = '/'
+
+        if not logo['image_path']:
+            log.warning('Image path not set for nav_logo')
             return False
-        logo = json.loads(config.get('logo'))
-        image_path = logo.get('image_path', False)
-        if not image_path:
-            return False
+
         allura_path = os.path.dirname(os.path.dirname(__file__))
         image_full_path = '%s/public/nf/images/%s' % (
-            allura_path, image_path)
+            allura_path, logo['image_path'])
 
         if not os.path.isfile(image_full_path):
+            log.warning('Could not find logo at: %s' % image_full_path)
             return False
 
-        if not logo.get('redirect_link', False):
-            logo['redirect_link'] = '/'
         path = 'images/%s' % logo['image_path']
         return {
             "image_path": self.forge_static(path),
-            "redirect_link": logo['redirect_link']
+            "redirect_link": logo['redirect_link'],
+            "image_width": logo['image_width'],
+            "image_height": logo['image_height']
         }
 
 
