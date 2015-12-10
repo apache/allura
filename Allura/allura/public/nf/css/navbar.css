@@ -54,7 +54,7 @@
     box-shadow: 0 1px 1px #ccc;
 }
 
-#normal-nav-bar, #top_nav_admin > ul.dropdown {
+#top_nav_admin ul.dropdown {
     border: none;
     box-shadow: none;
 }
@@ -222,6 +222,10 @@
 }
 #top_nav .tb-item-grouper a {
     text-align: left;
+}
+
+#top_nav #add-tool-container {
+    padding-bottom: 0;  /* cancel out the site style for dropdown <li>s, since this is already fairly tall */
 }
 
 #top_nav .add-tool-toggle {
