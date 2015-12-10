@@ -50,11 +50,9 @@
     {% do g.register_forge_js('js/react-reorderable.min.js') %}
     {% do g.register_forge_js('js/build/transpiled.js') %} {# if we do more es6, we'll need to register this in other places, or maybe even global #}
     <script>
-    'use strict';
-    var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe  }};
+        'use strict';
+        var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe }};
         $(document).ready(function () {
-            var _existingTools = getMountPoints(_data['menu']);
-            document._existingTools = getMountPoints(_data['menu'])
             $('#toggle-admin-btn').click(function () {
                 ReactDOM.render(React.createElement(Main, {
                     initialData: _data
@@ -62,8 +60,7 @@
             });
 
             ReactDOM.render(React.createElement(ToggleAddNewTool, {
-                        installableTools: _data['installable_tools'],
-                        mountPointValidation:_existingTools
+                        installableTools: _data['installable_tools']
                     }), document.getElementById('add-tool-container'));
 
             $("#toggle-admin-btn").tooltipster({

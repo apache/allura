@@ -336,21 +336,21 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_install_tool.html')
     def install_tool(self, tool_name=None, **kw):
         if tool_name == 'subproject':
-            return dict(
-                    tool_name=tool_name,
-                    tool={
-                        'tool_label': 'Sub Project',
-                        'default_mount_label': 'SubProject',
-                        'default_mount_point': 'subproject'
-                    },
-                    options=[],
-            )
+            tool = {
+                'tool_label': 'Sub Project',
+                'default_mount_label': 'SubProject',
+                'default_mount_point': 'subproject'
+            },
+            options = []
+        else:
+            tool = g.entry_points['tool'][tool_name]
+            options = tool.options_on_install()
 
-        tool = g.entry_points['tool'][tool_name]
         return dict(
-                tool_name=tool_name,
-                tool=tool,
-                options=tool.options_on_install(),
+            tool_name=tool_name,
+            tool=tool,
+            options=options,
+            existing_mount_points=c.project.mount_points()
         )
 
     @expose()
@@ -359,7 +359,6 @@ class ProjectAdminController(BaseController):
         if app is None:
             raise exc.HTTPNotFound, name
         return app.admin, remainder
-
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_permissions.html')

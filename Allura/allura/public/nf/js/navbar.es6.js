@@ -42,55 +42,6 @@ function _getProjectUrl(rest = true) {
     return (rest ? '/rest/' : '/') + nbhd_proj;
 }
 
-/**
- * Get a mount point from a NavBarItem node.
-
- * @constructor
- * @param {NavBarItem} node
- * @returns {string}
- */
-function getMountPoint(node) {
-    if(node.hasOwnProperty('mount_point') && node['mount_point'] !== null){
-        return node['mount_point'];
-    }
-    return node.props.children[0].props.mount_point;
-}
-
-/**
- * Get a url from a NavBarItem node.
-
- * @constructor
- * @param {NavBarItem} node
- * @returns {string}
- */
-function getUrlByNode(node) {
-    if(node.hasOwnProperty('url') && node['url'] !== null){
-        return node['url'];
-    }
-    return node.props.children[0].props.url;
-}
-
-/**
- * Returns all existing mount points for a given project.
-
- * @constructor
- * @param {array} items
- * @returns {array}
- */
-function getMountPoints(items) {
-    var existingTools = [];
-    for (let item of items) {
-        if (item.hasOwnProperty('mount_point') && item.mount_point !== null) {
-            existingTools.push(item.mount_point);
-        } else if (item.hasOwnProperty('children')) {
-            for (let child of item.children) {
-                existingTools.push(child.mount_point)
-            }
-        }
-    }
-    return existingTools;
-}
-
 const ToolsPropType = React.PropTypes.shape({
     mount_point: React.PropTypes.string,
     name: React.PropTypes.string.isRequired,
@@ -304,7 +255,6 @@ var NormalNavBar = React.createClass({
 
     render: function() {
         var listItems = this.props.items.map(this.buildMenu);
-        var existingTools = getMountPoints(this.props.items);
         return (
             <ul
                 id="normal-nav-bar"
@@ -313,7 +263,6 @@ var NormalNavBar = React.createClass({
                 <li id="add-tool-container">
                     <ToggleAddNewTool
                         {...this.props}
-                        mountPointValidation={existingTools}
                         onOptionClick={this.onOptionClick} />
                 </li>
             </ul>

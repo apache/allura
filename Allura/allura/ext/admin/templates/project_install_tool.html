@@ -61,6 +61,8 @@
 
 
 <script>
+    var _existingMountPoints = {{ h.escape_json(existing_mount_points)|safe }};
+
     $('#admin_modal_title').hide();
     var mount_point = $('#id_url_input');
     var _re = mount_point.data('regex');
@@ -77,7 +79,7 @@
     function validateNewToolForm() {
         var mp = document.getElementById('id_url_input');
         var v = $(mp).val();
-        var mp_exists = _.contains(document._existingTools, $(mp).val());
+        var mp_exists = _.contains(_existingMountPoints, $(mp).val());
 
         if(v.length > 61){
             submit_button.attr('disabled', true);
