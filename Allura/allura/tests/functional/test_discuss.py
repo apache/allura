@@ -172,6 +172,42 @@ class TestDiscuss(TestDiscussBase):
         assert M.Post.query.find().count() == 1
         assert M.Post.query.find({'deleted': False}).count() == 0
 
+    def test_user_filter(self):
+        r = self._make_post('Test post')
+        post_link = str(
+            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        self.app.post(post_link + 'moderate', params=dict(spam='spam'))
+        post = M.Post.query.find().first()
+        post_username = post.author().username
+        moderate_link = '/p/test/wiki/_discuss/moderate'
+
+        # no filter
+        r_no_filtered = self.app.get(
+            moderate_link,
+            params=dict(
+                status=post.status
+            ))
+        assert r_no_filtered.html.tbody.findAll('tr') != []
+
+        # filter with existing user
+        r_filtered = self.app.get(
+            moderate_link,
+            params=dict(
+                username=post_username,
+                status=post.status
+            ))
+        assert r_filtered.html.tbody.findAll('tr') != []
+        assert post_username in r_filtered.html.tbody.findAll('td')[-5].string
+
+        # filter without existing user
+        r_bad_filtered = self.app.get(
+            moderate_link,
+            params=dict(
+                username='bad_filtered_user',
+                status=post.status
+            ))
+        assert r_bad_filtered.html.tbody.findAll('tr') == []
+
     @patch.object(M.Thread, 'is_spam')
     def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
         is_spam.return_value = True

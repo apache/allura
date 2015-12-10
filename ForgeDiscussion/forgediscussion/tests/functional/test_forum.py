@@ -415,18 +415,6 @@ class TestForum(TestController):
         input_field = r.html.fieldset.find('input', {'value': username})
         assert input_field is not None
 
-        username = 341
-        r = self.app.get(
-            '/discussion/testforum/moderate?username=%s' % username)
-        input_field = r.html.fieldset.find('input', {'value': username})
-        assert input_field is not None
-
-        username = 123.43523
-        r = self.app.get(
-            '/discussion/testforum/moderate?username=%s' % username)
-        input_field = r.html.fieldset.find('input', {'value': username})
-        assert input_field is not None
-
         username = None
         r = self.app.get(
             '/discussion/testforum/moderate?username=%s' % username)
