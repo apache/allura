@@ -21,14 +21,19 @@ class TestNavigation(TestController):
         self.nav_data = {
             "title": "Link Test", "url": "http://example.com"}
         self.logo_data = {
-            "redirect_link": "/", "image_path": "test_image.png"}
+            "link": "/", "path": "test_image.png"}
+        self.width = 'width: %spx;'
+        self.height = 'height: %spx;'
         g._Globals__shared_state.pop('global_nav', None)
         g._Globals__shared_state.pop('nav_logo', None)
 
     def _set_config(self):
         return {
             "global_nav": json.dumps([self.nav_data]),
-            "logo": json.dumps(self.logo_data)
+            "logo.link": self.logo_data['link'],
+            "logo.path": self.logo_data['path'],
+            "logo.width": self.logo_data.get('width', ''),
+            "logo.height": self.logo_data.get('height', '')
         }
 
     def test_global_nav_links_present(self):
@@ -54,18 +59,52 @@ class TestNavigation(TestController):
 
     def test_logo_present(self):
         self.logo_data = {
-            "redirect_link": "/", "image_path": "user.png"}
+            "link": "/", "path": "user.png"}
         with h.push_config(config, **self._set_config()):
             response = self.app.get('/')
         nav_logo = response.html.find(*self.logo_pattern)
         assert len(nav_logo.findAll('a')) == 1
-        assert self.logo_data['image_path'] in nav_logo.a.img.get('src')
+        assert self.logo_data['path'] in nav_logo.a.img.get('src')
 
     def test_logo_no_redirect_url_set_default(self):
         self.logo_data = {
-            "redirect_link": "", "image_path": "user.png"}
+            "link": "", "path": "user.png"}
         with h.push_config(config, **self._set_config()):
             response = self.app.get('/')
         nav_logo = response.html.find(*self.logo_pattern)
         assert len(nav_logo.findAll('a')) == 1
         assert nav_logo.a.get('href') == '/'
+
+    def test_logo_image_width_and_height(self):
+        self.logo_data = {
+            "link": "", "path": "user.png",
+            "width": 20, "height": 20}
+        with h.push_config(config, **self._set_config()):
+            response = self.app.get('/')
+        nav_logo = response.html.find(*self.logo_pattern)
+        width = self.width % self.logo_data["width"]
+        height = self.height % self.logo_data["height"]
+        assert nav_logo.find(
+            'img', style='%s %s' % (width, height)) is not None
+
+    def test_missing_logo_width(self):
+        self.logo_data = {
+            "link": "", "path": "user.png",
+            "height": 20}
+        with h.push_config(config, **self._set_config()):
+            response = self.app.get('/')
+        nav_logo = response.html.find(*self.logo_pattern)
+        height = self.height % self.logo_data["height"]
+        assert nav_logo.find(
+            'img', style=' %s' % height) is not None
+
+    def test_missing_logo_height(self):
+        self.logo_data = {
+            "link": "/", "path": "user.png",
+            "width": 20}
+        with h.push_config(config, **self._set_config()):
+            response = self.app.get('/')
+        nav_logo = response.html.find(*self.logo_pattern)
+        width = self.width % self.logo_data["width"]
+        assert nav_logo.find(
+            'img', style='%s ' % width) is not None

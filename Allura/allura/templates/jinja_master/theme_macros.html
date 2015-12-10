@@ -29,7 +29,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     <div class="wrapper">
         <div class="nav-logo">
           {% if g.nav_logo %}
-            <a class="link-left" href="{{ g.nav_logo['redirect_link'] }}"><img class="nav-logo" src="{{ g.nav_logo['image_path'] }}" /></a>
+            <a class="link-left" href="{{ g.nav_logo['redirect_link'] }}"><img class="nav-logo" style="{% if g.nav_logo['image_width'] %}width: {{g.nav_logo['image_width']}}px;{% endif %} {% if g.nav_logo['image_height'] %}height: {{ g.nav_logo['image_height'] }}px;{% endif %}" src="{{ g.nav_logo['image_path'] }}" /></a>
           {% endif %}
         </div>
         <nav class="nav-left">
