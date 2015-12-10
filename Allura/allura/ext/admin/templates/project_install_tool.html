@@ -14,7 +14,6 @@
 {% endif %}
 
 <form method="post" action="{{ full_url }}admin/update_mounts" id="install_form">
-    <input type="hidden" name="new.ordinal" value="{{ total_mounts }}"/>
     <input type="hidden" name="new.ep_name" class="new_ep_name" value="{{ tool_name }}">
     <label class="grid-13" for="new.mount_label">Label</label>
     <div class="grid-13"><input type="text" name="new.mount_label" class="new_mount_label"
