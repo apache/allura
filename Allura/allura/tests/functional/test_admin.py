@@ -42,7 +42,6 @@ from allura.lib.plugin import AdminExtension
 from allura.lib import helpers as h
 from allura.ext.admin.admin_main import AdminApp
 
-from forgetracker.tracker_main import ForgeTrackerApp
 from forgewiki.wiki_main import ForgeWikiApp
 
 
@@ -378,17 +377,19 @@ class TestProjectAdmin(TestController):
             assert 'error' in self.webflash(r)
             assert 'limit exceeded' in self.webflash(r)
 
-    def test_tool_options_on_install(self):
-        self.app.get('/admin/options_on_install', status=404)
-        self.app.get('/admin/options_on_install?tool_name=fake', status=404)
-        r = self.app.get('/admin/options_on_install?tool_name=tickets')
-        assert_equals(r.body, '')
-        opts = ['EnableVoting']
-        with mock.patch.object(ForgeTrackerApp, 'config_on_install', new=opts):
-            r = self.app.get('/admin/options_on_install?tool_name=tickets')
-            inp_opts = {'type': 'checkbox', 'id': 'EnableVoting', 'name': 'EnableVoting'}
-            inp = r.html.findAll('input', inp_opts)
-            assert_equals(len(inp), 1)
+    def test_install_tool_form(self):
+        r = self.app.get('/admin/install_tool?tool_name=wiki')
+        assert_in(u'Installing Wiki', r)
+
+    def test_install_tool_form_options(self):
+        opts = ['AllowEmailPosting']
+        with mock.patch.object(ForgeWikiApp, 'config_on_install', new=opts):
+            r = self.app.get('/admin/install_tool?tool_name=wiki')
+            assert_in(u'<input id="AllowEmailPosting" name="AllowEmailPosting"', r)
+
+    def test_install_tool_form_subproject(self):
+        r = self.app.get('/admin/install_tool?tool_name=subproject')
+        assert_in(u'Installing Sub Project', r)
 
     def test_grouping_threshold(self):
         r = self.app.get('/admin/tools')
@@ -1276,20 +1277,20 @@ class TestRestInstallTool(TestRestApiBase):
         assert_equals(audit_log.message, 'install tool ticketsmount1')
 
     def test_tool_exists(self):
-        with mock.patch.object(ForgeTrackerApp, 'max_instances') as mi:
+        with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
             mi.__get__ = mock.Mock(return_value=2)
             r = self.api_get('/rest/p/test/')
             tools_names = [t['name'] for t in r.json['tools']]
-            assert 'tickets' not in tools_names
+            assert 'wiki' not in tools_names
 
             data = {
-                'tool': 'tickets',
-                'mount_point': 'ticketsmount1',
-                'mount_label': 'tickets_label1'
+                'tool': 'wiki',
+                'mount_point': 'wikimount1',
+                'mount_label': 'wiki_label1'
             }
             project = M.Project.query.get(shortname='test')
             with h.push_config(c, user=M.User.query.get()):
-                project.install_app('tickets', mount_point=data['mount_point'])
+                project.install_app('wiki', mount_point=data['mount_point'])
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert_equals(r.json['success'], False)
             assert_equals(r.json['info'], 'Mount point already exists.')
