@@ -440,8 +440,8 @@ class ModerationController(BaseController):
         if flag:
             query['flags'] = {'$gte': int(flag)}
         if username:
-            filtered_user = User.query.get(username=username)
-            query['author_id'] = getattr(filtered_user, '_id', None)
+            filtered_user = User.by_username(username)
+            query['author_id'] = filtered_user._id if filtered_user else None
         q = self.PostModel.query.find(query)
         count = q.count()
         limit, page, start = g.handle_paging(limit, page or 0, default=50)
