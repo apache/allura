@@ -784,6 +784,16 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             ordinal = last_menu_item['sub'].ordinal
         return ordinal
 
+    def mount_points_generator(self):
+        for item in self.ordered_mounts(include_hidden=True):
+            if 'ac' in item:
+                yield item['ac'].options.mount_point
+            else:
+                yield item['sub'].shortname
+
+    def mount_points(self):
+        return list(self.mount_points_generator())
+
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
         '''
         Install an app
