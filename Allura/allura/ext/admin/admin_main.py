@@ -340,7 +340,7 @@ class ProjectAdminController(BaseController):
                 'tool_label': 'Sub Project',
                 'default_mount_label': 'SubProject',
                 'default_mount_point': 'subproject'
-            },
+            }
             options = []
         else:
             tool = g.entry_points['tool'][tool_name]
