@@ -124,7 +124,7 @@ class PostFilter(ff.ForgeForm):
                         css_class='text',
                         if_missing=0),
             ew.InputField(name='username',
-                          label='Show post filtered by (username)'),
+                          label='Show post filtered by username'),
             ew.SubmitButton(label='Filter Posts')
         ])
     ]
