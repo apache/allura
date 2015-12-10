@@ -261,9 +261,7 @@ var NormalNavBar = React.createClass({
                 className="dropdown">
                 { listItems }
                 <li id="add-tool-container">
-                    <ToggleAddNewTool
-                        {...this.props}
-                        onOptionClick={this.onOptionClick} />
+                    <ToggleAddNewTool installableTools={this.props.installableTools}/>
                 </li>
             </ul>
         );
@@ -338,6 +336,9 @@ var AdminNav = React.createClass({
                     { tools }
                 </ReactReorderable>
                 { end_tools }
+                <div id="add-tool-container">
+                    <ToggleAddNewTool installableTools={this.props.installableTools}/>
+                </div>
             </div>
         );
     },

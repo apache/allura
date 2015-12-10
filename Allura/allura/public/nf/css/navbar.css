@@ -107,7 +107,6 @@
     margin: 10px 0;
 }
 
-#top_nav_admin .tb-item.anchored:last-child a,
 #top_nav_admin .tb-item-grouper a {
     border-right: 1px transparent;
 }
@@ -122,6 +121,15 @@
 
 .react-drag.dragging .react-reorderable-item {
     background: #ccc;
+}
+
+/* .react-drag used to distinguish container used in locked vs unlocked modes */
+.react-drag #add-tool-container {
+    float: left;
+    margin-left: 10px;
+}
+.react-drag #add-tool-container .add-tool-toggle {
+    margin-top: 5px;
 }
 
 .tb-item-edit a {
