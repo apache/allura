@@ -343,7 +343,6 @@ class ProjectAdminController(BaseController):
                         'default_mount_label': 'SubProject',
                         'default_mount_point': 'subproject'
                     },
-                    total_mounts=999,  # FIXME
                     options=[],
             )
 
@@ -351,7 +350,6 @@ class ProjectAdminController(BaseController):
         return dict(
                 tool_name=tool_name,
                 tool=tool,
-                total_mounts=999,  # FIXME
                 options=tool.options_on_install(),
         )
 
@@ -700,7 +698,10 @@ class ProjectAdminController(BaseController):
                     meta=dict(mount_point=mount_point, name=new['mount_label']))
                 sp = c.project.new_subproject(mount_point)
                 sp.name = new['mount_label']
-                sp.ordinal = int(new['ordinal'])
+                if 'ordinal' in new:
+                    sp.ordinal = int(new['ordinal'])
+                else:
+                    sp.ordinal = c.project.last_ordinal_value() + 1
             else:
                 require_access(c.project, 'admin')
                 installable_tools = AdminApp.installable_tools_for(c.project)
@@ -722,7 +723,7 @@ class ProjectAdminController(BaseController):
                     ep_name,
                     mount_point,
                     mount_label=new['mount_label'],
-                    ordinal=new['ordinal'],
+                    ordinal=int(new['ordinal']) if 'ordinal' in new else None,
                     **config_on_install)
         g.post_event('project_updated')
 
@@ -763,9 +764,10 @@ class ProjectAdminController(BaseController):
             'status': c.project.bulk_export_status()
         }
 
+
 class ProjectAdminRestController(BaseController):
     """
-    Exposes RESTful APi for project admin actions.
+    Exposes RESTful API for project admin actions.
     """
 
     def _check_security(self):
@@ -787,7 +789,6 @@ class ProjectAdminRestController(BaseController):
                         p.ordinal = int(ordinal)
         M.AuditLog.log('Updated tool order')
         return {'status': 'ok'}
-
 
     @expose('json:')
     @require_post()

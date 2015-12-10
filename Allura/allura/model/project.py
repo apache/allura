@@ -776,12 +776,29 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         except fe.Invalid as e:
             raise exceptions.ToolError(u'{}: {}'.format(opt.name, str(e)))
 
+    def last_ordinal_value(self):
+        last_menu_item = self.ordered_mounts(include_hidden=True)[-1]
+        if 'ac' in last_menu_item:
+            ordinal = last_menu_item['ac'].options.ordinal
+        else:
+            ordinal = last_menu_item['sub'].ordinal
+        return ordinal
+
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
+        '''
+        Install an app
+
+        :param str ep_name: Entry Point name, e.g. "wiki"
+        :param str mount_point: URL path, e.g. "docs"
+        :param str mount_label: Display name
+        :param int ordinal: location of tool, relative to others; None will go to the end.
+        :param override_options:
+        :return:
+        '''
         App = g.entry_points['tool'][ep_name]
         mount_point = self._mount_point_for_install(App, mount_point)
         if ordinal is None:
-            ordinal = int(self.ordered_mounts(include_hidden=True)
-                          [-1]['ordinal']) + 1
+            ordinal = self.last_ordinal_value() + 1
         options = App.default_options()
         options['mount_point'] = mount_point
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
@@ -843,8 +860,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 
     def ordered_mounts(self, include_hidden=False):
-        '''Returns an array of a projects mounts (tools and sub-projects) in
-        toolbar order.'''
+        '''
+        Returns an array of a projects mounts (tools and sub-projects) in toolbar order.
+        Note that the top-level 'ordinal' field may be offset from the stored ordinal value, due to anchored tools
+        '''
         result = []
         anchored_tools = self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
