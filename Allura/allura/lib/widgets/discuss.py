@@ -346,6 +346,7 @@ class Post(HierWidget):
                             else if (mod == 'Undo'){
                                 spam_block_display($(post), 'block');
                                 $(post).find('.spam-present').hide();
+                                $(post).find('.options a').eq(0).hide();
                             }
                         }
                     });
