@@ -770,7 +770,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         projects = [r['project_id'] for r in reaching_roles]
         from .project import Project
 
-        return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
+        return Project.query.find({'_id': {'$in': projects}, 'deleted': False}).all()
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(

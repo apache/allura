@@ -1319,7 +1319,7 @@ class ThemeProvider(object):
         if note.user_role and c.user.is_anonymous():
             return None
         if note.user_role:
-            projects = c.user.my_projects_by_role_name(note.user_role).all()
+            projects = c.user.my_projects_by_role_name(note.user_role)
             if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
                 return None
 
