@@ -400,23 +400,23 @@ class TestThemeProvider(object):
         note.user_role = 'Test'
         note.page_regex = None
         note.page_tool_type = None
-        projects = User.my_projects_by_role_name.return_value
+        projects = User.my_projects_by_role_name.return_value.all
 
         User.is_anonymous.return_value = True
         assert_is(ThemeProvider().get_site_notification(), None)
 
         User.is_anonymous.return_value = False
-        projects.count.return_value = 0
+        projects.return_value = []
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        projects.count.return_value = 1
-        projects.first.return_value.is_user_project = True
+        projects.return_value = [Mock()]
+        projects.return_value[0].is_user_project = True
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        projects.first.return_value.is_user_project = False
+        projects.return_value[0].is_user_project = False
         assert_is(ThemeProvider().get_site_notification(), note)
 
-        projects.count.return_value = 2
+        projects.projects.return_value = [Mock(), Mock()]
         assert_is(ThemeProvider().get_site_notification(), note)
 
     @patch('allura.model.notification.SiteNotification')
@@ -458,33 +458,33 @@ class TestThemeProvider(object):
         c.app = None
         assert_is(ThemeProvider().get_site_notification(), None)
 
-    @patch('re.search')
+    @patch('pylons.request')
     @patch('allura.model.notification.SiteNotification')
-    def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, search):
+    def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, request):
         note = SiteNotification.current.return_value
         note.user_role = None
         note.page_regex = 'test'
         c.app = Mock()
         note.page_tool_type.lower.return_value = 'test1'
 
-        search.return_value = None
+        request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test2'
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        search.return_value = True
+        request.path_qs = 'test'
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        search.return_value = None
+        request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test1'
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        search.return_value = True
+        request.path_qs = 'test'
         assert_is(ThemeProvider().get_site_notification(), note)
 
         c.app = None
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        search.return_value = None
+        request.path_qs = 'ttt'
         assert_is(ThemeProvider().get_site_notification(), None)
 
 
