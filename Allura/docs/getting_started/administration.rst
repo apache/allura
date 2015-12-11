@@ -43,6 +43,39 @@ The admin interface allows you to:
 * Subscribe a user to an artifact
 * Reclone a repository
 
+Customizing appearance
+======================
+
+Global navigation
+-----------------
+
+Allura supports adding global navigation links which will be displayed in the header of every page.
+
+To set up this add :code:`global_nav` option to :code:`[app:main]` section of your :file:`development.ini`. It should be a JSON list of dicts like the following:
+
+.. code-block:: ini
+
+    [app:main]
+    ...
+    global_nav = [{"title": "Example", "url": "http://example.com"}, {"title": "Another", "url": "http://another.com"}]
+
+Site logo
+---------
+
+You can set up logo to be displayed in the top left corner of the site.
+
+Add the following to your :file:`development.ini`:
+
+.. code-block:: ini
+
+    [app:main]
+    ...
+    logo.link = /          ; link to attach to the logo (optional, defaults to "/")
+    logo.path = sf10a.png  ; fs path to the logo image, relative to Allura/allura/public/nf/images/
+    logo.width = 78        ; logo width in pixels (optional)
+    logo.height = 30       ; logo height in pixels (optional)
+
+
 Commands, Scripts, and Tasks
 ============================
 
