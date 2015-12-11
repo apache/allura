@@ -44,6 +44,7 @@
 </div>
 {% if h.has_access(c.project, 'admin')() %}
     {% do g.register_forge_js('js/underscore-min.js') %}
+    {% do g.register_forge_js('js/browser-polyfill.min.js') %}
     {% do g.register_forge_js('js/react-with-addons' + ('' if h.asbool(config.get('debug')) else '.min') + '.js') %}
     {% do g.register_forge_js('js/react-dom' + ('' if h.asbool(config.get('debug')) else '.min') + '.js') %}
     {% do g.register_forge_js('js/react-drag.min.js') %}

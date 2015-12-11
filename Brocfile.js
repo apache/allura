@@ -47,6 +47,7 @@ var navbar = funnel('Allura/allura', {
               'public/nf/js/react-drag.min.js',
               'public/nf/js/react-reorderable.min.js',
               'lib/widgets/resources/js/jquery.lightbox_me.js',
+              'public/nf/js/browser-polyfill.min.js',
               'public/nf/js/admin_modal.js',
               'public/nf/js/jquery.tooltipster.js',
               'public/nf/js/navbar.es6.js',
