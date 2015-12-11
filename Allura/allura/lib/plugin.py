@@ -1316,18 +1316,16 @@ class ThemeProvider(object):
         note = SiteNotification.current()
         if note is None:
             return None
-        if note.user_role is not None and c.user.is_anonymous():
+        if note.user_role and c.user.is_anonymous():
             return None
-        if note.user_role is not None:
-            projects = c.user.my_projects_by_role_name(note.user_role)
-            if projects is not None:
-                only_user_project = projects.count() == 1 and projects.first().is_user_project
-                if projects.count() == 0 or only_user_project:
-                    return None
+        if note.user_role:
+            projects = c.user.my_projects_by_role_name(note.user_role).all()
+            if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
+                return None
 
-        if note.page_regex is not None and re.search(note.page_regex, request.url) is None:
+        if note.page_regex and re.search(note.page_regex, request.path_qs) is None:
             return None
-        if note.page_tool_type is not None and (c.app is None or c.app.config.tool_name.lower() != note.page_tool_type.lower()):
+        if note.page_tool_type and (c.app is None or c.app.config.tool_name.lower() != note.page_tool_type.lower()):
             return None
 
         cookie = request.cookies.get('site-notification', '').split('-')
