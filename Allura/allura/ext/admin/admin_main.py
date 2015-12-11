@@ -735,12 +735,11 @@ class ProjectAdminController(BaseController):
         try:
             new_app = self._update_mounts(subproject, tool, new, **kw)
             if new_app:
-                # force redir to last page of tools, where new app will be
-                page = ''
+                redirect(new_app.url)
         except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
-        redirect('tools?limit=%s&page=%s' % (limit, page))
+        redirect(request.referer)
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):
