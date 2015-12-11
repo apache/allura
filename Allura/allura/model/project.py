@@ -549,7 +549,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 log.exception('AppConfig %s references invalid tool %s',
                               ac._id, ac.tool_name)
                 continue
-            if c.app and c.app.config._id == ac._id:
+            if getattr(c, 'app', None) and c.app.config._id == ac._id:
                 # slight performance gain (depending on the app) by using the current app if we're on it
                 app = c.app
             else:
