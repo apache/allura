@@ -22,7 +22,7 @@
 {% extends 'allura:templates/site_admin.html' %}
 {% block content %}
   <div class="grid-23"><a href="/nf/admin">Back to Site Admin Home</a></div>
-  <div class="grid-23"><a href="">Create a new notification</a></div>
+  <div class="grid-23"><a href="new">Create a new notification</a></div>
   {{c.page_size.display(limit=limit, page=page_url, count=count)}}
   <table id="site_notifications">
     <thead>
@@ -45,8 +45,8 @@
       <td><small class="tooltip" title="{{ note.page_regex }}">{{ note.page_regex|truncate(20) if note.page_regex}}</small></td>
       <td><small>{{ note.page_tool_type if note.page_tool_type}}</small></td>
       <td>
-          <a href="">Edit</a><br>
-          <a href="">Delete</a>
+          <a href="{{ note._id }}/edit">Edit</a><br>
+          <a href="{{ note._id }}/delete">Delete</a>
       </td>
     </tr>
     {% endfor %}
