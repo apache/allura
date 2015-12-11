@@ -400,7 +400,7 @@ class TestThemeProvider(object):
         note.user_role = 'Test'
         note.page_regex = None
         note.page_tool_type = None
-        projects = User.my_projects_by_role_name.return_value.all
+        projects = User.my_projects_by_role_name
 
         User.is_anonymous.return_value = True
         assert_is(ThemeProvider().get_site_notification(), None)
