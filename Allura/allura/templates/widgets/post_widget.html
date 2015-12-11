@@ -46,13 +46,15 @@
       <div class="grid-14 post-content" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
         <div class="spam-present">
           <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
+          {% if h.has_access(value, 'moderate')() %}
           <form method="POST" action="{{value.url()+'moderate'}}">
             <input type="hidden" name="undo" value="True"/>
             <a href="" class="moderate_post little_link"><span>Undo</span></a>
             {{lib.csrf_token()}}
           </form>
+          {% endif %}
           <br>
-          <span class="spam-text">You can see all comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate">here</a>
+          <span class="spam-text">You can see all comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate?username={{value.author().username}}&status=spam">here</a>
         </div>
         <div class="display_post{% if pending and moderator %} moderate{% endif %}">
           {% if pending and not moderator %}
