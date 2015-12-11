@@ -61,7 +61,6 @@
 
 .config-tool {
     color: #555;
-    cursor: pointer;
     cursor: context-menu;
 }
 
@@ -83,7 +82,7 @@
 .react-reorderable-item-active {
     border: 3px dashed #9e9e9e;
     background: #c9c9c9;
-    width: 7rem; /* dynamic would be nice */
+    width: 6rem; /* dynamic would be nice */
     height: 30px;
 }
 
@@ -98,7 +97,9 @@
 /* this is the div that moves around with the cursor, when dragging */
 #top_nav_admin .react-reorderable-handle {
     position: absolute;
-    background: transparent;
+    background: rgba(255, 48, 13, 0.2);
+    border: 3px dashed rgba(255, 48, 13, 0.3);
+    min-width: 4em;
 }
 
 #top_nav_admin .tb-item a {
@@ -189,7 +190,7 @@
     background: white;
     position: absolute;
     top: 32px;
-    /*z-index: 2100;*/
+    white-space: nowrap;
 }
 
 .tb-item-container {
@@ -204,7 +205,6 @@
 .tb-item-grouper .react-reorderable-item-active {
     border: 3px dashed #9e9e9e;
     background: #c9c9c9;
-    width: 100%;
     width: calc(100% - 6px);
     height: 24px;
 }
@@ -212,7 +212,6 @@
 .react-reorderable-item .tb-item-grouper > div {
     position: relative;
     background: white;
-    /*z-index: 1620;*/
 }
 
 .react-reorderable-item .tb-item-grouper > div > div {
@@ -279,6 +278,7 @@
     margin-left: 15px;
     border-radius: 4px;
     z-index: 20200;
+    white-space: nowrap;
     clear: both;
 }
 
@@ -290,7 +290,7 @@
 }
 
 #top_nav_admin .contextMenu > ul > li > a {
-    margin: 4px;
+    margin: 4px 0;
     border-right: none;
     min-width: 6em;
     clear: both;
@@ -300,20 +300,6 @@
     border-right: none !important;
 }
 
-/*.modal {*/
-    /*background: rgb(47, 47, 47) none !important;*/
-    /*box-shadow: none !important;*/
-    /*border-radius: 15px !important;*/
-    /*border: 5px solid #404040 !important;*/
-/*}*/
-
-/*.modal input{*/
-    /*margin-bottom: 3px;*/
-    /*padding-left: 2px;*/
-    /*font-weight: 700;*/
-    /*margin-top: 5px;*/
-    /*font-size: medium;*/
-/*}*/
 .options-context-menu{
     /*border: 10px solid red;*/
 }
