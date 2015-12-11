@@ -1910,10 +1910,6 @@ class TestFunctionalController(TrackerTestController):
         r = self.new_ticket(summary='test vote').follow()
         assert_true(r.html.find('div', {'id': 'vote'}))
 
-        # enable voting
-        self.app.post('/admin/bugs/set_options',
-                      params={'EnableVoting': 'true'})
-
         # test vote form not visible to anon user
         r = self.app.get('/bugs/1/', extra_environ=dict(username='*anonymous'))
         assert_false(r.html.find('div', {'id': 'vote'}))
