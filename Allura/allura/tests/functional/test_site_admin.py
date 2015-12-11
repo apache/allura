@@ -18,6 +18,7 @@
 
 import json
 import datetime as dt
+import bson
 
 from mock import patch, MagicMock
 from nose.tools import assert_equal, assert_in, assert_not_in
@@ -205,6 +206,120 @@ class TestSiteAdmin(TestController):
         assert row[3].contents[0].contents[0] == 'test2'
         assert row[4].contents[0].contents[0] == 'test3'
         assert row[5].contents[0].contents[0] == 'test4'
+
+    def test_site_notification_new_template(self):
+        r = self.app.get('/nf/admin/site_notifications/new')
+
+        assert r
+        assert 'New Site Notification' in r
+        assert 'Active' in r
+        assert 'Impressions' in r
+        assert 'Content' in r
+        assert 'User Role' in r
+        assert 'Page Regex' in r
+        assert 'Page Type' in r
+
+    def test_site_notification_create(self):
+        count = M.notification.SiteNotification.query.find().count()
+        active = 'True'
+        impressions = '7'
+        content = 'test1'
+        user_role = 'test2'
+        page_regex = 'test3'
+        page_tool_type = 'test4'
+        r = self.app.post('/nf/admin/site_notifications/create', params=dict(
+            active=active,
+            impressions=impressions,
+            content=content,
+            user_role=user_role,
+            page_regex=page_regex,
+            page_tool_type=page_tool_type))
+        note = M.notification.SiteNotification.query.find().sort('_id', -1).next()
+
+        assert '/nf/admin/site_notifications' in r.location
+
+        assert M.notification.SiteNotification.query.find().count() == count + 1
+
+        assert note.active == bool('True')
+        assert note.impressions == int(impressions)
+        assert note.content == content
+        assert note.user_role == user_role
+        assert note.page_regex == page_regex
+        assert note.page_tool_type == page_tool_type
+
+    def test_site_notification_edit_template(self):
+        note = M.notification.SiteNotification(active=True,
+                                               impressions=0,
+                                               content='test1',
+                                               user_role='test2',
+                                               page_regex='test3',
+                                               page_tool_type='test4')
+        ThreadLocalORMSession().flush_all()
+        r = self.app.get('/nf/admin/site_notifications/{}/edit'.format(note._id))
+
+        assert r
+
+        assert (u'selected', u'selected') in r.html.find('form').findAll('option')[1].attrs
+        assert r.form['impressions'].value == '0'
+        assert r.form['content'].value == 'test1'
+        assert r.form['user_role'].value == 'test2'
+        assert r.form['page_regex'].value == 'test3'
+        assert r.form['page_tool_type'].value == 'test4'
+
+        assert 'Edit Site Notification' in r
+        assert 'Active' in r
+        assert 'Impressions' in r
+        assert 'Content' in r
+        assert 'User Role' in r
+        assert 'Page Regex' in r
+        assert 'Page Type' in r
+
+    def test_site_notification_update(self):
+        active = 'True'
+        impressions = '7'
+        content = 'test1'
+        user_role = 'test2'
+        page_regex = 'test3'
+        page_tool_type = 'test4'
+
+        note = M.notification.SiteNotification(active=False,
+                                               impressions=0,
+                                               content='test')
+        ThreadLocalORMSession().flush_all()
+
+        count = M.notification.SiteNotification.query.find().count()
+
+        r = self.app.post('/nf/admin/site_notifications/{}/update'.format(note._id), params=dict(
+            active=active,
+            impressions=impressions,
+            content=content,
+            user_role=user_role,
+            page_regex=page_regex,
+            page_tool_type=page_tool_type))
+        ThreadLocalORMSession().flush_all()
+
+        note = M.notification.SiteNotification.query.find().sort('_id', -1).next()
+
+        assert '/nf/admin/site_notifications' in r.location
+        assert M.notification.SiteNotification.query.find().count() == count
+        assert note.active == bool('True')
+        assert note.impressions == int(impressions)
+        assert note.content == content
+        assert note.user_role == user_role
+        assert note.page_regex == page_regex
+        assert note.page_tool_type == page_tool_type
+
+    def test_site_notification_delete(self):
+        note = M.notification.SiteNotification(active=False,
+                                               impressions=0,
+                                               content='test')
+        ThreadLocalORMSession().flush_all()
+
+        count = M.notification.SiteNotification.query.find().count()
+
+        self.app.get('/nf/admin/site_notifications/{}/delete'.format(note._id))
+        assert M.notification.SiteNotification.query.find().count() == count -1
+        assert M.notification.SiteNotification.query.get(_id=bson.ObjectId(note._id)) is None
 
 
 class TestProjectsSearch(TestController):

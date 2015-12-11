@@ -1,0 +1,118 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set page="task_manager" %}
+{% set sidebar_rel = '../' %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block extra_css %}
+<style>
+  form {
+    margin: 1em;
+  }
+  form > div {
+    margin-bottom: 1em;
+  }
+  form > div > *{
+    display: inline-block;
+    vertical-align: top;
+  }
+  form > div input,
+  form > div textarea,
+  form > div select,
+  form > .input {
+    display: block;
+    width: 300px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+  form > div label {
+    width: 100px;
+  }
+  .error {
+    width: 300px;
+    background: none;
+    border: none;
+    color: #f00;
+    margin: 0;
+    padding: 0 0 0 .8em;
+  }
+</style>
+{% endblock %}
+
+{% macro error(field) %}
+  {% if form_errors.get(field) %}
+  <span class="error">{{form_errors.get(field)}}</span>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+<h2>Edit Site Notification</h2>
+<form method="POST" action="update" id="editnote">
+  <div>
+    <label>Active</label>
+    <div class="input">
+      <select name="active">
+        <option value="False">No</option>
+        <option value="True" {%- if form_values.get('active') == 'True' -%}selected{%- endif -%}>Yes</option>
+      </select>
+    </div>
+    {{error('active')}}
+  </div>
+  <div>
+    <label>Impressions</label>
+    <div class="input">
+      <input name="impressions" value="{{form_values.get('impressions', '0')}}" />
+    </div>
+    {{error('impressions')}}
+  </div>
+  <div>
+    <label>Content</label>
+    <div class="input">
+      <textarea name="content" rows="4">{{form_values.get('content', '')}}</textarea>
+    </div>
+    {{error('content')}}
+  </div>
+  <div>
+    <label>User Role</label>
+    <div class="input">
+      <input name="user_role" value="{{form_values.get('user_role', '')}}" />
+    </div>
+    {{error('user_role')}}
+  </div>
+  <div>
+    <label>Page Regex</label>
+    <div class="input">
+      <input name="page_regex" value="{{form_values.get('page_regex', '')}}" />
+    </div>
+    {{error('page_regex')}}
+  </div>
+  <div>
+    <label>Page Type</label>
+    <div class="input">
+      <input name="page_tool_type" value="{{form_values.get('page_tool_type', '')}}" />
+    </div>
+    {{error('page_tool_type')}}
+  </div>
+
+
+  <input type="submit" value="Save"/><br/>
+  {{lib.csrf_token()}}
+</form>
+{% endblock %}
