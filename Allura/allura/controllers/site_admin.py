@@ -30,6 +30,7 @@ from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound, HTTPFound
+from ming.odm import ThreadLocalORMSession
 
 from allura.app import SitemapEntry
 from allura.lib import helpers as h
@@ -422,6 +423,14 @@ class DeleteProjectsController(object):
 
 class SiteNotificationController(object):
 
+    def __init__(self, note=None):
+        self.note = note
+
+    @expose()
+    def _lookup(self, id, *remainder):
+        note = M.notification.SiteNotification.query.get(_id=bson.ObjectId(id))
+        return SiteNotificationController(note=note), remainder
+
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
                             neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
@@ -445,6 +454,63 @@ class SiteNotificationController(object):
             'page_url': page,
             'limit': limit
         }
+
+    @expose('jinja:allura:templates/site_admin_site_notifications_new.html')
+    @without_trailing_slash
+    def new(self, **kw):
+        """Render the New SiteNotification form"""
+        return dict(
+            form_errors=c.form_errors or {},
+            form_values=c.form_values or {},
+        )
+
+    @expose()
+    @require_post()
+    @validate(v.CreateSiteNotificationSchema(), error_handler=new)
+    def create(self, active, impressions, content, user_role, page_regex, page_tool_type):
+        """Post a new note"""
+        M.notification.SiteNotification(
+            active=active, impressions=impressions, content=content,
+            user_role=user_role, page_regex=page_regex,
+            page_tool_type=page_tool_type)
+        ThreadLocalORMSession().flush_all()
+        redirect('../site_notifications')
+
+    @expose('jinja:allura:templates/site_admin_site_notifications_edit.html')
+    def edit(self):
+        if c.form_values:
+            return dict(
+                form_errors=c.form_errors or {},
+                form_values=c.form_values or {},
+            )
+        form_value = {}
+        form_value['active'] = str(self.note.active)
+        form_value['imressions'] = self.note.impressions
+        form_value['content'] = self.note.content
+        form_value['user_role'] = self.note.user_role if self.note.user_role is not None else ''
+        form_value['page_regex'] = self.note.page_regex if self.note.page_regex is not None else ''
+        form_value['page_tool_type'] = self.note.page_tool_type if self.note.page_tool_type is not None else ''
+        return dict(form_errors={},
+                    form_values=form_value)
+
+    @expose()
+    @require_post()
+    @validate(v.CreateSiteNotificationSchema(), error_handler=edit)
+    def update(self, active=True, impressions=0, content='', user_role=None, page_regex=None, page_tool_type=None):
+        self.note.active = active
+        self.note.impressions = impressions
+        self.note.content = content
+        self.note.user_role = user_role
+        self.note.page_regex = page_regex
+        self.note.page_tool_type = page_tool_type
+        ThreadLocalORMSession().flush_all()
+        redirect('..')
+
+    @expose()
+    def delete(self):
+        self.note.delete()
+        ThreadLocalORMSession().flush_all()
+        redirect(request.referer)
 
 
 class TaskManagerController(object):
@@ -692,3 +758,10 @@ class StatsSiteAdminExtension(SiteAdminExtension):
     def update_sidebar_menu(self, links):
         links.append(SitemapEntry('Stats', '/nf/admin/stats',
             ui_icon=g.icons['stats']))
+
+
+class SNEditC(object):
+    @expose()
+    @with_trailing_slash
+    def _default(self, *args, **kwargs):
+        redirect('/')

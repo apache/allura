@@ -306,6 +306,15 @@ class CreateTaskSchema(fe.Schema):
     path = PathValidator(strip=True, if_missing={}, if_empty={})
 
 
+class CreateSiteNotificationSchema(fe.Schema):
+    active = fev.StringBool()
+    impressions = fev.Int(not_empty=True)
+    content = fev.NotEmpty(messages=dict(empty='Please enter a value'))
+    user_role = fev.FancyValidator(not_empty=False, if_empty=None)
+    page_regex = fev.FancyValidator(not_empty=False, if_empty=None)
+    page_tool_type = fev.FancyValidator(not_empty=False, if_empty=None)
+
+
 class DateValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
