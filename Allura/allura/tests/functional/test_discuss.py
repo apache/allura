@@ -208,6 +208,14 @@ class TestDiscuss(TestDiscussBase):
             ))
         assert r_bad_filtered.html.tbody.findAll('tr') == []
 
+    def test_undo(self):
+        r = self._make_post('Test post')
+        post_link = str(
+            r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        self.app.post(post_link + 'moderate', params=dict(undo='undo'))
+        post = M.Post.query.find().first()
+        assert post.status == 'pending'
+
     @patch.object(M.Thread, 'is_spam')
     def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
         is_spam.return_value = True
