@@ -230,12 +230,14 @@ class AuthController(BaseController):
         if not asbool(config.get('auth.allow_user_registration', True)):
             raise wexc.HTTPNotFound()
         require_email = asbool(config.get('auth.require_email_addr', False))
+        make_project = not require_email
         user = M.User.register(
             dict(username=username,
                  display_name=display_name,
                  password=pw,
-                 pending=require_email),make_project=False)
-        user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # else the first password set causes this session to be invalidated
+                 pending=require_email), make_project)
+        user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
+        # else the first password set causes this session to be invalidated
         if require_email:
             em = user.claim_address(email)
             if em:
@@ -277,8 +279,7 @@ class AuthController(BaseController):
                 plugin.AuthenticationProvider.get(request).activate_user(user)
                 projectname = plugin.AuthenticationProvider.get(request).user_project_shortname(user)
                 n = M.Neighborhood.query.get(name='Users')
-                n.register_project(projectname,
-                               user=user, user_project=True)
+                n.register_project(projectname, user=user, user_project=True)
         else:
             flash('Unknown verification link', 'error')
 
