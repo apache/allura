@@ -30,7 +30,16 @@
     });
     if(window.location.hash) {
         // Nested comment (reply) hash link contains a /, which must be escaped
-        $(window.location.hash.replace('/', '\\/') + '.title-pane').removeClass('closed');
+        var splited_link = window.location.hash.split('/'),
+            united_link = "";
+        for (var i = 0; i < splited_link.length; i++) {
+            if (i == 0) {
+                united_link += splited_link[i];
+            } else {
+                united_link += "\\/" + splited_link[i];
+            }
+        }
+        $(united_link + '.title-pane').removeClass('closed');
     }
 
     // Setup editable widgets
