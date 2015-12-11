@@ -3422,3 +3422,9 @@ fieldset.preferences legend {
 .ui-autocomplete {
   z-index: 10; /* so autocomplete of tags or username is always over markdown editor components */
 }
+.spam-present {
+  display: none;
+}
+.spam-text {
+  float: left;
+}

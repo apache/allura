@@ -341,11 +341,24 @@ class Post(HierWidget):
                                 $('div.moderate', post).removeClass('moderate');
                             }
                             else if (mod == 'Spam'){
-                                $(post).remove();
+                                spam_block_display($(post), 'none');
+                                $(post).find('.spam-present').show();
+                            }
+                            else if (mod == 'Undo'){
+                                spam_block_display($(post), 'block');
+                                $(post).find('.spam-present').hide();
                             }
                         }
                     });
                 });
+
+                function spam_block_display($post, display_type) {
+                    $post.find('.display_post').css(
+                        'display', display_type);
+                    $.each($post.find('.options').children(), function() {
+                        $(this).css('display', display_type);
+                    });
+                }
 
                 function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }
 

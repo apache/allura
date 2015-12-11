@@ -43,7 +43,17 @@
       </div>
       {% set pending = value.status == 'pending' %}
       {% set moderator = h.has_access(value, 'moderator')() %}
-      <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
+      <div class="grid-14 post-content" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
+        <div class="spam-present">
+          <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
+          <form method="POST" action="{{value.url()+'moderate'}}">
+            <input type="hidden" name="undo" value="True"/>
+            <a href="" class="moderate_post little_link"><span>Undo</span></a>
+            {{lib.csrf_token()}}
+          </form>
+          <br>
+          <span class="spam-text">You can see all comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate">here</a>
+        </div>
         <div class="display_post{% if pending and moderator %} moderate{% endif %}">
           {% if pending and not moderator %}
             <b>Post awaiting moderation.</b>
