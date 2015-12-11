@@ -72,10 +72,10 @@ Commands can be discovered and run via the `paster` command when you are in the
 Scripts are in the `scripts/` directory and run slightly differently, via `paster script`.  An extra
 :kbd:`--` is required to separate script arguments from paster arguments.  Example::
 
-     paster script development.ini ../scripts/create-allura-sitemap.py -- --help
+     paster script development.ini ../scripts/add_user_to_group.py -- --help
     ... help output ...
 
-     paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
+     paster script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
 
 To run these when using docker, prefix with :code:`docker-compose run taskd` and use :code:`docker-dev.ini` like::
 
@@ -224,15 +224,15 @@ reindex_users.py
     :prog: paster script development.ini allura/scripts/reindex_users.py --
 
 
-create-allura-sitemap.py
-------------------------
+create_sitemap_files.py
+-----------------------
 
-*Cannot currently be run as a background task.*
+*Can be run as a background task using task name:* :code:`allura.scripts.create_sitemap_files.CreateSitemapFiles`
 
 .. argparse::
-    :file: ../../scripts/create-allura-sitemap.py
-    :func: parser
-    :prog: paster script development.ini ../scripts/create-allura-sitemap.py --
+    :module: allura.scripts.create_sitemap_files
+    :func: get_parser
+    :prog: paster script development.ini allura/scripts/create_sitemap_files.py --
 
 
 publicize-neighborhood.py
