@@ -37,6 +37,7 @@ import pylons
 import webob
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
+from tg import config
 
 from allura import model as M
 from allura.lib import security, utils
@@ -44,7 +45,6 @@ from allura.scripts import ScriptTask
 
 
 MAX_SITEMAP_URLS = 50000
-BASE_URL = 'http://sourceforge.net'
 
 INDEX_TEMPLATE = """\
 <?xml version="1.0" encoding="utf-8"?>
@@ -112,7 +112,7 @@ class CreateSitemapFiles(ScriptTask):
                 c.project = p
                 try:
                     for s in p.sitemap(excluded_tools=['git', 'hg', 'svn']):
-                        url = BASE_URL + s.url if s.url[0] == '/' else s.url
+                        url = config['base_url'] + s.url if s.url[0] == '/' else s.url
                         locs.append({'url': url,
                                      'date': p.last_updated.strftime("%Y-%m-%d")})
 
@@ -135,7 +135,7 @@ class CreateSitemapFiles(ScriptTask):
             sitemap_index_vars = dict(
                 now=now,
                 sitemaps=[
-                    '%s/allura_sitemap/sitemap-%d.xml' % (BASE_URL, n)
+                    '%s%s/sitemap-%d.xml' % (config['base_url'], options.url_dir, n)
                     for n in range(file_count)])
             sitemap_index_content = Template(
                 INDEX_TEMPLATE).render(sitemap_index_vars)
@@ -164,6 +164,9 @@ class CreateSitemapFiles(ScriptTask):
         parser.add_argument('-n', '--neighborhood', dest='neighborhood',
                             help="URL prefix of excluded neighborhood(s)",
                             default=None, nargs='*')
+        parser.add_argument('--url-dir', dest='url_dir',
+                            default='/allura_sitemap',
+                            help='URL directory in which the files will be served from')
         return parser
 
 
