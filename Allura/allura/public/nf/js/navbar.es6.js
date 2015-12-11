@@ -339,9 +339,9 @@ var AdminNav = React.createClass({
                     { tools }
                 </ReactReorderable>
                 { end_tools }
-                <div id="add-tool-container">
+                { !isSubMenu && <div id="add-tool-container">
                     <ToggleAddNewTool installableTools={this.props.installableTools}/>
-                </div>
+                </div>}
             </div>
         );
     },
