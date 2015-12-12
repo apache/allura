@@ -212,9 +212,16 @@ class TestDiscuss(TestDiscussBase):
         r = self._make_post('Test post')
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
-        self.app.post(post_link + 'moderate', params=dict(undo='undo'))
+
+        self.app.post(post_link + 'moderate', params=dict(
+            undo='undo', prev_status='pending'))
         post = M.Post.query.find().first()
         assert post.status == 'pending'
+
+        self.app.post(post_link + 'moderate', params=dict(
+            undo='undo', prev_status='ok'))
+        post = M.Post.query.find().first()
+        assert post.status == 'ok'
 
     @patch.object(M.Thread, 'is_spam')
     def test_feed_does_not_include_comments_held_for_moderation(self, is_spam):
