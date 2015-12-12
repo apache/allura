@@ -356,7 +356,9 @@ class PostController(BaseController):
         elif kw.pop('spam', None):
             self.post.spam()
         elif kw.pop('undo', None):
-            self.post.status = 'pending'
+            prev_status = kw.pop('prev_status', None)
+            if prev_status:
+                self.post.status = prev_status
         elif kw.pop('approve', None):
             if self.post.status != 'ok':
                 self.post.approve()

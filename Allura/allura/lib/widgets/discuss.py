@@ -341,23 +341,37 @@ class Post(HierWidget):
                             }
                             else if (mod == 'Spam'){
                                 spam_block_display($(post), 'none');
-                                $(post).find('.spam-present').show();
                             }
                             else if (mod == 'Undo'){
                                 spam_block_display($(post), 'block');
-                                $(post).find('.spam-present').hide();
-                                $(post).find('.options a').eq(0).hide();
                             }
                         }
                     });
                 });
 
                 function spam_block_display($post, display_type) {
-                    $post.find('.display_post').css(
-                        'display', display_type);
+                    var post_block = $post.find('.display_post');
+                    post_block.css('display', display_type);
+
+                    var attach_block = $post.find('.add_attachment_form').next();
+                    if (attach_block.attr('class') == undefined) {
+                        attach_block.css('display', display_type);
+                    }
+
                     $.each($post.find('.options').children(), function() {
                         $(this).css('display', display_type);
+                        if (
+                            $(this).hasClass('reply_post') &&
+                            $post.find('input[name="prev_status"]').attr('value') == 'pending'
+                        ) {
+                            $(this).hide();
+                        }
                     });
+                    if (display_type == 'none') {
+                        $post.find('.spam-present').show();
+                    } else {
+                        $post.find('.spam-present').hide();
+                    }
                 }
 
                 function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }

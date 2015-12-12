@@ -49,6 +49,7 @@
           {% if h.has_access(value, 'moderate')() %}
           <form method="POST" action="{{value.url()+'moderate'}}">
             <input type="hidden" name="undo" value="True"/>
+            <input type="hidden" name="prev_status" value="{{value.status}}">
             <a href="" class="moderate_post little_link"><span>Undo</span></a>
             {{lib.csrf_token()}}
           </form>
