@@ -1,5 +1,5 @@
  /**
-  * React (with addons) v0.14.1
+  * React (with addons) v0.14.3
   */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.React = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /**
@@ -3277,6 +3277,7 @@ var HTMLDOMPropertyConfig = {
     icon: null,
     id: MUST_USE_PROPERTY,
     inputMode: MUST_USE_ATTRIBUTE,
+    integrity: null,
     is: MUST_USE_ATTRIBUTE,
     keyParams: MUST_USE_ATTRIBUTE,
     keyType: MUST_USE_ATTRIBUTE,
@@ -3299,6 +3300,7 @@ var HTMLDOMPropertyConfig = {
     multiple: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
     muted: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
     name: null,
+    nonce: MUST_USE_ATTRIBUTE,
     noValidate: HAS_BOOLEAN_VALUE,
     open: HAS_BOOLEAN_VALUE,
     optimum: null,
@@ -3310,6 +3312,7 @@ var HTMLDOMPropertyConfig = {
     readOnly: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
     rel: null,
     required: HAS_BOOLEAN_VALUE,
+    reversed: HAS_BOOLEAN_VALUE,
     role: MUST_USE_ATTRIBUTE,
     rows: MUST_USE_ATTRIBUTE | HAS_POSITIVE_NUMERIC_VALUE,
     rowSpan: null,
@@ -3788,6 +3791,7 @@ assign(React, {
 });
 
 React.__SECRET_DOM_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactDOM;
+React.__SECRET_DOM_SERVER_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactDOMServer;
 
 module.exports = React;
 },{"120":120,"24":24,"40":40,"50":50,"69":69}],27:[function(_dereq_,module,exports){
@@ -4335,6 +4339,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
     if (userSpecifiedDelay) {
       // Clean-up the animation after the specified delay
       timeout = setTimeout(endListener, userSpecifiedDelay);
+      this.transitionTimeouts.push(timeout);
     } else {
       // DEPRECATED: this listener will be removed in a future version of react
       ReactTransitionEvents.addEndEventListener(node, endListener);
@@ -4359,12 +4364,16 @@ var ReactCSSTransitionGroupChild = React.createClass({
 
   componentWillMount: function () {
     this.classNameQueue = [];
+    this.transitionTimeouts = [];
   },
 
   componentWillUnmount: function () {
     if (this.timeout) {
       clearTimeout(this.timeout);
     }
+    this.transitionTimeouts.forEach(function (timeout) {
+      clearTimeout(timeout);
+    });
   },
 
   componentWillAppear: function (done) {
@@ -6662,6 +6671,7 @@ var registrationNameModules = ReactBrowserEventEmitter.registrationNameModules;
 // For quickly matching children type, to test if can be treated as content.
 var CONTENT_TYPES = { 'string': true, 'number': true };
 
+var CHILDREN = keyOf({ children: null });
 var STYLE = keyOf({ style: null });
 var HTML = keyOf({ __html: null });
 
@@ -7152,7 +7162,9 @@ ReactDOMComponent.Mixin = {
         }
         var markup = null;
         if (this._tag != null && isCustomComponent(this._tag, props)) {
-          markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
+          if (propKey !== CHILDREN) {
+            markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
+          }
         } else {
           markup = DOMPropertyOperations.createMarkupForProperty(propKey, propValue);
         }
@@ -7411,6 +7423,9 @@ ReactDOMComponent.Mixin = {
       } else if (isCustomComponent(this._tag, nextProps)) {
         if (!node) {
           node = ReactMount.getNode(this._rootNodeID);
+        }
+        if (propKey === CHILDREN) {
+          nextProp = null;
         }
         DOMPropertyOperations.setValueForAttribute(node, propKey, nextProp);
       } else if (DOMProperty.properties[propKey] || DOMProperty.isCustomAttribute(propKey)) {
@@ -10072,11 +10087,12 @@ if ("development" !== 'production') {
     var fakeNode = document.createElement('react');
     ReactErrorUtils.invokeGuardedCallback = function (name, func, a, b) {
       var boundFunc = func.bind(null, a, b);
-      fakeNode.addEventListener(name, boundFunc, false);
+      var evtType = 'react-' + name;
+      fakeNode.addEventListener(evtType, boundFunc, false);
       var evt = document.createEvent('Event');
-      evt.initEvent(name, false, false);
+      evt.initEvent(evtType, false, false);
       fakeNode.dispatchEvent(evt);
-      fakeNode.removeEventListener(name, boundFunc, false);
+      fakeNode.removeEventListener(evtType, boundFunc, false);
     };
   }
 }
@@ -14392,8 +14408,11 @@ NoopInternalComponent.prototype = {
     this._currentElement = element;
   },
 
-  unmountComponent: function () {}
+  unmountComponent: function () {},
 
+  getPublicInstance: function () {
+    return null;
+  }
 };
 
 var ShallowComponentWrapper = function () {};
@@ -15454,7 +15473,7 @@ module.exports = ReactUpdates;
 
 'use strict';
 
-module.exports = '0.14.1';
+module.exports = '0.14.3';
 },{}],98:[function(_dereq_,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -17478,7 +17497,7 @@ module.exports = adler32;
 var canDefineProperty = false;
 if ("development" !== 'production') {
   try {
-    Object.defineProperty({}, 'x', {});
+    Object.defineProperty({}, 'x', { get: function () {} });
     canDefineProperty = true;
   } catch (x) {
     // IE will fail on defineProperty
