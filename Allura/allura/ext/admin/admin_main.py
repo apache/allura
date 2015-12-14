@@ -773,14 +773,13 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     @require_post()
-    def mount_order(self, subs=None, tools=None, **kw):
+    def mount_order(self, **kw):
         if kw:
             for ordinal, mount_point in sorted(kw.items(), key=lambda x: int(x[0])):
                 try:
                     c.project.app_config(mount_point).options.ordinal = int(ordinal)
                 except AttributeError as e:
                     # Handle subproject
-                    # print("Handle subproject", mount_point)
                     p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
                                             neighborhood_id=c.project.neighborhood_id)
                     if p:
