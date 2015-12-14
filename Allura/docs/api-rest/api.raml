@@ -558,7 +558,7 @@ documentation:
             description: |
               Returns status: busy or ready
             is: [ bearerAuth ]
-        /{project}/webhooks:
+        /{tool}/webhooks:
             type: {
               typedCollection: {
               example: !include examples/webhooks.json,
@@ -604,7 +604,6 @@ documentation:
                     type: string
                     description: |
                       Unique identifier for a webhook.
-
                 get:
                   description: |
                     View a webhook
@@ -667,15 +666,55 @@ documentation:
                     required: false
                     description: |
                       "first", "last", or "alpha_tool" for position with respect to existing tools (or existing tools of the same type for "alpha_tool")
-        /tools:
+        /mount_order:
           description: |
-            Gets a list of installable tools for a project
-
-            returns dict with two fields:
-            success: False if error is occurred, otherwise True
-            info: success or error message
+            Save tool/subproject order for multiple tools at once.  *Authentication Required*.
+          post:
+            is: [ bearerAuth ]
+            body:
+              application/x-www-form-urlencoded:
+                formParameters:
+                  1:
+                    description: Mount point name for the first position.
+                    example: tickets
+                    type: string
+                  2:
+                    description: Mount point name for the second position.
+                    example: our-news
+                    type: string
+                  3:
+                    description: Mount point name for the third position.
+                    example: documentation
+                    type: string
+                  4...:
+                    description: Etc.
+        /configure_tool_grouping:
+          description: |
+            Set the nav bar grouping threshold. *Authentication Required*.
+          post:
+            is: [ bearerAuth ]
+            body:
+              application/x-www-form-urlencoded:
+                formParameters:
+                  grouping_threshold:
+                    description: Value for the grouping threshold.
+                    example: 1
+                    type: number
+        /installable_tools:
+          description: |
+            List of installable tools and their default options.  *Authentication Required*.
           get:
-
+            is: [ bearerAuth ]
+        /admin_options:
+          description: |
+            List of links to admin pages or modal content, for a specific tool. *Authentication Required*.
+          get:
+            is: [ bearerAuth ]
+            queryParameters:
+              mount_point:
+                type: string
+                description: |
+                  The mount point to specify which tool.
 
 /u/{username}:
     description: |
