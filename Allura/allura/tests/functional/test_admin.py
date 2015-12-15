@@ -385,7 +385,9 @@ class TestProjectAdmin(TestController):
         opts = ['EnableVoting']
         with mock.patch.object(ForgeTrackerApp, 'config_on_install', new=opts):
             r = self.app.get('/admin/options_on_install?tool_name=tickets')
-            assert_in(u'<input id="EnableVoting" name="EnableVoting" type="checkbox">', r)
+            inp_opts = {'type': 'checkbox', 'id': 'EnableVoting', 'name': 'EnableVoting'}
+            inp = r.html.findAll('input', inp_opts)
+            assert_equals(len(inp), 1)
 
     def test_grouping_threshold(self):
         r = self.app.get('/admin/tools')
