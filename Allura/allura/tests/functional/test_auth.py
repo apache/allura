@@ -722,6 +722,7 @@ class TestAuth(TestController):
                 ))
             user = M.User.query.get(username='aaa')
             assert not user.pending
+            assert_equal(M.Project.query.find({'name': 'u/aaa'}).count(), 1)
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
             self.app.post(
                 '/auth/save_new',
@@ -735,6 +736,7 @@ class TestAuth(TestController):
                 ))
             user = M.User.query.get(username='bbb')
             assert user.pending
+            assert_equal(M.Project.query.find({'name': 'u/bbb'}).count(), 0)
 
     def test_verify_email(self):
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
@@ -759,6 +761,7 @@ class TestAuth(TestController):
             assert not user.pending
             assert em.confirmed
             assert user.get_pref('email_address')
+            assert_equal(M.Project.query.find({'name': 'u/aaa'}).count(), 1)
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
