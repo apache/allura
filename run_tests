@@ -30,7 +30,7 @@ import os
 
 CPUS = multiprocessing.cpu_count()
 CONCURRENT_SUITES = (CPUS // 4) or CPUS
-CONCURRENT_TESTS = max(CPUS // CONCURRENT_SUITES, 2)  # need at least two, see thread http://mail-archives.apache.org/mod_mbox/allura-dev/201409.mbox/%3C541C5756.1020604%40brondsema.net%3E
+CONCURRENT_TESTS = CPUS // CONCURRENT_SUITES
 PROC_TIMEOUT = 360
 
 ALT_PKG_PATHS = {
