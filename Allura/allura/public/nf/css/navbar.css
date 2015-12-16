@@ -31,6 +31,7 @@
     width: 1.8rem;
     height: 1.8rem;
 }
+
 #toggle-admin-btn:focus {
     outline: none;
 }
@@ -125,11 +126,12 @@
 }
 
 /* .react-drag used to distinguish container used in locked vs unlocked modes */
-.react-drag #add-tool-container {
+#add-tool-container {
     float: left;
     margin-left: 10px;
 }
-.react-drag #add-tool-container .add-tool-toggle {
+
+#add-tool-container .add-tool-toggle {
     margin-top: 5px;
 }
 
@@ -222,13 +224,14 @@
     min-width: 150px;
 }
 
-#add-tool-container .contextMenu {
-    border: none;
-    top: -20px;
-}
 #top_nav_admin .contextMenu a {
     text-align: left;
-    padding-left: 5px !important;
+    border-right: 0;
+    margin: 4px 0;
+    overflow: hidden !important;
+    white-space: nowrap;
+    width: auto;
+    padding: 0 1em 0 0.5em !important;
 }
 
 .tb-item-grouper .tb-item {
@@ -236,24 +239,26 @@
     border-bottom: none;
     overflow: hidden;
 }
-.anchored{
-        float: left;
+
+.anchored {
+    float: left;
 }
+
 #top_nav .tb-item-grouper a {
     text-align: left;
 }
 
-#top_nav #add-tool-container {
-    padding-bottom: 0;  /* cancel out the site style for dropdown <li>s, since this is already fairly tall */
+#add-tool-container {
+    padding-bottom: 0 !important;/* cancel out the site style for dropdown <li>s, since this is already fairly tall */
 }
+
 
 #top_nav .add-tool-toggle {
     border: 1px dashed #B9B9B9;
     color: #0077aa;
     padding: 3px 7px;
     margin-top: -4px;
-    height: 100%;
-    float: right;
+    float: left;
     border-radius: 2px;
     cursor: pointer;
     -webkit-user-select: none;
@@ -289,22 +294,65 @@
     visibility: visible !important;
 }
 
-#top_nav_admin .contextMenu > ul > li > a {
+#add-tool-container > div > div {
+    /* margin-top: 20px; */
+    margin-left: -10px;
+}
+
+#add-tool-container .contextMenu {
+    border: none;
+    background: white;
+    text-align: left;
+    top: 15px;
+}
+
+#add-tool-container .contextMenu ul {
+    position: initial !important;
+    border: none;
+    background: white;
+    text-align: left;
+    margin: 0 !important;
+    top: 0;
+}
+
+#add-tool-container li {
+    overflow: auto;
+    border: 1px solid #e5e5e5;
+    border-bottom: none;
+    min-width: 100px;
+    margin: 0;
+    display: block;
+    padding: 0.3em 0.5em 0.3em 0.3em !important;
+}
+
+#add-tool-container li:hover {
+    color: white;
+    background-color: #09c;
+    background-image: linear-gradient(#09c, #07a);
+    border-color: #07a;
+}
+
+#add-tool-container li:hover a {
+    color: white !important;
+
+}
+
+#add-tool-container li:first-child {
+    border-top: 0;
+}
+
+#add-tool-container a {
     margin: 4px 0;
     border-right: none;
-    min-width: 6em;
-    clear: both;
+    white-space: nowrap;
 }
 
 #top_nav_admin .tool_option > a {
     border-right: none !important;
 }
 
-.options-context-menu{
-    /*border: 10px solid red;*/
-}
-.add-tool-context-menu{
-    /*background: black;*/
+.unlocked-container{
+    margin-top: 10px;
 }
 
 input.validate_input:valid[type='text'] {
@@ -316,12 +364,8 @@ input.validate_input:invalid[type='text'] {
     background: #fadad5;
 }
 
-input:focus:invalid {
-    outline: none;
-}
-
 .modal-form-error {
-    color: #FFFFFF;
+    color: white;
     padding: 2px;
     border-radius: 2px;
     font-size: smaller;

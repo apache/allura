@@ -97,14 +97,11 @@ var NavBarItem = React.createClass({
                 </a>
                 {this.props.currentOptionMenu.tool
                 && this.props.currentOptionMenu.tool === this.props.mount_point
-                &&
-                <div className="options-context-menu">
-                    <ContextMenu
+                && <ContextMenu
                     {...this.props}
                         items={this.props.options}
                         onOptionClick={this.props.onOptionClick}
-                    />
-                </div>}
+                    /> }
             </div>
         );
     },
@@ -339,7 +336,7 @@ var AdminNav = React.createClass({
                     { tools }
                 </ReactReorderable>
                 { end_tools }
-                { !isSubMenu && <div id="add-tool-container">
+                { !isSubMenu && <div id="add-tool-container" className="unlocked-container">
                     <ToggleAddNewTool installableTools={this.props.installableTools}/>
                 </div>}
             </div>
