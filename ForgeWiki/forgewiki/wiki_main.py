@@ -593,6 +593,8 @@ class PageController(BaseController, FeedController):
             page = self.page
         else:
             page = self.fake_page()
+        if request.headers.get('X-Requested-With', None) == 'XMLHttpRequest':
+            return
         c.confirmation = W.confirmation
         c.markdown_editor = W.markdown_editor
         c.attachment_add = W.attachment_add
