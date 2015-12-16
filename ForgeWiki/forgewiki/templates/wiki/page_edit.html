@@ -101,6 +101,7 @@
   });
   /*]]>*/
 
+  {% if page_exists %}
   function update_attachments(attachment_url, filename, filesize){
     if ($('.attachment_files').length + $('.attachment_files').length == 0){
       var attach_divs = '<strong>Attachments:</strong>' +
@@ -131,7 +132,6 @@
       $(new_attach).prependTo($('.attachment_files'));
     };
   };
-
   function send_attach() {
     var page_url = '{{page.url()}}';
     $.ajax({
@@ -165,5 +165,6 @@
       }
     });
   };
+  {% endif %}
 </script>
 {% endblock %}
