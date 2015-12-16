@@ -26,6 +26,7 @@ import subprocess
 import sys
 import threading
 import textwrap
+import os
 
 CPUS = multiprocessing.cpu_count()
 CONCURRENT_SUITES = (CPUS // 4) or CPUS
@@ -43,7 +44,8 @@ NOT_MULTIPROC_SAFE = [
 
 
 def run_one(cmd, **popen_kwargs):
-    print '{} running {} {}'.format(threading.current_thread(), cmd, popen_kwargs)
+    cmd_to_show = u'{} in {}'.format(cmd, popen_kwargs.get('cwd', '.'))
+    print u'{} running {}'.format(threading.current_thread(), cmd_to_show)
     sys.stdout.flush()
 
     all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
@@ -60,7 +62,7 @@ def run_one(cmd, **popen_kwargs):
     out_remainder, _ = proc.communicate()
     sys.stdout.write(out_remainder)
     sys.stdout.flush()
-    print 'finished {} {}'.format(cmd, popen_kwargs)
+    print u'finished {}'.format(cmd_to_show)
     sys.stdout.flush()
     return proc
 
