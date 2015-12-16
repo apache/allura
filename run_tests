@@ -130,6 +130,8 @@ def run_tests_in_parallel(options, nosetests_args):
         return CPUS
 
     cmds = []
+    env = dict(os.environ,
+               NOSE_IGNORE_CONFIG_FILES='1')
     for package in check_packages(options.packages):
         cover_package = package.lower()
         our_nosetests_args = copy(nosetests_args)
@@ -139,7 +141,7 @@ def run_tests_in_parallel(options, nosetests_args):
             nosetests_args=' '.join(our_nosetests_args),
             multiproc_args=get_multiproc_args(package),
         )
-        cmds.append((cmd, dict(cwd=package)))
+        cmds.append((cmd, dict(cwd=package, env=env)))
     return run_many(cmds, processes=get_concurrent_suites())
 
 
