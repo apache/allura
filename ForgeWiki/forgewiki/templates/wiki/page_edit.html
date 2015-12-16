@@ -74,9 +74,9 @@
     {{lib.csrf_token()}}
 </form>
 <div class="grid-19">
-  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
+  {{c.attachment_list.display(onsubmit='del_attach(this); return false;', attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
   {% if page_exists and h.has_access(page, 'edit')() %}
-    {{c.attachment_add.display(action=page.url() + 'attach', name='file_info')}}
+    {{c.attachment_add.display(onsubmit='send_attach(); return false;', name='file_info')}}
   {% endif %}
 </div>
 {{c.confirmation.display(content='')}}
@@ -100,5 +100,70 @@
     {% endif %}
   });
   /*]]>*/
+
+  function update_attachments(attachment_url, filename, filesize){
+    if ($('.attachment_files').length + $('.attachment_files').length == 0){
+      var attach_divs = '<strong>Attachments:</strong>' +
+                        '<div class="attachment_images"></div>' +
+                        '<div class="attachment_files"></div>';
+      $(attach_divs).prependTo($('.attachments'));
+    };
+    var ext = filename.split('.').pop().toLowerCase();
+    if($.inArray(ext, ['gif','png','jpg','jpeg']) != -1) {
+      new_attach = '<div class="attachment_thumb">' +
+                     '<a href="' + attachment_url + '">' +
+                     '<img src="' + attachment_url + '/thumb" alt="Thumbnail"/>' +
+                     '</a><br/>' + filename +
+                     '<form method="post" action="' + attachment_url + '">' +
+                       '<input type="hidden" name="delete" value="True"/>' +
+                       '<input type="submit" value="Delete File"/>' +
+                     '</form>' +
+                   '</div>';
+      $(new_attach).prependTo($('.attachment_images'));
+    } else {
+      var new_attach ='<form method="post" action="' + attachment_url + '">' +
+                        '<a href="' + attachment_url + '">' + filename + '</a> (' + filesize + ' bytes)' +
+                        '<input type="hidden" name="delete" value="True"/>' +
+                        '<span>' +
+                          '<input type="submit" value="Delete File"/>' +
+                        '</span>' +
+                      '</form>';
+      $(new_attach).prependTo($('.attachment_files'));
+    };
+  };
+
+  function send_attach() {
+    var page_url = '{{page.url()}}';
+    $.ajax({
+      type: "POST",
+      url: page_url + 'attach',
+      data: new FormData($('#attachment_form')[0]),
+      processData: false,
+      contentType: false,
+      headers: {
+        "X-CSRF-Token": $.cookie('_session_id')
+      },
+      success: function(data) {
+        var attachment_name = $("#file_info").val();
+        var attachment_url = page_url + 'attachment/' + attachment_name;
+        update_attachments(attachment_url, attachment_name, $("#file_info")[0].files[0].size);
+      }
+    });
+  };
+
+  function del_attach(this) {
+    var attr_url = $(this).attr('action');
+    $.ajax({
+      type: "POST",
+      url: attr_url,
+      data: $(this).serialize(),
+      headers: {
+        "X-CSRF-Token": $.cookie('_session_id')
+      },
+      success:  function() {
+        $(this).parent().remove();
+      }
+    });
+  };
 </script>
 {% endblock %}

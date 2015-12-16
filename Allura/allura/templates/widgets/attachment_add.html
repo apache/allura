@@ -18,7 +18,9 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="post"
+      id="attachment_form"
       action="{{action}}"
+      onsubmit="{{onsubmit}}"
       enctype="multipart/form-data">
       <a href="#" class="btn link attachment_form_add_button">Add attachments</a>
       <div class="attachment_form_fields" style="display:none">
