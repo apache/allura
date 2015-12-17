@@ -774,16 +774,22 @@ class ProjectAdminRestController(BaseController):
     @expose('json:')
     @require_post()
     def mount_order(self, **kw):
-        if kw:
-            for ordinal, mount_point in sorted(kw.items(), key=lambda x: int(x[0])):
-                try:
-                    c.project.app_config(mount_point).options.ordinal = int(ordinal)
-                except AttributeError as e:
-                    # Handle subproject
-                    p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
-                                            neighborhood_id=c.project.neighborhood_id)
-                    if p:
-                        p.ordinal = int(ordinal)
+        if not kw:
+            raise exc.HTTPBadRequest('Expected kw params in the form of "ordinal: mount_point"')
+        try:
+            sorted_tools = sorted(kw.items(), key=lambda x: int(x[0]))
+        except ValueError:
+            raise exc.HTTPBadRequest('Invalid kw: expected "ordinal: mount_point"')
+
+        for ordinal, mount_point in sorted_tools:
+            try:
+                c.project.app_config(mount_point).options.ordinal = int(ordinal)
+            except AttributeError as e:
+                # Handle sub project
+                p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
+                                        neighborhood_id=c.project.neighborhood_id)
+                if p:
+                    p.ordinal = int(ordinal)
         M.AuditLog.log('Updated tool order')
         return {'status': 'ok'}
 
@@ -792,15 +798,13 @@ class ProjectAdminRestController(BaseController):
     def configure_tool_grouping(self, grouping_threshold='1', **kw):
         try:
             grouping_threshold = int(grouping_threshold)
-            if grouping_threshold < 1:
-                raise ValueError('Invalid threshold')
+            if grouping_threshold < 1 or grouping_threshold > 10:
+                raise exc.HTTPBadRequest('Invalid threshold. Expected a value between 1 and 10')
             c.project.set_tool_data(
                 'allura', grouping_threshold=grouping_threshold)
         except ValueError:
-            return {
-                'status': 'error',
-                'msg': 'Invalid threshold'
-            }
+            raise exc.HTTPBadRequest('Invalid threshold. Expected a value between 1 and 10')
+
         M.AuditLog.log('Updated tool grouping threshold')
         return {'status': 'ok'}
 
@@ -882,9 +886,13 @@ class ProjectAdminRestController(BaseController):
         """
         Returns the admin options for a given mount_point
         """
+
+        if not mount_point:
+            raise exc.HTTPBadRequest('Must provide a mount point')
+
         tool = c.project.app_instance(mount_point)
-        if not mount_point or tool is None:
-            raise exc.HTTPNotFound
+        if tool is None:
+            raise exc.HTTPBadRequest('The mount point you provided was invalid')
         admin_menu = tool.admin_menu()
         if tool.admin_menu_delete_button:
             admin_menu.append(tool.admin_menu_delete_button)
