@@ -291,6 +291,7 @@ class ProjectAdminController(BaseController):
                 raise ValueError('Invalid threshold')
             c.project.set_tool_data(
                 'allura', grouping_threshold=grouping_threshold)
+            g.post_event('project_menu_updated')
         except ValueError:
             flash('Invalid threshold', 'error')
         redirect('tools?limit=%s&page=%s' % (limit, page))
@@ -648,8 +649,8 @@ class ProjectAdminController(BaseController):
                 p.ordinal = int(sp['ordinal'])
         if tools:
             for p in tools:
-                c.project.app_config(
-                    p['mount_point']).options.ordinal = int(p['ordinal'])
+                c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
+        g.post_event('project_menu_updated')
         redirect('tools')
 
     def _update_mounts(self, subproject=None, tool=None, new=None, **kw):
@@ -657,6 +658,7 @@ class ProjectAdminController(BaseController):
             subproject = []
         if tool is None:
             tool = []
+        new_app = None
         for sp in subproject:
             p = M.Project.query.get(shortname=sp['shortname'],
                                     neighborhood_id=c.project.neighborhood_id)
@@ -718,13 +720,15 @@ class ProjectAdminController(BaseController):
                     k: v for (k, v) in kw.iteritems()
                     if k in [o.name for o in App.options_on_install()]
                 }
-                return c.project.install_app(
+                new_app = c.project.install_app(
                     ep_name,
                     mount_point,
                     mount_label=new['mount_label'],
                     ordinal=int(new['ordinal']) if 'ordinal' in new else None,
                     **config_on_install)
         g.post_event('project_updated')
+        g.post_event('project_menu_updated')
+        return new_app
 
     @h.vardec
     @expose()
@@ -785,6 +789,7 @@ class ProjectAdminRestController(BaseController):
                     if p:
                         p.ordinal = int(ordinal)
         M.AuditLog.log('Updated tool order')
+        g.post_event('project_menu_updated')
         return {'status': 'ok'}
 
     @expose('json:')
@@ -802,6 +807,7 @@ class ProjectAdminRestController(BaseController):
                 'msg': 'Invalid threshold'
             }
         M.AuditLog.log('Updated tool grouping threshold')
+        g.post_event('project_menu_updated')
         return {'status': 'ok'}
 
     @expose('json:')
