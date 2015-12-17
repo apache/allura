@@ -42,6 +42,43 @@ class TestProjectHome(TestController):
             assert nl['href'] == entry['url']
 
     @td.with_wiki
+    def test_project_nav_with_admin_options(self):
+        r = self.app.get('/p/test/_nav.json?admin_options=1')
+        assert_in({
+            "text": "Wiki",
+            "href": "/p/test/admin/install_tool?tool_name=wiki",
+            "tooltip":
+                "Documentation is key to your project and the wiki tool helps make it easy for anyone to contribute."
+        }, r.json['installable_tools'])
+        for m in r.json['menu']:
+            if m['mount_point'] == 'sub1':
+                assert_equal(m['admin_options'],
+                             [{'className': None,
+                               'text': 'Subproject Admin',
+                               'href': '/p/test/sub1/admin',
+                               }])
+                break
+        else:
+            raise AssertionError(u'Did not find sub1 subproject in menu results: {}'.format(r.json['menu']))
+        for m in r.json['menu']:
+            if m['mount_point'] == 'wiki':
+                assert_in({'className': 'admin_modal',
+                           'text': 'Set Home',
+                           'href': '/p/test/admin/wiki/home',
+                           }, m['admin_options'])
+                assert_in({'className': None,
+                           'text': 'Permissions',
+                           'href': '/p/test/admin/wiki/permissions',
+                           }, m['admin_options'])
+                assert_in({'className': 'admin_modal',
+                           'text': 'Delete',
+                           'href': '/p/test/admin/wiki/delete',
+                           }, m['admin_options'])
+                break
+        else:
+            raise AssertionError(u'Did not find wiki in menu results: {}'.format(r.json['menu']))
+
+    @td.with_wiki
     def test_project_group_nav(self):
         c.user = M.User.by_username('test-admin')
         p = M.Project.query.get(shortname='test')
