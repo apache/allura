@@ -654,6 +654,11 @@ class ProjectAdminController(BaseController):
         redirect('tools')
 
     def _update_mounts(self, subproject=None, tool=None, new=None, **kw):
+        '''
+
+        Returns the new App or Subproject, if one was installed.
+        Returns None otherwise.
+        '''
         if subproject is None:
             subproject = []
         if tool is None:
@@ -703,6 +708,7 @@ class ProjectAdminController(BaseController):
                     sp.ordinal = int(new['ordinal'])
                 else:
                     sp.ordinal = c.project.last_ordinal_value() + 1
+                new_app = sp
             else:
                 require_access(c.project, 'admin')
                 installable_tools = AdminApp.installable_tools_for(c.project)
@@ -739,7 +745,13 @@ class ProjectAdminController(BaseController):
         try:
             new_app = self._update_mounts(subproject, tool, new, **kw)
             if new_app:
-                redirect(new_app.url)
+                if getattr(new_app, 'tool_label', '') == 'External Link':
+                    flash(u'{} installed successfully.'.format(new_app.tool_label))
+                else:
+                    new_url = new_app.url
+                    if callable(new_url):  # subprojects have a method instead of property
+                        new_url = new_url()
+                    redirect(new_url)
         except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
