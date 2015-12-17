@@ -880,6 +880,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         """
         require_access(self.app, 'configure')
         self.app.config.options['mount_label'] = mount_label
+        g.post_event('project_menu_updated')
         redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_options.html')

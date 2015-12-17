@@ -161,6 +161,13 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/audit/')
         assert "uninstall tool test-tool" in r.body, r.body
 
+        # Make sure several 'project_menu_updated' events got sent
+        menu_updated_events = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.event_tasks.event',
+            'args': 'project_menu_updated'
+        }).all()
+        assert_equals(len(menu_updated_events), 7)
+
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
