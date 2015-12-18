@@ -960,7 +960,6 @@ class ProjectAdminRestController(BaseController):
 
         """
         controller = ProjectAdminController()
-        ordinal = 0
 
         if not tool or not mount_point or not mount_label:
             return {
