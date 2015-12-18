@@ -617,7 +617,7 @@ class TestFork(_TestCase):
         assert 'git checkout master' in merge_instructions
         assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
         assert 'git merge {}'.format(c_id) in merge_instructions
-        assert_in('less than 1 minute ago', r.html.findAll('p')[2].getText())
+        assert_in('less than 1 minute ago', r)
 
         merge_form = r.html.find('form', action='merge')
         assert merge_form

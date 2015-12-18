@@ -42,7 +42,7 @@ class TestDiscussionApiBase(TestRestApiBase):
 
     def create_forum(self, shortname, name, description):
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'héllo'
         form['add_forum.name'] = 'Say Héllo'
         form['add_forum.description'] = 'Say héllo here'
@@ -235,7 +235,7 @@ class TestRootRestController(TestDiscussionApiBase):
 
     def test_private_forums(self):
         r = self.app.get('/p/test/admin/discussion/forums')
-        form = r.forms[2]
+        form = r.forms['edit-forums']
         if form['forum-0.shortname'].value == u'héllo':
             form['forum-0.members_only'] = True
         else:

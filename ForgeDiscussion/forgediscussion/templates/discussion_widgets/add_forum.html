@@ -20,7 +20,7 @@
 {% if value == c.add_forum -%}
     {% set value = {} -%}
 {% endif -%}
-<form method="{{method}}" action="{{action}}" enctype="multipart/form-data">
+<form method="{{method}}" action="{{action}}" enctype="multipart/form-data" id="add-forum">
   <input type="hidden" name="add_forum.app_id" value="{{app and app.config._id}}">
   <div id="add_forum_form" style="display:none">
     <label class="grid-5">Name:</label>

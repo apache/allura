@@ -45,7 +45,7 @@ class TestForumEmail(TestController):
         c.user = M.User.by_username('test-admin')
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'testforum'
         form['add_forum.name'] = 'Test Forum'
         form.submit()
@@ -131,13 +131,13 @@ class TestForumAsync(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'testforum'
         form['add_forum.name'] = 'Test Forum'
         form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum' in r
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'test1'
         form['add_forum.name'] = 'Test Forum 1'
         form.submit()
@@ -270,7 +270,7 @@ class TestForum(TestController):
         TestController.setUp(self)
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'testforum'
         form['add_forum.name'] = 'Test Forum'
         form.submit()
@@ -280,7 +280,7 @@ class TestForum(TestController):
         h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'childforum'
         form['add_forum.name'] = 'Child Forum'
         form['add_forum.parent'] = str(frm._id)
@@ -316,7 +316,7 @@ class TestForum(TestController):
 
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
         form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
         form.submit()
@@ -325,7 +325,7 @@ class TestForum(TestController):
 
     def test_markdown_description(self):
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = 'tester'
         form['add_forum.name'] = 'Tester'
         form['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
@@ -825,7 +825,7 @@ class TestForum(TestController):
 
     def test_create_topic_unicode(self):
         r = self.app.get('/admin/discussion/forums')
-        form = r.forms[3]
+        form = r.forms['add-forum']
         form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
         form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
         form.submit()

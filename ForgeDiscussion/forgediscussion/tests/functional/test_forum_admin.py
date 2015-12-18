@@ -38,9 +38,10 @@ class TestForumAdmin(TestController):
 
     def test_forum_CRUD(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'testforum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit().follow()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit().follow()
         assert 'Test Forum' in r
         h.set_context('test', 'Forum', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
@@ -57,47 +58,54 @@ class TestForumAdmin(TestController):
 
     def test_forum_CRUD_hier(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'testforum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit().follow()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit().follow()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
         h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'childforum'
-        r.forms[3]['add_forum.name'] = 'Child Forum'
-        r.forms[3]['add_forum.parent'] = str(frm._id)
-        r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'childforum'
+        form['add_forum.name'] = 'Child Forum'
+        form['add_forum.parent'] = str(frm._id)
+        form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'Child Forum' in r
 
     def test_bad_forum_names(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'Test.Forum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'Test.Forum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit()
         assert 'error' in r
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'Test/Forum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'Test/Forum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit()
         assert 'error' in r
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'Test Forum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'Test Forum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit()
         assert 'error' in r
 
     def test_duplicate_forum_names(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'a'
-        r.forms[3]['add_forum.name'] = 'Forum A'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'a'
+        form['add_forum.name'] = 'Forum A'
+        r = form.submit()
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'b'
-        r.forms[3]['add_forum.name'] = 'Forum B'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'b'
+        form['add_forum.name'] = 'Forum B'
+        r = form.submit()
         h.set_context('test', 'Forum', neighborhood='Projects')
         forum_a = FM.Forum.query.get(shortname='a')
         self.app.post('/admin/discussion/update_forums',
@@ -109,22 +117,24 @@ class TestForumAdmin(TestController):
         # Now we have two forums: 'a', and 'b'.  'a' is deleted.
         # Let's try to create new forums with these names.
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'a'
-        r.forms[3]['add_forum.name'] = 'Forum A'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'a'
+        form['add_forum.name'] = 'Forum A'
+        r = form.submit()
         assert 'error' in r
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'b'
-        r.forms[3]['add_forum.name'] = 'Forum B'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'b'
+        form['add_forum.name'] = 'Forum B'
+        r = form.submit()
         assert 'error' in r
 
     def test_delete_undelete(self):
         r = self.app.get('/admin/discussion/forums')
-        r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'testforum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r = r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        r = form.submit()
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
         assert len(soup_form.findAll('input', {'value': 'Delete'})) == 2
@@ -151,9 +161,10 @@ class TestForumAdmin(TestController):
     def test_members_only(self):
         # make a forum anyone can see
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'secret'
-        r.forms[3]['add_forum.name'] = 'Secret'
-        r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'secret'
+        form['add_forum.name'] = 'Secret'
+        form.submit()
         # forum can be viewed by member and non-member
         self.app.get('/discussion/secret')
         self.app.get('/discussion/secret',
@@ -210,9 +221,10 @@ class TestForumAdmin(TestController):
     def test_anon_posts(self):
         # make a forum anons can't post in
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'testforum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
         # try to post in the forum and get a 403
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find(
@@ -255,9 +267,10 @@ class TestForumAdmin(TestController):
 
     def test_footer_monitoring_email(self):
         r = self.app.get('/admin/discussion/forums')
-        r.forms[3]['add_forum.shortname'] = 'testforum'
-        r.forms[3]['add_forum.name'] = 'Test Forum'
-        r.forms[3].submit()
+        form = r.forms['add-forum']
+        form['add_forum.shortname'] = 'testforum'
+        form['add_forum.name'] = 'Test Forum'
+        form.submit()
         testforum = FM.Forum.query.get(shortname='testforum')
         self.app.post('/admin/discussion/update_forums',
                       params={'forum-0.anon_posts': 'on',

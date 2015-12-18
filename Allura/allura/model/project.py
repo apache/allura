@@ -625,7 +625,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             if admin_options and s.tool_name and mount_point:
                 try:
                     entry['admin_options'] = ProjectAdminRestController().admin_options(mount_point)['options']
-                except exc.HTTPNotFound:
+                except exc.HTTPError:
                     log.debug('Could not get admin_options mount_point for tool: %s', s.url)
             if admin_options and not s.tool_name:
                 entry['admin_options'] = [dict(text='Subproject Admin', href=s.url + 'admin', className=None)]

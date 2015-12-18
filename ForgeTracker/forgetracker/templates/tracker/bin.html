@@ -30,7 +30,8 @@
 {% block header %}Saved Searches{% endblock %}
 
 {% block content %}
-  <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/bins/update_bins" method="post" class="update_bins">
+  <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/bins/update_bins" method="post"
+        class="update_bins" id="saved-search-form">
     <table>
       <thead>
         <tr>

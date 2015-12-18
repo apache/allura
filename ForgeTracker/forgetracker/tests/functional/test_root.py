@@ -1410,7 +1410,7 @@ class TestFunctionalController(TrackerTestController):
             'sort': ''})
         assert err in r
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.forms[2]
+        edit_form = r.forms['saved-search-form']
         edit_form['bins-2.summary'] = 'Original'
         edit_form['bins-2.terms'] = 'label:foo'
         r = edit_form.submit()
@@ -1434,7 +1434,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_edit_saved_search(self):
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.forms[2]
+        edit_form = r.forms['saved-search-form']
         edit_form['bins-2.summary'] = 'Original'
         edit_form['bins-2.terms'] = 'aaa'
         edit_form.submit()
@@ -1442,7 +1442,7 @@ class TestFunctionalController(TrackerTestController):
         assert sidebar_contains(r, 'Original')
         assert not sidebar_contains(r, 'New')
         r = self.app.get('/admin/bugs/bins/')
-        edit_form = r.forms[2]
+        edit_form = r.forms['saved-search-form']
         edit_form['bins-2.summary'] = 'New'
         edit_form.submit()
         r = self.app.get('/bugs/')
@@ -2241,12 +2241,13 @@ class TestFunctionalController(TrackerTestController):
         M.Notification.query.remove()
         r = self.app.get('/p/test/bugs/2/')
         field_name = None  # comment text textarea name
-        for name, field in r.forms[2].fields.iteritems():
+        form = r.forms['ticket-form']
+        for name, field in form.fields.iteritems():
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
-        r.forms[2].fields[field_name][0].value = 'Hi there'
-        r.forms[2].submit()
+        form.fields[field_name][0].value = 'Hi there'
+        form.submit()
 
         # notification for ticket 2 should reference [test:bugs], not
         # [test:dummy]
@@ -2298,12 +2299,13 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test ticket')
         r = self.app.get('/p/test/bugs/1/')
         field_name = None  # comment text textarea name
-        for name, field in r.forms[2].fields.iteritems():
+        form = r.forms['ticket-form']
+        for name, field in form.fields.iteritems():
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
-        r.forms[2].fields[field_name][0].value = 'I am comment'
-        r.forms[2].submit()
+        form.fields[field_name][0].value = 'I am comment'
+        form.submit()
         r = self.app.get('/p/test/bugs/1/')
         assert_in('I am comment', r)
 

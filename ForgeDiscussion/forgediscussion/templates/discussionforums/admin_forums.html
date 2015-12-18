@@ -24,7 +24,7 @@
 {% block header %}{{app.config.options.mount_label}} Admin Forums{% endblock %}
 
 {% block content %}
-<form method="POST" action="update_forums" enctype="multipart/form-data">
+<form method="POST" action="update_forums" enctype="multipart/form-data" id="edit-forums">
   <table id="forums">
     <thead>
       <tr>
