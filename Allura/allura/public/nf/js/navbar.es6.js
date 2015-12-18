@@ -513,7 +513,7 @@ var Main = React.createClass({
         // because that means you re-render the HTML while the drag is happening
         // and the actual dragging doesn't work any more
         var dragging_mount_point = obj.props.children.props.mount_point;
-        $(`[data-mount-point=${dragging_mount_point}]`).closest('.react-drag').addClass('dragging');
+        $(`[data-mount-point="${dragging_mount_point}"]`).closest('.react-drag').addClass('dragging');
     },
 
     render: function() {
