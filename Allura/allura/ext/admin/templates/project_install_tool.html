@@ -54,7 +54,7 @@
             <label class="grid-13" for="{{ o.name }}">{{ o.label }}</label>
             <div class="grid-13">
                 {% if o.ming_type.__name__ == 'bool' %}
-                    <input {{ o.render_attrs() }}id="{{ o.name }}" name="{{ o.name }}"
+                    <input {{ o.render_attrs() }} id="{{ o.name }}" name="{{ o.name }}"
                            type="checkbox"{{ ' checked="checked"' if o.default }}>
                 {% else %}
                     <input {{ o.render_attrs() }} id="{{ o.name }}" name="{{ o.name }}" value="{{ o.default or '' }}">
