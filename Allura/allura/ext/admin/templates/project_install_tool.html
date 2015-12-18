@@ -99,12 +99,7 @@
         var v = $(mp).val();
         var mp_exists = _.contains(_existingMountPoints, $(mp).val());
 
-        if(v.length > 61){
-            submit_button.attr('disabled', true);
-            $(url_error).text("The path entered is too long");
-            mp.setCustomValidity("Must be less than 63 characters");
-        }
-        else if (!v.match(_re)) {
+        if (!v.match(_re)) {
             submit_button.attr('disabled', true);
             $(url_error).text("You have entered an invalid character");
             mp.setCustomValidity("Invalid character");
