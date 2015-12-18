@@ -338,6 +338,12 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     user = M.User.register(dict(username=username,
                                 display_name=display_name),
                            make_project=make_project)
+    email = username+"@allura.local"
+    user.claim_address(email)
+    from allura.model.auth import EmailAddress
+    kw = {"email": email}
+    em = EmailAddress.get(**kw)
+    em.confirmed = True
     user.set_password(password)
     return user
 
