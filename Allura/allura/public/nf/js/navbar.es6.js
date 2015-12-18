@@ -558,8 +558,7 @@ var Main = React.createClass({
         var show_grouping_threshold = max_tool_count > 1;
 
         return (
-            <div
-                className={ 'nav_admin '}>
+            <div>
                 { navBar }
                 <div id='bar-config'>
                     {show_grouping_threshold &&

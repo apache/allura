@@ -145,7 +145,6 @@
 }
 
 .add-new-tool-field label {
-    /*float: left;*/
     color: #7C7C7C;
 }
 
@@ -163,7 +162,6 @@
 }
 
 #new-tool-submit {
-    /* float: left; */
     width: 138px;
     font-size: larger;
     margin-left: 15px;
@@ -295,7 +293,6 @@
 }
 
 #add-tool-container > div > div {
-    /* margin-top: 20px; */
     margin-left: -10px;
 }
 
