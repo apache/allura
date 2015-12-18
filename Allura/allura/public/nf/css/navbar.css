@@ -230,6 +230,7 @@
     white-space: nowrap;
     width: auto;
     padding: 0 1em 0 0.5em !important;
+    clear: both;
 }
 
 .tb-item-grouper .tb-item {
