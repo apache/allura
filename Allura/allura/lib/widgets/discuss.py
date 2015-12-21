@@ -341,37 +341,25 @@ class Post(HierWidget):
                                 $('div.moderate', post).removeClass('moderate');
                             }
                             else if (mod == 'Spam'){
-                                spam_block_display($(post), 'none');
+                                spam_block_display($(post), 'show_spam');
                             }
                             else if (mod == 'Undo'){
-                                spam_block_display($(post), 'block');
+                                spam_block_display($(post), 'hide_spam');
                             }
                         }
                     });
                 });
 
                 function spam_block_display($post, display_type) {
-                    var post_block = $post.find('.display_post');
-                    post_block.css('display', display_type);
+                    var spam_block = $post.find('.info.grid-15.spam-present');
+                    var row = $post.find('.row').eq(0);
 
-                    var attach_block = $post.find('.add_attachment_form').next();
-                    if (attach_block.attr('class') == undefined) {
-                        attach_block.css('display', display_type);
-                    }
-
-                    $.each($post.find('.options').children(), function() {
-                        $(this).css('display', display_type);
-                        if (
-                            $(this).hasClass('reply_post') &&
-                            $post.find('input[name="prev_status"]').attr('value') == 'pending'
-                        ) {
-                            $(this).hide();
-                        }
-                    });
-                    if (display_type == 'none') {
-                        $post.find('.spam-present').show();
-                    } else {
-                        $post.find('.spam-present').hide();
+                    if (display_type == 'show_spam') {
+                        spam_block.show();
+                        row.hide();
+                    } else if (display_type == 'hide_spam') {
+                        spam_block.hide();
+                        row.show();
                     }
                 }
 

@@ -29,6 +29,19 @@
 
 <div>
   <div id="{{value.slug}}" class="discussion-post">
+    {% if h.has_access(value, 'moderate')() %}
+    <div class="info grid-15 spam-present">
+      <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
+      <form method="POST" action="{{value.url()+'moderate'}}">
+        <input type="hidden" name="undo" value="True"/>
+        <input type="hidden" name="prev_status" value="{{value.status}}">
+        <a href="" class="moderate_post little_link"><span>Undo</span></a>
+        {{lib.csrf_token()}}
+      </form>
+      <br>
+      <span class="spam-text">You can see all pending comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate?username={{value.author().username}}&status=pending">here</a>
+    </div>
+    {% endif %}
     <div class="row">
       <div class="grid-2 tcenter gravatar">
        <p class="gravatar">
@@ -44,19 +57,6 @@
       {% set pending = value.status == 'pending' %}
       {% set moderator = h.has_access(value, 'moderator')() %}
       <div class="grid-14 post-content" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
-        <div class="spam-present">
-          <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
-          {% if h.has_access(value, 'moderate')() %}
-          <form method="POST" action="{{value.url()+'moderate'}}">
-            <input type="hidden" name="undo" value="True"/>
-            <input type="hidden" name="prev_status" value="{{value.status}}">
-            <a href="" class="moderate_post little_link"><span>Undo</span></a>
-            {{lib.csrf_token()}}
-          </form>
-          {% endif %}
-          <br>
-          <span class="spam-text">You can see all comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate?username={{value.author().username}}&status=spam">here</a>
-        </div>
         <div class="display_post{% if pending and moderator %} moderate{% endif %}">
           {% if pending and not moderator %}
             <b>Post awaiting moderation.</b>
