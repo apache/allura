@@ -446,7 +446,7 @@ blockquote {
   color: #555555;
 }
 #site-header a:first-child, #site-footer a:first-child {
-  margin-left: 1em;
+  margin-left: 0;
 }
 
 /* site header */
