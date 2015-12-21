@@ -115,20 +115,20 @@
                      '<a href="' + attachment_url + '">' +
                      '<img src="' + attachment_url + '/thumb" alt="Thumbnail"/>' +
                      '</a><br/>' + filename +
-                     '<form method="post" action="' + attachment_url + '">' +
+                     '<form method="post" action="' + attachment_url + '" onsubmit="del_attach(this); return false;">' +
                        '<input type="hidden" name="delete" value="True"/>' +
                        '<input type="submit" value="Delete File"/>' +
                      '</form>' +
                    '</div>';
       $(new_attach).prependTo($('.attachment_images'));
     } else {
-      var new_attach ='<form method="post" action="' + attachment_url + '">' +
+      var new_attach ='<div><form method="post" action="' + attachment_url + '" onsubmit="del_attach(this); return false;">' +
                         '<a href="' + attachment_url + '">' + filename + '</a> (' + filesize + ' bytes)' +
                         '<input type="hidden" name="delete" value="True"/>' +
                         '<span>' +
                           '<input type="submit" value="Delete File"/>' +
                         '</span>' +
-                      '</form>';
+                      '</form></div>';
       $(new_attach).prependTo($('.attachment_files'));
     };
   };
@@ -140,9 +140,6 @@
       data: new FormData($('#attachment_form')[0]),
       processData: false,
       contentType: false,
-      headers: {
-        "X-CSRF-Token": $.cookie('_session_id')
-      },
       success: function(data) {
         var attachment_name = $("#file_info").val();
         var attachment_url = page_url + 'attachment/' + attachment_name;
@@ -151,17 +148,14 @@
     });
   };
 
-  function del_attach(this) {
-    var attr_url = $(this).attr('action');
+  function del_attach(elem) {
+    var attr_url = $(elem).attr('action');
     $.ajax({
       type: "POST",
       url: attr_url,
-      data: $(this).serialize(),
-      headers: {
-        "X-CSRF-Token": $.cookie('_session_id')
-      },
+      data: $(elem).serialize() +"&_session_id=" + $.cookie('_session_id'),
       success:  function() {
-        $(this).parent().remove();
+        $(elem).parent().remove();
       }
     });
   };
