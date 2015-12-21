@@ -45,8 +45,8 @@
       <td><small class="tooltip" title="{{ note.page_regex }}">{{ note.page_regex|truncate(20) if note.page_regex}}</small></td>
       <td><small>{{ note.page_tool_type if note.page_tool_type}}</small></td>
       <td>
-          <a href="{{ note._id }}/edit">Edit</a><br>
-          <a href="{{ note._id }}/delete">Delete</a>
+        <a href="{{ note._id }}/edit">Edit</a><br>
+        <a href="{{ note._id }}/delete" class="sn_delete">Delete</a>
       </td>
     </tr>
     {% endfor %}
@@ -69,19 +69,22 @@
 
 {% block extra_js %}
     <script>
-        $(document).ready(function() {
-        $(".tooltip").tooltipster({
-            animation: 'fade',
-            delay: 200,
-            theme: 'tooltipster-light',
-            trigger: 'hover',
-            iconCloning: false
-        }).focus(function () {
-            $(this).tooltipster('show');
-        }).blur(function () {
-            $(this).tooltipster('hide');
+      $(document).ready(function() {
+        $(".sn_delete").on("click", function(e){
+          e.preventDefault();
+          var elem = this;
+          $.ajax({
+            type: 'POST',
+            url: elem.href,
+            data: {
+              '_session_id': $.cookie('_session_id')
+            },
+            success: function(data) {
+                $(elem).parent().parent().remove();
+            }
+          });
         });
-        });
+      });
     </script>
 {% endblock %}
 
