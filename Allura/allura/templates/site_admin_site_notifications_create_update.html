@@ -63,8 +63,8 @@
 {% endmacro %}
 
 {% block content %}
-<h2>Edit Site Notification</h2>
-<form method="POST" action="update" id="editnote">
+<h2>{{ form_title }}</h2>
+<form method="POST" action="{{ form_action }}">
   <div>
     <label>Active</label>
     <div class="input">
