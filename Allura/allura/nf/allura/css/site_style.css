@@ -3430,6 +3430,7 @@ fieldset.preferences legend {
 }
 .spam-present {
   display: none;
+  margin-left: 75px;
 }
 .spam-text {
   float: left;
