@@ -431,11 +431,6 @@ class SiteNotificationController(object):
         note = M.notification.SiteNotification.query.get(_id=bson.ObjectId(id))
         return SiteNotificationController(note=note), remainder
 
-    def _check_security(self):
-        with h.push_context(config.get('site_admin_project', 'allura'),
-                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
-            require_access(c.project, 'admin')
-
     @expose('jinja:allura:templates/site_admin_site_notifications_list.html')
     @with_trailing_slash
     def index(self, page=0, limit=25):
@@ -455,13 +450,15 @@ class SiteNotificationController(object):
             'limit': limit
         }
 
-    @expose('jinja:allura:templates/site_admin_site_notifications_new.html')
+    @expose('jinja:allura:templates/site_admin_site_notifications_create_update.html')
     @without_trailing_slash
     def new(self, **kw):
         """Render the New SiteNotification form"""
         return dict(
             form_errors=c.form_errors or {},
             form_values=c.form_values or {},
+            form_title='New Site Notification',
+            form_action='create'
         )
 
     @expose()
@@ -476,12 +473,14 @@ class SiteNotificationController(object):
         ThreadLocalORMSession().flush_all()
         redirect('../site_notifications')
 
-    @expose('jinja:allura:templates/site_admin_site_notifications_edit.html')
-    def edit(self):
+    @expose('jinja:allura:templates/site_admin_site_notifications_create_update.html')
+    def edit(self, **kw):
         if c.form_values:
             return dict(
                 form_errors=c.form_errors or {},
                 form_values=c.form_values or {},
+                form_title='Edit Site Notification',
+                form_action='update'
             )
         form_value = {}
         form_value['active'] = str(self.note.active)
@@ -491,7 +490,9 @@ class SiteNotificationController(object):
         form_value['page_regex'] = self.note.page_regex if self.note.page_regex is not None else ''
         form_value['page_tool_type'] = self.note.page_tool_type if self.note.page_tool_type is not None else ''
         return dict(form_errors={},
-                    form_values=form_value)
+                    form_values=form_value,
+                    form_title='Edit Site Notification',
+                    form_action='update')
 
     @expose()
     @require_post()
@@ -507,6 +508,7 @@ class SiteNotificationController(object):
         redirect('..')
 
     @expose()
+    @require_post()
     def delete(self):
         self.note.delete()
         ThreadLocalORMSession().flush_all()
@@ -758,10 +760,3 @@ class StatsSiteAdminExtension(SiteAdminExtension):
     def update_sidebar_menu(self, links):
         links.append(SitemapEntry('Stats', '/nf/admin/stats',
             ui_icon=g.icons['stats']))
-
-
-class SNEditC(object):
-    @expose()
-    @with_trailing_slash
-    def _default(self, *args, **kwargs):
-        redirect('/')

@@ -317,7 +317,7 @@ class TestSiteAdmin(TestController):
 
         count = M.notification.SiteNotification.query.find().count()
 
-        self.app.get('/nf/admin/site_notifications/{}/delete'.format(note._id))
+        self.app.post('/nf/admin/site_notifications/{}/delete'.format(note._id))
         assert M.notification.SiteNotification.query.find().count() == count -1
         assert M.notification.SiteNotification.query.get(_id=bson.ObjectId(note._id)) is None
 

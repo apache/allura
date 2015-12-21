@@ -309,7 +309,7 @@ class CreateTaskSchema(fe.Schema):
 class CreateSiteNotificationSchema(fe.Schema):
     active = fev.StringBool()
     impressions = fev.Int(not_empty=True)
-    content = fev.NotEmpty(messages=dict(empty='Please enter a value'))
+    content = fev.UnicodeString(not_empty=True)
     user_role = fev.FancyValidator(not_empty=False, if_empty=None)
     page_regex = fev.FancyValidator(not_empty=False, if_empty=None)
     page_tool_type = fev.FancyValidator(not_empty=False, if_empty=None)
