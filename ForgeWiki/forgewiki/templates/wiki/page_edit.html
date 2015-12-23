@@ -128,7 +128,7 @@
                         '<span>' +
                           '<input type="submit" value="Delete File"/>' +
                         '</span>' +
-                      '</form></div>';
+                      '</form></div><div style="clear:both"></div>';
       $(new_attach).prependTo($('.attachment_files'));
     };
   };
@@ -141,7 +141,7 @@
       processData: false,
       contentType: false,
       success: function(data) {
-        var attachment_name = $("#file_info").val();
+        var attachment_name = $("#file_info")[0].files[0].name;
         var attachment_url = page_url + 'attachment/' + attachment_name;
         update_attachments(attachment_url, attachment_name, $("#file_info")[0].files[0].size);
       }
