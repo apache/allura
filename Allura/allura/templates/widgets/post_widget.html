@@ -79,13 +79,13 @@
                     <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>
                     <br/>
                     <a href="{{att.url()}}">{{att.filename}}</a>
-                    {% if c.user._id and value.author_id==c.user._id %}
+                    {% if h.has_access(value, 'moderate')()%}
                         <br>
                         <input class="submit delete_attachment pic" type="submit" value="X"/>
                     {% endif %}
                 {% else %}
                     <a href="{{att.url()}}">{{att.filename}}</a>
-                    {% if c.user._id and value.author_id==c.user._id %}
+                    {% if h.has_access(value, 'moderate')()%}
                     <input class="submit delete_attachment file" type="submit" value="X"/>
                     {% endif %}
                 {% endif %}
