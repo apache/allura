@@ -39,7 +39,8 @@
         {{lib.csrf_token()}}
       </form>
       <br>
-      <span class="spam-text">You can see all pending comments posted by this user&nbsp;</span><a href="/p/test/tickets/_discuss/moderate?username={{value.author().username}}&status=pending">here</a>
+      <span class="spam-text">You can see all pending comments posted by this user&nbsp;</span>
+      <a href="{{value.thread.discussion.url()}}moderate?username={{value.author().username}}&status=pending">here</a>
     </div>
     {% endif %}
     <div class="row">
