@@ -67,12 +67,22 @@ class AttachmentController(BaseController):
         self.filename = filename
         self.artifact = artifact
 
-    @LazyProperty
-    def attachment(self):
+    @property
+    def attachments_query(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
         metadata['type'] = 'attachment'
+        return dict(filename=self.filename, **metadata)
+
+    @property
+    def thumbnails_query(self):
+        metadata = self.AttachmentClass.metadata_for(self.artifact)
+        metadata['type'] = 'thumbnail'
+        return dict(filename=self.filename, **metadata)
+
+    @LazyProperty
+    def attachment(self):
         attachment = self.AttachmentClass.query.find(
-            dict(filename=self.filename, **metadata)
+            self.attachments_query
         ).sort('_id', -1).limit(1).first()
         if attachment is None:
             raise exc.HTTPNotFound
@@ -80,10 +90,8 @@ class AttachmentController(BaseController):
 
     @LazyProperty
     def thumbnail(self):
-        metadata = self.AttachmentClass.metadata_for(self.artifact)
-        metadata['type'] = 'thumbnail'
         attachment = self.AttachmentClass.query.find(
-            dict(filename=self.filename, **metadata)
+            self.thumbnails_query
         ).sort('_id', -1).limit(1).first()
         if attachment is None:
             raise exc.HTTPNotFound
@@ -92,12 +100,11 @@ class AttachmentController(BaseController):
     def handle_post(self, delete, **kw):
         require_access(self.artifact, self.edit_perm)
         if delete:
-            self.attachment.delete()
-            try:
-                if self.thumbnail:
-                    self.thumbnail.delete()
-            except exc.HTTPNotFound:
-                pass
+            # Remove all attachments with such filename. Since we're showing
+            # only the most recent one we don't want previous attachments
+            # with such filename (if there was any) to show up after delete
+            self.AttachmentClass.query.remove(self.attachments_query)
+            self.AttachmentClass.query.remove(self.thumbnails_query)
 
     @expose()
     def index(self, delete=False, **kw):
