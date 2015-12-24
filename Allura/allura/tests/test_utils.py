@@ -340,6 +340,8 @@ class FakeAttachment(object):
     def __init__(self, filename):
         self._id = ObjectId()
         self.filename = filename
+    def __repr__(self):
+        return u'%s %s' % (self._id, self.filename)
 
 
 def unique_attachments():
@@ -352,6 +354,6 @@ def unique_attachments():
     file1 = FakeAttachment('file.txt')
     file2 = FakeAttachment('file.txt')
     other = FakeAttachment('other')
-    attachments = [pic1, pic2, file1, file2, other]
-    expected = [pic2, file2, other]
+    attachments = [pic1, file1, pic2, file2, pic2, other]
+    expected = [file2, other, pic2]
     assert_equal(expected, ua(attachments))

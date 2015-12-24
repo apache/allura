@@ -650,6 +650,8 @@ def unique_attachments(attachments):
     if not attachments:
         return []
     result = []
+    # list passed to groupby should be sorted in order to avoid group key repetition
+    attachments = sorted(attachments, key=op.attrgetter('filename'))
     for _, atts in groupby(attachments, op.attrgetter('filename')):
         result.append(max(atts, key=op.attrgetter('_id')))
     return result
