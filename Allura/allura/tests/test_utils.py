@@ -24,6 +24,7 @@ import datetime as dt
 from ming.odm import session
 from os import path
 
+from bson import ObjectId
 from webob import Request
 from mock import Mock, patch
 from nose.tools import (
@@ -333,3 +334,24 @@ def test_skip_mod_date():
     with utils.skip_mod_date(M.Artifact):
         assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) is True
     assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) is False
+
+
+class FakeAttachment(object):
+    def __init__(self, filename):
+        self._id = ObjectId()
+        self.filename = filename
+
+
+def unique_attachments():
+    ua = utils.unique_attachments
+    assert_equal([], ua(None))
+    assert_equal([], ua([]))
+
+    pic1 = FakeAttachment('pic.png')
+    pic2 = FakeAttachment('pic.png')
+    file1 = FakeAttachment('file.txt')
+    file2 = FakeAttachment('file.txt')
+    other = FakeAttachment('other')
+    attachments = [pic1, pic2, file1, file2, other]
+    expected = [pic2, file2, other]
+    assert_equal(expected, ua(attachments))

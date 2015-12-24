@@ -594,8 +594,9 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     @LazyProperty
     def attachments(self):
-        return self.attachment_class().query.find(dict(
+        atts = self.attachment_class().query.find(dict(
             post_id=self._id, type='attachment')).all()
+        return utils.unique_attachments(atts)
 
     def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):

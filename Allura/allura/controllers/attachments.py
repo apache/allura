@@ -71,8 +71,9 @@ class AttachmentController(BaseController):
     def attachment(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
         metadata['type'] = 'attachment'
-        attachment = self.AttachmentClass.query.get(
-            filename=self.filename, **metadata)
+        attachment = self.AttachmentClass.query.find(
+            dict(filename=self.filename, **metadata)
+        ).sort('_id', -1).limit(1).first()
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
@@ -81,8 +82,9 @@ class AttachmentController(BaseController):
     def thumbnail(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
         metadata['type'] = 'thumbnail'
-        attachment = self.AttachmentClass.query.get(
-            filename=self.filename, **metadata)
+        attachment = self.AttachmentClass.query.find(
+            dict(filename=self.filename, **metadata)
+        ).sort('_id', -1).limit(1).first()
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment

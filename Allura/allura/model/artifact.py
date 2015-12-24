@@ -411,8 +411,9 @@ class Artifact(MappedClass, SearchIndexable):
 
     @LazyProperty
     def attachments(self):
-        return self.attachment_class().query.find(dict(
+        atts = self.attachment_class().query.find(dict(
             app_config_id=self.app_config_id, artifact_id=self._id, type='attachment')).all()
+        return utils.unique_attachments(atts)
 
     def delete(self):
         """Delete this Artifact.

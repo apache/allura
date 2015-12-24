@@ -30,6 +30,7 @@ import mimetypes
 import re
 import magic
 from itertools import groupby
+import operator as op
 import collections
 
 import tg
@@ -639,3 +640,16 @@ def skip_mod_date(model_cls):
         yield
     finally:
         session(model_cls)._get().skip_mod_date = skip_mod_date
+
+
+def unique_attachments(attachments):
+    """Given a list of :class:`allura.model.attachments.BaseAttachment` return
+    a list where each filename present only once. If original list contains
+    multiple attachmnets with the same filename the most recent one (i.e. with
+    max :class:`bson.ObjectId`) will make it to the resulting list."""
+    if not attachments:
+        return []
+    result = []
+    for _, atts in groupby(attachments, op.attrgetter('filename')):
+        result.append(max(atts, key=op.attrgetter('_id')))
+    return result
