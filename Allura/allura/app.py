@@ -617,7 +617,7 @@ class Application(object):
                 project in which this Application is installed
             - 'Options', if this Application has custom options, or
                 ``force_options`` is True
-            - 'Label', for editing this Application's label
+            - 'Rename', for editing this Application's label
             - 'Webhooks', if this Application can trigger any webhooks
 
         Subclasses should override this method to provide additional admin
