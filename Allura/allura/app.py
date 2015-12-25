@@ -638,7 +638,7 @@ class Application(object):
             links.append(
                 SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         links.append(
-            SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
+            SitemapEntry('Rename', admin_url + 'edit_label', className='admin_modal'))
         if len(self._webhooks) > 0:
             links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
         return links
