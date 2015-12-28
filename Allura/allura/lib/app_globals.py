@@ -439,7 +439,7 @@ class Globals(object):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
             # 'fenced_code'
-            extensions=['codehilite',
+            extensions=['fenced_code', 'codehilite',
                         ForgeExtension(
                             **kwargs), 'tables', 'toc', 'nl2br'],
             output_format='html4')

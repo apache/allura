@@ -21,7 +21,6 @@ from urlparse import urljoin
 
 from tg import config
 from bs4 import BeautifulSoup
-from markdown.extensions.fenced_code import FencedBlockPreprocessor
 import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
@@ -249,7 +248,6 @@ class ForgeExtension(markdown.Extension):
         # allow markdown within e.g. <div markdown>...</div>  More info at:
         # https://github.com/waylan/Python-Markdown/issues/52
         md.preprocessors['html_block'].markdown_in_raw = True
-        md.preprocessors['fenced-code'] = FencedBlockPreprocessor(md)
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird
@@ -374,23 +372,6 @@ class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
         txt = txt.replace('>', '&gt;')
         txt = txt.replace('"', '&quot;')
         return txt
-
-
-class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
-    pattern = '~~~~'
-
-    def run(self, lines):
-        in_block = False
-        new_lines = []
-        for line in lines:
-            if line.lstrip().startswith(self.pattern):
-                in_block = not in_block
-                continue
-            if in_block:
-                new_lines.append('    ' + line)
-            else:
-                new_lines.append(line)
-        return new_lines
 
 
 class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
