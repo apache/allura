@@ -73,7 +73,7 @@ class TestProjectAdmin(TestController):
         assert 'Test Subproject' not in r
         assert 'Milkshakes are for crazy monkeys' in r
         sidebar = r.html.find(id='sidebar')
-        assert sidebar.find('a', href='/p/test/admin/tools'), sidebar
+        assert sidebar.find('a', href='/p/test/admin/overview'), sidebar
 
         # Add a subproject
         with audits('create subproject test-subproject'):

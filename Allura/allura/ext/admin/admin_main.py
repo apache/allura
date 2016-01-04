@@ -146,7 +146,7 @@ class AdminApp(Application):
                     SitemapEntry('Screenshots', admin_url + 'screenshots'),
                     SitemapEntry('Categorization', admin_url + 'trove')
                 ]
-        links.append(SitemapEntry('Tools', admin_url + 'tools'))
+        links.append(SitemapEntry('Tools', admin_url + 'tools_moved'))
         if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
@@ -260,6 +260,10 @@ class ProjectAdminController(BaseController):
         license_trove = M.TroveCategory.query.get(
             trove_parent_id=0, shortname='license')
         return dict(base_troves=base_troves, license_trove=license_trove, topic_trove=topic_trove)
+
+    @expose('jinja:allura.ext.admin:templates/project_tools_moved.html')
+    def tools_moved(self, **kw):
+        return {}
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_tools.html')
