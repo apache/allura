@@ -484,7 +484,7 @@ class SiteNotificationController(object):
             )
         form_value = {}
         form_value['active'] = str(self.note.active)
-        form_value['imressions'] = self.note.impressions
+        form_value['impressions'] = self.note.impressions
         form_value['content'] = self.note.content
         form_value['user_role'] = self.note.user_role if self.note.user_role is not None else ''
         form_value['page_regex'] = self.note.page_regex if self.note.page_regex is not None else ''
