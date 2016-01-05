@@ -307,7 +307,7 @@ class CreateTaskSchema(fe.Schema):
 
 
 class CreateSiteNotificationSchema(fe.Schema):
-    active = fev.StringBool()
+    active = fev.StringBool(if_missing=False)
     impressions = fev.Int(not_empty=True)
     content = fev.UnicodeString(not_empty=True)
     user_role = fev.FancyValidator(not_empty=False, if_empty=None)

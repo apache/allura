@@ -68,17 +68,14 @@
   <div>
     <label>Active</label>
     <div class="input">
-      <select name="active">
-        <option value="False">No</option>
-        <option value="True" {%- if form_values.get('active') == 'True' -%}selected{%- endif -%}>Yes</option>
-      </select>
+      <input type="checkbox" name="active" value="yes" {%- if not form_values -%} checked {%- elif form_values|length and form_values.get('active') -%} checked {% endif %}>
     </div>
     {{error('active')}}
   </div>
   <div>
     <label>Impressions</label>
     <div class="input">
-      <input name="impressions" value="{{form_values.get('impressions', '0')}}" />
+      <input name="impressions" value="{{form_values.get('impressions', '10')}}" />
     </div>
     {{error('impressions')}}
   </div>
@@ -92,7 +89,7 @@
   <div>
     <label>User Role</label>
     <div class="input">
-      <input name="user_role" value="{{form_values.get('user_role', '')}}" />
+      <input name="user_role" value="{{form_values.get('user_role', '')}}" placeholder="e.g. Admin, Developer"/>
     </div>
     {{error('user_role')}}
   </div>
