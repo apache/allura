@@ -22,6 +22,7 @@ from tg import expose, request, redirect
 from ming.utils import LazyProperty
 
 from allura.lib.security import require_access
+from allura.lib.utils import is_ajax
 from .base import BaseController
 
 
@@ -110,6 +111,8 @@ class AttachmentController(BaseController):
     def index(self, delete=False, **kw):
         if request.method == 'POST':
             self.handle_post(delete, **kw)
+            if is_ajax(request):
+                return
             redirect(request.referer)
         if self.artifact.deleted:
             raise exc.HTTPNotFound

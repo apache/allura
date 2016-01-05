@@ -655,3 +655,10 @@ def unique_attachments(attachments):
     for _, atts in groupby(attachments, op.attrgetter('filename')):
         result.append(max(atts, key=op.attrgetter('_id')))
     return result
+
+
+
+def is_ajax(request):
+    if request.headers.get('X-Requested-With', None) == 'XMLHttpRequest':
+        return True
+    return False

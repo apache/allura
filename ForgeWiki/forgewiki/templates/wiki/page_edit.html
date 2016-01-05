@@ -74,9 +74,9 @@
     {{lib.csrf_token()}}
 </form>
 <div class="grid-19">
-  {{c.attachment_list.display(onsubmit='del_attach(this); return false;', attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
+  {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}
   {% if page_exists and h.has_access(page, 'edit')() %}
-    {{c.attachment_add.display(onsubmit='send_attach(); return false;', name='file_info')}}
+    {{c.attachment_add.display(name='file_info')}}
   {% endif %}
 </div>
 {{c.confirmation.display(content='')}}
@@ -115,14 +115,14 @@
                      '<a href="' + attachment_url + '">' +
                      '<img src="' + attachment_url + '/thumb" alt="Thumbnail"/>' +
                      '</a><br/>' + filename +
-                     '<form method="post" action="' + attachment_url + '" onsubmit="del_attach(this); return false;">' +
+                     '<form method="post" action="' + attachment_url + '>' +
                        '<input type="hidden" name="delete" value="True"/>' +
                        '<input type="submit" value="Delete File"/>' +
                      '</form>' +
                    '</div>';
       $(new_attach).prependTo($('.attachment_images'));
     } else {
-      var new_attach ='<div><form method="post" action="' + attachment_url + '" onsubmit="del_attach(this); return false;">' +
+      var new_attach ='<div><form method="post" action="' + attachment_url + '">' +
                         '<a href="' + attachment_url + '">' + filename + '</a> (' + filesize + ' bytes)' +
                         '<input type="hidden" name="delete" value="True"/>' +
                         '<span>' +
@@ -132,7 +132,9 @@
       $(new_attach).prependTo($('.attachment_files'));
     };
   };
-  function send_attach() {
+
+  $('#attachment_form').on('submit', function(event) {
+    event.preventDefault();
     var page_url = '{{page.url()}}';
     $.ajax({
       type: "POST",
@@ -140,7 +142,7 @@
       data: new FormData($('#attachment_form')[0]),
       processData: false,
       contentType: false,
-      success: function(data) {
+      success: function() {
         var i;
         for (i = 0; i < $("#file_info")[0].files.length; i++){
           var attachment_name = $("#file_info")[0].files[i].name;
@@ -149,19 +151,21 @@
         }
       }
     });
-  };
+  });
 
-  function del_attach(elem) {
-    var attr_url = $(elem).attr('action');
+  $('.attachments').on('submit', 'form', function(event) {
+    event.preventDefault();
+    elem = $(this);
+    var attr_url = elem.attr('action');
     $.ajax({
       type: "POST",
       url: attr_url,
-      data: $(elem).serialize() +"&_session_id=" + $.cookie('_session_id'),
-      success:  function() {
-        $(elem).parent().remove();
+      data: elem.serialize() +"&_session_id=" + $.cookie('_session_id'),
+      success:  function() {;
+        elem.parent().remove();
       }
     });
-  };
+  });
   {% endif %}
 </script>
 {% endblock %}

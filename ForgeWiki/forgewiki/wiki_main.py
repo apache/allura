@@ -37,6 +37,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController, Config
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
+from allura.lib.utils import is_ajax
 from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
@@ -754,8 +755,9 @@ class PageController(BaseController, FeedController):
             raise exc.HTTPNotFound
         require_access(self.page, 'edit')
         self.page.add_multiple_attachments(file_info)
-        if request.headers.get('X-Requested-With', None) != 'XMLHttpRequest':
-            redirect(request.referer)
+        if is_ajax(request):
+            return
+        redirect(request.referer)
 
     @expose('json:')
     @require_post()
