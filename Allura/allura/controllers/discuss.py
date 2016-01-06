@@ -62,7 +62,6 @@ class WidgetConfig(object):
     edit_post = DW.EditPost()
     moderate_thread = DW.ModerateThread()
     moderate_post = DW.ModeratePost()
-    flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
     moderate_posts = DW.ModeratePosts()
     # Other widgets
@@ -366,17 +365,6 @@ class PostController(BaseController):
                 self.post.thread.post_to_feed(self.post)
         self.thread.update_stats()
         return dict(result='success')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    @validate(pass_validator, error_handler=error_handler)
-    def flag(self, **kw):
-        self.W.flag_post.to_python(kw, None)
-        if c.user._id not in self.post.flagged_by:
-            self.post.flagged_by.append(c.user._id)
-            self.post.flags += 1
-        redirect(request.referer)
 
     @h.vardec
     @expose()

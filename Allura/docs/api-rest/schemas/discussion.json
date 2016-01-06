@@ -36,10 +36,6 @@
                         "type": "object", 
                         "id": "last_post", 
                         "properties": {
-                            "flagged_by": {
-                                "type": "array", 
-                                "id": "flagged_by"
-                            }, 
                             "status": {
                                 "type": "string", 
                                 "id": "status"

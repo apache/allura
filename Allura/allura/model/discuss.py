@@ -484,8 +484,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
     subject = FieldProperty(schema.Deprecated)
     status = FieldProperty(schema.OneOf('ok', 'pending', 'spam',
                                         if_missing='pending'))
-    flagged_by = FieldProperty([schema.ObjectId])
-    flags = FieldProperty(int, if_missing=0)
     last_edit_date = FieldProperty(datetime, if_missing=None)
     last_edit_by_id = AlluraUserProperty()
     edit_count = FieldProperty(int, if_missing=0)
@@ -506,7 +504,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
             subject=self.subject,
             status=self.status,
             text=self.text,
-            flagged_by=map(str, self.flagged_by),
             timestamp=self.timestamp,
             last_edited=self.last_edit_date,
             author_id=str(author._id),

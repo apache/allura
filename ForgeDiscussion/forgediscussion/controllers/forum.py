@@ -60,7 +60,6 @@ class WidgetConfig(object):
     subscribe_form = SubscribeForm()
     edit_post = DW.EditPost(show_subject=True)
     moderate_thread = FW.ModerateThread()
-    flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
     moderate_posts = DW.ModeratePosts()
     # Other widgets

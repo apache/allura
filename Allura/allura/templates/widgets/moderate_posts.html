@@ -32,7 +32,6 @@
         <th><a href="#">[x]</a></th>
         <th>Timestamp</th>
         <th>Status</th>
-        <th>Flags?</th>
         <th>Author</th>
         <th>Subject</th>
         <th>Text</th>
@@ -49,7 +48,6 @@
           </td>
           <td>{{h.ago(post.timestamp)}}</td>
           <td>{{post.status}}</td>
-          <td>{{post.flags}}</td>
           {% set author = post.author() %}
           <td>{{author.display_name}} ({{author.username}})</td>
           <td>{{post.thread.subject or '(no subject)'}}</td>
