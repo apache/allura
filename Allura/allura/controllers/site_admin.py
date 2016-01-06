@@ -464,7 +464,7 @@ class SiteNotificationController(object):
     @expose()
     @require_post()
     @validate(v.CreateSiteNotificationSchema(), error_handler=new)
-    def create(self, active, impressions, content, user_role, page_regex, page_tool_type):
+    def create(self, impressions, content, user_role, page_regex, page_tool_type, active=False):
         """Post a new note"""
         M.notification.SiteNotification(
             active=active, impressions=impressions, content=content,
