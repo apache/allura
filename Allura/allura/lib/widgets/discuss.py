@@ -54,13 +54,6 @@ class ModeratePost(ew.SimpleForm):
         submit_text=None)
 
 
-class FlagPost(ew.SimpleForm):
-    template = 'jinja:allura:templates/widgets/flag_post.html'
-    defaults = dict(
-        ew.SimpleForm.defaults,
-        submit_text=None)
-
-
 class AttachPost(ff.ForgeForm):
     defaults = dict(
         ff.ForgeForm.defaults,
@@ -119,10 +112,6 @@ class PostFilter(ff.ForgeForm):
                                   label='Pending moderation'),
                         ew.Option(py_value='ok', label='Ok')],
                     if_missing='pending'),
-            ew.IntField(name='flag',
-                        label='Show posts with at least "n" flags',
-                        css_class='text',
-                        if_missing=0),
             ew.InputField(name='username',
                           label='Show post filtered by username'),
             ew.SubmitButton(label='Filter Posts')
@@ -317,10 +306,6 @@ class Post(HierWidget):
             $('div.discussion-post').each(function () {
                 var post = this;
                 $('.submit', post).button();
-                $('.flag_post', post).click(function (evt) {
-                    evt.preventDefault();
-                    this.parentNode.submit();
-                });
                 $('.moderate_post', post).click(function(e){
                     e.preventDefault();
                     var mod = $(this).text();
