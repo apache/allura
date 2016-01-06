@@ -407,9 +407,10 @@ paragraph.""")}}
 <h2 id="md_ex_pre{{id}}">Preformatted Text</h2>
 <p>If you want some text to show up exactly as you write it, without
 Markdown doing anything to it, just indent every line by at least 4
-spaces (or 1 tab).  As an alternative to indenting, you can use 4 or
-more tildes before and after the text.  See examples in the
-<a href="#md_ex_code">Code Highlighting section</a>
+spaces (or 1 tab).  As an alternative to indenting, you can make a code block use 3 or
+more tildes (~) or backticks (`) on a line before and after the text
+(<a href="https://pythonhosted.org/Markdown/extensions/fenced_code_blocks.html">syntax details</a>). See examples in the
+<a href="#md_ex_code">Code Highlighting section</a>.
 </p>
 <div class="codehilite"><pre>
     This line won't *have any markdown* formatting applied.
@@ -690,48 +691,57 @@ allowed, permitting basic styling and layout: &lt;div markdown style="float:left
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_code{{id}}">
 <h2 id="md_ex_code{{id}}">Code Highlighting</h2>
-<p>The code highlighting syntax uses <a href="http://pythonhosted.org/Markdown/extensions/code_hilite.html">CodeHilite</a> and is colored with <a href="http://pygments.org/">Pygments</a>. It follows the same syntax as regular Markdown code blocks, except that there are two ways to tell the highlighter what language to use for the code block.</p>
+<p>The code highlighting syntax uses <a href="http://pythonhosted.org/Markdown/extensions/code_hilite.html">CodeHilite</a> and is colored with <a href="http://pygments.org/">Pygments</a>. It follows the same syntax as regular Markdown <a href="#md_ex_pre">code blocks</a>, with ways to tell the highlighter what language to use for the code block.</p>
 
-<p>Fenced Code Blocks <a href="https://pythonhosted.org/Markdown/extensions/fenced_code_blocks.html">syntax</a> is also supported.</p>
-
-<p>If the first line of the codeblock contains a shebang, the language is derived from that and line numbers are used.</p>
-
-<div class="codehilite"><pre>
-    #!/usr/bin/python
-    # Code goes here ...
-</pre></div>
-
-<p>Output:</p>
-{{g.markdown.convert('''
-    #!/usr/bin/python
-    # Code goes here ...''')}}
-
-<p>If the first line contains a shebang, but the shebang line does not contain a path (a single / or even a space) or If the first line begins with three or more colons, the text following the colons identifies the language. In both cases, the first line is removed from the code block before processing.</p>
+<p>The language will be detected automatically, if possible.  Or you can specify it on the first line with 3 colons and the language name.</p>
 
 <div class="codehilite"><pre>
     :::python
-    # Code goes here ...
+    import abc
 </pre></div>
 
 <p>Output:</p>
 {{g.markdown.convert('''
     :::python
-    # Code goes here ...''')}}
+    import abc''')}}
 
-<p>You can also designate a code block by surrounding it with lines of tildes. The type of code highlighting to apply will be inferred based on the code within, or you can specify like above.</p>
+<p>If the first line of the codeblock contains a shebang, the language is derived from that and line numbers are used.
+If shebang line contains a full path, it will be included in the output.  If it does not contain a path (a single / or even a space),
+then that shebang line will be omitted from output.
+</p>
 
 <div class="codehilite"><pre>
-~~~~~~
+    #!/usr/bin/python
+    import abc
+</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''
+    #!/usr/bin/python
+    import abc''')}}
+
+<p>If using a code block of tildes or backticks, you can also specify the language on the first divider line</p>
+
+<div class="codehilite"><pre>
+~~~html
 &lt;a href="#">My code&lt;/a>
-~~~~~~
+~~~
+</pre></div>
+
+<div class="codehilite"><pre>
+```html
+&lt;a href="#">My code&lt;/a>
+```
 </pre></div>
 
 <p>Output:</p>
 {{g.markdown.convert('''
-~~~~~~
+```html
 <a href="#">My code</a>
-~~~~~~''')}}
+```''')}}
 </div>
+
+<p>Many languages are supported.  See all the "short names" listed in the <a href="http://pygments.org/docs/lexers/">Pygments docs</a>.</p>
 
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_includes{{id}}">
