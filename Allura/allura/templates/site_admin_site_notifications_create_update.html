@@ -34,13 +34,16 @@
   }
   form > div input,
   form > div textarea,
-  form > div select,
   form > .input {
     display: block;
-    width: 300px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+  }
+  form > div  input:not([type="checkbox"]),
+  form > div textarea,
+  form > .input {
+    width: 300px;
   }
   form > div label {
     width: 100px;
@@ -68,7 +71,7 @@
   <div>
     <label>Active</label>
     <div class="input">
-      <input type="checkbox" name="active" value="yes" {%- if not form_values -%} checked {%- elif form_values|length and form_values.get('active') -%} checked {% endif %}>
+      <input type="checkbox" name="active" value="yes" {%- if not form_values|length -%} checked {%- elif form_values.get('active') == 'True' -%} checked {% endif %}>
     </div>
     {{error('active')}}
   </div>
@@ -96,14 +99,14 @@
   <div>
     <label>Page Regex</label>
     <div class="input">
-      <input name="page_regex" value="{{form_values.get('page_regex', '')}}" />
+      <input name="page_regex" value="{{form_values.get('page_regex', '')}}" placeholder="e.g. (Home|browse_pages)"/>
     </div>
     {{error('page_regex')}}
   </div>
   <div>
     <label>Page Type</label>
     <div class="input">
-      <input name="page_tool_type" value="{{form_values.get('page_tool_type', '')}}" />
+      <input name="page_tool_type" value="{{form_values.get('page_tool_type', '')}}" placeholder="e.g. Wiki, Tickets"/>
     </div>
     {{error('page_tool_type')}}
   </div>
