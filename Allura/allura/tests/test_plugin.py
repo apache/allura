@@ -86,6 +86,8 @@ class TestProjectRegistrationProvider(object):
                       'this-is-valid-but-too-long', neighborhood=nbhd)
         assert_raises(ProjectShortnameInvalid, v,
                       'this is invalid and too long', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v,
+                      'end-dash-', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 

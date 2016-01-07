@@ -30,8 +30,14 @@ class TestApplication(TestCase):
 
     def test_validate_mount_point(self):
         app = Application
+
+        self.assertIsNotNone(app.validate_mount_point('dash-in-middle'))
+
+        self.assertIsNone(app.validate_mount_point('end-dash-'))
+
         mount_point = '1.2+foo_bar'
         self.assertIsNone(app.validate_mount_point(mount_point))
+
         app.relaxed_mount_points = True
         self.assertIsNotNone(app.validate_mount_point(mount_point))
 
