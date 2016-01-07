@@ -258,8 +258,7 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/site_notifications/{}/edit'.format(note._id))
 
         assert r
-
-        assert (u'selected', u'selected') in r.html.find('form').findAll('option')[1].attrs
+        assert 'checked' in r.form['active'].attrs
         assert r.form['impressions'].value == '0'
         assert r.form['content'].value == 'test1'
         assert r.form['user_role'].value == 'test2'
