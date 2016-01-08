@@ -42,6 +42,7 @@ The admin interface allows you to:
 * Manage "trove" categories (for user skill choices)
 * Subscribe a user to an artifact
 * Reclone a repository
+* :ref:`Manage site notifications <site-notifications>`
 
 Customizing appearance
 ======================
@@ -301,34 +302,35 @@ Requires running: :command:`pip install suds` first. ::
 
     usage: paster script development.ini ../scripts/teamforge-import.py -- --help
 
+.. _site-notifications:
 
 Site Notifications
 ==================
 
-Allura has support for site-wide notifications that appear below the site header,
-but there is currently no UI for managing them.  They can easily be inserted via
-manual mongo queries, however:
+Allura has support for site-wide notifications that appear below the site
+header.  UI for managing them can be found under "Site Notifications" in the
+left sidebar on the :ref:`site admin interface <site-admin-interface>`.
+
+For example, setting available options to:
 
 .. code-block:: console
 
-    > db.site_notification.insert({
-    ... active: true,
-    ... impressions: 10,
-    ... content: 'You can now reimport exported project data.',
-    ... user_role: 'Developer',
-    ... page_regex: '(Home|browse_pages)',
-    ... page_tool_type: 'wiki'
-    ... })
+    Active:      ✓
+    Impressions: 10
+    Content:     You can now reimport exported project data.
+    User Role:   Developer
+    Page Regex:  (Home|browse_pages)
+    Page Type:   wiki
 
-This will create a notification that will be shown for 10 page views or until
+will create a notification that will be shown for 10 page views or until
 the user closes it manually.  The notification will be shown only for users
 which have role 'Developer' or higher in one of their projects.  And if url of
 the current page is matching regex :code:`(Home|browse_pages)` and app
-tool type is :code:`wiki`.  An :code:`impressions` value of 0 will show the
+tool type is :code:`wiki`.  An "Impressions" value of 0 will show the
 notification indefinitely (until closed).  The notification content can contain
 HTML.  Only the most recent notification will be shown, unless it has
-:code:`active:false`, in which case no notification will be shown.
-:code:`user_role`, :code:`page_regex` and :code:`page_tool_type` are optional.
+"Active" unchecked, in which case no notification will be shown.
+"User Role", "Page Regex" and "Page Type" are optional.
 
 .. _delete-projects:
 
