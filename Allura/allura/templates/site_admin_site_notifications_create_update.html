@@ -71,7 +71,7 @@
   <div>
     <label>Active</label>
     <div class="input">
-      <input type="checkbox" name="active" value="yes" {%- if not form_values|length -%} checked {%- elif form_values.get('active') == 'True' -%} checked {% endif %}>
+      <input type="checkbox" name="active" value="True" {%- if not form_values|length -%} checked {%- elif form_values.get('active') == 'True' -%} checked {% endif %}>
     </div>
     {{error('active')}}
   </div>
