@@ -631,7 +631,7 @@ class Message(Artifact):
         part = h.nonce()
         if timestamp is None:
             timestamp = datetime.utcnow()
-        dt = timestamp.strftime('%Y%m%d%H%M%S')
+        dt = timestamp.strftime('%Y%m%d%H%M%S%f')
         slug = part
         full_slug = dt + ':' + part
         if parent:
