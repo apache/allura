@@ -24,8 +24,7 @@
 {% endif %}
 {% do g.register_forge_js('js/react-with-addons' + ('' if h.asbool(tg.config.get('debug')) else '.min') + '.js',
                           location='head_js') %}
-{% do g.register_forge_js('js/react-dom' + ('' if h.asbool(tg.config.get('debug')) else '.min') + '.js',
-                          location='head_js') %}
+{% do g.register_forge_js('js/react-dom.js', location='head_js') %}
 {% do g.register_forge_js('js/jquery-base.js', location='head_js') %}
 {% do g.register_forge_js('js/phone-verification.js', location='body_js_tail') %}
 {% do g.theme.require() %}
