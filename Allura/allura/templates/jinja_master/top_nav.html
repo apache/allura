@@ -55,15 +55,24 @@
         var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe }};
         $(document).ready(function () {
             $('#toggle-admin-btn').click(function () {
+                if (typeof Main === 'undefined') {
+                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                    return;
+                }
                 ReactDOM.render(React.createElement(Main, {
                     initialData: _data
                 }), document.getElementById("top_nav_admin"));
             });
 
-            ReactDOM.render(React.createElement(ToggleAddNewTool, {
+            if (typeof ToggleAddNewTool === 'undefined') {
+                $('#add-tool-container').click(function(){
+                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                });
+            } else {
+                ReactDOM.render(React.createElement(ToggleAddNewTool, {
                         installableTools: _data['installable_tools']
                     }), document.getElementById('add-tool-container'));
-
+            }
             $("#toggle-admin-btn").tooltipster({
                 delay: 200,
                 theme: 'tooltipster-light',
