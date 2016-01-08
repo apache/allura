@@ -16,9 +16,12 @@
 #       under the License.
 
 from pylons import tmpl_context as c
+from pylons import request
 from ming.orm.ormsession import ThreadLocalORMSession
+from webob import Request
 
 from allura.websetup import bootstrap
+from allura.websetup.schema import REGISTRY
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura import model as M
@@ -45,6 +48,7 @@ class TrackerTestWithModel(object):
         c.project.install_app('Tickets', 'bugs')
         ThreadLocalORMSession.flush_all()
         h.set_context('test', 'bugs', neighborhood='Projects')
+        REGISTRY.register(request, Request.blank('/'))  # borrowed from setup_unit_test but we need just this
 
     def tearDown(self):
         ThreadLocalORMSession.close_all()
