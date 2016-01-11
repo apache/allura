@@ -43,7 +43,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
         <h2 class="complete">Merged</h2>
         <h2 class="fail">Something went wrong. Please, merge manually</h2>
       {% endif %}
-    </div>
+  </div>
     <div id="can_merge_task_status" class="task_status">
       {% if can_merge_status != 'complete' %}
         <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
@@ -88,6 +88,17 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
           </div>
         </form>
       </div>
+    {% endif %}
+
+    {% if req.creator == c.user and req.status == "open" %}
+    <div class="grid-19">
+        <form action="save" method="POST">
+            {{ lib.csrf_token() }}
+            <input type="hidden" value="rejected" name="status"></input>
+            <input id="reject-btn" type="submit" value="Reject">
+            <p style="color:red;">Click to reject the merge request.</p>
+        </form>
+    </div>
     {% endif %}
 
     {{ c.log_widget.display(value=commits, app=downstream_app) }}

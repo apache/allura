@@ -42,7 +42,7 @@ from allura.lib import helpers as h
 from allura.lib import widgets as w
 from allura.lib.decorators import require_post
 from allura.lib.diff import HtmlSideBySideDiff
-from allura.lib.security import require_access, require_authenticated
+from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
 from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
@@ -454,8 +454,8 @@ class MergeRequestController(object):
     @require_post()
     @validate(mr_dispose_form)
     def save(self, status=None, **kw):
-        require_access(self.req, 'write')
-        if self.req.status != status:
+        if status and self.req.status != status and \
+           (has_access(self.req, 'write') or (self.req.creator == c.user and status == 'rejected')):
             message = self.tmpl.render(changes={'Status': [self.req.status, status]})
             self.req.discussion_thread.add_post(text=message, is_meta=True)
             self.req.status = status
