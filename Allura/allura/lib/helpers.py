@@ -70,12 +70,13 @@ log = logging.getLogger(__name__)
 
 # http://stackoverflow.com/questions/2063213/regular-expression-for-validating-dns-label-host-name
 # modified to remove capital A-Z and make length parameterized
-dns_var_length = r'^(?![0-9]+$)(?!-)[a-z0-9-]{%s}(?<!-)$'
+# and not use lookbehind assertion since JS doesn't support that
+dns_var_length = r'^(?![0-9]+$)(?!-)[a-z0-9-]{%s}[a-z0-9]$'
 
 # project & tool names must comply to DNS since used in subdomains for emailing
 re_mount_points = {
-    're_project_name': dns_var_length % '3,15',  # validates project, subproject, and user names
-    're_tool_mount_point': dns_var_length % '1,63',  # validates tool mount point names
+    're_project_name': dns_var_length % '2,14',  # validates project, subproject, and user names
+    're_tool_mount_point': dns_var_length % '0,62',  # validates tool mount point names
     're_tool_mount_point_fragment': r'[a-z][-a-z0-9]*',
     're_relaxed_tool_mount_point': r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$',
     're_relaxed_tool_mount_point_fragment':  r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*'

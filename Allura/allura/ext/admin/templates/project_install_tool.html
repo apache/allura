@@ -22,12 +22,12 @@
 
 <h1> Installing {{ tool.tool_label }} </h1>
 {% if tool_name == 'subproject' %}
-    {% set mount_point_re = h.re_mount_points['re_project_name']|safe %}
+    {% set mount_point_re = h.re_mount_points['re_project_name'] %}
     {% set max_length = 15 %}
 {% else %}
-    {% set mount_point_re = h.re_mount_points['re_relaxed_tool_mount_point']|safe
+    {% set mount_point_re = h.re_mount_points['re_relaxed_tool_mount_point']
     if g.entry_points['tool'][tool_name].relaxed_mount_points
-    else h.re_mount_points['re_tool_mount_point']|safe %}
+    else h.re_mount_points['re_tool_mount_point'] %}
     {% set max_length = 62 %}
 {% endif %}
 
