@@ -96,6 +96,7 @@ class ForgeBlogApp(Application):
     ]
     ordinal = 14
     exportable = True
+    searchable = True
     config_options = Application.config_options
     default_external_feeds = []
     icons = {
@@ -161,7 +162,6 @@ class ForgeBlogApp(Application):
         base = c.app.url
         links = [
             SitemapEntry('Home', base),
-            SitemapEntry('Search', base + 'search'),
         ]
         if has_access(self, 'write')():
             links += [SitemapEntry('New Post', base + 'new')]
