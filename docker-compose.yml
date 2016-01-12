@@ -51,12 +51,12 @@ solr:
     - /allura-data/solr:/opt/solr/server/solr/allura/data
 
 mongo:
-  image: mongo:2.6
+  image: mongo:3.2
   ports:
     - "27017:27017"
   volumes:
     - /allura-data/mongo:/data/db
-  command: mongod --smallfiles
+  command: mongod --storageEngine wiredTiger
 
 outmail:
   image: allura_web
