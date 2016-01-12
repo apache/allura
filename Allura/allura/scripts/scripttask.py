@@ -74,7 +74,12 @@ class ScriptTask(object):
     @classmethod
     def _execute_task(cls, arg_string):
         try:
-            options = cls.parser().parse_args(shlex.split(arg_string or ''))
+            if isinstance(arg_string, unicode):
+                # shlex doesn't support unicode fully, so encode it http://stackoverflow.com/a/14219159/79697
+                # decode has to happen in the arg parser (e.g. see delete_projects.py)
+                arg_string = arg_string.encode('utf8')
+            args_split = shlex.split(arg_string or '')
+            options = cls.parser().parse_args(args_split)
         except SystemExit:
             raise Exception("Error parsing args: '%s'" % arg_string)
         return cls.execute(options)
