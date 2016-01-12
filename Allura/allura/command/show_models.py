@@ -22,7 +22,7 @@ from itertools import groupby
 
 from paste.deploy.converters import asbool
 from pylons import tmpl_context as c, app_globals as g
-from pymongo.errors import DuplicateKeyError, InvalidDocument
+from pymongo.errors import DuplicateKeyError, InvalidDocument, OperationFailure
 
 from ming.orm import mapper, session, Mapper
 from ming.orm.declarative import MappedClass
@@ -257,7 +257,12 @@ class EnsureIndexCommand(base.Command):
         prev_uindexes = {}
         unique_flag_drop = {}
         unique_flag_add = {}
-        for iname, fields in collection.index_information().iteritems():
+        try:
+            existing_indexes = collection.index_information().iteritems()
+        except OperationFailure:
+            # exception is raised if db or collection doesn't exist yet
+            existing_indexes = {}
+        for iname, fields in existing_indexes:
             if iname == '_id_':
                 continue
             keys = tuple(fields['key'])
