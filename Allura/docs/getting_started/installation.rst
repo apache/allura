@@ -51,7 +51,7 @@ Before we begin, you'll need to install some system packages.
 
 .. code-block:: bash
 
-    ~$ sudo aptitude install git-core default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo aptitude install git-core python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
