@@ -289,11 +289,6 @@ Start containers in the background:
 You're up and running!  Visit localhost:8080, or on a Mac or Windows whatever IP address Docker Toolbox is using.  Then
 see our :ref:`post-setup-instructions` and read more below about the Docker environment for Allura.
 
-.. note::
-
-   If running from git source, it will take a few minutes during the first time running "up", to set up JS build tools
-   before the webapp is actually running on port 8080.  Watch the progress with :code:`docker-compose logs web`.
-
 
 Containers
 ^^^^^^^^^^
