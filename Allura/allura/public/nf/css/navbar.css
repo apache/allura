@@ -352,21 +352,3 @@
 .unlocked-container{
     margin-top: 10px;
 }
-
-input.validate_input:valid[type='text'] {
-    border: 1px solid #d8ffd5;
-    background: #deffdc;
-}
-
-input.validate_input:invalid[type='text'] {
-    background: #fadad5;
-}
-
-.modal-form-error {
-    color: white;
-    padding: 2px;
-    border-radius: 2px;
-    font-size: smaller;
-    font-weight: 600;
-    margin-left: 0.6rem;
-}
