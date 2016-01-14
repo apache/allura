@@ -54,8 +54,6 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    install_modal = ffw.Lightbox(
-        name='install_modal', trigger='a.install_trig')
     explain_export_modal = ffw.Lightbox(
         name='explain_export', trigger='#why_export')
     group_card = aw.GroupCard()
@@ -265,26 +263,6 @@ class ProjectAdminController(BaseController):
     def tools_moved(self, **kw):
         return {}
 
-    @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_tools.html')
-    def tools(self, page=None, limit=200, **kw):
-        c.markdown_editor = W.markdown_editor
-        c.label_edit = W.label_edit
-        c.install_modal = W.install_modal
-        c.page_list = W.page_list
-        mounts = c.project.ordered_mounts()
-        total_mounts = len(mounts)
-        limit, page = h.paging_sanitizer(limit, page or total_mounts / int(limit), total_mounts)
-        start = page * limit
-        return dict(
-            page=page,
-            limit=limit,
-            total_mounts=total_mounts,
-            mounts=mounts[start:start + limit],
-            installable_tools=AdminApp.installable_tools_for(c.project),
-            roles=M.ProjectRole.query.find(
-                dict(project_id=c.project.root_project._id)).sort('_id').all(),
-            categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
 
     @expose()
     @require_post()
