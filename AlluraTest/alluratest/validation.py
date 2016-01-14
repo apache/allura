@@ -89,17 +89,16 @@ class Config(object):
 
 
 def report_validation_error(val_name, filename, message):
-    message = '%s Validation errors (%s):\n%s\n' % (
-        val_name, filename, message)
+    message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
     if Config.instance().fail_on_validation(val_name):
         ok_(False, message)
     else:
         sys.stderr.write('=' * 40 + '\n' + message)
 
 
-def dump_to_file(prefix, html):
-    f = tempfile.NamedTemporaryFile(prefix=prefix, delete=False)
-    f.write(html)
+def dump_to_file(prefix, contents, suffix=''):
+    f = tempfile.NamedTemporaryFile(prefix=prefix, delete=False, suffix=suffix)
+    f.write(contents)
     f.close()
     return f.name
 
@@ -165,7 +164,7 @@ def validate_html5(html_or_response):
         resp = re.sub('Error: ' + ignore, 'Ignoring: ' + ignore, resp)
 
     if 'Error:' in resp:
-        fname = dump_to_file('html5-', html)
+        fname = dump_to_file('html5-', html, suffix='.html')
         message = resp.decode('ascii', 'ignore')
         report_validation_error('html5', fname, message)
 
@@ -192,23 +191,18 @@ def validate_js(html_or_response):
     if hasattr(html_or_response, 'body'):
         if html_or_response.status_int != 200:
             return
-        html = html_or_response.body
+        js = html_or_response.body
     else:
-        html = html_or_response
-    basedir = path.dirname(path.abspath(__file__))
-    jslint_dir = basedir + '/../jslint'
-    fname = dump_to_file('jslint-', html)
-    cmd = 'java -jar ' + jslint_dir + '/js.jar ' + \
-        jslint_dir + '/jslint.js ' + fname
-    p = subprocess.Popen(cmd, shell=True,
+        js = html_or_response
+    fname = dump_to_file('eslint-', js, suffix='.js')
+    p = subprocess.Popen(['eslint', '--no-ignore', fname],
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = p.communicate(html)
-    if stdout.startswith('jslint: No problems found'):
+    stdout, stderr = p.communicate(js)
+    if p.returncode == 0:
         os.unlink(fname)
-        return
-    stdout = stdout.decode('UTF-8', 'replace')
-    msg = '\n'.join(repr(s) for s in stdout.split('\n') if s)
-    report_validation_error('js', fname, msg)
+    else:
+        stdout = stdout.decode('utf8')
+        report_validation_error('js', fname, stdout)
 
 
 def validate_page(html_or_response):
