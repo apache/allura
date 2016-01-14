@@ -53,7 +53,6 @@ Allura/docs/make.bat
 Allura/docs/Makefile
 Allura/docs/_build/
 Allura/run/dummy.txt
-AlluraTest/jslint/
 CHANGES
 ForgeGit/forgegit/data/post-receive_tmpl
 ForgeImporters/docs/make.bat
