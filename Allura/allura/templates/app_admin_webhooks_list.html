@@ -55,9 +55,9 @@ $(function() {
     var csrf = $.cookie('_session_id');
     var data = {'webhook': id, '_session_id': csrf};
     var url = $(this).attr('href');
-    var $tr = $(this).parents('tr')
+    var $tr = $(this).parents('tr');
     $.post(url, data, function(data) {
-      if (data['status'] == 'ok') {
+      if (data['status'] === 'ok') {
         $tr.remove();
       } else {
         console.log(data);

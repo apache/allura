@@ -1,0 +1,42 @@
+{
+  "rules": {
+    "indent": [2, 4],
+    "no-unused-vars": [2, {"vars": "all", "args": "none"}],
+    "no-console": 0,
+    "semi": [2, "always"],
+    "eqeqeq": 2,
+    "block-scoped-var": 2,
+    "consistent-return": 2,
+    // specify curly brace conventions for all control statements
+    "curly": [2, "all"],
+    // require default case in switch statements
+    "default-case": 2,
+    // disallow use of eval()
+    "no-eval": 2,
+    // disallow adding to native types
+    "no-extend-native": 2,
+    // disallow use of eval()-like methods
+    "no-implied-eval": 2,
+    // disallow this keywords outside of classes or class-like objects
+    "no-invalid-this": 2,
+    // disallow creation of functions within loops
+    "no-loop-func": 2,
+    // disallow declaring the same variable more then once
+    "no-redeclare": 2,
+    // disallow use of the with statement
+    "no-with": 2,
+    // require use of the second argument for parseInt()
+    "radix": 2
+  },
+  "globals": {
+
+  },
+  "parser": "esprima-fb",
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "extends": "eslint:recommended",
+  "plugins": [
+  ]
+}

@@ -17,8 +17,6 @@
        under the License.
 */
 
-/*jslint onevar: false, nomen: false, evil: true, css: true, plusplus: false, white: false, forin: true */
-/*global alert, unescape, window, jQuery, $, net, COMSCORE */
 var show_deleted, can_delete;
 
 function toggle_deleted(show) {
