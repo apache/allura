@@ -29,6 +29,7 @@ import subprocess
 import json
 import urllib2
 import re
+import pkg_resources
 
 import webtest
 from webtest import TestApp
@@ -187,17 +188,25 @@ def validate_html5_chunk(html):
     return validate_html5(html)
 
 
-def validate_js(html_or_response):
+def validate_js(html_or_response, within_html=False):
     if hasattr(html_or_response, 'body'):
         if html_or_response.status_int != 200:
             return
-        js = html_or_response.body
+        text = html_or_response.body
     else:
-        js = html_or_response
-    fname = dump_to_file('eslint-', js, suffix='.js')
-    p = subprocess.Popen(['eslint', '--no-ignore', fname],
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, stderr = p.communicate(js)
+        text = html_or_response
+    fname = dump_to_file('eslint-', text, suffix='.html' if within_html else '.js')
+    eslintrc = os.path.join(pkg_resources.get_distribution('allura').location, '../.eslintrc')
+    cmd = ['eslint',
+           '-c', eslintrc,  # since we're in a tmp dir
+           '--no-ignore',  # tmp dirs ignored by default
+           ]
+    if within_html:
+        cmd += ['--rule', 'indent: 0']  # inline HTML always has indentation wrong
+        cmd += ['--plugin', 'html']
+    cmd += [fname]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, stderr = p.communicate()
     if p.returncode == 0:
         os.unlink(fname)
     else:
@@ -209,7 +218,7 @@ def validate_page(html_or_response):
     if Config.instance().validation_enabled('html5'):
         validate_html(html_or_response)
     if Config.instance().validation_enabled('inlinejs'):
-        validate_js(html_or_response)
+        validate_js(html_or_response, within_html=True)
 
 
 class AntiSpamTestApp(TestApp):

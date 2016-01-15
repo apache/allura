@@ -273,8 +273,8 @@ The wiki uses [Markdown](%s) syntax.
             var link = this;
             var data = {
                 _session_id: $.cookie('_session_id'),
-                subscribe: '1',
-            }
+                subscribe: '1'
+            };
             $.post(this.href, data, function(){
                 $('#messages').notify('Subscribed to wiki.');
                 $('span', link).text('Unsubscribe');
@@ -286,8 +286,8 @@ The wiki uses [Markdown](%s) syntax.
             var link = this;
             var data = {
                 _session_id: $.cookie('_session_id'),
-                unsubscribe: '1',
-            }
+                unsubscribe: '1'
+            };
             $.post(this.href, data, function(){
                 $('#messages').notify('Unsubscribed.');
                 $('span', link).text('Subscribe to wiki');

@@ -36,11 +36,12 @@
 {% block extra_js %}
     <script type="text/javascript">
         $('.post-link').click(function () {
+            var dialog_text;
             var version = $(this).data("dialog-id");
             if (version) {
-                var dialog_text = $(".confirmation_dialog_" + version);
+                dialog_text = $(".confirmation_dialog_" + version);
             } else {
-                var dialog_text = $(".confirmation_dialog");
+                dialog_text = $(".confirmation_dialog");
             }
 
             var modal = $('#lightbox_confirm');

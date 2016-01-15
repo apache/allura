@@ -325,20 +325,19 @@ class Post(HierWidget):
                     if (mod === 'Delete' && !confirm('Really delete this post?')) {
                         return;
                     }
-                    var id_post = $(post).attr('id');
                     $.ajax({
                         type: 'POST',
                         url: this.parentNode.action,
                         data: jQuery(this.parentNode).serialize(),
                         success: function() {
-                            if (mod == 'Delete'){
+                            if (mod === 'Delete'){
                                 $(post).remove();
                             }
-                            else if (mod == 'Approve'){
+                            else if (mod === 'Approve'){
                                 $('a.reply_post, a.shortlink, form.moderate_spam, form.moderate_approve', post).toggle();
                                 $('div.moderate', post).removeClass('moderate');
                             }
-                            else if (mod == 'Spam'){
+                            else if (mod === 'Spam'){
                                 $(post).remove();
                             }
                         }
@@ -484,7 +483,6 @@ class Thread(HierWidget):
             }
             if (thread_spam.length) {
                 if (allow_moderate.length) {
-                    var cval = $.cookie('_session_id');
                     thread_spam[0].style.display='block';
                 }
             }
