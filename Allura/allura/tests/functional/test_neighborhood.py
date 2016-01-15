@@ -19,6 +19,7 @@ import json
 import os
 from cStringIO import StringIO
 import urllib2
+import re
 
 import PIL
 from mock import patch
@@ -126,9 +127,12 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/_admin/overview', extra_environ=dict(username='root'))
         assert 'wiki, tickets' in r
 
-        r = self.app.get('/p/test/admin/tools')
-        assert ' <span class="tool_title">Wiki</span><br />' not in r
-        assert ' <span class="tool_title">Tickets</span><br />' not in r
+        r = self.app.get('/p/test/admin/overview')
+        c = re.compile('var _data = .*;')
+        _data = json.loads(c.search(str(r.html)).group()[12:-1])
+        tools = [tool['name'] for tool in _data['menu']]
+        assert 'Wiki' not in tools
+        assert 'Tickets' not in tools
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
@@ -171,11 +175,14 @@ class TestNeighborhood(TestController):
         assert top_nav.find(href='/p/test/wiki/'), top_nav
         assert top_nav.find(href='/p/test/tickets/'), top_nav
 
-        r = self.app.get('/p/test/admin/tools')
-        assert '<div class="fleft isnt_sorted">' in r
-        delete_tool = [link for link in r.html.findAll('a', {'class': 'admin_modal'})
-                       if link['href'].endswith('/delete')]
-        assert_equal(len(delete_tool), 0)  # wiki not deletable
+        r = self.app.get('/p/test/admin/overview')
+        c = re.compile('var _data = .*;')
+        _data = json.loads(c.search(str(r.html)).group()[12:-1])
+        for tool in _data['menu']:
+            if tool['name'].lower() == 'wiki':
+                menu = [name['text'] for name in tool['admin_options']]
+                assert 'Delete' not in menu
+                break
 
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview',
@@ -809,7 +816,7 @@ class TestNeighborhood(TestController):
                 private_project='off'),
             antispam=True,
             extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/testtemp/admin/tools')
+        r = self.app.get('/adobe/testtemp/admin/overview')
         assert r.html.find('div', id='top_nav').find(
             'a', href='/adobe/testtemp/wiki/'), r.html
         assert r.html.find('div', id='top_nav').find(

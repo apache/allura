@@ -50,11 +50,6 @@ log = logging.getLogger(__name__)
 
 class TestProjectAdmin(TestController):
 
-    def get_available_tools(self):
-        r = self.app.get('/admin/tools')
-        available_tools = r.html.findAll('a', {'class': 'install_trig'})
-        return [' '.join(opt.find('span').string.strip().split()) for opt in available_tools]
-
     def test_admin_controller(self):
         self.app.get('/admin/')
         with audits(
@@ -336,54 +331,6 @@ class TestProjectAdmin(TestController):
                     tag['name'].endswith('.id'))]
             assert len(cards) == len(app.permissions), cards
 
-    def test_tool_list(self):
-        r = self.app.get('/admin/tools')
-        new_ep_opts = r.html.findAll('a', {'class': "install_trig"})
-        tool_strings = [' '.join(opt.find('span').string.strip().split())
-                        for opt in new_ep_opts]
-        expected_tools = [
-            'Wiki',
-            'Tickets',
-            'Discussion',
-            'Blog',
-            'Subproject']
-        # check using sets, because their may be more tools installed by default
-        # that we don't know about
-        assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
-
-    def test_tool_paging(self):
-        r = self.app.get('/admin/tools')
-        items = r.html.findAll('ul', {'class': 'deck'})
-        # sometimes the activity tool is present, sometimes it isn't - not sure why
-        assert_in(len(items), (2, 3))
-        r = self.app.get('/admin/tools?limit=1&page=0')
-        assert_equals(1, len(r.html.findAll('ul', {'class': 'deck'})))
-        r = self.app.get('/admin/tools?limit=1&page=1')
-        assert_equals(1, len(r.html.findAll('ul', {'class': 'deck'})))
-
-    def test_tool_installation_limit(self):
-        with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
-            mi.__get__ = mock.Mock(return_value=1)
-
-            available_tools = self.get_available_tools()
-            assert_in('Wiki', available_tools)
-            r = self.app.post('/admin/update_mounts/', params={
-                'new.install': 'install',
-                'new.ep_name': 'Wiki',
-                'new.ordinal': '1',
-                'new.mount_point': 'wiki',
-                'new.mount_label': 'Wiki'})
-            available_tools = self.get_available_tools()
-            assert_not_in('Wiki', available_tools)
-            r = self.app.post('/admin/update_mounts/', params={
-                'new.install': 'install',
-                'new.ep_name': 'Wiki',
-                'new.ordinal': '1',
-                'new.mount_point': 'wiki2',
-                'new.mount_label': 'Wiki 2'})
-            assert 'error' in self.webflash(r)
-            assert 'limit exceeded' in self.webflash(r)
-
     def test_install_tool_form(self):
         r = self.app.get('/admin/install_tool?tool_name=wiki')
         assert_in(u'Installing Wiki', r)
@@ -397,22 +344,6 @@ class TestProjectAdmin(TestController):
     def test_install_tool_form_subproject(self):
         r = self.app.get('/admin/install_tool?tool_name=subproject')
         assert_in(u'Installing Sub Project', r)
-
-    def test_grouping_threshold(self):
-        r = self.app.get('/admin/tools')
-        grouping_threshold = r.html.find(
-            'input', {'name': 'grouping_threshold'})
-        assert_equals(grouping_threshold['value'], '1')
-        r = self.app.post('/admin/configure_tool_grouping', params={
-            'grouping_threshold': '2',
-        }).follow()
-        grouping_threshold = r.html.find(
-            'input', {'name': 'grouping_threshold'})
-        assert_equals(grouping_threshold['value'], '2')
-        r = self.app.get('/admin/tools')
-        grouping_threshold = r.html.find(
-            'input', {'name': 'grouping_threshold'})
-        assert_equals(grouping_threshold['value'], '2')
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
