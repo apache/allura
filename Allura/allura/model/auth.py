@@ -196,8 +196,12 @@ class EmailAddress(MappedClass):
                 message_id=h.gen_message_id(),
                 text=text)
 
-    def send_verification_link(self):
+    def set_nonce_hash(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()
+        return True
+
+    def send_verification_link(self):
+        self.set_nonce_hash()
         log.info('Sending verification link to %s', self.email)
         text = '''
 To verify the email address %s belongs to the user %s,

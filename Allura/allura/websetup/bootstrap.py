@@ -344,6 +344,7 @@ def create_user(display_name, username=None, password='foo', make_project=False)
     kw = {"email": email}
     em = EmailAddress.get(**kw)
     em.confirmed = True
+    em.set_nonce_hash()
     user.set_pref('email_address',email)
     user.set_password(password)
     return user

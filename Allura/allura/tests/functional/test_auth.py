@@ -257,14 +257,14 @@ class TestAuth(TestController):
         assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  ' \
                                                           'Please check your email and click to confirm.'
         assert sendsimplemail.post.called
-        assert len(M.User.query.get(username='test-admin').email_addresses) == addresses_number + 1
+        assert len(M.User.query.get(username='test-user-1').email_addresses) == addresses_number + 1
         assert len(M.EmailAddress.find(dict(email=email_address)).all()) == 2
 
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_user_cannot_claim_more_than_max_limit(self, gen_message_id, sendsimplemail):
-        with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '1'}):
+        with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '2'}):
             self.app.get('/')  # establish session
             r = self.app.post('/auth/preferences/update_emails',
                               params={
@@ -290,7 +290,7 @@ class TestAuth(TestController):
                               extra_environ=dict(username='test-user-1'))
 
             assert json.loads(self.webflash(r))['status'] == 'error'
-            assert json.loads(self.webflash(r))['message'] == 'You cannot claim more than 1 email addresses.'
+            assert json.loads(self.webflash(r))['message'] == 'You cannot claim more than 2 email addresses.'
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
