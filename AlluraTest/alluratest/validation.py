@@ -78,23 +78,13 @@ class Config(object):
         elif env_var is not None:
             return val_type in env_var.split(',')
 
-        enabled = self.test_ini.getboolean(
-            'validation', 'validate_' + val_type)
+        enabled = self.test_ini.getboolean('validation', 'validate_' + val_type)
         return enabled
-
-    def fail_on_validation(self, val_type):
-        env_var = os.getenv('ALLURA_VALIDATION')
-        if env_var == 'all':
-            return True
-        return False
 
 
 def report_validation_error(val_name, filename, message):
     message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
-    if Config.instance().fail_on_validation(val_name):
-        ok_(False, message)
-    else:
-        sys.stderr.write('=' * 40 + '\n' + message)
+    ok_(False, message)
 
 
 def dump_to_file(prefix, contents, suffix=''):
