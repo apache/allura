@@ -676,14 +676,15 @@ class TestUserDetails(TestController):
                 'username': 'test-user',
                 'addr-1.ord': '1',
                 'addr-2.ord': '2',
-                'addr-2.delete': 'on',
+                'addr-3.ord': '3',
+                'addr-3.delete': 'on',
                 'new_addr.addr': '',
                 'primary_addr': 'test2@example.com'},
                 extra_environ=dict(username='test-admin'))
         r = self.app.get('/nf/admin/user/test-user')
         user = M.User.query.get(username='test-user')
         # test@example.com set as primary since test2@example.com is deleted
-        assert_equal(user.get_pref('email_address'), 'test@example.com')
+        assert_equal(user.get_pref('email_address'), 'test-user@allura.local')
 
     @patch.object(LocalAuthenticationProvider, 'set_password')
     def test_set_random_password(self, set_password):
