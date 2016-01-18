@@ -34,7 +34,7 @@ function prompt() {
 
 RELEASE_DIR_BASE=/tmp
 
-PREV_VERSION=`git tag -l asf_release_* | sort -rn | head -1 | sed -e 's/^asf_release_//'`
+PREV_VERSION=`git tag -l rel/* | sort -rn | head -1 | sed -e 's/^rel\///'`
 VERSION=`echo $PREV_VERSION | perl -pe '@_ = split /\./; $_[-1]++; $_ = join ".", @_'`
 prompt VERSION "Version" "$VERSION"
 
@@ -43,10 +43,10 @@ RELEASE_DIR=$RELEASE_DIR_BASE/$RELEASE_BASE
 RELEASE_FILENAME=$RELEASE_BASE.tar.gz
 RELEASE_FILE_EXTRACTED=$RELEASE_DIR/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
-RELEASE_TAG=asf_release_$VERSION
+RELEASE_TAG=rel/$VERSION
 CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`
 
-scripts/changelog.py asf_release_$PREV_VERSION HEAD $VERSION > .changelog.tmp
+scripts/changelog.py rel/$PREV_VERSION HEAD $VERSION > .changelog.tmp
 echo >> .changelog.tmp
 cat CHANGES >> .changelog.tmp
 mv -f .changelog.tmp CHANGES
@@ -115,7 +115,7 @@ The release has been signed with key ($KEY):
 
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
-  Tag:    asf_release_$VERSION (pending successful vote)
+  Tag:    $RELEASE_TAG (pending successful vote)
   Browse: https://forge-allura.apache.org/p/allura/git/ci/$COMMIT_SHA/log/
 
 Changes for this version are listed at:
