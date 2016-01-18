@@ -187,7 +187,7 @@ def validate_js(html_or_response, within_html=False):
         text = html_or_response
     fname = dump_to_file('eslint-', text, suffix='.html' if within_html else '.js')
     eslintrc = os.path.join(pkg_resources.get_distribution('allura').location, '../.eslintrc')
-    cmd = ['eslint',
+    cmd = ['npm', 'run', 'eslint', '--',
            '-c', eslintrc,  # since we're in a tmp dir
            '--no-ignore',  # tmp dirs ignored by default
            ]
