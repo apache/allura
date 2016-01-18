@@ -627,6 +627,28 @@ class Post(Message, VersionedArtifact, ActivityObject):
         else:  # pragma no cover
             return None
 
+    def parent_artifact(self):
+        """
+        :return: the artifact (e.g Ticket, Wiki Page) that this Post belongs to.  May return None.
+        """
+        aref = ArtifactReference.query.get(_id=self.thread.ref_id)
+        if aref and aref.artifact:
+            return aref.artifact
+        else:
+            return None
+
+    def main_url(self):
+        """
+        :return: the URL for the artifact (e.g Ticket, Wiki Page) that this Post belongs to,
+                 else the default thread URL
+        """
+        parent_artifact = self.parent_artifact()
+        if parent_artifact:
+            url = parent_artifact.url()
+        else:
+            url = self.thread.url()
+        return url
+
     def url_paginated(self):
         '''Return link to the thread with a #target that poins to this comment.
 
@@ -659,11 +681,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             page = find_i(posts) / limit
 
         slug = h.urlquote(self.slug)
-        aref = ArtifactReference.query.get(_id=self.thread.ref_id)
-        if aref and aref.artifact:
-            url = aref.artifact.url()
-        else:
-            url = self.thread.url()
+        url = self.main_url()
         if page == 0:
             return '%s?limit=%s#%s' % (url, limit, slug)
         return '%s?limit=%s&page=%s#%s' % (url, limit, page, slug)
