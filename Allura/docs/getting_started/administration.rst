@@ -328,8 +328,7 @@ which have role 'Developer' or higher in one of their projects.  And if url of
 the current page is matching regex :code:`(Home|browse_pages)` and app
 tool type is :code:`wiki`.  An "Impressions" value of 0 will show the
 notification indefinitely (until closed).  The notification content can contain
-HTML.  Only the most recent notification will be shown, unless it has
-"Active" unchecked, in which case no notification will be shown.
+HTML.  Only the most recent active notification will be shown.
 "User Role", "Page Regex" and "Page Type" are optional.
 
 .. _delete-projects:
