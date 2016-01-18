@@ -105,7 +105,6 @@ To transpile those files as soon as you edit them:
 
 .. code-block:: bash
 
-    ~$ npm install -g broccoli-timepiece
     ~$ cd ~/src/allura
     ~$ npm run watch
 
