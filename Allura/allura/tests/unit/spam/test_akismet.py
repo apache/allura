@@ -37,7 +37,7 @@ class TestAkismet(unittest.TestCase):
             # akismet can be successfully urlencoded
             urllib.urlencode(kw.get('data', {}))
         self.akismet.service.comment_check = mock.Mock(side_effect=side_effect)
-        self.fake_artifact = mock.Mock(**{'url.return_value': 'artifact url'})
+        self.fake_artifact = mock.Mock(**{'main_url.return_value': 'artifact url'})
         self.fake_user = mock.Mock(display_name=u'Søme User',
                                    email_addresses=['user@domain'])
         self.fake_headers = dict(

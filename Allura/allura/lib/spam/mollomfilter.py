@@ -67,10 +67,15 @@ class MollomSpamFilter(SpamFilter):
         log_msg = text
         kw['postBody'] = text
         if artifact:
+            try:
+                # if its a comment, get wiki, ticket, etc URL
+                url = artifact.main_url()
+            except:
+                url = artifact.url()
             # Should be able to send url, but can't right now due to a bug in
             # the PyMollom lib
-            # kw['url'] = artifact.url()
-            log_msg = artifact.url()
+            # kw['url'] = url
+            log_msg = url
         user = user or c.user
         if user:
             kw['authorName'] = user.display_name or user.username
