@@ -57,7 +57,7 @@ class AkismetSpamFilter(SpamFilter):
             config.get('spam.key'), config.get('base_url'))
         self.service.verify_key()
 
-    def get_data(self, text, artifact=None, user=None, content_type='comment', **kw):
+    def get_data(self, text, artifact=None, user=None, content_type='comment', request=None, **kw):
         kw['comment_content'] = text
         kw['comment_type'] = content_type
         if artifact:
@@ -65,11 +65,11 @@ class AkismetSpamFilter(SpamFilter):
         user = user or c.user
         if user:
             kw['comment_author'] = user.display_name or user.username
-            kw['comment_author_email'] = user.email_addresses[
-                0] if user.email_addresses else ''
-        kw['user_ip'] = utils.ip_address(request)
-        kw['user_agent'] = request.headers.get('USER_AGENT')
-        kw['referrer'] = request.headers.get('REFERER')
+            kw['comment_author_email'] = user.email_addresses[0] if user.email_addresses else ''
+        if request:
+            kw['user_ip'] = utils.ip_address(request)
+            kw['user_agent'] = request.headers.get('USER_AGENT')
+            kw['referrer'] = request.headers.get('REFERER')
         # kw will be urlencoded, need to utf8-encode
         for k, v in kw.items():
             kw[k] = h.really_unicode(v).encode('utf8')
@@ -81,7 +81,9 @@ class AkismetSpamFilter(SpamFilter):
                                          data=self.get_data(text=text,
                                                             artifact=artifact,
                                                             user=user,
-                                                            content_type=content_type),
+                                                            content_type=content_type,
+                                                            request=request,
+                                                            ),
                                          build_data=False)
         log.info("spam=%s (akismet): %s" % (str(res), log_msg))
         return res
