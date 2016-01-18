@@ -755,7 +755,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def spam(self):
         self.status = 'spam'
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
-        g.spam_checker.submit_spam(self.text, artifact=self, user=c.user)
+        g.spam_checker.submit_spam(self.text, artifact=self, user=self.author())
 
 
 class DiscussionAttachment(BaseAttachment):

@@ -117,21 +117,27 @@ class TestAkismet(unittest.TestCase):
             data=expected_data, build_data=False)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
-    @mock.patch('allura.lib.spam.akismetfilter.request')
-    def test_submit_spam(self, request, c):
-        request.headers = self.fake_headers
-        request.remote_addr = 'some ip'
+    def test_submit_spam(self, c):
         c.user = None
+
         self.akismet.submit_spam(self.content)
+
+        # no IP addr, UA, etc, since this isn't the original request
+        expected_data = dict(comment_content=u'spåm text'.encode('utf8'),
+                             comment_type='comment',
+                             )
         self.akismet.service.submit_spam.assert_called_once_with(
-            self.content, data=self.expected_data, build_data=False)
+            self.content, data=expected_data, build_data=False)
 
     @mock.patch('allura.lib.spam.akismetfilter.c')
-    @mock.patch('allura.lib.spam.akismetfilter.request')
-    def test_submit_ham(self, request, c):
-        request.headers = self.fake_headers
-        request.remote_addr = 'some ip'
+    def test_submit_ham(self, c):
         c.user = None
+
         self.akismet.submit_ham(self.content)
+
+        # no IP addr, UA, etc, since this isn't the original request
+        expected_data = dict(comment_content=u'spåm text'.encode('utf8'),
+                             comment_type='comment',
+                             )
         self.akismet.service.submit_ham.assert_called_once_with(
-            self.content, data=self.expected_data, build_data=False)
+            self.content, data=expected_data, build_data=False)
