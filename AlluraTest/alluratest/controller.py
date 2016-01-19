@@ -94,9 +94,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     cmd.run([test_file])
     ew.TemplateEngine.initialize({})
 
-    # run all tasks, e.g. indexing from bootstrap operations
-    while M.MonQTask.run_ready('setup'):
-        ThreadLocalORMSession.flush_all()
+    # remove unnecessary bootstrap tasks, e.g. search indexing
+    M.MonQTask.query.remove({'state': 'ready'})
 setup_basic_test.__test__ = False  # sometimes __test__ above isn't sufficient
 
 
