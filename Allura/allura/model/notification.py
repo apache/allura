@@ -707,6 +707,9 @@ class SiteNotification(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'site_notification'
+        indexes = [
+            ('active', '_id'),
+        ]
 
     _id = FieldProperty(S.ObjectId)
     content = FieldProperty(str, if_missing='')
@@ -717,10 +720,7 @@ class SiteNotification(MappedClass):
     page_regex = FieldProperty(str, if_missing=None)
     page_tool_type = FieldProperty(str, if_missing=None)
 
-
     @classmethod
     def current(cls):
-        note = cls.query.find().sort('_id', -1).limit(1).first()
-        if note is None or not note.active:
-            return None
+        note = cls.query.find({'active': True}).sort('_id', -1).limit(1).first()
         return note
