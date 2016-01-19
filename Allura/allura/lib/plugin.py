@@ -1310,7 +1310,7 @@ class ThemeProvider(object):
         else:
             return app.icon_url(size)
 
-    def get_site_notification(self):
+    def get_site_notification(self, is_api=None, api_cookie=None):
         from pylons import request, response
         from allura.model.notification import SiteNotification
         note = SiteNotification.current()
@@ -1328,7 +1328,11 @@ class ThemeProvider(object):
         if note.page_tool_type and (c.app is None or c.app.config.tool_name.lower() != note.page_tool_type.lower()):
             return None
 
-        cookie = request.cookies.get('site-notification', '').split('-')
+        cookie = api_cookie
+        if not cookie:
+            cookie = request.cookies.get('site-notification', '')
+        cookie = cookie.split('-')
+
         if len(cookie) == 3 and cookie[0] == str(note._id):
             views = asint(cookie[1]) + 1
             closed = asbool(cookie[2])
@@ -1337,9 +1341,13 @@ class ThemeProvider(object):
             closed = False
         if closed or note.impressions > 0 and views > note.impressions:
             return None
+
+        set_cookie = '-'.join(map(str, [note._id, views, closed]))
+        if is_api:
+            return note, set_cookie
         response.set_cookie(
             'site-notification',
-            '-'.join(map(str, [note._id, views, closed])),
+            set_cookie,
             max_age=timedelta(days=365))
         return note
 

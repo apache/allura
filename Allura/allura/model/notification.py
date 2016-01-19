@@ -720,6 +720,17 @@ class SiteNotification(MappedClass):
     page_regex = FieldProperty(str, if_missing=None)
     page_tool_type = FieldProperty(str, if_missing=None)
 
+    def __json__(self):
+        return dict(
+            _id=str(self._id),
+            content=self.content,
+            active=self.active,
+            impressions=self.impressions,
+            user_role=self.user_role if self.user_role else '',
+            page_regex=self.page_regex if self.page_regex else '',
+            page_tool_type=self.page_tool_type if self.page_tool_type else ''
+        )
+
     @classmethod
     def current(cls):
         note = cls.query.find({'active': True}).sort('_id', -1).limit(1).first()

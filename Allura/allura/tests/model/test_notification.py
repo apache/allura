@@ -475,6 +475,37 @@ class TestSubscriptionTypes(unittest.TestCase):
         assert_equal(count, 1)
 
 
+class TestSiteNotification(unittest.TestCase):
+    def setUp(self):
+        self.note = M.SiteNotification(
+            active=True,
+            impressions=0,
+            content='test',
+            page_regex='',
+            page_tool_type='',
+            user_role=''
+        )
+
+    def test_json_type(self):
+        note_json = self.note.__json__()
+        assert isinstance(note_json, dict)
+
+    def test_json_keys(self):
+        keys = self.note.__json__().keys()
+        assert 'active' in keys
+        assert 'impressions' in keys
+        assert 'content' in keys
+        assert 'page_regex' in keys
+        assert 'page_tool_type' in keys
+        assert 'user_role' in keys
+
+    def test_json_values_if_missing(self):
+        note_json = self.note.__json__()
+        assert note_json['page_regex'] is ''
+        assert note_json['page_tool_type'] is ''
+        assert note_json['user_role'] is ''
+
+
 def _clear_subscriptions():
         M.Mailbox.query.remove({})
 

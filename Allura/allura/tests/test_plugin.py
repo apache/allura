@@ -489,6 +489,37 @@ class TestThemeProvider(object):
         request.path_qs = 'ttt'
         assert_is(ThemeProvider().get_site_notification(), None)
 
+    @patch('allura.model.notification.SiteNotification')
+    def test_get_site_notification_with_is_api(self, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'test_id'
+        note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
+        get_note = ThemeProvider().get_site_notification(is_api=True)
+
+        assert isinstance(get_note, tuple)
+        assert len(get_note) is 2
+        assert get_note[0] is note
+        assert get_note[1] == 'test_id-1-False'
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.request')
+    def test_get_site_notifications_with_api_cookie(self, request, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'test_id'
+        note.user_role = None
+        note.page_regex = None
+        note.page_tool_type = None
+        request.cookies = {}
+        get_note = ThemeProvider().get_site_notification(
+            is_api=True,
+            api_cookie='test_id-1-False'
+        )
+
+        assert get_note[0] is note
+        assert get_note[1] == 'test_id-2-False'
+
 
 class TestLocalAuthenticationProvider(object):
 

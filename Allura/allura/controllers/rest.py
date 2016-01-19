@@ -89,6 +89,16 @@ class RestController(object):
             summary['site_stats'] = stats
         return summary
 
+    @expose('json:')
+    def notification(self, cookie=None):
+        c.api_token = self._authenticate_request()
+        if c.api_token:
+            c.user = c.api_token.user
+        r = g.theme.get_site_notification(is_api=True, api_cookie=cookie)
+        if r:
+            return dict(notification=r[0], cookie=r[1])
+        return {}
+
     @expose()
     def _lookup(self, name, *remainder):
         c.api_token = self._authenticate_request()

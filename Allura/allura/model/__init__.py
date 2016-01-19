@@ -29,7 +29,7 @@ from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, EmailAddress, OldProjectRole
 from .auth import AuditLog, audit_log, AlluraUserProperty
 from .filesystem import File
-from .notification import Notification, Mailbox
+from .notification import Notification, Mailbox, SiteNotification
 from .repository import Repository, RepositoryImplementation
 from .repository import MergeRequest, GitLikeTree
 from .stats import Stats
@@ -60,4 +60,4 @@ __all__ = [
     'OAuthRequestToken', 'OAuthAccessToken', 'MonQTask', 'Webhook', 'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS',
     'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session', 'project_doc_session', 'project_orm_session',
     'artifact_orm_session', 'repository_orm_session', 'task_orm_session', 'ArtifactSessionExtension', 'repository',
-    'repo_refresh', ]
+    'repo_refresh', 'SiteNotification']
