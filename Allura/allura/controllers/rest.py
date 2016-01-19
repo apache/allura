@@ -273,7 +273,7 @@ class AppRestControllerMixin(object):
         return rest_has_access(c.app, user, perm)
 
 
-def nbhd_lookup_first_path(nbhd, name, current_user, *remainder):
+def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
     """
     Resolve first part of a neighborhood url.  May raise 404, redirect, or do other side effects.
 
@@ -283,6 +283,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, *remainder):
     :param name: project or tool name (next part of url)
     :param current_user: a User
     :param remainder: remainder of url
+    :param bool api: whether this is handling a /rest/ request or not
 
     :return: project (to be set as c.project)
     :return: remainder (possibly modified)
@@ -305,7 +306,13 @@ def nbhd_lookup_first_path(nbhd, name, current_user, *remainder):
             if project.shortname != prefix + pname:
                 # might be different URL than the URL requested
                 # e.g. if username isn't valid project name and user_project_shortname() converts the name
-                redirect(project.url())
+                new_url = project.url()
+                if api:
+                    new_url = '/rest' + new_url
+                new_url += '/'.join(remainder)
+                if request.query_string:
+                    new_url += '?' + request.query_string
+                redirect(new_url)
     if project is None:
         # look for neighborhood tools matching the URL
         project = nbhd.neighborhood_project
@@ -341,7 +348,7 @@ class NeighborhoodRestController(object):
     def _lookup(self, name=None, *remainder):
         if not name:
             raise exc.HTTPNotFound
-        c.project, remainder = nbhd_lookup_first_path(self._neighborhood, name, c.user, *remainder)
+        c.project, remainder = nbhd_lookup_first_path(self._neighborhood, name, c.user, remainder, api=True)
         return ProjectRestController(), remainder
 
 

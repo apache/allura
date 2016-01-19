@@ -89,7 +89,7 @@ class NeighborhoodController(object):
 
     @expose()
     def _lookup(self, pname, *remainder):
-        c.project, remainder = nbhd_lookup_first_path(self.neighborhood, pname, c.user, *remainder)
+        c.project, remainder = nbhd_lookup_first_path(self.neighborhood, pname, c.user, remainder)
         return ProjectController(), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')

@@ -57,14 +57,23 @@ class TestUserProfile(TestController):
         User.upsert('foo_bar')
 
         # default auth provider's user_project_shortname() converts _ to - for the project name
-        response = self.app.get('/u/foo_bar/profile/', status=302)
+        response = self.app.get('/u/foo_bar/', status=302)
         assert_equal(response.location, 'http://localhost/u/foo-bar/')
+        response = self.app.get('/u/foo_bar/profile/xyz?a=b', status=302)
+        assert_equal(response.location, 'http://localhost/u/foo-bar/profile/xyz?a=b')
 
         # unfortunately this doesn't work because the default auth provider's user_by_project_shortname()
         # doesn't try converting back (and it probably shouldn't since you could get multiple users with conflicting proj names)
         # at least this works with other auth providers that have a more complete implementation of both
         # user_project_shortname() and user_by_project_shortname()
         #self.app.get('/u/foo-bar/profile/')
+
+    def test_differing_profile_proj_shortname_rest_api(self):
+        User.upsert('foo_bar')
+
+        # default auth provider's user_project_shortname() converts _ to - for the project name
+        response = self.app.get('/rest/u/foo_bar/', status=302)
+        assert_equal(response.location, 'http://localhost/rest/u/foo-bar/')
 
     @td.with_user_project('test-admin')
     @td.with_wiki
