@@ -46,7 +46,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
             {% if h.asbool(config.get('auth.allow_user_registration', True)) %}
               <a class="link-right" href="/auth/create_account">Register</a>
             {% endif %}
-            <a class="link-right" href="{{login_url}}">Log In</a>
+            <a class="link-right" href="{{login_url}}?return_to={{ h.urlquote(request.path_qs) }}">Log In</a>
           {% endif %}
         </nav>
     </div>
