@@ -65,3 +65,6 @@
 .CodeMirror .CodeMirror-code .cm-url {
   color: #33d;
 }
+.CodeMirror .CodeMirror-placeholder {
+    color: #999;
+}
