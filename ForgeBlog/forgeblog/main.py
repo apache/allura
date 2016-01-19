@@ -430,8 +430,7 @@ class BlogAdminController(DefaultAdminController):
         self.app.config.options[
             'AllowEmailPosting'] = allow_email_posting and True or False
         flash('Blog options updated')
-        redirect(h.really_unicode(c.project.url() + 'admin/tools')
-                 .encode('utf-8'))
+        redirect(request.referer)
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/admin_exfeed.html')
@@ -475,7 +474,7 @@ class BlogAdminController(DefaultAdminController):
             flash('Invalid link(s): %s' %
                   ','.join(link for link in invalid_list), 'error')
 
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)
 
 
 class RootRestController(BaseController, AppRestControllerMixin):

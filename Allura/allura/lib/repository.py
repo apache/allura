@@ -291,7 +291,7 @@ class RepoAdminController(DefaultAdminController):
             flash(message,
                   'error' if 'Invalid' in message else 'ok')
 
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)
 
 
 class RepoAdminRestController(BaseController):

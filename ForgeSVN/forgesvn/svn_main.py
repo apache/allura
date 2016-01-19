@@ -17,7 +17,7 @@
 
 #-*- python -*-
 import logging
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, request
 
 # Non-stdlib imports
 from ming.utils import LazyProperty
@@ -179,7 +179,7 @@ class SVNImportController(BaseController, AdminControllerMixin):
             M.Notification.post_user(
                 c.user, self.app.repo, 'error',
                 text="Can't import into non empty repository.")
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)
 
 
 class SVNCommitBrowserController(BaseController):
