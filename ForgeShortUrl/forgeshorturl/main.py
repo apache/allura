@@ -200,7 +200,7 @@ class ShortURLAdminController(DefaultAdminController):
 
     @expose()
     def index(self, **kw):
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)
 
     @without_trailing_slash
     @expose('json:')

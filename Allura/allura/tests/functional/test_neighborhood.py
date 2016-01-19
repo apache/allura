@@ -27,7 +27,7 @@ from tg import config
 from nose.tools import assert_equal, assert_in, assert_not_equal
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from paste.httpexceptions import HTTPFound
-from pylons import app_globals as g
+from pylons import app_globals as g, tmpl_context as c
 
 import allura
 from allura import model as M
@@ -127,12 +127,12 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/_admin/overview', extra_environ=dict(username='root'))
         assert 'wiki, tickets' in r
 
-        r = self.app.get('/p/test/admin/overview')
-        c = re.compile('var _data = .*;')
-        _data = json.loads(c.search(str(r.html)).group()[12:-1])
-        tools = [tool['name'] for tool in _data['menu']]
-        assert 'Wiki' not in tools
-        assert 'Tickets' not in tools
+        c.user = M.User.query.get(username='root')
+        c.project = M.Project.query.get(shortname='test')
+        data = c.project.nav_data(admin_options=True)
+
+        assert 'Wiki' not in data
+        assert 'Tickets' not in data
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
@@ -175,10 +175,10 @@ class TestNeighborhood(TestController):
         assert top_nav.find(href='/p/test/wiki/'), top_nav
         assert top_nav.find(href='/p/test/tickets/'), top_nav
 
-        r = self.app.get('/p/test/admin/overview')
-        c = re.compile('var _data = .*;')
-        _data = json.loads(c.search(str(r.html)).group()[12:-1])
-        for tool in _data['menu']:
+        c.user = M.User.query.get(username='root')
+        c.project = M.Project.query.get(shortname='test')
+        data = c.project.nav_data(admin_options=True)
+        for tool in data['menu']:
             if tool['name'].lower() == 'wiki':
                 menu = [name['text'] for name in tool['admin_options']]
                 assert 'Delete' not in menu

@@ -902,4 +902,4 @@ class WikiAdminController(DefaultAdminController):
         self.app.show_right_bar = show_right_bar
         self.app.allow_email_posting = allow_email_posting
         flash('Wiki options updated')
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)

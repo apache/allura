@@ -1671,7 +1671,7 @@ class TrackerAdminController(DefaultAdminController):
         for k, v in kw.iteritems():
             self.app.config.options[k] = v
         flash('Options updated')
-        redirect(c.project.url() + 'admin/tools')
+        redirect(request.referer)
 
     @expose()
     @require_post()
