@@ -149,11 +149,11 @@ $(window).load(function() {
                 }
               }
 
-              function insertFencingAtSelection(cm, cur_start, cur_end, fenceCharsToInsert, inverse) {  // FIXME inverse is just for us
+              function insertFencingAtSelection(cm, cur_start, cur_end, fenceCharsToInsert) {
                 var start_line_sel = cur_start.line + 1,
                   end_line_sel = cur_end.line + 1,
                   sel_multi = cur_start.line !== cur_end.line,
-                  repl_start = (inverse?'':'\n') + fenceCharsToInsert + '\n',  // FIXME extra leading \n for us
+                  repl_start = fenceCharsToInsert + '\n',
                   repl_end = '\n' + fenceCharsToInsert;
                 if (sel_multi) {
                   end_line_sel++;
@@ -162,11 +162,6 @@ $(window).load(function() {
                 if (sel_multi && cur_end.ch === 0) {
                   repl_end = fenceCharsToInsert + '\n';
                   end_line_sel--;
-                }
-                if (inverse) {
-                  repl_end = '\n' + repl_end; // FIXME extra leading \n for us
-                } else {
-                  start_line_sel++; end_line_sel++; // FIXME because of first extra leading \n for us
                 }
                 _replaceSelection(cm, false, repl_start, repl_end);
                 cm.setSelection({line: start_line_sel, ch: 0},
@@ -208,7 +203,7 @@ $(window).load(function() {
                     }
                   }
                   var fencedTok = cm.getTokenAt({line: block_start, ch: 1});
-                  insertFencingAtSelection(cm, cur_start, cur_end, fencedTok.state.base.fencedChars, true);
+                  insertFencingAtSelection(cm, cur_start, cur_end, fencedTok.state.base.fencedChars);
                 } else {
                   // no selection, search for ends of this fenced block
                   var search_from = cur_start.line;
