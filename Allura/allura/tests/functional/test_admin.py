@@ -331,6 +331,38 @@ class TestProjectAdmin(TestController):
                     tag['name'].endswith('.id'))]
             assert len(cards) == len(app.permissions), cards
 
+    def test_tool_installation_limit(self):
+        with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
+            mi.__get__ = mock.Mock(return_value=1)
+
+            c.user = M.User.query.get(username='root')
+            c.project = M.Project.query.get(shortname='test')
+            data = c.project.nav_data(admin_options=True)
+            menu = [tool['text'] for tool in data['installable_tools']]
+            assert_in('Wiki', menu)
+
+            r = self.app.post('/p/test/admin/update_mounts/', params={
+                'new.install': 'install',
+                'new.ep_name': 'Wiki',
+                'new.ordinal': '1',
+                'new.mount_point': 'wiki',
+                'new.mount_label': 'Wiki'})
+
+            c.project = M.Project.query.get(shortname='test')
+            data = c.project.nav_data(admin_options=True)
+            menu = [tool['text'] for tool in data['installable_tools']]
+            assert_not_in('Wiki', menu)
+
+            r = self.app.post('/p/test/admin/update_mounts/', params={
+                'new.install': 'install',
+                'new.ep_name': 'Wiki',
+                'new.ordinal': '1',
+                'new.mount_point': 'wiki2',
+                'new.mount_label': 'Wiki 2'})
+
+            assert 'error' in self.webflash(r)
+            assert 'limit exceeded' in self.webflash(r)
+
     def test_install_tool_form(self):
         r = self.app.get('/admin/install_tool?tool_name=wiki')
         assert_in(u'Installing Wiki', r)
@@ -344,6 +376,20 @@ class TestProjectAdmin(TestController):
     def test_install_tool_form_subproject(self):
         r = self.app.get('/admin/install_tool?tool_name=subproject')
         assert_in(u'Installing Sub Project', r)
+
+    def test_grouping_threshold(self):
+        c.user = M.User.query.get(username='root')
+        c.project = M.Project.query.get(shortname='test')
+        data = c.project.nav_data(admin_options=True)
+        assert_equals(data['grouping_threshold'], 1)
+
+        self.app.post('/admin/configure_tool_grouping', params={
+            'grouping_threshold': '2',
+        })
+
+        c.project = M.Project.query.get(shortname='test')
+        data = c.project.nav_data(admin_options=True)
+        assert_equals(data['grouping_threshold'], 2)
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
