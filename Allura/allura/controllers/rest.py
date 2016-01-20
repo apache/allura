@@ -90,7 +90,7 @@ class RestController(object):
         return summary
 
     @expose('json:')
-    def notification(self, cookie=None):
+    def notification(self, cookie=None, **kw):
         c.api_token = self._authenticate_request()
         if c.api_token:
             c.user = c.api_token.user
