@@ -265,7 +265,8 @@ class Thread(Artifact, ActivityObject):
         """Helper function to avoid code duplication."""
         p = self.post(**kw)
         p.commit(update_stats=False)
-        self.num_replies += 1
+        session(self).flush(self)
+        self.update_stats()
         if not self.first_post:
             self.first_post_id = p._id
         self.post_to_feed(p)
@@ -343,7 +344,7 @@ class Thread(Artifact, ActivityObject):
 
     def update_stats(self):
         self.num_replies = self.post_class().query.find(
-            dict(thread_id=self._id, status='ok', deleted=False)).count() - 1
+            dict(thread_id=self._id, status='ok', deleted=False)).count()
 
     @property
     def last_post(self):
@@ -683,7 +684,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def delete(self):
         self.deleted = True
         session(self).flush(self)
-        self.thread.num_replies = max(0, self.thread.num_replies - 1)
+        self.thread.update_stats()
 
     def approve(self, file_info=None, notify=True, notification_text=None):
         if self.status == 'ok':
@@ -751,8 +752,15 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     def spam(self):
         self.status = 'spam'
-        self.thread.num_replies = max(0, self.thread.num_replies - 1)
         g.spam_checker.submit_spam(self.text, artifact=self, user=c.user)
+        session(self).flush(self)
+        self.thread.update_stats()
+
+    def undo(self, prev_status):
+        if prev_status in ('ok', 'pending'):
+            self.status = prev_status
+            session(self).flush(self)
+            self.thread.update_stats()
 
 
 class DiscussionAttachment(BaseAttachment):

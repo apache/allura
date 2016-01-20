@@ -114,7 +114,8 @@ def test_thread_methods():
     assert '_id' in jsn
     assert_equals(len(jsn['posts']), 3)
     (p.approve() for p in (p0, p1))
-    assert t.num_replies == 2
+    ThreadLocalORMSession.flush_all()
+    assert t.num_replies == 3
     t.spam()
     assert t.num_replies == 0
     ThreadLocalORMSession.flush_all()
@@ -165,13 +166,14 @@ def test_post_methods():
     assert jsn["thread_id"] == t._id
 
     (p.approve() for p in (p, p2))
-    assert t.num_replies == 1
-    p2.spam()
-    assert t.num_replies == 0
+    ThreadLocalORMSession.flush_all()
+    assert t.num_replies == 2
     p.spam()
-    assert t.num_replies == 0
+    assert t.num_replies == 1
+    p.undo('ok')
+    assert t.num_replies == 2
     p.delete()
-    assert t.num_replies == 0
+    assert t.num_replies == 1
 
 
 @with_setup(setUp, tearDown)
@@ -322,6 +324,21 @@ def test_post_delete():
              post_id=p._id)
     ThreadLocalORMSession.flush_all()
     p.delete()
+
+
+@with_setup(setUp, tearDown)
+def test_post_undo():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+    p = t.post('This is a post')
+    t.post('This is a post2')
+    t.post('This is a post3')
+    ThreadLocalORMSession.flush_all()
+    assert t.num_replies == 3
+    p.spam()
+    assert t.num_replies == 2
+    p.undo('ok')
+    assert t.num_replies == 3
 
 
 @with_setup(setUp, tearDown)
@@ -519,6 +536,7 @@ def test_post_count():
 def test_spam_num_replies(spam_checker):
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread', num_replies=2)
+    M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
     p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
     p1.spam()
     assert_equal(t.num_replies, 1)

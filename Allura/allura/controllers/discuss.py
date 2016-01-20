@@ -356,15 +356,13 @@ class PostController(BaseController):
             self.post.spam()
         elif kw.pop('undo', None):
             prev_status = kw.pop('prev_status', None)
-            if prev_status:
-                self.post.status = prev_status
+            self.post.undo(prev_status)
         elif kw.pop('approve', None):
             if self.post.status != 'ok':
                 self.post.approve()
                 g.spam_checker.submit_ham(
                     self.post.text, artifact=self.post, user=c.user)
                 self.post.thread.post_to_feed(self.post)
-        self.thread.update_stats()
         return dict(result='success')
 
     @h.vardec
