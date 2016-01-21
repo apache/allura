@@ -98,13 +98,13 @@ var NavBarItem = React.createClass({
                         {this.props.name}
                     </span>
                 </a>
-                {this.props.currentOptionMenu.tool
-                && this.props.currentOptionMenu.tool === this.props.mount_point
-                && <ContextMenu
+                {this.props.currentOptionMenu.tool &&
+                this.props.currentOptionMenu.tool === this.props.mount_point &&
+                <ContextMenu
                     {...this.props}
-                        items={this.props.options}
-                        onOptionClick={this.props.onOptionClick}
-                    /> }
+                    items={this.props.options}
+                    onOptionClick={this.props.onOptionClick}
+                /> }
             </div>
         );
     },
