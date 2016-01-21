@@ -38,7 +38,7 @@ class ContextMenu extends React.Component {
     componentWillMount() {
         let _this = this;
         var mount_point;
-        $('body').on('click.contextMenu', function (evt) {
+        $('body').on('click.contextMenu', function(evt) {
             /* the :not filter should've worked as a 2nd param to .on() instead of this,
              but clicks in the page gutter were being delayed for some reason */
             if ($(evt.target).is(':not(.contextMenu)')) {
@@ -67,7 +67,7 @@ class ContextMenu extends React.Component {
             <div className="contextMenu">
                 <ToolTip targetSelector='#top_nav_admin .contextMenu a'/>
                 <ul>{
-                    this.props.items.map(function (o, i) {
+                    this.props.items.map(function(o, i) {
                         return (<li key={i}>
                             <a href={o.href}
                                className={_this.props.classes.concat([o.className]).join(' ')}
