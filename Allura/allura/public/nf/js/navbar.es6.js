@@ -209,7 +209,7 @@ var ToggleAddNewTool = React.createClass({
             visible: !this.state.visible
         });
     },
-    render: function () {
+    render: function() {
         return (
             <div>
                 <a onClick={ this.handleToggle } className="add-tool-toggle">
@@ -286,7 +286,7 @@ var AdminNav = React.createClass({
         onOptionClick: React.PropTypes.func.isRequired
     },
 
-    buildMenu: function (items, isSubMenu=false) {
+    buildMenu: function(items, isSubMenu=false) {
         var _this = this;
         var [tools, anchoredTools, endTools] = [[], [], []];
         var subMenu;
@@ -358,14 +358,14 @@ var AdminNav = React.createClass({
         );
     },
 
-    render: function () {
+    render: function() {
         var tools = this.buildMenu(this.props.tools);
         return <div>{tools}</div>;
     }
 });
 
 var NavBarItemWithSubMenu = React.createClass({
-    render: function () {
+    render: function() {
         return (
             <div className={"tb-item-container" + (this.props.childOptionsOpen ? " child-options-open" : "")}>
                 { this.props.tool }
@@ -385,7 +385,7 @@ var NavBarItemWithSubMenu = React.createClass({
  * @constructor
  */
 var AdminItemGroup = React.createClass({
-    render: function () {
+    render: function() {
         return (
             <div className="tb-item-grouper">
                 {this.props.children}
@@ -459,7 +459,7 @@ var Main = React.createClass({
         });
     },
 
-    handleShowOptionMenu: function (mount_point) {
+    handleShowOptionMenu: function(mount_point) {
         this.setState({
             currentOptionMenu: {
                 tool: mount_point
@@ -504,7 +504,7 @@ var Main = React.createClass({
             type: 'POST',
             url: url,
             data: params,
-            success: function () {
+            success: function() {
                 $('#messages').notify('Tool order updated',
                     {
                         status: 'confirm',
