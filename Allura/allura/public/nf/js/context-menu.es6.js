@@ -19,7 +19,6 @@
 /* eslint camelcase: 0 */
 'use strict';
 
-
 class ContextMenu extends React.Component {
     constructor(props) {
         super(props);

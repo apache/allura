@@ -54,7 +54,6 @@ class ToolTip extends React.Component {
         theme: 'tooltipster-light'
     };
 
-
     componentDidMount() {
         var _this = this;
         $(this.props.targetSelector).tooltipster({

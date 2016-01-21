@@ -379,7 +379,6 @@ var NavBarItemWithSubMenu = React.createClass({
     }
 });
 
-
 /**
  * The NavBar when in "Admin" mode.
  * @constructor
