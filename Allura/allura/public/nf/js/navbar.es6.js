@@ -27,7 +27,9 @@
  * @returns {string}
  */
 function _getProjectUrl(rest = true) {
-    var nbhd, proj, nbhd_proj;
+    var nbhd;
+    var proj;
+    var nbhd_proj;
     var ident_classes = document.getElementById('page-body').className.split(' ');
     for (var cls of ident_classes) {
         if (cls.indexOf('project-') === 0) {
@@ -287,7 +289,8 @@ var AdminNav = React.createClass({
     buildMenu: function (items, isSubMenu=false) {
         var _this = this;
         var [tools, anchoredTools, endTools] = [[], [], []];
-        var subMenu, childOptionsOpen;
+        var subMenu;
+        var childOptionsOpen;
 
         for (let item of items) {
             if (item.children) {
@@ -297,8 +300,8 @@ var AdminNav = React.createClass({
             }
 
             var _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
-
-            var toolList, isAnchored;
+            var toolList;
+            var isAnchored;
             if (item.mount_point === 'admin') {
                 // force admin to end, just like 'Project.sitemap()' does
                 toolList = endTools;
