@@ -1,9 +1,7 @@
 {
   "rules": {
-    "indent": [
-      2,
-      4
-    ]
+    "max-len": [1, 119, 4],
+    "indent": [2, 4]
   },
   "globals": {
     "ReactDOM": true,

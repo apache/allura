@@ -142,7 +142,11 @@ var GroupingThreshold = React.createClass({
               <label htmlFor='threshold-input'>Grouping Threshold</label>
                 <ToolTip targetSelector="#threshold-input" position="top" contentAsHTML={true}/>
                 <input type='number' name='threshold-input' id="threshold-input"
-                       title='When you have multiple tools of the same type, <u>this number</u> determines if they will fit in the navigation bar or be grouped into a dropdown.'
+
+                       title='When you have multiple tools of the same type,\
+                             <u>this number</u> determines if they will fit in the navigation \
+                             bar or be grouped into a dropdown.'
+
                        value={ this.state.value }
                        onChange={ this.handleChange }
                        min='1' max='50'/>
@@ -317,8 +321,15 @@ var AdminNav = React.createClass({
                 options={ item.admin_options }
             />;
             if (subMenu) {
-                childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'), this.props.currentOptionMenu.tool);
-                tool_list.push(<NavBarItemWithSubMenu key={_.uniqueId()} tool={core_item} subMenu={subMenu} childOptionsOpen={childOptionsOpen}/>);
+                childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'),
+                    this.props.currentOptionMenu.tool);
+
+                tool_list.push(<NavBarItemWithSubMenu
+                    key={_.uniqueId()}
+                    tool={core_item}
+                    subMenu={subMenu}
+                    childOptionsOpen={childOptionsOpen}
+                />);
             } else {
                 tool_list.push(core_item);
             }
