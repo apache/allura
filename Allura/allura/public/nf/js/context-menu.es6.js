@@ -72,10 +72,10 @@ class ContextMenu extends React.Component {
                             <a href={o.href}
                                className={_this.props.classes.concat([o.className]).join(' ')}
                                title={o.tooltip}>{o.text}</a>
-                        </li>)
+                        </li>);
                     })}
                 </ul>
             </div>
-        )
+        );
     }
 }
