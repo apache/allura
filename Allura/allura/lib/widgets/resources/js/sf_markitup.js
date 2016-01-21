@@ -17,6 +17,7 @@
        under the License.
 */
 
+/*global SimpleMDE, _replaceSelection */
 $(window).load(function() {
     if(!window.markdown_init){
         window.markdown_init = true;
@@ -42,7 +43,7 @@ $(window).load(function() {
               "preview",
               //"side-by-side",
               "fullscreen",
-              tool = {
+              {
                 name: 'guide',
                 action: show_help,
                 className: 'fa fa-question-circle',
