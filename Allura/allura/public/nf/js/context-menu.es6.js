@@ -78,3 +78,5 @@ class ContextMenu extends React.Component {
         );
     }
 }
+
+module.exports(ContextMenu);
