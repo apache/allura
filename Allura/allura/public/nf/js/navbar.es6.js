@@ -286,7 +286,7 @@ var AdminNav = React.createClass({
         onOptionClick: React.PropTypes.func.isRequired
     },
 
-    buildMenu: function(items, isSubMenu=false) {
+    buildMenu: function(items, isSubMenu = false) {
         var _this = this;
         var [tools, anchoredTools, endTools] = [[], [], []];
         var subMenu;
