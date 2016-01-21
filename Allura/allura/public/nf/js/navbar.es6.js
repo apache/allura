@@ -17,6 +17,7 @@
        under the License.
 */
 /* eslint camelcase: 0 */
+/* exported Main */
 'use strict';
 
 /**
@@ -109,7 +110,7 @@ var NavBarItem = React.createClass({
         );
     },
 
-    handleOptionClick: function(event) {
+    handleOptionClick: function() {
         this.props.onOptionClick(this.props.mount_point);
     }
 });
@@ -244,7 +245,7 @@ var NormalNavBar = React.createClass({
         ).isRequired
     },
 
-    buildMenu: function(item, i) {
+    buildMenu: function(item) {
         let classes = window.location.pathname.startsWith(item.url) ? 'active-nav-link' : '';
 
         var subMenu;
@@ -588,3 +589,5 @@ var Main = React.createClass({
         );
     }
 });
+
+module.exports(Main);

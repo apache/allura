@@ -75,3 +75,5 @@ class ToolTip extends React.Component {
     }
 }
 
+module.exports(ToolTip);
+
