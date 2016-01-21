@@ -68,7 +68,7 @@ class ToolTip extends React.Component {
             multiple: _this.props.multiple,
             iconCloning: false,
             maxWidth: _this.props.maxWidth
-        })
+        });
     }
 
     render() {

@@ -223,7 +223,7 @@ var ToggleAddNewTool = React.createClass({
                     items={this.props.installableTools} />
                 }
             </div>
-        )
+        );
     }
 });
 
@@ -563,7 +563,7 @@ var Main = React.createClass({
 
         var max_tool_count = _.chain(this.state.data.menu)
                              .map((item) => {
-                                 return item.children ? _.pluck(item.children, 'tool_name') : item.tool_name
+                                 return item.children ? _.pluck(item.children, 'tool_name') : item.tool_name;
                              })
                              .flatten()
                              .countBy()
