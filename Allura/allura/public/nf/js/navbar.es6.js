@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 */
+/* eslint camelcase: 0 */
 'use strict';
 
 /**
@@ -285,7 +286,7 @@ var AdminNav = React.createClass({
 
     buildMenu: function (items, isSubMenu=false) {
         var _this = this;
-        var [tools, anchored_tools, end_tools] = [[], [], []];
+        var [tools, anchoredTools, endTools] = [[], [], []];
         var subMenu, childOptionsOpen;
 
         for (let item of items) {
@@ -297,19 +298,19 @@ var AdminNav = React.createClass({
 
             var _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
 
-            var tool_list, is_anchored;
+            var toolList, isAnchored;
             if (item.mount_point === 'admin') {
                 // force admin to end, just like 'Project.sitemap()' does
-                tool_list = end_tools;
-                is_anchored = true;
+                toolList = endTools;
+                isAnchored = true;
             } else if (item.is_anchored) {
-                tool_list = anchored_tools;
-                is_anchored = true;
+                toolList = anchoredTools;
+                isAnchored = true;
             } else {
-                tool_list = tools;
-                is_anchored = false;
+                toolList = tools;
+                isAnchored = false;
             }
-            var core_item = <NavBarItem
+            var coreItem = <NavBarItem
                 {..._this.props}
                 mount_point={ item.mount_point }
                 name={ item.name }
@@ -317,27 +318,27 @@ var AdminNav = React.createClass({
                 isGrouper={item.children && item.children.length > 0}
                 url={ item.url }
                 key={ 'tb-item-' + _.uniqueId() }
-                is_anchored={ is_anchored }
+                is_anchored={ isAnchored }
                 options={ item.admin_options }
             />;
             if (subMenu) {
                 childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'),
                     this.props.currentOptionMenu.tool);
 
-                tool_list.push(<NavBarItemWithSubMenu
+                toolList.push(<NavBarItemWithSubMenu
                     key={_.uniqueId()}
-                    tool={core_item}
+                    tool={coreItem}
                     subMenu={subMenu}
                     childOptionsOpen={childOptionsOpen}
                 />);
             } else {
-                tool_list.push(core_item);
+                toolList.push(coreItem);
             }
         }
 
         return (
             <div className='react-drag'>
-                { anchored_tools }
+                { anchoredTools }
                 <ReactReorderable
                     key={ 'reorder-' + _.uniqueId() }
                     handle={"." + _handle}
@@ -346,7 +347,7 @@ var AdminNav = React.createClass({
                     onDrop={ _this.props.onToolReorder }>
                     { tools }
                 </ReactReorderable>
-                { end_tools }
+                { endTools }
                 { !isSubMenu && <div id="add-tool-container" className="unlocked-container">
                     <ToggleAddNewTool installableTools={this.props.installableTools}/>
                 </div>}
