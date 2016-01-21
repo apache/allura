@@ -7,6 +7,7 @@
   },
   "globals": {
     "ReactDOM": true,
+    "React": true,
     "$": true,
     "window": true,
     "_": true,
