@@ -385,15 +385,16 @@ class TestRestHome(TestRestApiBase):
         self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': 'http://bad.com/'},
                       status=401)
 
-    @mock.patch('allura.lib.plugin.ThemeProvider.get_site_notification')
-    def test_notification(self, get_site_notification):
+    @mock.patch('allura.lib.plugin.ThemeProvider._get_site_notification')
+    def test_notification(self, _get_site_notification):
         note = M.SiteNotification()
         cookie = '{}-1-False'.format(note._id)
-        g.theme.get_site_notification = mock.Mock(return_value=(note, cookie))
+        g.theme._get_site_notification = mock.Mock(return_value=(note, cookie))
 
         r = self.app.get('/rest/notification')
 
         assert r.status_int == 200
+        print r.json
         assert r.json['cookie'] == cookie
         assert r.json['notification'] == note.__json__()
 

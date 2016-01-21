@@ -1310,16 +1310,16 @@ class ThemeProvider(object):
         else:
             return app.icon_url(size)
 
-    def get_site_notification(self, is_api=None, api_cookie=None):
-        from pylons import request, response
+    def _get_site_notification(self, user=None, site_notification_cookie_value=''):
+        from pylons import request
         from allura.model.notification import SiteNotification
         note = SiteNotification.current()
         if note is None:
             return None
-        if note.user_role and c.user.is_anonymous():
+        if note.user_role and (not user or user.is_anonymous()):
             return None
         if note.user_role:
-            projects = c.user.my_projects_by_role_name(note.user_role)
+            projects = user.my_projects_by_role_name(note.user_role)
             if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
                 return None
 
@@ -1328,11 +1328,7 @@ class ThemeProvider(object):
         if note.page_tool_type and (c.app is None or c.app.config.tool_name.lower() != note.page_tool_type.lower()):
             return None
 
-        cookie = api_cookie
-        if not cookie:
-            cookie = request.cookies.get('site-notification', '')
-        cookie = cookie.split('-')
-
+        cookie = site_notification_cookie_value.split('-')
         if len(cookie) == 3 and cookie[0] == str(note._id):
             views = asint(cookie[1]) + 1
             closed = asbool(cookie[2])
@@ -1343,8 +1339,19 @@ class ThemeProvider(object):
             return None
 
         set_cookie = '-'.join(map(str, [note._id, views, closed]))
-        if is_api:
-            return note, set_cookie
+        return note, set_cookie
+
+    def get_site_notification(self):
+        from pylons import request, response
+
+        r = self._get_site_notification(
+            c.user,
+            request.cookies.get('site-notification', '')
+        )
+        if not r:
+            return None
+        note, set_cookie = r
+
         response.set_cookie(
             'site-notification',
             set_cookie,

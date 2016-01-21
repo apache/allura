@@ -490,13 +490,13 @@ class TestThemeProvider(object):
         assert_is(ThemeProvider().get_site_notification(), None)
 
     @patch('allura.model.notification.SiteNotification')
-    def test_get_site_notification_with_is_api(self, SiteNotification):
+    def test_get__site_notification(self, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'test_id'
         note.user_role = None
         note.page_regex = None
         note.page_tool_type = None
-        get_note = ThemeProvider().get_site_notification(is_api=True)
+        get_note = ThemeProvider()._get_site_notification()
 
         assert isinstance(get_note, tuple)
         assert len(get_note) is 2
@@ -512,9 +512,8 @@ class TestThemeProvider(object):
         note.page_regex = None
         note.page_tool_type = None
         request.cookies = {}
-        get_note = ThemeProvider().get_site_notification(
-            is_api=True,
-            api_cookie='test_id-1-False'
+        get_note = ThemeProvider()._get_site_notification(
+            site_notification_cookie_value='test_id-1-False'
         )
 
         assert get_note[0] is note
