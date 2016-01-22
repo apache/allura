@@ -41,7 +41,6 @@ class ContextMenu extends React.Component {
             /* the :not filter should've worked as a 2nd param to .on() instead of this,
              but clicks in the page gutter were being delayed for some reason */
             if ($(evt.target).is(':not(.contextMenu)')) {
-
                 /* if clicking directly onto another gear, set it directly.
                  this is necessary since sometimes our jquery events seem to interfere with the react event
                  that is supposed to handle this kind of thing */
