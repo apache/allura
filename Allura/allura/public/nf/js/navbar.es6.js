@@ -530,7 +530,7 @@ var Main = React.createClass({
 
     render: function() {
         var _this = this;
-        var navBarSwitch = (showAdmin) => {
+        var navBarSwitch = showAdmin => {
             if (showAdmin) {
                 return (
                     <AdminNav
