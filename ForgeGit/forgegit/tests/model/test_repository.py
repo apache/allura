@@ -650,6 +650,16 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tempfile.mkdtemp.return_value,
             ignore_errors=True)
 
+    @mock.patch('forgegit.model.git_repo.tempfile')
+    @mock.patch('forgegit.model.git_repo.shutil')
+    @mock.patch('forgegit.model.git_repo.git')
+    def test_merge_raise_exception(self, git, shutil, tempfile):
+        self.repo._impl._git.git = mock.Mock()
+        git.Repo.clone_from.side_effect = Exception
+        with self.assertRaises(Exception):
+            self.repo.merge(mock.Mock())
+        shutil.rmtree.assert_has_calles()
+
     @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'false'})
     @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
     def test_paged_diffs(self):
