@@ -139,7 +139,7 @@ var GroupingThreshold = React.createClass({
     render: function() {
         return (
             <div>
-                { !!this.props.isHidden &&
+                { !Boolean(this.props.isHidden) &&
                 <div id='threshold-config'>
             <span>
               <label htmlFor='threshold-input'>Grouping Threshold</label>
