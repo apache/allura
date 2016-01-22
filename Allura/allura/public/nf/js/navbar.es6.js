@@ -531,35 +531,33 @@ var Main = React.createClass({
     render: function() {
         var _this = this;
         var navBarSwitch = showAdmin => {
+            var navbar;
             if (showAdmin) {
-                return (
-                    <AdminNav
-                        tools={ _this.state.data.menu }
-                        installableTools={ _this.state.data.installable_tools }
-                        data={ _this.state.data }
-                        onToolReorder={ _this.onToolReorder }
-                        onToolDragStart={ _this.onToolDragStart }
-                        editMode={ _this.state.visible }
-                        currentOptionMenu={ _this.state.currentOptionMenu }
-                        onOptionClick={ _this.handleShowOptionMenu }
-                        currentToolOptions={this.state.currentToolOptions}
-                    />
-                );
+                navbar = <AdminNav
+                    tools={ _this.state.data.menu }
+                    installableTools={ _this.state.data.installable_tools }
+                    data={ _this.state.data }
+                    onToolReorder={ _this.onToolReorder }
+                    onToolDragStart={ _this.onToolDragStart }
+                    editMode={ _this.state.visible }
+                    currentOptionMenu={ _this.state.currentOptionMenu }
+                    onOptionClick={ _this.handleShowOptionMenu }
+                    currentToolOptions={this.state.currentToolOptions}
+                />;
             } else {
-                return (
-                    <div>
-                        <NormalNavBar
-                            items={ _this.state.data.menu }
-                            installableTools={ _this.state.data.installable_tools }
-                            />
-                    </div>
-                );
+                navbar = <div>
+                    <NormalNavBar
+                        items={ _this.state.data.menu }
+                        installableTools={ _this.state.data.installable_tools }
+                    />
+                </div>;
             }
+            return navbar;
         };
         var navBar = navBarSwitch(this.state.visible);
 
         var max_tool_count = _.chain(this.state.data.menu)
-                             .map((item) => {
+                             .map(item => {
                                  return item.children ? _.pluck(item.children, 'tool_name') : item.tool_name;
                              })
                              .flatten()
