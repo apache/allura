@@ -11,7 +11,8 @@
         "ClassDeclaration": false
       }
     }],
-    "no-inline-comments": 0
+    "no-inline-comments": 0,
+    "comma-dangle": 0
   },
   "globals": {
     "ReactDOM": true,

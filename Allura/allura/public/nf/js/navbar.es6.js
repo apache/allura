@@ -171,7 +171,7 @@ var NormalNavItem = React.createClass({
         url: React.PropTypes.string.isRequired,
         classes: React.PropTypes.string
     },
-  mixins: [React.addons.PureRenderMixin],
+    mixins: [React.addons.PureRenderMixin],
     render: function() {
         return (
             <li key={`tb-norm-${_.uniqueId()}`}>
@@ -291,7 +291,7 @@ var AdminNav = React.createClass({
         var [tools, anchoredTools, endTools] = [[], [], []];
         var subMenu;
         var childOptionsOpen;
-
+        var _handle;
         for (let item of items) {
             if (item.children) {
                 subMenu = this.buildMenu(item.children, true);
@@ -299,7 +299,7 @@ var AdminNav = React.createClass({
                 subMenu = null;
             }
 
-            var _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
+            _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
             var toolList;
             var isAnchored;
             if (item.mount_point === 'admin') {
