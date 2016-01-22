@@ -575,7 +575,7 @@ var Main = React.createClass({
                     <GroupingThreshold
                         onUpdateThreshold={ this.onUpdateThreshold }
                         isHidden={ this.state.visible }
-                        initialValue={ parseInt(this.state.data.grouping_threshold) }/> }
+                        initialValue={ parseInt(this.state.data.grouping_threshold, 10) }/> }
                 </div>
                 <ToggleAdminButton
                     handleButtonPush={ this.handleToggleAdmin }
