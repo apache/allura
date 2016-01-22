@@ -9,8 +9,9 @@
         "FunctionDeclaration": true,
         "MethodDefinition": false,
         "ClassDeclaration": false
-    }
-  }]
+      }
+    }],
+    "no-inline-comments": 0
   },
   "globals": {
     "ReactDOM": true,
