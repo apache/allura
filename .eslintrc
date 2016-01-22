@@ -4,7 +4,13 @@
     "indent": [2, 4],
     "jsx-quotes": [0],
     "quotes": [0],
-    "operator-linebreak": [2, "before", { "overrides": { "?": "after", "&&": "after" } }]
+    "operator-linebreak": [2, "before", { "overrides": { "?": "after", "&&": "after" } }],
+    "require-jsdoc": [2, {"require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": false,
+        "ClassDeclaration": false
+    }
+  }]
   },
   "globals": {
     "ReactDOM": true,

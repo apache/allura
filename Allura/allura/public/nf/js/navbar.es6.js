@@ -21,18 +21,17 @@
 'use strict';
 
 /**
- * Gets the current project url.
-
- * @constructor
- * @param {bool} rest - Return a "rest" version of the url.
- * @returns {string}
- */
-function _getProjectUrl(rest = true) {
+* Gets the current project url.
+* @param {boolean} rest - Return a "rest" version of the url.
+* @returns {string} - Project Url
+*/
+var _getProjectUrl = function(rest = true) {
     var nbhd;
     var proj;
     var nbhd_proj;
-    var ident_classes = document.getElementById('page-body').className.split(' ');
-    for (var cls of ident_classes) {
+    var identClasses = document.getElementById('page-body').className.split(' ');
+    var basePath = rest ? '/rest/' : '/';
+    for (var cls of identClasses) {
         if (cls.indexOf('project-') === 0) {
             proj = cls.slice('project-'.length);
         }
@@ -43,8 +42,8 @@ function _getProjectUrl(rest = true) {
     } else {
         nbhd_proj = `${nbhd}/${proj}`;
     }
-    return (rest ? '/rest/' : '/') + nbhd_proj;
-}
+    return basePath + nbhd_proj;
+};
 
 const ToolsPropType = React.PropTypes.shape({
     mount_point: React.PropTypes.string,
@@ -469,8 +468,8 @@ var Main = React.createClass({
 
     /**
      * Handles the changing of the NavBars grouping threshold.
-
-     * @param {object} event
+     * @param {object} event Fired when the threshold changes
+     * @return {boolean} False
      */
     onUpdateThreshold: function(event) {
         var thres = event.target.value;
@@ -486,8 +485,6 @@ var Main = React.createClass({
 
     /**
      * Handles the sending and updating tool ordinals.
-
-     * @param {array} data - Array of tools
      */
     onToolReorder: function() {
         $('.react-drag.dragging').removeClass('dragging');
