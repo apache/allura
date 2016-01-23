@@ -90,17 +90,14 @@ class RestController(object):
         return summary
 
     @expose('json:')
-    def notification(self, cookie='', **kw):
+    def notification(self, cookie='', url='', **kw):
         c.api_token = self._authenticate_request()
-        if c.api_token:
-            r = g.theme._get_site_notification(
-                user=c.api_token.user,
-                site_notification_cookie_value=cookie
-            )
-        else:
-            r = g.theme._get_site_notification(
-                site_notification_cookie_value=cookie
-            )
+        user = c.api_token.user if c.api_token else c.user
+        r = g.theme._get_site_notification(
+            url=url,
+            user=user,
+            site_notification_cookie_value=cookie
+        )
         if r:
             return dict(notification=r[0], cookie=r[1])
         return {}

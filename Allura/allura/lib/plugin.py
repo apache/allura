@@ -1310,20 +1310,19 @@ class ThemeProvider(object):
         else:
             return app.icon_url(size)
 
-    def _get_site_notification(self, user=None, site_notification_cookie_value=''):
-        from pylons import request
+    def _get_site_notification(self, url='', user=None, site_notification_cookie_value=''):
         from allura.model.notification import SiteNotification
         note = SiteNotification.current()
         if note is None:
             return None
-        if note.user_role and (not user or user.is_anonymous()):
+        if note.user_role and user.is_anonymous():
             return None
         if note.user_role:
             projects = user.my_projects_by_role_name(note.user_role)
             if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
                 return None
 
-        if note.page_regex and re.search(note.page_regex, request.path_qs) is None:
+        if note.page_regex and re.search(note.page_regex, url) is None:
             return None
         if note.page_tool_type and (c.app is None or c.app.config.tool_name.lower() != note.page_tool_type.lower()):
             return None
@@ -1345,6 +1344,7 @@ class ThemeProvider(object):
         from pylons import request, response
 
         r = self._get_site_notification(
+            request.path_qs,
             c.user,
             request.cookies.get('site-notification', '')
         )
