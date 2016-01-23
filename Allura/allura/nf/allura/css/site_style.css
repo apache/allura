@@ -2133,6 +2133,35 @@ a.sidebar-disabled:focus {
   height: 48px;
   vertical-align: middle;
 }
+.neighborhood_icon_left {
+  float: left;
+  margin-right: 0.5em;
+  width: 48px;
+  height: 48px;
+  vertical-align: middle;
+}
+
+.neighborhood_block {
+  margin-bottom: 10px;
+  float: right;
+  z-index: 0;
+}
+
+.neighborhood_title {
+  float: right;
+  text-align: end;
+  padding-top: 0.4rem;
+}
+
+.neighborhood_title h3 {
+  font-size: x-large;
+  margin-bottom: 0.4rem;
+}
+
+.neighborhood_title_link {
+  float: right;
+  font-style: italic;
+}
 
 #top_nav {
   background-color: #f8f8f8;
