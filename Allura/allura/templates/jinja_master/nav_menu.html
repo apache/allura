@@ -31,17 +31,15 @@
     {% elif c.project.icon %}
       <img src="{{c.project.url()}}icon?{{c.project.icon._id.generation_time}}" class="project_icon" alt="Project Logo">
     {% endif %}
-    <h1 class="project_title">
-        <a href="{{c.project.url()}}" class="project_link">
-            {%- if c.project.is_user_project -%}
-                {{ c.project.user_project_of.display_name }}
-            {%- elif c.project.is_nbhd_project -%}
-                {{ c.project.neighborhood.name }}
-            {%- else -%}
-                {{ c.project.name }}
-            {%- endif -%}
-        </a>
-    </h1>
+        <h1 class="project_title">
+            <a href="{{c.project.url()}}" class="project_link">
+                {%- if c.project.is_user_project -%}
+                    {{ c.project.user_project_of.display_name }}
+                {%- elif not c.project.is_nbhd_project -%}
+                    {{ c.project.name }}
+                {%- endif -%}
+            </a>
+        </h1>
     {% set status = c.project.troves_by_type('developmentstatus')|sort(attribute='fullname') %}
     {% set status = status[-1] %}
     {% if status and status.shortname not in ['production', 'mature'] %}
