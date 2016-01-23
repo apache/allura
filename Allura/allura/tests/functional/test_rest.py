@@ -392,11 +392,12 @@ class TestRestHome(TestRestApiBase):
         cookie = '{}-1-False'.format(note._id)
         g.theme._get_site_notification = mock.Mock(return_value=(note, cookie))
 
-        r = self.app.get('/rest/notification?url=test_url&cookie=test_cookie')
+        r = self.app.get('/rest/notification?url=test_url&cookie=test_cookie&tool_name=test_tool')
         g.theme._get_site_notification.assert_called_once_with(
             url='test_url',
-            site_notification_cookie_value='test_cookie',
-            user=user
+            user=user,
+            tool_name='test_tool',
+            site_notification_cookie_value='test_cookie'
         )
 
         assert r.status_int == 200
