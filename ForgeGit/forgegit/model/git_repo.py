@@ -121,6 +121,7 @@ class Repository(M.Repository):
             tmp_repo = git.Repo.clone_from(
                 self.full_fs_path,
                 to_path=tmp_path,
+                shared=True,
                 bare=False)
             tmp_repo = GitImplementation(Object(full_fs_path=tmp_path))._git
             tmp_repo.git.fetch('origin', mr.target_branch)

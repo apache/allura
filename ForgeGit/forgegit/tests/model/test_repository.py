@@ -631,7 +631,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         git.Repo.clone_from.assert_called_once_with(
             self.repo.full_fs_path,
             to_path=tempfile.mkdtemp.return_value,
-            bare=False)
+            bare=False,
+            shared=True)
         tmp_repo = GitImplementation.return_value._git
         assert_equal(
             tmp_repo.git.fetch.call_args_list,
