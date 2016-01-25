@@ -2133,13 +2133,6 @@ a.sidebar-disabled:focus {
   height: 48px;
   vertical-align: middle;
 }
-.neighborhood_icon_left {
-  float: left;
-  margin-right: 0.5em;
-  width: 48px;
-  height: 48px;
-  vertical-align: middle;
-}
 
 .neighborhood_block {
   margin-bottom: 10px;
@@ -2149,7 +2142,7 @@ a.sidebar-disabled:focus {
 
 .neighborhood_title {
   float: right;
-  text-align: end;
+  text-align: right;
   padding-top: 0.4rem;
 }
 

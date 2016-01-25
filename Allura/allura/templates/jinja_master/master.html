@@ -88,11 +88,16 @@
 {{ theme_macros.site_notification() }}
 {% set flash = tg.flash_obj.render('flash', use_js=False) %}
 <section id="page-body" class="{{ g.document_class(neighborhood) }}">
-    <div id="nav_menu_holder">
+<div id="nav_menu_holder">
+    {% if c.project and c.project.is_nbhd_project %}
+        {% set neighborhood=c.project.neighborhood %}
+            {% include 'allura:templates/jinja_master/neigh_nav_menu.html' with context %}
+    {% else %}
         {% block nav_menu %}
             {% include g.theme.nav_menu %}
         {% endblock %}
-    </div>
+    {% endif %}
+</div>
     <div id="top_nav" class="">
         {% block top_nav %}
             {% include g.theme.top_nav %}
