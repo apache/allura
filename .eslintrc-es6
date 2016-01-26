@@ -17,11 +17,16 @@
       "args": "none"
     }],
     "no-inline-comments": 0,
-    "comma-dangle": 0
+    "comma-dangle": 0,
+    "vars-on-top": 2,
+    "react/jsx-indent-props": 0,
+   "react/jsx-curly-spacing": [2, "never"],
+   "react/jsx-closing-bracket-location": 0
   },
   "globals": {
     "ReactDOM": true,
     "React": true,
+    "ToolTip": true,
     "$": true,
     "window": true,
     "_": true,
@@ -33,7 +38,7 @@
     "browser": true,
     "node": false
   },
-  "extends": "xo/browser",
+  "extends":  ["xo/browser", "xo-react"],
   "ecmaFeatures": {
     "jsx": true,
     "modules": false,
