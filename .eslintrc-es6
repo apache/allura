@@ -1,0 +1,39 @@
+{
+  "rules": {
+    "max-len": [1, 119, 4],
+    "indent": [2, 4],
+    "jsx-quotes": [0],
+    "quotes": [0],
+    "operator-linebreak": [2, "before", { "overrides": { "?": "after", "&&": "after" } }],
+    "require-jsdoc": [2, {"require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": false,
+        "ClassDeclaration": false
+      }
+    }],
+    "no-inline-comments": 0,
+    "comma-dangle": 0
+  },
+  "globals": {
+    "ReactDOM": true,
+    "React": true,
+    "$": true,
+    "window": true,
+    "_": true,
+    "ReactReorderable": true
+  },
+  "parser": "babel-eslint",
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "extends": "google",
+  "ecmaFeatures": {
+    "jsx": true,
+    "forOf": true,
+    "experimentalObjectRestSpread": true
+  },
+  "plugins": [
+    "react"
+  ]
+}
