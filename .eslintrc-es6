@@ -11,6 +11,10 @@
         "ClassDeclaration": false
       }
     }],
+    "no-unused-vars": [2, {
+      "vars": "local",
+      "args": "none"
+    }],
     "no-inline-comments": 0,
     "comma-dangle": 0
   },
@@ -22,15 +26,19 @@
     "_": true,
     "ReactReorderable": true
   },
-  "parser": "babel-eslint",
   "env": {
     "es6": true,
+    "jquery": true,
     "browser": true
   },
   "extends": "google",
   "ecmaFeatures": {
     "jsx": true,
     "forOf": true,
+    "blockBindings": true,
+    "arrowFunctions": true,
+    "classes": true,
+    "defaultParams": true,
     "experimentalObjectRestSpread": true
   },
   "plugins": [

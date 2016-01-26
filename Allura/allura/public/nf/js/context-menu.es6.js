@@ -24,16 +24,6 @@ class ContextMenu extends React.Component {
         super(props);
     }
 
-    static propTypes = {
-        classes: React.PropTypes.array,
-        items: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-        onOptionClick: React.PropTypes.func.isRequired
-    };
-
-    static defaultProps = {
-        classes: []
-    };
-
     componentWillMount() {
         let _this = this;
         var mount_point;
@@ -78,4 +68,12 @@ class ContextMenu extends React.Component {
     }
 }
 
-module.exports(ContextMenu);
+ContextMenu.propTypes = {
+    classes: React.PropTypes.array,
+    items: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    onOptionClick: React.PropTypes.func.isRequired
+};
+
+ContextMenu.defaultProps = {
+    classes: []
+};

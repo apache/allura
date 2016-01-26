@@ -17,13 +17,13 @@
        under the License.
 */
 /* eslint camelcase: 0 */
-/* exported Main */
+/* eslint no-unused-vars: [2, {"args": "none", "varsIgnorePattern": "Main"}] */
 'use strict';
 
 /**
 * Gets the current project url.
 * @param {boolean} rest - Return a "rest" version of the url.
-* @returns {string} - Project Url
+* @return {string} - Project Url
 */
 var _getProjectUrl = function(rest = true) {
     var nbhd;
@@ -584,5 +584,3 @@ var Main = React.createClass({
         );
     }
 });
-
-module.exports(Main);
