@@ -16,8 +16,8 @@
        specific language governing permissions and limitations
        under the License.
 */
-'use strict';
 
+/* exported ToolTip */
 /**
  * React Tooltip (tooltipster) Base class
 
@@ -27,32 +27,6 @@ class ToolTip extends React.Component {
     constructor(props) {
         super(props);
     }
-
-    static propTypes = {
-        targetSelector: React.PropTypes.string.isRequired,
-        animation: React.PropTypes.string,
-        speed: React.PropTypes.number,
-        position: React.PropTypes.string,
-        contentAsHTML: React.PropTypes.bool,
-        delay: React.PropTypes.number,
-        theme: React.PropTypes.string,
-        maxWidth: React.PropTypes.number,
-        trigger: React.PropTypes.string,
-        multiple: React.PropTypes.bool,
-    };
-
-    static defaultProps = {
-        animation: 'fade',
-        speed: 150,
-        delay: 0,
-        maxWidth: 300,
-        multiple: true,
-        contentAsHTML: false,
-        position: 'left',
-        trigger: 'hover',
-        classes: [],
-        theme: 'tooltipster-light'
-    };
 
     componentDidMount() {
         var _this = this;
@@ -75,5 +49,29 @@ class ToolTip extends React.Component {
     }
 }
 
-module.exports(ToolTip);
+ToolTip.propTypes = {
+    targetSelector: React.PropTypes.string.isRequired,
+    animation: React.PropTypes.string,
+    speed: React.PropTypes.number,
+    position: React.PropTypes.string,
+    contentAsHTML: React.PropTypes.bool,
+    delay: React.PropTypes.number,
+    theme: React.PropTypes.string,
+    maxWidth: React.PropTypes.number,
+    trigger: React.PropTypes.string,
+    multiple: React.PropTypes.bool,
+};
+
+ToolTip.defaultProps = {
+    animation: 'fade',
+    speed: 150,
+    delay: 0,
+    maxWidth: 300,
+    multiple: true,
+    contentAsHTML: false,
+    position: 'left',
+    trigger: 'hover',
+    classes: [],
+    theme: 'tooltipster-light'
+};
 
