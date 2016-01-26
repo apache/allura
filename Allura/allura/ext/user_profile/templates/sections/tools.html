@@ -22,12 +22,6 @@
     Personal Tools
 {% endblock %}
 
-{% block actions %}
-    {% if user == c.user %}
-        <a href="{{c.project.url()}}admin/tools">Add Tools</a>
-    {% endif %}
-{% endblock %}
-
 {% block section_class %}tools{% endblock %}
 
 {% block content %}

@@ -19,7 +19,6 @@ import json
 import os
 from cStringIO import StringIO
 import urllib2
-import re
 
 import PIL
 from mock import patch
