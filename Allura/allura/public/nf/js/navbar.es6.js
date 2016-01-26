@@ -17,6 +17,7 @@
        under the License.
 */
 /* eslint camelcase: 0 */
+/* globals ContextMenu ToolTip */
 'use strict';
 
 /**
@@ -30,7 +31,7 @@ var _getProjectUrl = function(rest = true) {
     var nbhd_proj;
     var identClasses = document.getElementById('page-body').className.split(' ');
     var basePath = rest ? '/rest/' : '/';
-    for (var cls of identClasses) {
+    for (let cls of identClasses) {
         if (cls.indexOf('project-') === 0) {
             proj = cls.slice('project-'.length);
         }
@@ -65,45 +66,48 @@ var NavBarItem = React.createClass({
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
         currentOptionMenu: React.PropTypes.object,
+        isGrouper: React.PropTypes.bool,
+        mount_point: React.PropTypes.string,
         onOptionClick: React.PropTypes.func.isRequired,
         options: React.PropTypes.array,
+        handleType: React.PropTypes.string,
         is_anchored: React.PropTypes.bool
     },
 
     render: function() {
         var divClasses = "tb-item tb-item-edit";
+        var spanClasses = this.props.handleType + " ordinal-item";
+
         if (this.props.is_anchored) {
             divClasses += " anchored";
         }
-        var spanClasses = this.props.handleType + " ordinal-item";
         if (this.props.isGrouper) {
             spanClasses += " toolbar-grouper";
         }
 
         return (
-            <div className={ divClasses }>
-                <ToolTip targetSelector=".anchored .draggable-handle" position="top"
-                         theme="tooltipster-default" delay={250}/>
-                <ToolTip targetSelector=".anchored .draggable-handle-sub" position="right"
-                         theme="tooltipster-default" delay={250}/>
+            <div className={divClasses}>
+                <ToolTip targetSelector=".anchored .draggable-handle"
+                         position="top"
+                         theme="tooltipster-default"
+                         delay={250}/>
+                <ToolTip targetSelector=".anchored .draggable-handle-sub"
+                         position="right"
+                         theme="tooltipster-default"
+                         delay={250}/>
                 <a>
-                    {!_.isEmpty(this.props.options) && <i className='config-tool fa fa-cog'
-                                                          onClick={this.handleOptionClick}> </i>}
+                    {!_.isEmpty(this.props.options) &&
+                    <i className='config-tool fa fa-cog' onClick={this.handleOptionClick}> </i>}
                     <span
                         className={spanClasses}
                         data-mount-point={this.props.mount_point}
-                        title={this.props.is_anchored ? 'This item cannot be moved.' : ''}
-                        >
+                        title={this.props.is_anchored ? 'This item cannot be moved.' : ''}>
                         {this.props.name}
                     </span>
                 </a>
                 {this.props.currentOptionMenu.tool &&
                 this.props.currentOptionMenu.tool === this.props.mount_point &&
-                <ContextMenu
-                    {...this.props}
-                    items={this.props.options}
-                    onOptionClick={this.props.onOptionClick}
-                /> }
+                <ContextMenu {...this.props} items={this.props.options} onOptionClick={this.props.onOptionClick}/>}
             </div>
         );
     },
@@ -120,7 +124,9 @@ var NavBarItem = React.createClass({
  */
 var GroupingThreshold = React.createClass({
     propTypes: {
-        initialValue: React.PropTypes.number.isRequired
+        initialValue: React.PropTypes.number.isRequired,
+        isHidden: React.PropTypes.bool,
+        onUpdateThreshold: React.PropTypes.func
     },
     getInitialState: function() {
         return {
@@ -138,22 +144,21 @@ var GroupingThreshold = React.createClass({
     render: function() {
         return (
             <div>
-                { !Boolean(!this.props.isHidden) &&
+                {!Boolean(!this.props.isHidden) &&
                 <div id='threshold-config'>
             <span>
               <label htmlFor='threshold-input'>Grouping Threshold</label>
-                <ToolTip targetSelector="#threshold-input" position="top" contentAsHTML={true}/>
+                <ToolTip targetSelector="#threshold-input" position="top" contentAsHTML/>
                 <input type='number' name='threshold-input' id="threshold-input"
-
                        title='When you have multiple tools of the same type,\
                              <u>this number</u> determines if they will fit in the navigation \
                              bar or be grouped into a dropdown.'
-
-                       value={ this.state.value }
-                       onChange={ this.handleChange }
-                       min='1' max='50'/>
+                       value={this.state.value}
+                       onChange={this.handleChange}
+                       min='1' max='50'
+                />
               </span>
-                </div> }
+                </div>}
             </div>
         );
     }
@@ -168,14 +173,15 @@ var NormalNavItem = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
         url: React.PropTypes.string.isRequired,
+        children: React.PropTypes.object,
         classes: React.PropTypes.string
     },
     mixins: [React.addons.PureRenderMixin],
     render: function() {
         return (
             <li key={`tb-norm-${_.uniqueId()}`}>
-                <a href={ this.props.url } className={ this.props.classes }>
-                    { this.props.name }
+                <a href={this.props.url} className={this.props.classes}>
+                    {this.props.name}
                 </a>
                 {this.props.children}
             </li>
@@ -211,15 +217,16 @@ var ToggleAddNewTool = React.createClass({
     render: function() {
         return (
             <div>
-                <a onClick={ this.handleToggle } className="add-tool-toggle">
+                <a onClick={this.handleToggle} className="add-tool-toggle">
                     Add New...
                 </a>
                 {this.state.visible &&
-                <ContextMenu
-                    {...this.props}
-                    classes={['admin_modal']}
-                    onOptionClick={this.handleToggle}
-                    items={this.props.installableTools} />
+                    <ContextMenu
+                        {...this.props}
+                        classes={['admin_modal']}
+                        onOptionClick={this.handleToggle}
+                        items={this.props.installableTools}
+                    />
                 }
             </div>
         );
@@ -265,7 +272,7 @@ var NormalNavBar = React.createClass({
             <ul
                 id="normal-nav-bar"
                 className="dropdown">
-                { listItems }
+                {listItems}
                 <li id="add-tool-container">
                     <ToggleAddNewTool installableTools={this.props.installableTools}/>
                 </li>
@@ -282,6 +289,13 @@ var AdminNav = React.createClass({
     propTypes: {
         tools: React.PropTypes.arrayOf(ToolsPropType),
         currentOptionMenu: React.PropTypes.object,
+        installableTools: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                text: React.PropTypes.string.isRequired,
+                href: React.PropTypes.string,
+                tooltip: React.PropTypes.string
+            })
+        ),
         onOptionClick: React.PropTypes.func.isRequired
     },
 
@@ -291,6 +305,8 @@ var AdminNav = React.createClass({
         var subMenu;
         var childOptionsOpen;
         var _handle;
+        var toolList;
+        var isAnchored;
         for (let item of items) {
             if (item.children) {
                 subMenu = this.buildMenu(item.children, true);
@@ -299,8 +315,6 @@ var AdminNav = React.createClass({
             }
 
             _handle = isSubMenu ? "draggable-handle-sub" : 'draggable-handle';
-            var toolList;
-            var isAnchored;
             if (item.mount_point === 'admin') {
                 // force admin to end, just like 'Project.sitemap()' does
                 toolList = endTools;
@@ -312,17 +326,17 @@ var AdminNav = React.createClass({
                 toolList = tools;
                 isAnchored = false;
             }
-            var coreItem = <NavBarItem
+            let coreItem = (<NavBarItem
                 {..._this.props}
-                mount_point={ item.mount_point }
-                name={ item.name }
+                mount_point={item.mount_point}
+                name={item.name}
                 handleType={_handle}
                 isGrouper={item.children && item.children.length > 0}
-                url={ item.url }
-                key={ 'tb-item-' + _.uniqueId() }
-                is_anchored={ isAnchored }
-                options={ item.admin_options }
-            />;
+                url={item.url}
+                key={'tb-item-' + _.uniqueId()}
+                is_anchored={isAnchored}
+                options={item.admin_options}
+            />);
             if (subMenu) {
                 childOptionsOpen = _.contains(_.pluck(item.children, 'mount_point'),
                     this.props.currentOptionMenu.tool);
@@ -340,17 +354,17 @@ var AdminNav = React.createClass({
 
         return (
             <div className='react-drag'>
-                { anchoredTools }
+                {anchoredTools}
                 <ReactReorderable
-                    key={ 'reorder-' + _.uniqueId() }
+                    key={'reorder-' + _.uniqueId()}
                     handle={"." + _handle}
-                    mode={ isSubMenu ? 'list' : 'grid' }
-                    onDragStart={ _this.props.onToolDragStart }
-                    onDrop={ _this.props.onToolReorder }>
-                    { tools }
+                    mode={isSubMenu ? 'list' : 'grid'}
+                    onDragStart={_this.props.onToolDragStart}
+                    onDrop={_this.props.onToolReorder}>
+                    {tools}
                 </ReactReorderable>
-                { endTools }
-                { !isSubMenu && <div id="add-tool-container" className="unlocked-container">
+                {endTools}
+                {!isSubMenu && <div id="add-tool-container" className="unlocked-container">
                     <ToggleAddNewTool installableTools={this.props.installableTools}/>
                 </div>}
             </div>
@@ -364,10 +378,15 @@ var AdminNav = React.createClass({
 });
 
 var NavBarItemWithSubMenu = React.createClass({
+    propTypes: {
+        subMenu: React.PropTypes.arrayOf(ToolsPropType),
+        childOptionsOpen: React.PropTypes.string,
+        tool: React.PropTypes.objectOf(ToolsPropType)
+    },
     render: function() {
         return (
             <div className={"tb-item-container" + (this.props.childOptionsOpen ? " child-options-open" : "")}>
-                { this.props.tool }
+                {this.props.tool}
                 {this.props.subMenu &&
                 <AdminItemGroup key={_.uniqueId()}>
                     {this.props.subMenu}
@@ -383,6 +402,9 @@ var NavBarItemWithSubMenu = React.createClass({
  * @constructor
  */
 var AdminItemGroup = React.createClass({
+    propTypes: {
+        children: React.PropTypes.object
+    },
     render: function() {
         return (
             <div className="tb-item-grouper">
@@ -399,13 +421,14 @@ var AdminItemGroup = React.createClass({
  */
 var ToggleAdminButton = React.createClass({
     propTypes: {
+        handleButtonPush: React.PropTypes.func,
         visible: React.PropTypes.bool
     },
     render: function() {
         var classes = this.props.visible ? 'fa fa-unlock' : 'fa fa-lock';
         return (
-            <button id='toggle-admin-btn' onClick={ this.props.handleButtonPush } className='admin-toolbar-right'>
-                <i className={ classes }> </i>
+            <button id='toggle-admin-btn' onClick={this.props.handleButtonPush} className='admin-toolbar-right'>
+                <i className={classes}> </i>
             </button>
         );
     }
@@ -488,14 +511,14 @@ var Main = React.createClass({
     onToolReorder: function() {
         $('.react-drag.dragging').removeClass('dragging');
 
-        var params = {_session_id: $.cookie('_session_id')};
-        var toolNodes = $(ReactDOM.findDOMNode(this)).find('span.ordinal-item').not(".toolbar-grouper");
-        for (var i = 0; i < toolNodes.length; i++) {
+        let params = {_session_id: $.cookie('_session_id')};
+        let toolNodes = $(ReactDOM.findDOMNode(this)).find('span.ordinal-item').not(".toolbar-grouper");
+        for (let i = 0; i < toolNodes.length; i++) {
             params[i] = toolNodes[i].dataset.mountPoint;
         }
 
-        var _this = this;
-        var url = _getProjectUrl() + '/admin/mount_order';
+        let _this = this;
+        let url = _getProjectUrl() + '/admin/mount_order';
         $.ajax({
             type: 'POST',
             url: url,
@@ -532,24 +555,24 @@ var Main = React.createClass({
         var navBarSwitch = showAdmin => {
             var navbar;
             if (showAdmin) {
-                navbar = <AdminNav
-                    tools={ _this.state.data.menu }
-                    installableTools={ _this.state.data.installable_tools }
-                    data={ _this.state.data }
-                    onToolReorder={ _this.onToolReorder }
-                    onToolDragStart={ _this.onToolDragStart }
-                    editMode={ _this.state.visible }
-                    currentOptionMenu={ _this.state.currentOptionMenu }
-                    onOptionClick={ _this.handleShowOptionMenu }
+                navbar = (<AdminNav
+                    tools={_this.state.data.menu}
+                    installableTools={_this.state.data.installable_tools}
+                    data={_this.state.data}
+                    onToolReorder={_this.onToolReorder}
+                    onToolDragStart={_this.onToolDragStart}
+                    editMode={_this.state.visible}
+                    currentOptionMenu={_this.state.currentOptionMenu}
+                    onOptionClick={_this.handleShowOptionMenu}
                     currentToolOptions={this.state.currentToolOptions}
-                />;
+                />);
             } else {
-                navbar = <div>
+                navbar = (<div>
                     <NormalNavBar
-                        items={ _this.state.data.menu }
-                        installableTools={ _this.state.data.installable_tools }
+                        items={_this.state.data.menu}
+                        installableTools={_this.state.data.installable_tools}
                     />
-                </div>;
+                </div>);
             }
             return navbar;
         };
@@ -568,17 +591,17 @@ var Main = React.createClass({
 
         return (
             <div>
-                { navBar }
+                {navBar}
                 <div id='bar-config'>
                     {show_grouping_threshold &&
                     <GroupingThreshold
-                        onUpdateThreshold={ this.onUpdateThreshold }
-                        isHidden={ this.state.visible }
-                        initialValue={ parseInt(this.state.data.grouping_threshold, 10) }/> }
+                        onUpdateThreshold={this.onUpdateThreshold}
+                        isHidden={this.state.visible}
+                        initialValue={parseInt(this.state.data.grouping_threshold, 10)}/>}
                 </div>
                 <ToggleAdminButton
-                    handleButtonPush={ this.handleToggleAdmin }
-                    visible={ this.state.visible }/>
+                    handleButtonPush={this.handleToggleAdmin}
+                    visible={this.state.visible}/>
             </div>
         );
     }
