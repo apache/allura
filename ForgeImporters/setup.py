@@ -34,14 +34,11 @@ setup(name='ForgeImporters',
       entry_points="""
       # -*- Entry points: -*-
       [allura.project_importers]
-      google-code = forgeimporters.google.project:GoogleCodeProjectImporter
       trac = forgeimporters.trac.project:TracProjectImporter
       github = forgeimporters.github.project:GitHubProjectImporter
 
       [allura.importers]
       github-tracker = forgeimporters.github.tracker:GitHubTrackerImporter
-      google-code-tracker = forgeimporters.google.tracker:GoogleCodeTrackerImporter
-      google-code-repo = forgeimporters.google.code:GoogleRepoImporter
       github-wiki = forgeimporters.github.wiki:GitHubWikiImporter
       github-repo = forgeimporters.github.code:GitHubRepoImporter
       trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
