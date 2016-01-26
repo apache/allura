@@ -1087,3 +1087,11 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             iframe = overlay.find('iframe')
             assert_equal(header.getText(), 'Phone Verification Required')
             assert_equal(iframe.get('src'), '/p/phone_verification_fragment')
+
+
+class TestProjectImport(TestController):
+
+    def test_not_found(self):
+        self.app.get('/p/import_project/asdf/', status=404)
+
+    # positive tests exist within ForgeImporter package
