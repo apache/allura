@@ -4,6 +4,7 @@
     "indent": [2, 4],
     "jsx-quotes": [0],
     "quotes": [0],
+    "space-before-function-paren": [2, "never"],
     "operator-linebreak": [2, "before", { "overrides": { "?": "after", "&&": "after" } }],
     "require-jsdoc": [2, {"require": {
         "FunctionDeclaration": true,
@@ -29,11 +30,13 @@
   "env": {
     "es6": true,
     "jquery": true,
-    "browser": true
+    "browser": true,
+    "node": false
   },
-  "extends": "google",
+  "extends": "xo/browser",
   "ecmaFeatures": {
     "jsx": true,
+    "modules": false,
     "forOf": true,
     "blockBindings": true,
     "arrowFunctions": true,

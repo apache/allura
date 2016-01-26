@@ -17,7 +17,6 @@
        under the License.
 */
 /* eslint camelcase: 0 */
-/* eslint no-unused-vars: [2, {"args": "none", "varsIgnorePattern": "Main"}] */
 'use strict';
 
 /**
