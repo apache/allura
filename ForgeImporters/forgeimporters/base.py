@@ -420,7 +420,7 @@ class ToolImporter(object):
        `source` value of the :class:`ProjectImporter` for this importer to
        be discovered during full-project imports.  E.g.::
 
-            source = 'Google Code'
+            source = 'GitHub'
 
     .. py:attribute:: controller
 
