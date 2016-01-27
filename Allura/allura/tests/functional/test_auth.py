@@ -1334,7 +1334,7 @@ class TestPasswordReset(TestController):
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
-        with td.audits('Password recovery link sent to: test-admin@users.localhost', user=True):
+        with td.audits('Password recovery link sent to: '+ email.email, user=True):
             r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                                '_session_id': self.app.cookies['_session_id'],
                                                                })
