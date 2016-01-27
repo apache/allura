@@ -740,13 +740,14 @@ documentation:
 /notification:
   description: |
     Get current Site Notification
-  uriParameters:
-    cookie:
-      description: site-notification cookie value
-      example: "56a111736c4ff90011b9f932-1-False"
-    url:
-      description: page where must be shown notification
-      example: "/p/test-project"
-    tool_name:
-      description: tool's name which used on page
-      exaple: "Git"
+  get:
+    queryParameters:
+      cookie:
+        description: site-notification cookie value
+        example: "56a111736c4ff90011b9f932-1-False"
+      url:
+        description: page where notification will be shown
+        example: "/p/test-project"
+      tool_name:
+        description: tool's name for current page
+        example: "Git"
