@@ -129,7 +129,7 @@ class Repository(M.Repository):
             tmp_repo.git.fetch(mr.downstream_repo.full_fs_path, mr.source_branch)
             author = h.really_unicode(c.user.display_name or c.user.username)
             tmp_repo.git.config('user.name', author.encode('utf8'))
-            tmp_repo.git.config('user.email', '')
+            tmp_repo.git.config('user.email', 'allura@localhost')  # a public email alias could be nice here
             msg = u'Merge {} branch {} into {}\n\n{}'.format(
                 mr.downstream_repo.url(),
                 mr.source_branch,
