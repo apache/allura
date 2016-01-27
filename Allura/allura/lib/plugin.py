@@ -1324,7 +1324,7 @@ class ThemeProvider(object):
 
         if note.page_regex and re.search(note.page_regex, url) is None:
             return None
-        if note.page_tool_type and (c.app is None or tool_name.lower() != note.page_tool_type.lower()):
+        if note.page_tool_type and tool_name.lower() != note.page_tool_type.lower():
             return None
 
         cookie = site_notification_cookie_value.split('-')
