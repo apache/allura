@@ -19,6 +19,7 @@
 import logging
 import urllib
 import json
+import os
 
 # Non-stdlib imports
 from pylons import tmpl_context as c, app_globals as g
@@ -34,6 +35,7 @@ from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminCont
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
+from allura.lib.utils import JSONForExport
 
 # Local imports
 from forgediscussion import model as DM
@@ -237,12 +239,38 @@ class ForgeDiscussionApp(Application):
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"forums": [')
-        forums = DM.Forum.query.find(dict(app_config_id=self.config._id))
+        forums = list(DM.Forum.query.find(dict(app_config_id=self.config._id)))
+        if with_attachments:
+            GenericJSON = JSONForExport
+            for forum in forums:
+                self.export_attachments(forum.threads, export_path)
+        else:
+            GenericJSON = jsonify.GenericJSON
         for i, forum in enumerate(forums):
             if i > 0:
                 f.write(',')
-            json.dump(forum, f, cls=jsonify.GenericJSON, indent=2)
+            json.dump(forum, f, cls=GenericJSON, indent=2)
         f.write(']}')
+
+    def export_attachments(self, threads, export_path):
+        for thread in threads:
+            attachment_path = self.get_attachemnt_path(export_path, str(thread.artifact._id), thread._id)
+            if not os.path.exists(attachment_path):
+                os.makedirs(attachment_path)
+            for post in thread.query_posts(status='ok'):
+                post_path = os.path.join(
+                    attachment_path,
+                    post.slug
+                )
+                if not os.path.exists(post_path):
+                    os.makedirs(post_path)
+                for attachment in post.attachments:
+                    path = os.path.join(
+                        post_path,
+                        attachment.filename
+                    )
+                    with open(path, 'w') as fl:
+                        fl.write(attachment.rfile().read())
 
 
 class ForumAdminController(DefaultAdminController):

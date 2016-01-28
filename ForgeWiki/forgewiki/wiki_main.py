@@ -357,7 +357,7 @@ The wiki uses [Markdown](%s) syntax.
 
     def export_attachments(self, pages, export_path):
         for page in pages:
-            attachment_path = self.get_attachemnt_path(export_path, page.title)
+            attachment_path = self.get_attachemnt_path(export_path, str(page._id))
             if not os.path.exists(attachment_path):
                 os.makedirs(attachment_path)
             for attachment in page.attachments:

@@ -63,13 +63,13 @@ class Discussion(Artifact, ActivityObject):
     threads = RelationProperty('Thread', via='discussion_id')
     posts = RelationProperty('Post', via='discussion_id')
 
-    def __json__(self, limit=None, posts_limit=None):
+    def __json__(self, limit=None, posts_limit=None, is_export=False):
         return dict(
             _id=str(self._id),
             shortname=self.shortname,
             name=self.name,
             description=self.description,
-            threads=[t.__json__(limit=posts_limit) for t
+            threads=[t.__json__(limit=posts_limit, is_export=is_export) for t
                      in self.thread_class().query.find(dict(discussion_id=self._id)).limit(limit or 0)]
         )
 

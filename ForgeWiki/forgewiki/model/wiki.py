@@ -128,7 +128,7 @@ class Page(VersionedArtifact, ActivityObject):
         return [dict(bytes=attach.length,
                      path=os.path.join(
                          self.app_config.options.mount_point,
-                         self.title,
+                         str(self._id),
                          attach.filename)) for attach in self.attachments]
 
     def attachments_for_json(self):
