@@ -178,7 +178,7 @@ class Thread(Artifact, ActivityObject):
         return [dict(bytes=attach.length,
                      path=os.path.join(
                          self.artifact.app_config.options.mount_point,
-                         self.artifact.title,
+                         str(self.artifact._id),
                          self._id,
                          page.slug,
                          attach.filename)

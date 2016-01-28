@@ -21,6 +21,7 @@ import json
 import difflib
 from datetime import datetime, timedelta
 from bson import ObjectId
+import os
 
 import pymongo
 from pymongo.errors import OperationFailure
@@ -1106,14 +1107,28 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             ticket.discussion_thread.add_post(text=message, notify=notify)
         return ticket
 
-    def __json__(self, posts_limit=None):
+    def attachments_for_export(self):
+        return [dict(bytes=attach.length,
+                     path=os.path.join(
+                         self.app_config.options.mount_point,
+                         str(self._id),
+                         attach.filename)) for attach in self.attachments]
+
+    def attachments_for_json(self):
+        return [dict(bytes=attach.length,
+                     url=h.absurl(attach.url())) for attach in self.attachments]
+
+    def __json__(self, posts_limit=None, is_export=False):
         parents_json = {}
         for parent in reversed(type(self).mro()):
             if parent != type(self) and hasattr(parent, '__json__'):
                 kwargs = {}
                 if parent == VersionedArtifact:
                     kwargs['posts_limit'] = posts_limit
-                parents_json.update(parent.__json__(self, **kwargs))
+                try:
+                    parents_json.update(parent.__json__(self, is_export=True, **kwargs))
+                except:
+                    parents_json.update(parent.__json__(self, **kwargs))
 
         return dict(parents_json,
                     created_date=self.created_date,
@@ -1129,10 +1144,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     status=self.status,
                     private=self.private,
                     discussion_disabled=self.discussion_disabled,
-                    attachments=[dict(bytes=attach.length,
-                                      url=h.absurl(
-                                          attach.url(
-                                          ))) for attach in self.attachments],
+                    attachments=self.attachments_for_export() if is_export else self.attachments_for_json(),
                     custom_fields=dict(self.custom_fields))
 
     @classmethod

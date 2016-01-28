@@ -23,6 +23,7 @@ from functools import partial
 from urllib import urlencode, unquote
 from webob import exc
 import json
+import os
 
 # Non-stdlib imports
 import pkg_resources
@@ -479,33 +480,65 @@ class ForgeTrackerApp(Application):
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"tickets": [')
-        tickets = TM.Ticket.query.find(dict(
+        tickets = list(TM.Ticket.query.find(dict(
             app_config_id=self.config._id,
             # backwards compat for old tickets that don't have it set
             deleted={'$ne': True},
-        ))
+        )))
+        if with_attachments:
+            GenericClass = utils.JSONForExport
+            self.export_attachments(tickets, export_path)
+        else:
+            GenericClass = jsonify.GenericJSON
+
         for i, ticket in enumerate(tickets):
             if i > 0:
                 f.write(',')
-            json.dump(ticket, f, cls=jsonify.GenericJSON, indent=2)
+            json.dump(ticket, f, cls=GenericClass, indent=2)
         f.write('],\n"tracker_config":')
-        json.dump(self.config, f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(self.config, f, cls=GenericClass, indent=2)
         f.write(',\n"milestones":')
         milestones = self.milestones
-        json.dump(milestones, f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(milestones, f, cls=GenericClass, indent=2)
         f.write(',\n"custom_fields":')
         json.dump(self.globals.custom_fields, f,
-                  cls=jsonify.GenericJSON, indent=2)
+                  cls=GenericClass, indent=2)
         f.write(',\n"open_status_names":')
         json.dump(self.globals.open_status_names, f,
-                  cls=jsonify.GenericJSON, indent=2)
+                  cls=GenericClass, indent=2)
         f.write(',\n"closed_status_names":')
         json.dump(self.globals.closed_status_names, f,
-                  cls=jsonify.GenericJSON, indent=2)
+                  cls=GenericClass, indent=2)
         f.write(',\n"saved_bins":')
         bins = self.bins
-        json.dump(bins, f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(bins, f, cls=GenericClass, indent=2)
         f.write('}')
+
+    def export_attachments(self, tickets, export_path):
+        for ticket in tickets:
+            attachment_path = self.get_attachemnt_path(export_path, str(ticket._id))
+            if not os.path.exists(attachment_path):
+                os.makedirs(attachment_path)
+            for attachment in ticket.attachments:
+                path = os.path.join(attachment_path, attachment.filename)
+                with open(path, 'w') as fl:
+                    fl.write(attachment.rfile().read())
+
+            for post in ticket.discussion_thread.query_posts(status='ok'):
+                post_path = os.path.join(
+                    attachment_path,
+                    ticket.discussion_thread._id,
+                    post.slug
+                )
+                if not os.path.exists(post_path):
+                    os.makedirs(post_path)
+                for attachment in post.attachments:
+                    path = os.path.join(
+                        post_path,
+                        attachment.filename
+                    )
+                    with open(path, 'w') as fl:
+                        fl.write(attachment.rfile().read())
 
     @property
     def bins(self):
