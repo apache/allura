@@ -19,6 +19,7 @@
 import logging
 import urllib2
 import json
+import os
 
 # Non-stdlib imports
 import pymongo
@@ -38,6 +39,7 @@ from ming.orm import session
 from allura.app import Application, SitemapEntry, ConfigOption
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
+from allura.lib.utils import JSONForExport
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import has_access, require_access
@@ -207,12 +209,38 @@ class ForgeBlogApp(Application):
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"posts": [')
-        posts = BM.BlogPost.query.find(dict(app_config_id=self.config._id))
+        posts = list(BM.BlogPost.query.find(dict(app_config_id=self.config._id)))
+        if with_attachments:
+            GenericJSON = JSONForExport
+            self.export_attachments(posts, export_path)
+        else:
+            GenericJSON = jsonify.GenericJSON
         for i, post in enumerate(posts):
             if i > 0:
                 f.write(',')
-            json.dump(post, f, cls=jsonify.GenericJSON, indent=2)
+            json.dump(post, f, cls=GenericJSON, indent=2)
         f.write(']}')
+
+    def export_attachments(self, articles, export_path):
+        for article in articles:
+            attachment_path = self.get_attachment_export_path(export_path, str(article._id))
+            if not os.path.exists(attachment_path):
+                os.makedirs(attachment_path)
+            for post in article.discussion_thread.query_posts(status='ok'):
+                post_path = os.path.join(
+                    attachment_path,
+                    article.discussion_thread._id,
+                    post.slug
+                )
+                if not os.path.exists(post_path):
+                    os.makedirs(post_path)
+                for attachment in post.attachments:
+                    path = os.path.join(
+                        post_path,
+                        attachment.filename
+                    )
+                    with open(path, 'w') as fl:
+                        fl.write(attachment.rfile().read())
 
 
 class RootController(BaseController, FeedController):

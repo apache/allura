@@ -288,8 +288,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             subject='%s discussion' % post.title)
         return post
 
-    def __json__(self, posts_limit=None):
-        return dict(super(BlogPost, self).__json__(posts_limit=posts_limit),
+    def __json__(self, posts_limit=None, is_export=False):
+        return dict(super(BlogPost, self).__json__(posts_limit=posts_limit, is_export=is_export),
                     author=self.author().username,
                     title=self.title,
                     url=h.absurl('/rest' + self.url()),

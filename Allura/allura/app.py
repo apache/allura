@@ -758,7 +758,7 @@ class Application(object):
             'mount_label': self.config.options.mount_label
         }
 
-    def get_attachemnt_path(self, path='', *args):
+    def get_attachment_export_path(self, path='', *args):
         return os.path.join(path, self.config.options.mount_point, *args)
 
 

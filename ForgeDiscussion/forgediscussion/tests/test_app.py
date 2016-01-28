@@ -21,12 +21,17 @@
 
 import tempfile
 import json
+import os
 
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
+from cStringIO import StringIO
+from ming.orm import ThreadLocalORMSession
+from cgi import FieldStorage
 
 from allura import model as M
 from forgediscussion.tests.functional.test_rest import TestDiscussionApiBase
+from forgediscussion.model.forum import Forum
 
 
 class TestBulkExport(TestDiscussionApiBase):
@@ -60,3 +65,31 @@ class TestBulkExport(TestDiscussionApiBase):
         assert_equal(forums[1]['shortname'], u'héllo')
         assert_equal(forums[1]['description'], u'Say héllo here')
         assert_equal(forums[1]['name'], u'Say Héllo')
+
+    def test_export_with_attachments(self):
+        project = M.Project.query.get(shortname='test')
+        discussion = project.app_instance('discussion')
+        post = Forum.query.get(shortname='general').sorted_threads[0].first_post
+        test_file1 = FieldStorage()
+        test_file1.name = 'file_info'
+        test_file1.filename = 'test_file'
+        test_file1.file = StringIO('test file1\n')
+        post.add_attachment(test_file1)
+        ThreadLocalORMSession.flush_all()
+
+        f = tempfile.TemporaryFile()
+        temp_dir = tempfile.mkdtemp()
+        discussion.bulk_export(f, temp_dir, True)
+        f.seek(0)
+        discussion = json.loads(f.read())
+        forums = sorted(discussion['forums'], key=lambda x: x['name'])
+        threads = sorted(forums[0]['threads'], key=lambda x: x['subject'])
+        file_path = os.path.join(
+            'discussion',
+            str(post.discussion_id),
+            str(post.thread_id),
+            post.slug,
+            'test_file'
+        )
+        assert_equal(threads[0]['posts'][0]['attachments'][0]['path'], file_path)
+        os.path.exists(file_path)

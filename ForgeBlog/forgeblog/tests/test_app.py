@@ -19,15 +19,19 @@
 
 import tempfile
 import json
+import os
 
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
+from cStringIO import StringIO
+from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from forgeblog import model as BM
+from cgi import FieldStorage
 
 
 class TestBulkExport(object):
@@ -72,3 +76,40 @@ class TestBulkExport(object):
                      ['the firstlabel', 'the second label'])
         assert_equal(blog['posts'][1]['discussion_thread']
                      ['posts'][0]['text'], 'test comment')
+
+    @td.with_tool('test', 'Blog', 'blog')
+    def test_export_with_attachments(self):
+        project = M.Project.query.get(shortname='test')
+        blog = project.app_instance('blog')
+        with h.push_context('test', 'blog', neighborhood='Projects'):
+            post = BM.BlogPost.new(
+                title='Test title',
+                text='test post',
+                labels=['the firstlabel', 'the second label'],
+                delete=None
+            )
+            ThreadLocalORMSession.flush_all()
+            test_file1 = FieldStorage()
+            test_file1.name = 'file_info'
+            test_file1.filename = 'test_file'
+            test_file1.file = StringIO('test file1\n')
+            p = post.discussion_thread.add_post(text='test comment')
+            p.add_multiple_attachments(test_file1)
+            ThreadLocalORMSession.flush_all()
+        f = tempfile.TemporaryFile()
+        temp_dir = tempfile.mkdtemp()
+        blog.bulk_export(f, temp_dir, True)
+        f.seek(0)
+        blog = json.loads(f.read())
+        blog['posts'] = sorted(
+            blog['posts'], key=lambda x: x['title'], reverse=True)
+
+        file_path = 'blog/{}/{}/{}/test_file'.format(
+            post._id,
+            post.discussion_thread._id,
+            list(post.discussion_thread.post_class().query.find())[0].slug
+        )
+        print blog['posts'][0]['discussion_thread']['posts'][0]
+        assert_equal(blog['posts'][0]['discussion_thread']['posts'][0]
+                     ['attachments'][0]['path'], file_path)
+        assert os.path.exists(os.path.join(temp_dir, file_path))

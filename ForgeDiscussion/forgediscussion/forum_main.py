@@ -254,7 +254,7 @@ class ForgeDiscussionApp(Application):
 
     def export_attachments(self, threads, export_path):
         for thread in threads:
-            attachment_path = self.get_attachemnt_path(export_path, str(thread.artifact._id), thread._id)
+            attachment_path = self.get_attachment_export_path(export_path, str(thread.artifact._id), thread._id)
             if not os.path.exists(attachment_path):
                 os.makedirs(attachment_path)
             for post in thread.query_posts(status='ok'):

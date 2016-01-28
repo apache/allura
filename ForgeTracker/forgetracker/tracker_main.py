@@ -516,7 +516,7 @@ class ForgeTrackerApp(Application):
 
     def export_attachments(self, tickets, export_path):
         for ticket in tickets:
-            attachment_path = self.get_attachemnt_path(export_path, str(ticket._id))
+            attachment_path = self.get_attachment_export_path(export_path, str(ticket._id))
             if not os.path.exists(attachment_path):
                 os.makedirs(attachment_path)
             for attachment in ticket.attachments:

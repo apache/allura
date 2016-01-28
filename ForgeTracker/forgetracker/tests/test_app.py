@@ -18,9 +18,13 @@
 import tempfile
 import json
 import operator
+import os
 
 from nose.tools import assert_equal, assert_true
 from pylons import tmpl_context as c
+from cgi import FieldStorage
+from cStringIO import StringIO
+from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -37,8 +41,15 @@ class TestBulkExport(TrackerTestController):
         self.tracker = self.project.app_instance('bugs')
         self.new_ticket(summary='foo', _milestone='1.0')
         self.new_ticket(summary='bar', _milestone='2.0')
-        ticket = TM.Ticket.query.find(dict(summary='foo')).first()
-        ticket.discussion_thread.add_post(text='silly comment')
+        self.ticket = TM.Ticket.query.find(dict(summary='foo')).first()
+        self.post = self.ticket.discussion_thread.add_post(text='silly comment')
+        ThreadLocalORMSession.flush_all()
+        test_file1 = FieldStorage()
+        test_file1.name = 'file_info'
+        test_file1.filename = 'test_file'
+        test_file1.file = StringIO('test file1\n')
+        self.post.add_attachment(test_file1)
+        ThreadLocalORMSession.flush_all()
 
     def test_bulk_export(self):
         # Clear out some context vars, to properly simulate how this is run from the export task
@@ -72,3 +83,22 @@ class TestBulkExport(TrackerTestController):
         saved_bins_summaries = [bin['summary']
                                 for bin in tracker['saved_bins']]
         assert_true('Closed Tickets' in saved_bins_summaries)
+
+    def test_export_with_attachments(self):
+
+        f = tempfile.TemporaryFile()
+        temp_dir = tempfile.mkdtemp()
+        self.tracker.bulk_export(f, temp_dir, True)
+        f.seek(0)
+        tracker = json.loads(f.read())
+        tickets = sorted(tracker['tickets'],
+                         key=operator.itemgetter('summary'))
+        file_path = os.path.join(
+            'bugs',
+            str(self.ticket._id),
+            str(self.post.thread_id),
+            self.post.slug,
+            'test_file'
+        )
+        assert_equal(tickets[1]['discussion_thread']['posts'][0]['attachments'][0]['path'], file_path)
+        os.path.exists(file_path)

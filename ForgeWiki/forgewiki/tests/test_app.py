@@ -24,12 +24,12 @@ import os
 from cStringIO import StringIO
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
+from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgewiki import model as WM
-from ming.orm import session, ThreadLocalORMSession
 
 
 class TestBulkExport(object):
@@ -89,11 +89,11 @@ class TestBulkExport(object):
         assert_equal(len(pages[2]['discussion_thread']['posts']), 0)
 
     def add_page_with_attachmetns(self):
-        page = WM.Page.upsert('ZTest_title')
-        page.text = 'test_text'
-        page.mod_date = datetime.datetime(2013, 7, 5)
-        page.labels = ['test_label1', 'test_label2']
-        page.attach('test_file', StringIO('test string'))
+        self.page = WM.Page.upsert('ZTest_title')
+        self.page.text = 'test_text'
+        self.page.mod_date = datetime.datetime(2013, 7, 5)
+        self.page.labels = ['test_label1', 'test_label2']
+        self.page.attach('test_file', StringIO('test string'))
         ThreadLocalORMSession.flush_all()
 
     def test_bulk_export_with_attachmetns(self):
@@ -105,12 +105,9 @@ class TestBulkExport(object):
         wiki = json.loads(f.read())
         pages = sorted(wiki['pages'], key=operator.itemgetter('title'))
 
-        assert pages[3]['attachments'][0]['path'] == 'wiki/ZTest_title/test_file'
-        assert os.path.exists(os.path.join(temp_dir, 'wiki', 'A New Hope'))
-        assert os.path.exists(os.path.join(temp_dir, 'wiki', 'Return of the Jedi'))
-        assert os.path.exists(os.path.join(temp_dir, 'wiki', 'The Empire Strikes Back'))
-        assert os.path.exists(os.path.join(temp_dir, 'wiki', 'ZTest_title', 'test_file'))
-        with open(os.path.join(temp_dir, 'wiki', 'ZTest_title', 'test_file')) as fl:
+        assert pages[3]['attachments'][0]['path'] == 'wiki/{}/test_file'.format(self.page._id)
+        assert os.path.exists(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file'))
+        with open(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file')) as fl:
             assert fl.read() == 'test string'
 
     def test_bulk_export_without_attachments(self):
@@ -123,5 +120,5 @@ class TestBulkExport(object):
         pages = sorted(wiki['pages'], key=operator.itemgetter('title'))
 
         assert pages[3]['attachments'][0].get('path', None) is None
-        assert pages[3]['attachments'][0]['url'] != 'wiki/ZTest_title/test_file'
-        assert not os.path.exists(os.path.join(temp_dir, 'wiki', 'ZTest_title', 'test_file'))
+        assert pages[3]['attachments'][0]['url'] != 'wiki/{}/test_file'.format(self.page._id)
+        assert not os.path.exists(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file'))
