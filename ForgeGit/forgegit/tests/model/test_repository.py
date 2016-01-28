@@ -642,7 +642,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(
             tmp_repo.git.config.call_args_list,
             [mock.call('user.name', 'Test Admin'),
-             mock.call('user.email', '')])
+             mock.call('user.email', 'allura@localhost')])
         msg = u'Merge downstream-repo-url branch source-branch into target-branch'
         msg += u'\n\nhttp://localhost/merge-request/1/'
         tmp_repo.git.merge.assert_called_once_with('cid', '-m', msg)
