@@ -107,7 +107,7 @@ class ForgeLinkApp(Application):
         "Remove all the tool's artifacts from the database"
         super(ForgeLinkApp, self).uninstall(project)
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         json.dump(RootRestController(self).link_json(),
                   f, cls=jsonify.GenericJSON, indent=2)
 

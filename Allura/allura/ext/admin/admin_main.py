@@ -174,7 +174,7 @@ class AdminApp(Application):
     def install(self, project):
         pass
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         json.dump(self.project, f, cls=jsonify.GenericJSON, indent=2)
 
 

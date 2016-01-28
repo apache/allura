@@ -174,43 +174,36 @@ class Thread(Artifact, ActivityObject):
         new_doc.pop('num_views', None)
         return old_doc != new_doc
 
-    def __json__(self, limit=None, page=None, is_export=False):
-        if is_export:
-            posts = [dict(slug=p.slug,
-                        text=p.text,
-                        subject=p.subject,
-                        author=p.author().username,
-                        timestamp=p.timestamp,
-                        last_edited=p.last_edit_date,
-                        attachments=[dict(bytes=attach.length,
-                                          path=os.path.join(
-                                              self.artifact.app_config.options.mount_point,
-                                              self.artifact.title,
-                                              self._id,
-                                              p._id,
-                                              attach.filename)
-                                          ) for attach in p.attachments])
-                   for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
-                   ]
+    def attachment_for_export(self, page):
+        return [dict(bytes=attach.length,
+                     path=os.path.join(
+                         self.artifact.app_config.options.mount_point,
+                         self.artifact.title,
+                         self._id,
+                         page.slug,
+                         attach.filename)
+                     ) for attach in page.attachments]
 
-        else:
-            posts = [dict(slug=p.slug,
-                        text=p.text,
-                        subject=p.subject,
-                        author=p.author().username,
-                        timestamp=p.timestamp,
-                        last_edited=p.last_edit_date,
-                        attachments=[dict(bytes=attach.length,
-                                          url=h.absurl(attach.url())) for attach in p.attachments])
-                   for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
-                   ]
+    def attachemtns_for_json(self, page):
+        return [dict(bytes=attach.length,
+                     url=h.absurl(attach.url())) for attach in page.attachments]
+
+    def __json__(self, limit=None, page=None, is_export=False):
         return dict(
             _id=self._id,
             discussion_id=str(self.discussion_id),
             subject=self.subject,
             limit=limit,
             page=page,
-            posts=posts
+            posts=[dict(slug=p.slug,
+                        text=p.text,
+                        subject=p.subject,
+                        author=p.author().username,
+                        timestamp=p.timestamp,
+                        last_edited=p.last_edit_date,
+                        attachments=self.attachment_for_export(p) if is_export else self.attachemtns_for_json(p))
+                   for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
+                   ]
         )
 
     @property

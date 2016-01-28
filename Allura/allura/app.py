@@ -723,7 +723,7 @@ class Application(object):
                 text=text,
                 subject=message['headers'].get('Subject', 'no subject'))
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         """Export all artifacts in the tool into json file.
 
         :param f: File Object to write to
@@ -757,6 +757,9 @@ class Application(object):
             'tool_label': self.tool_label,
             'mount_label': self.config.options.mount_label
         }
+
+    def get_attachemnt_path(self, path='', *args):
+        return os.path.join(path, self.config.options.mount_point, *args)
 
 
 class AdminControllerMixin(object):

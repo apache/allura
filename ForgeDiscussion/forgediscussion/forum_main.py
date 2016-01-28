@@ -235,7 +235,7 @@ class ForgeDiscussionApp(Application):
         DM.ForumPost.query.remove(dict(app_config_id=self.config._id))
         super(ForgeDiscussionApp, self).uninstall(project)
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"forums": [')
         forums = DM.Forum.query.find(dict(app_config_id=self.config._id))
         for i, forum in enumerate(forums):

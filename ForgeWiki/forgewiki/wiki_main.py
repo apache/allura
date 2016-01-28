@@ -38,7 +38,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController, Config
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
-from allura.lib.utils import is_ajax, GenericJSON
+from allura.lib.utils import is_ajax, JSONForExport
 from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
@@ -345,8 +345,8 @@ The wiki uses [Markdown](%s) syntax.
             app_config_id=self.config._id,
             deleted=False)))
         if with_attachments:
-            GenericClass = GenericJSON
-            self.export_attachment(pages, export_path)
+            GenericClass = JSONForExport
+            self.export_attachments(pages, export_path)
         else:
             GenericClass = jsonify.GenericJSON
         for i, page in enumerate(pages):
@@ -355,13 +355,9 @@ The wiki uses [Markdown](%s) syntax.
             json.dump(page, f, cls=GenericClass, indent=2)
         f.write(']}')
 
-    def export_attachment(self, pages, export_path):
+    def export_attachments(self, pages, export_path):
         for page in pages:
-            attachment_path = os.path.join(
-                export_path,
-                self.config.options.mount_point,
-                page.title
-            )
+            attachment_path = self.get_attachemnt_path(export_path, page.title)
             if not os.path.exists(attachment_path):
                 os.makedirs(attachment_path)
             for attachment in page.attachments:
@@ -373,7 +369,7 @@ The wiki uses [Markdown](%s) syntax.
                 post_path = os.path.join(
                     attachment_path,
                     page.discussion_thread._id,
-                    post._id
+                    post.slug
                 )
                 if not os.path.exists(post_path):
                     os.makedirs(post_path)

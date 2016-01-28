@@ -124,21 +124,23 @@ class Page(VersionedArtifact, ActivityObject):
         d.update(summary=self.title)
         return d
 
+    def attachments_for_export(self):
+        return [dict(bytes=attach.length,
+                     path=os.path.join(
+                         self.app_config.options.mount_point,
+                         self.title,
+                         attach.filename)) for attach in self.attachments]
+
+    def attachments_for_json(self):
+        return [dict(bytes=attach.length,
+                     url=h.absurl(attach.url())) for attach in self.attachments]
+
     def __json__(self, posts_limit=None, is_export=False):
-        if is_export:
-            attachments = [dict(bytes=attach.length,
-                                path=os.path.join(
-                                    self.app_config.options.mount_point,
-                                    self.title,
-                                    attach.filename)) for attach in self.attachments]
-        else:
-            attachments = [dict(bytes=attach.length,
-                                url=h.absurl(attach.url())) for attach in self.attachments]
         return dict(super(Page, self).__json__(posts_limit=posts_limit, is_export=is_export),
                     title=self.title,
                     text=self.text,
                     labels=list(self.labels),
-                    attachments=attachments)
+                    attachments=self.attachments_for_export() if is_export else self.attachments_for_json())
 
     def commit(self):
         ss = VersionedArtifact.commit(self)

@@ -477,7 +477,7 @@ class ForgeTrackerApp(Application):
         TM.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"tickets": [')
         tickets = TM.Ticket.query.find(dict(
             app_config_id=self.config._id,

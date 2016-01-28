@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 
 @task
-def bulk_export(tools, filename=None, send_email=True):
+def bulk_export(tools, filename=None, send_email=True, with_attachments=False):
     '''
     Export the current project data.  Send notification to current user.
 
@@ -42,12 +42,12 @@ def bulk_export(tools, filename=None, send_email=True):
     '''
     # it's very handy to use c.* within a @task,
     # but let's be explicit and keep it separate from the main code
-    return BulkExport().process(c.project, tools, c.user, filename, send_email)
+    return BulkExport().process(c.project, tools, c.user, filename, send_email, with_attachments)
 
 
 class BulkExport(object):
 
-    def process(self, project, tools, user, filename=None, send_email=True):
+    def process(self, project, tools, user, filename=None, send_email=True, with_attachments=False):
         export_filename = filename or project.bulk_export_filename()
         export_path = self.get_export_path(
             project.bulk_export_path(), export_filename)
@@ -55,7 +55,7 @@ class BulkExport(object):
             os.makedirs(export_path)
         apps = [project.app_instance(tool) for tool in tools]
         exportable = self.filter_exportable(apps)
-        results = [self.export(export_path, app) for app in exportable]
+        results = [self.export(export_path, app, with_attachments) for app in exportable]
         exported = self.filter_successful(results)
         if exported:
             zipdir(export_path,
@@ -107,16 +107,12 @@ class BulkExport(object):
     def filter_exportable(self, apps):
         return [app for app in apps if app and app.exportable]
 
-    def export(self, export_path, app):
+    def export(self, export_path, app, with_attachments=False):
         tool = app.config.options.mount_point
         json_file = os.path.join(export_path, '%s.json' % tool)
         try:
             with open(json_file, 'w') as f:
-                try:
-                    app.bulk_export(f, export_path, True)
-                except Exception, e:
-                    log.info(e)
-                    app.bulk_export(f)
+                app.bulk_export(f, export_path, with_attachments)
         except Exception:
             log.error('Error exporting: %s on %s', tool,
                       app.project.shortname, exc_info=True)

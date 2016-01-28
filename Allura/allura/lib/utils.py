@@ -670,9 +670,8 @@ def is_ajax(request):
     return False
 
 
-class GenericJSON(json.JSONEncoder):
+class JSONForExport(tg.jsonify.GenericJSON):
     def default(self, obj):
         if hasattr(obj, '__json__') and callable(obj.__json__):
             return obj.__json__(is_export=True)
-        elif isinstance(obj, (datetime.date, datetime.datetime)):
-            return str(obj)
+        return super(JSONForExport, self).default(obj)
