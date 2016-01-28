@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import logging
 from datetime import datetime
 
@@ -173,14 +174,27 @@ class Thread(Artifact, ActivityObject):
         new_doc.pop('num_views', None)
         return old_doc != new_doc
 
-    def __json__(self, limit=None, page=None):
-        return dict(
-            _id=self._id,
-            discussion_id=str(self.discussion_id),
-            subject=self.subject,
-            limit=limit,
-            page=page,
-            posts=[dict(slug=p.slug,
+    def __json__(self, limit=None, page=None, is_export=False):
+        if is_export:
+            posts = [dict(slug=p.slug,
+                        text=p.text,
+                        subject=p.subject,
+                        author=p.author().username,
+                        timestamp=p.timestamp,
+                        last_edited=p.last_edit_date,
+                        attachments=[dict(bytes=attach.length,
+                                          path=os.path.join(
+                                              self.artifact.app_config.options.mount_point,
+                                              self.artifact.title,
+                                              self._id,
+                                              p._id,
+                                              attach.filename)
+                                          ) for attach in p.attachments])
+                   for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
+                   ]
+
+        else:
+            posts = [dict(slug=p.slug,
                         text=p.text,
                         subject=p.subject,
                         author=p.author().username,
@@ -190,6 +204,13 @@ class Thread(Artifact, ActivityObject):
                                           url=h.absurl(attach.url())) for attach in p.attachments])
                    for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
                    ]
+        return dict(
+            _id=self._id,
+            discussion_id=str(self.discussion_id),
+            subject=self.subject,
+            limit=limit,
+            page=page,
+            posts=posts
         )
 
     @property

@@ -17,6 +17,8 @@
 
 from datetime import datetime
 import difflib
+import os
+
 # g is a namespace for globally accessable app helpers
 from pylons import app_globals as g
 from pylons import tmpl_context as context
@@ -122,13 +124,21 @@ class Page(VersionedArtifact, ActivityObject):
         d.update(summary=self.title)
         return d
 
-    def __json__(self, posts_limit=None):
-        return dict(super(Page, self).__json__(posts_limit=posts_limit),
+    def __json__(self, posts_limit=None, is_export=False):
+        if is_export:
+            attachments = [dict(bytes=attach.length,
+                                path=os.path.join(
+                                    self.app_config.options.mount_point,
+                                    self.title,
+                                    attach.filename)) for attach in self.attachments]
+        else:
+            attachments = [dict(bytes=attach.length,
+                                url=h.absurl(attach.url())) for attach in self.attachments]
+        return dict(super(Page, self).__json__(posts_limit=posts_limit, is_export=is_export),
                     title=self.title,
                     text=self.text,
                     labels=list(self.labels),
-                    attachments=[dict(bytes=attach.length,
-                                      url=h.absurl(attach.url())) for attach in self.attachments])
+                    attachments=attachments)
 
     def commit(self):
         ss = VersionedArtifact.commit(self)

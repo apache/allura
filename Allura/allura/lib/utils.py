@@ -668,3 +668,11 @@ def is_ajax(request):
     if request.headers.get('X-Requested-With', None) == 'XMLHttpRequest':
         return True
     return False
+
+
+class GenericJSON(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, '__json__') and callable(obj.__json__):
+            return obj.__json__(is_export=True)
+        elif isinstance(obj, (datetime.date, datetime.datetime)):
+            return str(obj)

@@ -18,6 +18,7 @@
 #-*- python -*-
 import json
 import logging
+import os
 from pprint import pformat
 from urllib import unquote
 
@@ -37,7 +38,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController, Config
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access, has_access
-from allura.lib.utils import is_ajax
+from allura.lib.utils import is_ajax, GenericJSON
 from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
@@ -338,16 +339,51 @@ The wiki uses [Markdown](%s) syntax.
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
-    def bulk_export(self, f):
+    def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"pages": [')
-        pages = WM.Page.query.find(dict(
+        pages = list(WM.Page.query.find(dict(
             app_config_id=self.config._id,
-            deleted=False))
+            deleted=False)))
+        if with_attachments:
+            GenericClass = GenericJSON
+            self.export_attachment(pages, export_path)
+        else:
+            GenericClass = jsonify.GenericJSON
         for i, page in enumerate(pages):
             if i > 0:
                 f.write(',')
-            json.dump(page, f, cls=jsonify.GenericJSON, indent=2)
+            json.dump(page, f, cls=GenericClass, indent=2)
         f.write(']}')
+
+    def export_attachment(self, pages, export_path):
+        for page in pages:
+            attachment_path = os.path.join(
+                export_path,
+                self.config.options.mount_point,
+                page.title
+            )
+            if not os.path.exists(attachment_path):
+                os.makedirs(attachment_path)
+            for attachment in page.attachments:
+                path = os.path.join(attachment_path, attachment.filename)
+                with open(path, 'w') as fl:
+                    fl.write(attachment.rfile().read())
+
+            for post in page.discussion_thread.query_posts(status='ok'):
+                post_path = os.path.join(
+                    attachment_path,
+                    page.discussion_thread._id,
+                    post._id
+                )
+                if not os.path.exists(post_path):
+                    os.makedirs(post_path)
+                for attachment in post.attachments:
+                    path = os.path.join(
+                        post_path,
+                        attachment.filename
+                    )
+                    with open(path, 'w') as fl:
+                        fl.write(attachment.rfile().read())
 
 
 class RootController(BaseController, DispatchIndex, FeedController):

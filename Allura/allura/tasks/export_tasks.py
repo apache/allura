@@ -112,7 +112,11 @@ class BulkExport(object):
         json_file = os.path.join(export_path, '%s.json' % tool)
         try:
             with open(json_file, 'w') as f:
-                app.bulk_export(f)
+                try:
+                    app.bulk_export(f, export_path, True)
+                except Exception, e:
+                    log.info(e)
+                    app.bulk_export(f)
         except Exception:
             log.error('Error exporting: %s on %s', tool,
                       app.project.shortname, exc_info=True)

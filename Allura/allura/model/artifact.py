@@ -103,7 +103,7 @@ class Artifact(MappedClass, SearchIndexable):
     import_id = FieldProperty(None, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
 
-    def __json__(self, posts_limit=None):
+    def __json__(self, posts_limit=None, is_export=False):
         """Return a JSON-encodable :class:`dict` representation of this
         Artifact.
 
@@ -113,7 +113,7 @@ class Artifact(MappedClass, SearchIndexable):
             mod_date=self.mod_date,
             labels=list(self.labels),
             related_artifacts=[a.url() for a in self.related_artifacts()],
-            discussion_thread=self.discussion_thread.__json__(limit=posts_limit),
+            discussion_thread=self.discussion_thread.__json__(limit=posts_limit, is_export=is_export),
             discussion_thread_url=h.absurl('/rest%s' %
                                            self.discussion_thread.url()),
         )
