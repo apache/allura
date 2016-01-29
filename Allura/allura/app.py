@@ -761,6 +761,20 @@ class Application(object):
     def get_attachment_export_path(self, path='', *args):
         return os.path.join(path, self.config.options.mount_point, *args)
 
+    def make_dir_for_attachments(self, path):
+        if not os.path.exists(path):
+                os.makedirs(path)
+
+    def save_attachments(self, path, attachments):
+        self.make_dir_for_attachments(path)
+        for attachment in attachments:
+            attachment_path = os.path.join(
+                path,
+                attachment.filename
+            )
+            with open(attachment_path, 'w') as fl:
+                fl.write(attachment.rfile().read())
+
 
 class AdminControllerMixin(object):
     """Provides common functionality admin controllers need"""

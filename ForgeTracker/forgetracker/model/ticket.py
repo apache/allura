@@ -1126,7 +1126,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 if parent == VersionedArtifact:
                     kwargs['posts_limit'] = posts_limit
                 try:
-                    parents_json.update(parent.__json__(self, is_export=True, **kwargs))
+                    parents_json.update(parent.__json__(self, is_export=is_export, **kwargs))
                 except:
                     parents_json.update(parent.__json__(self, **kwargs))
 

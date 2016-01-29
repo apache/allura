@@ -358,12 +358,7 @@ The wiki uses [Markdown](%s) syntax.
     def export_attachments(self, pages, export_path):
         for page in pages:
             attachment_path = self.get_attachment_export_path(export_path, str(page._id))
-            if not os.path.exists(attachment_path):
-                os.makedirs(attachment_path)
-            for attachment in page.attachments:
-                path = os.path.join(attachment_path, attachment.filename)
-                with open(path, 'w') as fl:
-                    fl.write(attachment.rfile().read())
+            self.save_attachments(attachment_path, page.attachments)
 
             for post in page.discussion_thread.query_posts(status='ok'):
                 post_path = os.path.join(
@@ -371,15 +366,7 @@ The wiki uses [Markdown](%s) syntax.
                     page.discussion_thread._id,
                     post.slug
                 )
-                if not os.path.exists(post_path):
-                    os.makedirs(post_path)
-                for attachment in post.attachments:
-                    path = os.path.join(
-                        post_path,
-                        attachment.filename
-                    )
-                    with open(path, 'w') as fl:
-                        fl.write(attachment.rfile().read())
+                self.save_attachments(post_path, post.attachments)
 
 
 class RootController(BaseController, DispatchIndex, FeedController):

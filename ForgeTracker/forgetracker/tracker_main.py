@@ -517,12 +517,7 @@ class ForgeTrackerApp(Application):
     def export_attachments(self, tickets, export_path):
         for ticket in tickets:
             attachment_path = self.get_attachment_export_path(export_path, str(ticket._id))
-            if not os.path.exists(attachment_path):
-                os.makedirs(attachment_path)
-            for attachment in ticket.attachments:
-                path = os.path.join(attachment_path, attachment.filename)
-                with open(path, 'w') as fl:
-                    fl.write(attachment.rfile().read())
+            self.save_attachments(attachment_path, ticket.attachments)
 
             for post in ticket.discussion_thread.query_posts(status='ok'):
                 post_path = os.path.join(
@@ -530,15 +525,7 @@ class ForgeTrackerApp(Application):
                     ticket.discussion_thread._id,
                     post.slug
                 )
-                if not os.path.exists(post_path):
-                    os.makedirs(post_path)
-                for attachment in post.attachments:
-                    path = os.path.join(
-                        post_path,
-                        attachment.filename
-                    )
-                    with open(path, 'w') as fl:
-                        fl.write(attachment.rfile().read())
+                self.save_attachments(post_path, post.attachments)
 
     @property
     def bins(self):
