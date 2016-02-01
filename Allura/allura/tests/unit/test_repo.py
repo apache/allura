@@ -153,16 +153,16 @@ class TestTree(unittest.TestCase):
 class TestBlob(unittest.TestCase):
 
     def test_pypeline_view(self):
-        blob = M.repository.Blob(Mock(), 'INSTALL.mdown', 'blob1')
+        blob = M.repository.Blob(MagicMock(), 'INSTALL.mdown', 'blob1')
         assert_equal(blob.has_pypeline_view, True)
 
     def test_has_html_view_text_mime(self):
-        blob = M.repository.Blob(Mock(), 'INSTALL', 'blob1')
+        blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
         blob.content_type = 'text/plain'
         assert_equal(blob.has_html_view, True)
 
     def test_has_html_view_text_ext(self):
-        blob = M.repository.Blob(Mock(), 'INSTALL.txt', 'blob1')
+        blob = M.repository.Blob(MagicMock(), 'INSTALL.txt', 'blob1')
         blob.content_type = 'foo/bar'
         assert_equal(blob.has_html_view, True)
 
@@ -173,7 +173,7 @@ class TestBlob(unittest.TestCase):
         assert_equal(blob.has_html_view, True)
 
     def test_has_html_view_bin_ext(self):
-        blob = M.repository.Blob(Mock(), 'INSTALL.zip', 'blob1')
+        blob = M.repository.Blob(MagicMock(), 'INSTALL.zip', 'blob1')
         assert_equal(blob.has_html_view, False)
 
     def test_has_html_view_bin_content(self):
@@ -181,6 +181,13 @@ class TestBlob(unittest.TestCase):
         blob.content_type = 'whatever'
         blob.text = '\0\0\0\0'
         assert_equal(blob.has_html_view, False)
+
+    def test_has_html_view__local_setting_override_bin(self):
+        blob = M.repository.Blob(MagicMock(), 'myfile.dat', 'blob1')
+        blob.content_type = 'whatever'
+        blob.text = '\0\0\0\0'
+        blob.repo._additional_viewable_extensions = ['.dat']
+        assert_equal(blob.has_html_view, True)
 
 
 class TestCommit(unittest.TestCase):

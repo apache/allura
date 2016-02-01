@@ -88,7 +88,7 @@ BINARY_EXTENSIONS = frozenset([
     ".mp4", ".mp4a", ".mpeg", ".mpg", ".mpga", ".mxu", ".nef", ".npx", ".o", ".oga", ".ogg", ".ogv", ".otf", ".pbm",
     ".pcx", ".pdf", ".pea", ".pgm", ".pic", ".png", ".pnm", ".ppm", ".psd", ".pya", ".pyc", ".pyo", ".pyv", ".qt",
     ".rar", ".ras", ".raw", ".rgb", ".rip", ".rlc", ".rz", ".s3m", ".s7z", ".scpt", ".sgi", ".shar", ".sil", ".smv",
-    ".so", ".sub", ".swf", ".tar", ".tbz2", ".tga", ".tgz", ".tif", ".tiff", ".tlz", ".ts", ".ttf", ".uvh", ".uvi",
+    ".so", ".sub", ".swf", ".tar", ".tbz2", ".tga", ".tgz", ".tif", ".tiff", ".tlz", ".ttf", ".uvh", ".uvi",
     ".uvm", ".uvp", ".uvs", ".uvu", ".viv", ".vob", ".war", ".wav", ".wax", ".wbmp", ".wdp", ".weba", ".webm", ".webp",
     ".whl", ".wm", ".wma", ".wmv", ".wmx", ".woff", ".woff2", ".wvx", ".xbm", ".xif", ".xm", ".xpi", ".xpm", ".xwd",
     ".xz", ".z", ".zip", ".zipx"
@@ -1485,12 +1485,13 @@ class Blob(object):
         Return true if file is a text file that can be displayed.
         :return: boolean
         '''
+        if self.extension in self.repo._additional_viewable_extensions:
+            return True
         if self.extension in BINARY_EXTENSIONS:
             return False
         if (self.content_type.startswith('text/') or
                 self.extension in VIEWABLE_EXTENSIONS or
                 self.extension in PYPELINE_EXTENSIONS or
-                self.extension in self.repo._additional_viewable_extensions or
                 utils.is_text_file(self.text)):
             return True
         return False
