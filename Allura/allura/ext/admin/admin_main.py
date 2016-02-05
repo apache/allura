@@ -263,21 +263,6 @@ class ProjectAdminController(BaseController):
     def tools_moved(self, **kw):
         return {}
 
-
-    @expose()
-    @require_post()
-    def configure_tool_grouping(self, grouping_threshold='1', page=0, limit=200, **kw):
-        try:
-            grouping_threshold = int(grouping_threshold)
-            if grouping_threshold < 1:
-                raise ValueError('Invalid threshold')
-            c.project.set_tool_data(
-                'allura', grouping_threshold=grouping_threshold)
-            g.post_event('project_menu_updated')
-        except ValueError:
-            flash('Invalid threshold', 'error')
-        redirect('tools?limit=%s&page=%s' % (limit, page))
-
     @expose()
     @require_post()
     def update_labels(self, labels=None, **kw):
@@ -285,35 +270,6 @@ class ProjectAdminController(BaseController):
         c.project.labels = labels.split(',')
         M.AuditLog.log('updated labels')
         redirect('trove')
-
-    @without_trailing_slash
-    @expose()
-    def clone(self,
-              repo_type=None, source_url=None,
-              mount_point=None, mount_label=None,
-              **kw):
-        require_access(c.project, 'admin')
-        if repo_type is None:
-            return (
-                '<form method="get">'
-                '<input name="repo_type" value="Git">'
-                '<input name="source_url">'
-                '<input type="submit">'
-                '</form>')
-        for ep in h.iter_entry_points('allura', repo_type):
-            break
-        if ep is None or source_url is None:
-            raise exc.HTTPNotFound
-        h.log_action(log, 'install tool').info(
-            'clone repo from %s', source_url,
-            meta=dict(tool_type=repo_type, mount_point=mount_point, mount_label=mount_label))
-        c.project.install_app(
-            repo_type,
-            mount_point=mount_point,
-            mount_label=mount_label,
-            init_from_url=source_url)
-        M.AuditLog.log('Create repo as clone')
-        redirect('tools')
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_install_tool.html')
@@ -619,21 +575,6 @@ class ProjectAdminController(BaseController):
         n = M.Neighborhood.query.get(_id=nid)
         flash('Joined %s' % n.name)
         redirect('invitations')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_mount_order(self, subs=None, tools=None, **kw):
-        if subs:
-            for sp in subs:
-                p = M.Project.query.get(shortname=sp['shortname'],
-                                        neighborhood_id=c.project.neighborhood_id)
-                p.ordinal = int(sp['ordinal'])
-        if tools:
-            for p in tools:
-                c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
-        g.post_event('project_menu_updated')
-        redirect('tools')
 
     def _update_mounts(self, subproject=None, tool=None, new=None, **kw):
         '''

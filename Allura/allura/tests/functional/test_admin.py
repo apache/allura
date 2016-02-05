@@ -377,20 +377,6 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/install_tool?tool_name=subproject')
         assert_in(u'Installing Sub Project', r)
 
-    def test_grouping_threshold(self):
-        c.user = M.User.query.get(username='root')
-        c.project = M.Project.query.get(shortname='test')
-        data = c.project.nav_data(admin_options=True)
-        assert_equals(data['grouping_threshold'], 1)
-
-        self.app.post('/admin/configure_tool_grouping', params={
-            'grouping_threshold': '2',
-        })
-
-        c.project = M.Project.query.get(shortname='test')
-        data = c.project.nav_data(admin_options=True)
-        assert_equals(data['grouping_threshold'], 2)
-
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
