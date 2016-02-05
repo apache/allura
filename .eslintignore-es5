@@ -1,2 +1,10 @@
 Allura/allura/public/nf/js/build
 **/*es6.js
+# TODO make a "lib" folder for these
+Allura/allura/public/nf/js/*.compiled.js
+Allura/allura/public/nf/js/*.min.js
+Allura/allura/public/nf/js/jquery*
+Allura/allura/public/nf/js/modernizr.js
+Allura/allura/public/nf/js/react*
+Allura/allura/public/nf/js/sylvester.js
+Allura/allura/public/nf/js/underscore-min.js

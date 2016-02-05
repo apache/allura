@@ -7,7 +7,10 @@
 **/MANIFEST.in
 **/nosetests.xml
 **/setup.cfg
-.eslintrc
+.eslintignore-es5
+.eslintignore-es6
+.eslintrc-es5
+.eslintrc-es6
 .jscsrc
 .jshintrc
 Allura/allura/etc/mime.types

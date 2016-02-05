@@ -11,7 +11,7 @@
     "eslint": "eslint",
     "lint-es5": "eslint -c .eslintrc-es5  --ignore-path .eslintignore-es5 Allura/allura/public/**/*.js || true",
     "lint-es6": "eslint -c .eslintrc-es6  --ignore-path .eslintignore-es6 Allura/allura/public/**/*.es6.js || true",
-    "lint": "npm run lint5 && npm run lint6"
+    "lint": "npm run lint-es5 && npm run lint-es6"
   },
   "repository": {
     "type": "git",
