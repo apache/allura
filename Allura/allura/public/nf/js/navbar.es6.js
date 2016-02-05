@@ -144,7 +144,7 @@ var GroupingThreshold = React.createClass({
     render: function() {
         return (
             <div>
-                {!Boolean(!this.props.isHidden) &&
+                {Boolean(this.props.isHidden) &&
                 <div id='threshold-config'>
             <span>
               <label htmlFor='threshold-input'>Grouping Threshold</label>
@@ -379,9 +379,9 @@ var AdminNav = React.createClass({
 
 var NavBarItemWithSubMenu = React.createClass({
     propTypes: {
-        subMenu: React.PropTypes.arrayOf(ToolsPropType),
-        childOptionsOpen: React.PropTypes.string,
-        tool: React.PropTypes.objectOf(ToolsPropType)
+        subMenu: React.PropTypes.node,
+        childOptionsOpen: React.PropTypes.bool,
+        tool: React.PropTypes.node
     },
     render: function() {
         return (
