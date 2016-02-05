@@ -112,7 +112,7 @@ var NavBarItem = React.createClass({
         );
     },
 
-    handleOptionClick: function() {
+    handleOptionClick: function(event) {
         this.props.onOptionClick(this.props.mount_point);
     }
 });
@@ -250,7 +250,7 @@ var NormalNavBar = React.createClass({
         ).isRequired
     },
 
-    buildMenu: function(item) {
+    buildMenu: function(item, i) {
         let classes = window.location.pathname.startsWith(item.url) ? 'active-nav-link' : '';
 
         var subMenu;
