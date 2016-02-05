@@ -44,8 +44,8 @@ NOT_MULTIPROC_SAFE = [
 
 
 def run_one(cmd, **popen_kwargs):
-    cmd_to_show = u'{} in {}'.format(cmd, popen_kwargs.get('cwd', '.'))
-    print u'{} running {}'.format(threading.current_thread(), cmd_to_show)
+    cmd_to_show = u'`{}` in {}'.format(cmd, popen_kwargs.get('cwd', '.'))
+    print u'{} running {}\n'.format(threading.current_thread(), cmd_to_show)
     sys.stdout.flush()
 
     all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
@@ -144,6 +144,9 @@ def run_tests_in_parallel(options, nosetests_args):
             multiproc_args=get_multiproc_args(package),
         )
         cmds.append((cmd, dict(cwd=package, env=env)))
+
+    # TODO: add a way to include this or not; and add xml output for Jenkins
+    cmds.append(('npm run lint-es6', {}))
     return run_many(cmds, processes=get_concurrent_suites())
 
 
