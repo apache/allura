@@ -804,6 +804,13 @@ class TestDeleteProjects(TestController):
         self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('p/test/sub1 p/test2')
 
+    @td.with_user_project('test-user')
+    @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
+    def test_userproject_delete(self, dp):
+        data = {'projects': '/u/test-user'}
+        self.app.post('/nf/admin/delete_projects/really_delete', data)
+        dp.post.assert_called_once_with('u/test-user')
+
 
 @task
 def test_task(*args, **kw):

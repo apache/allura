@@ -407,7 +407,7 @@ class DeleteProjectsController(object):
             flash(u'No projects specified', 'warning')
             redirect('.')
         projects = self.parse_projects(projects)
-        task_params = [u'{}/{}'.format(p.neighborhood.url_prefix.strip('/'), p.shortname) for (_, p, _) in projects if p]
+        task_params = [p.url().strip('/') for (_, p, _) in projects if p]
         if not task_params:
             flash(u'Unable to parse at least one project from your input', 'warning')
             redirect('.')

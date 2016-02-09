@@ -1011,7 +1011,6 @@ class ProjectRegistrationProvider(object):
         g.post_event('project_deleted', project_id=pid, reason=reason)
 
     def disable_project_users(self, project, reason=None):
-        from allura.model import AuditLog
         provider = AuthenticationProvider.get(Request.blank('/'))
         users = project.admins() + project.users_with_role('Developer')
         for user in users:
@@ -1022,7 +1021,7 @@ class ProjectRegistrationProvider(object):
                 project.neighborhood.url_prefix,
                 project.shortname,
                 reason)
-            AuditLog.log_user(msg, user=user)
+            h.auditlog_user(msg, user=user)
             # `users` can contain duplicates. Make sure changes are visible
             # to next iterations, so that `user.disabled` check works.
             session(user).expunge(user)
@@ -1072,7 +1071,7 @@ class ProjectRegistrationProvider(object):
         n = Neighborhood.query.get(url_prefix=u'/{}/'.format(url[0]))
         if not n:
             return None, u'Neighborhood not found'
-        p = Project.query.get(neighborhood_id=n._id, shortname=url[1])
+        p = Project.query.get(neighborhood_id=n._id, shortname=n.shortname_prefix + url[1])
         if len(url) > 2:
             # Maybe subproject
             subp = Project.query.get(neighborhood_id=n._id, shortname='{}/{}'.format(*url[1:3]))

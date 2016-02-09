@@ -21,7 +21,7 @@ from pylons import app_globals as g
 from nose.tools import assert_equal
 
 from alluratest.controller import TestController
-from allura.tests.decorators import audits, out_audits
+from allura.tests.decorators import audits, out_audits, with_user_project
 from allura import model as M
 from allura.scripts import delete_projects
 from allura.lib import plugin
@@ -99,6 +99,15 @@ class TestDeleteProjects(TestController):
         self.run_script(['p/{}'.format(self.p_shortname)])
         del_solr.post.assert_called_once_with(pid)
 
+    @with_user_project('test-user')
+    @patch('allura.model.auth.request', autospec=True)
+    @patch('allura.lib.helpers.request', autospec=True)
+    def test_userproject_does_disable(self, req, req2):
+        req.remote_addr = None
+        req2.url = None
+        self.run_script(['u/test-user'])
+        assert M.User.by_username('test-user').disabled
+
     @patch.object(plugin.g, 'post_event', autospec=True)
     def test_event_is_fired(self, post_event):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
@@ -129,7 +138,7 @@ class TestDeleteProjects(TestController):
         if disable:
             opts.insert(0, '--disable-users')
         _audit = audits if disable else out_audits
-        with _audit(msg):
+        with _audit(msg, user=True):
             self.run_script(opts)
         admin = M.User.by_username('test-admin')
         dev = M.User.by_username('test-user')
@@ -137,8 +146,10 @@ class TestDeleteProjects(TestController):
         assert dev.disabled is disable
 
     @patch('allura.model.auth.request', autospec=True)
-    def test_disable_users(self, req):
-        req.url = None
+    @patch('allura.lib.helpers.request', autospec=True)
+    def test_disable_users(self, req, req2):
+        req.remote_addr = None
+        req2.url = None
         self._disable_users(disable=True)
 
     def test_not_disable_users(self):

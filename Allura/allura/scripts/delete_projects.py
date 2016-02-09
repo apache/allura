@@ -18,10 +18,13 @@
 import argparse
 import logging
 
+from webob import Request
+from ming.odm.odmsession import session
+
 from allura.scripts import ScriptTask
 from allura import model as M
-from allura.lib.plugin import ProjectRegistrationProvider
-
+from allura.lib import helpers as h
+from allura.lib.plugin import ProjectRegistrationProvider, AuthenticationProvider
 
 log = logging.getLogger(__name__)
 
@@ -31,11 +34,24 @@ class DeleteProjects(ScriptTask):
     @classmethod
     def execute(cls, options):
         provider = ProjectRegistrationProvider.get()
+        auth_provider = AuthenticationProvider.get(Request.blank('/'))
         for proj in options.projects:
             proj = cls.get_project(proj)
             if proj:
-                log.info('Purging %s%s. Reason: %s', proj.neighborhood.url_prefix, proj.shortname, options.reason)
-                provider.purge_project(proj, disable_users=options.disable_users, reason=options.reason)
+                if proj.is_user_project:
+                    # disabling a user makes the project pages 404, so do that instead of deleting the project
+                    user = proj.user_project_of
+                    if user:
+                        auth_provider.disable_user(user, audit=False)
+                        msg = u'Account disabled because user-project was specified for deletion. Reason: {}'.format(
+                            options.reason)
+                        log_entry = h.auditlog_user(msg, user=user)
+                        session(log_entry).flush(log_entry)
+                    else:
+                        log.info('Could not find associated user for user-project %s', proj.shortname)
+                else:
+                    log.info('Purging %s%s. Reason: %s', proj.neighborhood.url_prefix, proj.shortname, options.reason)
+                    provider.purge_project(proj, disable_users=options.disable_users, reason=options.reason)
 
     @classmethod
     def get_project(cls, proj):
@@ -44,7 +60,7 @@ class DeleteProjects(ScriptTask):
         if not n:
             log.warn("Can't find neighborhood for %s", proj)
             return
-        p = M.Project.query.get(neighborhood_id=n._id, shortname=p)
+        p = M.Project.query.get(neighborhood_id=n._id, shortname=n.shortname_prefix + p)
         if not p:
             log.warn("Can't find project %s", proj)
             return
