@@ -258,10 +258,17 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     activity('renamed', self)
                     subject = '%s renamed post %s to %s' % (
                         c.user.username, v1.title, v2.title)
+                    M.Feed.update(self, self.title, self.text, author=self.author(),
+                                pubdate=self.get_version(1).timestamp)
                 else:
                     activity('modified', self)
                     subject = '%s modified post %s' % (
                         c.user.username, self.title)
+                    M.Feed.update(self, self.title, self.text, author=self.author(),
+                                pubdate=self.get_version(1).timestamp)
+            elif v1.state == 'published' and v2.state == 'draft':
+                ### Delete it from the feed.
+                M.Feed.update(v2)
         else:
             description = self.text
             subject = '%s created post %s' % (

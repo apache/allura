@@ -823,17 +823,26 @@ class Feed(MappedClass):
     artifact_reference = FieldProperty(S.Deprecated)
 
     @classmethod
-    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None, **kw):
-        """
-        Create a Feed item.  Returns the item.
-        But if anon doesn't have read access, create does not happen and None is returned
-        """
-        # TODO: fix security system so we can do this correctly and fast
+    def has_access(cls, artifact):
+        # Enable only for development.
+        # return True
         from allura import model as M
         anon = M.User.anonymous()
         if not security.has_access(artifact, 'read', user=anon):
-            return
+            return False
         if not security.has_access(c.project, 'read', user=anon):
+            return False
+        return True
+
+    @classmethod
+    def post(cls, artifact, title=None, description=None, author=None,
+            author_link=None, author_name=None, pubdate=None, link=None, **kw):
+        """
+        Create a Feed item.  Returns the item.
+        But if anon doesn't have read access, create does not happen and None is
+        returned.
+        """
+        if not Feed.has_access(artifact):
             return
         idx = artifact.index()
         if author is None:
@@ -865,6 +874,23 @@ class Feed(MappedClass):
         if unique_id:
             item.unique_id = unique_id
         return item
+
+    @classmethod
+    def update(cls, artifact, title=None, description=None, author=None,
+            author_link=None, author_name=None, pubdate=None, link=None, **kw):
+        """
+        For a blog post which is present already but to be updated.
+        """
+        if not Feed.has_access(artifact):
+            return
+        v1 = Feed.query.find({'ref_id': artifact.index_id()}).first()
+        if artifact.state == 'draft':
+            Feed.delete(v1)
+        # Modify the previous version.
+        else:
+            v1.title = title
+            v1.description = g.markdown.convert(description)
+            return v1
 
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
