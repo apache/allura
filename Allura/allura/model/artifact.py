@@ -823,17 +823,21 @@ class Feed(MappedClass):
     artifact_reference = FieldProperty(S.Deprecated)
 
     @classmethod
+    def has_access(cls, artifact):
+        from allura import model as M
+        anon = M.User.anonymous()
+        if not security.has_access(artifact, 'read', user=anon):
+            return False
+        if not security.has_access(c.project, 'read', user=anon):
+            return False
+
+    @classmethod
     def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None, **kw):
         """
         Create a Feed item.  Returns the item.
         But if anon doesn't have read access, create does not happen and None is returned
         """
-        # TODO: fix security system so we can do this correctly and fast
-        from allura import model as M
-        anon = M.User.anonymous()
-        if not security.has_access(artifact, 'read', user=anon):
-            return
-        if not security.has_access(c.project, 'read', user=anon):
+        if Feed.has_access(artifact) == False:
             return
         idx = artifact.index()
         if author is None:
@@ -865,6 +869,19 @@ class Feed(MappedClass):
         if unique_id:
             item.unique_id = unique_id
         return item
+
+    @classmethod
+    def update(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None, **kw):
+        """
+        For a blog post which is present already but to be updated.
+        """
+        if Feed.has_access(artifact) == False:
+            return
+        # Modify the previous version.
+        v1 = Feed.query.find({'ref_id': artifact.index_id()}).first()
+        v1.title = title
+        v1.description = description
+        return v1
 
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
