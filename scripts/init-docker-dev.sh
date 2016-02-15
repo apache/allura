@@ -50,8 +50,7 @@ echo
 
 if [ ! -e /allura/Allura/allura/public/nf/js/build/transpiled.js ]; then
   echo -e "Installing npm packages"
-  # --no-bin-links is necessary when Virtualbox is used since shared mount can't handle symlinks
-  npm install --no-bin-links  # if we want more progress displayed:  --loglevel http
+  npm install  # if we want more progress displayed:  --loglevel http
 
   echo -e "\nCompiling JS"
   npm run build
