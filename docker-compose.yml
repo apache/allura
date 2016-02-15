@@ -28,7 +28,6 @@ web:
   links:
     - mongo
     - solr
-    - outmail
 
 taskd:
   image: allura_web
