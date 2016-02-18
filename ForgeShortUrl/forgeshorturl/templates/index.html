@@ -69,6 +69,7 @@
               $(function() {
                 var modal = $('#lightbox_short-url-modal');
                 $('#update-url-{{su.short_name}}').click(function() {
+                  startLightbox(modal);
                   modal.find('#short-url-form-title').show();
                   modal.find('#short-url-form-action-label').text('Update');
                   modal.find('input[name="update"]').val('True');
