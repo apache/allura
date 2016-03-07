@@ -23,6 +23,7 @@ from ming.utils import LazyProperty
 
 from allura.lib.security import require_access
 from allura.lib.utils import is_ajax
+from allura import model as M
 from .base import BaseController
 
 
@@ -60,9 +61,10 @@ class AttachmentController(BaseController):
 
     def _check_security(self):
         require_access(self.artifact, 'read')
-        status = getattr(self.artifact, 'status', None)
-        if status == 'pending':
-            require_access(self.artifact, 'moderate')
+        if isinstance(self.artifact, M.Post):
+            status = getattr(self.artifact, 'status', None)
+            if status == 'pending':
+                require_access(self.artifact, 'moderate')
 
     def __init__(self, filename, artifact):
         self.filename = filename
