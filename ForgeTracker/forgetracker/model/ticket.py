@@ -1109,6 +1109,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     def attachments_for_export(self):
         return [dict(bytes=attach.length,
+                     url=h.absurl(attach.url()),
                      path=os.path.join(
                          self.app_config.options.mount_point,
                          str(self._id),

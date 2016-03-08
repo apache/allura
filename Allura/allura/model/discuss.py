@@ -176,6 +176,7 @@ class Thread(Artifact, ActivityObject):
 
     def attachment_for_export(self, page):
         return [dict(bytes=attach.length,
+                     url=h.absurl(attach.url()),
                      path=os.path.join(
                          self.artifact.app_config.options.mount_point,
                          str(self.artifact._id),

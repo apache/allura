@@ -109,7 +109,6 @@ class TestBulkExport(object):
             post.discussion_thread._id,
             list(post.discussion_thread.post_class().query.find())[0].slug
         )
-        print blog['posts'][0]['discussion_thread']['posts'][0]
         assert_equal(blog['posts'][0]['discussion_thread']['posts'][0]
                      ['attachments'][0]['path'], file_path)
         assert os.path.exists(os.path.join(temp_dir, file_path))
