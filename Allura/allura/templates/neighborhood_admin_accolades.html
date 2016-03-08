@@ -55,7 +55,7 @@
                       <td><a href="{{award.longurl()}}">{{award.short}}</a></td>
                       <td>{{award.full}}</td>
                       <td>
-                        <form action="{{award.longurl()}}/delete" method="post">
+                        <form action="{{award.longurl()}}/delete" method="post" onsubmit="return confirm('Continue to delete this award?');">
                           <input type="submit" value="Delete"/>
                           {{lib.csrf_token()}}
                         </form>
