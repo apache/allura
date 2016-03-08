@@ -55,6 +55,10 @@
         <label for="tool-{{ loop.index }}">{{ tool.options.mount_label }}</label> <a href="{{ tool.url() }}">{{ tool.url() }}</a>
       </div>
       {% endfor %}
+      <p>&nbsp;</p>
+      <div class="grid-19">
+        <input type="checkbox" id="with_attachments" name="with_attachments"><label for="with_attachments">With attachments (attachments size: {{ total_size }} MB)</label><br>
+      </div>
       <p><div class="grid-19"><input type="submit" value="Export" {% if status == 'busy' %}disabled{% endif %}></div></p>
       {{lib.csrf_token()}}
     </form>

@@ -44,6 +44,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.tasks import export_tasks
 from allura.lib.widgets.project_list import ProjectScreenshots
+from allura.lib.utils import is_ajax
 
 from . import widgets as aw
 
@@ -681,12 +682,12 @@ class ProjectAdminController(BaseController):
         redirect(request.referer)
 
     @expose('jinja:allura.ext.admin:templates/export.html')
-    def export(self, tools=None):
+    def export(self, tools=None, with_attachments=False):
         if not asbool(config.get('bulk_export_enabled', True)):
             raise exc.HTTPNotFound()
         if request.method == 'POST':
             try:
-                ProjectAdminRestController().export(tools, send_email=True)
+                ProjectAdminRestController().export(tools, send_email=True, with_attachments=with_attachments)
             except (exc.HTTPBadRequest, exc.HTTPServiceUnavailable) as e:
                 flash(str(e), 'error')
                 redirect('.')
@@ -696,9 +697,27 @@ class ProjectAdminController(BaseController):
                 redirect('export')
 
         exportable_tools = AdminApp.exportable_tools_for(c.project)
+        apps_id = [tool._id for tool in exportable_tools]
+        db = M.session.project_doc_session.db
+        files_id = db.attachment.find({"app_config_id": {"$in": apps_id}}).distinct("file_id")
+        try:
+            total_size = db.attachment.files.aggregate([
+                {
+                    "$match": {"_id": {"$in": files_id}}
+                },
+                {
+                    "$group": {"_id": "total", "total_size": {"$sum": "$length"}}
+                },
+                {
+                    "$project": {"_id": 0, "total_size": {"$divide": ["$total_size", 1000000]}}
+                }
+            ]).get('result')[0].get('total_size')
+        except IndexError:
+            total_size = 0
         return {
             'tools': exportable_tools,
-            'status': c.project.bulk_export_status()
+            'status': c.project.bulk_export_status(),
+            'total_size': round(total_size, 3)
         }
 
 
@@ -782,7 +801,7 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     @require_post()
-    def export(self, tools=None, send_email=False, **kw):
+    def export(self, tools=None, send_email=False, with_attachments=False, **kw):
         """
         Initiate a bulk export of the project data.
 
@@ -818,7 +837,7 @@ class ProjectAdminRestController(BaseController):
         # filename (potentially) includes a timestamp, so we have
         # to pre-generate to be able to return it to the user
         filename = c.project.bulk_export_filename()
-        export_tasks.bulk_export.post(tools, filename, send_email=send_email)
+        export_tasks.bulk_export.post(tools, filename, send_email=send_email, with_attachments=with_attachments)
         return {
             'status': 'in progress',
             'filename': filename,
