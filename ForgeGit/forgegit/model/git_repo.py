@@ -716,8 +716,10 @@ class GitImplementation(M.RepositoryImplementation):
         self._git.git.clone('--bare', '--shared', from_path, tmp_path)
         tmp_repo = GitImplementation(Object(full_fs_path=tmp_path))
         log.info('Merge request view - shared clone timing: %s for %s', time()-start_time, from_path)
-        yield tmp_repo
-        shutil.rmtree(tmp_path, ignore_errors=True)
+        try:
+            yield tmp_repo
+        finally:
+            shutil.rmtree(tmp_path, ignore_errors=True)
 
     def merge_base(self, mr):
         g = self._git.git
