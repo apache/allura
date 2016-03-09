@@ -25,7 +25,7 @@ import logging
 
 import tg
 import PIL
-from nose.tools import assert_equals, assert_in, assert_not_in, assert_is_not_none
+from nose.tools import assert_equals, assert_in, assert_not_in, assert_is_not_none, assert_greater
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from pylons import tmpl_context as c, app_globals as g
@@ -1390,20 +1390,29 @@ class TestRestMountOrder(TestRestApiBase):
         assert_equals(r.status, '400 Bad Request')
         assert_in('Invalid kw: expected "ordinal: mount_point"', r.body)
 
+    @td.with_wiki
     def test_reorder(self):
         data = {
-            '0': u'sub1',
-            '1': u'admin'
+            '0': u'wiki',
+            '1': u'sub1',
+            '2': u'admin'
         }
 
-        before_reorder = self.api_get('/p/test/_nav.json')
-        assert_equals(before_reorder.json['menu'][0]['mount_point'], 'sub1')
+        tool = {
+            u'icon': u'tool-admin',
+            u'is_anchored': False,
+            u'mount_point': u'sub1',
+            u'name': u'A Subproject',
+            u'tool_name': u'sub',
+            u'url': u'/p/test/sub1/'
+        }
 
+        a = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
         r = self.api_post('/rest/p/test/admin/mount_order/', **data)
         assert_equals(r.json['status'], 'ok')
-
         after_reorder = self.api_get('/p/test/_nav.json')
-        assert_equals(after_reorder.json['menu'][1]['mount_point'], 'admin')
+        b = after_reorder.json['menu'].index(tool)
+        assert_greater(b, a)
 
 
 class TestRestToolGrouping(TestRestApiBase):
