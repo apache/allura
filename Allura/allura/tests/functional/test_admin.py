@@ -1042,7 +1042,11 @@ class TestExport(TestController):
         r = self.app.get('/admin/')
         assert_in('Export', r)
 
-    def test_export_page_contains_exportable_tools(self):
+
+    @mock.patch('allura.model.session.project_doc_session')
+    def test_export_page_contains_exportable_tools(self, session):
+        session.return_value = {'result': [{"total_size": 10000}]}
+
         r = self.app.get('/admin/export')
         assert_in('Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>', r)
         assert_in(
@@ -1081,8 +1085,10 @@ class TestExport(TestController):
         export_tasks.bulk_export.post.assert_called_once_with(
             [u'wiki', u'wiki2'], 'test.zip', send_email=True, with_attachments=False)
 
-    def test_export_in_progress(self):
+    @mock.patch('allura.model.session.project_doc_session')
+    def test_export_in_progress(self, session):
         from allura.tasks import export_tasks
+        session.return_value = {'result': [{"total_size": 10000}]}
         export_tasks.bulk_export.post(['wiki'])
         r = self.app.get('/admin/export')
         assert_in('<h2>Busy</h2>', r.body)
@@ -1106,7 +1112,10 @@ class TestExport(TestController):
         project = M.Project.query.get(name='Home Project for Projects')
         assert_equals(project.bulk_export_path(), '/tmp/bulk_export/p/p')
 
-    def test_export_page_contains_check_all_checkbox(self):
+    @mock.patch('allura.model.session.project_doc_session')
+    def test_export_page_contains_check_all_checkbox(self, session):
+        session.return_value = {'result': [{"total_size": 10000}]}
+
         r = self.app.get('/admin/export')
         assert_in('<input type="checkbox" id="check-all">', r)
         assert_in('Check All</label>', r)
@@ -1384,18 +1393,17 @@ class TestRestMountOrder(TestRestApiBase):
     def test_reorder(self):
         data = {
             '0': u'sub1',
-            '1': u'activity',
-            '2': u'admin'
+            '1': u'admin'
         }
 
         before_reorder = self.api_get('/p/test/_nav.json')
-        assert_equals(before_reorder.json['menu'][1]['mount_point'], 'sub1')
+        assert_equals(before_reorder.json['menu'][0]['mount_point'], 'sub1')
 
         r = self.api_post('/rest/p/test/admin/mount_order/', **data)
         assert_equals(r.json['status'], 'ok')
 
         after_reorder = self.api_get('/p/test/_nav.json')
-        assert_equals(after_reorder.json['menu'][1]['mount_point'], 'activity')
+        assert_equals(after_reorder.json['menu'][1]['mount_point'], 'admin')
 
 
 class TestRestToolGrouping(TestRestApiBase):
