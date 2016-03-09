@@ -3457,3 +3457,17 @@ fieldset.preferences legend {
 .spam-text {
   float: left;
 }
+
+@media print{
+  body{ 
+  	background-color:#FFFFFF; 
+  	background-image:none; 
+  	color:#000000; 
+  }
+  #site-header, #site-sec-header, #sidebar, #top_nav{ 
+  	display:none; 
+  }
+  #page-body{ 
+  	width:100%; 
+  }
+}
