@@ -31,7 +31,6 @@ from tg import expose
 from pylons import tmpl_context as c, app_globals as g
 import mock
 
-
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
@@ -1073,14 +1072,14 @@ class TestExport(TestController):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            [u'wiki'], 'test.zip', send_email=True)
+            [u'wiki'], 'test.zip', send_email=True, with_attachments=False)
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            [u'wiki', u'wiki2'], 'test.zip', send_email=True)
+            [u'wiki', u'wiki2'], 'test.zip', send_email=True, with_attachments=False)
 
     def test_export_in_progress(self):
         from allura.tasks import export_tasks
@@ -1176,7 +1175,7 @@ class TestRestExport(TestRestApiBase):
             'status': 'in progress',
         })
         bulk_export.post.assert_called_once_with(
-            ['tickets', 'discussion'], 'test.zip', send_email=False)
+            ['tickets', 'discussion'], 'test.zip', send_email=False, with_attachments=False)
 
 
 class TestRestInstallTool(TestRestApiBase):
