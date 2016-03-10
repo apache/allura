@@ -1392,7 +1392,12 @@ class TestRestMountOrder(TestRestApiBase):
 
     @td.with_wiki
     def test_reorder(self):
-        data = {
+        d1 = {
+            '0': u'sub1',
+            '1': u'wiki',
+            '2': u'admin'
+        }
+        d2 = {
             '0': u'wiki',
             '1': u'sub1',
             '2': u'admin'
@@ -1407,11 +1412,20 @@ class TestRestMountOrder(TestRestApiBase):
             u'url': u'/p/test/sub1/'
         }
 
-        a = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
-        r = self.api_post('/rest/p/test/admin/mount_order/', **data)
+        # Set initial order to d1
+        r = self.api_post('/rest/p/test/admin/mount_order/', **d1)
         assert_equals(r.json['status'], 'ok')
-        after_reorder = self.api_get('/p/test/_nav.json')
-        b = after_reorder.json['menu'].index(tool)
+
+        # Get index of sub1
+        a = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
+
+        # Set order to d2
+        r = self.api_post('/rest/p/test/admin/mount_order/', **d2)
+        assert_equals(r.json['status'], 'ok')
+
+        # Get index of sub1 after reordering
+        b = self.api_get('/p/test/_nav.json').json['menu'].index(tool)
+
         assert_greater(b, a)
 
 
