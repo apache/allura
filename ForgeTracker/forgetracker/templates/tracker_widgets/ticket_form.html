@@ -79,7 +79,7 @@
   <div class="grid-6">
     <label class="simple">Creator:</label>
     {% if ticket %}
-      <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+      {{lib.user_link(ticket.reported_by)}}
     {% else %}
       {{lib.user_link(c.user)}}
     {% endif %}
