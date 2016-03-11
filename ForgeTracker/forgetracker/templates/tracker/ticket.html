@@ -77,7 +77,7 @@
       <div class="grid-5 ticket-assigned-to">
         <label class="simple">Owner: </label>
         {% if ticket.assigned_to_id %}
-          <a href="{{ticket.assigned_to.url()}}">{{ticket.assigned_to_name()}}</a>
+          {{lib.user_link(ticket.assigned_to)}}
         {% else %}
           {{ticket.assigned_to_name()}}
         {% endif %}
@@ -131,7 +131,7 @@
     </div>
     <div class="grid-5">
       <label class="simple">Creator:</label>
-      <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+      {{lib.user_link(ticket.reported_by)}}
     </div>
     <div class="grid-4">
       <label class="simple">Private:</label>

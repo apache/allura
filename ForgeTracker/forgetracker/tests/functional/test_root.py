@@ -2449,6 +2449,11 @@ class TestFunctionalController(TrackerTestController):
             t = tm.Ticket.query.get(summary=summary)
             assert_equal(t, None)
 
+    def test_user_missing(self):
+        self.new_ticket(summary='foo bar', assigned_to=c.user.username)
+        M.User.query.remove({'username': c.user.username})
+        self.app.get('/p/test/bugs/1/', status=200)
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
