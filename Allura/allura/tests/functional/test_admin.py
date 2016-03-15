@@ -1251,7 +1251,7 @@ class TestRestInstallTool(TestRestApiBase):
         assert_equals(project.ordered_mounts()
                       [-1]['ac'].options.mount_point, 'ticketsmount1')
         audit_log = M.AuditLog.query.find(
-            {'project_id': project._id}).sort({'_id': -1}).first()
+            {'project_id': project._id}).sort('_id', -1).first()
         assert_equals(audit_log.message, 'install tool ticketsmount1')
 
     def test_tool_exists(self):

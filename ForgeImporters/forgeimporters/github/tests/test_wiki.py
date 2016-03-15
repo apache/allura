@@ -578,9 +578,17 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(u'import_history', args['tool_option'])
         self.assertEqual(requests.head.call_count, 1)
 
-        # without history
-        requests.head.reset_mock()
-        params.pop('tool_option')
+    @with_wiki
+    @patch('forgeimporters.github.requests')
+    @patch('forgeimporters.base.import_tool')
+    def test_create_without_history(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
+        params = dict(
+            gh_user_name='spooky',
+            gh_project_name='mulder',
+            mount_point='gh-wiki',
+            mount_label='GitHub Wiki'
+        )
         r = self.app.post(self.url + 'create', params, status=302)
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
                          test_project_with_wiki)
