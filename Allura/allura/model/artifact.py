@@ -496,6 +496,21 @@ class Snapshot(Artifact):
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
 
+    def clear_user_data(self):
+        """ Redact author data for a given user """
+
+        new_author = {
+            "username": "",
+            "display_name": "",
+            "id": None,
+            "logged_ip": None
+        }
+        self.author = new_author
+
+    @classmethod
+    def from_username(cls, username):
+        return cls.query.find({'author.username': username}).all()
+
     @property
     def attachments(self):
         orig = self.original()
@@ -819,6 +834,17 @@ class Feed(MappedClass):
     author_link = FieldProperty(
         str, if_missing=lambda: c.user.url() if hasattr(c, 'user') else None)
     artifact_reference = FieldProperty(S.Deprecated)
+
+    def clear_user_data(self):
+        """ Redact author data """
+        self.author_name = ""
+        self.author_link = ""
+        title = self.title.partition("modified by")[:-1]
+        self.title = u"".join(title) + u" <REDACTED>"
+
+    @classmethod
+    def from_username(cls, username):
+        return cls.query.find({'author_link': u"/u/{}/".format(username)}).all()
 
     @classmethod
     def has_access(cls, artifact):
