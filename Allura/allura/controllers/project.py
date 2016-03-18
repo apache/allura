@@ -345,6 +345,16 @@ class ProjectController(FeedController):
         name = unquote(name)
         if name == '_nav.json':
             return self, ['_nav']
+
+        if c.project.deleted:
+            if c.user not in c.project.admins():
+                raise exc.HTTPNotFound, name
+        app = c.project.app_instance(name)
+
+        if app:
+            c.app = app
+            if app.root:
+                return app.root, remainder
         subproject = M.Project.query.get(
             shortname=c.project.shortname + '/' + name,
             neighborhood_id=c.project.neighborhood_id)
@@ -352,14 +362,7 @@ class ProjectController(FeedController):
             c.project = subproject
             c.app = None
             return ProjectController(), remainder
-        app = c.project.app_instance(name)
-        if app is None:
-            raise exc.HTTPNotFound, name
-        c.app = app
-        if not app.root:
-            raise exc.HTTPNotFound, name
-
-        return app.root, remainder
+        raise exc.HTTPNotFound, name
 
     @expose('jinja:allura:templates/members.html')
     @with_trailing_slash

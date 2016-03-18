@@ -205,3 +205,55 @@ class TestProjectHome(TestController):
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
+
+    def test_toolaccess_before_subproject(self):
+        self.app.extra_environ = {'username': 'test-admin'}
+        # Add the subproject with a wiki.
+        self.app.post('/p/test/admin/update_mounts', params={
+            'new.install': 'install',
+            'new.ep_name': '',
+            'new.ordinal': '1',
+            'new.mount_point': 'test-mount',
+            'new.mount_label': 'Test Mount'})
+        r = self.app.get('/p/test/test-mount/')
+        assert r.location.endswith('admin/'), r.location
+
+        pr = M.Project.query.get(shortname='test/test-mount')
+        assert pr != None
+        c.user = M.User.query.get(username='test-admin')
+
+        # Install and Verify a Tool in the subproject.
+        pr.install_app(ep_name='Wiki', mount_point='test-sub', mount_label='Test Sub', ordinal='1')
+        r = self.app.get('/p/test/test-mount/test-sub/').follow()
+        active_link = r.html.findAll('li', {'class': 'selected'})
+        assert_equal(len(active_link), 1)
+        assert active_link[0].contents[1]['href'] == '/p/test/test-mount/test-sub/'
+        assert 'Welcome to your wiki!' in r
+
+        # Delete the Subproject.
+        self.app.post('/p/test/admin/update_mounts', params={
+            'subproject-0.delete': 'on',
+            'subproject-0.shortname': 'test/test-mount',
+            'new.ep_name': '',
+        })
+
+        # Try to access the  installed tool as anon.
+        r = self.app.get('/p/test/test-mount/test-sub/',
+        extra_environ = dict(username='*anonymous'),
+        status=404)
+        assert (r.status_int == 403 or r.status_int == 404)
+
+        # Try to access the installed tool as Admin.
+        r = self.app.get('/p/test/test-mount/test-sub/').follow()
+        assert 'Wiki' in r
+
+        # Install a new tool with same mount point in parent project. Here a Wiki is installed.
+        p = M.Project.query.get(shortname='test')
+        p.install_app(ep_name='Wiki', mount_point='test-mount', mount_label='Test Sub', ordinal='1')
+
+        # Check if the tool is accessed and not the subproject.
+        r = self.app.get('/p/test/test-mount/').follow()
+        active_link = r.html.findAll('li', {'class': 'selected'})
+        assert_equal(len(active_link), 1)
+        assert active_link[0].contents[1]['href'] == '/p/test/test-mount/'
+        assert 'Welcome to your wiki!' in r
