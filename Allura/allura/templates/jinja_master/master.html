@@ -50,6 +50,7 @@
 <html lang="en" class="no-js"> <!--<![endif]-->
 <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+    <script src="//twemoji.maxcdn.com/twemoji.min.js"></script>
     <title>{% block title %}Your title goes here{% endblock %}</title>
     {{ theme_macros.extra_header(g.theme_href('')) }}
     {% for blob in g.resource_manager.emit('head_css') %}
@@ -186,6 +187,18 @@
             $(this).tooltipster('hide');
         });
     });
+
+    window.onload = function() {
+      twemoji.size = '16x16';
+      twemoji.parse(document.body);
+    }
+
 </script>
+<style type="text/css">
+    img.emoji {  
+      margin: 0px !important;
+      display: inline !important;
+    }
+</style>
 </body>
 </html>
