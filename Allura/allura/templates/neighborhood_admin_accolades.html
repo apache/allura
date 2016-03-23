@@ -127,7 +127,7 @@
                       <td><a href="{{grant.award_url}}">{{grant.award_url}}</a></td>
                       <td>{{grant.comment}}</td>
                       <td>
-                        <form action="{{grant.longurl()}}/revoke" method="post">
+                        <form action="{{grant.longurl()}}/revoke" method="post" onsubmit="return confirm('Continue to revoke this award?');">
                           <input type="submit" value="Revoke"/>
                           {{lib.csrf_token()}}
                         </form>
