@@ -478,8 +478,9 @@ class Snapshot(Artifact):
         if original:
             original_index = original.index()
             result.update(original_index)
-            result['title'] = '%s (version %d)' % (
-                h.get_first(original_index, 'title'), self.version)
+            result['title'] = '%s (version %d)' % (h.get_first(original_index, 'title'), self.version)
+        else:
+            result['title'] = None
         result.update(
             id=self.index_id(),
             version_i=self.version,
@@ -691,8 +692,7 @@ class Award(Artifact):
             short_s=self.short,
             timestamp_dt=self.timestamp,
             full_s=self.full)
-        if self.created_by:
-            result['created_by_s'] = self.created_by.name
+        result['created_by_s'] = self.created_by.name if self.created_by else None
         return result
 
     @property
@@ -739,8 +739,7 @@ class AwardGrant(Artifact):
             short_s=self.short,
             timestamp_dt=self.timestamp,
             full_s=self.full)
-        if self.award:
-            result['award_s'] = self.award.short
+        result['award_s'] = self.award.short if self.award else None
         return result
 
     @property
@@ -761,7 +760,6 @@ class AwardGrant(Artifact):
             return self.award.short
         else:
             return None
-
 
 
 class RssFeed(FG.Rss201rev2Feed):

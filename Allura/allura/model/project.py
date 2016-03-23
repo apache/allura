@@ -1131,10 +1131,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                       short_description_t=self.short_description,
                       labels_t=' '.join(self.labels),
                       summary_t=self.summary,
-                    )
-        if self.category:
-            fields.update(category_name_t=self.category.name,
-                          category_description_t=self.category.description)
+                      category_name_t=self.category.name if self.category else None,
+                      category_description_t=self.category.description if self.category else None,
+                      )
         return dict(provider.index_project(self), **fields)
 
     def should_update_index(self, old_doc, new_doc):
