@@ -705,10 +705,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 result[k + solr_type] = (v or
                                          get_default_for_solr_type(solr_type))
 
-        if self.reported_by:
-            result['reported_by_s'] = self.reported_by.username
-        if self.assigned_to:
-            result['assigned_to_s'] = self.assigned_to.username
+        result['reported_by_s'] = self.reported_by.username if self.reported_by else None
+        result['assigned_to_s'] = self.assigned_to.username if self.assigned_to else None
+
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to
         # match on it too.

@@ -357,3 +357,10 @@ class TestTicketModel(TrackerTestWithModel):
         search.assert_called_once_with(app_cfg, user, solr_query, filter=filter, sort=None, limit=None, page=0, **kw)
         assert_equal(query.call_count, 0)
         assert_equal(tsearch.query_filter_choices.call_count, 0)
+
+    def test_index(self):
+        idx = Ticket(ticket_num=2, summary="ticket2", labels=["mylabel", "other"]).index()
+        assert_equal(idx['summary_t'], 'ticket2')
+        assert_equal(idx['labels_t'], 'mylabel other')
+        assert_equal(idx['reported_by_s'], 'test-user')
+        assert_equal(idx['assigned_to_s'], None)  # must exist at least
