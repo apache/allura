@@ -25,7 +25,7 @@
 {% block header %}
     {% if c.project.is_user_project %}
         {% if not actor_only %}
-            Activity from your followers
+            Activity from people you follow
         {% else %}
             Activity for
             {{c.project.user_project_of.display_name}}
