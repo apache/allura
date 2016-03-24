@@ -3460,14 +3460,23 @@ fieldset.preferences legend {
 
 @media print{
   body{ 
-  	background-color:#FFFFFF; 
-  	background-image:none; 
-  	color:#000000; 
+  	background-color: #FFFFFF; 
+  	background-image: none; 
+  	color: #000000; 
+  }
+  div{
+    background-image: none;
+    box-shadow: none;
+    width: 100%;
   }
   #site-header, #site-sec-header, #sidebar, #top_nav{ 
-  	display:none; 
+  	display: none; 
   }
-  #page-body{ 
-  	width:100%; 
+  #page-body, #content_base{ 
+  	width: 100%; 
+  }
+  .btn, button, input[type=submit], input[type=reset], input[type=button]{
+    background-image: none;
+    box-shadow: none;
   }
 }
