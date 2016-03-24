@@ -875,14 +875,14 @@ class Feed(MappedClass):
 
     @classmethod
     def update(cls, artifact, title=None, description=None, author=None,
-            author_link=None, author_name=None, pubdate=None, link=None, **kw):
+            author_link=None, author_name=None, pubdate=None, link=None, delete=False, **kw):
         """
         For a blog post which is present already but to be updated.
         """
         if not Feed.has_access(artifact):
             return
         v1 = Feed.query.find({'ref_id': artifact.index_id()}).first()
-        if artifact.state == 'draft':
+        if artifact.state == 'draft' or delete:
             Feed.delete(v1)
         # Modify the previous version.
         else:

@@ -190,40 +190,6 @@ class Test(TestController):
         response = self.app.get('/blog/%s/my-post/diff?v1=0&v2=0' % d)
         assert 'My Post' in response
 
-    def test_feeds(self):
-        self.app.get('/blog/feed.rss')
-        self.app.get('/blog/feed.atom')
-
-    def test_rss_feed_contains_self_link(self):
-        r = self.app.get('/blog/feed.rss')
-        # atom namespace included
-        assert_in('<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">', r)
-        # ...and atom:link points to feed url
-        assert_in('<atom:link href="http://localhost/blog/feed.rss" '
-                  'type="application/rss+xml" rel="self"></atom:link>', r)
-
-    def test_post_feeds(self):
-        self._post()
-        d = self._blog_date()
-        response = self.app.get('/blog/%s/my-post/feed.rss' % d)
-        assert 'Nothing to see' in response
-        response = self.app.get('/blog/%s/my-post/feed.atom' % d)
-        assert 'Nothing to see' in response
-        self._post(title='test', text='*sometext*')
-        response = self.app.get('/blog/feed')
-        assert '&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in response
-
-    def test_related_artifacts(self):
-        self._post(title='one')
-        M.MonQTask.run_ready()
-        d = self._blog_date()
-        self._post(title='two', text='[blog:%s/one]' % d)
-        M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
-        r = self.app.get('/blog/%s/one/' % d)
-        assert 'Related' in r
-        assert 'Blog: %s/two' % d in r
-
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)
         assert_equal(r.status_int, 404)

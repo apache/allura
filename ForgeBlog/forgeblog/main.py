@@ -377,6 +377,8 @@ class PostController(BaseController, FeedController):
     def save(self, delete=None, **kw):
         require_access(self.post, 'write')
         if delete:
+            # Remove from the Rss Feed.
+            M.Feed.update(self.post, delete=True)
             self.post.delete()
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))
