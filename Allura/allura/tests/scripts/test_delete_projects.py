@@ -124,7 +124,7 @@ class TestDeleteProjects(TestController):
         session(p).expunge(p)
         p = M.Project.query.get(shortname=p.shortname)
         assert p is None, 'Project is not deleted'
-        log.info.assert_called_once_with('Purging %s%s. Reason: %s', '/p/', 'test-delete', 'The Reason')
+        log.info.assert_called_once_with('Purging %s Reason: %s', '/p/test-delete/', 'The Reason')
         post_event.assert_called_once_with('project_deleted', project_id=pid, reason='The Reason')
 
     def _disable_users(self, disable):

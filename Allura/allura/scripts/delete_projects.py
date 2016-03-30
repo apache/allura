@@ -39,7 +39,7 @@ class DeleteProjects(ScriptTask):
             proj = cls.get_project(proj)
             if proj:
                 if proj.is_user_project:
-                    # disabling a user makes the project pages 404, so do that instead of deleting the project
+                    # disable user as well
                     user = proj.user_project_of
                     if user:
                         auth_provider.disable_user(user, audit=False)
@@ -49,9 +49,9 @@ class DeleteProjects(ScriptTask):
                         session(log_entry).flush(log_entry)
                     else:
                         log.info('Could not find associated user for user-project %s', proj.shortname)
-                else:
-                    log.info('Purging %s%s. Reason: %s', proj.neighborhood.url_prefix, proj.shortname, options.reason)
-                    provider.purge_project(proj, disable_users=options.disable_users, reason=options.reason)
+
+                log.info('Purging %s Reason: %s', proj.url(), options.reason)
+                provider.purge_project(proj, disable_users=options.disable_users, reason=options.reason)
 
     @classmethod
     def get_project(cls, proj):
