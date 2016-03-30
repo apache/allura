@@ -681,11 +681,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         # spaces and unicode filenames
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7')
         expected = {
-            'added': [u'with space.txt', u'привіт.txt'],
             'removed': [],
             'changed': [],
-            'copied': [],
             'renamed': [],
+            'added': [u'with space.txt', u'привіт.txt'],
+            'copied': [],
             'total': 2,
         }
         assert_equals(diffs, expected)

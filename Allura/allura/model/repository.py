@@ -326,7 +326,7 @@ class RepositoryImplementation(object):
         """
         raise NotImplementedError('get_changes')
 
-    def paged_diffs(self, commit_id, start=0, end=None):
+    def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         """
         Returns files touched by the commit, grouped by status (added, removed,
         and changed) and the total number of such files.  Paginates according
@@ -512,8 +512,8 @@ class Repository(Artifact, ActivityObject):
     def set_default_branch(self, name):
         return self._impl.set_default_branch(name)
 
-    def paged_diffs(self, commit_id, start=0, end=None):
-        return self._impl.paged_diffs(commit_id, start, end)
+    def paged_diffs(self, commit_id, start=0, end=None,  onlyChangedFiles=False):
+        return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -1168,8 +1168,8 @@ class Commit(RepoObject, ActivityObject):
     def diffs(self):
         return self.paged_diffs()
 
-    def paged_diffs(self, start=0, end=None):
-        diffs = self.repo.paged_diffs(self._id, start, end)
+    def paged_diffs(self, start=0, end=None,  onlyChangedFiles=False):
+        diffs = self.repo.paged_diffs(self._id, start, end, onlyChangedFiles)
 
         return Object(
             added=sorted(diffs['added']),

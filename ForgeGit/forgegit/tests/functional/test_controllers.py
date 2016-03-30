@@ -75,6 +75,35 @@ class _TestCase(TestController):
         ThreadLocalORMSession.flush_all()
 
 
+class TestUIController(TestController):
+    def setUp(self):
+        super(TestUIController, self).setUp()
+        self.setup_with_tools()
+
+    @with_git
+    def setup_with_tools(self):
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testui2.git'
+        c.app.repo.status = 'ready'
+        self.repo = c.app.repo
+        self.repo.refresh()
+        self.rev = self.repo.commit('HEAD')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_repo_loading(self):
+        resp = self.app.get('/src-git/').follow().follow()
+        assert '<a href="/p/test/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/">' in resp
+
+    def test_status_html(self):
+        resp = self.app.get('/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/')
+        sortedCommits = resp.html.findAll('td')
+        actualCommit = ['added', 'aaa.txt', 'removed', 'bbb.txt', 'changed', 'ccc.txt', 'removed', 'ddd.txt', 'added', 'eee.txt', 'added', 'ggg.txt']
+        for i, item in enumerate(sortedCommits):
+            assert_equal(actualCommit[i], ''.join(item.findAll(text=True)).strip())
+
 class TestRootController(_TestCase):
     @with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
     def _setup_weird_chars_repo(self):

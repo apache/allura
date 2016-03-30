@@ -650,7 +650,7 @@ class GitImplementation(M.RepositoryImplementation):
             pretty='format:',
             max_count=1).splitlines()[1:]
 
-    def paged_diffs(self, commit_id, start=0, end=None):
+    def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': []}
         cmd_args = ['--no-commit-id',
                     '--name-status',
@@ -660,6 +660,8 @@ class GitImplementation(M.RepositoryImplementation):
                     '-t',
                     '-z'  # don't escape filenames and use \x00 as fields delimiter
                     ]
+        if onlyChangedFiles:
+            cmd_args[4] = '-r'
         if asbool(tg.config.get('scm.commit.git.detect_copies', True)):
             cmd_args += ['-M', '-C']
 

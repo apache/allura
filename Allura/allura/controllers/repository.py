@@ -563,7 +563,7 @@ class CommitBrowser(BaseController):
         tree = self._commit.tree
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
-        diffs = self._commit.paged_diffs(start=start, end=start + limit)
+        diffs = self._commit.paged_diffs(start=start, end=start + limit, onlyChangedFiles=True)
         result['artifacts'] = []
         for t in ('added', 'removed', 'changed', 'copied', 'renamed'):
             for f in diffs[t]:
@@ -577,6 +577,14 @@ class CommitBrowser(BaseController):
                 )
         count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))
+        # Sort the result['artifacts'] which is in format as below -
+        # [('added', u'aaa.txt', 'blob', True),
+        # ('added', u'eee.txt', 'blob', True),
+        # ('added', u'ggg.txt', 'blob', True),
+        # ('removed', u'bbb.txt', 'tree', None),
+        # ('removed', u'ddd.txt', 'tree', None),
+        # ('changed', u'ccc.txt', 'blob', True)]
+        result['artifacts'].sort(key=lambda x: x[1]['old'] if(type(x[1]) == dict) else x[1])
         return result
 
     @expose('jinja:allura:templates/repo/commit_basic.html')
