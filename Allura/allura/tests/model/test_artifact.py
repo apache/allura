@@ -245,3 +245,57 @@ def test_get_discussion_thread_dupe():
     assert_equal(len(threads), 1)
     assert_equal(len(thread.posts), 6)
     assert not any(p.deleted for p in thread.posts)  # normal thread deletion propagates to children, make sure that doesn't happen
+
+
+def test_snapshot_clear_user_data():
+    s = M.Snapshot(author={'username': 'johndoe',
+                           'display_name': 'John Doe',
+                           'logged_ip': '1.2.3.4'})
+    s.clear_user_data()
+    assert_equal(s.author, {'username': '',
+                            'display_name': '',
+                            'logged_ip': None,
+                            'id': None,
+                            })
+
+
+@with_setup(setUp, tearDown)
+def test_snapshot_from_username():
+    s = M.Snapshot(author={'username': 'johndoe',
+                           'display_name': 'John Doe',
+                           'logged_ip': '1.2.3.4'})
+    s = M.Snapshot(author={'username': 'johnsmith',
+                           'display_name': 'John Doe',
+                           'logged_ip': '1.2.3.4'})
+    ThreadLocalORMSession.flush_all()
+    assert_equal(len(M.Snapshot.from_username('johndoe')), 1)
+
+
+def test_feed_clear_user_data():
+    f = M.Feed(author_name='John Doe',
+               author_link='/u/johndoe/',
+               title='Something')
+    f.clear_user_data()
+    assert_equal(f.author_name, '')
+    assert_equal(f.author_link, '')
+    assert_equal(f.title, 'Something')
+
+    f = M.Feed(author_name='John Doe',
+               author_link='/u/johndoe/',
+               title='Home Page modified by John Doe')
+    f.clear_user_data()
+    assert_equal(f.author_name, '')
+    assert_equal(f.author_link, '')
+    assert_equal(f.title, 'Home Page modified by <REDACTED>')
+
+
+@with_setup(setUp, tearDown)
+def test_feed_from_username():
+    M.Feed(author_name='John Doe',
+           author_link='/u/johndoe/',
+           title='Something')
+    M.Feed(author_name='John Smith',
+           author_link='/u/johnsmith/',
+           title='Something')
+    ThreadLocalORMSession.flush_all()
+    assert_equal(len(M.Feed.from_username('johndoe')), 1)

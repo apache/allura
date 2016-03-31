@@ -839,8 +839,8 @@ class Feed(MappedClass):
         """ Redact author data """
         self.author_name = ""
         self.author_link = ""
-        title = self.title.partition("modified by")[:-1]
-        self.title = u"".join(title) + u" <REDACTED>"
+        title_parts = self.title.partition(" modified by ")
+        self.title = u"".join(title_parts[0:2]) + (u"<REDACTED>" if title_parts[2] else '')
 
     @classmethod
     def from_username(cls, username):
