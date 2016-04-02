@@ -56,7 +56,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% if req.downstream_repo %}
     <p>
       <a href="{{req.creator_url}}">{{req.creator_name}}</a>
-      asked you to merge {{h.text.plural(commits|count, 'commit', 'commits')}}
+      wants to merge {{h.text.plural(commits|count, 'commit', 'commits')}}
       from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
       to {{ req.target_branch }},
       {{lib.abbr_date(req.mod_date)}}

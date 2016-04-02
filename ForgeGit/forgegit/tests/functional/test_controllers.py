@@ -601,7 +601,7 @@ class TestFork(_TestCase):
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
-        assert 'asked you to merge' in r, r.showbrowser()
+        assert 'wants to merge' in r, r.showbrowser()
         assert 'Improve documentation' in r, r.showbrowser()
         revs = r.html.findAll('tr', attrs={'class': 'rev'})
         assert_equal(len(revs), 1)
