@@ -130,6 +130,10 @@ def commit():
     g.solr.commit()
 
 
+@task
+def solr_del_tool(project_id, mount_point_s):
+    g.solr.delete(q='project_id_s:"%s" AND mount_point_s:"%s"' % (project_id, mount_point_s))
+
 @contextmanager
 def _indexing_disabled(session):
     session.disable_index = session.skip_mod_date = True

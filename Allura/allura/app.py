@@ -46,6 +46,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
+from allura.tasks import index_tasks
 
 log = logging.getLogger(__name__)
 
@@ -541,8 +542,8 @@ class Application(object):
         if project_id is None:
             project_id = project._id
         # De-index all the artifacts belonging to this tool in one fell swoop
-        g.solr.delete(q='project_id_s:"%s" AND mount_point_s:"%s"' % (
-            project_id, self.config.options['mount_point']))
+        index_tasks.solr_del_tool.post(project_id, self.config.options['mount_point'])
+        
         for d in model.Discussion.query.find({
                 'project_id': project_id,
                 'app_config_id': self.config._id}):
