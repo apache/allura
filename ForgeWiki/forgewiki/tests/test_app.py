@@ -93,7 +93,7 @@ class TestBulkExport(object):
         self.page.text = 'test_text'
         self.page.mod_date = datetime.datetime(2013, 7, 5)
         self.page.labels = ['test_label1', 'test_label2']
-        self.page.attach('test_file', StringIO('test string'))
+        self.page.attach('some/path/test_file', StringIO('test string'))
         ThreadLocalORMSession.flush_all()
 
     def test_bulk_export_with_attachmetns(self):

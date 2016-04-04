@@ -182,7 +182,7 @@ class Thread(Artifact, ActivityObject):
                          str(self.artifact._id),
                          self._id,
                          page.slug,
-                         attach.filename)
+                         os.path.basename(attach.filename))
                      ) for attach in page.attachments]
 
     def attachemtns_for_json(self, page):

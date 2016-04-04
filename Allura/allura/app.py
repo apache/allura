@@ -771,7 +771,7 @@ class Application(object):
         for attachment in attachments:
             attachment_path = os.path.join(
                 path,
-                attachment.filename
+                os.path.basename(attachment.filename)
             )
             with open(attachment_path, 'w') as fl:
                 fl.write(attachment.rfile().read())
