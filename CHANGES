@@ -1,3 +1,78 @@
+Version 1.4.0  (April 2016)
+
+Upgrade Instructions
+
+ To show a custom logo, update your .ini file with logo.* settings (see development.ini for examples)
+ To show custom header links, set global_nav in the .ini file
+
+New Features
+ * [#7919] [#7920] New admin nav bar
+ * [#5940] Add options for site logo and links in header
+ * [#8023] [#8024] Site notification admin interface
+ * [#6662] [#8051] Add attachments to Export
+ * [#7987] Standardize fenced blocks in markdown
+
+Bug Fixes & Minor Improvements
+
+ Code Repositories:
+ * [#8029] Submitter should be able to reject merge request
+ * [#8042] Better handing of tmp dirs during merge
+ * [#8072] Change "asked you to merge" text
+ * Remove .ts from list of known binary extensions; allow repo settings to override binary blacklist
+ * Encode username for git
+ Wiki:
+ * [#7998] Adding attachment to wiki loses your text changes
+ Tickets:
+ * [#7929] Enable voting on tickets by default
+ * [#8069] Ticket search error: undefined field assigned_to
+ * [#8061] Attachments not visible if ticket status is 'pending'
+ Blog:
+ * [#4153] RSS feed for blog should not show revisions or deleted posts
+ * [#8031] Show blog search box
+ Admin:
+ * [#7145] When deleting a tool, the solr call should be a bg task
+ * [#7682] Add confirmation dialog to award/awardgrant delete
+ * [#8020] Easy way to view all posts from a certain user, and flag as spam
+ * [#8033] create-allura-sitemap.py broken
+ * [#8037] Change "Label" admin option to "Rename"
+ * [#8057] Handle user-projects better in project delete form
+ * When deleting a user project, actually do it - not just disable the user
+ General:
+ * [#4849] Pages are more printer-friendly
+ * [#7978] Activity page fixes
+ * [#8003] Bugs in attachments to comments
+ * [#8005] Subprojects not checked for 'deleted' flag
+ * [#8010] Markdown editor does not load when url hash contains slashes
+ * [#8013] New Users should not be displayed in /u/wiki/home until email is verified
+ * [#8036] Update modal css (simple-flat-dark)
+ * [#8046] Don't duplicate titles on neighborhood pages
+ * [#8066] Don't error out on missing users
+ * Add login redirect to the nav "Log In" link
+ * better tool descriptions
+ For Developers:
+ * [#7907] Use standardized solr installation
+ * [#7921] Remove old tool configuration page
+ * [#8032] Set up primary emails for test users (paster setup-app)
+ * [#8034] Fire event for any menu changes
+ * [#8035] Finalize frontend eslint/jscs setup
+ * [#8038] Support mongo 3.x
+ * [#8039] Change jslint to use an npm tool instead of java
+ * [#8041] Update regexes to match DNS host rules better
+ * [#8044] API for current site notification
+ * [#8047] Akismet filter needs to send original metadata when reporting spam/ham
+ * [#8054] Remove Google Code importers
+ * Add audit log messages to disable_users.py script
+ * Docker fixes
+ * Add clear_user_data and from_username helper methods
+ * Add guardfile for livereload of frontend changes
+ * Delete bootstrap tasks instead of running them; 30-40% speedup in test run time
+ * new admin APIs, new _nav.json param
+ * remove AdminModal widgets, use JS directly
+ * remove sidebar_menu_widgets and admin_menu_widgets, using JS directly instead
+ * upgrade existing react code to 0.14
+ * better calculation of tool/subproject ordinal values when installing
+
+
 Version 1.3.2  (December 2015)
 
 Upgrade Instructions
@@ -66,6 +141,7 @@ Bug Fixes & Minor Improvements
  * [#7980] Fix pep8 and pyflakes violations
  * [#8015] Activitystream needs ming config option
  * [#8028] Use virtualenv inside docker
+
 
 Version 1.3.1  (August 2015)
 
