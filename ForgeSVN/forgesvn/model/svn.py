@@ -780,7 +780,7 @@ class SVNImplementation(M.RepositoryImplementation):
     def tags(self):
         return []
 
-    def paged_diffs(self, commit_id, start=0, end=None):
+    def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         result = {'added': [], 'removed': [], 'changed': [], 'copied': [], 'renamed': [], 'total': 0}
         rev = self._revision(commit_id)
         try:
