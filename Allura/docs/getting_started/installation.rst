@@ -224,15 +224,6 @@ Next Steps
 Go to the Allura webapp running on your `local machine <http://localhost:8080/>`_ port 8080.
 (If you're running this inside a VM, you'll probably have to configure the port forwarding settings)
 
-You can log in with username `admin1`, `test-user` or `root`.  They all have password "foo".  (For more details
-on the default data, see :file:`bootstrap.py`)
-
-There are a few default projects (like "test") and neighborhoods.  Feel free to experiment with them.  If you want to
-register a new project in your own forge, visit `/p/add_project`.
-
-Extra
-^^^^^
-
 * Read :ref:`post-setup-instructions`
 * Ask questions and discuss Allura on the `allura-dev mailing list <http://mail-archives.apache.org/mod_mbox/allura-dev/>`_
 * Run the test suite (slow): :code:`$ ALLURA_VALIDATION=none ./run_tests`
@@ -250,8 +241,12 @@ First run
 `Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
 
 Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
+On Linux, you may need to `create a docker group <https://docs.docker.com/engine/installation/linux/ubuntulinux/#create-a-docker-group>`_.  On Mac, make sure
+you're in a directory that Virtual Box shares through to the VM (by default, anywhere in your home directory works).
 
-Build/fetch all required images (run these in allura source directory):
+Rename your directory to just "allura" and run the following commands in that directory:
+
+Build/fetch all required images:
 
 .. code-block:: bash
 
@@ -385,6 +380,15 @@ Connecting to mongo using a container:
 
 Post-setup instructions
 -----------------------
+
+Logging in and sample projects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can log in with username `admin1`, `test-user` or `root`.  They all have password "foo".  (For more details
+on the default data, see :file:`bootstrap.py`)
+
+There are a few default projects (like "test") and neighborhoods.  Feel free to experiment with them.  If you want to
+register a new project in your own forge, visit `/p/add_project`.
 
 Create project for site-admin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
