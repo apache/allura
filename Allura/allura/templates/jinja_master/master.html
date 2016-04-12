@@ -33,9 +33,9 @@
 {% do g.register_forge_css('css/forge/tooltipster.css') %}
 {% do g.register_forge_css('css/font-awesome.min.css', compress=False) %}
 {% do g.theme.require() %}
+{% do g.register_forge_js('js/admin_modal.js') %}
+{% do g.register_js('js/jquery.lightbox_me.js') %}
 {% if h.has_access(c.project, 'admin')() %}
-    {% do g.register_forge_js('js/admin_modal.js') %}
-    {% do g.register_js('js/jquery.lightbox_me.js') %}
     {# this would be better placed in top_nav.html but that file is included later so its too late for it to register
        any css.  (Unlike other html files which are the top-level file and extend this master.html) #}
     {% do g.register_forge_css('css/navbar.css') %}

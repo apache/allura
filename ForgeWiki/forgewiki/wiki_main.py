@@ -219,7 +219,7 @@ The wiki uses [Markdown](%s) syntax.
     def create_common_wiki_menu(self, has_create_access, admin_menu=False):
         links = []
         if has_create_access:
-            links += [SitemapEntry('Create Page', self.admin_url + 'create_wiki_page',
+            links += [SitemapEntry('Create Page', self.url + 'create_wiki_page/',
                                    ui_icon=g.icons['add'],
                                    className='admin_modal')]
         if not admin_menu:
@@ -486,6 +486,11 @@ class RootController(BaseController, DispatchIndex, FeedController):
                     count=count,
                     page=pagenum,
                     name_labels=name_labels[start:start + limit])
+
+    @with_trailing_slash
+    @expose('jinja:forgewiki:templates/wiki/create_page.html')
+    def create_wiki_page(self):
+        return dict(allow_create=has_access(c.app, 'create')())
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax.html')
@@ -885,11 +890,6 @@ class WikiAdminController(DefaultAdminController):
     def home(self):
         return dict(app=self.app,
                     home=self.app.root_page_name,
-                    allow_config=has_access(self.app, 'configure')())
-
-    @expose('jinja:forgewiki:templates/wiki/admin_add_page.html')
-    def create_wiki_page(self):
-        return dict(app=self.app,
                     allow_config=has_access(self.app, 'configure')())
 
     @without_trailing_slash

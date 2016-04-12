@@ -19,7 +19,7 @@
 <script type="text/javascript">
     $(function () {
         $("form").submit(function () {
-            location.href = '{{ app.url }}' +
+            location.href = '{{ c.app.url }}' +
                     encodeURIComponent($('input[name=name]', $(this)).val().replace(new RegExp('/', 'g'), '-')) + '/edit';
             return false;
         });
