@@ -301,8 +301,42 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
         return dict(commit_count=len(all_commits))
 
     @expose('json:')
+    def logs(self, rev=None, comm=25, **kw):
+        '''
+        Return 25 latest commits   : /rest/p/code/logs/ 
+        Return 25 commits since sha: /rest/p/code/logs/e1a2ad
+        Return 04 commits since sha: /rest/p/code/logs/e1a2ad/4
+        Return 120 latest commits  : /rest/p/code/logs/?comm=120
+        '''
+
+        revisions = islice(c.app.repo.log(rev, id_only=False), int(comm))
+
+        return {
+            'commits': [
+                {
+                    'parents': [{'id': p} for p in commit['parents']],
+                    'url': c.app.repo.url_for_commit(commit['id']),
+                    'id': commit['id'],
+                    'message': commit['message'],
+                    'tree': commit.get('tree'),
+                    'committed_date': commit['committed']['date'],
+                    'authored_date': commit['authored']['date'],
+                    'author': {
+                        'name': commit['authored']['name'],
+                        'email': commit['authored']['email'],
+                    },
+                    'committer': {
+                        'name': commit['committed']['name'],
+                        'email': commit['committed']['email'],
+                    },
+                }
+                for commit in revisions
+            ]}
+
+    @expose('json:')
     def commits(self, rev=None, **kw):
-        revisions = islice(c.app.repo.log(rev, id_only=False), 25)
+
+        revisions = islice(c.app.repo.log(rev, id_only=False), 1)
 
         return {
             'commits': [
