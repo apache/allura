@@ -60,6 +60,13 @@ class TestRootController(TestController):
                          extra_environ=dict(username='*anonymous')).follow()
         assert 'Create Page' not in r
 
+    @td.with_wiki
+    def test_create_wiki_page(self):
+        url = u"/p/test/wiki/create_wiki_page/"
+        r = self.app.get(url)
+        assert u'test' in r
+        assert u'Create page' in r.body
+
     def test_root_markdown_syntax(self):
         response = self.app.get('/wiki/markdown_syntax/')
         assert 'Markdown Syntax' in response

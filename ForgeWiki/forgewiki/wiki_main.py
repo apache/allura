@@ -490,7 +490,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/create_page.html')
     def create_wiki_page(self):
-        return dict(allow_create=has_access(c.app, 'create')())
+        return {}
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax.html')
