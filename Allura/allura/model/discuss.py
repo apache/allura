@@ -288,7 +288,8 @@ class Thread(Artifact, ActivityObject):
         return p
 
     def is_spam(self, post):
-        if c.user in c.project.users_with_role('Admin', 'Developer'):
+        roles = [r.name for r in c.project.named_roles]
+        if c.user in c.project.users_with_role(*roles):
             return False
         else:
             return g.spam_checker.check(post.text, artifact=post, user=c.user)

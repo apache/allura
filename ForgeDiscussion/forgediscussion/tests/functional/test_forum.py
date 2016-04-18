@@ -25,7 +25,9 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
+from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
+
 from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false
 import feedparser
 
@@ -33,6 +35,7 @@ from allura import model as M
 from allura.tasks import mail_tasks
 from alluratest.controller import TestController
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 
 from forgediscussion import model as FM
 
@@ -515,6 +518,19 @@ class TestForum(TestController):
         post = FM.ForumPost.query.get(text='Post content')
         link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
         assert link in r, link
+
+    @td.with_tool('test2', 'Discussion', 'discussion')
+    @mock.patch('allura.model.discuss.g.spam_checker')
+    def test_is_spam(self, spam_checker):
+        spam_checker.check.return_value = True
+        c.user = M.User.query.get(username="test-user")
+        role = M.ProjectRole(project_id=c.project._id, name='TestRole')
+        M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
+        ThreadLocalORMSession.flush_all()
+        t = M.Thread()
+        p = M.Post()
+        assert_in('TestRole', [r.name for r in c.project.named_roles])
+        assert_false(t.is_spam(p))
 
     def test_thread(self):
         r = self.app.get('/discussion/create_topic/')
