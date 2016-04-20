@@ -31,6 +31,7 @@ from paste.deploy.converters import asint
 import allura.tasks.repo_tasks
 from allura.controllers import BaseController
 from allura.controllers.repository import RepoRootController
+from allura.controllers.repository import RepoRestController
 from allura.lib.decorators import require_post
 from allura.lib.repository import RepositoryApp, RepoAdminController
 from allura.app import SitemapEntry, ConfigOption, AdminControllerMixin
@@ -72,6 +73,7 @@ class ForgeSVNApp(RepositoryApp):
         super(ForgeSVNApp, self).__init__(project, config)
         self.root = BranchBrowser()
         default_root = RepoRootController()
+        self.api_root = RepoRestController()
         self.root.refresh = default_root.refresh
         self.root.commit_browser = default_root.commit_browser
         self.root.commit_browser_data = SVNCommitBrowserController().commit_browser_data
