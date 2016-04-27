@@ -102,11 +102,12 @@ $(window).load(function() {
 
             function drawTable(editor) {
               var cm = editor.codemirror;
-              _replaceSelection(cm, false, '',
+              cm.replaceSelection(
                 'Header | Header | Header\n' +
                 '---------- | ---------- | ------ \n' +
                 'Cell      | Cell       | Cell \n' +
                 'Cell      | Cell       | Cell ');
+              cm.focus();
             }
 
             function show_help(editor) {
