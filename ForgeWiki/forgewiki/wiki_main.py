@@ -534,8 +534,8 @@ class PageController(BaseController, FeedController):
             self.rate_limit()
 
     def rate_limit(self):
-        if WM.Page.is_limit_exceeded(c.app.config):
-            msg = 'Page creation rate limit exceeded. '
+        if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
+            msg = 'Page create/edit rate limit exceeded. '
             log.warn(msg + c.app.config.url())
             flash(msg + 'Please try again later.', 'error')
             redirect('..')
@@ -607,6 +607,7 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
     def edit(self):
+        self.rate_limit()  # check before trying to save
         page_exists = self.page
         if self.page:
             require_access(self.page, 'edit')
@@ -718,6 +719,7 @@ class PageController(BaseController, FeedController):
             flash('You must provide a title for the page.', 'error')
             redirect('edit')
         title = title.replace('/', '-')
+        self.rate_limit()
         if not self.page:
             # the page doesn't exist yet, so create it
             self.page = WM.Page.upsert(self.title)
@@ -861,8 +863,8 @@ class PageRestController(BaseController):
         with h.notifications_disabled(c.project):
             if not self.page:
                 require_access(c.app, 'create')
-                if WM.Page.is_limit_exceeded(c.app.config):
-                    log.warn('Page creation rate limit exceeded. %s',
+                if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
+                    log.warn('Page create/edit rate limit exceeded. %s',
                              c.app.config.url())
                     raise forge_exc.HTTPTooManyRequests()
                 self.page = WM.Page.upsert(title)

@@ -804,7 +804,7 @@ class TestRootController(TestController):
             assert_equal(wf['status'], 'error')
             assert_equal(
                 wf['message'],
-                'Page creation rate limit exceeded. Please try again later.')
+                'Page create/edit rate limit exceeded. Please try again later.')
 
     def test_rate_limit_update(self):
         # Set rate limit to unlimit
@@ -826,9 +826,34 @@ class TestRootController(TestController):
             assert_equal(wf['status'], 'error')
             assert_equal(
                 wf['message'],
-                'Page creation rate limit exceeded. Please try again later.')
+                'Page create/edit rate limit exceeded. Please try again later.')
             p = model.Page.query.get(title='page2')
             assert_equal(p, None)
+
+    def test_rate_limit_by_user(self):
+        # also test that multiple edits to a page counts as one page towards the limit
+
+        # test/wiki/Home and test/sub1/wiki already were created by this user
+        # and proactively get the user-project wiki created (otherwise it'll be created during the subsequent edits)
+        self.app.get('/u/test-admin/wiki/')
+        with h.push_config(config, **{'forgewiki.rate_limits_per_user': '{"3600": 5}'}):
+            r = self.app.post('/p/test/wiki/page123/update',  # page 4 (remember, 3 other projects' wiki pages)
+                              dict(text='Starting a new page, ok', title='page123'))
+            assert_equal(self.webflash(r), '')
+            r = self.app.post('/p/test/wiki/page123/update',
+                              dict(text='Editing some', title='page123'))
+            assert_equal(self.webflash(r), '')
+            r = self.app.post('/p/test/wiki/page123/update',
+                              dict(text='Still editing', title='page123'))
+            assert_equal(self.webflash(r), '')
+            r = self.app.post('/p/test/wiki/pageABC/update',  # page 5
+                              dict(text='Another new page', title='pageABC'))
+            assert_equal(self.webflash(r), '')
+            r = self.app.post('/p/test/wiki/pageZZZZZ/update',  # page 6
+                              dict(text='This new page hits the limit', title='pageZZZZZ'))
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(wf['message'], 'Page create/edit rate limit exceeded. Please try again later.')
 
     def test_sidebar_admin_menu(self):
         r = self.app.get('/p/test/wiki/Home/')

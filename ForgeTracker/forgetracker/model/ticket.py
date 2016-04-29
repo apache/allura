@@ -1296,6 +1296,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             discussion_disabled=self.discussion_disabled)
 
 
+
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
     ArtifactType = Ticket

@@ -431,21 +431,23 @@ class Artifact(MappedClass, SearchIndexable):
         return h.gen_message_id(self._id)
 
     @classmethod
-    def is_limit_exceeded(cls, app_config):
+    def is_limit_exceeded(cls, app_config, user=None, count_by_user=None):
         """
         Returns True if any of artifact creation rate limits are exceeded,
         False otherwise
         """
         pkg = cls.__module__.split('.', 1)[0]
         opt = u'{}.rate_limits'.format(pkg)
-        count = cls.query.find(dict(app_config_id=app_config._id)).count()
+        count_in_app = cls.query.find(dict(app_config_id=app_config._id)).count()
         provider = plugin.ProjectRegistrationProvider.get()
         start = provider.registration_date(app_config.project)
-        # have to have the replace because, the generation_time is offset-aware
-        # UTC and h.rate_limit uses offset-naive UTC dates
+        # need the replace because the generation_time is offset-aware UTC and h.rate_limit uses offset-naive UTC dates
         start = start.replace(tzinfo=None)
+
         try:
-            h.rate_limit(opt, count, start)
+            h.rate_limit(opt, count_in_app, start)
+            if user and count_by_user is not None:
+                h.rate_limit(opt + '_per_user', count_by_user, user.registration_date())
         except forge_exc.RatelimitError:
             return True
         return False
@@ -458,7 +460,9 @@ class Snapshot(Artifact):
         session = artifact_orm_session
         name = 'artifact_snapshot'
         unique_indexes = [('artifact_class', 'artifact_id', 'version')]
-        indexes = [('artifact_id', 'version')]
+        indexes = [('artifact_id', 'version'),
+                   'author.id',
+                   ]
 
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)
@@ -616,6 +620,22 @@ class VersionedArtifact(Artifact):
         super(VersionedArtifact, self).delete()
         HC = self.__mongometa__.history_class
         HC.query.remove(dict(artifact_id=self._id))
+
+    @classmethod
+    def is_limit_exceeded(cls, *args, **kwargs):
+        if 'user' in kwargs:
+            # count distinct items, not total (e.g. many edits to a single wiki page doesn't count against you)
+            HC = cls.__mongometa__.history_class
+            distinct_artifacts_by_user = HC.query.find({'author.id': kwargs['user']._id}).distinct('artifact_id')
+            """
+            # some useful debugging:
+            log.info(distinct_artifacts_by_user)
+            for art_id in distinct_artifacts_by_user:
+                art = cls.query.get(_id=art_id)
+                log.info('   ' + art.url())
+            """
+            kwargs['count_by_user'] = len(distinct_artifacts_by_user)
+        return super(VersionedArtifact, cls).is_limit_exceeded(*args, **kwargs)
 
 
 class Message(Artifact):

@@ -657,7 +657,7 @@ class RootController(BaseController, FeedController):
         require_access(c.app, 'read')
 
     def rate_limit(self, redir='..'):
-        if TM.Ticket.is_limit_exceeded(c.app.config):
+        if TM.Ticket.is_limit_exceeded(c.app.config, user=c.user):
             msg = 'Ticket creation rate limit exceeded. '
             log.warn(msg + c.app.config.url())
             flash(msg + 'Please try again later.', 'error')
@@ -1830,7 +1830,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require_access(c.app, 'create')
-        if TM.Ticket.is_limit_exceeded(c.app.config):
+        if TM.Ticket.is_limit_exceeded(c.app.config, user=c.user):
             msg = 'Ticket creation rate limit exceeded. '
             log.warn(msg + c.app.config.url())
             raise forge_exc.HTTPTooManyRequests()
