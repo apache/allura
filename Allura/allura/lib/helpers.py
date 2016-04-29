@@ -1281,6 +1281,8 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
     """
     Check the various config-defined artifact creation rate limits, and if any
     are exceeded, raise exception.
+
+    :param artifact_count: a number or callable (for lazy evaluation)
     """
     if exception is None:
         exception = exc.RatelimitError
@@ -1289,5 +1291,8 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
     for rate, count in rate_limits.items():
         age = now - start_date
         age = (age.microseconds + (age.seconds + age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
-        if age < int(rate) and artifact_count >= count:
-            raise exception()
+        if age < int(rate):
+            if callable(artifact_count):
+                artifact_count = artifact_count()
+            if artifact_count >= count:
+                raise exception()

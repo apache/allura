@@ -438,7 +438,7 @@ class Artifact(MappedClass, SearchIndexable):
         """
         pkg = cls.__module__.split('.', 1)[0]
         opt = u'{}.rate_limits'.format(pkg)
-        count_in_app = cls.query.find(dict(app_config_id=app_config._id)).count()
+        count_in_app = lambda: cls.query.find(dict(app_config_id=app_config._id)).count()
         provider = plugin.ProjectRegistrationProvider.get()
         start = provider.registration_date(app_config.project)
         # need the replace because the generation_time is offset-aware UTC and h.rate_limit uses offset-naive UTC dates
@@ -624,17 +624,19 @@ class VersionedArtifact(Artifact):
     @classmethod
     def is_limit_exceeded(cls, *args, **kwargs):
         if 'user' in kwargs:
-            # count distinct items, not total (e.g. many edits to a single wiki page doesn't count against you)
-            HC = cls.__mongometa__.history_class
-            distinct_artifacts_by_user = HC.query.find({'author.id': kwargs['user']._id}).distinct('artifact_id')
-            """
-            # some useful debugging:
-            log.info(distinct_artifacts_by_user)
-            for art_id in distinct_artifacts_by_user:
-                art = cls.query.get(_id=art_id)
-                log.info('   ' + art.url())
-            """
-            kwargs['count_by_user'] = len(distinct_artifacts_by_user)
+            def distinct_artifacts_by_user():
+                # count distinct items, not total (e.g. many edits to a single wiki page doesn't count against you)
+                HC = cls.__mongometa__.history_class
+                artifacts = HC.query.find({'author.id': kwargs['user']._id}).distinct('artifact_id')
+                """
+                # some useful debugging:
+                log.info(artifacts)
+                for art_id in artifacts:
+                    art = cls.query.get(_id=art_id)
+                    log.info('   ' + art.url())
+                """
+                return len(artifacts)
+            kwargs['count_by_user'] = distinct_artifacts_by_user
         return super(VersionedArtifact, cls).is_limit_exceeded(*args, **kwargs)
 
 
