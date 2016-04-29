@@ -44,4 +44,5 @@ ENV LANG en_US.UTF-8
 ENV USER root
 
 WORKDIR /allura
+ENV PYTHONUNBUFFERED 1
 CMD gunicorn --paste Allura/docker-dev.ini --reload
