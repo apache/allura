@@ -937,6 +937,8 @@ class RootController(BaseController, FeedController):
             require_access(c.app, 'create')
             self.rate_limit(redir='.')
             ticket = TM.Ticket.new()
+            g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
+                                 user=c.user, content_type='ticket')
         ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,

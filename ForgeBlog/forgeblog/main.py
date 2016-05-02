@@ -308,6 +308,8 @@ class RootController(BaseController, FeedController):
         require_access(c.app, 'write')
         rate_limit()
         post = BM.BlogPost.new(**kw)
+        g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=post,
+                             user=c.user, content_type='blog-post')
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
     @with_trailing_slash

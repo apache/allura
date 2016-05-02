@@ -391,7 +391,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': '',
                 'viewable_by-0.id': 'all'})
-        assert_equal(spam_checker.check.call_args[0][0], 'sometext')
+        assert_equal(spam_checker.check.call_args[0][0], u'tést\nsometext')
         assert 'tést' in response
 
     def test_page_label_unlabel(self):

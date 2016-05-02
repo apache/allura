@@ -745,7 +745,7 @@ class PageController(BaseController, FeedController):
         else:
             self.page.labels = []
         self.page.commit()
-        g.spam_checker.check(text, artifact=self.page,
+        g.spam_checker.check(title + u'\n' + text, artifact=self.page,
                              user=c.user, content_type='wiki')
         g.director.create_activity(c.user, activity_verb, self.page,
                                    related_nodes=[c.project], tags=['wiki'])

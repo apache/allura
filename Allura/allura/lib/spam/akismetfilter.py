@@ -81,7 +81,6 @@ class AkismetSpamFilter(SpamFilter):
         return kw
 
     def check(self, text, artifact=None, user=None, content_type='comment', **kw):
-        log_msg = text
         res = self.service.comment_check(text,
                                          data=self.get_data(text=text,
                                                             artifact=artifact,
@@ -90,7 +89,7 @@ class AkismetSpamFilter(SpamFilter):
                                                             request=request,
                                                             ),
                                          build_data=False)
-        log.info("spam=%s (akismet): %s" % (str(res), log_msg))
+        log.info("spam=%s (akismet): %s" % (str(res), artifact.url() if artifact else text))
         return res
 
     def submit_spam(self, text, artifact=None, user=None, content_type='comment'):
