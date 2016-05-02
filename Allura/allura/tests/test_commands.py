@@ -17,6 +17,8 @@
 
 from nose.tools import assert_raises, assert_in
 from datadiff.tools import assert_equal
+
+from ming.base import Object
 from ming.orm import ThreadLocalORMSession
 from mock import Mock, call, patch
 import pymongo
@@ -180,6 +182,22 @@ class TestEnsureIndexCommand(object):
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd.run([test_config])
 
+    def test_no_drop(self):
+        collection = Mock(name='collection')
+        collection.index_information.return_value = {
+            '_id_': {'key': '_id'},
+            '_foo_bar': {'key': [('foo', 1), ('bar', 1)]},
+        }
+        indexes = [
+            Mock(unique=False, index_spec=[('foo', 1)],
+                 index_options={'unique': False, 'sparse': False}),
+        ]
+        cmd = show_models.EnsureIndexCommand('ensure_index')
+        cmd.options = Object(clean=False)
+        cmd._update_indexes(collection, indexes)
+        assert collection.ensure_index.called
+        assert not collection.drop_index.called
+
     def test_update_indexes_order(self):
         collection = Mock(name='collection')
         collection.index_information.return_value = {
@@ -191,6 +209,7 @@ class TestEnsureIndexCommand(object):
                  index_options={'unique': False, 'sparse': False}),
         ]
         cmd = show_models.EnsureIndexCommand('ensure_index')
+        cmd.options = Object(clean=True)
         cmd._update_indexes(collection, indexes)
 
         collection_call_order = {}

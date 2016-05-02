@@ -203,8 +203,10 @@ class EnsureIndexCommand(base.Command):
     min_args = 1
     max_args = 1
     usage = '[<ini file>]'
-    summary = 'Create all the Mongo indexes specified by Ming models, drop any unspecified indexes.'
+    summary = 'Create all the Mongo indexes specified by Ming models'
     parser = base.Command.standard_parser(verbose=True)
+    parser.add_option('--clean', action='store_true', dest='clean',
+                      help='Drop any unneeded indexes')
 
     def command(self):
         from allura import model as M
@@ -298,12 +300,20 @@ class EnsureIndexCommand(base.Command):
         # Drop obsolete indexes
         for iname, keys in prev_indexes.iteritems():
             if keys not in indexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
-                collection.drop_index(iname)
+                if self.options.clean:
+                    base.log.info('...... drop index %s:%s', collection.name, iname)
+                    collection.drop_index(iname)
+                else:
+                    base.log.info('...... potentially unneeded index, could be removed by running with --clean %s:%s',
+                                  collection.name, iname)
         for iname, keys in prev_uindexes.iteritems():
             if keys not in uindexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
-                collection.drop_index(iname)
+                if self.options.clean:
+                    base.log.info('...... drop index %s:%s', collection.name, iname)
+                    collection.drop_index(iname)
+                else:
+                    base.log.info('...... potentially unneeded index, could be removed by running with --clean %s:%s',
+                                  collection.name, iname)
 
     def _recreate_index(self, collection, iname, keys, **creation_options):
         '''Recreate an index with new creation options, using a temporary index
