@@ -44,6 +44,7 @@ from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
+from allura.lib import exceptions as forge_exc
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
@@ -233,6 +234,14 @@ class ForgeBlogApp(Application):
                 self.save_attachments(post_path, post.attachments)
 
 
+def rate_limit():
+    if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
+        msg = 'Create/edit rate limit exceeded. '
+        log.warn(msg + c.app.config.url())
+        flash(msg + 'Please try again later.', 'error')
+        redirect(c.app.config.url())
+
+
 class RootController(BaseController, FeedController):
 
     def __init__(self):
@@ -285,6 +294,7 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def new(self, **kw):
         require_access(c.app, 'write')
+        rate_limit()
         post = dict(
             state='published')
         c.form = W.new_post_form
@@ -296,6 +306,7 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def save(self, **kw):
         require_access(c.app, 'write')
+        rate_limit()
         post = BM.BlogPost.new(**kw)
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
@@ -350,6 +361,7 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     def edit(self, **kw):
         require_access(self.post, 'write')
+        rate_limit()
         c.form = W.edit_post_form
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
@@ -376,6 +388,7 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     def save(self, delete=None, **kw):
         require_access(self.post, 'write')
+        rate_limit()
         if delete:
             # Remove from the Rss Feed.
             M.Feed.update(self.post, delete=True)
@@ -509,6 +522,9 @@ class RootRestController(BaseController, AppRestControllerMixin):
     def index(self, title='', text='', state='draft', labels='', limit=10, page=0, **kw):
         if request.method == 'POST':
             require_access(c.app, 'write')
+            if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
+                log.warn('Create/edit rate limit exceeded. %s', c.app.config.url())
+                raise forge_exc.HTTPTooManyRequests()
             post = BM.BlogPost.new(
                 title=title,
                 state=state,
@@ -559,6 +575,9 @@ class PostRestController(BaseController):
 
     def _update_post(self, **post_data):
         require_access(self.post, 'write')
+        if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
+            log.warn('Create/edit rate limit exceeded. %s', c.app.config.url())
+            raise forge_exc.HTTPTooManyRequests()
         if 'delete' in post_data:
             self.post.delete()
             return {}

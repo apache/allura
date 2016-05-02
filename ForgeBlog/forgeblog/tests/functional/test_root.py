@@ -16,13 +16,14 @@
 #       under the License.
 
 import datetime
+import json
 
+import tg
 from nose.tools import assert_equal, assert_in
-from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 
+from allura.lib import helpers as h
 from alluratest.controller import TestController
-from allura import model as M
 
 #---------x---------x---------x---------x---------x---------x---------x
 # RootController methods exposed:
@@ -201,3 +202,17 @@ class Test(TestController):
         self._post()
         d = self._blog_date()
         self.app.get('/blog/%s/my-post/?limit=blah&page=2x' % d, status=200)
+
+    def test_rate_limit_submit(self):
+        with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
+            r = self._post()
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(wf['message'], 'Create/edit rate limit exceeded. Please try again later.')
+
+    def test_rate_limit_form(self):
+        with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
+            r = self.app.get('/blog/new')
+            wf = json.loads(self.webflash(r))
+            assert_equal(wf['status'], 'error')
+            assert_equal(wf['message'], 'Create/edit rate limit exceeded. Please try again later.')

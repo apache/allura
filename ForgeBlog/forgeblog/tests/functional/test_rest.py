@@ -18,11 +18,14 @@
 #       under the License.
 from datetime import date
 
+import tg
 from nose.tools import assert_equal, assert_in
+
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from allura import model as M
 from alluratest.controller import TestRestApiBase
+
 from forgeblog import model as BM
 
 
@@ -252,3 +255,33 @@ class TestBlogApi(TestRestApiBase):
             user='root')
         assert_equal(r.status_int, 200)
         assert_equal(r.json['result'], False)
+
+    def test_create_post_limit_by_project(self):
+        data = {
+            'title': 'test against limit',
+            'text': 'test text',
+            'state': 'published',
+            'labels': 'label1, label2'
+        }
+        # Set rate limit to 0 in first hour of project
+        with h.push_config(tg.config, **{'forgeblog.rate_limits': '{"3600": 0}'}):
+            self.api_post('/rest/p/test/blog/', status=429, **data)
+
+    def test_edit_post_limit_by_user(self):
+        data = {
+            'title': 'test abc',
+            'text': 'test text',
+            'state': 'published',
+            'labels': 'label1, label2'
+        }
+        self.api_post('/rest/p/test/blog/', status=201, **data)
+
+        url = '/rest' + BM.BlogPost.query.find().first().url()
+        data = {
+            'text': 'test xyz',
+            'state': 'published',
+            'labels': 'label3'
+        }
+        # Set rate limit to 1 in first hour of user
+        with h.push_config(tg.config, **{'forgeblog.rate_limits_per_user': '{"3600": 1}'}):
+            self.api_post(url, status=429, **data)
