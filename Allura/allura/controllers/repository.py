@@ -334,8 +334,11 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
             ]}
 
     @expose('json:')
-    def commits(self, rev=None, **kw):
-
+    def commit(self, rev=None, **kw):
+        '''
+        Return the latest commit   : /rest/p/code/commit/ 
+        Return the commit with sha : /rest/p/code/commit/e1a2ad
+        '''
         revisions = islice(c.app.repo.log(rev, id_only=False), 1)
 
         return {
