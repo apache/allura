@@ -85,6 +85,9 @@ MD5_CHECKSUM=`cd $RELEASE_DIR ; md5sum $RELEASE_FILENAME` ; echo "$MD5_CHECKSUM"
 SHA1_CHECKSUM=`cd $RELEASE_DIR ; shasum -a1 $RELEASE_FILENAME` ; echo "$SHA1_CHECKSUM" > $RELEASE_FILE.sha1
 SHA512_CHECKSUM=`cd $RELEASE_DIR ; shasum -a512 $RELEASE_FILENAME` ; echo "$SHA512_CHECKSUM" > $RELEASE_FILE.sha512
 
+echo
+echo
+echo
 echo "Release is ready at: $RELEASE_DIR"
 echo "Once confirmed, push the CHANGES commit with:"
 echo "    git push"
@@ -96,8 +99,7 @@ echo "-------------------------------------------------------------"
 cat <<EOF
 Hello,
 
-This is a call for a vote on Apache Allura $VERSION.  Please use this thread for votes, and
-the [DISCUSS] thread for any discussion.
+This is a call for a vote on Apache Allura $VERSION.
 
 Source tarball, signature and checksums are available at:
   https://dist.apache.org/repos/dist/dev/allura/
@@ -134,6 +136,5 @@ but we welcome all community members to vote as well.
 Thanks & Regards
 EOF
 echo "-------------------------------------------------------------"
-echo "Also start at '[DISCUSS] Releasing Apache Allura $VERSION' thread.  (Note slightly different title so gmail doesn't combine threads)"
 echo "After a successful vote (just in case you have to redo the release), you can push the tag:"
 echo "    git push --tags"
