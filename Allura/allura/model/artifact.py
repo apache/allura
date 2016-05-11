@@ -446,7 +446,7 @@ class Artifact(MappedClass, SearchIndexable):
 
         try:
             h.rate_limit(opt, count_in_app, start)
-            if user and count_by_user is not None:
+            if user and not user.is_anonymous() and count_by_user is not None:
                 h.rate_limit(opt + '_per_user', count_by_user, user.registration_date())
         except forge_exc.RatelimitError:
             return True

@@ -607,13 +607,13 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
     def edit(self):
-        self.rate_limit()  # check before trying to save
         page_exists = self.page
         if self.page:
             require_access(self.page, 'edit')
             page = self.page
         else:
             page = self.fake_page()
+        self.rate_limit()  # check before trying to save
         c.confirmation = W.confirmation
         c.markdown_editor = W.markdown_editor
         c.attachment_add = W.attachment_add
