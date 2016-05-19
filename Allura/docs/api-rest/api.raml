@@ -87,31 +87,26 @@ documentation:
               default: read
               enum: [read, admin, create, update]
 
-      /{scm_tool}
+      /{scm_tool}:
         description: |
           Represents the **Git/Hg/SVN tool** and returns the commit count.
 
         displayName: SCM Tool
         uriParameters:
-          displayName: Name of SCM Tool
-          type: string
-          example: git
+          scm_tool:
+            displayName: Name of SCM Tool
+            type: string
+            example: git
 
-        /logs:
+        /commits:
           description: |
             Returns the 25 latest commit logs of the SCM tool
           /{rev}:
             description: |
               Represents the revision ID of a commit from where you want the logs to start.
-            /{comm}:
-              Represents the number of commits you want to get from the log.
-
-        /commit:
-          description: |
-            Returns the details of the last commit
-          /{rev}:
-            description: |
-              Represents the revision ID of the specific commit you want
+            /{limit}:
+              description: |
+                Represents the number of commits you want to get from the log.
 
 
       /{wiki}:
