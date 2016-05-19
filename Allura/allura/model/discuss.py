@@ -200,7 +200,7 @@ class Thread(Artifact, ActivityObject):
                         text=p.text,
                         subject=p.subject,
                         author=p.author().username,
-                        icon_url=p.icon_url(),
+                        icon_url=p.author_icon_url(),
                         timestamp=p.timestamp,
                         last_edited=p.last_edit_date,
                         attachments=self.attachment_for_export(p) if is_export else self.attachemtns_for_json(p))

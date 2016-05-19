@@ -682,7 +682,7 @@ class Message(Artifact):
         from .auth import User
         return User.query.get(_id=self.author_id) or User.anonymous()
 
-    def icon_url(self):
+    def author_icon_url(self):
         from .auth import User
         return User.query.get(_id=self.author_id).icon_url()
 
