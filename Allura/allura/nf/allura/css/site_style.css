@@ -859,7 +859,7 @@ table {
   width: 100%;
   margin-bottom: 20px;
 }
-table thead tr th {
+table thead tr {
   background: #e5e5e5;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
   background-image: -moz-linear-gradient(top, #ffffff 0%, #e5e5e5 100%);
@@ -909,6 +909,10 @@ table tfoot tr td {
 
 #search table td {
   padding: 10px;
+}
+
+thead th{
+    resize: horizontal;
 }
 
 /* buttons - lui */

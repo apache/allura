@@ -175,5 +175,4 @@
     $('.ui-multiselect-menu').click(function(event){
         event.stopPropagation();
     });
-
 })();

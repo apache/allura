@@ -101,8 +101,8 @@
 
 {% block extra_js %}
 
+{% if q and h.has_access(c.app, 'save_searches')() %}
     <script type="text/javascript">
-    {% if q and h.has_access(c.app, 'save_searches')() %}
       $('#save_search').click(function(){
         $('div.editbox input[name=summary]').val($('#bin_summary').val());
         $('div.editbox input[name=terms]').val($('#bin_terms').val());
@@ -111,9 +111,8 @@
       $('#cancel_new_bin').click(function(){
         $('div.editbox').hide();
       });
-    {% endif %}
-      $( "th" ).resizable();
-    </script>
 
+    </script>
+{% endif %}
 
 {% endblock %}
