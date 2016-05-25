@@ -311,6 +311,7 @@ class Notification(MappedClass):
             in_reply_to=self.in_reply_to,
             references=self.references,
             sender=self._sender(),
+            metalink=h.absurl(self.link),
             text=(self.text or '') + self.footer())
 
     @classmethod

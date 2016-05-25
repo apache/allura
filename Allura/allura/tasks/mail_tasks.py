@@ -30,11 +30,28 @@ log = logging.getLogger(__name__)
 
 smtp_client = mail_util.SMTPClient()
 
+def mail_meta_content(metalink):
+    '''
+    Helper function used to include a view action button in your email client
+    https://developers.google.com/gmail/markup/reference/go-to-action#view_action
+
+    :param metalink:  url to the page the action button links to
+    '''
+
+    return h.html.literal("""\
+    <div itemscope itemtype="http://schema.org/EmailMessage">
+    <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
+      <link itemprop="url" href="%s"></link>
+      <meta itemprop="name" content="View"></meta>
+    </div>
+    <meta itemprop="description" content="View"></meta>
+    </div>""" % metalink)
 
 @task
 def route_email(
         peer, mailfrom, rcpttos, data):
-    '''Route messages according to their destination:
+    '''
+    Route messages according to their destination:
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.domain.net
     gets sent to c.app.handle_message(topic, message)
@@ -86,7 +103,7 @@ def route_email(
 
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
-             message_id, in_reply_to=None, sender=None, references=None):
+             message_id, in_reply_to=None, sender=None, references=None, metalink=None):
     '''
     Send an email to the specified list of destinations with respect to the preferred email format specified by user.
     It is best for broadcast messages.
@@ -141,6 +158,9 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     htmlparser = HTMLParser.HTMLParser()
     plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
     html_text = g.forge_markdown(email=True).convert(text)
+    if metalink != None:
+        html_text = html_text + mail_meta_content(metalink)
+
     html_msg = mail_util.encode_email_part(html_text, 'html')
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
