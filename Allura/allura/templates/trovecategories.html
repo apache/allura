@@ -29,7 +29,7 @@
       <div class="grid-20">
         <a href="/categories">Top-level categories</a>
         {% for cat in hierarchy %}
-          &gt; <a href="/categories/{{cat.shortname}}">{{cat.fullname}}</a>
+          &gt; <a href="/categories/{{cat.trove_cat_id}}">{{cat.fullname}}</a>
         {% endfor %}
         &gt; {{selected_cat.fullname}}
       </div>
@@ -72,7 +72,7 @@
       {{g.theme.add_trove_category.display(uppercategory_id=0)}}
     {% endif %}
     <div class="grid-20" style="margin-bottom:10px;">
-      Are you done creating new categories? <a href="/auth/user_info/skills/{{selected_cat.shortname}}">Click here</a> to configure your skills!
+      Are you done creating new categories? <a href="/auth/user_info/skills/{{selected_cat.trove_cat_id}}">Click here</a> to configure your skills!
     </div>
 
   </div>

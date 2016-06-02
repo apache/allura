@@ -647,8 +647,10 @@ class UserSkillsController(BaseController):
         require_authenticated()
 
     @expose()
-    def _lookup(self, catshortname, *remainder):
-        cat = M.TroveCategory.query.get(shortname=catshortname)
+    def _lookup(self, trove_cat_id, *remainder):
+        cat = M.TroveCategory.query.get(trove_cat_id=int(trove_cat_id))
+        if not cat:
+            raise wexc.HTTPNotFound
         return UserSkillsController(category=cat), remainder
 
     @with_trailing_slash
