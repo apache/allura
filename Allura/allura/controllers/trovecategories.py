@@ -20,7 +20,7 @@ from tg import expose, flash, redirect, validate, config
 from pylons import tmpl_context as c
 from string import digits, lowercase
 from tg.decorators import without_trailing_slash
-from webob.exc import HTTPForbidden
+from webob.exc import HTTPForbidden, HTTPNotFound
 from pylons import app_globals as g
 
 from allura import model as M
@@ -40,8 +40,10 @@ class F(object):
 
 class TroveCategoryController(BaseController):
     @expose()
-    def _lookup(self, catshortname, *remainder):
-        cat = M.TroveCategory.query.get(shortname=catshortname)
+    def _lookup(self, trove_cat_id, *remainder):
+        cat = M.TroveCategory.query.get(trove_cat_id=int(trove_cat_id))
+        if not cat:
+            raise HTTPNotFound
         return TroveCategoryController(category=cat), remainder
 
     def _check_security(self):
@@ -70,7 +72,7 @@ class TroveCategoryController(BaseController):
                 hierarchy = [temp_cat] + hierarchy
                 temp_cat = temp_cat.parent_category
         else:
-            l = M.TroveCategory.query.find(dict(trove_parent_id=0)).all()
+            l = M.TroveCategory.query.find(dict(trove_parent_id=0)).sort('fullname').all()
             selected_cat = None
             hierarchy = []
         return dict(
@@ -142,7 +144,7 @@ class TroveCategoryController(BaseController):
             else:
                 flash('An error occured while crearing the category.', "error")
         if upper:
-            redirect('/categories/%s' % upper.shortname)
+            redirect('/categories/%s' % upper.trove_cat_id)
         else:
             redirect('/categories')
 
@@ -154,7 +156,7 @@ class TroveCategoryController(BaseController):
         if cat.trove_parent_id:
             parent = M.TroveCategory.query.get(
                 trove_cat_id=cat.trove_parent_id)
-            redirecturl = '/categories/%s' % parent.shortname
+            redirecturl = '/categories/%s' % parent.trove_cat_id
         else:
             redirecturl = '/categories'
         if len(cat.subcategories) > 0:

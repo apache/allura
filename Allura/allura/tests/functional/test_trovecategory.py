@@ -82,14 +82,29 @@ class TestTroveCategory(TestController):
 
 
 class TestTroveCategoryController(TestController):
-    @td.with_tool('test2', 'admin_main', 'admin')
-    def test_trove_hierarchy(self):
+    def create_some_cats(self):
         root_parent = M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)
         category_a = M.TroveCategory(fullname="CategoryA", trove_cat_id=2, trove_parent_id=1)
         category_b = M.TroveCategory(fullname="CategoryB", trove_cat_id=3, trove_parent_id=1)
         child_a = M.TroveCategory(fullname="ChildA", trove_cat_id=4, trove_parent_id=2)
         child_b = M.TroveCategory(fullname="ChildB", trove_cat_id=5, trove_parent_id=2)
 
+    def test_root(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        r = self.app.get('/categories/')
+        assert '<a href="/categories/1">Root</a>' in r
+
+    def test_subcat(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        r = self.app.get('/categories/1')
+        assert '<a href="/categories/2">CategoryA</a>' in r
+        assert '<a href="/categories/3">CategoryB</a>' in r
+
+    @td.with_tool('test2', 'admin_main', 'admin')
+    def test_trove_hierarchy(self):
+        self.create_some_cats()
         session(M.TroveCategory).flush()
 
         r = self.app.get('/categories/browse')

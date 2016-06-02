@@ -64,7 +64,7 @@
         <div class="grid-12" style="margin-bottom:20px">      
            <a href=".">List of all skills</a>
            {% for cat in parents %}
-             &gt; <a href="{{cat.shortname}}">{{cat.fullname}}</a>
+             &gt; <a href="{{cat.trove_cat_id}}">{{cat.fullname}}</a>
            {% endfor %}
            &gt; <b>{{selected_skill.fullname}}</b>
            <input type="hidden" name="upper_category" value="{{selected_skill.trove_parent_id}}"/>
@@ -83,7 +83,7 @@
     {% if selected_skill %}
       <h3>Add "{{selected_skill.fullname}}" to you set of skills</h3>
       {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
-           action=selected_skill.shortname + "/save_skill")}}
+           action="{}/save_skill".format(selected_skill.trove_cat_id)) }}
     {% endif %}
 
     <h3>Other possible actions</h3>
@@ -92,7 +92,7 @@
         {% if tg.config.get('trovecategories.enableediting', 'false') == 'true' %}
           {% if selected_skill %}
             <li>
-              <a href="/categories/{{selected_skill.shortname}}">
+              <a href="/categories/{{selected_skill.trove_cat_id}}">
                 Create a new category in this list
               </a>
               if you want to add a more specific kind of skill which is not included here.
