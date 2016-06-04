@@ -2401,13 +2401,6 @@ div.attachment_thumb .file_type span {
 
 /* Discussion */
 #comment .row {
-  border: 3px solid #d7d7d7;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -o-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -khtml-border-radius: 5px;
-  border-radius: 5px;
   position: relative;
   float: right;
   clear: right;
@@ -2452,7 +2445,10 @@ div.attachment_thumb .file_type span {
 }
 
 #comment .grid-14 { overflow: visible; }
-#comment .display_post { margin-right: 5px; }
+#comment .display_post {
+    margin-right: 5px;
+    padding: 5px;
+}
 
 #comment ul {
   list-style: none;
@@ -2485,19 +2481,10 @@ div.attachment_thumb .file_type span {
 
 #comment ul .row {
   margin: 0;
-  min-height: 140px;
   padding-top: 1em;
 }
 
 #comment ul ul .row {
-  border: 3px solid #ebebeb;
-  border-top: none;
-  border-radius: 0;
-  -moz-border-radius: 0;
-  -webkit-border-radius: 0;
-  border-bottom-left-radius: 0;
-  -webkit-border-bottom-left-radius: 5px;
-  -moz-border-radius-bottomleft: 5px;
   position: relative;
 }
 
@@ -3460,6 +3447,60 @@ fieldset.preferences legend {
 }
 .spam-text {
   float: left;
+}
+
+.bubble{
+    border-radius: 3px;
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+    border: 1px solid #e5e5e5;
+}
+
+.bubble .header{
+    border-radius-top: 5px;
+    background-color: #e5e5e5;
+    padding: 10px;
+}
+
+.bubble .header .btn{
+    float: none;
+    margin: 0px;
+}
+
+.header form{
+    display:inline;
+}
+
+.header .tools{
+    display: inline;
+    float: right;
+}
+
+.header a .little_link {
+
+}
+
+.bubble::before {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 8px 8px 0;
+    border-color: transparent #F7F7F7 transparent transparent;
+    content:'\A';
+    position:absolute;
+    left: 83px;
+    top: 25px;
+    border-right-color: #e5e5e5;
+}
+
+.discussion-post .row .emboss{
+    //un-emboss image for discussions
+
+    box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
+
+    border-radius: 10%;
 }
 
 @media print{

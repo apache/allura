@@ -47,24 +47,38 @@
       <div class="grid-2 tcenter gravatar">
        <p class="gravatar">
         {% set size = value.parent and 32 or 48 %}
-        {{lib.gravatar(value.author(), size=size)}}<br>
-        <small>
-            {{lib.user_link(value.author())}}
-        </small>
-        <br>
-        <small>{{lib.abbr_date(value.timestamp)}}</small>
+        {{lib.gravatar(value.author(), size=size)}}
        </p>
       </div>
       {% set pending = value.status == 'pending' %}
       {% set moderator = h.has_access(value, 'moderator')() %}
-      <div class="grid-14 post-content" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
-        <div class="display_post{% if pending and moderator %} moderate{% endif %}">
+      <div class="grid-16 post-content bubble" style="width: {{indent == 0 and 652 or (indent <= 40 and 642-indent*10 or 65)}}px">
+          <div class="header">
+            {{lib.user_link(value.author())}} - <i style="color: #777">{{lib.abbr_date(value.timestamp)}}</i>
+
+            <div class="tools">
+            <a class="icon reply_post btn" href="#" style="" title="Reply" role="button"><span class="ui-button-text"><i class="fa fa-reply"></i></span></a>
+
+            <a href="{{shortlink_url}}" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+              <span><i class="fa fa-link" aria-hidden="true"></i></span></a>
+
+            {% if h.has_access(value, 'moderate')()%}
+                <a href="#" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only edit_post little_link"><span><i class="fa fa-pencil" aria-hidden="true"></i></span></a>
+            {% endif %}
+
+                {% if h.has_access(value.thread, 'moderate')() %}
+                    {{widgets.moderate_post.display(value=value, action=value.url()+'moderate', status = value.status)}}
+                {%endif%}
+            </div>
+          </div>
+          <div class="display_post{% if pending and moderator %} moderate{% endif %}">
           {% if pending and not moderator %}
             <b>Post awaiting moderation.</b>
           {% else %}
             {% if show_subject %}
                 <b>{{value.subject or '(no subject)'}}<br/></b>
             {% endif %}
+
             {{g.markdown.cached_convert(value, 'text')|safe}}&nbsp;
             {{lib.related_artifacts(value)}}
             {% if value.edit_count %}
@@ -111,28 +125,7 @@
         </div>
         {% endif %}
         </div>
-        <div class="options grid-3">
-        {% if h.has_access(value.thread, 'post')() %}
-          {{ g.icons['reply'].render(
-              show_title=True,
-              extra_css='reply_post btn',
-              style='display:none;' if value.status == 'pending' else '') }}
-        {% endif %}
-        <div style="clear:both">
-            <div class="little_link">
-                <a href="{{shortlink_url}}" class="little_link shortlink"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Link</span></a><br/>
-                {% if h.has_access(value, 'moderate')()%}
-                    <a href="#" class="edit_post little_link"><span>Edit</span></a><br/>
-                {% endif %}
-            </div>
-            {% if h.has_access(value.thread, 'moderate')() %}
-            {{widgets.moderate_post.display(value=value, action=value.url()+'moderate', status = value.status)}}
-            {%endif%}
-          {% if h.has_access(value.thread, 'post')() %}
-            <a href="#" class="add_attachment little_link"><span>Attach</span></a>
-          {% endif %}
-        </div>
-      </div>
+
       <div class="shortlink_popup modal" style="display: none">
         {{ g.icons['close'].render(extra_css='close') }}
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
