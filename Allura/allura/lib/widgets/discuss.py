@@ -309,6 +309,13 @@ class Post(HierWidget):
                 $('.moderate_post', post).click(function(e){
                     e.preventDefault();
                     var mod = $(this).text();
+
+                    if ($(this).hasClass('delete')) mod = 'Delete';
+                    else if ($(this).hasClass('approve')) mod = 'Approve';
+                    else if ($(this).hasClass('spam')) mod = 'Spam';
+                    else if ($(this).hasClass('undo')) mod = 'Undo';
+
+
                     if (mod === 'Delete' && !confirm('Really delete this post?')) {
                         return;
                     }
