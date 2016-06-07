@@ -3473,6 +3473,10 @@ fieldset.preferences legend {
     font-size: 0.8em;
 }
 
+.header .fa{
+    display: inherit;
+}
+
 .header form{
     display:inline;
 }
