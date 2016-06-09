@@ -52,7 +52,7 @@
       </div>
       {% set pending = value.status == 'pending' %}
       {% set moderator = h.has_access(value, 'moderator')() %}
-      <div class="grid-16 post-content bubble" style="width: {{indent == 0 and 652 or (indent <= 40 and 642-indent*10 or 65)}}px">
+      <div class="grid-16 post-content bubble" style="width: {{indent == 0 and 652 or (indent <= 40 and 642-indent*10 or 65)}}px;  {% if indent != 0 %} margin-right:0px {% endif %}">
           <div class="header">
             {{lib.user_link(value.author())}} - <i style="color: #777">{{lib.abbr_date(value.timestamp)}}</i>
 
