@@ -505,11 +505,8 @@ class TestForum(TestController):
 
         r = self.app.get(thread.request.url)
         assert '<div class="display_post moderate">' in r
-        assert '<a class="icon reply_post btn" href="#" style="display:none;" title="Reply">'\
-               '<i class="fa fa-reply"></i>&nbsp;Reply</a>' in r
+        assert '<i class="fa fa-reply"></i>' in r
 
-        assert r.html.find(
-            'a', {'class': 'little_link shortlink', 'style': 'display:none'}) is not None
         assert 'name="delete"' in r
         assert 'name="approve"' in r
         assert 'name="spam"' in r
