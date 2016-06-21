@@ -224,7 +224,7 @@ class ForgeActivityRestController(BaseController, AppRestControllerMixin):
         return {
             'following': data['following'],
             'followee': {
-                'activity_name': data['followee'].shortname,
+                'activity_name': data['followee'].activity_name,
                 'activity_url': data['followee'].url(),
                 'activity_extras': {},
             },
