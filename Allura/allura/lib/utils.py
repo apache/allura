@@ -549,6 +549,16 @@ def serve_file(fp, filename, content_type, last_modified=None,
 
 
 class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
+    # remove some elements from the sanitizer whitelist
+    # <form> and <input> could be used for a social engineering attack to construct a form
+    # others are just unexpected and confusing, and have no need to be used in markdown
+    _form_elements = ('button', 'datalist', 'fieldset', 'form', 'input', 'label', 'legend', 'meter', 'optgroup',
+                      'option', 'output', 'progress', 'select', 'textarea')
+    _forge_acceptable_elements = [e for e in html5lib.sanitizer.HTMLSanitizer.acceptable_elements
+                                  if e not in (_form_elements)]
+    allowed_elements = _forge_acceptable_elements \
+                       + html5lib.sanitizer.HTMLSanitizer.mathml_elements \
+                       + html5lib.sanitizer.HTMLSanitizer.svg_elements
 
     valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
 

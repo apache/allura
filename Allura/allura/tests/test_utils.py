@@ -265,6 +265,10 @@ class TestHTMLSanitizer(unittest.TestCase):
         assert_equal(
             self.simple_tag_list(p), ['div', 'iframe', 'div'])
 
+    def test_html_sanitizer_form_elements(self):
+        p = utils.ForgeHTMLSanitizer('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
+        assert_equal(self.simple_tag_list(p), ['p', 'p'])
+
 
 def test_ip_address():
     req = Mock()
