@@ -3516,6 +3516,20 @@ fieldset.preferences legend {
     border-radius: 10%;
 }
 
+.meta_post .bubble .header{
+    background-color: #ffffff;
+    font-size: 0.7em;
+}
+
+.meta_post .bubble::before{
+    border-right-color: #efefef;
+}
+
+.meta_post .bubble .markdown_content{
+    padding-left: 5px;
+    font-size: 0.7em;
+}
+
 @media print{
   body{ 
   	background-color: #FFFFFF; 
