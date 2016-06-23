@@ -2425,6 +2425,10 @@ div.attachment_thumb .file_type span {
   padding-left: 0;
 }
 
+.discussion-post img {
+    max-width: 100%;
+}
+
 #comment .row .options {
   position: relative;
   padding-top: 5px;
