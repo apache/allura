@@ -277,6 +277,11 @@ For details, see:
     Allura/allura/public/nf/css/font-awesome.min.css
     Allura/allura/public/nf/fonts/
 
+Twitter's Twemoji, which is available under the MIT license (for the code) and Graphics licensed under CC-BY 4.0
+Source code available at https://github.com/twitter/twemoji
+For details, see:
+    Allura/allura/public/nf/js/twemoji.min.js
+
 SimpleMDE markdown editor (https://github.com/NextStepWebs/simplemde-markdown-editor/) is available under the MIT
 license. For details, see:
     Allura/allura/lib/widgets/resources/js/simplemde.min.js

@@ -207,4 +207,7 @@ $(function(){
         e.preventDefault();
         return false;
     });
+
+    twemoji.size = '16x16';
+    twemoji.parse(document.body);
 });
