@@ -131,7 +131,7 @@ class RepositoryApp(Application):
                 SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
         merge_request_count = self.repo.merge_requests_by_statuses(
             'open').count()
-        if self.forkable ==  True:
+        if self.forkable:
             links += [
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
