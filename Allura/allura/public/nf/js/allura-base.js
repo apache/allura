@@ -208,6 +208,6 @@ $(function(){
         return false;
     });
 
-    twemoji.size = '16x16';
+    twemoji.size = '36x36';
     twemoji.parse(document.body);
 });
