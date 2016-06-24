@@ -90,7 +90,9 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     {% if req.merge_allowed(c.user) %}
         <form action="merge" method="POST">
           {{ lib.csrf_token() }}
-          <input id="merge-btn" type="submit" value="Merge"{% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
+          <button type="submit" id="merge-btn">
+            <i class="fa fa-code-fork fa-flip-vertical" aria-hidden="true" {% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}></i> Merge
+          </button>
         </form>
     {% endif %}
 
@@ -98,12 +100,16 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
         <form action="save" method="POST">
             {{ lib.csrf_token() }}
             <input type="hidden" value="rejected" name="status">
-            <input id="reject-btn" type="submit" value="Reject">
+            <button type="submit" id="reject-btn" type="submit" >
+                <i class="fa fa-ban" aria-hidden="true"></i> Reject
+            </button>
         </form>
 
         <form action="refresh" method="POST">
             {{ lib.csrf_token() }}
-            <input id="refresh-btn" type="submit" value="Refresh Commits">
+            <button type="submit" id="refresh-btn" type="submit" >
+                <i class="fa fa-refresh" aria-hidden="true"></i> Refresh Commits
+            </button>
             <input type="hidden" value="{{req.source_branch}}" name="source_branch">
         </form>
     {% endif %}
