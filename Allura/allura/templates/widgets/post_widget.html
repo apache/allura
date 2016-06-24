@@ -60,11 +60,11 @@
             {% if h.has_access(value.thread, 'post')() %}
                 <a class="icon reply_post btn" href="#" style="" title="Reply" role="button"><span class="ui-button-text"><i class="fa fa-reply"></i></span></a>
             {% endif %}
-            <a href="{{shortlink_url}}" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+            <a href="{{shortlink_url}}" title="Shortlink" class="little_link shortlink icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
               <span><i class="fa fa-link" aria-hidden="true"></i></span></a>
 
             {% if h.has_access(value, 'moderate')()%}
-                <a href="#" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only edit_post little_link"><span><i class="fa fa-pencil" aria-hidden="true"></i></span></a>
+                <a href="#" title="Edit" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only edit_post little_link"><span><i class="fa fa-pencil" aria-hidden="true"></i></span></a>
             {% endif %}
 
                 {% if h.has_access(value.thread, 'moderate')() %}
