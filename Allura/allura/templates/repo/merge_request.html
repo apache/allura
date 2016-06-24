@@ -73,33 +73,42 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     {% endif %}
 
     {% if req.merge_allowed(c.user) %}
-      <div class="grid-19">
+    <div class='grid-19 merge-help'>
+        <div class="merge-help-text can-merge-in-progress" {% if can_merge == None %}style="display: block;"{% endif %}>
+            Checking if merge is possible...
+        </div>
+        <div class="merge-help-text merge-ok" {% if can_merge == True %}style="display: block;"{% endif %}>
+            Merge request has no conflicts. You can merge automatically.
+        </div>
+        <div class="merge-help-text merge-conflicts" {% if can_merge == False %}style="display: block;"{% endif %}>
+            Merge request has conflicts. Follow manual instructions below to merge.
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="grid-19 merge-toolbar">
+    {% if req.merge_allowed(c.user) %}
         <form action="merge" method="POST">
           {{ lib.csrf_token() }}
           <input id="merge-btn" type="submit" value="Merge"{% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
-          <div class="merge-help-text can-merge-in-progress" {% if can_merge == None %}style="display: block;"{% endif %}>
-            Checking if merge is possible...
-          </div>
-          <div class="merge-help-text merge-ok" {% if can_merge == True %}style="display: block;"{% endif %}>
-            Merge request has no conflicts. You can merge automatically.
-          </div>
-          <div class="merge-help-text merge-conflicts" {% if can_merge == False %}style="display: block;"{% endif %}>
-            Merge request has conflicts. Follow manual instructions below to merge.
-          </div>
         </form>
-      </div>
     {% endif %}
 
     {% if req.creator == c.user and req.status == "open" %}
-    <div class="grid-19">
         <form action="save" method="POST">
             {{ lib.csrf_token() }}
-            <input type="hidden" value="rejected" name="status"></input>
+            <input type="hidden" value="rejected" name="status">
             <input id="reject-btn" type="submit" value="Reject">
-            <p style="color:red;">Click to reject the merge request.</p>
         </form>
-    </div>
+
+        <form action="refresh" method="POST">
+            {{ lib.csrf_token() }}
+            <input id="refresh-btn" type="submit" value="Refresh Commits">
+            <input type="hidden" value="{{req.source_branch}}" name="source_branch">
+        </form>
     {% endif %}
+
+    </div>
 
     {{ c.log_widget.display(value=commits, app=downstream_app) }}
 

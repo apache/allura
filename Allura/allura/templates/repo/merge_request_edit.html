@@ -19,10 +19,10 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
 
 {% block title %}
-  {{c.project.name}} / {{c.app.config.options.mount_label}} / Request merge
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Request Merge
 {% endblock %}
 
-{% block header %}Update merge request{% endblock %}
+{% block header %}Update Merge Request{% endblock %}
 
 {% block content %}
   {{ c.form.display(action='do_request_merge_edit', value=dict(source_branch=source_branch, target_branch=target_branch, description=description, summary=summary))}}

@@ -468,6 +468,15 @@ class MergeRequestController(object):
 
     @expose()
     @require_post()
+    @validate(mr_dispose_form)
+    def refresh(self, **kw):
+        require_access(self.req, 'write')
+        with self.req.push_downstream_context():
+            self.req.downstream['commit_id'] = c.app.repo.commit(self.req.source_branch)._id
+        redirect(self.req.url())
+
+    @expose()
+    @require_post()
     def merge(self):
         if not self.req.merge_allowed(c.user) or not self.req.can_merge():
             raise exc.HTTPNotFound
