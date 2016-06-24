@@ -88,7 +88,7 @@
           {% endif %}
         </div>
         {% if h.has_access(value, 'moderate')() %}
-        <div class="edit_post_form reply" style="display:none">
+        <div class="edit_post_form reply" style="display:none; padding-left: 5px;">
             {{widgets.edit_post.display(value=value, submit_text='Post', action=value.url())}}
         </div>
         {% endif %}
@@ -98,7 +98,7 @@
         </div>
         {% endif %}
         {% if value.attachments and (not pending or moderator) %}
-        <div>
+        <div style="padding-left: 5px;">
           <strong>Attachments</strong>
           <div class="clear"></div>
           {% for att in value.attachments %}

@@ -2480,7 +2480,6 @@ div.attachment_thumb .file_type span {
   margin-top: 0 !important;
   background-color: #fff;
   overflow: auto;
-  padding-bottom: 30px;
 }
 
 #comment ul .row {
@@ -3514,6 +3513,25 @@ fieldset.preferences legend {
     -webkit-box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
 
     border-radius: 10%;
+}
+
+.discussion-post .editor-toolbar {
+    border: 0px;
+    width: 100%;
+}
+
+.discussion-post .CodeMirror {
+    border: 0px;
+    width: 100%;
+}
+
+.discussion-post .editor-statusbar {
+    border: 0px !important;
+    width: 100%;
+}
+
+.discussion-post .editor-preview {
+    width: 100%;
 }
 
 .meta_post .bubble .header{
