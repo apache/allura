@@ -71,3 +71,8 @@ class TestActivityHasAccessAPI(TestRestApiBase):
             user='root')
         assert_equal(r.status_int, 200)
         assert_equal(r.json['result'], False)
+
+
+    def test_user_api(self):
+        r = self.api_get('/rest/u/test-user/activity')
+        assert_equal(r.status_int, 200)
