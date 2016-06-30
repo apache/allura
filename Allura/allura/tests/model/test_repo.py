@@ -695,6 +695,7 @@ class TestMergeRequest(object):
         self.mr.app = mock.Mock(forkable=True)
         self.mr.app.repo.commit.return_value = mock.Mock(_id='09876')
         self.mr.merge_allowed = mock.Mock(return_value=True)
+        self.mr.discussion_thread = mock.Mock()
 
     def test_can_merge_cache_key(self):
         key = self.mr.can_merge_cache_key()
