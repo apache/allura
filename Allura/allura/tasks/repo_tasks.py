@@ -161,6 +161,7 @@ def merge(merge_request_id):
     from allura import model as M
     mr = M.MergeRequest.query.get(_id=merge_request_id)
     mr.app.repo.merge(mr)
+    mr.add_meta_post(changes={'Status': [mr.status, 'merged']})
     mr.status = 'merged'
     session(mr).flush(mr)
 

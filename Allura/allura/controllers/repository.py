@@ -361,7 +361,6 @@ class MergeRequestController(object):
     mr_dispose_form = SCMMergeRequestDisposeWidget()
 
     def __init__(self, num):
-        self.tmpl = g.jinja2_env.get_template('allura:templates/repo/merge_request_changed.html')
         self.req = M.MergeRequest.query.get(
             app_config_id=c.app.config._id,
             request_number=int(num))
@@ -453,8 +452,8 @@ class MergeRequestController(object):
         with self.req.push_downstream_context():
             self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
 
-        message = self.tmpl.render(changes=changes)
-        self.req.discussion_thread.add_post(text=message, is_meta=True)
+        if changes:
+            self.req.add_meta_post(changes=changes)
         redirect(self.req.url())
 
     @expose()
@@ -463,8 +462,7 @@ class MergeRequestController(object):
     def save(self, status=None, **kw):
         if status and self.req.status != status and \
            (has_access(self.req, 'write') or (self.req.creator == c.user and status == 'rejected')):
-            message = self.tmpl.render(changes={'Status': [self.req.status, status]})
-            self.req.discussion_thread.add_post(text=message, is_meta=True)
+            self.req.add_meta_post(changes={'Status': [self.req.status, status]})
             self.req.status = status
         redirect('.')
 

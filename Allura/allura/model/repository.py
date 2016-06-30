@@ -914,6 +914,12 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return task.state
         return None
 
+    def add_meta_post(self, changes):
+        tmpl = g.jinja2_env.get_template('allura:templates/repo/merge_request_changed.html')
+        message = tmpl.render(changes=changes)
+        self.discussion_thread.add_post(text=message, is_meta=True)
+
+
 
 # Basic commit information
 # One of these for each commit in the physical repo on disk. The _id is the
