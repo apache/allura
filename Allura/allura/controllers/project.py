@@ -144,7 +144,8 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
-        require_access(self.neighborhood, 'register')
+        with h.login_overlay():
+            require_access(self.neighborhood, 'register')
         verify = c.form_errors == {'_the_form': u'phone-verification'}
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
