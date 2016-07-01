@@ -821,12 +821,6 @@ class TestNeighborhood(TestController):
         assert r.html.find('div', id='top_nav').find(
             'a', href='/adobe/testtemp/admin/'), r.html
 
-    def test_name_suggest(self):
-        r = self.app.get('/p/suggest_name?project_name=My+Moz')
-        assert_equal(r.json, dict(suggested_name='my-moz'))
-        r = self.app.get('/p/suggest_name?project_name=Te%st!')
-        assert_equal(r.json, dict(suggested_name='te-st'))
-
     def test_name_check(self):
         for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):
             r = self.app.get(

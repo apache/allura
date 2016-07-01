@@ -1025,6 +1025,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         });
                     }
                 });
+                var suggest_name = function(project_name) {
+                    return project_name.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase();
+                };
                 var check_names = function() {
                     var data = {
                         'neighborhood': $nbhd_input.val(),
@@ -1037,28 +1040,20 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     });
                 };
                 var manual = false;
-                $name_input.keyup(function(){
-                    delay(function() {
-                        if (!manual) {
-                            var data = {
-                                'project_name':$name_input.val()
-                            };
-                            $.getJSON('suggest_name', data, function(result){
-                                $unixname_input.val(result.suggested_name);
-                                $url_fragment.text(result.suggested_name);
-                                check_names();
-                            });
-                        } else {
-                            check_names();
-                        }
-                    }, 500);
+                $name_input.on('input', function(){
+                    if (!manual) {
+                        var suggested_name = suggest_name($name_input.val());
+                        $unixname_input.val(suggested_name);
+                        $url_fragment.text(suggested_name);
+                    }
+                    delay(check_names, 20);
                 });
                 $unixname_input.change(function() {
                     manual = true;
                 });
-                $unixname_input.keyup(function(){
+                $unixname_input.on('input', function(){
                     $url_fragment.text($unixname_input.val());
-                    delay(check_names, 500);
+                    delay(check_names, 20);
                 });
             });
         ''' % dict(neighborhood=neighborhood, project_name=project_name, project_unixname=project_unixname))

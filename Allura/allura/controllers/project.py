@@ -183,12 +183,6 @@ class NeighborhoodController(object):
         return res
 
     @expose('json:')
-    def suggest_name(self, project_name='', **kw):
-        provider = plugin.ProjectRegistrationProvider.get()
-        return dict(suggested_name=provider.suggest_name(project_name,
-                                                         self.neighborhood))
-
-    @expose('json:')
     @validate(W.add_project)
     def check_names(self, **raw_data):
         return c.form_errors

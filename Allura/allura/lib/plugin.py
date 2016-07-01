@@ -681,15 +681,6 @@ class ProjectRegistrationProvider(object):
         method = config.get('registration.method', 'local')
         return app_globals.Globals().entry_points['registration'][method]()
 
-    def suggest_name(self, project_name, neighborhood):
-        """Return a suggested project shortname for the full ``project_name``.
-
-        Example: "My Great Project" -> "mygreatproject"
-
-        """
-        name = re.sub("[^A-Za-z0-9]", " ", project_name).lower()
-        return '-'.join(name.split())
-
     def rate_limit(self, user, neighborhood):
         """Check the various config-defined project registration rate
         limits, and if any are exceeded, raise ProjectRatelimitError.
