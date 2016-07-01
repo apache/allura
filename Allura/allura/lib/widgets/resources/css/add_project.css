@@ -35,11 +35,12 @@ div.welcome input {
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
 }
-div.welcome .error, div.welcome .success {
+div.welcome .error, div.welcome .success, #project_url {
     font-size: 13px;
     padding: 5px;
     background: none;
     border: 0;
+    margin-bottom: 0;
 }
 div.welcome .error, .error_icon {
     color: #D41326;
@@ -80,10 +81,6 @@ div.welcome div.grid-9{
 }
 div.welcome div.grid-3{
     padding-top: 2px;
-}
-#project_url {
-    font-size: 12px;
-    padding-left: 5px;
 }
 #url_fragment {
     font-weight: 600;

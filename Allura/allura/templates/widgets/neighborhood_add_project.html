@@ -37,7 +37,7 @@
             </label>
         </div>
         <div class="grid-10">{{widget.display_field(widget.fields.project_unixname)}}
-            <br/><div id="project_url">http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
+            <div id="project_url">http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
         </div>
         <div class="grid-9" style="position:relative; overflow:visible">
             {{ g.icons['caution'].render(tag='b', extra_css='error_icon') }}
@@ -48,6 +48,9 @@
     </div>
 
     {% if not neighborhood.project_template %}
+    <h2 style="padding-left:20px">
+        Select the tools to use in your project.  You may add or remove tools at any time.
+    </h2>
     {% for opt in widget.fields.tools.options %}
         {% set tool = g.entry_points["tool"][opt.html_value] %}
         {% set _ctx = widget.context_for(widget.fields.tools) %}

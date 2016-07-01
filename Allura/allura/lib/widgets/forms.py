@@ -55,7 +55,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
     def _validate_shortname(self, shortname, neighborhood, state):
         if not h.re_project_name.match(shortname):
             raise forge_exc.ProjectShortnameInvalid(
-                'Please use only small letters, numbers, and dashes 3-15 characters long.',
+                'Please use 3-15 small letters, numbers, and dashes.',
                 shortname, state)
 
     def _validate_allowed(self, shortname, neighborhood, state):
@@ -976,6 +976,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 var $nbhd_input = $('input[name="%(neighborhood)s"]');
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
+                var $project_url = $('#project_url');
                 var $url_fragment = $('#url_fragment');
                 var $form = $name_input.closest('form');
                 var delay = (function(){
@@ -1005,6 +1006,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         $error_field = $('<div class="error" style="display: none"></div>').insertAfter($input);
                     }
                     $error_field.text(message).toggle(!!message);
+                    $project_url.toggle(!message);
                     update_icon($input);
                 };
                 $form.submit(function(e) {
