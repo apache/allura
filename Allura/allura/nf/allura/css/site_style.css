@@ -3507,8 +3507,6 @@ fieldset.preferences legend {
 }
 
 .discussion-post .row .emboss{
-    //un-emboss image for discussions
-
     box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
     -webkit-box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
 
@@ -3546,6 +3544,28 @@ fieldset.preferences legend {
 .meta_post .bubble .markdown_content{
     padding-left: 5px;
     font-size: 0.7em;
+}
+
+.reply .bubble::before{
+    display:none;
+}
+
+.reply .gravatar{
+    padding-top: 33px;
+}
+
+.reply .markdown_edit .bubble{
+    padding-left: 5px;
+}
+
+div .bubble .CodeMirror {
+    border-top: 1px #bbb solid !important;
+    border-bottom: 1px #bbb solid !important;
+    width: 100%;
+}
+
+.bubble .edit_markdown_form{
+    padding-left: 5px;
 }
 
 @media print{

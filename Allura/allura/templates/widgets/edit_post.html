@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-<div>
+<div class="edit_markdown_form">
   <form id="edit_{{ action[-4:] }}" method="post" action="{{action}}"
         enctype="multipart/form-data">
     {% if show_subject %}
@@ -26,10 +26,10 @@
     {% endif %}
     {{widget.display_field(widget.fields.text)}}
     <input type="hidden" class="original_value" value="{{value.text}}">
-    <span class="arw"><span></span></span><br/>
+    <span class="arw"><span></span></span>
     <div style="clear:both"></div>
-    <input type="submit" value="{{submit_text}}"/>
-    <a href="#" class="btn link cancel_edit_post">Cancel</a> &nbsp;
+    <input type="submit" value="{{submit_text}}" />
+    <a href="#" class="ui-button btn link cancel_edit_post">Cancel</a>&nbsp;
     <a href="#" class="btn link attachment_form_add_button">Add attachments</a>
     <input type="file" class="text attachment_form_fields" style="display:none" multiple="True" name="{{att_name}}" {% if att_id %}id="{{att_id}}"{% endif %}/>
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}

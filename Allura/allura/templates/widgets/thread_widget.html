@@ -52,8 +52,9 @@
 {% if h.has_access(value, 'post')() %}
   <div id="new_post_holder">
     <span id="add_comment"></span>
-    <div class="row reply">
-      <div class="grid-2 tcenter">
+    <div class="row" style="padding-top:10px;">
+      <div class="reply">
+        <div class="grid-2 tcenter">
           <p class="gravatar">
             {{lib.gravatar(c.user, size=48)}}<br>
             <small>
@@ -62,8 +63,10 @@
           </p>
         </div>
         <div class="grid-17">
-        {{widgets.edit_post.display(submit_text='Post', action=value.url() + 'post')}}
+            {{widgets.edit_post.display(submit_text='Post', action=value.url() + 'post')}}
+        </div>
       </div>
     </div>
   </div>
+
 {% endif %}
