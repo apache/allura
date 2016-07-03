@@ -1482,7 +1482,7 @@ class TestFunctionalController(TrackerTestController):
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1))
         assert_true(summary + ' --&gt; ' + new_summary in r)
-        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 2)
+        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post meta_post'})) == 1)
 
     def test_discussion_paging(self):
         summary = 'test discussion paging'

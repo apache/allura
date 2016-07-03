@@ -28,7 +28,7 @@
   + '#' + value.slug %}
 
 <div>
-  <div id="{{value.slug}}" class="discussion-post {%if value.is_meta %}meta_post{% endif %}">
+  <div id="{{value.slug}}" class="discussion-post{%if value.is_meta %} meta_post{% endif %}">
     {% if h.has_access(value, 'moderate')() %}
     <div class="info grid-15 spam-present">
       <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
