@@ -441,8 +441,6 @@ class Artifact(MappedClass, SearchIndexable):
         count_in_app = lambda: cls.query.find(dict(app_config_id=app_config._id)).count()
         provider = plugin.ProjectRegistrationProvider.get()
         start = provider.registration_date(app_config.project)
-        # need the replace because the generation_time is offset-aware UTC and h.rate_limit uses offset-naive UTC dates
-        start = start.replace(tzinfo=None)
 
         try:
             h.rate_limit(opt, count_in_app, start)

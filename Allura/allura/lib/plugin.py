@@ -1026,7 +1026,8 @@ class ProjectRegistrationProvider(object):
         '''
         Return the datetime the project was created.
         '''
-        return project._id.generation_time
+        # generation_time is offset-aware UTC, but everything else is offset-naive
+        return project._id.generation_time.replace(tzinfo=None)
 
     def details_links(self, project):
         '''Return list of pairs (url, label) with details

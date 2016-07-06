@@ -148,7 +148,10 @@ class AdminApp(Application):
                     SitemapEntry('Screenshots', admin_url + 'screenshots'),
                     SitemapEntry('Categorization', admin_url + 'trove')
                 ]
-        links.append(SitemapEntry('Tools', admin_url + 'tools_moved'))
+        if plugin.ProjectRegistrationProvider.get().registration_date(c.project) < datetime(2016, 6, 1):
+            # only show transitional Tools page to older projects that may be used to it
+            # no point is showing it to new projects
+            links.append(SitemapEntry('Tools', admin_url + 'tools_moved'))
         if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
