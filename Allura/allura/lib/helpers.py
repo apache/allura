@@ -1225,16 +1225,6 @@ def get_filter(ctx, filter_name):
         return partial(filter_, ctx.environment)
 
 
-@contextfilter
-def map_jinja_filter(ctx, seq, filter_name, *a, **kw):
-    """
-    A Jinja2 filter that applies the named filter with the
-    given args to the sequence this filter is applied to.
-    """
-    filter_ = get_filter(ctx, filter_name)
-    return [filter_(value, *a, **kw) for value in seq]
-
-
 def unidiff(old, new):
     """Returns unified diff between `one` and `two`."""
     return '\n'.join(difflib.unified_diff(
