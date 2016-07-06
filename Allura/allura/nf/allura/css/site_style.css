@@ -948,6 +948,9 @@ thead th{
   height: auto;
   float: left;
 }
+.hopscotch-bubble button {
+  float: initial;
+}
 
 button, input[type="submit"], input[type="reset"], input[type="button"] {
   padding-bottom: 4px;
@@ -1077,6 +1080,12 @@ a.btn:active {
   background-image: -moz-linear-gradient(top, #ffffff 0%, #eeeeee 100%);
   background-image: linear-gradient(top, #ffffff 0%, #eeeeee 100%);
 }
+.hopscotch-bubble button:hover {
+  border-color: transparent !important;
+}
+.hopscotch-bubble button.hopscotch-bubble-close:hover {
+  border-width: 0 !important;
+}
 
 button[disabled]:hover, input[type=submit][disabled]:hover, input[type=reset][disabled]:hover, input[type=button][disabled]:hover {
   cursor: auto;
@@ -1094,6 +1103,10 @@ li.active, .btn.active, .btn:active:hover, button:active:hover, .btn-set .btn.ic
   -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0 -2px 5px inset,rgba(0, 0, 0, 0.2) 0 1px 3px inset;
   -o-box-shadow: rgba(0, 0, 0, 0.1) 0 -2px 5px inset,rgba(0, 0, 0, 0.2) 0 1px 3px inset;
   box-shadow: rgba(0, 0, 0, 0.1) 0 -2px 5px inset,rgba(0, 0, 0, 0.2) 0 1px 3px inset;
+}
+.hopscotch-bubble button:active:hover {
+  box-shadow: none;
+  background: transparent url(../../../allura/images/sprite-green.png) -192px -92px no-repeat; // reset to hopscotch.min.css value
 }
 
 button[disabled]:active:hover, input[type=submit][disabled]:active:hover, input[type=reset][disabled]:active:hover, input[type=button][disabled]:active:hover {

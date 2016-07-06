@@ -17,105 +17,113 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-{% set wiki_found = False %}
-{% set tracker_found = False %}
-{% set forum_found = False %}
 
-{% block title %}{{c.project.name}} / Admin{% endblock %}
+{% do g.register_forge_js('js/hopscotch.min.js') %} {# location='body_js_tail' #}
+{% do g.register_forge_css('css/hopscotch.min.css') %} {# location='body_js_tail' #}
 
-{% block header %}Project Admin{% endblock %}
+{% block title %}{{c.project.name}} / Admin Welcome{% endblock %}
+
+{% block header %}Welcome to your {{config.site_name}} project!{% endblock %}
+
+{% set tour = {
+    "id": "admin-welcome",
+    "showPrevButton": false,
+    "steps": [
+        {
+            "title": "Describe your project",
+            "content": "Enter your project description, then upload screenshots if you've got them, and categorize your project.  This helps people know what your project is all about.",
+            "target": ".admin-nav-metadata",
+            "placement": "right",
+            "yOffset": -17,
+        },
+        {
+            "title": "Add tools",
+            "content": "Add more code repositories, ticket trackers, wikis, links, whatever your project needs!",
+            "target": 'add-tool-container',
+            "__comment": "if many tools are installed, this target could be on the second row, but should be rare, particularly with brand new projects",
+            "placement": "bottom",
+            "xOffset": -180,
+            "arrowOffset": 200,
+        },
+        {
+            "title": "Customize",
+            "content": "Rename and change settings for your tools.  Remove any you don't need.",
+            "target": "toggle-admin-btn",
+            "placement": "top",
+            "xOffset": -275,
+            "arrowOffset": 270,
+        },
+        {
+            "title": "Add users",
+            "content": "Add other developers to your project.",
+            "target": ".admin-nav-user-perms",
+            "placement": "right",
+            "yOffset": -17,
+        },
+        {
+            "title": "Start coding",
+            "content": "Commit your code to your repo.  Or, if you have code somewhere else, <a href='ext/import/'>import it</a> or add link to it (add an 'External Link' tool).",
+            "target": ".tool-git-32,.tool-hg-32,.tool-svn-32",
+            "placement": "bottom",
+            "xOffset": -17,
+        },
+    ]
+} %}
+
 
 {% block content %}
-  <p>{{config.site_name}} projects come with a number of Tools, which can be configured and adjusted to your needs.</p>
+    <p>This is the Admin area of your project, where you can set your project details, permissions, options and more.
+        Your project has many tools available in the top menu, each with its own customization and settings.</p>
+    <p>Here's a quick tour of a few important things to get started:</p>
 
-  <div class="grid-1">
-    &nbsp;
-  </div>
-  <div class="grid-13">
-    <h3>Project Setup</h3>
-    <p>The first thing to do to setup your project is to create a solid description, so folks coming to your page can figure out what the project is all about. You'll then want to input information about the project, and we'll make sure all this relevant information gets added to the {{config.site_name}} project directory.</p>
-  </div>
-  <div class="grid-4">
-    <a href="overview">Update MetaData</a>
-  </div>
-  <div style="clear:both"></div>
-
-  <div class="grid-1">
-    &nbsp;
-  </div>
-  <div class="grid-13">
-    <h3>Wikis</h3>
-    <p>You can create documentation, post proposed feature descriptions, and discuss these shared documents.</p>
-  </div>
-  <div class="grid-4">
-    {% for tool in c.project.app_configs %}
-      {% if tool.tool_name.lower() == 'wiki' and not wiki_found %}
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/add">Add Page</a><br>
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Wiki</a>
-        {% set wiki_found = True %}
-      {% endif %}
-    {% endfor %}
-  </div>
-  <div style="clear:both"></div>
-  {% if scm_tools %}
-    {% set tool = scm_tools[0] %}
-      <div class="grid-1">
-        &nbsp;
-      </div>
-    <div class="grid-13">
-      <h3>Code</h3>
-      <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
+    {% for step in tour.steps %}
+    <div class="tour-step-info">
+        <h2>{{ step.title }}</h2>
+        <p>{{ step.content|safe }}
+        </p>
+        <div class="hopscotch-bubble not-really-hopscotch-bubble">
+            <button class="tour-show hopscotch-nav-button next" data-tour-id="{{ loop.index0 }}">Show Me</button>
+        </div>
     </div>
-    <div class="grid-4">
-      <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
-      <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
-    </div>
-  {% endif %}
-  <div style="clear:both"></div>
-
-  <div class="grid-1">
-    &nbsp;
-  </div>
-  <div class="grid-13">
-  <h3>Tickets</h3>
-    <p>With the {{config.site_name}} tracker you can keep track of items of work that need to be done. You can create one or more trackers for bugs, enhancements, tasks, that will help you plan and manage your development process.</p>
-  </div>
-  <div class="grid-4">
-    {% for tool in c.project.app_configs %}
-      {% if tool.tool_name.lower() == 'tickets' and not tracker_found %}
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/new">Create Ticket</a><br>
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/milestones">Edit Milestones</a><br>
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Tickets</a>
-        {% set tracker_found = True %}
-      {% endif %}
     {% endfor %}
-  </div>
-  <div style="clear:both"></div>
-
-  <div class="grid-1">
-    &nbsp;
-  </div>
-  <div class="grid-13">
-    <h3>Forums</h3>
-    <p>To use the forums, create a couple of forums, post introductory messages, and check out the spam controll/post moderation options.</p>
-  </div>
-  <div class="grid-4">
-    {% for tool in c.project.app_configs %}
-      {% if tool.tool_name == 'Discussion' and not forum_found %}
-          <a href="{{c.project.url()}}{{tool.options.mount_point}}/?new_forum=True">Create Forum</a><br>
-          <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Forums</a>
-        {% set forum_found = True %}
-      {% endif %}
-    {% endfor %}
-  </div>
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    .grid-20.pad .grid-1,
-    .grid-20.pad .grid-13,
-    .grid-20.pad .grid-4 {
-        margin-top: 2em;
+<style type="text/css">
+    div.hopscotch-bubble.not-really-hopscotch-bubble {
+        border: none;
+        position: initial;
+    }
+    .tour-step-info {
+        margin-bottom: 20px;
+    }
+    .tour-step-info h2 {
+        padding-bottom: 0;
+    }
+    .tour-step-info p {
+        padding-bottom: 8px;
+    }
+    .tour-step-info button {
+        float: none;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function() {
+    var tour = {{ h.escape_json(tour)|safe }};
+    tour.onError = function() {
+        var step = hopscotch.getCurrStepNum();
+        console.warn('Error on tour step #', step, tour.steps[step]);
+    };
+    $('.tour-show').click(function(){
+        var step = $(this).data('tour-id');
+        hopscotch.startTour(tour, step);
+    });
+    {% if 'first-visit' in request.params %}
+        hopscotch.startTour(tour);
+    {% endif %}
+});
+</script>
 {% endblock %}

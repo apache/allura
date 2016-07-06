@@ -141,7 +141,7 @@ class AdminApp(Application):
         else:
             links += [
                 SitemapEntry('Welcome', admin_url),
-                SitemapEntry('Metadata', admin_url + 'overview'),
+                SitemapEntry('Metadata', admin_url + 'overview', className="admin-nav-metadata"),
             ]
             if c.project.neighborhood.name != "Users":
                 links += [
@@ -153,7 +153,7 @@ class AdminApp(Application):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
             links.append(
-                SitemapEntry('User Permissions', admin_url + 'groups/'))
+                SitemapEntry('User Permissions', admin_url + 'groups/', className="admin-nav-user-perms"))
         if not c.project.is_root and has_access(c.project, 'admin')():
             links.append(
                 SitemapEntry('Permissions', admin_url + 'permissions/'))
@@ -206,12 +206,7 @@ class ProjectAdminController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')
     def index(self, **kw):
-        scm_tools = []
-        for tool in c.project.app_configs:
-            app = g.entry_points["tool"].get(tool.tool_name)
-            if app and issubclass(app, RepositoryApp):
-                scm_tools.append(tool)
-        return dict(scm_tools=scm_tools)
+        return dict()
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_invitations.html')
