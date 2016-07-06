@@ -29,12 +29,7 @@ from allura.lib.utils import skip_mod_date
 
 @task
 def init(**kwargs):
-    from allura import model as M
     c.app.repo.init()
-    M.Notification.post_user(
-        c.user, c.app.repo, 'created',
-        text='Repository %s/%s created' % (
-            c.project.shortname, c.app.config.options.mount_point))
 
 
 @task
