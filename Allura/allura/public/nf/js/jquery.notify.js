@@ -123,6 +123,10 @@
         if (opts.status === 'success') {
             opts.status = 'confirm';
         }
+        // For compatibility with the TG default of "ok"
+        if (opts.status === 'ok') {
+            opts.status = 'info';
+        }
         return $(this).each(function() {
             if (opts.message) {
                 var o = $.metadata ? $.extend(opts, $(this).metadata()) : opts;

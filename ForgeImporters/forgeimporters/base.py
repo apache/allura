@@ -310,7 +310,7 @@ class ProjectImporter(BaseController):
             ToolImporter.by_name(importer_name).post(**kw)
         M.AuditLog.log('import project from %s' % self.source)
 
-        flash('Welcome to the %s Project System! '
+        flash('Welcome to your new project on %s! '
               'Your project data will be imported and should show up here shortly.' % config['site_name'])
         redirect(c.project.script_name + 'admin/overview')
 
