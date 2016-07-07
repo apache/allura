@@ -31,11 +31,11 @@
 {% block content %}
 {{c.page_list.display(page=page, limit=limit, count=total_entries)}}
 <div>
-  <ul>
+  <div class="list">
   {% for e in entries %}
-    <li><a href="{{e.url}}">{{e.label}}</a></li>
+    <div class="list card proj_icon" style="width:97%; height: 30px;"><h2><a href="{{e.url}}">{{e.label}}</a></h2></div>
   {% endfor %}
-  </ul>
+  </div>
 </div>
 {{c.page_list.display(page=page, limit=limit, count=total_entries)}}
 {% endblock %}
