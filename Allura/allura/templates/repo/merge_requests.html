@@ -25,7 +25,12 @@
 {% block header %}{{c.app.config.options.mount_label}} Merge Requests{% endblock %}
 {% block content %}
   <div class="nested-grid-container">
-  {{ c.mr_filter.display(action='.', value=dict(status=status)) }}
+    <form method="GET" action=".">
+        <label class="btn-set">Filter </label>
+        <button type="submit" class="submit btn-set left" style="color:green" name="status" value="open">Open</button>
+        <button type="submit" class="submit btn-set" style="color:red" name="status" value="closed">Closed</button>
+        <button type="submit" class="submit btn-set right" style="color:DeepSkyBlue" name="status" value="merged">Merged</button>
+    </form>
   </div>
 
   <table>
