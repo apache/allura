@@ -2456,11 +2456,11 @@ div.attachment_thumb .file_type span {
 
 #comment ul {
   list-style: none;
-  margin: 0 20px 0px 0;
+  margin: 0 0 0 0;
   padding: 0;
   float: right;
   clear: right;
-  width: 99%;
+  width: 99%; /* to make thread-level <ul> full width */
 }
 
 #comment ul ul li {
@@ -2501,6 +2501,7 @@ div.attachment_thumb .file_type span {
   float: none;
   padding-left: 1em;
   list-style-type: disc;
+  width: inherit; /* regular, not 99% from thread-level <ul> */
 }
 #comment .edit_post_form ul,
 #comment .reply_post_form ul {
