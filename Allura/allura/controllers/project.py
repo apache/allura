@@ -236,9 +236,7 @@ class NeighborhoodController(object):
                 if (tool.lower() not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
                     install_params.append(dict(ep_name=tool, ordinal=i + offset))
             c.project.install_apps(install_params)
-        flash('Welcome to your new project on %s!'
-              'To get started, fill out some information about your project.' % config['site_name'])
-        redirect(c.project.script_name + 'admin/')
+        redirect(c.project.script_name + 'admin/?first-visit')
 
     @expose()
     def icon(self, **kw):

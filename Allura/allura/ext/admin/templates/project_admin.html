@@ -23,7 +23,7 @@
 
 {% block title %}{{c.project.name}} / Admin Welcome{% endblock %}
 
-{% block header %}Welcome to your {{config.site_name}} project!{% endblock %}
+{% block header %}Welcome to your {{config.site_name}} project!<span class="title-end"></span>{% endblock %}
 
 {% set tour = {
     "id": "admin-welcome",
@@ -69,6 +69,15 @@
         },
     ]
 } %}
+{% if 'first-visit' in request.params %}
+    {% do tour['steps'].insert(0, {
+        "title": "Welcome to your new project!",
+        "content": "Here's a quick tour to show you around.",
+        "target": "h2.title .title-end",
+        "placement": "right",
+        "yOffset": -26,
+    }) %}
+{% endif %}
 
 
 {% block content %}
