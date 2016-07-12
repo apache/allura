@@ -98,29 +98,38 @@
         </div>
         {% endif %}
         {% if value.attachments and (not pending or moderator) %}
-        <div style="padding-left: 5px;">
-          <strong>Attachments</strong>
-          <div class="clear"></div>
+        <div class="attachment_holder">
           {% for att in value.attachments %}
-            <div class="attachment_thumb">
-                <form method="POST" action="{{att.url()}}">
+            <div class="attachment_item">
                 {% if att.is_image() %}
-                    <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>
-                    <br/>
-                    <a href="{{att.url()}}">{{att.filename}}</a>
-                    {% if h.has_access(value, 'moderate')()%}
-                        <br>
-                        <input class="submit delete_attachment pic" type="submit" value="X"/>
-                    {% endif %}
+                    <div class="attachment_thumbnail">
+                        <a class="lightbox" data-src="{{att.url()}}" href="{{att.url()}}">
+                            <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
+                        </a>
+                    </div>
+                 <div class="attachment-name">
+                    <i class="fa fa-picture-o" aria-hidden="true"></i>
                 {% else %}
-                    <a href="{{att.url()}}">{{att.filename}}</a>
-                    {% if h.has_access(value, 'moderate')()%}
-                    <input class="submit delete_attachment file" type="submit" value="X"/>
-                    {% endif %}
+                <div class="attachment-name">
+                    <i class="fa fa-file-o" aria-hidden="true"></i>
                 {% endif %}
-                <input type="hidden" name="delete" value="True">
-                {{lib.csrf_token()}}
-                </form>
+                    <a href="{{att.url()}}">{{att.filename}}</a>
+                </div>
+                 <div class="attachment_toolbar">
+                    <form method="POST" action="{{att.url()}}">
+                        {% if h.has_access(value, 'moderate')()%}
+                            <a href="javascript: void(0)"  onclick="$(this).closest('form').submit();" title="Remove Attachment"" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
+                                <span><i class="fa fa-trash-o" aria-hidden="true"></i></span>
+                            </a>
+                        {% endif %}
+
+                        <a href="http://localhost:8080/p/test/tickets/1/#dd1a" download title="Download File" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
+                            <span><i class="fa fa-download" aria-hidden="true"></i></span>
+                        </a>
+                        <input type="hidden" name="delete" value="True">
+                        {{lib.csrf_token()}}
+                    </form>
+                </div>
             </div>
           {% endfor %}
         </div>
@@ -161,6 +170,11 @@
       </li>
     </ul>
   </div>
+    <!-- lightbox_me div that will dynamically load attachment image -->
+  <div id="lightbox" style="display:none; height: 90%">
+      <img style="width: inherit; height: inherit; display: block; margin-left: auto; margin-right: auto;" src="#">
+  </div>
+
 </div>
 
 {% block extra_css %}
@@ -169,4 +183,34 @@
         color:grey;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+
+    $(document).ready( function(){
+        //lightbox_me script to create lightbox of attached images
+        $('.lightbox').click(function(e) {
+            var image_source = $(this).data("src");
+            var image = $('#lightbox').find('img:first');
+            image.attr("src", image_source);
+
+            $('#lightbox').lightbox_me({
+                centered: true,
+                onLoad: function() {
+
+                }
+            });
+
+            e.preventDefault();
+        });
+    });
+
+    function deleteAttachment()
+    {
+         document.forms["myform"].submit();
+    }
+
+</script>
+
 {% endblock %}
