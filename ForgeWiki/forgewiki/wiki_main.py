@@ -320,13 +320,13 @@ The wiki uses [Markdown](%s) syntax.
         ]
         root_page_name = self.default_root_page_name
         WM.Globals(app_config_id=c.app.config._id, root=root_page_name)
-        self.upsert_root(root_page_name)
+        self.upsert_root(root_page_name, notify=False)
 
-    def upsert_root(self, new_root):
+    def upsert_root(self, new_root, notify=True):
         p = WM.Page.query.get(app_config_id=self.config._id,
                               title=new_root, deleted=False)
         if p is None:
-            with h.push_config(c, app=self):
+            with h.push_config(c, app=self), h.notifications_disabled(c.project, disabled=not notify):
                 p = WM.Page.upsert(new_root)
                 p.viewable_by = ['all']
                 p.text = self.default_root_page_text()
