@@ -206,8 +206,6 @@ class TestPostNotifications(unittest.TestCase):
         self._post_notification()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
         assert M.Mailbox.query.find().count() == 1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
