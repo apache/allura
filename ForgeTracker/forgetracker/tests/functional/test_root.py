@@ -882,10 +882,10 @@ class TestFunctionalController(TrackerTestController):
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get('/bugs/1/', dict(page=1))
-        assert '<input class="submit delete_attachment file" type="submit" value="X"/>' in r
+        assert '<i class="fa fa-trash-o" aria-hidden="true"></i>' in r
         r.forms[5].submit()
         r = self.app.get('/bugs/1/', dict(page=1))
-        assert '<input class="submit delete_attachment" type="submit" value="X"/>' not in r
+        assert '<i class="fa fa-trash-o" aria-hidden="true"></i>' not in r
 
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
@@ -2279,9 +2279,10 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(bugs2.config._id)}).follow()
 
-        attachs = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
-        ta = str(attachs[1])  # ticket's attachments
-        ca = str(attachs[2])  # comment's attachments
+        attach_tickets = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
+        attach_comments = r.html.findAll('div', attrs={'class': 'attachment_item'})
+        ta = str(attach_tickets)  # ticket's attachments
+        ca = str(attach_comments)  # comment's attachments
         assert_in('<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
         assert_in('<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
         p = M.Post.query.find().sort('timestamp', 1).first()

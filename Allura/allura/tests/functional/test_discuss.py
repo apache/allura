@@ -321,7 +321,7 @@ class TestAttachment(TestDiscussBase):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.thread_link)
-        assert '<div class="attachment_thumb">' in r
+        assert '<div class="attachment_holder">' in r
         alink = self.attach_link()
         r = self.app.get(alink)
         assert r.content_type == 'text/plain'
@@ -396,7 +396,7 @@ class TestAttachment(TestDiscussBase):
             upload_files=[('file_info', 'user.png', pic)])
         # ... make sure ordinary user can see it
         r = self.app.get(self.thread_link, extra_environ=ordinary_user)
-        assert '<div class="attachment_thumb">' in r
+        assert '<div class="attachment_holder">' in r
         alink = self.attach_link()
         thumblink = alink + '/thumb'
         # ... and access it
@@ -411,10 +411,10 @@ class TestAttachment(TestDiscussBase):
         session(post).flush(post)
         # ... make sure attachment is not visible to ordinary user
         r = self.app.get(self.thread_link, extra_environ=ordinary_user)
-        assert '<div class="attachment_thumb">' not in r, 'Attachment is visible on unmoderated post'
+        assert '<div class="attachment_holder">' not in r, 'Attachment is visible on unmoderated post'
         # ... but visible to moderator
         r = self.app.get(self.thread_link, extra_environ=moderator)
-        assert '<div class="attachment_thumb">' in r
+        assert '<div class="attachment_holder">' in r
         # ... and ordinary user can't access it
         self.app.get(alink, status=403, extra_environ=ordinary_user)
         self.app.get(thumblink, status=403, extra_environ=ordinary_user)
