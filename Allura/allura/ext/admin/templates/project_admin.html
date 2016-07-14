@@ -18,8 +18,8 @@
 -#}
 {% extends g.theme.master %}
 
-{% do g.register_forge_js('js/hopscotch.min.js') %} {# location='body_js_tail' #}
-{% do g.register_forge_css('css/hopscotch.min.css') %} {# location='body_js_tail' #}
+{% do g.register_forge_js('js/hopscotch.min.js', location='body_js') %}
+{% do g.register_forge_css('css/hopscotch.min.css', compress=False) %} {# compress will also serve from a different location, breaking image refs #}
 
 {% block title %}{{c.project.name}} / Admin Welcome{% endblock %}
 
