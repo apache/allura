@@ -209,5 +209,5 @@ $(function(){
     });
 
     twemoji.size = '36x36';
-    twemoji.parse(document.body);
+    twemoji.parse($('#content_base')[0]);
 });

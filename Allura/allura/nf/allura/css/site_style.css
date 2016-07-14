@@ -3605,7 +3605,7 @@ div .bubble .CodeMirror {
   }
 }
 
-img.emoji {
+#content_base img.emoji {
     display: inline !important;
     height: 1em;
     width: 1em;
