@@ -552,30 +552,6 @@ img.nav-logo {
   text-align: left;
 }
 
-.ads ins {
-  background-color: transparent;
-}
-
-.medrec {
-  width: 300px;
-  display: block;
-}
-
-.ads, .ad {
-  margin: 0 0 20px;
-}
-
-.leaderboard {
-  width: 728px;
-  overflow: hidden;
-  text-align: center;
-  margin: 0 auto;
-  line-height: 0;
-}
-.leaderboard .google_afc {
-  margin: 0 auto;
-}
-
 #site-notification {
   margin: 0 auto;
   margin-bottom: 20px;
@@ -627,11 +603,6 @@ img.nav-logo {
   padding: 2px 10px;
   color: #069;
   margin-left: 6px;
-}
-
-.hub {
-  width: 200px;
-  overflow: hidden;
 }
 
 /* message */
