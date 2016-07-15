@@ -541,3 +541,18 @@ def test_spam_num_replies(spam_checker):
     p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
     p1.spam()
     assert_equal(t.num_replies, 1)
+
+
+def test_deleted_thread_index():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    p = M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
+    t.delete()
+    ThreadLocalORMSession.flush_all()
+
+    # re-query, so relationships get reloaded
+    ThreadLocalORMSession.close_all()
+    p = M.Post.query.get(_id=p._id)
+
+    # just make sure this doesn't fail
+    p.index()

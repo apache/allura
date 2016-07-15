@@ -600,11 +600,13 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     @property
     def subject(self):
-        subject = self.thread.subject
-        if not subject:
-            artifact = self.thread.artifact
-            if artifact:
-                subject = getattr(artifact, 'email_subject', '')
+        subject = None
+        if self.thread:
+            subject = self.thread.subject
+            if not subject:
+                artifact = self.thread.artifact
+                if artifact:
+                    subject = getattr(artifact, 'email_subject', '')
         return subject or '(no subject)'
 
     @LazyProperty
