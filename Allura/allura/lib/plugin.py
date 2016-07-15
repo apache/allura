@@ -1110,7 +1110,6 @@ class ThemeProvider(object):
 
     def require(self):
         g.register_theme_css('css/site_style.css', compress=False)
-        g.register_theme_css('css/allura.css', compress=False)
 
     @classmethod
     def register_ew_resources(cls, manager, name):
