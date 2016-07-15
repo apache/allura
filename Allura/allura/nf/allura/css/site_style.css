@@ -2848,6 +2848,150 @@ h1.title .viewer:hover {
   width: 32em;
 }
 
+.commit-details {
+  padding: 10px;
+}
+.commit-details .commit-message {
+  margin: 0px;
+  padding: 10px 5px;
+  border: 1px solid #aaa;
+  -moz-border-radius-topleft: 4px;
+  -webkit-border-top-left-radius: 4px;
+  border-top-left-radius: 4px;
+  -moz-border-radius-topright: 4px;
+  -webkit-border-top-right-radius: 4px;
+  border-top-right-radius: 4px;
+  border-bottom: 0;
+  background: #BDE5F8;
+  color: #003565;
+}
+.commit-details .commit-message .first-line {
+  font-size: 18px;
+  font-weight: bold;
+}
+.commit-details .commit-details {
+  font-size: 12px;
+  margin: 0;
+  padding: 5px 10px 0 10px;
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U1ZTVlNSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background-size: 100%;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+  background-image: -moz-linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  background-image: -webkit-linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  background-image: linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  border: 1px solid #aaa;
+  -moz-border-radius-bottomleft: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  -moz-border-radius-bottomright: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.commit-details .commit-details p {
+  height: 23px;
+  padding: 2px 0;
+}
+.commit-details .commit-details .commit-authorship {
+  float: left;
+}
+.commit-details .commit-details .commit-authorship label {
+  display: inline-block;
+  width: 85px;
+}
+.commit-details .commit-details .commit-authorship img {
+  vertical-align: top;
+}
+.commit-details .commit-details .commit-links .commit-ancestry {
+  float: right;
+}
+.commit-details .commit-details .commit-links a.commit-tree-link {
+  float: right;
+  margin-left: 20px;
+  padding-top: 2px;
+}
+.commit-details .commit-details .clearfix {
+  clear: both;
+}
+
+.inline-diff {
+  margin: 10px;
+  border: 0;
+  -moz-box-shadow: 0 1px 0 #fff;
+  -webkit-box-shadow: 0 1px 0 #fff;
+  box-shadow: 0 1px 0 #fff;
+}
+.inline-diff h6 {
+  padding: 0px 10px;
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U1ZTVlNSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background-size: 100%;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+  background-image: -moz-linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  background-image: -webkit-linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  background-image: linear-gradient(#ffffff 0%, #e5e5e5 100%);
+  border: 1px solid #aaa;
+  -moz-border-radius-topleft: 4px;
+  -webkit-border-top-left-radius: 4px;
+  border-top-left-radius: 4px;
+  -moz-border-radius-topright: 4px;
+  -webkit-border-top-right-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.inline-diff h6 a {
+  color: #666;
+  display: inline-block;
+  padding: 2px 0;
+}
+.inline-diff h6 .commit-diff-link {
+  float: right;
+  border-left: 1px solid #aaa;
+  padding-left: 10px;
+}
+.inline-diff h6 .switch-diff-format-link {
+  padding-right: 10px;
+}
+.inline-diff .inline-diff-body {
+  border: 1px solid #aaa;
+  border-top: 0;
+  -moz-border-radius-bottomleft: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  -moz-border-radius-bottomright: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.inline-diff .inline-diff-body pre {
+  padding: 0;
+}
+.inline-diff .inline-diff-body .empty-diff {
+  margin: 10px;
+  font-style: italic;
+}
+
+div.message.scm-learn-basics, div.message.scm-ssh-key, div.message.scm-empty-repo {
+  cursor: default;
+  display: block;
+  width: auto;
+  margin: 0 1em 1em;
+  box-shadow: none;
+}
+div.message.scm-learn-basics h6, div.message.scm-empty-repo h6 {
+  padding-left: 0;
+}
+div.message.scm-empty-repo {
+  float: none;
+  overflow: hidden;
+  height: 90px;
+}
+div.message.scm-learn-basics {
+  float: right;
+  width: 270px;
+  background-color: #f5f5f5;
+  border-color: #aaa;
+}
+div.message.scm-learn-basics img {
+  margin-right: 1em;
+}
+
 /* Repo status indicator, displayed on repo pages if status != 'ready' */
 #repo_status {
   margin: 0 10px;
@@ -2892,11 +3036,6 @@ td.code {
 
 div.codehilite {
   margin-bottom: 5px;
-}
-div.codehilite pre {
-    padding-left: 0px;
-    padding-top:10px;
-    padding-bottom:10px;
 }
 div.codehilite pre div.code_block {
     padding-left:10px;
