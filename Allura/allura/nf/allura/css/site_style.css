@@ -3807,7 +3807,9 @@ tr.rev div.markdown_content p {
   text-align: center;
   line-height: 2em;
 }
-
+#usergroup_admin ul {
+  list-style-type: none;
+}
 #usergroup_admin .fa-plus-circle,
 #usergroup_admin .fa-check-circle,
 #usergroup_admin .fa-check {
