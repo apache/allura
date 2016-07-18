@@ -76,7 +76,8 @@ git push -u origin master</pre>
     &nbsp;
     <div class="message info scm-ssh-key">
       <div class="content">
-      Did you get asked for your {{config.site_name}} password during this process? You can securely use your Git repository and avoid having to re-enter your password by <a href="https://{{config.domain}}/account/ssh">setting up an ssh-key</a>.
+       {% if h.asbool(config.get('auth.allow_upload_ssh_key', True)) %} Did you get asked for your {{config.site_name}} password during this process? You can securely use your Git repository and avoid having to re-enter your password by <a href="{{config.get('auth.preferences_url')}}">setting up an ssh-key</a>.
+       {% else %} Did you get asked for your {{config.site_name}} password during this process? You can securely use your Git repository and avoid having to re-enter your password by asking your server admin to enable uploading ssh keys</a>. {% endif %}
       </div>
     </div>
     {% else %}
