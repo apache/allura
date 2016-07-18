@@ -80,17 +80,7 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 options=self.target_branches),
             ffw.MarkdownEdit(name='description')]
         return result
-
-
-class SCMMergeRequestFilterWidget(ff.ForgeForm):
-    defaults = dict(
-        ff.ForgeForm.defaults,
-        submit_text='Filter',
-        method='GET')
-
-    class fields(ew_core.NameList):
-        status = ew.MultiSelectField(options=M.MergeRequest.statuses)
-
+    
 
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):
 

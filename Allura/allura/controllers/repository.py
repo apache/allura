@@ -45,7 +45,7 @@ from allura.lib.diff import HtmlSideBySideDiff
 from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
-from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
+from allura.lib.widgets.repo import SCMMergeRequestWidget
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.controllers import AppDiscussionController
@@ -335,15 +335,12 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
 
 
 class MergeRequestsController(object):
-    mr_filter = SCMMergeRequestFilterWidget()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/merge_requests.html')
-    @validate(mr_filter)
     def index(self, status=None, **kw):
         status = status or ['open']
         requests = c.app.repo.merge_requests_by_statuses(*status)
-        c.mr_filter = self.mr_filter
         return dict(
             status=status,
             requests=requests)

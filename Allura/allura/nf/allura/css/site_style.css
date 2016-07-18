@@ -954,6 +954,7 @@ a.btn:active {
   border-radius: 0;
   border: 1px solid #aaaaaa !important;
 }
+
 .btn-set .btn:first-child {
   -moz-border-radius-topleft: 4px;
   -webkit-border-top-left-radius: 4px;
@@ -989,6 +990,10 @@ a.btn:active {
 }
 .btn-set.duo .btn:last-child {
   margin: 0 0 0 0;
+}
+
+.btn-set .joined{
+    margin: 0 0 10px 0 !important;
 }
 
 .btn-bar, #top_nav {
@@ -1211,35 +1216,12 @@ a.active {
   width: 960px;
 }
 
-.nested-grid-container {
+.filter-container {
   display: inline-block;
   overflow: hidden;
   padding-left: 10px;
   *zoom: 1;
   width: auto;
-}
-
-label.btn-set{
-    float:left;
-    position:relative;
-    top: 5px;
-    padding-right: 5px;
-}
-
-button.btn-set{
-    margin: 0px;
-    border-radius: 0px;
-    font-weight: bold;
-}
-
-button.btn-set.left{
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-}
-
-button.btn-set.right{
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
 }
 
 .grid-block {

@@ -18,18 +18,23 @@
 -#}
 {% extends 'allura:templates/repo/repo_master.html' %}
 
+{% set status = request.params.get('status' , '') %}
+
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}} / Merge Requests
 {% endblock %}
 
 {% block header %}{{c.app.config.options.mount_label}} Merge Requests{% endblock %}
 {% block content %}
-  <div class="nested-grid-container">
+  <div class="filter-container">
     <form method="GET" action=".">
-        <label class="btn-set">Filter </label>
-        <button type="submit" class="submit btn-set left" style="color:green" name="status" value="open">Open</button>
-        <button type="submit" class="submit btn-set" style="color:red" name="status" value="closed">Closed</button>
-        <button type="submit" class="submit btn-set right" style="color:DeepSkyBlue" name="status" value="merged">Merged</button>
+        <div class="btn-set">
+            <button type="button" class="btn duo joined"><i class="fa fa-filter" aria-hidden="true"></i></button>
+            <button type="submit" class="btn duo joined {% if status == '' %}active{% endif %}" name="status" value="">All</button>
+            <button type="submit" class="btn duo joined {% if status == 'open' %}active{% endif %}" style="color:green" name="status" value="open">Open</button>
+            <button type="submit" class="btn duo joined {% if status == 'closed' %}active{% endif %}" style="color:red" name="status" value="closed">Closed</button>
+            <button type="submit" class="btn duo joined {% if status == 'merged' %}active{% endif %}" style="color:DeepSkyBlue" name="status" value="merged">Merged</button>
+        </div>
     </form>
   </div>
 
