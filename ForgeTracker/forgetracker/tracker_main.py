@@ -1540,8 +1540,10 @@ class TicketController(BaseController, FeedController):
                 changes[cf.label] = cf_val(cf)
 
         post_text, notification_text = render_changes(changes, comment)
+
         thread = self.ticket.discussion_thread
-        thread.add_post(text=post_text, is_meta=True,
+        if changes.get_changed():
+            thread.add_post(text=post_text, is_meta=True,
                         notification_text=notification_text)
         self.ticket.commit()
         if comment:
