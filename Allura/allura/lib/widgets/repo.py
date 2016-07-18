@@ -80,7 +80,7 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 options=self.target_branches),
             ffw.MarkdownEdit(name='description')]
         return result
-    
+
 
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):
 
