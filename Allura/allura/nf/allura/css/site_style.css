@@ -800,10 +800,6 @@ input, textarea, select {
   border: 1px solid #aaaaaa;
 }
 
-html.no-boxshadow input, html.no-boxshadow textarea, html.no-boxshadow select {
-  border: 1px solid #aaaaaa;
-}
-
 input[type=radio] {
   border: none !important;
 }
@@ -2169,12 +2165,6 @@ a.sidebar-disabled:focus {
 #top_nav a:hover {
   opacity: 1;
   color: #666666;
-}
-
-.no-cssgradients #top_nav {
-  border-top: 1px solid #aaaaaa;
-  border-left: 1px solid #aaaaaa;
-  border-right: 1px solid #aaaaaa;
 }
 
 #content_base {
