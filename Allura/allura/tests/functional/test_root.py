@@ -55,7 +55,7 @@ class TestRootController(TestController):
         response = self.app.get('/')
         assert_equal(response.html.find('h2', {'class': 'dark title'}).contents[
                      0].strip(), 'All Neighborhoods')
-        nbhds = response.html.findAll('td', {'class': 'nbhd'})
+        nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
         assert nbhds[0].find('a').get('href') == '/adobe/'
         cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('li')
         assert len(cat_links) == 4
