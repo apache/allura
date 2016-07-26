@@ -1216,6 +1216,15 @@ a.active {
   width: 960px;
 }
 
+.nested-grid-container {
+  display: inline-block;
+  margin-left: -10px;
+  margin-right: -10px;
+  overflow: hidden;
+  *zoom: 1;
+  width: auto;
+}
+
 .filter-container {
   display: inline-block;
   overflow: hidden;
