@@ -34,16 +34,15 @@
 {% block content %}
     {{ text if text }}
 
-    <table>
-        <thead>
-            <tr><th>Neighborhood</th></tr>
-        </thead>
-        <tbody>
+    <div class="neighborhoods">
         {% for nbhd in neighborhoods %}
-            <tr><td class="nbhd"><a href="{{nbhd.url()}}">{{nbhd.name}}</a></td></tr>
+            <div class="nbhd_holder">
+                <div class="nbhd_icon">{% if nbhd.icon %}<a href="{{nbhd.url()}}"><img src="{{nbhd.url()}}icon" class="project_icon" alt="{{nbhd.name}} Logo"/> </a>{% endif %}</div>
+                <div class="nbhd_name"><a href="{{nbhd.url()}}">{{nbhd.name}}</a></div>
+                <div class="nbhd_count">{{nbhd.projects_count()}}</div>
+            </div>
         {% else %}
             <tr><td class="no-nbhds">No neighborhoods found</td></tr>
         {% endfor %}
         </tbody>
-    </table>
 {% endblock %}

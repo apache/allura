@@ -2153,6 +2153,16 @@ a.sidebar-disabled:focus {
   font-style: italic;
 }
 
+.nbhd_holder {
+    height: 50px;
+}
+
+.nbhd_icon {
+    width: 50px;
+    float:left;
+    padding-top: 2px;
+}
+
 #top_nav {
   background-color: #f8f8f8;
   background-image: linear-gradient(#ffffff, #f0f0f0);

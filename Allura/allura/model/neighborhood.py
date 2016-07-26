@@ -117,6 +117,23 @@ class Neighborhood(MappedClass):
         else:
             return url
 
+    def projects_count(self):
+        from allura import model as M
+        from allura.lib import helpers as h
+
+        q = dict(
+            deleted=False,
+            is_nbhd_project=False,
+            neighborhood_id=self._id)
+
+        total = 0
+
+        for p in M.Project.query.find(q):
+            if h.has_access(p, 'read')():
+                total = total + 1
+
+        return total
+
     def register_project(self, shortname, user=None, project_name=None, user_project=False, private_project=False, apps=None):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
