@@ -123,7 +123,7 @@
                             </a>
                         {% endif %}
 
-                        <a href="http://localhost:8080/p/test/tickets/1/#dd1a" download title="Download File" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
+                        <a href="{{att.url()}}" download title="Download File" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
                             <span><i class="fa fa-download" aria-hidden="true"></i></span>
                         </a>
                         <input type="hidden" name="delete" value="True">
@@ -196,20 +196,12 @@
             image.attr("src", image_source);
 
             $('#lightbox').lightbox_me({
-                centered: true,
-                onLoad: function() {
-
-                }
+                centered: true
             });
 
             e.preventDefault();
         });
     });
-
-    function deleteAttachment()
-    {
-         document.forms["myform"].submit();
-    }
 
 </script>
 

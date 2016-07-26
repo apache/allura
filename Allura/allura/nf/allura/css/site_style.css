@@ -2279,6 +2279,7 @@ div.attachment_item{
 .attachment_item .attachment-name {
     background-color: #fafafa;
     padding: 5px;
+    word-wrap: break-word;
 }
 
 .attachment_item img {
