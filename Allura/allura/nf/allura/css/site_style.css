@@ -2161,6 +2161,8 @@ a.sidebar-disabled:focus {
     width: 50px;
     float:left;
     padding-top: 2px;
+    background-color: #f9f9f9;
+    margin-right: 5px;
 }
 
 #top_nav {
