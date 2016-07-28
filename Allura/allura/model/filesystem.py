@@ -59,9 +59,16 @@ class File(MappedClass):
 
     @classmethod
     def _fs(cls):
-        return GridFS(
-            session(cls).impl.db,
-            cls._root_collection())
+        gridfs_args = (session(cls).impl.db, cls._root_collection())
+        try:
+            # for some pymongo 2.x versions the _connect option is available to avoid index creation on every usage
+            # (it'll still create indexes on delete & write)
+            gridfs = GridFS(*gridfs_args, _connect=False)
+        except TypeError:  # (unexpected keyword argument)
+            # pymongo 3.0 removes the _connect arg
+            # pymongo 3.1 makes index creation only happen on the very first write
+            gridfs = GridFS(*gridfs_args)
+        return gridfs
 
     @classmethod
     def _root_collection(cls):
