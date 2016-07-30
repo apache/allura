@@ -243,7 +243,7 @@ class TestForumAsync(TestController):
         r = self.app.get(url)
         assert "test1.txt" in r
         assert "test2.txt" in r
-        for link in r.html.findAll('a'):
+        for link in r.html.findAll('a.btn'):
             if 'attachment' in link.get('href', ''):
                 self.app.get(str(link['href']))
                 self.app.post(str(link['href']), params=dict(delete='on'))
