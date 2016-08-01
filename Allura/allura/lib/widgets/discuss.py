@@ -300,6 +300,11 @@ class Post(HierWidget):
         for w in self.widgets.itervalues():
             for r in w.resources():
                 yield r
+        yield ew.CSSScript('''
+        div.moderate {
+            color:grey;
+        }
+        ''')
         yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.JSScript('''
         (function () {
@@ -414,6 +419,19 @@ class Post(HierWidget):
                         popup.hide();
                     });
                 }
+            });
+
+            //lightbox_me script to create lightbox of attached images
+            $('.lightbox').click(function(e) {
+                var image_source = $(this).data("src");
+                var image = $('#lightbox').find('img:first');
+                image.attr("src", image_source);
+
+                $('#lightbox').lightbox_me({
+                    centered: true
+                });
+
+                e.preventDefault();
             });
         }());
         ''')
