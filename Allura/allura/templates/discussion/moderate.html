@@ -37,3 +37,11 @@ Moderation Queue
 {{c.post_filter.display(action=discussion.url()+'moderate', value=dict(status=status, flag=flag, username=username))}}
 {{c.moderate_posts.display(value=dict(posts=posts), action=discussion.url()+'moderate/save_moderation')}}
 {% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+    #content_base td:nth-child(6) {
+        word-break: break-all;
+    }
+</style>
+{% endblock %}
