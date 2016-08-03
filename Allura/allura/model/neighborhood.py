@@ -131,6 +131,8 @@ class Neighborhood(MappedClass):
         for p in M.Project.query.find(q):
             if h.has_access(p, 'read')():
                 total = total + 1
+                if total == 100:
+                    return total
 
         return total
 

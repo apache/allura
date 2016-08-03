@@ -42,7 +42,7 @@
                     {% else %}<a href="{{nbhd.url()}}"><div class="placeholder" style="width: 50px; height: 50px; "></div></a>{% endif %}
                 </div>
                 <div class="nbhd_name"><a href="{{nbhd.url()}}">{{nbhd.name}}</a></div>
-                <div class="nbhd_count">{{nbhd.projects_count()}} Projects</div>
+                <div class="nbhd_count">{{nbhd.projects_count()}}{% if nbhd.projects_count() == 100 %}+{% endif %} Projects</div>
             </div>
         {% else %}
             <tr><td class="no-nbhds">No neighborhoods found</td></tr>
