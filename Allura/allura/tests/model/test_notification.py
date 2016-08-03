@@ -96,6 +96,7 @@ class TestNotification(unittest.TestCase):
             references=['a'],
             sender='wiki@test.p.in.localhost',
             text='text footer',
+            metalink=None,
         )
 
     @mock.patch('allura.tasks.mail_tasks.sendmail')
@@ -159,6 +160,7 @@ class TestNotification(unittest.TestCase):
             references=['a'],
             sender='wiki@test.p.in.localhost',
             text='text footer',
+            metalink=None,
         )
 
 
