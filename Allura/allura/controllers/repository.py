@@ -342,7 +342,7 @@ class MergeRequestsController(object):
         status = status or 'open'
         status = [status]
         if status == ['all']:
-            requests = c.app.repo.all_merge_requests(*status)
+            requests = c.app.repo.all_merge_requests()
         else:
             requests = c.app.repo.merge_requests_by_statuses(*status)
 

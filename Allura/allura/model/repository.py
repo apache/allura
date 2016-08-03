@@ -633,7 +633,7 @@ class Repository(Artifact, ActivityObject):
             status={'$in': statuses})).sort(
             'request_number')
 
-    def all_merge_requests(self, *statuses):
+    def all_merge_requests(self):
         return MergeRequest.query.find(dict(
             app_config_id=self.app.config._id)).sort(
             'request_number')
