@@ -39,7 +39,7 @@ $(window).load(function() {
                 title: 'Insert Table'
               },
               "horizontal-rule", "|",
-              "link", "image", "|",
+              "link", "image",
               "preview",
               //"side-by-side",
               "fullscreen",

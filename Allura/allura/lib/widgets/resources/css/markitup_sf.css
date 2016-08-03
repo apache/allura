@@ -68,3 +68,13 @@
 .CodeMirror .CodeMirror-placeholder {
     color: #999;
 }
+/* move these buttons to the right, they are a different type of button */
+.editor-toolbar .fa-eye,
+.editor-toolbar .fa-arrows-alt,
+.editor-toolbar .fa-question-circle {
+  float: right;
+}
+.editor-toolbar.fullscreen {
+  /* for some reason the "nowrap" setting causes our floated elements to be offset in Firefox, when fullscreen */
+  white-space: inherit;
+}
