@@ -2154,15 +2154,30 @@ a.sidebar-disabled:focus {
 }
 
 .nbhd_holder {
-    height: 50px;
+    height: px;
+    float: left;
+    margin-left: 10px;
+    margin-top: 10px;
 }
 
 .nbhd_icon {
     width: 50px;
     float:left;
-    padding-top: 2px;
     background-color: #f9f9f9;
     margin-right: 5px;
+}
+
+.nbhd_details{
+    float: left;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 5px;
+    min-width: 120px;
+}
+
+.neighborhoods .nbhd_icon .placeholder{
+    width: 50px;
+    height: 50px;
 }
 
 #top_nav {
