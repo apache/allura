@@ -339,8 +339,13 @@ class MergeRequestsController(object):
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/merge_requests.html')
     def index(self, status=None, **kw):
-        status = status or ['open']
-        requests = c.app.repo.merge_requests_by_statuses(*status)
+        status = status or 'open'
+        status = [status]
+        if status == ['all']:
+            requests = c.app.repo.all_merge_requests(*status)
+        else:
+            requests = c.app.repo.merge_requests_by_statuses(*status)
+
         return dict(
             status=status,
             requests=requests)

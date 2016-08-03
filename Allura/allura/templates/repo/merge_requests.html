@@ -30,9 +30,9 @@
     <form method="GET" action=".">
         <div class="btn-set">
             <button type="button" class="btn duo joined"><i class="fa fa-filter" aria-hidden="true"></i></button>
-            <button type="submit" class="btn duo joined {% if status == '' %}active{% endif %}" name="status" value="">All</button>
-            <button type="submit" class="btn duo joined {% if status == 'open' %}active{% endif %}" style="color:green" name="status" value="open">Open</button>
-            <button type="submit" class="btn duo joined {% if status == 'closed' %}active{% endif %}" style="color:red" name="status" value="closed">Closed</button>
+            <button type="submit" class="btn duo joined {% if status == 'all' %}active{% endif %}" name="status" value="all">All</button>
+            <button type="submit" class="btn duo joined {% if status == 'open' or status == '' %}active{% endif %}" style="color:green" name="status" value="open">Open</button>
+            <button type="submit" class="btn duo joined {% if status == 'rejected' %}active{% endif %}" style="color:red" name="status" value="rejected">Rejected</button>
             <button type="submit" class="btn duo joined {% if status == 'merged' %}active{% endif %}" style="color:DeepSkyBlue" name="status" value="merged">Merged</button>
         </div>
     </form>

@@ -633,6 +633,11 @@ class Repository(Artifact, ActivityObject):
             status={'$in': statuses})).sort(
             'request_number')
 
+    def all_merge_requests(self, *statuses):
+        return MergeRequest.query.find(dict(
+            app_config_id=self.app.config._id)).sort(
+            'request_number')
+
     @LazyProperty
     def _additional_viewable_extensions(self):
         ext_list = self.additional_viewable_extensions or ''
