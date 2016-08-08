@@ -27,6 +27,7 @@
       .no-nbhds {
           text-align: center;
           font-style: italic;
+          margin: 5px;
       }
   </style>
 {% endblock %}
@@ -43,11 +44,11 @@
                 </div>
                 <div class="nbhd_details">
                     <div class="nbhd_name"><a href="{{nbhd.url()}}">{{nbhd.name}}</a></div>
-                    <div class="nbhd_count">{{nbhd.projects_count()}}{% if nbhd.projects_count() == 100 %}+{% endif %} Projects</div>
+                    <div class="nbhd_count">{{nbhd.projects_count}}{% if nbhd.projects_count == 100 %}+{% endif %} Projects</div>
                 </div>
             </div>
         {% else %}
-            <tr><td class="no-nbhds">No neighborhoods found</td></tr>
+            <div class="no-nbhds">No neighborhoods found</div>
         {% endfor %}
     </div>
 {% endblock %}

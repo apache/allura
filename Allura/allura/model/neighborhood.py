@@ -117,6 +117,7 @@ class Neighborhood(MappedClass):
         else:
             return url
 
+    @LazyProperty
     def projects_count(self):
         from allura import model as M
         from allura.lib import helpers as h
