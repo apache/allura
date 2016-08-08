@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/rss+xml" title="Wiki RSS" href="../feed.rss"/>
 <link rel="alternate" type="application/atom+xml" title="Wiki Atom" href="../feed.atom"/>
 {% endblock %}
-{% block body_attrs %} class="wiki-{{(page.title).replace(' ','_')}}"{% endblock %}
+{% block body_css_class %} {{super()}} wiki-{{(page.title).replace(' ','_')}}{% endblock %}
 
 {% block actions %}
   {% if not page['deleted'] %}
