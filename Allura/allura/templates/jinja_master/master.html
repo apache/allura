@@ -78,7 +78,6 @@
     {% if g.production_mode %}{{ g.analytics.display() }}{% endif %}
 </head>
 
-<body{% block body_attrs %}{% endblock %} id="forge">
 <body{% block body_attrs %}{% endblock %} class="{% block body_css_class %}{% endblock %}" id="forge">
 {% block body_top_js %}
     {% for blob in g.resource_manager.emit('body_top_js') %}
