@@ -67,8 +67,16 @@ $(window).load(function() {
               },
               blockStyles: {
                 code: '~~~'
+              },
+              shortcuts: {
+                  "drawLink": null,  // default is cmd-k, used for search in Firefox, better to preserve that
+                  "toggleUnorderedList": null, // default is cmd-l, used to activate location bar
               }
             });
+            // https://github.com/codemirror/CodeMirror/issues/1576#issuecomment-19146595
+            // can't use simplemde's shortcuts settings, since those only hook into bindings set up for each button
+            editor.codemirror.options.extraKeys.Home = "goLineLeft";
+            editor.codemirror.options.extraKeys.End = "goLineRight";
             editor.render();
 
             // shared at https://github.com/codemirror/CodeMirror/issues/2143#issuecomment-140100969
