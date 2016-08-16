@@ -124,6 +124,10 @@ setup(
     [allura.webhooks]
     repo-push = allura.webhooks:RepoPushWebhookSender
 
+    [allura.multifactor.totp]
+    mongodb = allura.lib.multifactor:MongodbTotpService
+    filesystem-googleauth = allura.lib.multifactor:GoogleAuthenticatorPamFilesystemTotpService
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand

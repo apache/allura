@@ -36,6 +36,7 @@ from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask
 from .webhook import Webhook
+from .multifactor import TotpKey
 
 from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL, MarkdownCache
 from .session import main_doc_session, main_orm_session
@@ -60,4 +61,4 @@ __all__ = [
     'OAuthRequestToken', 'OAuthAccessToken', 'MonQTask', 'Webhook', 'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS',
     'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session', 'project_doc_session', 'project_orm_session',
     'artifact_orm_session', 'repository_orm_session', 'task_orm_session', 'ArtifactSessionExtension', 'repository',
-    'repo_refresh', 'SiteNotification']
+    'repo_refresh', 'SiteNotification', 'TotpKey']

@@ -16,7 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import base64
 import sys
 import os
 import os.path
@@ -35,6 +35,7 @@ from collections import defaultdict
 import shlex
 import socket
 from functools import partial
+from cStringIO import StringIO
 
 import tg
 import genshi.template
@@ -1286,3 +1287,10 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
                 artifact_count = artifact_count()
             if artifact_count >= count:
                 raise exception()
+
+
+def base64uri(image, format='PNG', mimetype='image/png'):
+    output = StringIO()
+    image.save(output, format=format)
+    data = base64.b64encode(output.getvalue())
+    return 'data:{};base64,{}'.format(mimetype, data)

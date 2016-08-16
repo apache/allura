@@ -306,6 +306,7 @@ class Globals(object):
             # imported (after load, the ep itself is not used)
             macros=_cache_eps('allura.macros'),
             webhooks=_cache_eps('allura.webhooks'),
+            multifactor_totp=_cache_eps('allura.multifactor.totp')
         )
 
         # Neighborhood cache

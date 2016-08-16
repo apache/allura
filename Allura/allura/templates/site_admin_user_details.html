@@ -35,6 +35,7 @@
           <li>Username: {{ user.username }} (<a href="{{ user.url() }}">Go to profile page</a>)</li>
           <li>Full name: {{ user.get_pref('display_name') }}</li>
           <li>Registered: {{ user.registration_date() }} ({{ h.ago(user.registration_date(), show_date_after=None) }})</li>
+          <li>Multifactor auth: {{ user.get_pref('multifactor') or False }}</li>
         </ul>
         {% block extra_general_info %}{% endblock %}
         </div>

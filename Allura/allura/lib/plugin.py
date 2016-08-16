@@ -33,7 +33,6 @@ from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
 import calendar
-import json
 
 try:
     import ldap
@@ -80,6 +79,10 @@ class AuthenticationProvider(object):
         '/auth/pwd_expired_change',
         '/auth/logout',
     ]
+    multifactor_allowed_urls = [
+        '/auth/multifactor',
+        '/auth/do_multifactor',
+    ]
 
     def __init__(self, request):
         self.request = request
@@ -103,6 +106,10 @@ class AuthenticationProvider(object):
         username = self.session.get('username') or self.session.get('expired-username')
         user = M.User.query.get(username=username)
 
+        if 'multifactor-username' in self.session and request.path not in self.multifactor_allowed_urls:
+            # ensure any partially completed multifactor login is not left open, if user goes to any other pages
+            del self.session['multifactor-username']
+            self.session.save()
         if user is None:
             return M.User.anonymous()
         if user.disabled or user.pending:
@@ -126,6 +133,7 @@ class AuthenticationProvider(object):
                 # Don't try to re-post; the body has been lost.
                 location = tg.url(self.pwd_expired_allowed_urls[0])
             redirect(location)
+
         return user
 
     def register_user(self, user_doc):
@@ -146,9 +154,16 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError('_login')
 
-    def login(self, user=None):
+    def login(self, user=None, multifactor_success=False):
         if user is None:
             user = self._login()  # raises exception if auth fails
+
+        if user.get_pref('multifactor') and not multifactor_success:
+            self.session['multifactor-username'] = user.username
+            self.session.save()
+            return None
+        else:
+            self.session.pop('multifactor-username', None)
 
         if self.is_password_expired(user):
             self.session['pwd-expired'] = True

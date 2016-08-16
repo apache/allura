@@ -101,6 +101,36 @@
       {% endif %}
     {% endblock %}
 
+    {% block multifactor %}
+      {% if h.asbool(tg.config.get('auth.multifactor.totp', False)) %}
+        <fieldset class="preferences multifactor">
+            <legend>Multifactor Authentication</legend>
+            <p>Multifactor authentication is currently
+            {% set user_multifactor = c.user.get_pref('multifactor') %}
+            {% if user_multifactor %}
+                <strong style="color:green">enabled</strong>
+            {%- else -%}
+                <strong style="color:red">disabled</strong>
+            {%- endif -%}
+            .
+            </p>
+            <p><b class="fa fa-cog"></b> <a href="totp_new">
+                {% if user_multifactor %}
+                    Regenerate multifactor key (e.g. for a new phone).
+                {% else %}
+                    Set up multifactor authentication.
+                {% endif %}
+            </a></p>
+            {% if user_multifactor %}
+                <p><b class="fa fa-qrcode"></b> <a href="totp_view">View existing configuration</a></p>
+
+                {# FIXME, need confirmation #}
+                <p><b class="fa fa-trash"></b> <a href="multifactor_disable" class="post-link">Disable</a></p>
+            {% endif %}
+        </fieldset>
+      {% endif %}
+    {% endblock %}
+
     {% block upload_key_form %}
       {% if h.asbool(tg.config.get('auth.allow_upload_ssh_key', False)) %}
         <fieldset class="preferences">
@@ -138,6 +168,11 @@
     width: 860px;
     padding: 0;
     border: 0;
+  }
+  .multifactor .fa {
+      font-size: 300%;
+      vertical-align: middle;
+      margin-right: 5px;
   }
 </style>
 {% endblock %}
