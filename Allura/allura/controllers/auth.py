@@ -19,6 +19,7 @@ import logging
 import os
 import datetime
 import re
+from urlparse import urlparse, urljoin
 
 import bson
 import tg
@@ -28,7 +29,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
-from urlparse import urlparse, urljoin
+from cryptography.hazmat.primitives.twofactor import InvalidToken
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -47,6 +48,7 @@ from allura.lib.widgets import (
     DisableAccountForm)
 from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
+from allura.lib.multifactor import TotpService
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
@@ -244,7 +246,7 @@ class AuthController(BaseController):
                 em.send_verification_link()
             flash('User "%s" registered. Verification link was sent to your email.' % username)
         else:
-            plugin.AuthenticationProvider.get(request).login(user)
+            plugin.AuthenticationProvider.get(request).login(user)  # TODO test this flow
             flash('User "%s" registered' % username)
         redirect('/')
 
@@ -294,24 +296,61 @@ class AuthController(BaseController):
         plugin.AuthenticationProvider.get(request).logout()
         redirect(config.get('auth.post_logout_url', '/'))
 
+    @staticmethod
+    def _verify_return_to(return_to):
+        # protect against any "open redirect" attacks using an external URL
+        if not return_to:
+            return_to = '/'
+        rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
+        base_host = urlparse(config['base_url']).netloc
+        if rt_host == base_host:
+            return return_to
+        else:
+            return '/'
+
     @expose()
     @require_post()
     @validate(F.login_form, error_handler=index)
     def do_login(self, return_to=None, **kw):
         location = '/'
 
-        if session.get('expired-username'):
+        if session.get('multifactor-username'):
+            location = tg.url('/auth/multifactor', dict(return_to=return_to))
+        elif session.get('expired-username'):
             if return_to and return_to not in plugin.AuthenticationProvider.pwd_expired_allowed_urls:
                 location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0], dict(return_to=return_to))
             else:
                 location = tg.url(plugin.AuthenticationProvider.pwd_expired_allowed_urls[0])
         elif return_to and return_to != request.url:
-            rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
-            base_host = urlparse(config['base_url']).netloc
-            if rt_host == base_host:
-                location = return_to
+            location = self._verify_return_to(return_to)
 
         redirect(location)
+
+    @expose('jinja:allura:templates/login_multifactor.html')
+    def multifactor(self, return_to='', **kwargs):
+        return dict(
+            return_to=return_to,
+        )
+
+    @expose('jinja:allura:templates/login_multifactor.html')
+    @require_post()
+    def do_multifactor(self, code, **kwargs):
+        if 'multifactor-username' not in session:
+            tg.flash('Your multifactor login was disrupted, please start over.', 'error')
+            redirect('/auth', return_to=kwargs.get('return_to', ''))
+
+        user = M.User.by_username(session['multifactor-username'])
+        totp_service = TotpService.get()
+        totp = totp_service.get_totp(user)
+        try:
+            totp_service.verify(totp, code)
+        except InvalidToken:
+            c.form_errors['code'] = 'Invalid code, please try again.'
+            return self.multifactor(**kwargs)
+        else:
+            plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
+            return_to = self._verify_return_to(kwargs.get('return_to'))
+            redirect(return_to)
 
     @expose(content_type='text/plain')
     def refresh_repo(self, *repo_path):
@@ -451,6 +490,7 @@ class PreferencesController(BaseController):
 
     def _check_security(self):
         require_authenticated()
+
 
     @with_trailing_slash
     @expose('jinja:allura:templates/user_prefs.html')
@@ -603,6 +643,86 @@ class PreferencesController(BaseController):
     def user_message(self, allow_user_messages=False):
         c.user.set_pref('disable_user_messages', not allow_user_messages)
         redirect(request.referer)
+
+    @expose('jinja:allura:templates/user_totp.html')
+    @without_trailing_slash
+    #@reconfirm_password
+    def totp_new(self, **kw):
+        '''
+        auth_provider = plugin.AuthenticationProvider.get(request)
+        # TODO: don't require it every single time
+        if not kw.get('password') or not auth_provider.validate_password(c.user, kw.get('password')):
+            flash('You must provide your current password to set up multifactor authentication', 'error')
+            redirect('.')
+        '''
+
+        totp_service = TotpService.get()
+        if 'totp_new_key' not in session:
+            # never been here yet
+            # get a new key
+            totp = totp_service.Totp(key=None)
+            # don't save to database until confirmed, just session for now
+            session['totp_new_key'] = totp.key
+            session.save()
+        else:
+            # use key from session, so we don't regenerate new keys on each page load
+            key = session['totp_new_key']
+            totp = totp_service.Totp(key)
+
+        qr = totp_service.get_qr_code(totp, c.user)
+        h.auditlog_user('Visited multifactor new TOTP page')
+        return dict(
+            qr=qr,
+            setup=True,
+        )
+
+    @expose('jinja:allura:templates/user_totp.html')
+    @without_trailing_slash
+    #@reconfirm_password
+    def totp_view(self, **kw):
+        totp_service = TotpService.get()
+        totp = totp_service.get_totp(c.user)
+        qr = totp_service.get_qr_code(totp, c.user)
+        h.auditlog_user('Viewed multifactor TOTP config page')
+        return dict(
+            qr=qr,
+            setup=False,
+        )
+
+    @expose('jinja:allura:templates/user_totp.html')
+    @require_post()
+    # @reconfirm_password
+    def totp_set(self, code, **kw):
+        # TODO: email notification
+        key = session['totp_new_key']
+        totp_service = TotpService.get()
+        totp = totp_service.Totp(key)
+        try:
+            totp_service.verify(totp, code)
+        except InvalidToken:
+            h.auditlog_user('Failed to set up multifactor TOTP (wrong code)')
+            c.form_errors['code'] = 'Invalid code, please try again.'
+            return self.totp_new(**kw)
+        else:
+            h.auditlog_user('Set up multifactor TOTP')
+            totp_service.set_secret_key(c.user, key)
+            c.user.set_pref('multifactor', True)
+            del session['totp_new_key']
+            session.save()
+            tg.flash('Two factor authentication has now been set up.')
+            redirect('.')
+
+    @expose()
+    @require_post()
+    # @reconfirm_password
+    def multifactor_disable(self):
+        # TODO: email notification
+        h.auditlog_user('Disabled multifactor TOTP')
+        totp_service = TotpService.get()
+        totp_service.set_secret_key(c.user, None)
+        c.user.set_pref('multifactor', False)
+        tg.flash('Multifactor authentication has now been disabled.')
+        redirect('.')
 
 
 class UserInfoController(BaseController):

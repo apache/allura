@@ -1,0 +1,55 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set hide_left_bar = True %}
+{% extends "allura:templates/user_account_base.html" %}
+
+{% block title %}{{c.user.username}} / Multifactor Authentication Setup{% endblock %}
+
+{% block header %}Multifactor Authentication Setup for {{c.user.username}}{% endblock %}
+
+{% block content %}
+  {{ super() }}
+  <div class='grid-20'>
+    {% if setup %}
+        {% if c.user.get_pref('multifactor') %}
+            <h3>Warning: this will invalidate your previous multifactor configuration.</h3>
+        {% endif %}
+    <h2>Install App</h2>
+    <p>To use two-factor authentication, you will need to install an app on your phone.
+       You can use Duo Mobile, Authy, Google Authenticator, or Authenticator for Windows phones.</p>
+    {% endif %}
+
+    <h2>Scan this barcode with your app</h2>
+    <img src="{{ h.base64uri(qr) }}"/>
+
+    {% if setup %}
+    <h2>Enter the code</h2>
+    <p>
+    Enter the 6-digit code to confirm it is set up correctly:
+    <form method="POST" action="totp_set">
+        <div class="fielderror">{{ c.form_errors['code'] }}</div>
+        <input type="text" name="code" autofocus autocomplete="off"/>
+        {{ lib.csrf_token() }}
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+    </p>
+    {% endif %}
+  </div>
+{% endblock %}
