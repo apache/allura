@@ -1,3 +1,69 @@
+Version 1.5.0  (August 2016)
+
+New Features
+ * [#3593] Add a guided tour after project registration
+ * [#8088] Design changes to Discussions
+ * Added project count and new design for neighborhood listing
+ * Design changes to list attachments. Added lightbox_me to view images
+ * Updated design of tool listing
+ * Added refresh commits button to merge requests
+ * Added emoji rendering via twemoji
+
+Bug Fixes & Minor Improvements
+
+ General:
+ * [#4644] Don't whitelist form elements in markdown processing
+ * [#8006] Large timeline performance issue in activity stream
+ * [#8082] Rate limit artifact creation per-user NEEDS INDEX
+ * [#8094] Improve project creation UX
+ * [#8110] moderation queue items with long lines break layout
+ * Added optional parameter metalink in sendmail function that adds a view button in email clients
+ * Move help/fullscreen/preview icons on markdown editor to the right
+ * Fix how far lists inside comments can go; a proper fix for [#6248]
+ * Compressed PNG images losslessly using OptiPNG (-o6 -zm1-9)
+ * No rate limiting for anonymous user; on wiki page edit check perms before rate limit
+ * Whitelist posts for members of a project
+ Code Repositories:
+ * [#6409] CSS & JS on commit view missing
+ * [#7949] Better listing of files changed in a certain commit
+ * [#7965] Improve git/hg/svn endpoints for rest api
+ * [#8048] Better email subjects for merge request updates
+ * [#8078] Missing notification when using the one-click merge button
+ * [#8090] Show merge requests in sidebar, even if there are 0
+ * Added link items of owner column to filter by assigned_to
+ * Improve design of merge requests listing filter
+ * Fix for scm-ssh-key to be visible only if allow upload ssh key is true
+ * Speed up checking of newly forked repo (patterned after tarball, merge request pages)
+ * Use authored date instead of committed date in merge requests
+ Tickets:
+ * [#8087] Make Columns resizable in ticket table and ticket search
+ * [#8104] Skip creating metapost if list of changes is empty
+ * [#8106] tracker: can't reply to comment which was just moderated Approved
+ * [#8108] tracker markdown text editor handles end key incorrectly
+ Wiki:
+ * [#8071] Create wiki page button should work without admin access
+ * [#5194] For newly registered projects, don't send new wiki page email
+ Admin:
+ * [#7858] /categories URLs needs to use unique ids
+ * Don't error out when reindexing a post/thread that has been deleted
+ * Specify title for /nf/admin/new_projects page
+ API:
+ * [#8077] Add author profile picture information to the post inside response from the API
+ * [#8092] REST API for User Activity does not work due to missing attribute
+ For Developers:
+ * [#8040] Upgrade SimpleMDE and contribute our toggleCodeBlock
+ * [#8079] ensure_index command should not drop indexes
+ * [#8109] Reduce gridfs index creation
+ * Update copyright year.
+ * Adds a jinja block for specifying css classes on body element
+ * Remove modernizr and some unused related classes.
+ * Updated readme
+ * Minor updates to release script
+ * Do not buffer output from gunicorn (or taskd/mail containers that extend this one), useful when using print statements during dev
+ * Stop tracking ForgeGit/forgegit/tests/data/testgit.git/FETCH_HEAD file which changes values based on local machine when running tests
+ * Add a few helpful notes for Docker installation, move login info to Post-setup section so Docker installers see it too
+
+
 Version 1.4.0  (April 2016)
 
 Upgrade Instructions
