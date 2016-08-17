@@ -30,9 +30,9 @@ API_URL = 'https://forge-allura.apache.org/rest/p/allura/tickets/search?limit=10
 
 def main():
     from_ref, to_ref, version = get_versions()
-    tickets = get_tickets(from_ref, to_ref)
+    tickets, changes_without_tickets = get_tickets(from_ref, to_ref)
     summaries = get_ticket_summaries(tickets)
-    print_changelog(version, summaries)
+    print_changelog(version, summaries, changes_without_tickets)
 
 
 def get_versions():
@@ -42,12 +42,15 @@ def get_versions():
 def get_tickets(from_ref, to_ref):
     repo = git.Repo('.')
     ticket_nums = set()
+    changes_without_tickets = []
     ref_spec = '..'.join([from_ref, to_ref])
     for commit in repo.iter_commits(ref_spec):
         match = re.match(r'\s*\[#(\d+)\]', commit.summary)
         if match:
             ticket_nums.add(match.group(1))
-    return list(ticket_nums)
+        else:
+            changes_without_tickets.append(commit.summary)
+    return list(ticket_nums), changes_without_tickets
 
 
 def get_ticket_summaries(tickets):
@@ -60,13 +63,15 @@ def get_ticket_summaries(tickets):
     return summaries
 
 
-def print_changelog(version, summaries):
+def print_changelog(version, summaries, changes_without_tickets):
     print 'Version {version}  ({date})\n'.format(**{
         'version': version,
         'date': datetime.utcnow().strftime('%B %Y'),
     })
     for ticket in sorted(summaries.keys()):
         print " * [#{0}] {1}".format(ticket, summaries[ticket].encode('utf-8'))
+    for change in changes_without_tickets:
+        print " * {}".format(change.encode('utf-8'))
 
 if __name__ == '__main__':
     main()
