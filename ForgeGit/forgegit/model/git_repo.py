@@ -698,16 +698,22 @@ class GitImplementation(M.RepositoryImplementation):
                 x += 2
 
         for status, name in files[start:end]:
-            change_list = {
+            change_list_types = {
                 'R': result['renamed'],
                 'C': result['copied'],
                 'A': result['added'],
                 'D': result['removed'],
-                'M': result['changed']
-            }[status]
-            change_list.append(name)
+                'M': result['changed'],
+                'T': result['changed'],
+            }
+            if status in change_list_types:
+                change_list = change_list_types[status]
+                change_list.append(name)
+            else:
+                log.error('Unexpected git change status: "%s" on file %s commit %s repo %s',
+                          status, name, commit_id, self._repo.full_fs_path)
 
-        result['total'] = len(files)
+        result['total'] = sum(len(chgs) for chgs in result.values())
 
         return result
 
