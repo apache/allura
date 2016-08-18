@@ -721,7 +721,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'copied': [],
             'renamed': [],
             'changed': [],
-            'total': 2,
+            'total': 1,
         }
         assert_equals(diffs, expected)
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=1, end=2)
@@ -731,7 +731,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'copied': [],
             'renamed': [],
             'changed': [],
-            'total': 2,
+            'total': 1,
         }
         assert_equals(diffs, expected)
         diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
@@ -752,6 +752,16 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'renamed': [],
             'changed': [],
             'total': 2,
+        }
+        assert_equals(diffs, expected)
+        diffs = repo.paged_diffs('616d24f8dd4e95cadd8e93df5061f09855d1a066')  # Test type change
+        expected = {
+            'added': [],
+            'removed': [],
+            'copied': [],
+            'renamed': [],
+            'changed': [u'README.copy'],
+            'total': 1,
         }
         assert_equals(diffs, expected)
 
