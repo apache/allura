@@ -244,12 +244,13 @@ Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <ht
 On Linux, you may need to `create a docker group <https://docs.docker.com/engine/installation/linux/ubuntulinux/#create-a-docker-group>`_.  On Mac, make sure
 you're in a directory that Virtual Box shares through to the VM (by default, anywhere in your home directory works).
 
-Rename your directory to just "allura" and run the following commands in that directory:
+Run the following commands in your allura directory:
 
 Build/fetch all required images:
 
 .. code-block:: bash
 
+    export COMPOSE_PROJECT_NAME=allura
     docker-compose build
 
 Python and JS package setup (and first containers started):
