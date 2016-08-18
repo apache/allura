@@ -217,7 +217,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
-    @mock.patch('forgegit.model.git_repo.git.Repo.clone_from')
+    @mock.patch('forgegit.model.git_repo.git.Repo.clone_from', autospec=True)
     def test_hotcopy(self, clone_from):
         with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
             repo = GM.Repository(
@@ -651,15 +651,15 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tempfile.mkdtemp.return_value,
             ignore_errors=True)
 
-    @mock.patch('forgegit.model.git_repo.tempfile')
-    @mock.patch('forgegit.model.git_repo.shutil')
-    @mock.patch('forgegit.model.git_repo.git')
+    @mock.patch('forgegit.model.git_repo.tempfile', autospec=True)
+    @mock.patch('forgegit.model.git_repo.shutil', autospec=True)
+    @mock.patch('forgegit.model.git_repo.git', autospec=True)
     def test_merge_raise_exception(self, git, shutil, tempfile):
         self.repo._impl._git.git = mock.Mock()
         git.Repo.clone_from.side_effect = Exception
         with self.assertRaises(Exception):
             self.repo.merge(mock.Mock())
-        shutil.rmtree.assert_has_calles()
+        assert shutil.rmtree.called
 
     @mock.patch.dict('allura.lib.app_globals.config',  {'scm.commit.git.detect_copies': 'false'})
     @td.with_tool('test', 'Git', 'src-weird', 'Git', type='git')
