@@ -338,14 +338,14 @@ View logs from all services:
 
 .. code-block:: bash
 
-    docker-compose logs
+    docker-compose logs -f
 
 You can specify one or more services to view logs only from them, e.g. to see
 outgoing mail:
 
 .. code-block:: bash
 
-    docker-compose logs outmail
+    docker-compose logs outmail -f
 
 Update requirements and reinstall apps:
 
