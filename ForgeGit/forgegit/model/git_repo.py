@@ -713,7 +713,7 @@ class GitImplementation(M.RepositoryImplementation):
                 log.error('Unexpected git change status: "%s" on file %s commit %s repo %s',
                           status, name, commit_id, self._repo.full_fs_path)
 
-        result['total'] = sum(len(chgs) for chgs in result.values())
+        result['total'] = len(files)
 
         return result
 
