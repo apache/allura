@@ -147,33 +147,30 @@ class AuthenticationProvider(object):
         raise NotImplementedError('_login')
 
     def login(self, user=None):
-        try:
-            if user is None:
-                user = self._login()
-            if self.is_password_expired(user):
-                self.session['pwd-expired'] = True
-                self.session['expired-username'] = user.username
-                h.auditlog_user('Password expired', user=user)
-            else:
-                self.session['username'] = user.username
+        if user is None:
+            user = self._login()  # raises exception if auth fails
 
-            if 'rememberme' in self.request.params:
-                remember_for = int(config.get('auth.remember_for', 365))
-                self.session['login_expires'] = datetime.utcnow() + timedelta(remember_for)
-            else:
-                self.session['login_expires'] = True
-            self.session.save()
-            g.statsUpdater.addUserLogin(user)
-            user.track_login(self.request)
-            # set a non-secure cookie with same expiration as session,
-            # so an http request can know if there is a related session on https
-            response.set_cookie('allura-loggedin', value='true',
-                                expires=None if self.session['login_expires'] is True else self.session['login_expires'],
-                                secure=False, httponly=True)
-            return user
-        except exc.HTTPUnauthorized:
-            self.logout()
-            raise
+        if self.is_password_expired(user):
+            self.session['pwd-expired'] = True
+            self.session['expired-username'] = user.username
+            h.auditlog_user('Password expired', user=user)
+        else:
+            self.session['username'] = user.username
+
+        if 'rememberme' in self.request.params:
+            remember_for = int(config.get('auth.remember_for', 365))
+            self.session['login_expires'] = datetime.utcnow() + timedelta(remember_for)
+        else:
+            self.session['login_expires'] = True
+        self.session.save()
+        g.statsUpdater.addUserLogin(user)
+        user.track_login(self.request)
+        # set a non-secure cookie with same expiration as session,
+        # so an http request can know if there is a related session on https
+        response.set_cookie('allura-loggedin', value='true',
+                            expires=None if self.session['login_expires'] is True else self.session['login_expires'],
+                            secure=False, httponly=True)
+        return user
 
     def logout(self):
         self.session.invalidate()
