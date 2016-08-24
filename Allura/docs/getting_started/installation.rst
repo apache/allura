@@ -346,7 +346,7 @@ outgoing mail:
 
 .. code-block:: bash
 
-    docker-compose logs outmail -f
+    docker-compose logs -f outmail
 
 Update requirements and reinstall apps:
 
