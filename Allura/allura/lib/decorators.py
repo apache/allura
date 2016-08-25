@@ -22,14 +22,22 @@ import logging
 from collections import defaultdict
 from urllib import unquote
 
+from datetime import datetime
+
+from datetime import timedelta
 from decorator import decorator
+from paste.deploy.converters import asint
 from tg.decorators import before_validate
-from tg import request, redirect
+from tg import request, redirect, session, config
+from tg.render import render
 from webob import exc
 from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
 from allura.lib import utils
+
+
+log = logging.getLogger(__name__)
 
 
 def task(*args, **kw):
@@ -84,6 +92,10 @@ class event_handler(object):
 
 
 class require_post(object):
+    '''
+    A decorator to require controllers by accessed with a POST only.  Use whenever data will be modified by a
+    controller, since that's what POST is good for.  We have CSRF protection middleware on POSTs, too.
+    '''
 
     def __init__(self, redir=None):
         self.redir = redir
@@ -96,6 +108,28 @@ class require_post(object):
                 raise exc.HTTPMethodNotAllowed(headers={'Allow': 'POST'})
         before_validate(check_method)(func)
         return func
+
+
+@decorator
+def reconfirm_auth(func, *args, **kwargs):
+    '''
+    A decorator to require the user to reconfirm their login.  Useful for sensitive pages.
+    '''
+    from allura.lib.plugin import AuthenticationProvider
+
+    if request.POST.get('password'):
+        if AuthenticationProvider.get(request).validate_password(c.user, request.POST['password']):
+            session['auth-reconfirmed'] = datetime.utcnow()
+            session.save()
+        else:
+            c.form_errors['password'] = 'Invalid password.'
+
+    allowed_timedelta = timedelta(seconds=asint(config.get('auth.reconfirm.seconds', 60)))
+    last_reconfirm = session.get('auth-reconfirmed', datetime.min)
+    if datetime.utcnow() - last_reconfirm <= allowed_timedelta:
+        return func(*args, **kwargs)
+    else:
+        return render({}, 'jinja', "allura:templates/reconfirm_auth.html")
 
 
 class log_action(object):  # pragma no cover

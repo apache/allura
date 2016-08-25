@@ -17,7 +17,7 @@
 
 import logging
 import os
-import datetime
+from datetime import datetime, timedelta
 import re
 from urlparse import urlparse, urljoin
 
@@ -37,7 +37,7 @@ from allura.lib import validators as V
 from allura.lib.security import require_authenticated, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, reconfirm_auth
 from allura.lib.repository import RepositoryApp
 from allura.lib.widgets import (
     SubscriptionForm,
@@ -141,7 +141,7 @@ class AuthController(BaseController):
             redirect(login_url)
         hash_expiry = user_record.get_tool_data(
             'AuthPasswordReset', 'hash_expiry')
-        if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
+        if not hash_expiry or hash_expiry < datetime.utcnow():
             log.info('Reset hash expired: {} {}'.format(hash, hash_expiry))
             flash('Unable to process reset, please try again')
             redirect(login_url)
@@ -203,8 +203,8 @@ class AuthController(BaseController):
             hash = h.nonce(42)
             user_record.set_tool_data('AuthPasswordReset',
                                       hash=hash,
-                                      hash_expiry=datetime.datetime.utcnow() +
-                                      datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
+                                      hash_expiry=datetime.utcnow() +
+                                      timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
             log.info('Sending password recovery link to %s', email_record.email)
             subject = '%s Password recovery' % config['site_name']
@@ -646,16 +646,8 @@ class PreferencesController(BaseController):
 
     @expose('jinja:allura:templates/user_totp.html')
     @without_trailing_slash
-    #@reconfirm_password
+    @reconfirm_auth
     def totp_new(self, **kw):
-        '''
-        auth_provider = plugin.AuthenticationProvider.get(request)
-        # TODO: don't require it every single time
-        if not kw.get('password') or not auth_provider.validate_password(c.user, kw.get('password')):
-            flash('You must provide your current password to set up multifactor authentication', 'error')
-            redirect('.')
-        '''
-
         totp_service = TotpService.get()
         if 'totp_new_key' not in session:
             # never been here yet
@@ -678,7 +670,7 @@ class PreferencesController(BaseController):
 
     @expose('jinja:allura:templates/user_totp.html')
     @without_trailing_slash
-    #@reconfirm_password
+    @reconfirm_auth
     def totp_view(self, **kw):
         totp_service = TotpService.get()
         totp = totp_service.get_totp(c.user)
@@ -690,8 +682,8 @@ class PreferencesController(BaseController):
         )
 
     @expose('jinja:allura:templates/user_totp.html')
+    @reconfirm_auth
     @require_post()
-    # @reconfirm_password
     def totp_set(self, code, **kw):
         # TODO: email notification
         key = session['totp_new_key']
@@ -714,8 +706,8 @@ class PreferencesController(BaseController):
 
     @expose()
     @require_post()
-    # @reconfirm_password
-    def multifactor_disable(self):
+    @reconfirm_auth
+    def multifactor_disable(self, **kw):
         # TODO: email notification
         h.auditlog_user('Disabled multifactor TOTP')
         totp_service = TotpService.get()
