@@ -123,9 +123,12 @@
             </a></p>
             {% if user_multifactor %}
                 <p><b class="fa fa-qrcode"></b> <a href="totp_view">View existing configuration</a></p>
-
-                {# FIXME, need confirmation #}
-                <p><b class="fa fa-trash"></b> <a href="multifactor_disable" class="post-link">Disable</a></p>
+                <form action="multifactor_disable" method="post">
+                <p>
+                    <b class="fa fa-trash"></b> <a href="#" class="disable">Disable</a>
+                </p>
+                {{ lib.csrf_token() }}
+                </form>
             {% endif %}
         </fieldset>
       {% endif %}
@@ -178,6 +181,17 @@
 {% endblock %}
 
 {% block extra_js %}
+  <script type="text/javascript">
+      $(function() {
+          $('.multifactor .disable').click(function(e){
+              var ok = confirm('Are you sure you want to disable multifactor authentication?');
+              if(ok) {
+                  $(this).closest('form').submit();
+              }
+              e.preventDefault();
+          });
+      });
+  </script>
   {% if h.asbool(tg.config.get('auth.allow_edit_prefs', True)) %}
   {# js to ask for a current password on the email form #}
   <script type="text/javascript">
