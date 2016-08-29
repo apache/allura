@@ -33,10 +33,12 @@ The available extension points for Allura are:
 * :class:`allura.lib.plugin.ThemeProvider`
 * :class:`allura.lib.plugin.ProjectRegistrationProvider`
 * :class:`allura.lib.plugin.AuthenticationProvider`
+* :class:`allura.lib.multifactor.TotpService`
 * :class:`allura.lib.plugin.UserPreferencesProvider`
 * :class:`allura.lib.plugin.AdminExtension`
 * :class:`allura.lib.plugin.SiteAdminExtension`
 * :class:`allura.lib.spam.SpamFilter`
+* :class:`allura.lib.phone.PhoneService`
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
 * ``[allura.timers]`` functions which return a list or single :class:`timermiddleware.Timer` which will be included in stats.log timings
