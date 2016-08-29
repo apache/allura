@@ -246,7 +246,7 @@ class AuthController(BaseController):
                 em.send_verification_link()
             flash('User "%s" registered. Verification link was sent to your email.' % username)
         else:
-            plugin.AuthenticationProvider.get(request).login(user)  # TODO test this flow
+            plugin.AuthenticationProvider.get(request).login(user)
             flash('User "%s" registered' % username)
         redirect('/')
 
@@ -337,7 +337,7 @@ class AuthController(BaseController):
     def do_multifactor(self, code, **kwargs):
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
-            redirect('/auth', return_to=kwargs.get('return_to', ''))
+            redirect('/auth/', return_to=kwargs.get('return_to', ''))
 
         user = M.User.by_username(session['multifactor-username'])
         totp_service = TotpService.get()

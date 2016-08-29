@@ -302,7 +302,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         email_format=str,
         disable_user_messages=bool,
         multifactor=bool,
-        #totp=S.Binary,
     ))
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(

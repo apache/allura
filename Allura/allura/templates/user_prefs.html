@@ -123,7 +123,7 @@
             </a></p>
             {% if user_multifactor %}
                 <p><b class="fa fa-qrcode"></b> <a href="totp_view">View existing configuration</a></p>
-                <form action="multifactor_disable" method="post">
+                <form action="multifactor_disable" id="multifactor_disable" method="post">
                 <p>
                     <b class="fa fa-trash"></b> <a href="#" class="disable">Disable</a>
                 </p>

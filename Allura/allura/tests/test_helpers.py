@@ -22,6 +22,7 @@ from os import path
 from datetime import datetime, timedelta
 import time
 
+import PIL
 from mock import Mock, patch
 from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
@@ -81,6 +82,7 @@ def test_escape_json():
     outputsample = '{"foo": "bar\u003C/script>\u003Cimg src=foobar onerror=alert(1)>"}'
     outputdata = h.escape_json(inputdata)
     assert_equals(outputdata, outputsample)
+
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
@@ -586,3 +588,12 @@ def test_convert_bools():
                   {'foo': True, 'baz': True})
     assert_equals(h.convert_bools({'foo': 'true', 'baz': ' TRUE '}, prefix='ba'),
                   {'foo': 'true', 'baz': True})
+
+
+def test_base64uri():
+    img_file = path.join(path.dirname(__file__), 'data', 'user.png')
+    with open(img_file) as img_file_handle:
+        img = PIL.Image.open(img_file_handle)
+        b64img = h.base64uri(img)
+        assert b64img.startswith('data:image/png;base64,'), b64img[:100]
+        assert len(b64img) > 500

@@ -66,6 +66,7 @@ class PhoneService(object):
     def get(cls, config, entry_points):
         """
         Return an instance of PhoneService implementation based on ``config``.
+        :rtype: PhoneService
         """
         method = config.get('phone.method')
         if not method:

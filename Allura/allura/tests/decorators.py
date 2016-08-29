@@ -171,8 +171,10 @@ def audits(*messages, **kwargs):
     else:
         preamble = ''
     for message in messages:
-        assert M.AuditLog.query.find(dict(
-            message=re.compile(preamble + message))).count(), 'Could not find "%s"' % message
+        assert M.AuditLog.query.find(dict(message=re.compile(preamble + message))).count(), \
+            'Could not find "%s"%s' % (message,
+                                       '\nYou may need to escape the regex chars in the text you are matching'
+                                       if message != re.escape(message) else '')
 
 
 @contextlib.contextmanager
