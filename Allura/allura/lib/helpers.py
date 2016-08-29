@@ -1179,7 +1179,7 @@ def login_overlay(exceptions=None):
     the `_check_security()` method on a controller).  The `exceptions` param
     can be given a list of exposed views to leave with the original behavior.
 
-    For example:
+    For example::
 
         class MyController(BaseController);
             def _check_security(self):

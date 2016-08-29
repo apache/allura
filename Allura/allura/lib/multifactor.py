@@ -41,13 +41,14 @@ class TotpService(object):
     '''
     An interface for handling multifactor auth TOTP secret keys.  Common functionality
     is provided in this base class, and specific subclasses implement different storage options.
+    A provider must implement :meth:`get_secret_key` and :meth:`set_secret_key`.
 
     To use a new provider, expose an entry point in setup.py::
 
         [allura.multifactor.totp_service]
         mytotp = foo.bar:MyTotpService
 
-    Then in your .ini file, set auth.multifactor.totp.service=mytotp
+    Then in your .ini file, set ``auth.multifactor.totp.service=mytotp``
     '''
 
     @classmethod
@@ -120,6 +121,9 @@ class TotpService(object):
 
 
 class MongodbTotpService(TotpService):
+    '''
+    Store in TOTP keys in mongodb.
+    '''
 
     def get_secret_key(self, user):
         from allura import model as M
@@ -140,7 +144,7 @@ class MongodbTotpService(TotpService):
 
 class GoogleAuthenticatorFile(object):
     '''
-    Server-side .google_authenticator file for PAM
+    Parse & write server-side .google_authenticator files for PAM.
     https://github.com/google/google-authenticator/blob/master/libpam/FILEFORMAT
     '''
 

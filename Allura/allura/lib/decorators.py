@@ -43,20 +43,20 @@ log = logging.getLogger(__name__)
 def task(*args, **kw):
     """Decorator that adds a ``.post()`` function to the decorated callable.
 
-    Calling <original_callable>.post(*args, **kw) queues the callable for
+    Calling ``<original_callable>.post(*args, **kw)`` queues the callable for
     execution by a background worker process. All parameters must be
     BSON-serializable.
 
-    Example usage:
+    Example usage::
 
-    @task
-    def myfunc():
-        pass
+        @task
+        def myfunc():
+            pass
 
-    @task(notifications_disabled=True)
-    def myotherfunc():
-        # No email notifications will be sent for c.project during this task
-        pass
+        @task(notifications_disabled=True)
+        def myotherfunc():
+            # No email notifications will be sent for c.project during this task
+            pass
 
     """
     def task_(func):
