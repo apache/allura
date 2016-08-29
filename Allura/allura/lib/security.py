@@ -51,7 +51,10 @@ class Credentials(object):
 
     @classmethod
     def get(cls):
-        'get the global :class:`Credentials` instance'
+        '''
+        get the global :class:`Credentials` instance
+        :rtype: Credentials
+        '''
         import allura
         return allura.credentials
 

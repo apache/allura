@@ -17,9 +17,13 @@
 
 import calendar
 from datetime import datetime, time, timedelta
+from time import time as time_time
 import json
 from urlparse import urlparse, parse_qs
 from urllib import urlencode
+
+from allura.lib.multifactor import TotpService
+from allura.tests.decorators import audits, out_audits
 from bson import ObjectId
 
 import re
@@ -1985,3 +1989,223 @@ class TestCSRFProtection(TestController):
     def test_token_present_on_first_request(self):
         r = self.app.get('/auth/')
         assert_true(r.form['_session_id'].value)
+
+
+class TestTwoFactor(TestController):
+
+    sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
+
+    def _init_totp(self, username='test-admin'):
+        user = M.User.query.get(username=username)
+        totp_srv = TotpService().get()
+        totp_srv.set_secret_key(user, self.sample_key)
+        user.set_pref('multifactor', True)
+
+    def test_settings_on(self):
+        r = self.app.get('/auth/preferences/')
+        assert r.html.find(attrs={'class': 'preferences multifactor'})
+
+    def test_settings_off(self):
+        with h.push_config(config, **{'auth.multifactor.totp': 'false'}):
+            r = self.app.get('/auth/preferences/')
+        assert not r.html.find(attrs={'class': 'preferences multifactor'})
+
+    def test_user_disabled(self):
+        r = self.app.get('/auth/preferences/')
+        info_html = str(r.html.find(attrs={'class': 'preferences multifactor'}))
+        assert_in('disabled', info_html)
+
+    def test_user_enabled(self):
+        self._init_totp()
+        r = self.app.get('/auth/preferences/')
+        info_html = str(r.html.find(attrs={'class': 'preferences multifactor'}))
+        assert_in('enabled', info_html)
+
+    def test_reconfirm_auth(self):
+        from datetime import datetime as real_datetime
+        with patch('allura.lib.decorators.datetime') as datetime:
+            datetime.min = real_datetime.min
+
+            # reconfirm required at first
+            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 0, 0)
+            r = self.app.get('/auth/preferences/totp_new')
+            assert_in('Password Confirmation', r)
+
+            # submit form, and its not required
+            r.form['password'] = 'foo'
+            r = r.form.submit()
+            assert_not_in('Password Confirmation', r)
+
+            # still not required
+            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 0, 45)
+            r = self.app.get('/auth/preferences/totp_new')
+            assert_not_in('Password Confirmation', r)
+
+            # required later
+            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 1, 3)
+            r = self.app.get('/auth/preferences/totp_new')
+            assert_in('Password Confirmation', r)
+
+    def test_enable_totp(self):
+        with out_audits(user=True):
+            r = self.app.get('/auth/preferences/totp_new')
+            assert_in('Password Confirmation', r)
+
+        with audits('Visited multifactor new TOTP page', user=True):
+            r.form['password'] = 'foo'
+            r = r.form.submit()
+            assert_in('Scan this barcode', r)
+
+        first_key_shown = r.session['totp_new_key']
+
+        with audits('Failed to set up multifactor TOTP \(wrong code\)', user=True):
+            r.form['code'] = ''
+            r = r.form.submit()
+            assert_in('Invalid', r)
+            assert_equal(first_key_shown, r.session['totp_new_key'])  # different keys on each pageload would be bad!
+
+        new_totp = TotpService().Totp(r.session['totp_new_key'])
+        code = new_totp.generate(time_time())
+        r.form['code'] = code
+        with audits('Set up multifactor TOTP', user=True):
+            r = r.form.submit()
+            assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
+                         self.webflash(r))
+
+    def test_reset_totp(self):
+        self._init_totp()
+
+        # access page
+        r = self.app.get('/auth/preferences/totp_new')
+        assert_in('Password Confirmation', r)
+
+        # reconfirm password to get to it
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+
+        # confirm warning message, and key is not changed yet
+        assert_in('Scan this barcode', r)
+        assert_in('this will invalidate your previous', r)
+        current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
+        assert_equal(self.sample_key, current_key)
+
+        # incorrect submission
+        r.form['code'] = ''
+        r = r.form.submit()
+        assert_in('Invalid', r)
+
+        # still unchanged key
+        current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
+        assert_equal(self.sample_key, current_key)
+
+        # valid submission
+        new_key = r.session['totp_new_key']
+        new_totp = TotpService().Totp(new_key)
+        code = new_totp.generate(time_time())
+        r.form['code'] = code
+        r = r.form.submit()
+        assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
+                     self.webflash(r))
+
+        # new key in place
+        current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
+        assert_equal(new_key, current_key)
+        assert_not_equal(self.sample_key, current_key)
+
+    def test_disable(self):
+        self._init_totp()
+
+        self.app.get('/auth/multifactor_disable', status=404)  # GET not allowed
+
+        # get form and submit
+        r = self.app.get('/auth/preferences/')
+        form = r.forms['multifactor_disable']
+        r = form.submit()
+
+        # confirm first, no change
+        assert_in('Password Confirmation', r)
+        user = M.User.query.get(username='test-admin')
+        assert_equal(user.get_pref('multifactor'), True)
+
+        # confirm submit, everything goes off
+        r.form['password'] = 'foo'
+        with audits('Disabled multifactor TOTP', user=True):
+            r = r.form.submit()
+            assert_equal('Multifactor authentication has now been disabled.', json.loads(self.webflash(r))['message'],
+                         self.webflash(r))
+        user = M.User.query.get(username='test-admin')
+        assert_equal(user.get_pref('multifactor'), False)
+        assert_equal(TotpService().get().get_secret_key(user), None)
+
+    def test_login_totp(self):
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+
+        # check results
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert not r.session.get('username')
+
+        # try an invalid code
+        r.form['code'] = 'invalid-code'
+        r = r.form.submit()
+        assert_in('Invalid code', r)
+        assert not r.session.get('username')
+
+        # use a valid code
+        totp = TotpService().Totp(self.sample_key)
+        code = totp.generate(time_time())
+        r.form['code'] = code
+        r = r.form.submit()
+
+        # confirm login and final page
+        assert_equal(r.session['username'], 'test-admin')
+        assert r.location.endswith('/p/foo'), r
+
+    def test_login_totp_disrupted(self):
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+        r = r.follow()
+
+        # go to some other page instead of filling out the 2FA code
+        other_r = self.app.get('/')
+
+        # then try to complete the 2FA form
+        totp = TotpService().Totp(self.sample_key)
+        code = totp.generate(time_time())
+        r.form['code'] = code
+        r = r.form.submit()
+
+        # sent back to regular login
+        assert_equal('Your multifactor login was disrupted, please start over.', json.loads(self.webflash(r))['message'],
+                     self.webflash(r))
+        r = r.follow()
+        assert_in('Password Login', r)
+
+    def test_view_key(self):
+        self._init_totp()
+
+        with out_audits(user=True):
+            r = self.app.get('/auth/preferences/totp_view')
+            assert_in('Password Confirmation', r)
+
+        with audits('Viewed multifactor TOTP config page', user=True):
+            r.form['password'] = 'foo'
+            r = r.form.submit()
+            assert_in('Scan this barcode', r)

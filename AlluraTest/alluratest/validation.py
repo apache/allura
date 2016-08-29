@@ -296,6 +296,9 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         return params, kw
 
     def get(self, *args, **kw):
+        '''
+        :rtype: webtest.app.TestResponse
+        '''
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).get(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
@@ -303,6 +306,9 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         return resp
 
     def post(self, *args, **kw):
+        '''
+        :rtype: webtest.app.TestResponse
+        '''
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).post(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
@@ -310,6 +316,9 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         return resp
 
     def delete(self, *args, **kw):
+        '''
+        :rtype: webtest.app.TestResponse
+        '''
         val_params, kw = self._get_validation_params(kw)
         resp = super(ValidatingTestApp, self).delete(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:

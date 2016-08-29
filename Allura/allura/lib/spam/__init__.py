@@ -42,7 +42,9 @@ class SpamFilter(object):
 
     @classmethod
     def get(cls, config, entry_points):
-        """Return an instance of the SpamFilter impl specified in ``config``.
+        """
+        Return an instance of the SpamFilter impl specified in ``config``.
+        :rtype: SpamFilter
         """
         method = config.get('spam.method')
         if not method:

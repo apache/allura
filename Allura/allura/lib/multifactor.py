@@ -53,6 +53,9 @@ class TotpService(object):
 
     @classmethod
     def get(cls):
+        '''
+        :rtype: TotpService
+        '''
         method = config.get('auth.multifactor.totp.service', 'mongodb')
         return g.entry_points['multifactor_totp'][method]()
 
@@ -93,7 +96,6 @@ class TotpService(object):
     def get_totp(self, user):
         '''
         :param user: a :class:`User <allura.model.auth.User>`
-        :param bool generate_new: generate (but does not save) if one does not exist already
         :return:
         '''
         key = self.get_secret_key(user)
@@ -130,8 +132,8 @@ class MongodbTotpService(TotpService):
         if user.is_anonymous():
             return None
         record = M.TotpKey.query.get(user_id=user._id)
-        if record:
-            return record.key
+        if record and record.key:
+            return bytes(record.key)
 
     def set_secret_key(self, user, key):
         from allura import model as M

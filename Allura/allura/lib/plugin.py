@@ -89,7 +89,10 @@ class AuthenticationProvider(object):
 
     @classmethod
     def get(cls, request):
-        '''returns the AuthenticationProvider instance for this request'''
+        '''
+        returns the AuthenticationProvider instance for this request
+        :rtype: AuthenticationProvider
+        '''
         try:
             result = cls._loaded_ep
         except AttributeError:
@@ -689,6 +692,9 @@ class ProjectRegistrationProvider(object):
 
     @classmethod
     def get(cls):
+        '''
+        :rtype: ProjectRegistrationProvider
+        '''
         from allura.lib import app_globals
         method = config.get('registration.method', 'local')
         return app_globals.Globals().entry_points['registration'][method]()
@@ -1292,6 +1298,9 @@ class ThemeProvider(object):
 
     @classmethod
     def get(cls):
+        '''
+        :rtype: ThemeProvider
+        '''
         name = config.get('theme', 'allura')
         return g.entry_points['theme'][name]()
 
@@ -1381,6 +1390,9 @@ class UserPreferencesProvider(object):
 
     @classmethod
     def get(cls):
+        '''
+        :rtype: UserPreferencesProvider
+        '''
         method = config.get('user_prefs_storage.method', 'local')
         return g.entry_points['user_prefs'][method]()
 
@@ -1580,6 +1592,9 @@ class ImportIdConverter(object):
 
     @classmethod
     def get(cls):
+        '''
+        :rtype: ImportIdConverter
+        '''
         converter = config.get('import_id_converter')
         if converter:
             return g.entry_points['allura.import_id_converter'][converter]()
