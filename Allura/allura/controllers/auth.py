@@ -50,6 +50,7 @@ from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
 from allura.lib.multifactor import TotpService
 from allura.controllers import BaseController
+from allura.tasks.mail_tasks import send_system_mail_to_user
 
 log = logging.getLogger(__name__)
 
@@ -685,7 +686,6 @@ class PreferencesController(BaseController):
     @reconfirm_auth
     @require_post()
     def totp_set(self, code, **kw):
-        # TODO: email notification
         key = session['totp_new_key']
         totp_service = TotpService.get()
         totp = totp_service.Totp(key)
@@ -702,18 +702,27 @@ class PreferencesController(BaseController):
             del session['totp_new_key']
             session.save()
             tg.flash('Two factor authentication has now been set up.')
+            email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_enabled.md').render(dict(
+                user=c.user,
+                config=config,
+            ))
+            send_system_mail_to_user(c.user, u'Two-Factor Authentication Enabled', email_body)
             redirect('.')
 
     @expose()
     @require_post()
     @reconfirm_auth
     def multifactor_disable(self, **kw):
-        # TODO: email notification
         h.auditlog_user('Disabled multifactor TOTP')
         totp_service = TotpService.get()
         totp_service.set_secret_key(c.user, None)
         c.user.set_pref('multifactor', False)
         tg.flash('Multifactor authentication has now been disabled.')
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_disabled.md').render(dict(
+            user=c.user,
+            config=config,
+        ))
+        send_system_mail_to_user(c.user, u'Two-Factor Authentication Disabled', email_body)
         redirect('.')
 
 

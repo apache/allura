@@ -117,7 +117,7 @@ class TotpService(object):
     def set_secret_key(self, user, key):
         '''
         :param user: a :class:`User <allura.model.auth.User>`
-        :param bytes key: may be `None` to clear out a key
+        :param bytes|None key: may be `None` to clear out a key
         '''
         raise NotImplementedError('set_secret_key')
 

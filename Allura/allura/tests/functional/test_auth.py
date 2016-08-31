@@ -2072,6 +2072,11 @@ class TestTwoFactor(TestController):
             assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
                          self.webflash(r))
 
+        tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Enabled')
+        assert_in('new two-factor authentication', tasks[0].kwargs['text'])
+
     def test_reset_totp(self):
         self._init_totp()
 
@@ -2136,6 +2141,12 @@ class TestTwoFactor(TestController):
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('multifactor'), False)
         assert_equal(TotpService().get().get_secret_key(user), None)
+
+        # email confirmation
+        tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Disabled')
+        assert_in('disabled two-factor authentication', tasks[0].kwargs['text'])
 
     def test_login_totp(self):
         self._init_totp()
