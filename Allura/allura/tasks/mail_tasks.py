@@ -18,7 +18,7 @@
 import logging
 import HTMLParser
 
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c, app_globals as g, config
 from bson import ObjectId
 
 from allura.lib import helpers as h
@@ -29,6 +29,7 @@ from allura.lib import exceptions as exc
 log = logging.getLogger(__name__)
 
 smtp_client = mail_util.SMTPClient()
+
 
 def mail_meta_content(metalink):
     '''
@@ -46,6 +47,7 @@ def mail_meta_content(metalink):
     </div>
     <meta itemprop="description" content="View"></meta>
     </div>""" % metalink)
+
 
 @task
 def route_email(
@@ -223,3 +225,32 @@ def sendsimplemail(
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg, sender=sender, references=references, cc=cc, to=toaddr)
+
+
+def send_system_mail_to_user(user_or_emailaddr, subject, text):
+    '''
+    Sends a standard email from the Allura system itself, to a user.
+    This is a helper function around sendsimplemail() that generates a new task
+
+    :param user_or_emailaddr: an email addres (str) or a User object
+    :param subject: subject of the email
+    :param text: text of the email (markdown)
+    '''
+    if isinstance(user_or_emailaddr, basestring):
+        toaddr = user_or_emailaddr
+    else:
+        toaddr = user_or_emailaddr._id
+
+    email = {
+        'toaddr': toaddr,
+        'fromaddr': u'"{}" <{}>'.format(
+            config['site_name'],
+            config['forgemail.return_path']
+        ),
+        'sender': unicode(config['forgemail.return_path']),
+        'reply_to': unicode(config['forgemail.return_path']),
+        'message_id': h.gen_message_id(),
+        'subject': subject,
+        'text': text,
+    }
+    sendsimplemail.post(**email)
