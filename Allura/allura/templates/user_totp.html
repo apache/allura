@@ -30,26 +30,58 @@
         {% if c.user.get_pref('multifactor') %}
             <h3>Warning: this will invalidate your previous multifactor configuration.</h3>
         {% endif %}
-    <h2>Install App</h2>
-    <p>To use two-factor authentication, you will need to install an app on your phone.
-       You can use Duo Mobile, Authy, Google Authenticator, or Authenticator for Windows phones.</p>
+        <h2>Install App</h2>
+        <p>To use two-factor authentication, you will need to install an app on your phone.<br>
+            Install Google Authenticator for
+            <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"><b>Android</b></a>
+            or <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605"><b>iOS</b></a>.
+            <br>
+            Or use another app like Duo Mobile, Authy, or Authenticator for Windows phones.
+        </p>
     {% endif %}
 
     <h2>Scan this barcode with your app</h2>
-    <img src="{{ h.base64uri(qr) }}"/>
+    <img class="qrcode" src="{{ h.base64uri(qr) }}"/>
 
     {% if setup %}
-    <h2>Enter the code</h2>
-    <p>
-    Enter the 6-digit code to confirm it is set up correctly:
-    <form method="POST" action="totp_set">
-        <div class="fielderror">{{ c.form_errors['code'] }}</div>
-        <input type="text" name="code" autofocus autocomplete="off"/>
-        {{ lib.csrf_token() }}
-        <br>
-        <input type="submit" value="Submit">
-    </form>
-    </p>
+        <h2>Enter the code</h2>
+        <form method="POST" action="totp_set">
+        <p>
+            Enter the {{ config['auth.multifactor.totp.length'] }}-digit code to confirm it is set up correctly:<br>
+            {% if c.form_errors['code'] %}
+                <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
+            {% endif %}
+            <input type="text" name="code" autofocus autocomplete="off"/>
+            {{ lib.csrf_token() }}
+            <br>
+            <input type="submit" value="Submit">
+            <a class="cancel" href="/auth/preferences/">Cancel</a>
+        </p>
+        </form>
+    {% else %}
+        <p>
+            You may use this to set up additional devices with the same two-factor key.<br>
+            <br>
+            If you are replacing a device, please <a href="totp_new">regenerate a brand new key</a>.<br>
+            <br>
+            <a href="/auth/preferences/">Back</a>
+        </p>
     {% endif %}
   </div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+    .qrcode {
+        /* compensate for whitespace on QR code image */
+        position: relative;
+        top: -15px;
+        margin-bottom: -15px;
+    }
+    a.cancel {
+        /* align with floated button */
+        display: inline-block;
+        margin: 6px 10px;
+    }
+</style>
 {% endblock %}

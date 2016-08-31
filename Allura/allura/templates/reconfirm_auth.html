@@ -26,8 +26,10 @@
 {% block content %}
 <form method="post">
     <h2>Password Confirmation</h2>
-    <p>To access this account security page, you must reconfirm your password:</p>
-    <div class="fielderror">{{ c.form_errors['password'] }}</div>
+    <p>To access this account security page, you must reconfirm your password:<br>
+    {% if c.form_errors['password'] %}
+        <span class="fielderror">{{ c.form_errors['password'] }}</span><br>
+    {% endif %}
     <input type="password" name="password" autofocus>
     <br>
     <input type="submit" value="Submit">
@@ -40,5 +42,6 @@
     {% endfor %}
 
     {{ lib.csrf_token() }}
+    </p>
 </form>
 {% endblock %}

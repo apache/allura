@@ -25,15 +25,18 @@
 
 {% block content %}
 <form method="post" action="/auth/do_multifactor">
-    <h2>Please enter your Multifactor Authentication Code</h2>
+    <h2>Enter your Multifactor Authentication Code</h2>
+    <p>
+    Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:<br>
     {% if c.form_errors['code'] %}
-        <div class="fielderror">{{ c.form_errors['code'] }}</div>
+        <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
     {% endif %}
     <input type="text" name="code" autofocus autocomplete="off"/>
     <input type="hidden" name="return_to" value="{{ return_to }}"/>
     <br>
     <input type="submit" value="Log In">
     {{ lib.csrf_token() }}
+    </p>
 </form>
 
 {% endblock %}

@@ -2037,12 +2037,12 @@ class TestTwoFactor(TestController):
             assert_not_in('Password Confirmation', r)
 
             # still not required
-            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 0, 45)
+            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 1, 45)
             r = self.app.get('/auth/preferences/totp_new')
             assert_not_in('Password Confirmation', r)
 
             # required later
-            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 1, 3)
+            datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 2, 3)
             r = self.app.get('/auth/preferences/totp_new')
             assert_in('Password Confirmation', r)
 

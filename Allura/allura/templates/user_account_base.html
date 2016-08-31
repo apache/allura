@@ -20,6 +20,7 @@
 {% extends g.theme.master %}
 
 {% block content %}
+{% if menu %}
   <ul id="account-nav-menu" class="b-hornav droppy">
       {% for item in menu -%}
       <li id="{{ item.tabid }}">
@@ -30,4 +31,5 @@
       </li>
       {%- endfor %}
   </ul>
+{% endif %}
 {% endblock %}
