@@ -567,7 +567,7 @@ class TestExportTasks(unittest.TestCase):
         assert_equal(len(tasks), 1)
         assert_equal(tasks[0].kwargs['subject'],
                      'Bulk export for project test completed')
-        assert_equal(tasks[0].kwargs['fromaddr'], g.noreply)
+        assert_equal(tasks[0].kwargs['fromaddr'], '"Allura" <noreply@localhost>')
         assert_equal(tasks[0].kwargs['reply_to'], g.noreply)
         text = tasks[0].kwargs['text']
         assert_in('The bulk export for project test is completed.', text)

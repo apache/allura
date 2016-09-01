@@ -1368,8 +1368,9 @@ To reset your password on %s, please visit the following URL:
 %s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
 
         sendmail.post.assert_called_once_with(
+            sender='noreply@localhost',
             toaddr=email.email,
-            fromaddr=config['forgemail.return_path'],
+            fromaddr=u'"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
             reply_to=config['forgemail.return_path'],
             subject='Allura Password recovery',
             message_id=gen_message_id(),

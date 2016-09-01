@@ -188,13 +188,9 @@ class EmailAddress(MappedClass):
                 config=config
             ))
 
-            allura.tasks.mail_tasks.sendsimplemail.post(
-                toaddr=self.email,
-                fromaddr=config['forgemail.return_path'],
-                reply_to=config['forgemail.return_path'],
-                subject=u'%s - Email address claim attempt' % config['site_name'],
-                message_id=h.gen_message_id(),
-                text=text)
+            allura.tasks.mail_tasks.send_system_mail_to_user(self.email,
+                                                             u'%s - Email address claim attempt' % config['site_name'],
+                                                             text)
 
     def set_nonce_hash(self):
         self.nonce = sha256(os.urandom(10)).hexdigest()
