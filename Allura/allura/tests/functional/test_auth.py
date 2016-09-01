@@ -2221,3 +2221,16 @@ class TestTwoFactor(TestController):
             r.form['password'] = 'foo'
             r = r.form.submit()
             assert_in('Scan this barcode', r)
+
+    def test_send_links(self):
+        r = self.app.get('/auth/preferences/totp_new')
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+
+        r = r.forms['totp_send_link'].submit()
+
+        tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Apps')
+        assert_in('itunes.apple.com', tasks[0].kwargs['text'])
+        assert_in('play.google.com', tasks[0].kwargs['text'])
