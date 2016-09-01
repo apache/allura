@@ -2060,16 +2060,18 @@ class TestTwoFactor(TestController):
         first_key_shown = r.session['totp_new_key']
 
         with audits('Failed to set up multifactor TOTP \(wrong code\)', user=True):
-            r.form['code'] = ''
-            r = r.form.submit()
+            form = r.forms['totp_set']
+            form['code'] = ''
+            r = form.submit()
             assert_in('Invalid', r)
             assert_equal(first_key_shown, r.session['totp_new_key'])  # different keys on each pageload would be bad!
 
         new_totp = TotpService().Totp(r.session['totp_new_key'])
         code = new_totp.generate(time_time())
-        r.form['code'] = code
+        form = r.forms['totp_set']
+        form['code'] = code
         with audits('Set up multifactor TOTP', user=True):
-            r = r.form.submit()
+            r = form.submit()
             assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
                          self.webflash(r))
 
@@ -2096,8 +2098,9 @@ class TestTwoFactor(TestController):
         assert_equal(self.sample_key, current_key)
 
         # incorrect submission
-        r.form['code'] = ''
-        r = r.form.submit()
+        form = r.forms['totp_set']
+        form['code'] = ''
+        r = form.submit()
         assert_in('Invalid', r)
 
         # still unchanged key
@@ -2108,8 +2111,9 @@ class TestTwoFactor(TestController):
         new_key = r.session['totp_new_key']
         new_totp = TotpService().Totp(new_key)
         code = new_totp.generate(time_time())
-        r.form['code'] = code
-        r = r.form.submit()
+        form = r.forms['totp_set']
+        form['code'] = code
+        r = form.submit()
         assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
                      self.webflash(r))
 
