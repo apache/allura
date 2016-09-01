@@ -718,6 +718,15 @@ class PreferencesController(BaseController):
         send_system_mail_to_user(c.user, u'Two-Factor Authentication Disabled', email_body)
         redirect('.')
 
+    @expose()
+    @require_post()
+    def totp_send_link(self, **kw):
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_apps.md').render(dict(
+            user=c.user,
+            config=config,
+        ))
+        send_system_mail_to_user(c.user, u'Two-Factor Authentication Apps', email_body)
+
 
 class UserInfoController(BaseController):
 

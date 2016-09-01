@@ -31,13 +31,17 @@
             <h3>Warning: this will invalidate your previous multifactor configuration.</h3>
         {% endif %}
         <h2>Install App</h2>
+        <form action="totp_send_link" id="totp_send_link" method="post">
         <p>To use two-factor authentication, you will need to install an app on your phone.<br>
             Install Google Authenticator for
             <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"><b>Android</b></a>
             or <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605"><b>iOS</b></a>.
+            <a href="#" class="ajax-submit-form">Email me these links.</a>
             <br>
             Or use another app like Duo Mobile, Authy, or Authenticator for Windows phones.
         </p>
+        {{ lib.csrf_token() }}
+        </form>
     {% endif %}
 
     <h2>Scan this barcode with your app</h2>
@@ -84,4 +88,22 @@
         margin: 6px 10px;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+$(function() {
+      $('a.ajax-submit-form').click(function(e){
+          e.preventDefault();
+          $form = $(this).closest('form');
+          $.post($form.attr('action'), $form.serialize())
+                  .done(function() {
+                      $('#messages').notify({message: 'Email sent!'});
+                  })
+                  .fail(function() {
+                      $('#messages').notify({message: 'Error sending email', status: 'error'});
+                  });
+      });
+});
+</script>
 {% endblock %}
