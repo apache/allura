@@ -49,7 +49,7 @@
 
     {% if setup %}
         <h2>Enter the code</h2>
-        <form method="POST" action="totp_set">
+        <form method="POST" action="totp_set" id="totp_set">
         <p>
             Enter the {{ config['auth.multifactor.totp.length'] }}-digit code to confirm it is set up correctly:<br>
             {% if c.form_errors['code'] %}
