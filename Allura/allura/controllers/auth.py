@@ -214,14 +214,7 @@ class AuthController(BaseController):
                 config=config,
                 hash=hash,
             ))
-
-            allura.tasks.mail_tasks.sendsimplemail.post(
-                toaddr=email_record.email,
-                fromaddr=config['forgemail.return_path'],
-                reply_to=config['forgemail.return_path'],
-                subject=subject,
-                message_id=h.gen_message_id(),
-                text=text)
+            send_system_mail_to_user(email_record.email, subject, text)
         h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
         flash(message)
         redirect('/')
