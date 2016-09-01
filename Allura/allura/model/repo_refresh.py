@@ -418,13 +418,15 @@ def send_notifications(repo, commit_ids):
                 date=ci.authored.date.strftime("%m/%d/%Y %H:%M"),
                 summary=summary,
                 branches=branches,
-                commit_url=base_url + href))
+                commit_url=base_url + href,
+                shorthand_id=ci.shorthand_id()))
 
     if commit_msgs:
         if len(commit_msgs) > 1:
             subject = u"{} new commits to {}".format(len(commit_msgs), repo.app.config.options.mount_label)
         else:
-            subject = u'New commit by {}'.format(commit_msgs[0]['author'])
+            commit = commit_msgs[0]
+            subject = u'New commit {} by {}'.format(commit['shorthand_id'], commit['author'])
         template = g.jinja2_env.get_template("allura:templates/mail/commits.md")
         text = u"\n\n-----".join([template.render(d) for d in commit_msgs])
 

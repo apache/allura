@@ -695,7 +695,8 @@ class TestSVNRev(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         send_notifications(self.repo, [self.repo.rev_to_commit_id(1)])
         ThreadLocalORMSession.flush_all()
-        n = M.Notification.query.find({u'subject': u'[test:src] New commit by rick446'}).first()
+        n = M.Notification.query.find({u'subject': u'[test:src] New commit [r1] by rick446'}).first()
+
         assert n
         assert_in(u'By rick446', n.text)
         assert_in(u'Create readme', n.text)

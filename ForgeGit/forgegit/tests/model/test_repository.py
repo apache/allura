@@ -377,7 +377,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
         ThreadLocalORMSession.flush_all()
 
-        n = M.Notification.query.find({'subject': u'[test:src-git] New commit by Rick Copeland'}).first()
+        import pudb;pudb.set_trace()
+        n = M.Notification.query.find({'subject': u'[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
         assert n
         assert_in('Change README', n.text)
         send_notifications(
