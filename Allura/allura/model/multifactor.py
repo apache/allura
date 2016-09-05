@@ -38,4 +38,4 @@ class TotpKey(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)
-    key = FieldProperty(str, required=True)
+    key = FieldProperty(bytes, required=True)

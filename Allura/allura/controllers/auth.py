@@ -678,6 +678,7 @@ class PreferencesController(BaseController):
     @expose('jinja:allura:templates/user_totp.html')
     @reconfirm_auth
     @require_post()
+    @without_trailing_slash
     def totp_set(self, code, **kw):
         key = session['totp_new_key']
         totp_service = TotpService.get()

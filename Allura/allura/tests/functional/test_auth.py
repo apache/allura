@@ -2125,7 +2125,7 @@ class TestTwoFactor(TestController):
     def test_disable(self):
         self._init_totp()
 
-        self.app.get('/auth/multifactor_disable', status=404)  # GET not allowed
+        self.app.get('/auth/preferences/multifactor_disable', status=405)  # GET not allowed
 
         # get form and submit
         r = self.app.get('/auth/preferences/')
