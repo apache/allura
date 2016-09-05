@@ -22,7 +22,7 @@ import json
 from urlparse import urlparse, parse_qs
 from urllib import urlencode
 
-from allura.lib.multifactor import TotpService
+from allura.lib.multifactor import TotpService, RecoveryCodeService
 from allura.tests.decorators import audits, out_audits
 from bson import ObjectId
 
@@ -2080,6 +2080,9 @@ class TestTwoFactor(TestController):
         assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Enabled')
         assert_in('new two-factor authentication', tasks[0].kwargs['text'])
 
+        r = r.follow()
+        assert_in('Recovery Codes', r)
+
     def test_reset_totp(self):
         self._init_totp()
 
@@ -2146,6 +2149,7 @@ class TestTwoFactor(TestController):
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('multifactor'), False)
         assert_equal(TotpService().get().get_secret_key(user), None)
+        assert_equal(RecoveryCodeService().get().get_codes(user), [])
 
         # email confirmation
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
@@ -2214,6 +2218,48 @@ class TestTwoFactor(TestController):
         r = r.follow()
         assert_in('Password Login', r)
 
+    def test_login_recovery_code(self):
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+
+        # check results
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert not r.session.get('username')
+
+        # change login mode
+        r.form['mode'] = 'recovery'
+
+        # try an invalid code
+        r.form['code'] = 'invalid-code'
+        r = r.form.submit()
+        assert_in('Invalid code', r)
+        assert not r.session.get('username')
+
+        # use a valid code
+        user = M.User.by_username('test-admin')
+        recovery = RecoveryCodeService().get()
+        recovery.regenerate_codes(user)
+        recovery_code = recovery.get_codes(user)[0]
+        r.form['code'] = recovery_code
+        with audits('Logged in using a multifactor recovery code', user=True):
+            r = r.form.submit()
+
+        # confirm login and final page
+        assert_equal(r.session['username'], 'test-admin')
+        assert r.location.endswith('/p/foo'), r
+
+        # confirm code used up
+        assert_not_in(recovery_code, RecoveryCodeService().get().get_codes(user))
+
     def test_view_key(self):
         self._init_totp()
 
@@ -2225,6 +2271,31 @@ class TestTwoFactor(TestController):
             r.form['password'] = 'foo'
             r = r.form.submit()
             assert_in('Scan this barcode', r)
+
+    def test_view_recovery_codes_and_regen(self):
+        self._init_totp()
+
+        # reconfirm password
+        with out_audits(user=True):
+            r = self.app.get('/auth/preferences/multifactor_recovery')
+            assert_in('Password Confirmation', r)
+
+        # actual visit
+        with audits('Viewed multifactor recovery codes', user=True):
+            r.form['password'] = 'foo'
+            r = r.form.submit()
+            assert_in('Download', r)
+            assert_in('Print', r)
+
+        # regenerate codes
+        with audits('Regenerated multifactor recovery codes', user=True):
+            r = r.forms['multifactor_recovery_regen'].submit()
+
+        # email confirmation
+        tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Recovery Codes Regenerated')
+        assert_in('regenerated', tasks[0].kwargs['text'])
 
     def test_send_links(self):
         r = self.app.get('/auth/preferences/totp_new')

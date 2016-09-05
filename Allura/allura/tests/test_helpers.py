@@ -590,10 +590,15 @@ def test_convert_bools():
                   {'foo': 'true', 'baz': True})
 
 
-def test_base64uri():
+def test_base64uri_img():
     img_file = path.join(path.dirname(__file__), 'data', 'user.png')
     with open(img_file) as img_file_handle:
         img = PIL.Image.open(img_file_handle)
         b64img = h.base64uri(img)
         assert b64img.startswith('data:image/png;base64,'), b64img[:100]
         assert len(b64img) > 500
+
+
+def test_base64uri_text():
+    b64txt = h.base64uri('blah blah blah 123 456 foo bar baz', mimetype='text/plain')
+    assert b64txt.startswith('data:text/plain;base64,'), b64txt

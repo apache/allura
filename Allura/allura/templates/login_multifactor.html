@@ -27,7 +27,9 @@
 <form method="post" action="/auth/do_multifactor">
     <h2>Enter your Multifactor Authentication Code</h2>
     <p>
-    Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:<br>
+    <span class="totp">Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:</span>
+    <span class="recovery">Please enter a recovery code:</span>
+    <br>
     {% if c.form_errors['code'] %}
         <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
     {% endif %}
@@ -35,8 +37,51 @@
     <input type="hidden" name="return_to" value="{{ return_to }}"/>
     <br>
     <input type="submit" value="Log In">
+    <span class="alternate-links">
+        <span class="totp">
+            or <a href="#" class="show-recovery">use a recovery code</a>
+        </span>
+        <span class="recovery">
+            or <a href="#" class="show-totp">use an authenticator app code</a>
+        </span>
+    </span>
+    <input type="hidden" name="mode" value="{{ mode }}"/>
     {{ lib.csrf_token() }}
     </p>
 </form>
 
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+    .{{ 'recovery' if mode == 'totp' else 'totp' }} {
+        display: none;
+    }
+    .alternate-links {
+        /* align with floated button */
+        display: inline-block;
+        margin: 6px 10px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+  $(function() {
+      $('.show-recovery').click(function(e){
+          $('.recovery').show();
+          $('.totp').hide();
+          $('.fielderror').empty()
+          $('input[name=mode]').val('recovery');
+          $('input[name=code]').focus();
+      });
+      $('.show-totp').click(function(e){
+          $('.totp').show();
+          $('.recovery').hide();
+          $('.fielderror').empty()
+          $('input[name=mode]').val('totp');
+          $('input[name=code]').focus();
+      });
+  });
+</script>
 {% endblock %}

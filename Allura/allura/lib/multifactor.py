@@ -17,21 +17,26 @@
 
 import os
 import logging
+import random
+import string
 from collections import OrderedDict
 from base64 import b32decode, b32encode
 from time import time
+import errno
 
 import bson
-import errno
-from cryptography.hazmat.primitives.twofactor import InvalidToken
-
+from allura.lib.exceptions import InvalidRecoveryCode
 from tg import config
 from pylons import app_globals as g
 from paste.deploy.converters import asint
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.twofactor import InvalidToken
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from cryptography.hazmat.primitives.hashes import SHA1
 import qrcode
+from ming.odm import session
+
+from allura.model.multifactor import RecoveryCode
 
 
 log = logging.getLogger(__name__)
@@ -237,3 +242,98 @@ class GoogleAuthenticatorPamFilesystemTotpService(TotpService):
             gaf.key = key
             with open(self.config_file(user), 'w') as f:
                 f.write(gaf.dump())
+
+
+class RecoveryCodeService(object):
+    '''
+    An interface for handling multifactor recovery codes.  Common functionality
+    is provided in this base class, and specific subclasses implement different storage options.
+    A provider must implement :meth:`get_codes`, :meth:`replace_codes`, and :meth:`verify_and_remove_code`.
+
+
+    To use a new provider, expose an entry point in setup.py::
+
+        [allura.multifactor.recovery_code]
+        myrecovery = foo.bar:MyRecoveryCodeService
+
+    Then in your .ini file, set ``auth.multifactor.recovery_code.service=myrecovery``
+    '''
+
+    @classmethod
+    def get(cls):
+        '''
+        :rtype: RecoveryCodeService
+        '''
+        method = config.get('auth.multifactor.recovery_code.service', 'mongodb')
+        return g.entry_points['multifactor_recovery_code'][method]()
+
+    def generate_one_code(self):
+        # for compatibility with Google PAM file, we only do digits
+        length = asint(config.get('auth.multifactor.recovery_code.length', 8))
+        return ''.join([random.choice(string.digits) for i in xrange(length)])
+
+    def regenerate_codes(self, user):
+        '''
+        Regenerate and replace existing codes
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        :return: codes, ``list[str]``
+        '''
+        count = asint(config.get('auth.multifactor.recovery_code.count', 10))
+        codes = [
+            self.generate_one_code() for i in xrange(count)
+        ]
+        self.replace_codes(user, codes)
+        return codes
+
+    def delete_all(self, user):
+        return self.replace_codes(user, [])
+
+    def get_codes(self, user):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :return: list[str]
+        '''
+        raise NotImplementedError('get_codes')
+
+    def replace_codes(self, user, codes):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        '''
+        raise NotImplementedError('replace_codes')
+
+    def verify_and_remove_code(self, user, code):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :param code: str
+        :raises: InvalidRecoveryCode
+        '''
+        raise NotImplementedError('verify_and_remove_code')
+
+
+class MongodbRecoveryCodeService(RecoveryCodeService):
+
+    def get_codes(self, user):
+        return [rc.code for rc in
+                RecoveryCode.query.find({'user_id': user._id}).sort('_id')]
+
+    def replace_codes(self, user, codes):
+        RecoveryCode.query.remove({'user_id': user._id})
+        for code in codes:
+            rc = RecoveryCode(user_id=user._id, code=code)
+            session(rc).flush(rc)
+
+    def verify_and_remove_code(self, user, code):
+        rc = RecoveryCode.query.get(user_id=user._id, code=code)
+        if rc:
+            rc.query.delete()
+            session(rc).flush(rc)
+            return True
+        else:
+            raise InvalidRecoveryCode
+
+
+class GoogleAuthenticatorPamFilesystemRecoveryCodeService(RecoveryCodeService):
+
+    def get_codes(self, user):
+        return []

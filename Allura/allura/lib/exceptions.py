@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import webob
+import webob.exc
 from formencode import Invalid
 
 
@@ -81,6 +81,10 @@ class NoSuchNBFeatureError(ForgeError):
 
 
 class InvalidNBFeatureValueError(ForgeError):
+    pass
+
+
+class InvalidRecoveryCode(ForgeError):
     pass
 
 

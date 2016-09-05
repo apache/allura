@@ -23,6 +23,7 @@ from urlparse import urlparse, urljoin
 
 import bson
 import tg
+from allura.lib.exceptions import InvalidRecoveryCode
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -48,7 +49,7 @@ from allura.lib.widgets import (
     DisableAccountForm)
 from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
-from allura.lib.multifactor import TotpService
+from allura.lib.multifactor import TotpService, RecoveryCodeService
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 
@@ -321,26 +322,32 @@ class AuthController(BaseController):
         redirect(location)
 
     @expose('jinja:allura:templates/login_multifactor.html')
-    def multifactor(self, return_to='', **kwargs):
+    def multifactor(self, return_to='', mode='totp', **kwargs):
         return dict(
             return_to=return_to,
+            mode=mode,
         )
 
     @expose('jinja:allura:templates/login_multifactor.html')
     @require_post()
-    def do_multifactor(self, code, **kwargs):
+    def do_multifactor(self, code, mode, **kwargs):
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
             redirect('/auth/', return_to=kwargs.get('return_to', ''))
 
         user = M.User.by_username(session['multifactor-username'])
-        totp_service = TotpService.get()
-        totp = totp_service.get_totp(user)
         try:
-            totp_service.verify(totp, code)
-        except InvalidToken:
+            if mode == 'totp':
+                totp_service = TotpService.get()
+                totp = totp_service.get_totp(user)
+                totp_service.verify(totp, code)
+            elif mode == 'recovery':
+                recovery = RecoveryCodeService.get()
+                recovery.verify_and_remove_code(user, code)
+                h.auditlog_user('Logged in using a multifactor recovery code', user=user)
+        except (InvalidToken, InvalidRecoveryCode):
             c.form_errors['code'] = 'Invalid code, please try again.'
-            return self.multifactor(**kwargs)
+            return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
             return_to = self._verify_return_to(kwargs.get('return_to'))
@@ -701,7 +708,7 @@ class PreferencesController(BaseController):
                 config=config,
             ))
             send_system_mail_to_user(c.user, u'Two-Factor Authentication Enabled', email_body)
-            redirect('.')
+            redirect('/auth/preferences/multifactor_recovery')
 
     @expose()
     @require_post()
@@ -710,6 +717,8 @@ class PreferencesController(BaseController):
         h.auditlog_user('Disabled multifactor TOTP')
         totp_service = TotpService.get()
         totp_service.set_secret_key(c.user, None)
+        recovery = RecoveryCodeService.get()
+        recovery.delete_all(c.user)
         c.user.set_pref('multifactor', False)
         tg.flash('Multifactor authentication has now been disabled.')
         email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_disabled.md').render(dict(
@@ -727,6 +736,36 @@ class PreferencesController(BaseController):
             config=config,
         ))
         send_system_mail_to_user(c.user, u'Two-Factor Authentication Apps', email_body)
+
+    @expose('jinja:allura:templates/user_recovery_codes.html')
+    @reconfirm_auth
+    @without_trailing_slash
+    def multifactor_recovery(self, **kw):
+        if not c.user.get_pref('multifactor'):
+            redirect('.')
+        recovery = RecoveryCodeService.get()
+        codes = recovery.get_codes(c.user)
+        if not codes:
+            codes = recovery.regenerate_codes(c.user)
+        h.auditlog_user('Viewed multifactor recovery codes')
+        return dict(
+            codes=codes,
+        )
+
+    @expose()
+    @require_post()
+    @reconfirm_auth
+    def multifactor_recovery_regen(self, **kw):
+        recovery = RecoveryCodeService.get()
+        recovery.regenerate_codes(c.user)
+        email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_recovery_regen.md').render(dict(
+            user=c.user,
+            config=config,
+        ))
+        h.auditlog_user('Regenerated multifactor recovery codes')
+        send_system_mail_to_user(c.user, u'Two-Factor Recovery Codes Regenerated', email_body)
+        tg.flash('Your recovery codes have been regenerated.  Save the new codes!')
+        redirect('/auth/preferences/multifactor_recovery')
 
 
 class UserInfoController(BaseController):

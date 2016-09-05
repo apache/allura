@@ -128,6 +128,10 @@ setup(
     mongodb = allura.lib.multifactor:MongodbTotpService
     filesystem-googleauth = allura.lib.multifactor:GoogleAuthenticatorPamFilesystemTotpService
 
+    [allura.multifactor.recovery_code]
+    mongodb = allura.lib.multifactor:MongodbRecoveryCodeService
+    filesystem-googleauth = allura.lib.multifactor:GoogleAuthenticatorPamFilesystemRecoveryCodeService
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand

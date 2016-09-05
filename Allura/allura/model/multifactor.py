@@ -39,3 +39,18 @@ class TotpKey(MappedClass):
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)
     key = FieldProperty(bytes, required=True)
+
+
+class RecoveryCode(MappedClass):
+    '''
+    For use with "mongodb" recovery code service
+    '''
+
+    class __mongometa__:
+        session = main_orm_session
+        name = 'multifactor_recovery_code'
+        indexes = ['user_id']
+
+    _id = FieldProperty(S.ObjectId)
+    user_id = FieldProperty(S.ObjectId, required=True)
+    code = FieldProperty(str, required=True)

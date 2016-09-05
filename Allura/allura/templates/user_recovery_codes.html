@@ -1,0 +1,114 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set hide_left_bar = True %}
+{% extends "allura:templates/user_account_base.html" %}
+
+{% block title %}{{c.user.username}} / Recovery Codes for Multifactor Authentication{% endblock %}
+
+{% block header %}Recovery Codes for Multifactor Authentication{% endblock %}
+
+
+{% macro plaintext(codes) %}
+{{ config['site_name'] }} Recovery Codes:
+{% for code in codes %}
+{{ code }}
+{% endfor %}
+{% endmacro %}
+
+{% block content %}
+  {{ super() }}
+  <div class='grid-20'>
+    <h2 class="subtitle">Your {{ config['site_name'] }} Recovery Codes</h2>
+    <p>
+        <a href="#" class="print"><strong>Print</strong></a> these!
+        <a href="{{ h.base64uri(plaintext(codes), mimetype='text/plain') }}" download="{{ config['site_name'] }} recovery codes.txt" class="download"><strong>Download</strong></a> them!
+        Keep them safe.
+    </p>
+    <p>
+        It is essential to keep a copy of these recovery codes, otherwise you may get permanently locked out of your account, if you lose
+        your authenticator device.
+    </p>
+    <p>
+        <a href="/auth/preferences/">Back to Account Settings</a>
+    </p>
+    <hr>
+    <p class="codes">
+    {% for code in codes %}
+        {{ code }}<br>
+    {% endfor %}
+    </p>
+    <hr>
+    <form action="multifactor_recovery_regen" id="multifactor_recovery_regen" method="post">
+        <p>
+            If you regenerate your recovery codes, your old ones will not work any more.
+            You will need to save the new ones.
+        </p>
+        <p>
+            <input type="submit" value="Regenerate Codes">
+        </p>
+        {{ lib.csrf_token() }}
+    </form>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+p.codes {
+    -moz-columns: 2;
+    columns: 2;
+    font-size: 300%;
+    line-height: 125%;
+    padding-bottom: 0;
+}
+@media print {
+    /* don't show link destinations */
+    a:after {
+        content: '';
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script type="text/javascript">
+$(function() {
+    $('#multifactor_recovery_regen').submit(function(e) {
+        var ok = confirm('Are you sure you want to regenerate your recovery codes?');
+        if(!ok) {
+            e.preventDefault();
+        }
+    });
+    $('.print').click(function(e) {
+        window.print();
+    });
+    if (window.navigator.msSaveBlob) {
+        // IE doesn't support base64 links or the download attr, so use its msSaveBlob
+        $('.download').click(function(e) {
+            e.preventDefault();
+            var fileData = $('.subtitle').text() + '\n\n' + $('.codes').text();
+            fileData = fileData.replace(new RegExp('\n', 'g'), '\r\n');
+            blobObject = new Blob([fileData]);
+            var fileName = $('.download').attr('download');
+            window.navigator.msSaveBlob(blobObject, fileName);
+        });
+    }
+});
+</script>
+{% endblock %}
