@@ -14,8 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
-
+import shutil
 import textwrap
 import os
 
@@ -32,6 +31,7 @@ from tg import config
 from allura.lib.multifactor import GoogleAuthenticatorFile, TotpService, MongodbTotpService
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemTotpService
 from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeService
+from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
 
 class TestGoogleAuthenticatorFile(object):
@@ -154,11 +154,20 @@ class TestMongodbTotpService():
         assert_equal(None, srv.get_secret_key(user))
 
 
-class TestGoogleAuthenticatorPamFilesystemTotpService():
-    sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
+class TestGoogleAuthenticatorPamFilesystemMixin(object):
 
     def setUp(self):
-        config['auth.multifactor.totp.filesystem.basedir'] = os.path.join(os.getenv('TMPDIR', '/tmp'), 'totp-test')
+        self.totp_basedir = os.path.join(os.getenv('TMPDIR', '/tmp'), 'totp-test')
+        config['auth.multifactor.totp.filesystem.basedir'] = self.totp_basedir
+
+    def tearDown(self):
+        if os.path.exists(self.totp_basedir):
+            shutil.rmtree(self.totp_basedir)
+
+
+class TestGoogleAuthenticatorPamFilesystemTotpService(TestGoogleAuthenticatorPamFilesystemMixin):
+
+    sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
 
     def test_none(self):
         srv = GoogleAuthenticatorPamFilesystemTotpService()
@@ -202,24 +211,24 @@ class TestRecoveryCodeService(object):
         assert_equal(len(recovery.saved_codes), asint(config.get('auth.multifactor.recovery_code.count', 10)))
 
 
-class TestMongodbRecoveryCodeService(object):
+class TestAnyRecoveryCodeServiceImplementation(object):
 
-    def setUp(self):
-        config = {
-            'ming.main.uri': 'mim://allura_test',
-        }
-        ming.configure(**config)
+    __test__ = False
 
-    def test_get_codes(self):
-        recovery = MongodbRecoveryCodeService()
-        user = Mock(_id=bson.ObjectId())
+    def test_get_codes_none(self):
+        recovery = self.Service()
+        user = self.mock_user()
         assert_equal(recovery.get_codes(user), [])
+
+    def test_regen_get_codes(self):
+        recovery = self.Service()
+        user = self.mock_user()
         recovery.regenerate_codes(user)
         assert recovery.get_codes(user)
 
     def test_replace_codes(self):
-        recovery = MongodbRecoveryCodeService()
-        user = Mock(_id=bson.ObjectId())
+        recovery = self.Service()
+        user = self.mock_user()
         codes = [
             '12345',
             '67890'
@@ -228,16 +237,16 @@ class TestMongodbRecoveryCodeService(object):
         assert_equal(recovery.get_codes(user), codes)
 
     def test_verify_fail(self):
-        recovery = MongodbRecoveryCodeService()
-        user = Mock(_id=bson.ObjectId())
+        recovery = self.Service()
+        user = self.mock_user()
         with assert_raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '11111')
         with assert_raises(InvalidRecoveryCode):
             recovery.verify_and_remove_code(user, '')
 
     def test_verify_and_remove_code(self):
-        recovery = MongodbRecoveryCodeService()
-        user = Mock(_id=bson.ObjectId())
+        recovery = self.Service()
+        user = self.mock_user()
         codes = [
             '12345',
             '67890'
@@ -246,3 +255,51 @@ class TestMongodbRecoveryCodeService(object):
         result = recovery.verify_and_remove_code(user, '12345')
         assert_equal(result, True)
         assert_equal(recovery.get_codes(user), ['67890'])
+
+
+class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
+
+    __test__ = True
+
+    Service = MongodbRecoveryCodeService
+
+    def setUp(self):
+        config = {
+            'ming.main.uri': 'mim://allura_test',
+        }
+        ming.configure(**config)
+
+    def mock_user(self):
+        return Mock(_id=bson.ObjectId())
+
+
+class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation,
+                                                              TestGoogleAuthenticatorPamFilesystemMixin):
+
+    __test__ = True
+
+    Service = GoogleAuthenticatorPamFilesystemRecoveryCodeService
+
+    def mock_user(self):
+        return Mock(username='some-user-guy')
+
+    def setUp(self):
+        super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).setUp()
+
+        # make a regular .google-authenticator file first, so recovery keys have somewhere to go
+        GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(),
+                                                                     b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a')
+
+    def test_get_codes_none_when_no_file(self):
+        # this deletes the file
+        GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(), None)
+
+        super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).test_get_codes_none()
+
+    def test_replace_codes_when_no_file(self):
+        # this deletes the file
+        GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(), None)
+
+        # then it errors because no .google-authenticator file
+        with assert_raises(IOError):
+            super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).test_replace_codes()

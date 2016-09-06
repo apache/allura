@@ -193,11 +193,7 @@ class GoogleAuthenticatorFile(object):
         return '\n'.join(lines)
 
 
-class GoogleAuthenticatorPamFilesystemTotpService(TotpService):
-    '''
-    Store in home directories, compatible with the TOTP PAM module for Google Authenticator
-    https://github.com/google/google-authenticator/tree/master/libpam
-    '''
+class GoogleAuthenticatorPamFilesystemMixin(object):
 
     @property
     def basedir(self):
@@ -209,39 +205,54 @@ class GoogleAuthenticatorPamFilesystemTotpService(TotpService):
             raise ValueError('Insecure username contains "/": %s' % username)
         return os.path.join(self.basedir, username, '.google_authenticator')
 
-    def get_secret_key(self, user):
+    def read_file(self, user, autocreate=False):
+        if autocreate:
+            userdir = os.path.dirname(self.config_file(user))
+            if not os.path.exists(userdir):
+                os.makedirs(userdir, 0700)
+
         try:
             with open(self.config_file(user)) as f:
-                gaf = GoogleAuthenticatorFile.load(f.read())
-                return gaf.key
+                return GoogleAuthenticatorFile.load(f.read())
         except IOError as e:
             if e.errno == errno.ENOENT:  # file doesn't exist
-                return None
+                if autocreate:
+                    gaf = GoogleAuthenticatorFile()
+                    gaf.options['RATE_LIMIT'] = '3 30'
+                    gaf.options['DISALLOW_REUSE'] = None
+                    gaf.options['TOTP_AUTH'] = None
+                    return gaf
+                else:
+                    return None
             else:
                 raise
+
+    def write_file(self, user, gaf):
+        with open(self.config_file(user), 'w') as f:
+            f.write(gaf.dump())
+
+
+class GoogleAuthenticatorPamFilesystemTotpService(TotpService, GoogleAuthenticatorPamFilesystemMixin):
+    '''
+    Store in home directories, compatible with the TOTP PAM module for Google Authenticator
+    https://github.com/google/google-authenticator/tree/master/libpam
+    '''
+
+    def get_secret_key(self, user):
+        gaf = self.read_file(user)
+        if gaf:
+            return gaf.key
+        else:
+            return None
 
     def set_secret_key(self, user, key):
         if key is None:
             # this also deletes the recovery keys, since they're stored in the same file
             os.remove(self.config_file(user))
         else:
-            userdir = os.path.dirname(self.config_file(user))
-            if not os.path.exists(userdir):
-                os.makedirs(userdir, 0700)
-            try:
-                with open(self.config_file(user)) as f:
-                    gaf = GoogleAuthenticatorFile.load(f.read())
-            except IOError as e:
-                if e.errno == errno.ENOENT:  # file doesn't exist
-                    gaf = GoogleAuthenticatorFile()
-                    gaf.options['RATE_LIMIT'] = '3 30'
-                    gaf.options['DISALLOW_REUSE'] = None
-                    gaf.options['TOTP_AUTH'] = None
-                else:
-                    raise
+            gaf = self.read_file(user, autocreate=True)
             gaf.key = key
-            with open(self.config_file(user), 'w') as f:
-                f.write(gaf.dump())
+            self.write_file(user, gaf)
 
 
 class RecoveryCodeService(object):
@@ -333,7 +344,27 @@ class MongodbRecoveryCodeService(RecoveryCodeService):
             raise InvalidRecoveryCode
 
 
-class GoogleAuthenticatorPamFilesystemRecoveryCodeService(RecoveryCodeService):
+class GoogleAuthenticatorPamFilesystemRecoveryCodeService(RecoveryCodeService, GoogleAuthenticatorPamFilesystemMixin):
 
     def get_codes(self, user):
-        return []
+        gaf = self.read_file(user)
+        if gaf:
+            return gaf.recovery_codes
+        else:
+            return []
+
+    def replace_codes(self, user, codes):
+        gaf = self.read_file(user)
+        if gaf:
+            gaf.recovery_codes = codes
+            self.write_file(user, gaf)
+        elif codes:
+            raise IOError('No .google-authenticator file exists, cannot add recovery codes.')
+
+    def verify_and_remove_code(self, user, code):
+        gaf = self.read_file(user)
+        if gaf and code in gaf.recovery_codes:
+            gaf.recovery_codes.remove(code)
+            self.write_file(user, gaf)
+            return True
+        raise InvalidRecoveryCode
