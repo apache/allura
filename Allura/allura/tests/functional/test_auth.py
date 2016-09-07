@@ -2009,7 +2009,21 @@ class TestTwoFactor(TestController):
     def test_settings_off(self):
         with h.push_config(config, **{'auth.multifactor.totp': 'false'}):
             r = self.app.get('/auth/preferences/')
-        assert not r.html.find(attrs={'class': 'preferences multifactor'})
+            assert not r.html.find(attrs={'class': 'preferences multifactor'})
+
+            for url in ['/auth/preferences/totp_new',
+                        '/auth/preferences/totp_view',
+                        '/auth/preferences/totp_set',
+                        '/auth/preferences/totp_send_link',
+                        '/auth/preferences/multifactor_disable',
+                        '/auth/preferences/multifactor_recovery',
+                        '/auth/preferences/multifactor_recovery_regen',
+                        '/auth/multifactor',
+                        '/auth/do_multifactor',
+                        ]:
+                self.app.post(url,
+                              {'password': 'foo', '_session_id': self.app.cookies['_session_id']},
+                              status=404)
 
     def test_user_disabled(self):
         r = self.app.get('/auth/preferences/')

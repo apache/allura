@@ -323,6 +323,9 @@ class AuthController(BaseController):
 
     @expose('jinja:allura:templates/login_multifactor.html')
     def multifactor(self, return_to='', mode='totp', **kwargs):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         return dict(
             return_to=return_to,
             mode=mode,
@@ -331,6 +334,9 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/login_multifactor.html')
     @require_post()
     def do_multifactor(self, code, mode, **kwargs):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
             redirect('/auth/', return_to=kwargs.get('return_to', ''))
@@ -649,6 +655,9 @@ class PreferencesController(BaseController):
     @without_trailing_slash
     @reconfirm_auth
     def totp_new(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         totp_service = TotpService.get()
         if 'totp_new_key' not in session:
             # never been here yet
@@ -673,6 +682,9 @@ class PreferencesController(BaseController):
     @without_trailing_slash
     @reconfirm_auth
     def totp_view(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         totp_service = TotpService.get()
         totp = totp_service.get_totp(c.user)
         qr = totp_service.get_qr_code(totp, c.user)
@@ -687,6 +699,9 @@ class PreferencesController(BaseController):
     @require_post()
     @without_trailing_slash
     def totp_set(self, code, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         key = session['totp_new_key']
         totp_service = TotpService.get()
         totp = totp_service.Totp(key)
@@ -714,6 +729,9 @@ class PreferencesController(BaseController):
     @require_post()
     @reconfirm_auth
     def multifactor_disable(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         h.auditlog_user('Disabled multifactor TOTP')
         totp_service = TotpService.get()
         totp_service.set_secret_key(c.user, None)
@@ -731,6 +749,9 @@ class PreferencesController(BaseController):
     @expose()
     @require_post()
     def totp_send_link(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_apps.md').render(dict(
             user=c.user,
             config=config,
@@ -741,6 +762,9 @@ class PreferencesController(BaseController):
     @reconfirm_auth
     @without_trailing_slash
     def multifactor_recovery(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         if not c.user.get_pref('multifactor'):
             redirect('.')
         recovery = RecoveryCodeService.get()
@@ -756,6 +780,9 @@ class PreferencesController(BaseController):
     @require_post()
     @reconfirm_auth
     def multifactor_recovery_regen(self, **kw):
+        if not asbool(config.get('auth.multifactor.totp', False)):
+            raise wexc.HTTPNotFound
+
         recovery = RecoveryCodeService.get()
         recovery.regenerate_codes(c.user)
         email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_recovery_regen.md').render(dict(
