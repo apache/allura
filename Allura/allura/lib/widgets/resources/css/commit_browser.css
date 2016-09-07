@@ -16,9 +16,6 @@
        specific language governing permissions and limitations
        under the License.
 */
-html.canvas #commit_browser_canvas_message {
-    display: none;
-}
 
 #graph_holder{
     height:305px;
