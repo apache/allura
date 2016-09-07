@@ -20,7 +20,6 @@
 
 """The application's Globals object"""
 
-__all__ = ['Globals']
 import logging
 import cgi
 import hashlib
@@ -64,6 +63,8 @@ from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.model.session import artifact_orm_session
+
+__all__ = ['Globals']
 
 log = logging.getLogger(__name__)
 

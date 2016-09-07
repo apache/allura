@@ -18,7 +18,7 @@
 
 import datetime
 
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from alluratest.controller import TestController
 from allura import model as M
@@ -39,7 +39,7 @@ class TestFeeds(TestController):
     def _update(self, url='', delete=False, **kw):
         if delete:
             d = {
-            'delete':'Delete'
+                'delete': 'Delete'
             }
         else:
             d = {
@@ -48,7 +48,7 @@ class TestFeeds(TestController):
                 'labels': '',
                 'state': 'published'}
             d.update(kw)
-        r = self.app.post('/blog/' + str(self._blog_date()) +  "/" + url + "/save", params = d)
+        r = self.app.post('/blog/' + str(self._blog_date()) + "/" + url + "/save", params=d)
         return r
 
     def _blog_date(self):
@@ -75,7 +75,8 @@ class TestFeeds(TestController):
         assert 'Nothing to see' in response
         self._post(title='test', text='*sometext*')
         response = self.app.get('/blog/feed')
-        assert '&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in response
+        assert_in('&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;',
+                  response)
 
     def test_related_artifacts(self):
         self._post(title='one')
@@ -99,13 +100,13 @@ class TestFeeds(TestController):
         # Check if the feed changed.
         response = self.app.get('/blog/%s/hello-world/feed.rss' % d)
         assert "Everything is here" in response
-        assert not "Nothing to see here" in response
+        assert "Nothing to see here" not in response
         # Change the status to draft.
         response = self.app.get('/blog/')
         assert "Everything is here" in response
-        r = self._update(url='hello-world', status="draft")
+        self._update(url='hello-world', status="draft")
         response = self.app.get('/blog/')
-        assert not "Everything is here" in response
+        assert "Everything is here" not in response
 
     def test_post_delete_feed_delete(self):
         # Post a blogpost.
@@ -121,6 +122,6 @@ class TestFeeds(TestController):
         self._update(url="deletion-post", delete=True)
         # Check feed is deleted.
         response = self.app.get("/blog/")
-        assert not '/blog/%s/deletion-post/edit' % d in response
+        assert '/blog/%s/deletion-post/edit' % d not in response
         response = self.app.get("/blog/feed.rss")
-        assert not url in response
+        assert url not in response

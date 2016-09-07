@@ -131,7 +131,7 @@ class Artifact(MappedClass, SearchIndexable):
 
     @classmethod
     def attachment_class(cls):
-        raise NotImplementedError, 'attachment_class'
+        raise NotImplementedError('attachment_class')
 
     @LazyProperty
     def ref(self):
@@ -185,7 +185,7 @@ class Artifact(MappedClass, SearchIndexable):
                 app = ac.project.app_instance(ac) if ac else None
                 if app:
                     artifact.set_context(app.repo)
-            if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) == False):
+            if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) is False):
                 related_artifacts.append(artifact)
         return sorted(related_artifacts, key=lambda a: a.url())
 
@@ -317,7 +317,7 @@ class Artifact(MappedClass, SearchIndexable):
         Subclasses must implement this.
 
         """
-        raise NotImplementedError, 'url'  # pragma no cover
+        raise NotImplementedError('url')  # pragma no cover
 
     def shorthand_id(self):
         """How to refer to this artifact within the app instance context.
@@ -438,7 +438,9 @@ class Artifact(MappedClass, SearchIndexable):
         """
         pkg = cls.__module__.split('.', 1)[0]
         opt = u'{}.rate_limits'.format(pkg)
-        count_in_app = lambda: cls.query.find(dict(app_config_id=app_config._id)).count()
+
+        def count_in_app():
+            return cls.query.find(dict(app_config_id=app_config._id)).count()
         provider = plugin.ProjectRegistrationProvider.get()
         start = provider.registration_date(app_config.project)
 
@@ -452,8 +454,10 @@ class Artifact(MappedClass, SearchIndexable):
 
 
 class Snapshot(Artifact):
-
-    """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
+    """
+    A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`,
+    used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`
+    """
     class __mongometa__:
         session = artifact_orm_session
         name = 'artifact_snapshot'
@@ -493,7 +497,7 @@ class Snapshot(Artifact):
         return result
 
     def original(self):
-        raise NotImplemented, 'original'  # pragma no cover
+        raise NotImplemented('original')  # pragma no cover
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -589,7 +593,7 @@ class VersionedArtifact(Artifact):
                 self.__class__.__name__),
             version=n)
         if ss is None:
-            raise IndexError, n
+            raise IndexError(n)
         return ss
 
     def revert(self, version):
@@ -880,7 +884,7 @@ class Feed(MappedClass):
 
     @classmethod
     def post(cls, artifact, title=None, description=None, author=None,
-            author_link=None, author_name=None, pubdate=None, link=None, **kw):
+             author_link=None, author_name=None, pubdate=None, link=None, **kw):
         """
         Create a Feed item.  Returns the item.
         But if anon doesn't have read access, create does not happen and None is
@@ -921,7 +925,7 @@ class Feed(MappedClass):
 
     @classmethod
     def update(cls, artifact, title=None, description=None, author=None,
-            author_link=None, author_name=None, pubdate=None, link=None, delete=False, **kw):
+               author_link=None, author_name=None, pubdate=None, link=None, delete=False, **kw):
         """
         For a blog post which is present already but to be updated.
         """

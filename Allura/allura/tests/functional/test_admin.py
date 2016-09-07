@@ -15,12 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 import os
 import allura
 import pkg_resources
 import StringIO
-from contextlib import contextmanager
 import logging
 
 import tg
@@ -469,10 +467,8 @@ class TestProjectAdmin(TestController):
                 'new.mount_label': 'sub-del-undel'})
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert r.html.find('input', {'name': 'removal', 'value': ''}).has_key('checked')
+        assert not r.html.find('input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
         with audits('delete project'):
             self.app.post('/admin/update', params=dict(
                 name='Test Project',
@@ -482,10 +478,8 @@ class TestProjectAdmin(TestController):
                 delete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert not r.html.find('input', {'name': 'removal', 'value': ''}).has_key('checked')
+        assert r.html.find('input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
         # make sure subprojects get deleted too
         r = self.app.get('/p/test/sub-del-undel/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
@@ -498,10 +492,8 @@ class TestProjectAdmin(TestController):
                 undelete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
-        assert r.html.find(
-            'input', {'name': 'removal', 'value': ''}).has_key('checked')
-        assert not r.html.find(
-            'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+        assert r.html.find('input', {'name': 'removal', 'value': ''}).has_key('checked')
+        assert not r.html.find('input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
 
     def test_project_delete_not_allowed(self):
         # turn off project delete option
@@ -519,12 +511,10 @@ class TestProjectAdmin(TestController):
                     'new.mount_label': 'sub-no-del'})
             # root project doesn't have delete option
             r = self.app.get('/p/test/admin/overview')
-            assert not r.html.find(
-                'input', {'name': 'removal', 'value': 'deleted'})
+            assert not r.html.find('input', {'name': 'removal', 'value': 'deleted'})
             # subprojects can still be deleted
             r = self.app.get('/p/test/sub-no-del/admin/overview')
-            assert r.html.find(
-                'input', {'name': 'removal', 'value': 'deleted'})
+            assert r.html.find('input', {'name': 'removal', 'value': 'deleted'})
             # attempt to delete root project won't do anything
             self.app.post('/admin/update', params=dict(
                 name='Test Project',
@@ -546,8 +536,7 @@ class TestProjectAdmin(TestController):
                     delete='on'))
             r = self.app.get('/p/test/sub-no-del/admin/overview')
             assert 'This project has been deleted and is not visible to non-admin users' in r
-            assert r.html.find(
-                'input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
+            assert r.html.find('input', {'name': 'removal', 'value': 'deleted'}).has_key('checked')
         finally:
             if old_allow_project_delete == ():
                 del config['allow_project_delete']
@@ -666,16 +655,14 @@ class TestProjectAdmin(TestController):
 
     def test_project_groups(self):
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         developer_id = dev_holder['data-group']
         with audits('add user test-user to Developer'):
             r = self.app.post('/admin/groups/add_user', params={
                 'role_id': developer_id,
                 'username': 'test-user'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         users = dev_holder.find('ul', {'class': 'users'}).findAll(
             'li', {'class': 'deleter'})
         assert 'test-user' in users[0]['data-user']
@@ -793,9 +780,7 @@ class TestProjectAdmin(TestController):
 
     def test_project_multi_groups(self):
         r = self.app.get('/admin/groups/')
-        user_id = M.User.by_username('test-admin')._id
-        admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[1]
         admin_id = admin_holder['data-group']
         with audits('add user test-user to Admin'):
             r = self.app.post('/admin/groups/add_user', params={
@@ -805,8 +790,7 @@ class TestProjectAdmin(TestController):
         r = self.app.post('/admin/groups/add_user', params={
             'role_id': admin_id,
             'username': 'test-user'})
-        assert r.json[
-            'error'] == 'Test User (test-user) is already in the group Admin.'
+        assert r.json['error'] == 'Test User (test-user) is already in the group Admin.'
         r = self.app.get('/admin/groups/')
         assert 'test-user' in str(r), r.showbrowser()
         with audits('remove user test-user from Admin'):
@@ -827,13 +811,11 @@ class TestProjectAdmin(TestController):
             r = self.app.post('/admin/groups/create',
                               params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
-        role_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[4]
+        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
         assert 'RoleNew1' in str(role_holder)
         role_id = role_holder['data-group']
         r = self.app.get('/admin/groups/' + role_id + '/', validate_chunk=True)
-        r = self.app.post('/admin/groups/'
-                          + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
+        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
         assert 'error' in self.webflash(r)
         assert 'already exists' in self.webflash(r)
 
@@ -844,8 +826,7 @@ class TestProjectAdmin(TestController):
         assert 'rleNew2' in r
 
         # add test-user to role
-        role_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[4]
+        role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
         rleNew2_id = role_holder['data-group']
         with audits('add user test-user to rleNew2'):
             r = self.app.post('/admin/groups/add_user', params={
@@ -869,10 +850,8 @@ class TestProjectAdmin(TestController):
 
     def test_change_perms(self):
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         mem_id = mem_holder['data-group']
         # neither group has update permission
         assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
@@ -883,10 +862,8 @@ class TestProjectAdmin(TestController):
             'permission': 'create',
             'allow': 'true'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         # Member now has update permission
         assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "yes"
         # Developer has inherited update permission from Member
@@ -898,24 +875,19 @@ class TestProjectAdmin(TestController):
             'permission': 'create',
             'allow': 'false'})
         r = self.app.get('/admin/groups/')
-        dev_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
-        mem_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         # neither group has update permission
         assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
         assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
 
     def test_permission_inherit(self):
         r = self.app.get('/admin/groups/')
-        admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[1]
         admin_id = admin_holder['data-group']
-        mem_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
+        mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         mem_id = mem_holder['data-group']
-        anon_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[5]
+        anon_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[5]
         anon_id = anon_holder['data-group']
         # first remove create from Admin so we can see it inherit
         r = self.app.post('/admin/groups/change_perm', params={
@@ -1042,7 +1014,6 @@ class TestExport(TestController):
         r = self.app.get('/admin/')
         assert_in('Export', r)
 
-
     @mock.patch('allura.model.session.project_doc_session')
     def test_export_page_contains_exportable_tools(self, session):
         session.return_value = {'result': [{"total_size": 10000}]}
@@ -1139,8 +1110,8 @@ class TestRestExport(TestRestApiBase):
     def test_export_no_exportable_tools(self, bulk_export, exportable_tools, MonQTask):
         MonQTask.query.get.return_value = None
         exportable_tools.return_value = []
-        r = self.api_post('/rest/p/test/admin/export',
-                          tools='tickets, discussion', status=400)
+        self.api_post('/rest/p/test/admin/export',
+                      tools='tickets, discussion', status=400)
         assert_equals(bulk_export.post.call_count, 0)
 
     @mock.patch('allura.model.project.MonQTask')
@@ -1152,7 +1123,7 @@ class TestRestExport(TestRestApiBase):
             mock.Mock(options=mock.Mock(mount_point='tickets')),
             mock.Mock(options=mock.Mock(mount_point='discussion')),
         ]
-        r = self.api_post('/rest/p/test/admin/export', status=400)
+        self.api_post('/rest/p/test/admin/export', status=400)
         assert_equals(bulk_export.post.call_count, 0)
 
     @mock.patch('allura.model.project.MonQTask')
@@ -1164,8 +1135,8 @@ class TestRestExport(TestRestApiBase):
             mock.Mock(options=mock.Mock(mount_point='tickets')),
             mock.Mock(options=mock.Mock(mount_point='discussion')),
         ]
-        r = self.api_post('/rest/p/test/admin/export',
-                          tools='tickets, discussion', status=503)
+        self.api_post('/rest/p/test/admin/export',
+                      tools='tickets, discussion', status=503)
         assert_equals(bulk_export.post.call_count, 0)
 
     @mock.patch('allura.model.project.MonQTask')

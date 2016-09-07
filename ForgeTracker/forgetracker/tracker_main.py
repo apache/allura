@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-#-*- python -*-
 import logging
 import re
 from datetime import datetime, timedelta
@@ -81,7 +80,6 @@ from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
-from forgetracker.import_support import ImportSupport
 
 log = logging.getLogger(__name__)
 
@@ -550,8 +548,6 @@ class ForgeTrackerApp(Application):
         return milestones
 
 
-### Controllers ###
-
 def mongo_columns():
     columns = [dict(name='ticket_num',
                     sort_name='ticket_num',
@@ -674,7 +670,7 @@ class RootController(BaseController, FeedController):
                 count = c.app.globals.bin_count(bin_id)['hits']
             except ValueError:
                 log.info('Ticket bin %s search failed for project %s' %
-                        (label, c.project.shortname))
+                         (label, c.project.shortname))
             bin_counts.append(dict(label=label, count=count))
         return dict(bin_counts=bin_counts)
 
@@ -1544,7 +1540,7 @@ class TicketController(BaseController, FeedController):
         thread = self.ticket.discussion_thread
         if changes.get_changed() or post_text or notification_text:
             thread.add_post(text=post_text, is_meta=True,
-                        notification_text=notification_text)
+                            notification_text=notification_text)
         self.ticket.commit()
         if comment:
             thread.post(text=comment, notify=False)
@@ -1701,7 +1697,7 @@ class TrackerAdminController(DefaultAdminController):
     @require_post()
     def allow_default_field(self, **post_data):
         for column in self.app.globals['show_in_search'].keys():
-            if post_data.has_key(column) and post_data[column] == 'on':
+            if post_data.get(column) == 'on':
                 self.app.globals['show_in_search'][column] = True
             else:
                 self.app.globals['show_in_search'][column] = False
@@ -1908,7 +1904,7 @@ class MilestoneController(BaseController):
     def __init__(self, root, field, milestone):
         for fld in c.app.globals.milestone_fields:
             name_no_underscore = fld.name[1:]
-            if fld.name[1:] == field:
+            if name_no_underscore == field:
                 break
         else:
             raise exc.HTTPNotFound()

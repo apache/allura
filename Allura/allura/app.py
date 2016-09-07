@@ -204,6 +204,7 @@ class SitemapEntry(object):
             extra_html_attrs=self.extra_html_attrs,
         )
 
+
 class Application(object):
 
     """
@@ -543,7 +544,7 @@ class Application(object):
             project_id = project._id
         # De-index all the artifacts belonging to this tool in one fell swoop
         index_tasks.solr_del_tool.post(project_id, self.config.options['mount_point'])
-        
+
         for d in model.Discussion.query.find({
                 'project_id': project_id,
                 'app_config_id': self.config._id}):
@@ -731,7 +732,7 @@ class Application(object):
 
         Set exportable to True for applications implementing this.
         """
-        raise NotImplementedError, 'bulk_export'
+        raise NotImplementedError('bulk_export')
 
     def doap(self, parent):
         """App's representation for DOAP API.
@@ -977,10 +978,13 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 group_ids = [group_ids]
 
             for acl in old_acl:
-                if (acl['permission'] == perm) and (str(acl['role_id']) not in group_ids) and acl['access'] != model.ACE.DENY:
+                if (acl['permission'] == perm
+                        and str(acl['role_id']) not in group_ids
+                        and acl['access'] != model.ACE.DENY):
                     del_group_ids.append(str(acl['role_id']))
 
-            get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
+            def get_role(_id):
+                return model.ProjectRole.query.get(_id=ObjectId(_id))
             groups = map(get_role, group_ids)
             new_groups = map(get_role, new_group_ids)
             del_groups = map(get_role, del_group_ids)

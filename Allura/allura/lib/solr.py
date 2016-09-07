@@ -22,23 +22,23 @@ from paste.deploy.converters import asbool
 import pysolr
 
 escape_rules = {'+': r'\+',
-               '-': r'\-',
-               '&': r'\&',
-               '|': r'\|',
-               '!': r'\!',
-               '(': r'\(',
-               ')': r'\)',
-               '{': r'\{',
-               '}': r'\}',
-               '[': r'\[',
-               ']': r'\]',
-               '^': r'\^',
-               '~': r'\~',
-               '*': r'\*',
-               '?': r'\?',
-               ':': r'\:',
-               '"': r'\"',
-               ';': r'\;'}
+                '-': r'\-',
+                '&': r'\&',
+                '|': r'\|',
+                '!': r'\!',
+                '(': r'\(',
+                ')': r'\)',
+                '{': r'\{',
+                '}': r'\}',
+                '[': r'\[',
+                ']': r'\]',
+                '^': r'\^',
+                '~': r'\~',
+                '*': r'\*',
+                '?': r'\?',
+                ':': r'\:',
+                '"': r'\"',
+                ';': r'\;'}
 
 
 def escape_solr_arg(term):
@@ -143,7 +143,8 @@ class MockSOLR(object):
         pass
 
     def search(self, q, fq=None, **kw):
-        if q is None: q = ''  # shlex will hang on None
+        if q is None:
+            q = ''  # shlex will hang on None
         if isinstance(q, unicode):
             q = q.encode('latin-1')
         # Parse query

@@ -47,7 +47,8 @@ class TestRootController(TestController):
         pass
 
     def _find_edit_form(self, resp):
-        cond = lambda f: f.id == 'page_edit_form'
+        def cond(f):
+            return f.id == 'page_edit_form'
         return self.find_form(resp, cond)
 
     def test_root_index(self):

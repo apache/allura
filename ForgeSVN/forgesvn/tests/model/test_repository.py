@@ -82,18 +82,15 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.shorthand_id() == '[r6]'
         assert self.rev.symbolic_ids == ([], [])
-        assert self.rev.url() == (
-            '/p/test/src/6/')
+        assert self.rev.url() == '/p/test/src/6/'
         all_cis = list(self.repo.log(self.rev._id))
         assert len(all_cis) == 6
         self.rev.tree.ls()
-        assert self.rev.tree.readme() == (
-            'README', 'This is readme\nAnother Line\n')
+        assert self.rev.tree.readme() == ('README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
-        assert self.rev.tree.url() == (
-            '/p/test/src/6/tree/')
+        assert self.rev.tree.url() == '/p/test/src/6/tree/'
         self.rev.tree.by_name['README']
-        assert self.rev.tree.is_blob('README') == True
+        assert self.rev.tree.is_blob('README') is True
         assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
 
@@ -828,18 +825,13 @@ class TestRepo(_TestWithRepo):
         assert i['name_s'] == 'test1', i
 
     def test_scm_host_url(self):
-        assert (
-            self.repo.clone_url('rw', 'nobody')
-            == 'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/'),\
-            self.repo.clone_url('rw', 'nobody')
-        assert (
-            self.repo.clone_url('https', 'nobody')
-            == 'https://nobody@localhost:8022/scm-repo/p/test/test1/'),\
-            self.repo.clone_url('https', 'nobody')
+        assert_equal(self.repo.clone_url('rw', 'nobody'),
+                     'svn+ssh://nobody@localhost:8022/scm-repo/p/test/test1/')
+        assert_equal(self.repo.clone_url('https', 'nobody'),
+                     'https://nobody@localhost:8022/scm-repo/p/test/test1/')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
-            assert_equal(
-                self.repo.clone_url('https', 'user'),
-                'https://user@foo.com/')
+            assert_equal(self.repo.clone_url('https', 'user'),
+                         'https://user@foo.com/')
 
     def test_guess_type(self):
         assert self.repo.guess_type('foo.txt') == ('text/plain', None)

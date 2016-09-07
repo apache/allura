@@ -427,9 +427,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         """
         if self.can_send_user_message():
             return 0
-        return self.sent_user_message_times[0] + \
-               timedelta(seconds=g.user_message_time_interval) - \
-               datetime.utcnow()
+        return (self.sent_user_message_times[0] +
+                timedelta(seconds=g.user_message_time_interval) -
+                datetime.utcnow())
 
     def send_user_message(self, user, subject, message, cc):
         """Send a user message (email) to ``user``.
@@ -618,7 +618,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def url(self):
         '''
         Return the URL (relative to root domain) for this user's user-project.
-        This includes any special handling via the :class:`~allura.lib.plugin.AuthenticationProvider` to determine the proper user-project name
+        This includes any special handling via the :class:`~allura.lib.plugin.AuthenticationProvider` to determine
+        the proper user-project name
         '''
         return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
@@ -829,7 +830,8 @@ class ProjectRole(MappedClass):
     :var user_id: used if this role is for a single user
     :var project_id:
     :var name:
-    :var roles: a list of other :class:`ProjectRole` ``ObjectId`` values.  These roles are delegated through the current role.
+    :var roles: a list of other :class:`ProjectRole` ``ObjectId`` values.  These roles are delegated through the
+                current role.
     """
 
     class __mongometa__:

@@ -36,14 +36,10 @@ import collections
 import tg
 import pylons
 import json
-import webob.multidict
 from formencode import Invalid
 from tg.decorators import before_validate
-from pylons import response
-from pylons import tmpl_context as c
 from pylons.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
-from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc
 from pygments.formatters import HtmlFormatter
@@ -111,7 +107,7 @@ class lazy_logger(object):
 
     def __getattr__(self, name):
         if name.startswith('_'):
-            raise AttributeError, name
+            raise AttributeError(name)
         return getattr(self._logger, name)
 
 
@@ -342,7 +338,7 @@ class AntiSpam(object):
             timestamp = self.timestamp
         try:
             client_ip = ip_address(self.request)
-        except (TypeError, AttributeError), err:
+        except (TypeError, AttributeError):
             client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
             timestamp, client_ip, pylons.config.get('spinner_secret', 'abcdef'))
@@ -362,17 +358,17 @@ class AntiSpam(object):
             if now is None:
                 now = time.time()
             if obj.timestamp > now + 5:
-                raise ValueError, 'Post from the future'
+                raise ValueError('Post from the future')
             if now - obj.timestamp > 24 * 60 * 60:
-                raise ValueError, 'Post from the distant past'
+                raise ValueError('Post from the distant past')
             if obj.spinner != obj.make_spinner(obj.timestamp):
-                raise ValueError, 'Bad spinner value'
+                raise ValueError('Bad spinner value')
             for k in new_params.keys():
                 new_params[obj.dec(k)] = new_params.pop(k)
             for fldno in range(obj.num_honey):
                 value = new_params.pop('honey%s' % fldno)
                 if value:
-                    raise ValueError, 'Value in honeypot field: %s' % value
+                    raise ValueError('Value in honeypot field: %s' % value)
         return new_params
 
     @classmethod
@@ -519,7 +515,7 @@ def take_while_true(source):
 
 
 def serve_file(fp, filename, content_type, last_modified=None,
-        cache_expires=None, size=None, embed=True, etag=None):
+               cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
         etag = u'{0}?{1}'.format(filename, last_modified).encode('utf-8')
@@ -671,7 +667,6 @@ def unique_attachments(attachments):
     for _, atts in groupby(attachments, op.attrgetter('filename')):
         result.append(max(atts, key=op.attrgetter('_id')))
     return result
-
 
 
 def is_ajax(request):

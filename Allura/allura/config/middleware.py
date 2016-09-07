@@ -20,7 +20,7 @@
 """WSGI middleware initialization for the allura application."""
 import mimetypes
 
-import pylons.middleware
+import pylons.middleware  # needed within tg.error :(
 import tg
 import tg.error
 import pkg_resources
@@ -94,9 +94,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     """
     # Run all the initialization code here
-    mimetypes.init(
-        [pkg_resources.resource_filename('allura', 'etc/mime.types')]
-        + mimetypes.knownfiles)
+    mimetypes.init([pkg_resources.resource_filename('allura', 'etc/mime.types')] + mimetypes.knownfiles)
 
     # Configure MongoDB
     ming.configure(**app_conf)
