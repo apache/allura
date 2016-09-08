@@ -19,15 +19,15 @@ import textwrap
 import os
 
 import bson
-from allura.lib.exceptions import InvalidRecoveryCode
 from paste.deploy.converters import asint
-
 import ming
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from mock import patch, Mock
 from nose.tools import assert_equal, assert_raises
 from tg import config
 
+from allura import model as M
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from allura.lib.multifactor import GoogleAuthenticatorFile, TotpService, MongodbTotpService
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemTotpService
 from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeService
@@ -75,6 +75,11 @@ class TestGoogleAuthenticatorFile(object):
         assert_equal(gaf.dump(), self.sample2)
 
 
+class GenericTotpService(TotpService):
+    def enforce_rate_limit(self, *args, **kwargs):
+        pass
+
+
 class TestTotpService(object):
 
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
@@ -88,28 +93,28 @@ class TestTotpService(object):
     @patch('allura.lib.multifactor.time')
     def test_verify_types(self, time):
         time.return_value = self.sample_time
-        srv = TotpService()
+        srv = GenericTotpService()
         totp = srv.Totp(key=self.sample_key)
-        srv.verify(totp, u'283 397')
-        srv.verify(totp, b'283397')
+        srv.verify(totp, u'283 397', None)
+        srv.verify(totp, b'283397', None)
 
     @patch('allura.lib.multifactor.time')
     def test_verify_window(self, time):
         time.return_value = self.sample_time
-        srv = TotpService()
+        srv = GenericTotpService()
         totp = srv.Totp(key=self.sample_key)
-        srv.verify(totp, b'283397')
+        srv.verify(totp, b'283397', None)
 
         time.return_value = self.sample_time + 30
-        srv.verify(totp, b'283397')
+        srv.verify(totp, b'283397', None)
 
         time.return_value = self.sample_time + 60
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'283397')
+            srv.verify(totp, b'283397', None)
 
         time.return_value = self.sample_time - 30
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'283397')
+            srv.verify(totp, b'283397', None)
 
     def test_get_qr_code(self):
         srv = TotpService()
@@ -119,39 +124,63 @@ class TestTotpService(object):
         assert srv.get_qr_code(totp, user)
 
 
-class TestMongodbTotpService():
+class TestAnyTotpServiceImplementation(object):
+
+    __test__ = False
+
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
+    sample_time = 1472502664
+    # these generate code 283397
+
+    def mock_user(self):
+        return M.User(username='some-user-guy')
+
+    def test_none(self):
+        srv = self.Service()
+        user = self.mock_user()
+        assert_equal(None, srv.get_secret_key(user))
+
+    def test_set_get(self):
+        srv = self.Service()
+        user = self.mock_user()
+        srv.set_secret_key(user, self.sample_key)
+        assert_equal(self.sample_key, srv.get_secret_key(user))
+
+    def test_delete(self):
+        srv = self.Service()
+        user = self.mock_user()
+        srv.set_secret_key(user, self.sample_key)
+        assert_equal(self.sample_key, srv.get_secret_key(user))
+        srv.set_secret_key(user, None)
+        assert_equal(None, srv.get_secret_key(user))
+
+    @patch('allura.lib.multifactor.time')
+    def test_rate_limiting(self, time):
+        time.return_value = self.sample_time
+        srv = self.Service()
+        user = self.mock_user()
+        totp = srv.Totp(key=self.sample_key)
+
+        # 4th attempt (good or bad) will trip over the default limit of 3 in 30s
+        with assert_raises(InvalidToken):
+            srv.verify(totp, b'34dfvdasf', user)
+        with assert_raises(InvalidToken):
+            srv.verify(totp, b'234asdfsadf', user)
+        srv.verify(totp, b'283397', user)
+        with assert_raises(MultifactorRateLimitError):
+            srv.verify(totp, b'283397', user)
+
+
+class TestMongodbTotpService(TestAnyTotpServiceImplementation):
+
+    __test__ = True
+    Service = MongodbTotpService
 
     def setUp(self):
         config = {
             'ming.main.uri': 'mim://allura_test',
         }
         ming.configure(**config)
-
-    def test_none(self):
-        srv = MongodbTotpService()
-        user = Mock(_id=bson.ObjectId(),
-                    is_anonymous=lambda: False,
-                    )
-        assert_equal(None, srv.get_secret_key(user))
-
-    def test_set_get(self):
-        srv = MongodbTotpService()
-        user = Mock(_id=bson.ObjectId(),
-                    is_anonymous=lambda: False,
-                    )
-        srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
-
-    def test_delete(self):
-        srv = MongodbTotpService()
-        user = Mock(_id=bson.ObjectId(),
-                    is_anonymous=lambda: False,
-                    )
-        srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
-        srv.set_secret_key(user, None)
-        assert_equal(None, srv.get_secret_key(user))
 
 
 class TestGoogleAuthenticatorPamFilesystemMixin(object):
@@ -165,28 +194,17 @@ class TestGoogleAuthenticatorPamFilesystemMixin(object):
             shutil.rmtree(self.totp_basedir)
 
 
-class TestGoogleAuthenticatorPamFilesystemTotpService(TestGoogleAuthenticatorPamFilesystemMixin):
+class TestGoogleAuthenticatorPamFilesystemTotpService(TestAnyTotpServiceImplementation,
+                                                      TestGoogleAuthenticatorPamFilesystemMixin):
 
-    sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
+    __test__ = True
+    Service = GoogleAuthenticatorPamFilesystemTotpService
 
-    def test_none(self):
-        srv = GoogleAuthenticatorPamFilesystemTotpService()
-        user = Mock(username='some-user-guy')
-        assert_equal(None, srv.get_secret_key(user))
-
-    def test_set_get(self):
-        srv = GoogleAuthenticatorPamFilesystemTotpService()
-        user = Mock(username='some-user-guy')
-        srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
-
-    def test_delete(self):
-        srv = GoogleAuthenticatorPamFilesystemTotpService()
-        user = Mock(username='some-user-guy')
-        srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
-        srv.set_secret_key(user, None)
-        assert_equal(None, srv.get_secret_key(user))
+    def test_rate_limiting(self):
+        # make a regular .google-authenticator file first, so rate limit info has somewhere to go
+        self.Service().set_secret_key(self.mock_user(), self.sample_key)
+        # then run test
+        super(TestGoogleAuthenticatorPamFilesystemTotpService, self).test_rate_limiting()
 
 
 class TestRecoveryCodeService(object):
@@ -214,6 +232,9 @@ class TestRecoveryCodeService(object):
 class TestAnyRecoveryCodeServiceImplementation(object):
 
     __test__ = False
+
+    def mock_user(self):
+        return M.User(username='some-user-guy')
 
     def test_get_codes_none(self):
         recovery = self.Service()
@@ -256,6 +277,24 @@ class TestAnyRecoveryCodeServiceImplementation(object):
         assert_equal(result, True)
         assert_equal(recovery.get_codes(user), ['67890'])
 
+    def test_rate_limiting(self):
+        recovery = self.Service()
+        user = self.mock_user()
+        codes = [
+            '11111',
+            '22222',
+        ]
+        recovery.replace_codes(user, codes)
+
+        # 4th attempt (good or bad) will trip over the default limit of 3 in 30s
+        with assert_raises(InvalidRecoveryCode):
+            recovery.verify_and_remove_code(user, '13485u0233')
+        with assert_raises(InvalidRecoveryCode):
+            recovery.verify_and_remove_code(user, '34123rdxafs')
+        recovery.verify_and_remove_code(user, '11111')
+        with assert_raises(MultifactorRateLimitError):
+            recovery.verify_and_remove_code(user, '22222')
+
 
 class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
 
@@ -269,9 +308,6 @@ class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
         }
         ming.configure(**config)
 
-    def mock_user(self):
-        return Mock(_id=bson.ObjectId())
-
 
 class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation,
                                                               TestGoogleAuthenticatorPamFilesystemMixin):
@@ -279,9 +315,6 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
     __test__ = True
 
     Service = GoogleAuthenticatorPamFilesystemRecoveryCodeService
-
-    def mock_user(self):
-        return Mock(username='some-user-guy')
 
     def setUp(self):
         super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).setUp()

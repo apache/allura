@@ -23,7 +23,7 @@ from urlparse import urlparse, urljoin
 
 import bson
 import tg
-from allura.lib.exceptions import InvalidRecoveryCode
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -346,13 +346,16 @@ class AuthController(BaseController):
             if mode == 'totp':
                 totp_service = TotpService.get()
                 totp = totp_service.get_totp(user)
-                totp_service.verify(totp, code)
+                totp_service.verify(totp, code, user)
             elif mode == 'recovery':
                 recovery = RecoveryCodeService.get()
                 recovery.verify_and_remove_code(user, code)
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
         except (InvalidToken, InvalidRecoveryCode):
             c.form_errors['code'] = 'Invalid code, please try again.'
+            return self.multifactor(mode=mode, **kwargs)
+        except MultifactorRateLimitError:
+            c.form_errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
             return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
@@ -706,7 +709,7 @@ class PreferencesController(BaseController):
         totp_service = TotpService.get()
         totp = totp_service.Totp(key)
         try:
-            totp_service.verify(totp, code)
+            totp_service.verify(totp, code, c.user)
         except InvalidToken:
             h.auditlog_user('Failed to set up multifactor TOTP (wrong code)')
             c.form_errors['code'] = 'Invalid code, please try again.'

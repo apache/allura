@@ -48,6 +48,10 @@ class ProjectRatelimitError(RatelimitError):
     pass
 
 
+class MultifactorRateLimitError(RatelimitError):
+    pass
+
+
 class ProjectPhoneVerificationError(ForgeError):
     pass
 

@@ -25,7 +25,7 @@ from time import time
 import errno
 
 import bson
-from allura.lib.exceptions import InvalidRecoveryCode
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from tg import config
 from pylons import app_globals as g
 from paste.deploy.converters import asint
@@ -42,11 +42,29 @@ from allura.model.multifactor import RecoveryCode
 log = logging.getLogger(__name__)
 
 
+def check_rate_limit(num_allowed, time_allowed, attempts):
+    '''
+    :param int num_allowed:
+    :param int time_allowed:
+    :param list[int] attempts:
+    :return: tuple: ok (bool), attempts still in window (list[int])
+    '''
+    attempts_in_limit = []
+    now = int(time())
+    for prev_attempt in attempts:
+        if now - prev_attempt <= time_allowed:
+            attempts_in_limit.append(prev_attempt)
+    attempts_in_limit.append(now)
+
+    ok = len(attempts_in_limit) <= num_allowed
+    return ok, attempts_in_limit
+
+
 class TotpService(object):
     '''
     An interface for handling multifactor auth TOTP secret keys.  Common functionality
     is provided in this base class, and specific subclasses implement different storage options.
-    A provider must implement :meth:`get_secret_key` and :meth:`set_secret_key`.
+    A provider must implement :meth:`get_secret_key` and :meth:`set_secret_key` and :meth:`enforce_rate_limit`
 
     To use a new provider, expose an entry point in setup.py::
 
@@ -80,9 +98,11 @@ class TotpService(object):
 
         return totp
 
-    def verify(self, totp, code):
+    def verify(self, totp, code, user):
         code = code.replace(' ', '')  # Google authenticator puts a space in their codes
         code = bytes(code)  # can't be unicode
+
+        self.enforce_rate_limit(user)
 
         # TODO prohibit re-use of a successful code, although it seems unlikely with a 30s window
         # see https://tools.ietf.org/html/rfc6238#section-5.2 paragraph 5
@@ -126,8 +146,31 @@ class TotpService(object):
         '''
         raise NotImplementedError('set_secret_key')
 
+    def enforce_rate_limit(self, user):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :raises: MultifactorRateLimitError
+        '''
+        raise NotImplementedError('enforce_rate_limit')
 
-class MongodbTotpService(TotpService):
+
+class MongodbMultifactorCommon(object):
+
+    def enforce_rate_limit(self, user):
+        prev_attempts = user.get_tool_data('allura', 'multifactor_attempts') or []
+
+        num_allowed = asint(config.get('auth.multifactor.rate_limit.num', 3))
+        time_allowed = asint(config.get('auth.multifactor.rate_limit.time', 30))
+
+        ok, attempts_in_limit = check_rate_limit(num_allowed, time_allowed, prev_attempts)
+
+        user.set_tool_data('allura', multifactor_attempts=attempts_in_limit)
+
+        if not ok:
+            raise MultifactorRateLimitError
+
+
+class MongodbTotpService(MongodbMultifactorCommon, TotpService):
     '''
     Store in TOTP keys in mongodb.
     '''
@@ -218,7 +261,9 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
             if e.errno == errno.ENOENT:  # file doesn't exist
                 if autocreate:
                     gaf = GoogleAuthenticatorFile()
-                    gaf.options['RATE_LIMIT'] = '3 30'
+                    gaf.options['RATE_LIMIT'] = '{} {}'.format(
+                        asint(config.get('auth.multifactor.rate_limit.num', 3)),
+                        asint(config.get('auth.multifactor.rate_limit.time', 30)))
                     gaf.options['DISALLOW_REUSE'] = None
                     gaf.options['TOTP_AUTH'] = None
                     return gaf
@@ -231,8 +276,30 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
         with open(self.config_file(user), 'w') as f:
             f.write(gaf.dump())
 
+    def enforce_rate_limit(self, user, existing_gaf=None):
+        if existing_gaf:
+            gaf = existing_gaf
+        else:
+            gaf = self.read_file(user)
+        if not gaf:
+            return
+        rate_limits = gaf.options['RATE_LIMIT'].split(' ')
+        num_allowed = int(rate_limits.pop(0))
+        time_allowed = int(rate_limits.pop(0))
+        prev_attempts = map(int, rate_limits)
 
-class GoogleAuthenticatorPamFilesystemTotpService(TotpService, GoogleAuthenticatorPamFilesystemMixin):
+        ok, attempts_in_limit = check_rate_limit(num_allowed, time_allowed, prev_attempts)
+
+        gaf.options['RATE_LIMIT'] = ' '.join(map(str, [num_allowed, time_allowed] + attempts_in_limit))
+
+        if not existing_gaf:
+            self.write_file(user, gaf)
+
+        if not ok:
+            raise MultifactorRateLimitError
+
+
+class GoogleAuthenticatorPamFilesystemTotpService(GoogleAuthenticatorPamFilesystemMixin, TotpService):
     '''
     Store in home directories, compatible with the TOTP PAM module for Google Authenticator
     https://github.com/google/google-authenticator/tree/master/libpam
@@ -315,14 +382,17 @@ class RecoveryCodeService(object):
 
     def verify_and_remove_code(self, user, code):
         '''
+        Verify and remove recovery codes.  Also check for rate limiting.
+
         :param user: a :class:`User <allura.model.auth.User>`
         :param code: str
         :raises: InvalidRecoveryCode
+        :raises: MultifactorRateLimitError
         '''
         raise NotImplementedError('verify_and_remove_code')
 
 
-class MongodbRecoveryCodeService(RecoveryCodeService):
+class MongodbRecoveryCodeService(MongodbMultifactorCommon, RecoveryCodeService):
 
     def get_codes(self, user):
         return [rc.code for rc in
@@ -335,6 +405,7 @@ class MongodbRecoveryCodeService(RecoveryCodeService):
             session(rc).flush(rc)
 
     def verify_and_remove_code(self, user, code):
+        self.enforce_rate_limit(user)
         rc = RecoveryCode.query.get(user_id=user._id, code=code)
         if rc:
             rc.query.delete()
@@ -344,7 +415,7 @@ class MongodbRecoveryCodeService(RecoveryCodeService):
             raise InvalidRecoveryCode
 
 
-class GoogleAuthenticatorPamFilesystemRecoveryCodeService(RecoveryCodeService, GoogleAuthenticatorPamFilesystemMixin):
+class GoogleAuthenticatorPamFilesystemRecoveryCodeService(GoogleAuthenticatorPamFilesystemMixin, RecoveryCodeService):
 
     def get_codes(self, user):
         gaf = self.read_file(user)
@@ -363,8 +434,13 @@ class GoogleAuthenticatorPamFilesystemRecoveryCodeService(RecoveryCodeService, G
 
     def verify_and_remove_code(self, user, code):
         gaf = self.read_file(user)
-        if gaf and code in gaf.recovery_codes:
-            gaf.recovery_codes.remove(code)
-            self.write_file(user, gaf)
-            return True
+        if gaf:
+            try:
+                self.enforce_rate_limit(user, gaf)
+                if code in gaf.recovery_codes:
+                    gaf.recovery_codes.remove(code)
+                    return True
+            finally:
+                # write both rate limit & recovery code changes
+                self.write_file(user, gaf)
         raise InvalidRecoveryCode

@@ -2204,6 +2204,34 @@ class TestTwoFactor(TestController):
         assert_equal(r.session['username'], 'test-admin')
         assert r.location.endswith('/p/foo'), r
 
+    def test_login_rate_limit(self):
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        r.form['username'] = 'test-admin'
+        r.form['password'] = 'foo'
+        r = r.form.submit()
+        r = r.follow()
+
+        # try some invalid codes
+        for i in xrange(3):
+            r.form['code'] = 'invalid-code'
+            r = r.form.submit()
+            assert_in('Invalid code', r)
+
+        # use a valid code, but it'll hit rate limit
+        totp = TotpService().Totp(self.sample_key)
+        code = totp.generate(time_time())
+        r.form['code'] = code
+        r = r.form.submit()
+
+        assert_in('rate limit exceeded', r)
+        assert not r.session.get('username')
+
     def test_login_totp_disrupted(self):
         self._init_totp()
 
