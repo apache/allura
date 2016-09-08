@@ -260,13 +260,26 @@ class AuthController(BaseController):
             flash('No such address', 'error')
         redirect(request.referer)
 
-    def _verify_addr(self, addr):
+    def _verify_addr(self, addr, do_auth_check=True):
         confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
         confirmed_by_other = filter(lambda item: item != addr, confirmed_by_other)
 
         if addr and not confirmed_by_other:
-            addr.confirmed = True
             user = addr.claimed_by_user(include_pending=True)
+            if do_auth_check and not user.pending:
+                # pending is ok, since you can't be logged in to your account yet :)
+                require_authenticated()
+                if c.user != user:
+                    flash('You must be logged in to the correct account', 'warning')
+                    # raising HTTPUnauthorized does this same logic, but doesn't preserve the flash() message
+                    # so we have to do similar logic as LoginRedirectMiddleware right here
+                    login_url = tg.config.get('auth.login_url', '/auth/')
+                    return_to = request.environ['PATH_INFO']
+                    if request.environ.get('QUERY_STRING'):
+                        return_to += '?' + request.environ['QUERY_STRING']
+                    redirect(login_url, {'return_to': return_to})
+
+            addr.confirmed = True
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s',  addr.email, user=user)
             if(user.get_pref('email_address') == None):
@@ -549,7 +562,7 @@ class PreferencesController(BaseController):
                         if not admin:
                             em.send_verification_link()
                         else:
-                            AuthController()._verify_addr(em)
+                            AuthController()._verify_addr(em, do_auth_check=False)
                     else:
                         em.send_claim_attempt()
 

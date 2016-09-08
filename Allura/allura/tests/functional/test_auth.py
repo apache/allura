@@ -67,7 +67,7 @@ class TestAuth(TestController):
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
-        ea = M.EmailAddress.find().first()
+        ea = M.EmailAddress.find({'email': email}).first()
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
         r = self.app.get('/auth/logout')
@@ -356,6 +356,37 @@ class TestAuth(TestController):
         assert json.loads(self.webflash(r))['status'] == 'error'
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         assert not email.confirmed
+
+    def test_verify_addr_correct_session(self):
+        self.app.get('/')  # establish session
+        email_address = 'test_abcd@domain.net'
+
+        # test-user claimed email address
+        user = M.User.query.get(username='test-user')
+        user.claim_address(email_address)
+        email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
+        email.confirmed = False
+        ThreadLocalORMSession.flush_all()
+
+        self.app.post('/auth/send_verification_link',
+                      params=dict(a=email_address,
+                                  _session_id=self.app.cookies['_session_id']),
+                      extra_environ=dict(username='test-user'))
+
+        # logged out, gets redirected to login page
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username='*anonymous'))
+        assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
+
+        # logged in as someone else
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username='test-admin'))
+        assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
+        assert_equal('You must be logged in to the correct account', json.loads(self.webflash(r))['message'])
+        assert_equal('warning', json.loads(self.webflash(r))['status'])
+
+        # logged in as correct user
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username='test-user'))
+        assert_in('confirmed', json.loads(self.webflash(r))['message'])
+        assert_equal('ok', json.loads(self.webflash(r))['status'])
 
     @staticmethod
     def _create_password_reset_hash():
