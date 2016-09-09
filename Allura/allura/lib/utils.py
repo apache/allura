@@ -683,3 +683,12 @@ class JSONForExport(tg.jsonify.GenericJSON):
             except TypeError:
                 return obj.__json__()
         return super(JSONForExport, self).default(obj)
+
+
+@contextmanager
+def umask(new_mask):
+    cur_mask = os.umask(new_mask)
+    try:
+        yield
+    finally:
+        os.umask(cur_mask)
