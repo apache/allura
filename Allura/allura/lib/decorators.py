@@ -121,7 +121,7 @@ def reconfirm_auth(func, *args, **kwargs):
         if AuthenticationProvider.get(request).validate_password(c.user, request.POST['password']):
             session['auth-reconfirmed'] = datetime.utcnow()
             session.save()
-            kwargs.pop('password')
+            kwargs.pop('password', None)
         else:
             c.form_errors['password'] = 'Invalid password.'
 
