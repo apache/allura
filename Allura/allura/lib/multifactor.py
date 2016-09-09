@@ -19,6 +19,7 @@ import os
 import logging
 import random
 import string
+import tempfile
 from collections import OrderedDict
 from base64 import b32decode, b32encode
 from time import time
@@ -37,6 +38,7 @@ import qrcode
 from ming.odm import session
 
 from allura.model.multifactor import RecoveryCode
+from allura.lib.utils import umask
 
 
 log = logging.getLogger(__name__)
@@ -228,8 +230,15 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
                 raise
 
     def write_file(self, user, gaf):
-        with open(self.config_file(user), 'w') as f:
+        conf_file = self.config_file(user)
+        # using a tmp file and rename is atomic, and how PAM module does it
+        # see `write_file_contents` in libpam/src/pam_google_authenticator.c
+        # 377 umask gives 400 permissions, which matches how the PAM module does it (600 would be fine too)
+        with umask(0o377), tempfile.NamedTemporaryFile(dir=os.path.dirname(conf_file),
+                                                       prefix='tmp-allura-gauth-',
+                                                       delete=False) as f:
             f.write(gaf.dump())
+        os.rename(f.name, conf_file)
 
 
 class GoogleAuthenticatorPamFilesystemTotpService(TotpService, GoogleAuthenticatorPamFilesystemMixin):
