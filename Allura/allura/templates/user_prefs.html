@@ -124,6 +124,7 @@
             {% if user_multifactor %}
                 <p><b class="fa fa-qrcode"></b> <a href="totp_view">View existing configuration</a></p>
                 <p><b class="fa fa-life-ring"></b> <a href="multifactor_recovery">View recovery codes</a></p>
+                <p><b class="fa fa-key"></b> <a href="u2f">Add or remove U2F hardware keys</a></p>
                 <form action="multifactor_disable" id="multifactor_disable" method="post">
                 <p>
                     <b class="fa fa-trash"></b> <a href="#" class="disable">Disable</a>

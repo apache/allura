@@ -36,6 +36,7 @@ pysolr==2.1.0b0
 python-dateutil==1.5
 python-magic==0.4.3
 python-oembed==0.2.1
+python-u2flib-server==4.0.1
 pytz==2014.10
 qrcode==5.3
 requests==2.0.0

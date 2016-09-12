@@ -54,3 +54,6 @@ class RecoveryCode(MappedClass):
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)
     code = FieldProperty(str, required=True)
+
+
+# U2F data is stored as user data, since it isn't confidential (just public keys) it doesn't warrant its own collection

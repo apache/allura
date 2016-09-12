@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import json
 import logging
 import os
 from datetime import datetime, timedelta
@@ -31,6 +31,7 @@ from pylons import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
 from cryptography.hazmat.primitives.twofactor import InvalidToken
+from u2flib_server import u2f_v2 as u2f
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -806,6 +807,30 @@ class PreferencesController(BaseController):
         send_system_mail_to_user(c.user, u'Two-Factor Recovery Codes Regenerated', email_body)
         tg.flash('Your recovery codes have been regenerated.  Save the new codes!')
         redirect('/auth/preferences/multifactor_recovery')
+
+    @expose('jinja:allura:templates/user_u2f.html')
+    @reconfirm_auth
+    @without_trailing_slash
+    def u2f(self, **kwargs):
+        appId = config.get('auth.multifactor.u2f.appId', config['base_url'])
+        register_request = u2f.start_register(appId)
+        session['u2f_reg_req'] = register_request
+        session.save()
+        return dict(
+            appId=appId,
+            register_request=register_request,
+        )
+
+    @expose()
+    @require_post()
+    @reconfirm_auth
+    def u2f_add(self, device_response, **kwargs):
+        register_request = session.pop('u2f_reg_req')
+        session.save()
+        appId = config.get('auth.multifactor.u2f.appId', config['base_url'])
+        registration, cert = u2f.complete_register(register_request, device_response)#, [appId])
+        return
+
 
 
 class UserInfoController(BaseController):

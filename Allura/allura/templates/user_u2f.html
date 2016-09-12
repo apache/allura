@@ -1,0 +1,89 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set hide_left_bar = True %}
+{% extends "allura:templates/user_account_base.html" %}
+
+{% block title %}{{c.user.username}} / U2F Setup{% endblock %}
+
+{% block header %}U2F Hardware Key Setup for {{c.user.username}}{% endblock %}
+
+{% block content %}
+  {{ super() }}
+  <div class='grid-20'>
+    <h2>Intro</h2>
+    <p>asdfsadf
+    </p>
+
+      <form method="post" action="u2f_add">
+          <input type="hidden" name="device_response"/>
+          {{ lib.csrf_token() }}
+
+
+          DEBUG: {{ register_request }}
+      </form>
+
+    <p>
+      <a href="/auth/preferences/">Back</a>
+    </p>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+</style>
+{% endblock %}
+
+{% block extra_js %}
+
+{#  TODO feature detection...  u2f already there or chrome?
+
+always need to include one of these I think, Chrome only has low-level APIs,
+ and the function signatures are a little bit different between these and firefox plugin
+<script src="https://demo.yubico.com/js/u2f-api.js"></script>
+#}
+<script src="https://rawgit.com/google/u2f-ref-code/master/u2f-gae-demo/war/js/u2f-api.js"></script>
+
+<script type="text/javascript">
+$(function() {
+    if (window.u2f) {
+        window.u2f.register('{{ appId }}', [
+            {{ h.escape_json(register_request)|safe }}
+        ],
+        [],
+        function (data) {
+            if (data.errorCode) {
+                if (data.errorCode === u2f.ErrorCodes.TIMEOUT) {
+                    // FIXME do something to re-prompt
+                    $('#messages').notify({message: 'Timeout, please try again.', status:'info'});
+                } else {
+                    $('#messages').notify({message: 'An error occurred, please try again.', status:'error'});
+                }
+                console.log(data);
+                return;
+            }
+            var $input = $('input[name=device_response]');
+            $input.val(JSON.stringify(data));
+            $input.closest('form').submit();
+        });
+    }
+});
+
+
+</script>
+{% endblock %}
