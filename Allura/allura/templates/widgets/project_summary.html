@@ -19,7 +19,7 @@
 <div class="list card{% if show_proj_icon%} proj_icon{% endif %}"
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
   {% if accolades %}
-    <div class="box notch sponsor">
+    <div class="box notch">
       <div class="feature">
         <a href="{{accolades[0].award_url}}" title="{{accolades[0].comment}}">{{accolades[0].award.short}}</a>
       </div>

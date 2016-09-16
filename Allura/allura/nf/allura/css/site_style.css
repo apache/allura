@@ -2413,8 +2413,6 @@ div.attachment_item{
 }
 .card .box.notch {
   margin: -6px -11px 5px 0;
-  background-image: -webkit-gradient(linear, 50% 100%, 100% 0%, color-stop(0.9, white), color-stop(0.9, #555555));
-  background-image: -moz-linear-gradient(100% 25% 230deg, #555555, white, white 1%);
 }
 .list.card {
   width: 740px;
@@ -2454,10 +2452,6 @@ div.attachment_item{
 }
 .list.card .feature {
   padding: 2em 3.6em .4em 2.7em;
-}
-.list.card .box.notch {
-  background-image: -webkit-gradient(linear, 67% 435%, 100% 0%, color-stop(0.9, rgb(255,255,255)), color-stop(0.9, #555));
-  background-image: -moz-linear-gradient(100% 25% 230deg,#555, rgb(255,255,255), rgb(255,255,255) 1%);
 }
 
 /* Discussion */
