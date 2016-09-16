@@ -2437,13 +2437,17 @@ div.attachment_item{
   width: 460px;
 }
 .list.card.proj_icon h2 { left: 55px; }
-.list.card.proj_icon p.desc { left: 56px; }
+.list.card.proj_icon p.desc {
+  left: 56px;
+  width: initial;
+}
 .list.card p.desc {
   font-size: 0.85em;
   height: 1.15em !important;
   position: absolute;
   top: 30px;
   width: 460px;
+  line-height: 1.35em;
 }
 .list.card .sfdl {
   position: absolute;
