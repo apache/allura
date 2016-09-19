@@ -74,3 +74,13 @@ inmail:
     - "8825:8825"
   links:
     - mongo
+
+git-http:
+  build: scm_config/git-http/
+  ports:
+    - "8081:80"
+  volumes_from:
+    - web
+  links:
+    - mongo
+    - web
