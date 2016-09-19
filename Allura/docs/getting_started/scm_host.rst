@@ -48,7 +48,7 @@ and subsequent chapters.
 
     sudo chmod 775 /srv/*  # make sure apache can read the repo dirs
     sudo apt-get install apache2
-    sudo a2enmod proxy rewrite
+    sudo a2enmod cgi
     sudo vi /etc/apache2/sites-available/default
 
 And add the following text within the :code:`<VirtualHost>` block:
@@ -57,11 +57,14 @@ And add the following text within the :code:`<VirtualHost>` block:
 
     SetEnv GIT_PROJECT_ROOT /srv/git
     SetEnv GIT_HTTP_EXPORT_ALL
-    ProxyPass /git/ !
     ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
 
     # no authentication required at all - for testing purposes
     SetEnv REMOTE_USER=git-allura
+    <Location "/git/">
+        # new for httpd 2.4
+        Require all granted
+    </Location>
 
 Then exit vim (:kbd:`<esc> :wq`) and run:
 
@@ -191,7 +194,7 @@ First, you need to ensure that mod_python is installed:
 
     sudo aptitude install libapache2-mod-python
 
-Then, in the VirtualHost section where you proxy SCM requests to git, SVN, or Hg, add the
+Then, in the VirtualHost section where you send SCM requests to git, SVN, or Hg, add the
 access handler, e.g.:
 
 .. code-block:: console
@@ -201,12 +204,17 @@ access handler, e.g.:
 .. code-block:: apache
 
     <LocationMatch "^/(git|svn|hg)/">
+        # new for httpd 2.4
+        Require all granted
+
         AddHandler mod_python .py
         # Change this path if needed:
         PythonAccessHandler /home/vagrant/src/allura/scripts/ApacheAccessHandler.py
+
         AuthType Basic
         AuthName "SCM Access"
         AuthBasicAuthoritative off
+
         # Change this path if needed:
         PythonOption ALLURA_VIRTUALENV /home/vagrant/env-allura
         # This routes back to the allura webapp
