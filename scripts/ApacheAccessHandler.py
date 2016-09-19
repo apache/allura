@@ -26,20 +26,22 @@ Here is a quick example for your apache settings (assuming ProxyPass)
 
     SetEnv GIT_PROJECT_ROOT /opt/allura/scm/git
     SetEnv GIT_HTTP_EXPORT_ALL
-    ProxyPass /git/ !
     ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
 
     <Location "/git/">
-            AddHandler mod_python .py
-            PythonAccessHandler /path/to/ApacheAccessHandler.py
-            PythonDebug On
+        # new for httpd 2.4
+        Require all granted
 
-            AuthType Basic
-            AuthName "Git Access"
-            AuthBasicAuthoritative off
-            PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
-            PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
-            PythonOption ALLURA_VIRTUALENV /var/local/env-allura
+        AddHandler mod_python .py
+        PythonAccessHandler /path/to/ApacheAccessHandler.py
+        PythonDebug On
+
+        AuthType Basic
+        AuthName "Git Access"
+        AuthBasicAuthoritative off
+        PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
+        PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
+        PythonOption ALLURA_VIRTUALENV /var/local/env-allura
     </Location>
 
 """
