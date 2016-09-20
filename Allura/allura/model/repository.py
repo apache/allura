@@ -575,8 +575,9 @@ class Repository(Artifact, ActivityObject):
         return self.app_config.url()
 
     def refresh_url(self):
+        refresh_base_url = tg.config.get('scm.repos.refresh_base_url') or tg.config.get('base_url', 'http://localhost:8080')
         return '/'.join([
-            tg.config.get('base_url', 'http://localhost:8080').rstrip('/'),
+            refresh_base_url.rstrip('/'),
             'auth/refresh_repo',
             self.url().lstrip('/'),
         ])
