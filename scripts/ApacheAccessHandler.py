@@ -113,10 +113,16 @@ def check_repo_path(req):
     return repo_path is not None
 
 
+class RateLimitExceeded(Exception):
+    pass
+
+
 def check_authentication(req):
     password = req.get_basic_auth_pw()  # MUST be called before req.user
     username = req.user
     log(req, "checking auth for: %s" % username)
+    if not username or not password:
+        return False
     auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
     r = requests.post(auth_url, allow_redirects=False, data={
         'username': username,
@@ -126,7 +132,37 @@ def check_authentication(req):
     }, cookies={
         '_session_id': 'this-is-our-session',
     })
-    return r.status_code == 302 and r.headers['location'].endswith('/login_successful')
+    if r.status_code == 302 and r.headers['location'].endswith('/login_successful'):
+        return True
+    else:
+        # try 2FA
+        password, code = password[:-6], password[-6:]
+        log(req, 'trying multifactor for user: %s' % username)
+        sess = requests.Session()
+        r = sess.post(auth_url, allow_redirects=False, data={
+            'username': username,
+            'password': password,
+            'return_to': '/login_successful',
+            '_session_id': 'this-is-our-session',
+        }, cookies={
+            '_session_id': 'this-is-our-session',
+        })
+        if r.status_code == 302 and '/auth/multifactor' in r.headers['location']:
+            multifactor_url = auth_url.replace('do_login', 'do_multifactor')
+            r = sess.post(multifactor_url, allow_redirects=False, data={
+                'mode': 'totp',
+                'code': code,
+                'return_to': '/login_successful',
+                '_session_id': 'this-is-our-session',
+            }, cookies={
+                '_session_id': 'this-is-our-session',
+            })
+            if r.status_code == 302 and r.headers['location'].endswith('/login_successful'):
+                return True
+            else:
+                if 'rate limit exceeded' in r.text:
+                    raise RateLimitExceeded()
+    return False
 
 
 def check_permissions(req):
@@ -156,9 +192,13 @@ def handler(req):
     req.add_common_vars()
 
     if not check_repo_path(req):
+        log(req, 'path not found in Allura for URL %s' % req.parsed_uri[apache.URI_PATH])
         return apache.HTTP_NOT_FOUND
-
-    authenticated = check_authentication(req)
+    try:
+        authenticated = check_authentication(req)
+    except RateLimitExceeded as e:
+        # HTTP "Too Many Requests" to give the user a bit of a hint about why it failed
+        return 429
     if req.user and not authenticated:
         return apache.HTTP_UNAUTHORIZED
 
