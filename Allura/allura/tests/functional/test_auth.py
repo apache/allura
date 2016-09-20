@@ -2093,6 +2093,11 @@ class TestTwoFactor(TestController):
             assert_in('Password Confirmation', r)
 
     def test_enable_totp(self):
+        # create a separate session, for later use in the test
+        other_session = TestController()
+        other_session.setUp()
+        other_session.app.get('/auth/preferences/')
+
         with out_audits(user=True):
             r = self.app.get('/auth/preferences/totp_new')
             assert_in('Password Confirmation', r)
@@ -2127,6 +2132,11 @@ class TestTwoFactor(TestController):
 
         r = r.follow()
         assert_in('Recovery Codes', r)
+
+        # Confirm any pre-existing sessions have to re-authenticate
+        r = other_session.app.get('/auth/preferences/')
+        assert_in('/auth/?return_to', r.headers['Location'])
+        other_session.tearDown()
 
     def test_reset_totp(self):
         self._init_totp()

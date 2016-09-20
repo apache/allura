@@ -118,11 +118,17 @@ class AuthenticationProvider(object):
         if user.disabled or user.pending:
             self.logout()
             return M.User.anonymous()
-        if not user.is_anonymous() and \
-                self.get_last_password_updated(user) > datetime.utcfromtimestamp(self.session.created) and \
-                user.get_tool_data('allura', 'pwd_reset_preserve_session') != self.session.id:
-            log.debug('Session logged out: due to user %s pwd change %s > %s', user.username,
-                      self.get_last_password_updated(user), datetime.utcfromtimestamp(self.session.created))
+        session_create_date = datetime.utcfromtimestamp(self.session.created)
+        if user.is_anonymous():
+            sessions_need_reauth = False
+        elif self.get_last_password_updated(user) > session_create_date:
+            sessions_need_reauth = True
+        elif (user.get_tool_data('allura', 'multifactor_date') or datetime.min) > session_create_date:
+            sessions_need_reauth = True
+        else:
+            sessions_need_reauth = False
+        if sessions_need_reauth and user.get_tool_data('allura', 'pwd_reset_preserve_session') != self.session.id:
+            log.debug('Session logged out: due to user %s pwd change or multifactor enabled', user.username)
             self.logout()
             return M.User.anonymous()
 

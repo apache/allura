@@ -731,6 +731,8 @@ class PreferencesController(BaseController):
             h.auditlog_user('Set up multifactor TOTP')
             totp_service.set_secret_key(c.user, key)
             c.user.set_pref('multifactor', True)
+            c.user.set_tool_data('allura', multifactor_date=datetime.utcnow())
+            c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)  # other sessions will have to re-auth; preserve this one
             del session['totp_new_key']
             session.save()
             tg.flash('Two factor authentication has now been set up.')
@@ -754,6 +756,7 @@ class PreferencesController(BaseController):
         recovery = RecoveryCodeService.get()
         recovery.delete_all(c.user)
         c.user.set_pref('multifactor', False)
+        c.user.set_tool_data('allura', multifactor_date=None)
         tg.flash('Multifactor authentication has now been disabled.')
         email_body = g.jinja2_env.get_template('allura:templates/mail/twofactor_disabled.md').render(dict(
             user=c.user,
