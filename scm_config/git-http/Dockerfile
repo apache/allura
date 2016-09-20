@@ -25,7 +25,8 @@ FROM ubuntu:14.04
 RUN apt-get update && apt-get install -y \
     apache2 \
     libapache2-mod-python \
-    git
+    git \
+    curl
 
 
 ENV APACHE_RUN_USER www-data
