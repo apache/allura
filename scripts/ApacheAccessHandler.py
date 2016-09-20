@@ -41,9 +41,13 @@ Here is a quick example for your apache settings (assuming ProxyPass)
         AuthBasicAuthoritative off
         PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
         PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
+        # for 'requests' lib only, doesn't have to be full allura venv
         PythonOption ALLURA_VIRTUALENV /var/local/env-allura
     </Location>
 
+
+This could also use the Allura code and authorize directly, but it's useful to be able to run
+this authorization code without Allura set up and configured on the git host.
 """
 
 
