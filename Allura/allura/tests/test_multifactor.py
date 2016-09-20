@@ -15,10 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 import shutil
+import tempfile
 import textwrap
 import os
 
-import bson
 from paste.deploy.converters import asint
 import ming
 from cryptography.hazmat.primitives.twofactor import InvalidToken
@@ -186,7 +186,7 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
 class TestGoogleAuthenticatorPamFilesystemMixin(object):
 
     def setUp(self):
-        self.totp_basedir = os.path.join(os.getenv('TMPDIR', '/tmp'), 'totp-test')
+        self.totp_basedir = tempfile.mkdtemp(prefix='totp-test', dir=os.getenv('TMPDIR', '/tmp'))
         config['auth.multifactor.totp.filesystem.basedir'] = self.totp_basedir
 
     def tearDown(self):
