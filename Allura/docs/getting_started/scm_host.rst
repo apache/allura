@@ -241,6 +241,11 @@ message.
     and write requests and thus requires WRITE permission for every request.
     See ticket #7288
 
+.. note::
+
+    If two-factor auth is enabled, enter your password + current 6-digit code together, as your password.
+    You will have to enter your password each time, and may run into temporary permission denied when it fails.
+
 
 Advanced Alternative
 --------------------
