@@ -18,6 +18,7 @@
 import os.path
 from subprocess import Popen, PIPE
 import sys
+from itertools import izip_longest
 
 toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
@@ -30,50 +31,15 @@ def run(cmd):
     sys.stderr.write(stderr)
     return proc.returncode
 
+
 find_py = "find Allura Forge* -name '*.py'"
 
-# a recepe from itertools doc
-from itertools import izip_longest
 
-
+# a recipe from itertools doc
 def grouper(n, iterable, fillvalue=None):
     "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n
     return izip_longest(fillvalue=fillvalue, *args)
-
-
-def test_pyflakes():
-    # skip some that aren't critical errors
-    skips = [
-        'imported but unused',
-        'redefinition of unused',
-        'assigned to but never used',
-        '__version__',
-    ]
-    proc = Popen(find_py, shell=True, cwd=toplevel_dir,
-                 stdout=PIPE, stderr=PIPE)
-    (find_stdout, stderr) = proc.communicate()
-    sys.stderr.write(stderr)
-    assert proc.returncode == 0, proc.returncode
-
-    # run pyflakes in batches, so it doesn't take tons of memory
-    error = False
-    all_files = [f for f in find_stdout.split('\n')
-                 if '/migrations/' not in f and f.strip()]
-    for files in grouper(20, all_files, fillvalue=''):
-        cmd = "pyflakes " + \
-            ' '.join(files) + " | grep -v '" + \
-            "' | grep -v '".join(skips) + "'"
-        # print 'Command was: %s' % cmd
-        retval = run(cmd)
-        if retval != 1:
-            print
-            # print 'Command was: %s' % cmd
-            print 'Returned %s' % retval
-            error = True
-
-    if error:
-        raise Exception('pyflakes failure, see stdout')
 
 
 def test_no_local_tz_functions():
@@ -104,6 +70,51 @@ def test_no_tabs():
     if run(find_py + " | xargs grep '	' ") not in [1, 123]:
         raise Exception('These should not use tab chars')
 
-def test_linters():
-    if run(find_py + ' | xargs pylint -E --disable=all --enable=exposed-api-needs-kwargs --load-plugins alluratest.pylint_checkers') != 0:
+
+def run_linter(files):
+    if run('pylint -E --disable=all --enable=exposed-api-needs-kwargs --load-plugins alluratest.pylint_checkers {}'.format(' '.join(files))) != 0:
         raise Exception('Custom Allura pylint errors found.')
+
+
+def run_pyflakes(files):
+    # skip some that aren't critical errors
+    skips = [
+        'imported but unused',
+        'redefinition of unused',
+        'assigned to but never used',
+        '__version__',
+    ]
+    files = [f for f in files if '/migrations/' not in f]
+    cmd = "pyflakes " + ' '.join(files) + " | grep -v '" + "' | grep -v '".join(skips) + "'"
+    if run(cmd) != 1:
+        # print 'Command was: %s' % cmd
+        raise Exception('pyflakes failure, see stdout')
+
+
+class TestLinters(object):
+    # this will get populated dynamically with test methods, see below
+    pass
+
+
+# Dynamically generate many test methods, to run pylint & pyflakes commands in separate batches
+# Can't use http://nose.readthedocs.io/en/latest/writing_tests.html#test-generators because nose doesn't run
+# those in parallel
+def create_many_lint_methods():
+    proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
+    (find_stdout, stderr) = proc.communicate()
+    sys.stderr.write(stderr)
+    assert proc.returncode == 0, proc.returncode
+    py_files = find_stdout.split('\n')
+
+    for i, files in enumerate(grouper(40, py_files)):
+        files = filter(None, files)
+
+        lint_test_method = lambda self, these_files=files: run_linter(these_files)
+        lint_test_method.__name__ = 'test_pylint_{}'.format(i)
+        setattr(TestLinters, 'test_pylint_{}'.format(i), lint_test_method)
+
+        pyflake_test_method = lambda self, these_files=files: run_pyflakes(these_files)
+        pyflake_test_method.__name__ = 'test_pyflakes_{}'.format(i)
+        setattr(TestLinters, 'test_pyflakes_{}'.format(i), pyflake_test_method)
+
+create_many_lint_methods()
