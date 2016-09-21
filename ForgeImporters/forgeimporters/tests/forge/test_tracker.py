@@ -17,8 +17,6 @@
 
 from datetime import datetime
 from unittest import TestCase
-from cgi import FieldStorage
-from cStringIO import StringIO
 
 import mock
 from ming.odm import ThreadLocalORMSession
@@ -29,10 +27,19 @@ from allura.tests.decorators import with_tracker
 
 from allura import model as M
 from forgeimporters.forge import tracker
-from forgetracker import model as TM
 
 
 class TestTrackerImporter(TestCase):
+
+    def setUp(self):
+        super(TestTrackerImporter, self).setUp()
+        # every single test method here creates an importer and ToolImporterMeta uses 'g'
+        self.patcher_g = mock.patch('forgeimporters.base.g', mock.MagicMock())
+        self.patcher_g.start()
+
+    def tearDown(self):
+        super(TestTrackerImporter, self).tearDown()
+        self.patcher_g.stop()
 
     @mock.patch.object(tracker, 'File')
     @mock.patch.object(tracker.h, 'make_app_admin_only')
