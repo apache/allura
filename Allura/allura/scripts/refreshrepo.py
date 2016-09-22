@@ -111,12 +111,12 @@ class RefreshRepo(ScriptTask):
 
                             # delete LastCommitDocs
                             i = M.repository.LastCommitDoc.m.find(
-                                dict(commit_ids={'$in': ci_ids_chunk})).count()
+                                dict(commit_id={'$in': ci_ids_chunk})).count()
                             if i:
                                 log.info(
                                     "Deleting %i remaining LastCommitDoc docs, by repo id...", i)
                                 M.repository.LastCommitDoc.m.remove(
-                                    dict(commit_ids={'$in': ci_ids_chunk}))
+                                    dict(commit_id={'$in': ci_ids_chunk}))
 
                             i = M.repository.CommitRunDoc.m.find(
                                 {"commit_ids": {"$in": ci_ids_chunk}}).count()
