@@ -251,6 +251,7 @@ class TestProjectRegistrationProviderPhoneVerification(object):
 
 class TestThemeProvider(object):
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -259,6 +260,7 @@ class TestThemeProvider(object):
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -271,6 +273,7 @@ class TestThemeProvider(object):
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -285,6 +288,7 @@ class TestThemeProvider(object):
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -300,6 +304,7 @@ class TestThemeProvider(object):
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365))
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -313,6 +318,7 @@ class TestThemeProvider(object):
         request.cookies = {'site-notification': 'deadbeef-1000-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -328,6 +334,7 @@ class TestThemeProvider(object):
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -343,6 +350,7 @@ class TestThemeProvider(object):
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -387,19 +395,21 @@ class TestThemeProvider(object):
                       g.theme_href.return_value)
         g.theme_href.assert_called_with('images/testapp_24.png')
 
-    @patch('pylons.tmpl_context.user')
+    @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
-    def test_get_site_notification_with_role(self, SiteNotification, User):
+    @patch('pylons.response', MagicMock())
+    @patch('pylons.request', MagicMock())
+    def test_get_site_notification_with_role(self, SiteNotification, c):
         note = SiteNotification.current.return_value
         note.user_role = 'Test'
         note.page_regex = None
         note.page_tool_type = None
-        projects = User.my_projects_by_role_name
+        projects = c.user.my_projects_by_role_name
 
-        User.is_anonymous.return_value = True
+        c.user.is_anonymous.return_value = True
         assert_is(ThemeProvider().get_site_notification(), None)
 
-        User.is_anonymous.return_value = False
+        c.user.is_anonymous.return_value = False
         projects.return_value = []
         assert_is(ThemeProvider().get_site_notification(), None)
 
@@ -413,7 +423,10 @@ class TestThemeProvider(object):
         projects.projects.return_value = [Mock(), Mock()]
         assert_is(ThemeProvider().get_site_notification(), note)
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response', MagicMock())
+    @patch('pylons.request', MagicMock())
     def test_get_site_notification_without_role(self, SiteNotification):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -421,8 +434,11 @@ class TestThemeProvider(object):
         note.page_tool_type = None
         assert_is(ThemeProvider().get_site_notification(), note)
 
+    @patch('allura.lib.plugin.c', MagicMock())
     @patch('re.search')
     @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response', MagicMock())
+    @patch('pylons.request', MagicMock())
     def test_get_site_notification_with_page_regex(self, SiteNotification, search):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -435,8 +451,11 @@ class TestThemeProvider(object):
         search.return_value = None
         assert_is(ThemeProvider().get_site_notification(), None)
 
+    @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
-    def test_get_site_notification_with_page_tool_type(self, SiteNotification):
+    @patch('pylons.response', MagicMock())
+    @patch('pylons.request', MagicMock())
+    def test_get_site_notification_with_page_tool_type(self, SiteNotification, c):
         note = SiteNotification.current.return_value
         note.user_role = None
         note.page_regex = None
@@ -452,9 +471,12 @@ class TestThemeProvider(object):
         c.app = None
         assert_is(ThemeProvider().get_site_notification(), None)
 
+    @patch('allura.lib.plugin.c')
     @patch('pylons.request')
     @patch('allura.model.notification.SiteNotification')
-    def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, request):
+    @patch('pylons.response', MagicMock())
+    @patch('pylons.request', MagicMock())
+    def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, request, c):
         note = SiteNotification.current.return_value
         note.user_role = None
         note.page_regex = 'test'
