@@ -54,8 +54,8 @@ class TestSVNImplementation(object):
 
         assert_equal(impl._svn.info2.call_args[0]
                      [0], 'file://' + g.tmpdir + '/code/trunk/foo')
-        treesdoc_partial.assert_called()
-        lcd_partial.assert_called()
+        assert treesdoc_partial.called
+        assert lcd_partial.called
 
     def test_last_commit_ids(self):
         self._test_last_commit_ids('/trunk/foo/')

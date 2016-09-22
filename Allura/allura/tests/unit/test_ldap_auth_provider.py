@@ -61,7 +61,7 @@ class TestLdapAuthenticationProvider(object):
         connection.bind_s.called_once_with(dn, 'old-pass')
         connection.modify_s.assert_called_once_with(
             dn, [(ldap.MOD_REPLACE, 'userPassword', 'new-pass-hash')])
-        connection.unbind_s.assert_called_once()
+        assert_equal(connection.unbind_s.call_count, 1)
 
     @patch('allura.lib.plugin.ldap')
     def test_login(self, ldap):
@@ -79,7 +79,7 @@ class TestLdapAuthenticationProvider(object):
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
         connection.bind_s.called_once_with(dn, 'test-password')
-        connection.unbind_s.assert_called_once()
+        assert_equal(connection.unbind_s.call_count, 1)
 
     @patch('allura.lib.plugin.ldap')
     def test_login_autoregister(self, ldap):
@@ -125,7 +125,7 @@ class TestLdapAuthenticationProvider(object):
             'cn=admin,dc=localdomain',
             'admin-password')
         connection.add_s.assert_called_once_with(dn, modlist.addModlist.return_value)
-        connection.unbind_s.assert_called_once()
+        assert_equal(connection.unbind_s.call_count, 1)
 
     @patch('allura.lib.plugin.ldap')
     @patch('allura.lib.plugin.datetime', autospec=True)

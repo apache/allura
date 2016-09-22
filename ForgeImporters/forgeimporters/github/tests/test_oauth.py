@@ -16,9 +16,13 @@
 #       under the License.
 
 from unittest import TestCase
-from mock import Mock, patch
-from pylons import tmpl_context as c
+
+from mock import Mock, patch, MagicMock
+from pylons import tmpl_context as c, config
+from webob.exc import HTTPFound
+
 from allura.tests import TestController
+from allura.tests.decorators import raises
 from forgeimporters.github import GitHubOAuthMixin
 
 
@@ -53,8 +57,12 @@ class TestGitHubOAuthMixin(TestController, TestCase):
         req.head.return_value.headers = {'X-OAuth-Scopes': 'write:repo_hook, user'}
         self.assertTrue(self.mix.oauth_has_access('write:repo_hook'))
 
-    @patch('forgeimporters.github.OAuth2Session')
-    def test_oauth_callback_complete(self, oauth):
-        with patch.object(self.mix, 'oauth_callback_complete') as _mock:
+    @patch.dict(config, {'github_importer.client_id': '123456',
+                         'github_importer.client_secret': 'deadbeef'})
+    @patch('forgeimporters.github.OAuth2Session', MagicMock())
+    @patch('forgeimporters.github.session', MagicMock())
+    @patch('forgeimporters.github.request', MagicMock())
+    def test_oauth_callback_complete(self):
+        with patch.object(self.mix, 'oauth_callback_complete') as _mock, raises(HTTPFound):
             self.mix.oauth_callback()
-            _mock.assert_called_once()
+        self.assertEqual(_mock.call_count, 1)

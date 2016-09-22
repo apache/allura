@@ -482,4 +482,4 @@ class TestUserStats(unittest.TestCase):
             stats.addCommit(newcommit, commit_datetime, project)
         self.assertEqual(stats.general[0].commits[0],
                          {'lines': 3, 'number': 2, 'language': None})
-        unified_diff.assert_not_called()
+        assert not unified_diff.called

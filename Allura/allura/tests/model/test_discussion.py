@@ -480,7 +480,7 @@ def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
 @with_setup(setUp, tearDown)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 @mock.patch.object(M.Thread, 'notify_moderators')
-def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker, notify_moderators):
+def test_not_spam_but_has_no_unmoderated_post_permission(notify_moderators, spam_checker):
     spam_checker.check.return_value = False
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
@@ -490,13 +490,13 @@ def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker, notify_mo
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
     assert_equal(post.status, 'pending')
-    notify_moderators.assert_called_once()
+    assert_equal(notify_moderators.call_count, 1)
 
 
 @with_setup(setUp, tearDown)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
 @mock.patch.object(M.Thread, 'notify_moderators')
-def test_spam_and_has_unmoderated_post_permission(spam_checker, notify_moderators):
+def test_spam_and_has_unmoderated_post_permission(notify_moderators, spam_checker):
     spam_checker.check.return_value = True
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
@@ -508,7 +508,7 @@ def test_spam_and_has_unmoderated_post_permission(spam_checker, notify_moderator
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
     assert_equal(post.status, 'pending')
-    notify_moderators.assert_called_once()
+    assert_equal(notify_moderators.call_count, 1)
 
 
 @with_setup(setUp, tearDown)
@@ -518,7 +518,7 @@ def test_thread_subject_not_included_in_text_checked(spam_checker):
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     t.post('Hello')
-    spam_checker.check.assert_called_once()
+    assert_equal(spam_checker.check.call_count, 1)
     assert_equal(spam_checker.check.call_args[0][0], 'Hello')
 
 

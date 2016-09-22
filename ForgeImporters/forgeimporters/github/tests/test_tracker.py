@@ -87,4 +87,4 @@ class TestGitHubTrackerImportController(TestController, TestCase):
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
         self.app.get(self.url)
-        oauth_begin.assert_called_once()
+        self.assertEqual(oauth_begin.call_count, 1)

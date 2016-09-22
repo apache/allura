@@ -53,7 +53,6 @@ class TestTrackerImporter(TestCase):
         app = project.install_app.return_value
         app.config.options.mount_point = 'mount_point'
         app.url = 'foo'
-        gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
 
         importer.import_tool(project, user, project_name='project_name',
                              mount_point='mount_point', mount_label='mount_label', user_name='me')
@@ -68,7 +67,6 @@ class TestTrackerImporter(TestCase):
                 'project_name': 'me/project_name',
             }
         )
-        gpe.iter_issues.assert_called_once()
         self.assertEqual(tlos.flush_all.call_args_list, [
             mock.call(),
             mock.call(),

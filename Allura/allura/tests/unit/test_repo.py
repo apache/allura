@@ -17,7 +17,7 @@
 
 import datetime
 import unittest
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock, MagicMock, call
 from nose.tools import assert_equal
 from datadiff import tools as dd
 
@@ -205,7 +205,7 @@ class TestCommit(unittest.TestCase):
         commit.get_path('foo/', create=False)
         commit.get_tree.assert_called_with(False)
         commit.get_tree().__getitem__.assert_called_with('foo')
-        commit.get_tree().__getitem__.assert_not_called_with('')
+        self.assertNotIn(call(''), commit.get_tree().__getitem__.call_args_list)
 
     def test_get_tree_no_create(self):
         c.model_cache = Mock()

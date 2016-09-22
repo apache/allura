@@ -691,7 +691,7 @@ class TestUserDetails(TestController):
         with td.audits('Set random password', user=True, actor='test-admin'):
             r = self.app.post('/nf/admin/user/set_random_password', params={'username': 'test-user'})
         assert_in('Password is set', self.webflash(r))
-        set_password.assert_called_once()
+        assert_equal(set_password.call_count, 1)
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')

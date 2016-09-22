@@ -131,4 +131,4 @@ class TestGitHubImportController(TestController, TestCase):
     def test_oauth(self, oauth_begin):
         self.app.get(
             '/p/{}/admin/ext/import/github-repo/'.format(test_project_with_repo))
-        oauth_begin.assert_called_once()
+        self.assertEqual(oauth_begin.call_count, 1)

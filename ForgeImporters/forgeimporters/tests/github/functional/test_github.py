@@ -71,7 +71,7 @@ class TestGitHubOAuth(TestController):
             call('github.oauth.redirect',
                  'http://localhost/p/import_project/github/')
         ])
-        session.save.assert_called_once()
+        assert_equal(session.save.call_count, 1)
 
         r = self.app.get(redirect)
         session.get.assert_has_calls([
