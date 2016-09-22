@@ -38,10 +38,16 @@
   $('#access_urls .btn').click(function(evt){
     evt.preventDefault();
     var parent = $(this).parents('.btn-bar');
-    $(parent).find('input').val($(this).attr('data-url'));
+    var checkout_cmd = $(this).attr('data-url');
+    $(parent).find('input').val(checkout_cmd);
     $(parent).find('span').text($(this).attr('title')+' access');
     $(this).parent().children('.btn').removeClass('active');
     $(this).addClass('active');
+    if (checkout_cmd.indexOf(' http://') !== -1 || checkout_cmd.indexOf(' https://') !== -1 ) {
+      $('#http-2fa-msg').show();
+    } else {
+      $('#http-2fa-msg').hide();
+    }
   });
   $('#access_urls .btn').first().click();
 
@@ -110,6 +116,12 @@
              class="selectText"
              value=""/>
     </div>
+    {% if not c.user.is_anonymous() and c.user.get_pref('multifactor') and h.has_access(c.app, 'write') %}
+        <div id="http-2fa-msg" class="grid-19 info" style="display: none">
+        When using HTTP access with two-factor auth, you will need to enter your password and current token together as
+        the password (e.g. "p4ssw0Rd123456")
+        </div>
+    {% endif %}
     <hr>
   {% endif %}
 {% endmacro %}
