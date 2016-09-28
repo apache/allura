@@ -56,14 +56,14 @@ Simple URL example to access a private ticket:
 
 https://forge-allura.apache.org/rest/p/allura/tickets/35/?access_token=MY_BEARER_TOKEN
 
-Python code example:
+Python code example to create a new ticket:
 
     import requests
     from pprint import pprint
     
     BEARER_TOKEN = '<bearer token from oauth page>'
     
-    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/new', params={
+    r = requests.post('https://forge-allura.apache.org/rest/p/test-project/tickets/new', params={
             'access_token': BEARER_TOKEN,
             'ticket_form.summary': 'Test ticket',
             'ticket_form.description': 'This is a test ticket',

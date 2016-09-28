@@ -242,7 +242,7 @@ documentation:
                       type: file
                       description:  (optional) attachment
                       required: false
-                    ticket_form.custom field name:
+                    ticket_form.custom-field-name:
                       description:  custom field value
                       type: string
                       required: false
@@ -252,7 +252,6 @@ documentation:
             searchableCollection: {
               queryParamName: q,
               queryParamExample: 'example',
-              queryRequired: true,
               schema: !include schemas/searchedTickets.json,
               example: !include examples/searchedTickets.json
             }
