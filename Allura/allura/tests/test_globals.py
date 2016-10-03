@@ -174,7 +174,7 @@ def test_macro_gittip_button():
     assert_equal(
         r,
         u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" '
-        u'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe>\n</p></div>')
+        u'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
 
 
 def test_macro_neighborhood_feeds():

@@ -263,7 +263,7 @@ class TestHTMLSanitizer(unittest.TestCase):
         p = utils.ForgeHTMLSanitizer(
             '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         assert_equal(
-            self.simple_tag_list(p), ['div', 'iframe', 'div'])
+            self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
 
     def test_html_sanitizer_form_elements(self):
         p = utils.ForgeHTMLSanitizer('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')

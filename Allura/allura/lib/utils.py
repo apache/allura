@@ -22,6 +22,9 @@ import hashlib
 import binascii
 import logging.handlers
 import codecs
+
+from html5lib.constants import tokenTypes
+
 from ming.odm import session
 import os.path
 import datetime
@@ -558,13 +561,22 @@ class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
 
     valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
 
+    _prev_token_was_ok_iframe = False
+
     def sanitize_token(self, token):
         if 'iframe' in self.allowed_elements:
             self.allowed_elements.remove('iframe')
+        ok_opening_iframe = False
+
         if token.get('name') == 'iframe':
             attrs = dict(token.get('data'))
             if attrs.get('src', '').startswith(self.valid_iframe_srcs):
                 self.allowed_elements.append('iframe')
+                ok_opening_iframe = True
+            elif token.get('type') == tokenTypes["EndTag"] and self._prev_token_was_ok_iframe:
+                self.allowed_elements.append('iframe')
+
+        self._prev_token_was_ok_iframe = ok_opening_iframe
         return super(ForgeHTMLSanitizer, self).sanitize_token(token)
 
 
