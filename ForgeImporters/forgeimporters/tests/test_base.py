@@ -24,7 +24,7 @@ from tg import expose, config
 from nose.tools import assert_equal, assert_raises
 from webob.exc import HTTPUnauthorized
 
-from alluratest.controller import TestController
+from alluratest.controller import TestController, setup_basic_test
 from allura.tests import decorators as td
 from allura.lib import helpers as h
 
@@ -81,6 +81,7 @@ def test_import_tool(g, c, object_from_path, M, _datetime):
 @mock.patch.object(base, 'ToolImporter')
 @mock.patch.object(base, 'g')
 def test_import_tool_failed(g, ToolImporter, format_exc):
+    setup_basic_test()
     format_exc.return_value = 'my traceback'
 
     importer = mock.Mock(source='importer_source',
@@ -88,9 +89,8 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
     importer.import_tool.side_effect = RuntimeError('my error')
     ToolImporter.return_value = importer
 
-    assert_raises(
-        RuntimeError, base.import_tool, 'forgeimporters.base.ToolImporter',
-        project_name='project_name')
+    with assert_raises(RuntimeError):
+        base.import_tool('forgeimporters.base.ToolImporter', project_name='project_name')
     g.post_event.assert_called_once_with(
         'import_tool_task_failed',
         error=str(importer.import_tool.side_effect),
