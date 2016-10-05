@@ -703,7 +703,7 @@ class Application(object):
                 post_id=message_id,
                 artifact_id=message_id)
             return
-        # Handle duplicates
+        # Handle duplicates (from multipart mail messages)
         post = self.PostClass.query.get(_id=message_id)
         if post:
             log.info(
