@@ -111,19 +111,17 @@ class Forum(M.Discussion):
     def get_discussion_thread(self, data=None):
         # If the data is a reply, use the parent's thread
         subject = '[no subject]'
-        parent_id = None
         if data is not None:
-            in_reply_to = data.get('in_reply_to')
-            if in_reply_to:
-                parent_id = in_reply_to[0].split('/')[-1]
-            else:
-                parent_id = None
             message_id = data.get('message_id') or ''
             subject = data['headers'].get('Subject', subject)
-        if parent_id is not None:
-            parent = self.post_class().query.get(_id=parent_id)
-            if parent:
-                return parent.thread, parent_id
+            in_reply_to = data.get('in_reply_to') or []
+            references = data.get('references') or []
+            # find first valid In-Reply-To: header or References: header (starting from end)
+            for msg_id in in_reply_to + list(reversed(references)):
+                parent_id = msg_id.split('/')[-1]
+                parent = self.post_class().query.get(_id=parent_id)
+                if parent:
+                    return parent.thread, parent_id
         if message_id:
             post = self.post_class().query.get(_id=message_id)
             if post:

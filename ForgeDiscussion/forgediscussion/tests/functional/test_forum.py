@@ -25,6 +25,8 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
+import pymongo
+
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 
@@ -129,7 +131,11 @@ class TestForumEmail(TestController):
         M.artifact_orm_session.flush()
 
 
-class TestForumAsync(TestController):
+class TestForumMessageHandling(TestController):
+    '''
+    Tests all the "handle_message" related logic, which is what inbound emails run through
+    '''
+
     def setUp(self):
         TestController.setUp(self)
         self.app.get('/discussion/')
@@ -166,17 +172,38 @@ class TestForumAsync(TestController):
         posts = FM.ForumPost.query.find()
         assert_equal(posts.count(), 1)
         assert_equal(FM.ForumThread.query.get().num_replies, 1)
-        assert_equal(FM.ForumThread.query.get()
-                     .first_post_id, 'test_reply@domain.net')
+        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@domain.net')
 
         post = posts.first()
         self._post('testforum', 'Test Reply', 'Nothing here, either',
-                   message_id=post.thread.url() + post._id,
+                   message_id='test_reply-msg2@domain.net',
                    in_reply_to=['test_reply@domain.net'])
         assert_equal(FM.ForumThread.query.find().count(), 1)
         assert_equal(FM.ForumPost.query.find().count(), 2)
-        assert_equal(FM.ForumThread.query.get()
-                     .first_post_id, 'test_reply@domain.net')
+        assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@domain.net')
+
+    def test_reply_using_references_headers(self):
+        self._post('testforum', 'Test Thread', 'Nothing here',
+                   message_id='first-message-id')
+        prev_post = FM.ForumPost.query.find().first()
+        thread = FM.ForumThread.query.find().first()
+
+        refs = M.Notification._references(thread, prev_post) + ['first-message-id']
+        self._post('testforum', 'Test Thread', 'Nothing here, yet',
+                   message_id='second-message-id',
+                   in_reply_to=['some-other-id@not.helpful.com'],
+                   references=refs)
+        assert_equal(FM.ForumThread.query.find().count(), 1)
+        assert_equal(FM.ForumPost.query.find().count(), 2)
+
+        prev_post = FM.ForumPost.query.find().sort('timestamp', pymongo.DESCENDING).first()
+        refs = M.Notification._references(thread, prev_post) + ['second-message-id']
+        self._post('testforum', 'Test Reply', 'Nothing here, either',
+                   message_id='third-message-id',
+                   # missing in_reply_to altogether
+                   references=refs)
+        assert_equal(FM.ForumThread.query.find().count(), 1)
+        assert_equal(FM.ForumPost.query.find().count(), 3)
 
     def test_attach(self):
         self._post('testforum', 'Attachment Thread', 'This is a text file',
@@ -255,6 +282,9 @@ class TestForumAsync(TestController):
                           params=dict(subject='', delete='on'))
 
     def _post(self, topic, subject, body, **kw):
+        '''
+        Submit a message very similar to how incoming email works
+        '''
         message_id = kw.pop('message_id', '%s@test.com' % random.random())
         with h.push_config(c, user=self.user):
             c.app.handle_message(
