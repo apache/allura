@@ -404,16 +404,14 @@ def ago(start_time, show_date_after=7):
 
     if start_time is None:
         return 'unknown'
-    granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
-                     'minute']
+    granularities = ['century', 'decade', 'year', 'month', 'day', 'hour', 'minute', 'second']
     end_time = datetime.utcnow()
     if show_date_after is not None and end_time - start_time > timedelta(days=show_date_after):
         return start_time.strftime('%Y-%m-%d')
 
     while True:
         granularity = granularities.pop()
-        ago = date.distance_of_time_in_words(
-            start_time, end_time, granularity, round=True)
+        ago = date.distance_of_time_in_words(start_time, end_time, granularity, round=True)
         rounded_to_one_granularity = 'and' not in ago
         if rounded_to_one_granularity:
             break

@@ -15,23 +15,26 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from mock import patch
-
 from datetime import datetime
+
+from mock import patch
+from nose.tools import assert_equal
+
 from allura.lib import helpers
 
 
-class TestAgo:
+class TestAgo(object):
 
     def setUp(self):
         self.start_time = datetime(2010, 1, 1, 0, 0, 0)
 
-    def test_that_empty_times_are_phrased_in_minutes(self):
-        self.assertTimeSince('0 minutes ago', 2010, 1, 1, 0, 0, 0)
+    def test_that_exact_times_are_phrased_in_seconds(self):
+        self.assertTimeSince('0 seconds ago', 2010, 1, 1, 0, 0, 0)
 
-    def test_that_partial_minutes_are_rounded(self):
-        self.assertTimeSince('less than 1 minute ago', 2010, 1, 1, 0, 0, 29)
-        self.assertTimeSince('1 minute ago', 2010, 1, 1, 0, 0, 31)
+    def test_that_partial_seconds_are_rounded(self):
+        self.assertTimeSince('less than 1 second ago', 2010, 1, 1, 0, 0, 0, 1)
+        # the are not rounded, actually.  oh well
+        self.assertTimeSince('less than 1 second ago', 2010, 1, 1, 0, 0, 0, 999999)
 
     def test_that_minutes_are_rounded(self):
         self.assertTimeSince('1 minute ago', 2010, 1, 1, 0, 1, 29)
@@ -55,7 +58,7 @@ class TestAgo:
         self.assertTimeSince('2010-01-01', 2011, 8, 1, 0, 0, 0)
 
     def assertTimeSince(self, time_string, *time_components):
-        assert time_string == self.time_since(*time_components)
+        assert_equal(time_string, self.time_since(*time_components))
 
     def time_since(self, *time_components):
         end_time = datetime(*time_components)

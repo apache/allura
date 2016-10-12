@@ -37,7 +37,7 @@ class TestUserProfile(TestController):
         assert_in('Username:test-admin', r.html.find(None, 'personal-data').getText())
         assert_in('projects', sections)
         assert_in('Test Project', r.html.find(None, 'projects').getText())
-        assert_in('Last Updated:less than 1 minute ago', r.html.find(None, 'projects').getText())
+        assert_in('Last Updated:', r.html.find(None, 'projects').getText())
         assert_in('tools', sections)
         assert_in('Admin', r.html.find(None, 'tools').getText())
         assert_in('skills', sections)

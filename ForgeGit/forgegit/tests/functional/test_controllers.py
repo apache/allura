@@ -27,6 +27,7 @@ from datadiff.tools import assert_equal as dd_assert_equal
 from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import tg
 import pkg_resources
+from nose.tools import assert_regexp_matches
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from mock import patch, PropertyMock
@@ -646,7 +647,7 @@ class TestFork(_TestCase):
         assert 'git checkout master' in merge_instructions
         assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
         assert 'git merge {}'.format(c_id) in merge_instructions
-        assert_in('less than 1 minute ago', r)
+        assert_regexp_matches(str(r), r'[0-9]+ seconds? ago')
 
         merge_form = r.html.find('div', {'class': 'merge-help-text merge-ok'})
         assert merge_form
@@ -675,8 +676,8 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/')
         assert 'href="%s/"' % mr_num in r, r
-        assert_equal(r.html.findAll('span')[-2].getText(), 'less than 1 minute ago')
-        assert_equal(r.html.findAll('span')[-1].getText(), 'less than 1 minute ago')
+        assert_regexp_matches(r.html.findAll('span')[-2].getText(), r'[0-9]+ seconds? ago')
+        assert_regexp_matches(r.html.findAll('span')[-1].getText(), r'[0-9]+ seconds? ago')
 
     def test_merge_request_update_status(self):
         r, mr_num = self._request_merge()

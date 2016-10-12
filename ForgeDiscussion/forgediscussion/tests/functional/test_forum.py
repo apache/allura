@@ -608,7 +608,7 @@ class TestForum(TestController):
         self.app.post(post_link, params)
         r = self.app.get(thread_url)
         assert 'zzz' in str(r.html.find('div', {'class': 'display_post'}))
-        assert 'Last edit: Test Admin less than 1 minute ago' in str(
+        assert 'Last edit: Test Admin ' in str(
             r.html.find('div', {'class': 'display_post'}))
 
     def test_subscription_controls(self):

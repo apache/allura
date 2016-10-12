@@ -270,7 +270,7 @@ class TestDiscuss(TestDiscussBase):
         assert create_activity.call_args[0][1] == 'modified'
         r = self.app.get(thread_url)
         assert 'zzz' in str(r.html.find('div', {'class': 'display_post'}))
-        assert 'Last edit: Test Admin less than 1 minute ago' in str(
+        assert 'Last edit: Test Admin ' in str(
             r.html.find('div', {'class': 'display_post'}))
 
     def test_deleted_post(self):
