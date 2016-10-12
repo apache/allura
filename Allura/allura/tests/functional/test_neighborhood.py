@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -741,8 +742,8 @@ class TestNeighborhood(TestController):
         # check the labels and trove cats
         r = self.app.get('/adobe/testtemp/admin/trove')
         assert 'mmi' in r
-        assert 'Topic :: Communications :: Telephony' in r
-        assert 'Development Status :: 5 - Production/Stable' in r
+        assert u'Communications » Telephony' in r
+        assert '5 - Production/Stable' in r
         # check the wiki text
         r = self.app.get('/adobe/testtemp/wiki/').follow()
         assert "My home text!" in r

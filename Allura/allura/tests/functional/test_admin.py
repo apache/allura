@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -548,7 +549,7 @@ class TestProjectAdmin(TestController):
 
         r = self.app.get('/admin/trove')
         assert 'No Database Environment categories have been selected.' in r
-        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
+        assert '<span class="trove_fullpath">Database API</span>' not in r
         # add a cat
         with audits('add trove root_database: Database Environment :: Database API'):
             form = r.forms['add_trove_root_database']
@@ -556,13 +557,13 @@ class TestProjectAdmin(TestController):
             r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
-        assert '<span class="trove_fullpath">Database Environment :: Database API :: Python Database API</span>' in r
+        assert u'<span class="trove_fullpath">Database API » Python Database API</span>' in r
         # delete the cat
         with audits('remove trove root_database: Database Environment :: Database API'):
             r = r.forms['delete_trove_root_database_506'].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
-        assert '<span class="trove_fullpath">Database Environment :: Database API :: Python Database API</span>' not in r
+        assert u'<span class="trove_fullpath">Database API » Python Database API</span>' not in r
 
     def test_add_remove_label(self):
         setup_trove_categories()

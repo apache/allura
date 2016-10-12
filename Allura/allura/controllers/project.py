@@ -60,7 +60,6 @@ class W:
     add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
-    project_select = ffw.NeighborhoodProjectSelect
     neighborhood_overview_form = ff.NeighborhoodOverviewForm()
     award_grant_form = ff.AwardGrantForm
 

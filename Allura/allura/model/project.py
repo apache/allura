@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -131,11 +132,13 @@ class TroveCategory(MappedClass):
 
     @property
     def subcategories(self):
-        return self.query.find(dict(trove_parent_id=self.trove_cat_id)).sort('fullname').all()
+        return sorted(self.query.find(dict(trove_parent_id=self.trove_cat_id)).all(),
+                      key=lambda t: t.fullname.lower())
 
     @property
     def children(self):
-        return self.query.find({'fullpath': re.compile('^' + re.escape(self.fullpath) + ' ::')}).sort('fullpath')
+        return sorted(self.query.find({'fullpath': re.compile('^' + re.escape(self.fullpath) + ' ::')}).all(),
+                      key=lambda t: t.fullpath.lower())
 
     @property
     def type(self):
@@ -161,6 +164,11 @@ class TroveCategory(MappedClass):
             url += trove.shortname + '/'
             crumbs.append((trove.fullname, url))
         return crumbs
+
+    @property
+    def fullpath_within_type(self):
+        'remove first section of full path, and use nicer separator'
+        return u' » '.join(self.fullpath.split(' :: ')[1:])
 
     def __json__(self):
         return dict(

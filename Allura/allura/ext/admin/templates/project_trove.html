@@ -24,10 +24,17 @@
 
 {% macro show_trove_base_cat(base) %}
   <h3>{{base.fullname}}</h3>
+  {% set help_text = config.get('trovecategories.admin.help.'+base.shortname, '') %}
+  {% if help_text %}
+    <div class="grid-19">
+      {{ help_text|safe }}
+      <br><br>
+    </div>
+  {% endif %}
   <div id="trove_existing_{{base.shortname}}" class="trove_existing grid-19">
     {% for cat in c.project.troves_by_type(base.shortname)|sort(attribute='fullpath') %}
     <div style="clear: both">
-      <span class="trove_fullpath">{{cat.fullpath}}</span>
+      <span class="trove_fullpath">{{cat.fullpath_within_type}}</span>
       <form id="delete_trove_{{base.shortname}}_{{cat.trove_cat_id}}"
             action="delete_trove" method="post" class="trove_deleter">
         <input type="hidden" name="type" value="{{base.shortname}}">
@@ -41,14 +48,27 @@
   {% endfor %}
   </div>
   <div class="grid-19 trove_add_container">
+    {% if trove_recommendations[base.shortname] %}
+        Recommended to choose from:
+            {% for trove_id, label in trove_recommendations[base.shortname].iteritems() %}
+                <a href="#" data-id="{{ trove_id }}" data-trove="{{ base.shortname }}" class="recommended_trove"><i class="fa fa-plus-circle"></i> {{ label }}</a>
+            {% endfor %}
+        <br>
+        Or <a href="#" class="choose_other">choose from other options...</a>
+    {% else %}
+        <label for="new_trove_{{base.shortname}}">Add a new {{base.fullname}} category:</label>
+        <br>
+    {% endif %}
+
     <form id="add_trove_{{base.shortname}}"
-          action="add_trove" method="post" class="trove_adder">
+          action="add_trove" method="post" class="trove_adder"
+          {% if trove_recommendations[base.shortname] %}style="display:none"{% endif -%}
+          >
       <input type="hidden" name="type" value="{{base.shortname}}">
-      <label for="new_trove_{{base.shortname}}">Add a new {{base.fullname}} category:</label>
-      <br>
-      <select name="new_trove" id="new_trove_{{base.shortname}}">
+      <select name="new_trove" id="new_trove_{{base.shortname}}" data-placeholder="Choose one...">
+        <option value=""></option>
         {% for cat in base.children if not cat.parent_only %}
-          <option value="{{cat.trove_cat_id}}">{{cat.fullpath}}</option>
+            <option value="{{cat.trove_cat_id}}">{{cat.fullpath_within_type}}</option>
         {% endfor %}
       </select>
       <br>
@@ -63,6 +83,7 @@
     <div class="notice">This project has been deleted and is not visible to non-admin users</div>
   {% endif %}
 
+  <div class="project_labels">
     <h3>Project Labels</h3>
     <div class="grid-19 trove_add_container">
       <form method="POST" class="can-retry" action="update_labels" id="label_edit_form">
@@ -72,23 +93,22 @@
         {{lib.csrf_token()}}
       </form>
     </div>
-  {{show_trove_base_cat(topic_trove)}}
-  {{show_trove_base_cat(license_trove)}}
-  {% for base in base_troves if base.shortname != 'topic' and base.shortname != 'license' %}
+  </div>
+  {% for base in base_troves %}
     {{show_trove_base_cat(base)}}
   {% endfor %}
 {% endblock %}
 
+{% do g.register_forge_js('js/chosen.jquery.min.js') %}
+{% do g.register_forge_css('css/chosen.min.css') %}
+
 {% block extra_js %}
   <script type="text/javascript">
     $(document).ready(function () {
-      var session_id = $('input[name=_session_id]').val();
-      var del_btn = '<a href="#" class="del_btn" title="Delete"><b data-icon="{{g.icons["delete"].char}}" class="ico {{g.icons["delete"].css}}"></b></a>';
-      $('form.trove_adder').submit(function(evt){
-        evt.preventDefault();
-        var $this = $(this);
-        var type = $this.find('input[name=type]').val();
-        var new_id = $this.find('select').last().val();
+      var chosen_opts = {search_contains:true};
+      $('.trove_add_container form:visible select').chosen(chosen_opts);
+
+      function add_trove(session_id, type, new_id) {
         $.post('add_trove_js',{
           _session_id:session_id,
           type:type,
@@ -116,6 +136,16 @@
               }
             }
         });
+      }
+
+      var session_id = $('input[name=_session_id]').val();
+      var del_btn = '<a href="#" class="del_btn" title="Delete"><b data-icon="{{g.icons["delete"].char}}" class="ico {{g.icons["delete"].css}}"></b></a>';
+      $('form.trove_adder').submit(function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var type = $this.find('input[name=type]').val();
+        var new_id = $this.find('select').last().val();
+        add_trove(session_id, type, new_id);
       });
       $('form.trove_deleter').each(function(){
         $(this).find('input[type="submit"]').remove();
@@ -136,15 +166,24 @@
             }
         });
       });
+      $('a.choose_other').on('click', function(e){
+        e.preventDefault();
+        var $form = $(this).next('form');
+        $form.show();
+        $('select', $form).chosen(chosen_opts);
+      });
+      $('a.recommended_trove').on('click', function(e) {
+        e.preventDefault();
+        var type = $(this).data('trove');
+        var new_id = $(this).data('id');
+        add_trove(session_id, type, new_id);
+      })
     });
   </script>
 {% endblock %}
 
 {% block extra_css %}
   <style type="text/css">
-    .trove_adder select {
-        font: 90% sans-serif;
-    }
     .trove_deleter{
       display:inline;
     }
@@ -157,11 +196,39 @@
     .trove_existing{
       margin-bottom: 1em;
     }
-    .trove_add_container{
+    .trove_add_container {
       margin-bottom: 1em;
       padding-bottom: 1em;
       border: 0 solid #ccc;
       border-width: 0 0 1px 0;
+    }
+    .recommended_trove {
+      margin-right: 0.5em;
+    }
+
+    /* for Chosen plugin to display well.  Super-long thread with other possible options: https://github.com/harvesthq/chosen/issues/86 */
+    .trove_add_container{
+      overflow: visible;
+    }
+    :not(.project_labels) > .trove_add_container:last-of-type {
+      margin-bottom: 250px;
+    }
+    /* for Chosen plugin, use Font-Awesome for icons instead of their sprite
+      Because when we have debug=False in the .ini file, the CSS concatenation makes the path to the sprite incorrect */
+    .chosen-container-single .chosen-search:after {
+      font-family: FontAwesome;
+      content: "\f002";  /* fa-search */
+      position: relative;
+      left: -1.5em;
+    }
+    .chosen-container-single .chosen-single div b {
+      background: none; /* cancel out existing sprite, so its not duplicated */
+    }
+    .chosen-container-single .chosen-single div b:after {
+      content: "▾";
+    }
+    .chosen-container-single.chosen-with-drop .chosen-single div b:after {
+      content: "▴";
     }
   </style>
 {% endblock %}

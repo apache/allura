@@ -16,10 +16,11 @@
 #       under the License.
 
 import logging
+from collections import OrderedDict
 from datetime import datetime
 from urlparse import urlparse
 import json
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g, response
 from pylons import request
@@ -253,13 +254,24 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_trove.html')
     def trove(self):
         c.label_edit = W.label_edit
-        base_troves = M.TroveCategory.query.find(
-            dict(trove_parent_id=0)).sort('fullname').all()
-        topic_trove = M.TroveCategory.query.get(
-            trove_parent_id=0, shortname='topic')
-        license_trove = M.TroveCategory.query.get(
-            trove_parent_id=0, shortname='license')
-        return dict(base_troves=base_troves, license_trove=license_trove, topic_trove=topic_trove)
+        base_troves_by_name = {t.shortname: t
+                               for t in M.TroveCategory.query.find(dict(trove_parent_id=0))}
+        first_troves = aslist(config.get('trovecategories.admin.order', 'topic,license,os'), ',')
+        base_troves = [
+            base_troves_by_name.pop(t) for t in first_troves
+        ] + sorted(base_troves_by_name.values(), key=attrgetter('fullname'))
+
+        trove_recommendations = {}
+        for trove in base_troves:
+            config_name = 'trovecategories.admin.recommended.{}'.format(trove.shortname)
+            recommendation_pairs = aslist(config.get(config_name, []), ',')
+            trove_recommendations[trove.shortname] = OrderedDict()
+            for pair in recommendation_pairs:
+                trove_id, label = pair.split('=')
+                trove_recommendations[trove.shortname][trove_id] = label
+
+        return dict(base_troves=base_troves,
+                    trove_recommendations=trove_recommendations)
 
     @expose('jinja:allura.ext.admin:templates/project_tools_moved.html')
     def tools_moved(self, **kw):
@@ -472,7 +484,7 @@ class ProjectAdminController(BaseController):
     def add_trove_js(self, type, new_trove, **kw):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
-        return dict(trove_full_path=trove_obj.fullpath, trove_cat_id=trove_obj.trove_cat_id, error_msg=error_msg)
+        return dict(trove_full_path=trove_obj.fullpath_within_type, trove_cat_id=trove_obj.trove_cat_id, error_msg=error_msg)
 
     @expose()
     @require_post()
