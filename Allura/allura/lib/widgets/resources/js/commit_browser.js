@@ -65,11 +65,11 @@ if($('#commit_graph')){
     var point_size = 10;
     var page_size = 15;
 
-    var data = {'commits': [], 'built_tree': {}};
+    var data = {'built_tree': {}};
     var offset = 1;
     var selected_commit = -1;
     var y_offset = offset * y_space;
-    var tree, next_column, max_x_pos, max_row = 0, next_row = 0, max_visible_row;
+    var tree, next_column = 0, max_row = 0, next_row = 0, max_visible_row;
 
     var $graph_holder = $('#graph_holder');
     var $scroll_placeholder = $('#graph_scroll_placeholder');
@@ -124,18 +124,16 @@ if($('#commit_graph')){
                 var parent_x = x_space+parent.column*x_space
                 var parent_y = y_space+(parent.row-offset)*y_space;
 
-                canvas_ctx.strokeStyle = color(parent.column % 6);
+                canvas_ctx.strokeStyle = color(Math.max(commit.column, parent.column) % 6);
 
-                // Vertical
-                canvas_ctx.beginPath();
-                canvas_ctx.moveTo(parent_x+point_offset, y_pos+y_space);
-                canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
-                canvas_ctx.stroke();
-
-                // Diagonal
                 canvas_ctx.beginPath()
                 canvas_ctx.moveTo(x_pos + point_offset, y_pos+point_offset);
-                canvas_ctx.lineTo(parent_x+point_offset, y_pos+y_space);
+                if (parent_x > x_pos) {
+                    canvas_ctx.lineTo(parent_x + point_offset, y_pos + y_space + point_offset); // out to the right to parent column, next row
+                } else {
+                    canvas_ctx.lineTo(x_pos + point_offset, parent_y - y_space + point_offset); // straight down, to point one higher than parent (might not go down at all)
+                }
+                canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset); // go to parent
                 canvas_ctx.stroke();
             }
         }
@@ -168,16 +166,88 @@ if($('#commit_graph')){
         }
         pending = true;
         drawGraph(offset);
-        var params = {'limit': 50};
+        var params = {'limit': 500};
         if (data['next_commit']) {
             params['start'] = data['next_commit'];
         }
         $.getJSON(document.location.href+'_data', params, function(new_data) {
             $.extend(true, data, new_data);
             tree = data['built_tree'];
-            next_column = data['next_column'];
-            max_x_pos = x_space*next_column;
-            max_row = next_row + data['max_row']
+
+            // Calculate columns
+            var used_columns = [];
+            function take_next_free_column() {
+                // default to next bigger one
+                var col = used_columns.length;
+                // go through each and see if any are missing, and use that
+                for (var i = 0; i < used_columns.length; i++) {
+                    if (used_columns.indexOf(i) === -1) {
+                        col = i;
+                        break;
+                    }
+                }
+                used_columns.push(col);
+                next_column = Math.max(next_column, col);
+                return col;
+
+            }
+            for(var c in tree) {
+                var commit = tree[c];
+                if (commit.column === undefined) {
+                    commit.column = take_next_free_column();
+                } else {
+                    // when reprocessing data after ajax load, make sure we mark what is used
+                    if (used_columns.indexOf(commit.column) === -1) {
+                        used_columns.push(commit.column);
+                    }
+                }
+                if (commit.columns_now_free !== undefined) {
+                    for (var i = 0; i < commit.columns_now_free.length; i++) {
+                        var col_idx = used_columns.indexOf(commit.columns_now_free[i]);
+                        used_columns.splice(col_idx, 1);  // splice == remove
+                    }
+                }
+                for(var p=0; p < commit.parents.length; p++) {
+                    var parent_id = commit.parents[p];
+                    var parent_commit = tree[parent_id];
+                    if (parent_commit) {
+                        // parent may not be available (we haven't loaded all the commits yet)
+                        if (!(parent_id in new_data['built_tree'])) {
+                            // console.log('skipping ', parent_id, 'because it is not new, don't want to change it');
+                        } else if (parent_commit.column !== undefined) {
+                            // parent already has column assigned (common ancestor of 2 branches)
+                            var first_col = Math.min(commit.column, parent_commit.column);
+                            var second_col = Math.max(commit.column, parent_commit.column);
+                            var columns_in_between = false;
+                            for (var i = first_col + 1; i < second_col; i++) {
+                                if (used_columns.indexOf(i) !== -1) {
+                                    columns_in_between = true;
+                                    break;
+                                }
+                            }
+                            parent_commit.columns_now_free = parent_commit.columns_now_free || [];
+                            if (columns_in_between) {
+                                // this isn't very frequent, but if it occurs, we can't change the column like we do
+                                // in the "else" portion, since that would cause lines to overlap
+                                parent_commit.columns_now_free.push(commit.column);
+                            } else {
+                                // ok to merge into the first column
+                                parent_commit.column = first_col;
+                                parent_commit.columns_now_free.push(second_col);
+                            }
+                        } else if (p === 0) {
+                            // first parent, stay in same column
+                            parent_commit.column = commit.column;
+                        } else {
+                            // additional parents, need separate columns
+                            parent_commit.column = take_next_free_column();
+                        }
+                    }
+                }
+            }
+
+            var new_commits_row = Object.keys(new_data['built_tree']).length - 1;
+            max_row = next_row + new_commits_row;
             max_visible_row = max_row + (data['next_commit'] ? 1 : 0);  // accounts for Show More link
             for (var c in new_data['built_tree']) {
                 tree[c].row += next_row;

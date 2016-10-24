@@ -479,7 +479,7 @@ class SVNImplementation(M.RepositoryImplementation):
         else:
             return self._blob_oid(commit_id, path)
 
-    def log(self, revs=None, path=None, exclude=None, id_only=True, page_size=25, **kw):
+    def log(self, revs=None, path=None, exclude=None, id_only=True, limit=25, **kw):
         """
         Returns a generator that returns information about commits reachable
         by revs.
@@ -519,7 +519,7 @@ class SVNImplementation(M.RepositoryImplementation):
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
                 logs = self._svn.log(
-                    url, revision_start=rev, peg_revision=rev, limit=page_size,
+                    url, revision_start=rev, peg_revision=rev, limit=limit,
                     discover_changed_paths=True)
             except pysvn.ClientError as e:
                 if 'Unable to connect' in e.message:
@@ -533,7 +533,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     yield ci.revision.number
                 else:
                     yield self._map_log(ci, url, path)
-            if len(logs) < page_size:
+            if len(logs) < limit:
                 # we didn't get a full page, don't bother calling SVN again
                 return
             revno = ci.revision.number - 1

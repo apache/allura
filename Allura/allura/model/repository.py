@@ -29,7 +29,7 @@ from collections import defaultdict, OrderedDict
 from urlparse import urljoin
 from threading import Thread
 from Queue import Queue
-from itertools import chain
+from itertools import chain, islice
 from difflib import SequenceMatcher
 
 import tg
@@ -534,7 +534,7 @@ class Repository(Artifact, ActivityObject):
         g.post_event('repo_cloned', source_url, source_path)
         self.refresh(notify=False, new_clone=True)
 
-    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
+    def log(self, revs=None, path=None, exclude=None, id_only=True, limit=None, **kw):
         """
         Returns a generator that returns information about commits reachable
         by revs which modify path.
@@ -558,7 +558,8 @@ class Repository(Artifact, ActivityObject):
             revs = [revs]
         if exclude is not None and not isinstance(exclude, (list, tuple)):
             exclude = [exclude]
-        return self._impl.log(revs, path, exclude=exclude, id_only=id_only, **kw)
+        log_iter = self._impl.log(revs, path, exclude=exclude, id_only=id_only, limit=limit, **kw)
+        return islice(log_iter, limit)
 
     def latest(self, branch=None):
         if self._impl is None:
@@ -1540,7 +1541,7 @@ class LastCommit(RepoObject):
     @classmethod
     def _last_commit_id(cls, commit, path):
         try:
-            rev = commit.repo.log(commit._id, path, id_only=True).next()
+            rev = commit.repo.log(commit._id, path, id_only=True, limit=1).next()
             return commit.repo.rev_to_commit_id(rev)
         except StopIteration:
             log.error('Tree node not recognized by SCM: %s @ %s',
@@ -1555,7 +1556,7 @@ class LastCommit(RepoObject):
         if lcid_cache != '' and path in lcid_cache:
             return lcid_cache[path]
         try:
-            log_iter = commit.repo.log(commit._id, path, id_only=True)
+            log_iter = commit.repo.log(commit._id, path, id_only=True, limit=2)
             log_iter.next()
             rev = log_iter.next()
             return commit.repo.rev_to_commit_id(rev)
