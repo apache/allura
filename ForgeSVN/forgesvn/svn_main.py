@@ -197,7 +197,7 @@ class SVNCommitBrowserController(BaseController):
             'next_commit': None,
         }
         limit, _ = h.paging_sanitizer(limit or 100, 0, 0)
-        for i, commit in enumerate(c.app.repo.log(revs=start, id_only=False, page_size=limit+1)):
+        for i, commit in enumerate(c.app.repo.log(revs=start, id_only=False, limit=limit+1)):
             if i >= limit:
                 data['next_commit'] = str(commit['id'])
                 break

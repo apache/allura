@@ -328,7 +328,7 @@ class GitImplementation(M.RepositoryImplementation):
         doc.m.save(safe=False)
         return doc
 
-    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
+    def log(self, revs=None, path=None, exclude=None, id_only=True, limit=None, **kw):
         """
         Returns a generator that returns information about commits reachable
         by revs.
@@ -354,7 +354,10 @@ class GitImplementation(M.RepositoryImplementation):
         args = ['--name-status', revs, '--', path]
         if path:
             args = ['--follow'] + args
-        for ci, refs, renamed in self._iter_commits_with_refs(*args):
+        kwargs = {}
+        if limit:
+            kwargs['n'] = limit
+        for ci, refs, renamed in self._iter_commits_with_refs(*args, **kwargs):
             if id_only:
                 yield ci.hexsha
             else:

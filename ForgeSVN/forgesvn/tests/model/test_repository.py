@@ -83,7 +83,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.shorthand_id() == '[r6]'
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == '/p/test/src/6/'
-        all_cis = list(self.repo.log(self.rev._id))
+        all_cis = list(self.repo.log(self.rev._id, limit=25))
         assert len(all_cis) == 6
         self.rev.tree.ls()
         assert self.rev.tree.readme() == ('README', 'This is readme\nAnother Line\n')
@@ -171,7 +171,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', hook_data)
 
         repo.refresh(notify=False)
-        assert len(list(repo.log()))
+        assert len(list(repo.log(limit=100)))
 
         shutil.rmtree(dirname)
 
@@ -222,7 +222,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
-        assert len(list(repo.log()))
+        assert len(list(repo.log(limit=100)))
 
         shutil.rmtree(dirname)
 
@@ -231,11 +231,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert i['type_s'] == 'SVN Repository', i
 
     def test_log_id_only(self):
-        entries = list(self.repo.log(id_only=True))
+        entries = list(self.repo.log(id_only=True, limit=25))
         assert_equal(entries, [6, 5, 4, 3, 2, 1])
 
     def test_log(self):
-        entries = list(self.repo.log(id_only=False))
+        entries = list(self.repo.log(id_only=False, limit=25))
         assert_equal(entries, [
             {'parents': [5],
              'refs': ['HEAD'],
@@ -322,7 +322,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'size': None}])
 
     def test_log_file(self):
-        entries = list(self.repo.log(path='/README', id_only=False))
+        entries = list(self.repo.log(path='/README', id_only=False, limit=25))
         assert_equal(entries, [
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
                           'email': '',
@@ -355,7 +355,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert not self.repo.is_file('/a')
 
     def test_paged_diffs(self):
-        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(2, id_only=True, limit=1).next())
         self.assertEqual(entry.diffs, entry.paged_diffs())
         self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
         added_expected = entry.diffs.added[1:3]
@@ -370,14 +370,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
-        entry = self.repo.commit(self.repo.log(1, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(1, id_only=True, limit=1).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[], renamed=[],
                 removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
-        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(2, id_only=True, limit=1).next())
         actual = entry.diffs
         actual.added = sorted(actual.added)
         self.assertEqual(
@@ -388,21 +388,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                     '/a/b/c/hello.txt']), total=4))
 
     def test_diff_modify_file(self):
-        entry = self.repo.commit(self.repo.log(3, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(3, id_only=True, limit=1).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=['/README'], renamed=[],
                 removed=[], added=[], total=1))
 
     def test_diff_delete(self):
-        entry = self.repo.commit(self.repo.log(4, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(4, id_only=True, limit=1).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[], renamed=[],
                 removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
-        entry = self.repo.commit(self.repo.log(5, id_only=True).next())
+        entry = self.repo.commit(self.repo.log(5, id_only=True, limit=1).next())
         assert_equals(dict(entry.diffs), dict(
                 copied=[{'new': u'/b', 'old': u'/a', 'ratio': 1}],  renamed=[],
                 changed=[], removed=[], added=[], total=1))
@@ -664,18 +664,18 @@ class TestSVNRev(unittest.TestCase):
 
     def test_log(self):
         # path only
-        commits = list(self.repo.log(self.repo.head, id_only=True))
+        commits = list(self.repo.log(self.repo.head, id_only=True, limit=25))
         assert_equal(commits, [6, 5, 4, 3, 2, 1])
-        commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
+        commits = list(self.repo.log(self.repo.head, 'README', id_only=True, limit=25))
         assert_equal(commits, [3, 1])
-        commits = list(self.repo.log(1, 'README', id_only=True))
+        commits = list(self.repo.log(1, 'README', id_only=True, limit=25))
         assert_equal(commits, [1])
-        commits = list(self.repo.log(self.repo.head, 'a/b/c/', id_only=True))
+        commits = list(self.repo.log(self.repo.head, 'a/b/c/', id_only=True, limit=25))
         assert_equal(commits, [4, 2])
-        commits = list(self.repo.log(3, 'a/b/c/', id_only=True))
+        commits = list(self.repo.log(3, 'a/b/c/', id_only=True, limit=25))
         assert_equal(commits, [2])
         assert_equal(
-            list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True)), [])
+            list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True, limit=25)), [])
 
     def test_notification_email(self):
         setup_global_objects()
@@ -1101,7 +1101,7 @@ class TestRename(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_log_file_with_rename(self):
-        entry = list(self.repo.log(path='/dir/b.txt', id_only=False))[0]
+        entry = list(self.repo.log(path='/dir/b.txt', id_only=False, limit=1))[0]
         assert_equal(entry['id'], 3)
         assert_equal(entry['rename_details']['path'], '/dir/a.txt')
         assert_equal(

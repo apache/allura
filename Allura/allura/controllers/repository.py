@@ -18,9 +18,9 @@
 import os
 import logging
 import difflib
+from datetime import datetime
 from urllib import quote, unquote
 from collections import defaultdict, OrderedDict
-from itertools import islice
 
 from paste.deploy.converters import asbool
 from pylons import tmpl_context as c, app_globals as g
@@ -222,14 +222,31 @@ class RepoRootController(BaseController, FeedController):
 
     @without_trailing_slash
     @expose('json:')
-    def commit_browser_data(self, **kw):
-        head_ids = [head.object_id for head in c.app.repo.get_heads()]
-        commit_ids = [c.app.repo.rev_to_commit_id(r)
-                      for r in c.app.repo.log(head_ids, id_only=True)]
+    def commit_browser_data(self, start=None, limit=50, **kw):
+        log.debug('Start commit_browser_data')
+
+        if start:
+            head_ids = start.split(',')
+        else:
+            # master, and any other branches
+            head_ids = [head.object_id for head in c.app.repo.get_heads()]
+        log.debug('Got %s heads', len(head_ids))
+
+        # recent commits from any head
+        heads_log = list(c.app.repo.log(head_ids, id_only=True, limit=int(limit)))
+        log.debug('Did log lookup')
+        commit_ids = [c.app.repo.rev_to_commit_id(r) for r in heads_log]
+
+        # any we didn't get to will be attempted in next page of commits
+        next_page_commits = list(set(head_ids) - set(commit_ids))
+        # and remove any heads that didn't come through from further processing
+        head_ids = set(head_ids).intersection(set(commit_ids))
+
         log.info('Grab %d commit objects by ID', len(commit_ids))
         commits_by_id = {
             c_obj._id: c_obj
             for c_obj in M.repository.CommitDoc.m.find(dict(_id={'$in': commit_ids}))}
+
         log.info('... build graph')
         parents = {}
         children = defaultdict(list)
@@ -240,7 +257,11 @@ class RepoRootController(BaseController, FeedController):
             for p_oid in ci.parent_ids:
                 children[p_oid].append(oid)
         result = []
-        for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
+        row = 0
+        for oid in topo_sort(children, parents, dates, head_ids):
+            if oid not in commits_by_id:
+                next_page_commits.append(oid)
+                continue
             ci = commits_by_id[oid]
             url = c.app.repo.url_for_commit(Object(_id=oid))
             msg_split = ci.message.splitlines()
@@ -255,38 +276,14 @@ class RepoRootController(BaseController, FeedController):
                 parents=ci.parent_ids,
                 message=msg,
                 url=url))
-        log.info('...done')
-        col_idx = {}
-        columns = []
+            row += 1
 
-        def find_column(columns):
-            for i, col in enumerate(columns):
-                if col is None:
-                    return i
-            columns.append(None)
-            return len(columns) - 1
-        for row, ci_json in enumerate(result):
-            oid = ci_json['oid']
-            colno = col_idx.get(oid)
-            if colno is None:
-                colno = find_column(columns)
-                col_idx[oid] = colno
-            columns[colno] = None
-            ci_json['column'] = colno
-            for p in parents[oid]:
-                p_col = col_idx.get(p, None)
-                if p_col is not None:
-                    continue
-                p_col = find_column(columns)
-                col_idx[p] = p_col
-                columns[p_col] = p
-        built_tree = dict(
-            (ci_json['oid'], ci_json) for ci_json in result)
+        built_tree = OrderedDict((ci_json['oid'], ci_json) for ci_json in result)
+        log.info('...done')
         return dict(
-            commits=[ci_json['oid'] for ci_json in result],
             built_tree=built_tree,
-            next_column=len(columns),
-            max_row=row)
+            next_commit=','.join(next_page_commits),
+        )
 
     @expose('json:')
     def status(self, **kw):
@@ -309,7 +306,7 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
         Return 120 latest commits  : /rest/p/code/logs/?limit=120
         '''
 
-        revisions = islice(c.app.repo.log(rev, id_only=False), int(limit))
+        revisions = c.app.repo.log(rev, id_only=False, limit=int(limit))
 
         return {
             'commits': [
@@ -638,11 +635,11 @@ class CommitBrowser(BaseController):
         if path:
             is_file = c.app.repo.is_file(path, self._commit._id)
         limit, _ = h.paging_sanitizer(limit, 0)
-        commits = list(islice(c.app.repo.log(
+        commits = list(c.app.repo.log(
             revs=self._commit._id,
             path=path,
             id_only=False,
-            page_size=limit + 1), limit + 1))
+            limit=limit + 1))  # get an extra one to check for a next commit
         next_commit = None
         if len(commits) > limit:
             next_commit = commits.pop()
@@ -827,7 +824,7 @@ def topo_sort(children, parents, dates, head_ids):
             continue
         visited.add(next)
         yield next
-        for p in parents[next]:
+        for p in parents.get(next, []):
             for child in children[p]:
                 if child not in visited:
                     break

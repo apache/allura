@@ -146,14 +146,11 @@ class TestRootController(_TestCase):
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
         data = json.loads(resp.body)
-        assert data['max_row'] == 4
-        assert data['next_column'] == 1
         assert_equal(
             data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
             {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
              u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
              u'short_id': u'[df3042]',
-             u'column': 0,
              u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              u'message': u'Add README', u'row': 2})
 
