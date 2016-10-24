@@ -56,13 +56,13 @@
             <div class="commit-ancestry">
                 {% if prev %}
                 <p class="commit-parents">
-                  Parent(s):
+                  Parent{% if prev|length > 1 %}s{% endif %}:
                   {% for ci in prev %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
                 </p>
                 {% endif %}
                 {% if next %}
                 <p class="commit-children">
-                  Child(ren):
+                  Child{% if next|length > 1 %}ren{% endif %}:
                   {% for ci in next %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
                 </p>
                 {% endif %}
