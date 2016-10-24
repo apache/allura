@@ -150,7 +150,8 @@ if($('#commit_graph')){
             canvas_ctx.fill();
             canvas_ctx.stroke();
             canvas_ctx.fillStyle = "#000";
-            canvas_ctx.fillText(commit.short_id + " " + commit.message, (2+next_column) * x_space, y_pos);
+            canvas_ctx.fillText(commit.short_id, (2+next_column) * x_space + 5, y_pos);
+            canvas_ctx.fillText(commit.message, (2+next_column) * x_space + 60, y_pos);
         }
         if (data['next_commit']) {
             var y_pos = y_space+((next_row-offset)*y_space);
