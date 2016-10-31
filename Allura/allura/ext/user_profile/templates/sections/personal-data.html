@@ -63,7 +63,7 @@
         <dt>Web Site{% if user.get_pref('webpages')|length > 1 %}s{% endif %}:</dt><dd>
             <ol>
             {% for webpage in user.get_pref('webpages') %}
-                <li>{{webpage|urlize(60)}}</li>
+                <li>{{webpage|urlize(60,nofollow=True)}}</li>
             {% endfor %}
             </ol>
         </dd>

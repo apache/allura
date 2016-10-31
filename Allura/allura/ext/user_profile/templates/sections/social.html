@@ -33,7 +33,7 @@
 {% block content %}
     <dl>
     {% for contact in user.get_pref('socialnetworks') %}
-        <dt>{{ contact.socialnetwork }}</dt><dd>{{ contact.accounturl|urlize }}</dd>
+        <dt>{{ contact.socialnetwork }}</dt><dd>{{ contact.accounturl|urlize(nofollow=True) }}</dd>
     {% else %}
         <dd class="empty">No social networks entered.</dd>
     {% endfor %}
