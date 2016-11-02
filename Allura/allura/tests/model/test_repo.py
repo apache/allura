@@ -208,7 +208,7 @@ class TestLastCommit(unittest.TestCase):
         self._last_commits.append((commit._id, set(diff_paths or tree_paths)))
         return commit
 
-    def _log(self, revs, path, id_only=True):
+    def _log(self, revs, path, id_only=True, limit=None):
         for commit_id, commit in reversed(self.repo._commits.items()):
             if path in commit.changed_paths:
                 yield commit_id
