@@ -240,6 +240,8 @@ under the MIT license.  For details, see the individual files:
     Allura/allura/public/nf/js/jquery.tablesorter.js
     Allura/allura/public/nf/css/forge/tooltipster.css
     Allura/allura/public/nf/js/jquery.tooltipster.js
+    Allura/allura/public/nf/css/chosen.min.css
+    Allura/allura/public/nf/js/chosen.jquery.min.js
 
 Transformie (https://github.com/pbakaus/transformie/), which is available under the MIT license.
 For details, see Allura/allura/public/nf/js/pb.transformie.min.js
