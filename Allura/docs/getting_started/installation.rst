@@ -29,11 +29,11 @@ Step-by-Step Installation
 
 For a simpler setup using Docker images, see :ref:`docker-install` instead.
 
-In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 14.04 <http://ubuntu.com>`_ (12.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
+In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 16.04 <http://ubuntu.com>`_ (15.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
 * Download and install `VirtualBox <http://www.virtualbox.org/wiki/Downloads>`__ for your platform.
 
-* Download a minimal `Ubuntu 14.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
+* Download a minimal `Ubuntu 16.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
 
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
 
@@ -51,7 +51,7 @@ Before we begin, you'll need to install some system packages.
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install git-core python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo apt-get install git-core python2.7-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
