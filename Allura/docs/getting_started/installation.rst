@@ -122,15 +122,23 @@ Optional, for SVN support: symlink the system pysvn package into our virtual env
 
     (env-allura)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/env-allura/lib/python2.7/site-packages/
 
-Next, run :code:`./rebuild-all.bash` to setup all the Allura applications.  If you only want to use a few tools, run:
+Next, run this to set up all the Allura tools:
 
 .. code-block:: bash
 
-    (env-allura)~/src/allura$ cd Allura
-    (env-allura)~/src/allura/Allura$ python setup.py develop
-    (env-allura)~/src/allura/Allura$ cd ../ForgeWiki   # required tool
-    (env-allura)~/src/allura/ForgeWiki$ python setup.py develop
-    # repeat for any other tools you want to use
+    (env-allura)~/src/allura$ ./rebuild-all.bash
+
+.. note::
+
+    If you only want to use a few tools, run this instead:
+
+    .. code-block:: bash
+
+        (env-allura)~/src/allura$ cd Allura
+        (env-allura)~/src/allura/Allura$ python setup.py develop
+        (env-allura)~/src/allura/Allura$ cd ../ForgeWiki   # required tool
+        (env-allura)~/src/allura/ForgeWiki$ python setup.py develop
+        # repeat for any other tools you want to use
 
 Initializing the environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
