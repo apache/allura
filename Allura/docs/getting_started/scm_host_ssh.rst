@@ -45,7 +45,7 @@ Install a chroot environment
 
 These instructions are based on the documentation in `Debootstrap Chroot`_.  and `OpenLDAPServer`_.
 
-Install debootstrap and schroot: :program:`aptitude install debootstrap schroot`
+Install debootstrap and schroot: :program:`apt-get install debootstrap schroot`
 
 Append the following text to the file :file:`/etc/schroot/schroot.conf`
 

@@ -51,7 +51,7 @@ Before we begin, you'll need to install some system packages.
 
 .. code-block:: bash
 
-    ~$ sudo aptitude install git-core python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo apt-get install git-core python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
@@ -59,7 +59,7 @@ Optional, for SVN support:
 
 .. code-block:: bash
 
-    ~$ sudo aptitude install subversion python-svn
+    ~$ sudo apt-get install subversion python-svn
 
 Setting up a virtual python environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +68,7 @@ The first step to installing the Allura platform is installing a virtual environ
 
 .. code-block:: bash
 
-    ~$ sudo aptitude install python-pip
+    ~$ sudo apt-get install python-pip
     ~$ sudo pip install virtualenv
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'env-allura'.

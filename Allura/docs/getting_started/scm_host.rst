@@ -136,7 +136,7 @@ that all svn repos can be dynamically served.
 
 .. code-block:: console
 
-    sudo aptitude install libapache2-svn
+    sudo apt-get install libapache2-svn
 
 Test accessing http://localhost/ (`localhost:8088` if using Vagrant).
 
@@ -192,7 +192,7 @@ First, you need to ensure that mod_python is installed:
 
 .. code-block:: console
 
-    sudo aptitude install libapache2-mod-python
+    sudo apt-get install libapache2-mod-python
 
 Then, in the VirtualHost section where you send SCM requests to git, SVN, or Hg, add the
 access handler, e.g.:
