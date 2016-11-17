@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y \
     git-core \
-    python-dev \
+    python2.7-dev \
     libssl-dev \
     libldap2-dev \
     libsasl2-dev \
@@ -29,7 +29,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     subversion \
     python-svn \
-    curl
+    curl \
+    sudo
 
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash - && \

@@ -20,7 +20,7 @@
 # not inspired by https://hub.docker.com/_/httpd/ which does a custom source-based install of httpd
 
 # match main allura Dockerfile, for shared base
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y \
     apache2 \

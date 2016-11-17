@@ -42,7 +42,7 @@ taskd:
     - outmail
 
 solr:
-  image: solr:5.3.1
+  image: solr:6-alpine  # alpine is a very small distro base
   ports:
     - "8983:8983"
   volumes:
