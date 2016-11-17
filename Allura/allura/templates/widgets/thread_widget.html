@@ -19,8 +19,8 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 <div>
-                <div class="row">
-                        <div class="column grid_12">
+  <div class="row">
+     <div class="column grid_12">
       {% if limit %}
         {{widgets.page_list.display(limit=limit, page=page, count=count)}}
       {% endif %}
@@ -68,5 +68,9 @@
       </div>
     </div>
   </div>
-
+{% elif c.user.is_anonymous() and h.is_allowed_by_role(value, 'post', '*authenticated', c.project)%}
+  <hr>
+  <p>
+    <a href="{{ tg.config.get('auth.login_url', '/auth/') }}">Log in</a> to post a comment.
+  </p>
 {% endif %}
