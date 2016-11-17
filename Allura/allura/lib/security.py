@@ -441,6 +441,14 @@ def all_allowed(obj, user_or_role=None, project=None):
     return perms
 
 
+def is_allowed_by_role(obj, permission, role_name, project):
+    # probably more effecient ways of doing these, e.g. through a modified has_access
+    # but this is easy
+    from allura import model as M
+    role = M.ProjectRole.by_name(role_name, project)
+    return permission in all_allowed(obj, role, project)
+
+
 def require(predicate, message=None):
     '''
     Example: ``require(has_access(c.app, 'read'))``

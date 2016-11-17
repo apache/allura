@@ -64,7 +64,7 @@ from allura.lib import AsciiDammit
 from allura.lib import utils
 
 # import to make available to templates, don't delete:
-from .security import has_access
+from .security import has_access, is_allowed_by_role
 
 
 log = logging.getLogger(__name__)

@@ -29,7 +29,7 @@
   {% if show_moderate and h.has_access(thread, 'moderate')() %}
     {{ g.icons['moderate'].render(id='mod_thread_link') }}
   {% endif %}
-  {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}
+  {# {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}   these labels aren't used anywhere ... #}
   {{ g.icons['feed'].render(href='feed.rss', title='Follow This', extra_css='thread_feed0') }}
 {% endblock %}
 

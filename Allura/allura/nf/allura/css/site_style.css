@@ -2593,6 +2593,12 @@ div.attachment_item{
 .forum-list th .ico {
   margin-left: 4px;
 }
+.forum-list .topic h3 {
+    padding-left: 0;
+}
+.forum-list th .icon {
+    margin-left: 3px;
+}
 
 .gravatar b {
   overflow: visible;

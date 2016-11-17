@@ -22,7 +22,9 @@
   <table class="forum-list clear">
     <thead>
       <tr>
-        <th>{{ g.icons['mail'].render(tag='span', title='Subscriptions') }}</th>
+        {% if not c.user.is_anonymous() %}
+          <th>{{ g.icons['mail'].render(tag='span', title='Subscriptions') }}</th>
+        {% endif %}
         <th class="topic">Topic</th>
         <th>Posts</th>
         <th>Views</th>
@@ -32,11 +34,13 @@
     <tbody class="forum-list">
       {% for thread in value %}
       <tr>
-        <td>
-          <input type="checkbox" name="threads-{{loop.index0}}.subscription"
+        {% if not c.user.is_anonymous() %}
+          <td>
+            <input type="checkbox" name="threads-{{loop.index0}}.subscription"
                  {% if thread.subscription %}checked="checked"{% endif %}/>
-          <input type="hidden" name="threads-{{loop.index0}}._id" value="{{thread._id}}"/>
-        </td>
+            <input type="hidden" name="threads-{{loop.index0}}._id" value="{{thread._id}}"/>
+          </td>
+        {% endif %}
         {% if not thread.first_post %}
         <td class="topic">
           {% if 'flags' in thread and 'Sticky' in thread.flags %}
@@ -61,9 +65,7 @@
         {% else %}
           {% set author = thread.last_post.author() %}
           <td>
-          <p class="gravatar sm">
             By {{lib.gravatar(author, size=16)}} {{lib.user_link(author)}}<br />on {{thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
-          </p>
           </td>
         {% endif %}
       </tr>

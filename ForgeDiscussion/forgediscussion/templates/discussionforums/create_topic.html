@@ -25,6 +25,9 @@
 {% block edit_box %}
 {% if forums | length == 0 %}
   <p>You do not have permission to post in any forums.</p>
+  {% if c.user.is_anonymous() %}
+    <p><a href="{{ config.get('auth.login_url', '/auth/') }}">Click here to log in.</a></p>
+  {% endif %}
 {% else %}
   <div class="editbox">
     {{c.new_topic.display(action=c.app.url + 'save_new_topic',show_subject=True,forums=forums, current_forum=current_forum)}}
