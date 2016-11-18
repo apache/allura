@@ -22,7 +22,7 @@
   <table class="forum-list clear">
     <thead>
       <tr>
-        {% if not c.user.is_anonymous() %}
+        {% if not c.user.is_anonymous() and allow_subscriptions %}
           <th>{{ g.icons['mail'].render(tag='span', title='Subscriptions') }}</th>
         {% endif %}
         <th class="topic">Topic</th>
@@ -34,10 +34,9 @@
     <tbody class="forum-list">
       {% for thread in value %}
       <tr>
-        {% if not c.user.is_anonymous() %}
+        {% if not c.user.is_anonymous() and allow_subscriptions %}
           <td>
-            <input type="checkbox" name="threads-{{loop.index0}}.subscription"
-                 {% if thread.subscribed() %}checked="checked"{% endif %}/>
+            <input type="checkbox" name="threads-{{loop.index0}}.subscription" {% if thread.subscribed() %}checked="checked"{% endif %} />
             <input type="hidden" name="threads-{{loop.index0}}._id" value="{{thread._id}}"/>
           </td>
         {% endif %}

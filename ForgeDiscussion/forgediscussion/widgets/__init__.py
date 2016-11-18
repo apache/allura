@@ -15,10 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from forum_widgets import ForumSubscriptionForm, ThreadSubscriptionForm, AnnouncementsTable
+from forum_widgets import ThreadSubscriptionForm, AnnouncementsTable
 from forum_widgets import ModerateThread, ForumHeader, ThreadHeader
 from forum_widgets import Post, Thread, Forum
 
 __all__ = [
-    'ForumSubscriptionForm', 'ThreadSubscriptionForm', 'AnnouncementsTable', 'ModerateThread', 'ForumHeader',
+    'ThreadSubscriptionForm', 'AnnouncementsTable', 'ModerateThread', 'ForumHeader',
     'ThreadHeader', 'Post', 'Thread', 'Forum']

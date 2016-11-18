@@ -67,7 +67,6 @@ def test_discussion_methods():
     assert d.last_post == None
     assert d.url().endswith('wiki/_discuss/')
     assert d.index()['name_s'] == 'test'
-    assert d.subscription() == None
     assert d.find_posts().count() == 0
     jsn = d.__json__()
     assert jsn['name'] == d.name
@@ -104,12 +103,6 @@ def test_thread_methods():
 
     assert 'wiki/_discuss/' in t.url()
     assert t.index()['views_i'] == 0
-    # FIXME
-    assert not t.subscription
-    t.subscription = True
-    assert t.subscription
-    t.subscription = False
-    assert not t.subscription
     assert t.post_count == 3
     jsn = t.__json__()
     assert '_id' in jsn

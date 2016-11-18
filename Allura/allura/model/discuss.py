@@ -242,6 +242,8 @@ class Thread(Artifact, ActivityObject):
 
     @property
     def artifact(self):
+        # Threads attached to a wiki page, ticket, etc will have a .ref.artifact pointing to that WikiPage etc
+        # Threads that are part of a forum will not have that
         if self.ref is None:
             return self.discussion
         return self.ref.artifact
