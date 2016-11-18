@@ -254,14 +254,6 @@ class Attachment(ew_core.Widget):
     post = None
 
 
-class DiscussionHeader(HierWidget):
-    template = 'jinja:allura:templates/widgets/discussion_header.html'
-    params = ['value']
-    value = None
-    widgets = dict(
-        edit_post=EditPost(submit_text='New Thread'))
-
-
 class ThreadHeader(HierWidget):
     template = 'jinja:allura:templates/widgets/thread_header.html'
     defaults = dict(
@@ -516,21 +508,3 @@ class Thread(HierWidget):
             }
         });
         ''')
-
-
-class Discussion(HierWidget):
-    template = 'jinja:allura:templates/widgets/discussion.html'
-    defaults = dict(
-        HierWidget.defaults,
-        value=None,
-        threads=None,
-        show_subject=False,
-        allow_create_thread=False)
-    widgets = dict(
-        discussion_header=DiscussionHeader(),
-        edit_post=EditPost(submit_text='New Topic'),
-        subscription_form=SubscriptionForm())
-
-    def resources(self):
-        for r in super(Discussion, self).resources():
-            yield r

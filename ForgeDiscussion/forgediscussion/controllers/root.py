@@ -56,7 +56,6 @@ log = logging.getLogger(__name__)
 class RootController(BaseController, DispatchIndex, FeedController):
 
     class W(object):
-        forum_subscription_form = FW.ForumSubscriptionForm()
         new_topic = DW.NewTopicPost(submit_text='Post')
 
         announcements_table = FW.AnnouncementsTable()
@@ -186,30 +185,6 @@ class RootController(BaseController, DispatchIndex, FeedController):
         else:
             raise exc.HTTPNotFound()
 
-    @h.vardec
-    @expose()
-    @validate(W.forum_subscription_form)
-    def subscribe(self, **kw):
-        require_authenticated()
-        forum = kw.pop('forum', [])
-        thread = kw.pop('thread', [])
-        objs = []
-        for data in forum:
-            objs.append(
-                dict(obj=model.Forum.query.get(shortname=data['shortname'],
-                                               app_config_id=c.app.config._id),
-                     subscribed=bool(data.get('subscribed'))))
-        for data in thread:
-            objs.append(dict(obj=model.Thread.query.get(_id=data['id']),
-                             subscribed=bool(data.get('subscribed'))))
-        for obj in objs:
-            # TODO where is this called from?
-            if obj['subscribed']:
-                obj['obj'].subscriptions[str(c.user._id)] = True
-            else:
-                obj['obj'].subscriptions.pop(str(c.user._id), None)
-        redirect(request.referer)
-
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
@@ -252,11 +227,6 @@ class RootController(BaseController, DispatchIndex, FeedController):
         grouping['year'] = {'$year': '$timestamp'}
         grouping['month'] = {'$month': '$timestamp'}
         grouping['day'] = {'$dayOfMonth': '$timestamp'}
-        {
-            'year': {'$year': '$timestamp'},
-            'month': {'$month': '$timestamp'},
-            'day': {'$dayOfMonth': '$timestamp'},
-        }
         mongo_data = model.ForumPost.query.aggregate([
             {'$match': {
                 'discussion_id': discussion_id_q,

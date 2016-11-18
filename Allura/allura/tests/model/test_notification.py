@@ -188,7 +188,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.list()
         t = M.MonQTask.get()
-        assert t.args[1] == self.pg.index_id()
+        assert_equal(t.args[1], [self.pg.index_id()])
 
     def test_post_user_notification(self):
         u = M.User.query.get(username='test-admin')

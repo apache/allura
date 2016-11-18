@@ -30,35 +30,6 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 from forgediscussion import model as M
 
 
-class _ForumSummary(ew_core.Widget):
-    template = 'jinja:forgediscussion:templates/discussion_widgets/forum_summary.html'
-    defaults = dict(
-        ew_core.Widget.defaults,
-        name=None,
-        value=None,
-        show_label=True,
-        label=None)
-
-
-class _ForumsTable(ew.TableField):
-
-    class fields(ew_core.NameList):
-        _id = ew.HiddenField(validator=V.Ming(M.ForumThread))
-        num_topics = ffw.DisplayOnlyField(show_label=True, label='Topics')
-        num_posts = ffw.DisplayOnlyField(show_label=True, label='Posts')
-        last_post = ffw.DisplayOnlyField(show_label=True)
-        subscribed = ew.Checkbox(suppress_label=True, show_label=True)
-    fields.insert(0, _ForumSummary())
-
-
-class ForumSubscriptionForm(CsrfForm):
-
-    class fields(ew_core.NameList):
-        forums = _ForumsTable()
-        page_list = ffw.PageList()
-    submit_text = 'Update Subscriptions'
-
-
 class _ThreadsTable(DW._ThreadsTable):
 
     class fields(ew_core.NameList):
@@ -71,7 +42,7 @@ class _ThreadsTable(DW._ThreadsTable):
         flags = ffw.DisplayOnlyField(show_label=True)
         last_post = ffw.DisplayOnlyField(show_label=True)
         subscription = ew.Checkbox(suppress_label=True, show_label=True)
-    defaults = dict(DW._ThreadsTable.defaults, div_id='forum_threads')
+    defaults = dict(DW._ThreadsTable.defaults, div_id='forum_threads', allow_subscriptions=True)
 
 
 class ThreadSubscriptionForm(DW.SubscriptionForm):
@@ -93,7 +64,7 @@ class AnnouncementsTable(DW._ThreadsTable):
         num_views = ffw.DisplayOnlyField(show_label=True)
         flags = ffw.DisplayOnlyField(show_label=True)
         last_post = ffw.DisplayOnlyField(show_label=True)
-    defaults = dict(DW._ThreadsTable.defaults, div_id='announcements')
+    defaults = dict(DW._ThreadsTable.defaults, div_id='announcements', allow_subscriptions=False)
     name = 'announcements'
 
 
@@ -127,11 +98,13 @@ class ModerateThread(CsrfForm):
         delete = ew.SubmitButton(label='Delete Thread')
 
 
-class ForumHeader(DW.DiscussionHeader):
+class ForumHeader(DW.HierWidget):
     template = 'jinja:forgediscussion:templates/discussion_widgets/forum_header.html'
-    widgets = dict(DW.DiscussionHeader.widgets,
+    params = ['value']
+    value = None
+    widgets = dict(DW.HierWidget.widgets,
                    announcements_table=AnnouncementsTable(),
-                   forum_subscription_form=ForumSubscriptionForm())
+                   )
 
 
 class ThreadHeader(DW.ThreadHeader):
@@ -157,13 +130,19 @@ class Thread(DW.Thread):
                    post=Post())
 
 
-class Forum(DW.Discussion):
+class Forum(DW.HierWidget):
     template = 'jinja:forgediscussion:templates/discussion_widgets/discussion.html'
-    allow_create_thread = True
-    show_subject = True
-    widgets = dict(DW.Discussion.widgets,
-                   discussion_header=ForumHeader(),
-                   forum_subscription_form=ForumSubscriptionForm(),
-                   whole_forum_subscription_form=SubscribeForm(),
+    defaults = dict(
+        DW.HierWidget.defaults,
+        value=None,
+        threads=None,
+        show_subject=True,
+        allow_create_thread=True
+    )
+    widgets = dict(DW.HierWidget.widgets,
                    subscription_form=ThreadSubscriptionForm()
                    )
+
+    def resources(self):
+        for r in super(Forum, self).resources():
+            yield r
