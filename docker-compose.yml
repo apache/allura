@@ -59,7 +59,10 @@ mongo:
 
 outmail:
   image: allura_web
-  command: python -u -m smtpd -n -c DebuggingServer 0.0.0.0:8826
+  environment: *env
+  volumes_from:
+    - web
+  command: python -u -m smtpd -n -c alluratest.smtp_debug.BetterDebuggingServer 0.0.0.0:8826
   expose:
     - "8826"
 
