@@ -120,8 +120,8 @@ class ModerateThread(CsrfForm):
     submit_text = 'Save Changes'
 
     class fields(ew_core.NameList):
-        discussion = _ForumSelector(label='New Forum')
-        flags = ew.CheckboxSet(options=['Sticky', 'Announcement'])
+        discussion = _ForumSelector(label='Move to different forum:')
+        flags = ew.CheckboxSet(label='Options', options=['Sticky', 'Announcement'])
 
     class buttons(ew_core.NameList):
         delete = ew.SubmitButton(label='Delete Thread')

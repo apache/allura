@@ -485,7 +485,7 @@ class Thread(HierWidget):
             if (mod_thread_link.length) {
                 if (mod_thread_form.length) {
                     mod_thread_link.click(function (e) {
-                        mod_thread_form.show();
+                        mod_thread_form.toggle();
                         return false;
                     });
                 }

@@ -26,9 +26,11 @@
 <div class="grid-5"><label>Updated:</label> {{lib.abbr_date(value.mod_date)}}</div>
 
 {% if show_moderate and h.has_access(value, 'moderate')() %}
-  <div id="mod_thread_form" style="display: none;">
+  <div id="mod_thread_form" style="display: none; clear: both">
     <h2>Moderate Thread</h2>
-    {{widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}}
+    <div class="grid-19 fright">
+      {{widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}}
+    </div>
     <div style="clear: both;">&nbsp;</div>
   </div>
 {% endif %}
