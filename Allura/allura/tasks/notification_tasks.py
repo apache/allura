@@ -19,7 +19,7 @@ from allura.lib.decorators import task
 
 
 @task
-def notify(n_id, ref_id, topic):
+def notify(n_id, ref_ids, topic):
     from allura import model as M
-    M.Mailbox.deliver(n_id, ref_id, topic)
+    M.Mailbox.deliver(n_id, ref_ids, topic)
     M.Mailbox.fire_ready()

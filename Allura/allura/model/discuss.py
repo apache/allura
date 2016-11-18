@@ -758,16 +758,18 @@ class Post(Message, VersionedArtifact, ActivityObject):
             n = Notification.query.get(_id=msg_id)
             if n:
                 # 'approved' notification also exists, re-send
-                n.fire_notification_task(artifact, 'message')
+                n.fire_notification_task([artifact, self.thread], 'message')
             else:
                 # 'approved' notification does not exist, create
                 notification_params['message_id'] = msg_id
         if not n:
-            n = Notification.post(artifact, 'message', **notification_params)
+            # artifact is Forum (or artifact like WikiPage)
+            n = Notification.post(artifact, 'message',
+                                  additional_artifacts_to_match_subscriptions=self.thread,
+                                  **notification_params)
         if not n:
             return
-        if (hasattr(artifact, "monitoring_email")
-                and artifact.monitoring_email):
+        if getattr(artifact, 'monitoring_email', None):
             if hasattr(artifact, 'notify_post'):
                 if artifact.notify_post:
                     n.send_simple(artifact.monitoring_email)

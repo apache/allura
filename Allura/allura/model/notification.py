@@ -43,7 +43,7 @@ from pylons import tmpl_context as c, app_globals as g
 from tg import config
 import pymongo
 import jinja2
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist
 
 from ming import schema as S
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
@@ -108,24 +108,23 @@ class Notification(MappedClass):
     )
 
     @classmethod
-    def post(cls, artifact, topic, **kw):
-        '''Create a notification and  send the notify message'''
+    def post(cls, artifact, topic, additional_artifacts_to_match_subscriptions=None, **kw):
+        '''Create a notification and send the notify message'''
         n = cls._make_notification(artifact, topic, **kw)
         if n:
             # make sure notification is flushed in time for task to process it
             session(n).flush(n)
-            n.fire_notification_task(artifact, topic)
+            artifacts = [artifact] + aslist(additional_artifacts_to_match_subscriptions)
+            n.fire_notification_task(artifacts, topic)
         return n
 
-    def fire_notification_task(self, artifact, topic):
+    def fire_notification_task(self, artifacts, topic):
         import allura.tasks.notification_tasks
-        allura.tasks.notification_tasks.notify.post(
-            self._id, artifact.index_id(), topic)
+        allura.tasks.notification_tasks.notify.post(self._id, [a.index_id() for a in artifacts], topic)
 
     @classmethod
     def post_user(cls, user, artifact, topic, **kw):
-        '''Create a notification and deliver directly to a user's flash
-    mailbox'''
+        '''Create a notification and deliver directly to a user's flash mailbox'''
         try:
             mbox = Mailbox(user_id=user._id, is_flash=True,
                            project_id=None,
@@ -530,23 +529,25 @@ class Mailbox(MappedClass):
             artifact_index_id=artifact_index_id)).count() != 0
 
     @classmethod
-    def deliver(cls, nid, artifact_index_id, topic):
+    def deliver(cls, nid, artifact_index_ids, topic):
         '''Called in the notification message handler to deliver notification IDs
         to the appropriate mailboxes.  Atomically appends the nids
         to the appropriate mailboxes.
         '''
+
+        artifact_index_ids.append(None)  # get tool-wide ("None") and specific artifact subscriptions
         d = {
             'project_id': c.project._id,
             'app_config_id': c.app.config._id,
-            'artifact_index_id': {'$in': [None, artifact_index_id]},
+            'artifact_index_id': {'$in': artifact_index_ids},
             'topic': {'$in': [None, topic]}
         }
         mboxes = cls.query.find(d).all()
-        log.debug('Delivering notification %s to mailboxes [%s]', nid, ', '.join(
-            [str(m._id) for m in mboxes]))
+        log.debug('Delivering notification %s to mailboxes [%s]', nid, ', '.join([str(m._id) for m in mboxes]))
         for mbox in mboxes:
             try:
                 mbox.query.update(
+                    # _id is automatically specified by ming's "query", so this matches the current mbox
                     {'$push': dict(queue=nid),
                      '$set': dict(last_modified=datetime.utcnow(),
                                   queue_empty=False),
@@ -558,7 +559,7 @@ class Mailbox(MappedClass):
                 # mboxes for this notification get skipped and lost forever
                 log.exception(
                     'Error adding notification: %s for artifact %s on project %s to user %s',
-                    nid, artifact_index_id, c.project._id, mbox.user_id)
+                    nid, artifact_index_ids, c.project._id, mbox.user_id)
 
     @classmethod
     def fire_ready(cls):
