@@ -37,7 +37,7 @@
         {% if not c.user.is_anonymous() %}
           <td>
             <input type="checkbox" name="threads-{{loop.index0}}.subscription"
-                 {% if thread.subscription %}checked="checked"{% endif %}/>
+                 {% if thread.subscribed() %}checked="checked"{% endif %}/>
             <input type="hidden" name="threads-{{loop.index0}}._id" value="{{thread._id}}"/>
           </td>
         {% endif %}

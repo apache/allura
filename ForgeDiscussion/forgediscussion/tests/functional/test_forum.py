@@ -374,16 +374,6 @@ class TestForum(TestController):
         r = self.app.get('/discussion/markdown_syntax')
         assert 'Markdown Syntax' in r
 
-    def test_forum_subscribe(self):
-        self.app.post('/discussion/subscribe', params={
-            'forum-0.shortname': 'testforum',
-            'forum-0.subscribed': 'on',
-        })
-        self.app.post('/discussion/subscribe', params={
-            'forum-0.shortname': 'testforum',
-            'forum-0.subscribed': '',
-        })
-
     def test_forum_index(self):
         self.app.get('/discussion/testforum/')
         self.app.get('/discussion/testforum/childforum/')

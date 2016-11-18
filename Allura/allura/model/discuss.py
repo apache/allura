@@ -118,9 +118,6 @@ class Discussion(Artifact, ActivityObject):
             text=self.description)
         return result
 
-    def subscription(self):
-        return self.subscriptions.get(str(c.user._id))
-
     def delete(self):
         # Delete all the threads, posts, and artifacts
         self.thread_class().query.remove(dict(discussion_id=self._id))
@@ -427,16 +424,6 @@ class Thread(Artifact, ActivityObject):
             views_i=self.num_views,
             text=self.subject)
         return result
-
-    def _get_subscription(self):
-        return self.subscriptions.get(str(c.user._id))
-
-    def _set_subscription(self, value):
-        if value:
-            self.subscriptions[str(c.user._id)] = True
-        else:
-            self.subscriptions.pop(str(c.user._id), None)
-    subscription = property(_get_subscription, _set_subscription)
 
     def delete(self):
         for p in self.post_class().query.find(dict(thread_id=self._id)):

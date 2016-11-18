@@ -91,8 +91,6 @@ class ForgeDiscussionApp(Application):
         self.root = RootController()
         self.api_root = RootRestController()
         self.admin = ForumAdminController(self)
-        self.default_forum_preferences = dict(
-            subscriptions={})
 
     def has_access(self, user, topic):
         f = DM.Forum.query.get(shortname=topic.replace('.', '/'),
