@@ -226,6 +226,17 @@ class Artifact(MappedClass, SearchIndexable):
             app_config_id=self.app_config._id,
             artifact_index_id=self.index_id())
 
+    def subscribed(self, user=None):
+        from allura.model import Mailbox
+        if user is None:
+            user = c.user
+        return Mailbox.subscribed(
+            user_id=user._id,
+            project_id=self.app_config.project_id,
+            app_config_id=self.app_config._id,
+            artifact=self,
+        )
+
     def primary(self):
         """If an artifact is a "secondary" artifact (discussion of a ticket, for
         instance), return the artifact that is the "primary".

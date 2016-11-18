@@ -104,6 +104,7 @@ def test_thread_methods():
 
     assert 'wiki/_discuss/' in t.url()
     assert t.index()['views_i'] == 0
+    # FIXME
     assert not t.subscription
     t.subscription = True
     assert t.subscription

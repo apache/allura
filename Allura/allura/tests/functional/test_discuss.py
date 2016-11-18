@@ -24,6 +24,7 @@ from ming.odm import session
 from allura.tests import TestController
 from allura import model as M
 
+
 class TestDiscussBase(TestController):
 
     def _thread_link(self):
@@ -41,24 +42,27 @@ class TestDiscussBase(TestController):
 
 class TestDiscuss(TestDiscussBase):
 
-    def _is_subscribed(self, username, thread_id):
-        user_id = str(M.User.by_username(username)._id)
-        thread = M.Thread.query.get(_id=thread_id)
-        return thread.subscriptions.get(user_id)
+    def _is_subscribed(self, user, thread):
+        return M.Mailbox.query.get(user_id=user._id, artifact_index_id=thread.index_id())
 
     def test_subscribe_unsubscribe(self):
-        user = 'test-admin'
+        user = M.User.by_username('test-admin')
         thread_id = self._thread_id()
-        assert_false(self._is_subscribed(user, thread_id))
+        thread = M.Thread.query.get(_id=thread_id)
+
+        # remove tool-wide subscription, so it doesn't interfere
+        M.Mailbox.query.remove(dict(user_id=user._id, app_config_id=thread.app_config_id))
+
+        assert_false(self._is_subscribed(user, thread))
         link = self._thread_link()
         params = {
             'threads-0._id': thread_id,
             'threads-0.subscription': 'on'}
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
-        assert_true(self._is_subscribed(user, thread_id))
+        assert_true(self._is_subscribed(user, thread))
         params = {'threads-0._id': thread_id}
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
-        assert_false(self._is_subscribed(user, thread_id))
+        assert_false(self._is_subscribed(user, thread))
 
     def _make_post(self, text):
         thread_link = self._thread_link()

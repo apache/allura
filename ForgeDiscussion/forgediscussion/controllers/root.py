@@ -203,6 +203,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             objs.append(dict(obj=model.Thread.query.get(_id=data['id']),
                              subscribed=bool(data.get('subscribed'))))
         for obj in objs:
+            # TODO where is this called from?
             if obj['subscribed']:
                 obj['obj'].subscriptions[str(c.user._id)] = True
             else:

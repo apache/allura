@@ -25,6 +25,7 @@ from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 
 from ming.base import Object
+from ming.odm import session
 from ming.utils import LazyProperty
 
 from allura import model as M
@@ -96,13 +97,13 @@ class DiscussionController(BaseController, FeedController):
     def subscribe(self, **kw):
         threads = kw.pop('threads', [])
         for t in threads:
-            thread = self.M.Thread.query.find(dict(_id=t['_id'])).first()
-            if 'subscription' in t:
-                thread['subscription'] = True
+            thread = self.M.Thread.query.get(_id=t['_id'])
+            if t.get('subscription'):
+                thread.subscribe()
             else:
-                thread['subscription'] = False
-            M.session.artifact_orm_session._get().skip_mod_date = True
-            M.session.artifact_orm_session._get().skip_last_updated = True
+                thread.unsubscribe()
+            session(self.M.Thread)._get().skip_mod_date = True
+            session(self.M.Thread)._get().skip_last_updated = True
         redirect(request.referer)
 
     def get_feed(self, project, app, user):
