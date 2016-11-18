@@ -18,6 +18,9 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
+{% set forum_subscribed = c.subscribed %} {# set in controller #}
+{% set tool_subscribed = c.tool_subscribed %}
+
 <div{{ {'id': div_id}|xmlattr }}>
   <table class="forum-list clear">
     <thead>
@@ -36,7 +39,13 @@
       <tr>
         {% if not c.user.is_anonymous() and allow_subscriptions %}
           <td>
-            <input type="checkbox" name="threads-{{loop.index0}}.subscription" {% if thread.subscribed() %}checked="checked"{% endif %} />
+            <input type="checkbox" name="threads-{{loop.index0}}.subscription"
+                   {%- if thread.subscribed() or forum_subscribed or tool_subscribed %} checked="checked" {% endif -%}
+                   {%- if forum_subscribed or tool_subscribed %}
+                        disabled title="You are subscribed to this entire {% if forum_subscribed %}Forum. Unsubscribe with mail icon in upper right, or on Account - Subscriptions page.
+                            {%- else %}Discussion tool.  Unsubscribe on Account - Subscriptions page.{% endif %}"
+                   {%- endif -%}
+            />
             <input type="hidden" name="threads-{{loop.index0}}._id" value="{{thread._id}}"/>
           </td>
         {% endif %}

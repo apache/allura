@@ -106,7 +106,9 @@ class ForumController(DiscussionController):
         if self.discussion.deleted:
             redirect(self.discussion.url() + 'deleted')
         limit, page, start = g.handle_paging(limit, page)
-        c.subscribed = M.Mailbox.subscribed(artifact=self.discussion)
+        if not c.user.is_anonymous():
+            c.subscribed = M.Mailbox.subscribed(artifact=self.discussion)
+            c.tool_subscribed = M.Mailbox.subscribed()
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('last_post_date', pymongo.DESCENDING)])
         c.discussion = self.W.discussion
