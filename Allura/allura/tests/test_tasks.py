@@ -481,8 +481,8 @@ class TestNotificationTasks(unittest.TestCase):
     def test_delivers_messages(self):
         with mock.patch.object(M.Mailbox, 'deliver') as deliver:
             with mock.patch.object(M.Mailbox, 'fire_ready') as fire_ready:
-                notification_tasks.notify('42', '52', 'none')
-                assert deliver.called_with('42', '52', 'none')
+                notification_tasks.notify('42', ['52'], 'none')
+                assert deliver.called_with('42', ['52'], 'none')
                 assert fire_ready.called_with()
 
 
