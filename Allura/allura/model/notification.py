@@ -486,8 +486,9 @@ class Mailbox(MappedClass):
             # tool
             for other_mbox in cls.query.find(dict(
                     user_id=user_id, project_id=project_id, app_config_id=app_config_id)):
-                if other_mbox is not mbox:
+                if other_mbox != mbox:
                     other_mbox.delete()
+        return mbox
 
     @classmethod
     def unsubscribe(

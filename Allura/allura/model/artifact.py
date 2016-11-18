@@ -201,7 +201,7 @@ class Artifact(MappedClass, SearchIndexable):
         from allura.model import Mailbox
         if user is None:
             user = c.user
-        Mailbox.subscribe(
+        return Mailbox.subscribe(
             user_id=user._id,
             project_id=self.app_config.project_id,
             app_config_id=self.app_config._id,

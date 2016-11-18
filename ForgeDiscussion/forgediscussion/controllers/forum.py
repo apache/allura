@@ -16,7 +16,10 @@
 #       under the License.
 
 import logging
+import re
+
 import pymongo
+from allura.lib.search import mapped_artifacts_from_index_ids
 
 from tg import expose, validate, redirect
 from tg import request
@@ -116,7 +119,6 @@ class ForumController(DiscussionController):
             limit=limit,
             page=page)
 
-
     @expose('jinja:forgediscussion:templates/discussionforums/deleted.html')
     def deleted(self):
         return dict()
@@ -127,8 +129,28 @@ class ForumController(DiscussionController):
     def subscribe_to_forum(self, subscribe=None, unsubscribe=None, shortname=None, **kw):
         if subscribe:
             self.discussion.subscribe(type='direct')
+
+            # unsubscribe from all individual threads that are part of this forum, so you don't have overlapping subscriptions
+            forumthread_index_prefix = (DM.ForumThread.__module__ + '.' + DM.ForumThread.__name__).replace('.', '/') + '#'
+            thread_mboxes = M.Mailbox.query.find(dict(
+                user_id=c.user._id,
+                project_id=c.project._id,
+                app_config_id=c.app.config._id,
+                artifact_index_id=re.compile('^' + re.escape(forumthread_index_prefix)),
+            )).all()
+            # get the ForumThread objects from the subscriptions
+            thread_index_ids = [mbox.artifact_index_id for mbox in thread_mboxes]
+            threads_by_id = mapped_artifacts_from_index_ids(thread_index_ids, DM.ForumThread, objectid_id=False)
+            for mbox in thread_mboxes:
+                thread_id = mbox.artifact_index_id.split('#')[1]
+                thread = threads_by_id[thread_id]
+                # only delete if the ForumThread is part of this forum
+                if thread.discussion_id == self.discussion._id:
+                    mbox.delete()
+
         elif unsubscribe:
             self.discussion.unsubscribe()
+
         return {
             'status': 'ok',
             'subscribed': M.Mailbox.subscribed(artifact=self.discussion),
