@@ -21,6 +21,7 @@ from logging import getLogger
 from urllib import urlencode
 from itertools import imap
 
+import bson
 import markdown
 import jinja2
 from tg import redirect, url
@@ -330,3 +331,33 @@ def find_shortlinks(text):
     md.convert(text)
     link_index = md.treeprocessors['links'].alinks
     return [link for link in link_index if link is not None]
+
+
+def artifacts_from_index_ids(index_ids, model, objectid_id=True):
+    '''
+    :param list[str] index_ids: a list of search/subscription/artifact-reference index_id values
+    :param type model: the Artifact class
+    :param bool objectid_id: whether the _id values are ObjectIds
+    :return: instances of the model, for each id given
+    :rtype: list
+    '''
+    # this could be made more flexible to not require the model passed in
+    ids = [index_id.split('#')[1] for index_id in index_ids]
+    if objectid_id:
+        ids = [bson.ObjectId(_id) for _id in ids if id != 'None']
+    return model.query.find({'_id': {'$in': ids}}).all()
+
+
+def mapped_artifacts_from_index_ids(index_ids, model, objectid_id=True):
+    '''
+    :param list[str] index_ids: a list of search/subscription/artifact-reference index_id values
+    :param type model: the Artifact class
+    :param bool objectid_id: whether the _id values are ObjectIds
+    :return: instances of the model, keyed by str(_id)
+    :rtype: dict
+    '''
+    models = artifacts_from_index_ids(index_ids, model, objectid_id=objectid_id)
+    map = {}
+    for m in models:
+        map[str(m._id)] = m
+    return map

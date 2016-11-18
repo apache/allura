@@ -272,12 +272,9 @@ class SiteAdminController(object):
             if match:
                 count = match.hits
                 objects = match.docs
-                ids = [obj['id'].split('#')[1] for obj in objects]
-                ids = [bson.ObjectId(_id) for _id in ids if _id != 'None']
-                mongo_objects = {}
-                for obj in model.query.find({'_id': {'$in': ids}}):
-                    mongo_objects[str(obj._id)] = obj
 
+                ids = [obj['id'] for obj in objects]
+                mongo_objects = search.mapped_artifacts_from_index_ids(ids, model)
                 for i in range(len(objects)):
                     obj = objects[i]
                     _id = obj['id'].split('#')[1]

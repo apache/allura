@@ -407,9 +407,9 @@ class TestUsersSearch(TestController):
             M.User(_id=_id, username='darth')
             ThreadLocalORMSession().flush_all()
 
-    @patch('allura.controllers.site_admin.search')
-    def test_default_fields(self, search):
-        search.site_admin_search.return_value = self.TEST_HIT
+    @patch('allura.controllers.site_admin.search.site_admin_search')
+    def test_default_fields(self, site_admin_search):
+        site_admin_search.return_value = self.TEST_HIT
         r = self.app.get('/nf/admin/search_users?q=fake&f=username')
         options = [o['value'] for o in r.html.findAll('option')]
         assert_equal(options, ['username', 'display_name', '__custom__'])
@@ -417,9 +417,9 @@ class TestUsersSearch(TestController):
         assert_equal(ths, ['Username', 'Display name', 'Email', 'Registered',
                            'Status', 'Details'])
 
-    @patch('allura.controllers.site_admin.search')
-    def test_additional_fields(self, search):
-        search.site_admin_search.return_value = self.TEST_HIT
+    @patch('allura.controllers.site_admin.search.site_admin_search')
+    def test_additional_fields(self, site_admin_search):
+        site_admin_search.return_value = self.TEST_HIT
         with h.push_config(config, **{'search.user.additional_search_fields': 'email_addresses, url',
                                       'search.user.additional_display_fields': 'url'}):
             r = self.app.get('/nf/admin/search_users?q=fake&f=username')
