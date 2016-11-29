@@ -1382,7 +1382,6 @@ class TicketController(BaseController, FeedController):
             c.ticket_custom_field = W.ticket_custom_field
             c.vote_form = W.vote_form
             tool_subscribed = M.Mailbox.subscribed()
-            c.subscribe_form.tool_subscribed = tool_subscribed
             if tool_subscribed:
                 subscribed = False
             else:
@@ -1393,7 +1392,6 @@ class TicketController(BaseController, FeedController):
             voting_enabled = self.ticket.app.config.options.get('EnableVoting')
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_access(self.ticket, 'update')(),
-                        tool_subscribed=tool_subscribed,
                         subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count)
         else:

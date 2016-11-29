@@ -23,7 +23,6 @@ var dom = React.createElement;
 var state = {
   'thing': 'tool',
   'subscribed': false,
-  'subscribed_to_tool': false,
   'url': '',
   'icon': {}
 };
@@ -64,7 +63,6 @@ SubscriptionForm = React.createClass({
       if (resp.status == 'ok') {
         set_state({
           subscribed: resp.subscribed,
-          subscribed_to_tool: resp.subscribed_to_tool
         });
         var link = this.getLinkNode();
         var text = null;

@@ -77,7 +77,6 @@ class SubscribeForm(ew.SimpleForm):
         ew.SimpleForm.defaults,
         thing='tool',
         style='icon',
-        tool_subscribed=False,
         value=None)
 
     class fields(ew_core.NameList):
