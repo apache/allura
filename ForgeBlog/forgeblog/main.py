@@ -354,7 +354,6 @@ class PostController(BaseController, FeedController):
         post = self._get_version(version)
         base_post = self.post
         subscribed = M.Mailbox.subscribed(artifact=self.post)
-        c.subscribe_form.tool_subscribed = M.Mailbox.subscribed()
         return dict(post=post, base_post=base_post,
                     page=page, limit=limit, count=post_count,
                     subscribed=subscribed)
