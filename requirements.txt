@@ -32,13 +32,13 @@ poster==0.8.1
 Pygments==2.0.2
 pymongo==2.8.1
 Pypeline==0.2
-pysolr==2.1.0b0
+pysolr==3.6.0
 python-dateutil==1.5
 python-magic==0.4.3
 python-oembed==0.2.1
 pytz==2014.10
 qrcode==5.3
-requests==2.0.0
+requests==2.12.1
 oauthlib==0.4.2
 requests-oauthlib==0.4.0
 # for taskd proc name switching
