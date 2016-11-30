@@ -69,10 +69,12 @@ SubscriptionForm = React.createClass({
         if (resp.subscribed_to_tool) {
           text = "You can't subscribe to this ";
           text += this.props.thing;
-          text += " because you are already subscribed to the entire tool";
+          text += " because you are already subscribed to the entire ";
+          text += resp.subscribed_to_entire_name ? resp.subscribed_to_entire_name : "tool";
+          text += ".";
         } else {
           var action = resp.subscribed ? 'subscribed to' : 'unsubscribed from';
-          text = 'Successfully ' + action + ' this ' + this.props.thing;
+          text = 'Successfully ' + action + ' this ' + this.props.thing + '.';
         }
         $(link).tooltipster('content', text).tooltipster('show');
         if (this.state.tooltip_timeout) {

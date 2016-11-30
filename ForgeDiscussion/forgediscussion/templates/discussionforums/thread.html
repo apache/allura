@@ -31,6 +31,7 @@
   {% endif %}
   {# {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}   these labels aren't used anywhere ... #}
   {{ g.icons['feed'].render(href='feed.rss', title='Follow This', extra_css='thread_feed0') }}
+  {{ c.thread_subscription_form.display(value=thread.subscribed(), action='subscribe', style='icon', thing='thread') }}
 {% endblock %}
 
 {% block edit_box %}

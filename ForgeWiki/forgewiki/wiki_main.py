@@ -793,6 +793,7 @@ class PageController(BaseController, FeedController):
             'status': 'ok',
             'subscribed': M.Mailbox.subscribed(artifact=self.page),
             'subscribed_to_tool': M.Mailbox.subscribed(),
+            'subscribed_to_entire_name': 'wiki',
         }
 
 
