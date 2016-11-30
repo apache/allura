@@ -161,6 +161,7 @@ class ForumController(DiscussionController):
 
 
 class ForumThreadController(ThreadController):
+    W = WidgetConfig
 
     @expose('jinja:forgediscussion:templates/discussionforums/thread.html')
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
@@ -168,6 +169,7 @@ class ForumThreadController(ThreadController):
     def index(self, limit=25, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url() + 'deleted')
+        c.thread_subscription_form = self.W.subscribe_form
         return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
     @h.vardec
@@ -190,6 +192,24 @@ class ForumThreadController(ThreadController):
             self.thread.set_forum(forum)
         self.thread.flags = args.pop('flags', [])
         redirect(self.thread.url())
+
+    @expose('json:')
+    @require_post()
+    @validate(W.subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
+        if subscribe:
+            self.thread.subscribe()
+        elif unsubscribe:
+            self.thread.unsubscribe()
+
+        sub_tool = M.Mailbox.subscribed()
+        sub_forum = M.Mailbox.subscribed(artifact=self.discussion)
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.thread),
+            'subscribed_to_tool': sub_tool or sub_forum,
+            'subscribed_to_entire_name': 'forum' if sub_forum else 'discussion tool',
+        }
 
 
 class ForumPostController(PostController):
