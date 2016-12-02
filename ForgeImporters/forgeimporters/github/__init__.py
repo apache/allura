@@ -177,17 +177,27 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return self.get_page('project_info').get('has_issues')
 
 
-class GitHubOAuthMixin(object):
+def valid_access_token(access_token):
+    # https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
+    client_id = config['github_importer.client_id']
+    secret = config['github_importer.client_secret']
+    token_valid_resp = requests.get('https://api.github.com/applications/{}/tokens/{}'.format(client_id, access_token),
+                                    auth=requests.auth.HTTPBasicAuth(client_id, secret))
+    return token_valid_resp.status_code == 200
 
+
+class GitHubOAuthMixin(object):
     '''Support for github oauth web application flow.'''
 
     def oauth_begin(self, scope=None):
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
+            log.warn('github_importer.* not set up in .ini file; cannot use OAuth for GitHub')
             return  # GitHub app is not configured
-        if c.user.get_tool_data('GitHubProjectImport', 'token'):
-            return  # token already exists, nothing to do
+        access_token = c.user.get_tool_data('GitHubProjectImport', 'token')
+        if access_token and valid_access_token(access_token):
+            return
         redirect_uri = request.url.rstrip('/') + '/oauth_callback'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
         auth_url, state = oauth.authorization_url(
