@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import requests
 import tg
 from mock import patch, call, Mock
 from nose.tools import assert_equal
@@ -81,6 +81,12 @@ class TestGitHubOAuth(TestController):
         user = M.User.by_username('test-admin')
         assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), 'abc')
 
-        r = self.app.get('/p/import_project/github/')
+        with patch('forgeimporters.github.requests.get') as valid_access_token_get:
+            valid_access_token_get.return_value = Mock(status_code=200)
+            r = self.app.get('/p/import_project/github/')
+
         # token in user data, so oauth isn't triggered
         assert_equal(r.status_int, 200)
+
+        valid_access_token_get.assert_called_once_with('https://api.github.com/applications/client_id/tokens/abc',
+                                                       auth=requests.auth.HTTPBasicAuth('client_id', 'secret'))
