@@ -38,7 +38,7 @@ python-magic==0.4.3
 python-oembed==0.2.1
 pytz==2014.10
 qrcode==5.3
-requests==2.12.1
+requests==2.11.1
 oauthlib==0.4.2
 requests-oauthlib==0.4.0
 # for taskd proc name switching
