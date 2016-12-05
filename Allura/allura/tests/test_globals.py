@@ -183,6 +183,7 @@ def test_macro_neighborhood_feeds():
     with h.push_context('--init--', 'wiki', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
         assert 'Home modified by' in r, r
+        r = re.sub(r'<small>.*? ago</small>', '', r)  # remove "less than 1 second ago" etc
         orig_len = len(r)
         # Make project private & verify we don't see its new feed items
         anon = M.User.anonymous()
@@ -194,6 +195,7 @@ def test_macro_neighborhood_feeds():
         with h.push_config(c, user=M.User.by_username('test-admin')):
             pg.commit()
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
+        r = re.sub(r'<small>.*? ago</small>', '', r)  # remove "less than 1 second ago" etc
         new_len = len(r)
         assert new_len == orig_len
         p = BM.BlogPost(title='test me',
