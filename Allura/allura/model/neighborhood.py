@@ -90,6 +90,7 @@ class Neighborhood(MappedClass):
         google_analytics=bool))
     anchored_tools = FieldProperty(str, if_missing='')
     prohibited_tools = FieldProperty(str, if_missing='')
+    use_wiki_page_as_root = FieldProperty(bool, if_missing=False)
 
     def parent_security_context(self):
         return None

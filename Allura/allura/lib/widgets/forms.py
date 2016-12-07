@@ -801,6 +801,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         homepage = ffw.AutoResizeTextarea()
         allow_browse = ew.Checkbox(label='')
         show_title = ew.Checkbox(label='')
+        use_wiki_page_as_root = ew.Checkbox(label='')
         css = ffw.AutoResizeTextarea()
         project_template = ffw.AutoResizeTextarea(
             validator=V.JsonValidator(if_empty=''))

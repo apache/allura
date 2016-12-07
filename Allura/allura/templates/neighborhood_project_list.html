@@ -49,6 +49,9 @@
 {% block header_classes %} colored{% endblock %}
 
 {% block content %}
+    {% if neighborhood.use_wiki_page_as_root and text %}
+      {{ text }}
+    {% endif %}
     {% if neighborhood.homepage %}
       {{neighborhood.homepage|safe}}
     {% endif %}

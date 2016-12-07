@@ -94,9 +94,12 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
-        if self.neighborhood.redirect:
+        text = None
+        if self.neighborhood.use_wiki_page_as_root:
+            text = g.markdown_wiki.convert('[[include ref=Home]]')
+        elif self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
-        if not self.neighborhood.has_home_tool:
+        elif not self.neighborhood.has_home_tool:
             mount = c.project.ordered_mounts()[0]
             if mount is not None:
                 if 'ac' in mount:
@@ -105,6 +108,10 @@ class NeighborhoodController(object):
                     redirect(mount['sub'].url())
             else:
                 redirect(c.project.app_configs[0].options.mount_point + '/')
+        else:
+            text=g.markdown.cached_convert(
+                self.neighborhood, 'homepage'),
+
         c.project_summary = W.project_summary
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)
@@ -134,8 +141,7 @@ class NeighborhoodController(object):
         ]
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to " + self.neighborhood.name,
-                    text=g.markdown.cached_convert(
-                        self.neighborhood, 'homepage'),
+                    text=text,
                     projects=projects,
                     sort=sort,
                     limit=limit, page=page, count=count)
@@ -615,6 +621,9 @@ class NeighborhoodAdminController(object):
         show_title = kw.get('show_title', False)
         h.log_if_changed(nbhd, 'show_title', show_title,
                          'change neighborhood show title to %s' % show_title)
+        use_wiki_page_as_root = kw.get('use_wiki_page_as_root', False)
+        h.log_if_changed(nbhd, 'use_wiki_page_as_root', use_wiki_page_as_root,
+                         'change use wiki page as root to %s' % use_wiki_page_as_root)
         project_list_url = kw.get('project_list_url', '')
         h.log_if_changed(nbhd, 'project_list_url', project_list_url,
                          'change neighborhood project list url to %s'

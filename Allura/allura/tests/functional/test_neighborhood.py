@@ -40,7 +40,7 @@ from alluratest.controller import setup_trove_categories
 
 class TestNeighborhood(TestController):
     def test_home_project(self):
-        r = self.app.get('/adobe/wiki/')
+        r = self.app.get('/adobe/wiki/', status=302)
         assert r.location.endswith('/adobe/wiki/Home/')
         r = r.follow()
         assert 'This is the "Adobe" neighborhood' in str(r), str(r)
@@ -54,6 +54,11 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
         r = self.app.get('/adobe/')
         assert r.location.endswith('/adobe/wiki/Home/')
+
+    @patch('allura.model.neighborhood.Neighborhood.use_wiki_page_as_root', True)
+    def test_wiki_as_home(self):
+        r = self.app.get('/adobe/', status=200)
+        assert 'This is the "Adobe" neighborhood' in str(r), str(r)
 
     def test_admin(self):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
