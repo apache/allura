@@ -1,3 +1,41 @@
+Version 1.6.0  (December 2016)
+
+New Features
+ * Multifactor authentication and recovery codes
+ * Add git-http docker container
+ * Per-thread subscriptions in discussion forums [#7981]
+
+Bug Fixes & Minor Improvements
+
+ General:
+ * Specify python 2.7 and ubuntu 16.04 in docs
+ * [#6876] Handle revoked OAuth tokens for GitHub import
+ * [#8132] Fix comment threading when email In-Reply-To header isn't useful
+ * [#8125] Require password when confirming new email address
+ * Add rel=nofollow to links in user profiles
+ * Includes "seconds" in ago() helper
+ * Remove src="#" that was causing extra requests to the same page
+ * Fix iframe sanitization so that closing tag is okay, which had been putting closing tags in the wrong place
+ * Good text wrapping on project lists
+ * Remove weird notch from project list when project has award, and using 2 or 3 column display
+ Admin:
+ * [#8135] Improve admin categorization page
+ Code Repositories:
+ * [#5496] Git browse view stalls on "Loading commit details ..."
+ * [#8001] Error with git status "T" in a commit
+ * [#8131] refresh repo task uses wrong query
+ * Remove message about browser not supporting canvas
+ * Adds commit id to notification email subject
+ For Developers:
+ * [#8062] Naming of docker image is incorrect in docker-compose during initial build using git
+ * Update docker images, pysolr
+ * Update for newer `docker-compose logs` syntax
+ * Fix RAML syntax (queryRequired wasn't coming through as bool in the type def), other minor tweaks
+ * Split up pylint test into chunks that can be run with nose multiprocess; move pyflakes chunks into parallelized pattern
+ * Various other test improvements
+ * Remove requirements from setup.py
+
+
 Version 1.5.0  (August 2016)
 
 New Features
