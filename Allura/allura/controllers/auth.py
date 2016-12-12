@@ -23,7 +23,6 @@ from urlparse import urlparse, urljoin
 
 import bson
 import tg
-from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -31,6 +30,7 @@ from pylons import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
 from cryptography.hazmat.primitives.twofactor import InvalidToken
+from beaker.session import _session_id
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -39,6 +39,7 @@ from allura.lib.security import require_authenticated, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post, reconfirm_auth
+from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from allura.lib.repository import RepositoryApp
 from allura.lib.widgets import (
     SubscriptionForm,
@@ -640,6 +641,8 @@ class PreferencesController(BaseController):
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
+            session['_id'] = _session_id()  # new one so even if this session had been intercepted somehow, its invalid
+            session.save()
             c.user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
             c.user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
 
