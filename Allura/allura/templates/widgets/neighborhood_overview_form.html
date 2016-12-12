@@ -31,8 +31,16 @@
   {% endif %}
     <label class="grid-4">Show Title</label>
     <div class="grid-14">{{widget.display_field(widget.fields.show_title)}}</div>
+
     <label class="grid-4">"Home" Wiki as Root</label>
-    <div class="grid-14">{{widget.display_field(widget.fields.use_wiki_page_as_root)}}</div>
+    <div class="grid-14">
+        {%if not allow_wiki_as_root %}
+        This feature is disabled because there is no "Home" page in the default Wiki.
+        {% else %}
+        {{widget.display_field(widget.fields.use_wiki_page_as_root)}}
+        {% endif %}
+    </div>
+
   {% if neighborhood.allow_custom_css %}
     <label class="grid-4">Custom CSS</label>
     <div class="grid-14">{{widget.display_field(widget.fields.css)}}</div>

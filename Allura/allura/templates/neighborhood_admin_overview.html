@@ -31,7 +31,7 @@
 {% endblock %}
 
 {% block content %}
-    {{c.overview_form.display(value=neighborhood, neighborhood=neighborhood)}}
+    {{c.overview_form.display(value=neighborhood, neighborhood=neighborhood, allow_wiki_as_root=allow_wiki_as_root)}}
 {% endblock %}
 
 {% block extra_css %}

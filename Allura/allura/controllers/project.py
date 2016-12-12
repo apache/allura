@@ -96,7 +96,9 @@ class NeighborhoodController(object):
     def index(self, sort='alpha', limit=25, page=0, **kw):
         text = None
         if self.neighborhood.use_wiki_page_as_root:
-            text = g.markdown_wiki.convert('[[include ref=Home]]')
+            default_wiki_page = get_default_wiki_page()
+            if default_wiki_page:
+                text = g.markdown_wiki.convert('[[include ref=Home]]')
         elif self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         elif not self.neighborhood.has_home_tool:
@@ -545,9 +547,12 @@ class NeighborhoodAdminController(object):
         set_nav(self.neighborhood)
         c.overview_form = W.neighborhood_overview_form
         allow_undelete = asbool(config.get('allow_project_undelete', True))
+        allow_wiki_as_root = True if get_default_wiki_page() else False
+
         return dict(
             neighborhood=self.neighborhood,
-            allow_project_undelete=allow_undelete)
+            allow_project_undelete=allow_undelete,
+            allow_wiki_as_root=allow_wiki_as_root)
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_permissions.html')
@@ -1015,3 +1020,17 @@ class ProjectImporterController(object):
             return ep.load()(self.neighborhood), rest
 
         raise exc.HTTPNotFound
+
+
+def get_default_wiki_page():
+    """
+    Gets the default home page from the default Wiki setup.
+    """
+
+    from forgewiki import model as WM
+    wiki_page = None
+    wiki_app = c.project.app_instance('wiki')
+    if wiki_app:
+        wiki_app.config._id
+        wiki_page = WM.Page.query.get(app_config_id=wiki_app.config._id, title='Home')
+        return wiki_page
