@@ -98,7 +98,7 @@ class NeighborhoodController(object):
         if self.neighborhood.use_wiki_page_as_root:
             default_wiki_page = get_default_wiki_page()
             if default_wiki_page:
-                text = g.markdown_wiki.convert('[[include ref=Home]]')
+                text = default_wiki_page.html_text
         elif self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         elif not self.neighborhood.has_home_tool:
@@ -1031,6 +1031,5 @@ def get_default_wiki_page():
     wiki_page = None
     wiki_app = c.project.app_instance('wiki')
     if wiki_app:
-        wiki_app.config._id
         wiki_page = WM.Page.query.get(app_config_id=wiki_app.config._id, title='Home')
         return wiki_page
