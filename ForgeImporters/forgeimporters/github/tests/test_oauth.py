@@ -45,7 +45,7 @@ class TestGitHubOAuthMixin(TestController, TestCase):
     def test_oauth_has_access_no_headers(self, req):
         c.user.get_tool_data.return_value = 'token'
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
-        req.head.assert_called_once_with('https://api.github.com/?access_token=token')
+        req.head.assert_called_once_with('https://api.github.com/?access_token=token', timeout=10)
 
     @patch('forgeimporters.github.requests')
     def test_oauth_has_access_with_headers(self, req):

@@ -107,7 +107,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return resp
 
     def check_readable(self):
-        resp = requests.head(self.add_token(self.get_page_url('project_info')))
+        resp = requests.head(self.add_token(self.get_page_url('project_info')), timeout=10)
         return resp.status_code == 200
 
     def get_next_page_url(self, link):
@@ -182,7 +182,8 @@ def valid_access_token(access_token):
     client_id = config['github_importer.client_id']
     secret = config['github_importer.client_secret']
     token_valid_resp = requests.get('https://api.github.com/applications/{}/tokens/{}'.format(client_id, access_token),
-                                    auth=requests.auth.HTTPBasicAuth(client_id, secret))
+                                    auth=requests.auth.HTTPBasicAuth(client_id, secret),
+                                    timeout=10)
     return token_valid_resp.status_code == 200
 
 
@@ -239,7 +240,7 @@ class GitHubOAuthMixin(object):
         if not token:
             return False
         url = 'https://api.github.com/?access_token={}'.format(token)
-        r = requests.head(url)
+        r = requests.head(url, timeout=10)
         scopes = r.headers.get('X-OAuth-Scopes', '')
         scopes = [s.strip() for s in scopes.split(',')]
         return scope in scopes

@@ -41,7 +41,7 @@ class TestProjectExtractor(TestCase):
         req = Request.return_value
         req.add_header.assert_called_once_with(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
-        urlopen.assert_called_once_with(req, retries=3, codes=(408, 500, 502, 503, 504))
+        urlopen.assert_called_once_with(req, retries=3, codes=(408, 500, 502, 503, 504), timeout=120)
         self.assertEqual(r, urlopen.return_value)
 
 

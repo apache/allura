@@ -89,4 +89,5 @@ class TestGitHubOAuth(TestController):
         assert_equal(r.status_int, 200)
 
         valid_access_token_get.assert_called_once_with('https://api.github.com/applications/client_id/tokens/abc',
-                                                       auth=requests.auth.HTTPBasicAuth('client_id', 'secret'))
+                                                       auth=requests.auth.HTTPBasicAuth('client_id', 'secret'),
+                                                       timeout=10)

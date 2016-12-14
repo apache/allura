@@ -41,7 +41,7 @@ class TracURLValidator(validators.URL):
         value = value.rstrip('/') + '/'
 
         try:
-            resp = requests.head(value, allow_redirects=True)
+            resp = requests.head(value, allow_redirects=True, timeout=10)
         except IOError:
             # fall through to 'raise' below
             pass

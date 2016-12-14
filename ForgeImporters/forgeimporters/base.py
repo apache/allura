@@ -166,11 +166,11 @@ class ProjectExtractor(object):
             self.get_page(page_name, **kw)
 
     @staticmethod
-    def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), **kw):
+    def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, **kw):
         req = urllib2.Request(url, **kw)
         req.add_header(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
-        return h.urlopen(req, retries=retries, codes=codes)
+        return h.urlopen(req, retries=retries, codes=codes, timeout=timeout)
 
     def get_page(self, page_name_or_url, parser=None, **kw):
         """Return a Beautiful soup object for the given page name or url.
