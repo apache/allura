@@ -989,11 +989,14 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
             new_groups = map(get_role, new_group_ids)
             del_groups = map(get_role, del_group_ids)
 
+            def group_names(groups):
+                return ', '.join((role.name or '<Unnamed>') for role in groups if role)
+
             if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
-                    ', '.join(map(lambda role: role.name, filter(None, groups + del_groups))),
-                    ', '.join(map(lambda role: role.name, filter(None, groups + new_groups))),
+                    group_names(groups + del_groups),
+                    group_names(groups + new_groups),
                     self.app.config.options['mount_point']))
 
             role_ids = map(ObjectId, group_ids + new_group_ids)
