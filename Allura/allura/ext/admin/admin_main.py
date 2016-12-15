@@ -232,8 +232,8 @@ class ProjectAdminController(BaseController):
         explain_export_text = '''The purpose of this section is to determine whether your project is subject to the
          provisions of the US Export Administration Regulations. You should consult section 734.4 and Supplement 2
           to Part 734 for information on such items and the calculation of U.S. controlled content.
-          <a href="http://www.bis.doc.gov/encryption/default.htm" target="_blank">
-          http://www.bis.doc.gov/encryption/default.htm</a>'''
+          <a href="https://www.bis.doc.gov/policy-guidance/encryption" target="_blank">
+          https://www.bis.doc.gov/policy-guidance/encryption</a>'''
         if 'us_export_contact' in config:
             explain_export_text += \
                 'If you have additional questions, ' \
