@@ -286,10 +286,12 @@ class Thread(Artifact, ActivityObject):
 
     def is_spam(self, post):
         roles = [r.name for r in c.project.named_roles]
+        spammy = g.spam_checker.check(post.text, artifact=post, user=c.user)
         if c.user in c.project.users_with_role(*roles):
+            # always run the check, so it's logged.  But don't act on it for admins/developers of their own project
             return False
         else:
-            return g.spam_checker.check(post.text, artifact=post, user=c.user)
+            return spammy
 
     def post(self, text, message_id=None, parent_id=None, notify=True,
              notification_text=None, timestamp=None, ignore_security=False,

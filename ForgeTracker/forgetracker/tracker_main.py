@@ -933,8 +933,8 @@ class RootController(BaseController, FeedController):
             require_access(c.app, 'create')
             self.rate_limit(redir='.')
             ticket = TM.Ticket.new()
-            g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
-                                 user=c.user, content_type='ticket')
+        g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
+                             user=c.user, content_type='ticket')
         ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,
@@ -1464,6 +1464,8 @@ class TicketController(BaseController, FeedController):
     @require_post()
     def _update_ticket(self, post_data):
         require_access(self.ticket, 'update')
+        g.spam_checker.check(post_data.get('summary', '') + u'\n' + post_data.get('description', ''),
+                             artifact=self.ticket, user=c.user, content_type='ticket')
         changes = changelog()
         comment = post_data.pop('comment', None)
         labels = post_data.pop('labels', None) or []

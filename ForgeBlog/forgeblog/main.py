@@ -408,6 +408,9 @@ class PostController(BaseController, FeedController):
             self.post.delete()
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))
+        else:
+            g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=self.post,
+                                 user=c.user, content_type='blog-post')
         for k, v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()
