@@ -18,6 +18,7 @@
 import logging
 
 from allura.lib.helpers import exceptionless
+from allura.model.artifact import SpamCheckResult
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +40,16 @@ class SpamFilter(object):
 
     def submit_ham(self, text, artifact=None, user=None, content_type='comment', **kw):
         log.info("No spam checking enabled")
+
+    def record_result(self, result, artifact, user):
+        filter_name = self.__class__.__name__.replace('SpamFilter', '').lower()
+        log.info("spam=%s (%s): %s" % (str(result), filter_name, artifact.url() if artifact else ''))
+        r = SpamCheckResult(
+            ref=artifact.ref,
+            project_id=artifact.project_id,
+            user=user,
+            result=result,
+        )
 
     @classmethod
     def get(cls, config, entry_points):

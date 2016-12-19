@@ -75,7 +75,6 @@ class MollomSpamFilter(SpamFilter):
             # Should be able to send url, but can't right now due to a bug in
             # the PyMollom lib
             # kw['url'] = url
-            log_msg = url
         user = user or c.user
         if user:
             kw['authorName'] = user.display_name or user.username
@@ -88,7 +87,7 @@ class MollomSpamFilter(SpamFilter):
         cc = self.service.checkContent(**kw)
         res = cc['spam'] == 2
         artifact.spam_check_id = cc.get('session_id', '')
-        log.info("spam=%s (mollom): %s" % (str(res), log_msg))
+        self.record_result(res, artifact, user)
         return res
 
     def submit_spam(self, text, artifact=None, user=None, content_type='comment', **kw):

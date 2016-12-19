@@ -81,7 +81,8 @@ setup_config_test.__test__ = False
 
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     '''
-    Create clean environment for running tests.
+    Create clean environment for running tests, includes mongodb connection with "mim" (mongo-in-memory) and sample
+    data created.
 
     A lightweight alternative is setup_config_test which doesn't bootstrap app data.
     '''

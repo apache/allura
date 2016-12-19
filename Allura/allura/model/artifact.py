@@ -1071,3 +1071,23 @@ class MovedArtifact(Artifact):
         'AppConfig', if_missing=lambda: c.app.config._id)
     app_config = RelationProperty('AppConfig')
     moved_to_url = FieldProperty(str, required=True, allow_none=False)
+
+
+class SpamCheckResult(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = 'spam_check_result'
+        indexes = [
+            ('project_id', 'result'),
+            ('user_id', 'result'),
+        ]
+
+    _id = FieldProperty(S.ObjectId)
+    ref_id = ForeignIdProperty('ArtifactReference')
+    ref = RelationProperty('ArtifactReference', via='ref_id')
+    project_id = ForeignIdProperty('Project')
+    project = RelationProperty('Project', via='project_id')
+    user_id = ForeignIdProperty('User')
+    user = RelationProperty('User', via='user_id')
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
+    result = FieldProperty(bool)

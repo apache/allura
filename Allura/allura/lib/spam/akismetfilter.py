@@ -89,7 +89,7 @@ class AkismetSpamFilter(SpamFilter):
                                                             request=request,
                                                             ),
                                          build_data=False)
-        log.info("spam=%s (akismet): %s" % (str(res), artifact.url() if artifact else text))
+        self.record_result(res, artifact, user)
         return res
 
     def submit_spam(self, text, artifact=None, user=None, content_type='comment'):

@@ -20,7 +20,14 @@
 import mock
 import unittest
 
+from ming.odm import ThreadLocalORMSession
+from nose.tools import assert_equal
+
 from allura.lib.spam import SpamFilter
+from allura import model as M
+from allura.model.artifact import SpamCheckResult
+from alluratest.controller import setup_basic_test
+from forgewiki import model as WM
 
 
 class MockFilter(SpamFilter):
@@ -53,6 +60,25 @@ class TestSpamFilter(unittest.TestCase):
         config = {'spam.method': 'mock'}
         entry_points = {'mock': MockFilter}
         checker = SpamFilter.get(config, entry_points)
-        result = checker.check()
+        result = checker.check('this is our text')
         self.assertFalse(result)
         self.assertTrue(log.exception.called)
+
+
+class TestSpamFilterFunctional(object):
+
+    def setUp(self):
+        setup_basic_test()
+
+    def test_record_result(self):
+        config = {}
+        artifact = WM.Page.query.get()
+        user = M.User.query.get(username='test-user')
+
+        SpamFilter(config).record_result(True, artifact, user)
+        ThreadLocalORMSession.flush_all()
+
+        results = SpamCheckResult.query.find().all()
+        assert_equal(len(results), 1)
+        assert_equal(results[0].result, True)
+        assert_equal(results[0].user.username, 'test-user')
