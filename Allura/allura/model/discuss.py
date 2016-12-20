@@ -265,14 +265,11 @@ class Thread(Artifact, ActivityObject):
 
     def post_to_feed(self, post):
         if post.status == 'ok':
-            link = None
-            if self.app.tool_label.lower() == 'tickets':
-                link = post.url_paginated()
             Feed.post(
                 self.primary(),
                 title=post.subject,
                 description=post.text,
-                link=link,
+                link=post.url_paginated(),
                 pubdate=post.mod_date,
             )
 

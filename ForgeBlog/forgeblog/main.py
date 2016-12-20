@@ -19,7 +19,7 @@
 import logging
 import urllib2
 import json
-import os
+import re
 
 # Non-stdlib imports
 import pymongo
@@ -35,7 +35,7 @@ from webob import exc
 
 from ming.orm import session
 
-# Pyforge-specific imports
+# Allura-specific imports
 from allura.app import Application, SitemapEntry, ConfigOption
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
@@ -327,6 +327,18 @@ class RootController(BaseController, FeedController):
         if post is None:
             raise exc.HTTPNotFound()
         return PostController(post), rest
+
+    def get_feed(self, project, app, user):
+        """
+        Return a :class:`allura.controllers.feed.FeedArgs` object describing the xml feed for this controller.
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+        """
+        return FeedArgs(
+            dict(project_id=project._id, app_config_id=app.config._id,
+                 link=re.compile(r'^[^#]+$'),  # no target in the link, meaning no comments
+                 ),
+            'Recent posts to %s' % app.config.options.mount_point,
+            app.url)
 
 
 class PostController(BaseController, FeedController):

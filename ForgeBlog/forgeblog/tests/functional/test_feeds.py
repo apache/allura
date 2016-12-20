@@ -18,10 +18,14 @@
 
 import datetime
 
-from nose.tools import assert_in
+from nose.tools import assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
+from pylons import tmpl_context as c
+
 from alluratest.controller import TestController
 from allura import model as M
+from allura.lib import helpers as h
+from forgeblog import model as BM
 
 
 class TestFeeds(TestController):
@@ -125,3 +129,17 @@ class TestFeeds(TestController):
         assert '/blog/%s/deletion-post/edit' % d not in response
         response = self.app.get("/blog/feed.rss")
         assert url not in response
+
+    def test_comments_only_in_per_post_feed(self):
+        self._post()
+        blog_post = BM.BlogPost.query.get()
+        with h.push_config(c, user=M.User.query.get(username='test-admin')), \
+             h.push_context(blog_post.project._id, app_config_id=blog_post.app_config_id):
+            blog_post.discussion_thread.add_post(text='You are a good blogger, I am a boring commentor.')
+        ThreadLocalORMSession.flush_all()
+
+        resp = self.app.get("/blog/" + self._blog_date() + "/my-post/feed.rss")
+        assert_in('boring comment', resp)
+
+        resp = self.app.get("/blog/feed.rss")
+        assert_not_in('boring comment', resp)
