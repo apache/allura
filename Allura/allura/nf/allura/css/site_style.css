@@ -1974,6 +1974,11 @@ a.sidebar-disabled:focus {
   width: 765px;
   margin-left: 10px;
 }
+/* cancel out ".pad table" styles in smaller contexts, it really only works when its not nested inside anything */
+.pad #comment table, .pad .markdown_edit table {
+  width: 100%;
+  margin-left: inherit;
+}
 .pad p, .pad h1, .pad h2, .pad h3, .pad h4, .pad h5, .pad h6 {
   padding: 0 10px 1em;
   margin-bottom: 0;
