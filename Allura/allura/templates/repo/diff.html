@@ -53,8 +53,6 @@
   {% else %}
   <div class="clip grid-19 diffbrowser">
     <h3>
-      {{ g.icons['table'].render(title=h.really_unicode(a.filename) or ' ', show_title=True) }}
-      <span class="fright">
         {% if session.diformat == 'sidebyside' %}
           {% set switch_url = request.url.replace('&diformat=sidebyside', '') + '&diformat=regular' %}
           {% set switch_text = 'unified' %}
@@ -63,7 +61,6 @@
           {% set switch_text = 'side-by-side' %}
         {% endif %}
         <a href="{{ switch_url }}">Switch to {{ switch_text }} view</a>
-      <span>
       </h3>
     {% if session.diformat == 'sidebyside' %}
       {{diff|safe}}
