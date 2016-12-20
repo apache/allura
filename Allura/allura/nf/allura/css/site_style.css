@@ -3711,6 +3711,13 @@ fieldset.preferences legend {
     border-right-color: #e5e5e5;
 }
 
+:target > .row > .post-content {
+    border-color: black;
+}
+:target > .row > .bubble::before {
+    border-right-color: black;
+}
+
 .discussion-post .row .emboss{
     box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
     -webkit-box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
