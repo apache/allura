@@ -76,13 +76,17 @@ class RootController(WsgiDispatchController):
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
-        n = g.neighborhood_cache.get(n_url_prefix)
+        n = self._lookup_neighborhood(n_url_prefix)
         if n and not n.url_prefix.startswith('//'):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
         self.nf.admin = SiteAdminController()
 
         super(RootController, self).__init__()
+
+    def _lookup_neighborhood(self, url_prefix):
+        n = M.Neighborhood.query.get(url_prefix=url_prefix)
+        return n
 
     def _setup_request(self):
         c.project = c.app = None

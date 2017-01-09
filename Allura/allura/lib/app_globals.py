@@ -139,36 +139,6 @@ class ForgeMarkdown(markdown.Markdown):
         return html
 
 
-class NeighborhoodCache(object):
-    """Cached Neighborhood objects by url_prefix.
-    For faster RootController.__init__ lookup
-    """
-
-    def __init__(self, duration):
-        self.duration = duration
-        self._data = {}
-
-    def _lookup(self, url_prefix):
-        n = M.Neighborhood.query.get(url_prefix=url_prefix)
-        self._data[url_prefix] = {
-            'object': n,
-            'ts': datetime.datetime.utcnow(),
-        }
-        return n
-
-    def _expired(self, n):
-        delta = datetime.datetime.utcnow() - n['ts']
-        if delta >= datetime.timedelta(seconds=self.duration):
-            return True
-        return False
-
-    def get(self, url_prefix):
-        n = self._data.get(url_prefix)
-        if n and not self._expired(n):
-            return n['object']
-        return self._lookup(url_prefix)
-
-
 class Globals(object):
 
     """Container for objects available throughout the life of the application.
@@ -310,10 +280,6 @@ class Globals(object):
             multifactor_totp=_cache_eps('allura.multifactor.totp'),
             multifactor_recovery_code=_cache_eps('allura.multifactor.recovery_code'),
         )
-
-        # Neighborhood cache
-        duration = asint(config.get('neighborhood.cache.duration', 0))
-        self.neighborhood_cache = NeighborhoodCache(duration)
 
         # Set listeners to update stats
         statslisteners = []

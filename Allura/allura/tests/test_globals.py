@@ -42,7 +42,7 @@ from alluratest.controller import (
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.app_globals import ForgeMarkdown, NeighborhoodCache
+from allura.lib.app_globals import ForgeMarkdown
 from allura.tests import decorators as td
 
 from forgewiki import model as WM
@@ -802,77 +802,6 @@ class TestHandlePaging(unittest.TestCase):
         self.assertEqual(g.handle_paging(None, 2, 30), (25, 2, 50))
         # handle paging must not mess up user preferences
         self.assertEqual(c.user.get_pref('results_per_page'), 25)
-
-
-class TestNeighborhoodCache(object):
-
-    @patch('allura.lib.app_globals.M', autospec=True)
-    @patch('allura.lib.app_globals.datetime', autospec=True)
-    def test_lookup(self, dt_mock, M):
-        dt_mock.datetime.utcnow.side_effect = [
-            dt.datetime(2015, 02, 05, 11, 32),
-            dt.datetime(2015, 02, 05, 11, 34),
-        ]
-        ret = M.Neighborhood.query.get.return_value
-        cache = NeighborhoodCache(30)
-        assert_equal(cache._data, {})
-
-        n = cache._lookup('/p/')
-        M.Neighborhood.query.get.assert_called_once_with(url_prefix='/p/')
-        assert_equal(n, ret)
-        assert_equal(cache._data, {'/p/': {
-            'object': ret,
-            'ts': dt.datetime(2015, 02, 05, 11, 32),
-        }})
-
-        # hits mongo every time
-        n = cache._lookup('/p/')
-        assert_equal(M.Neighborhood.query.get.call_count, 2)
-        assert_equal(n, ret)
-        assert_equal(cache._data, {'/p/': {
-            'object': ret,
-            'ts': dt.datetime(2015, 02, 05, 11, 34),
-        }})
-
-    @patch('allura.lib.app_globals.M', autospec=True)
-    @patch('allura.lib.app_globals.datetime', autospec=True)
-    def test_get(self, dt_mock, M):
-        dt_mock.datetime.utcnow.side_effect = [
-            dt.datetime(2015, 02, 05, 11, 32),
-            dt.datetime(2015, 02, 05, 11, 34),
-        ]
-        ret = M.Neighborhood.query.get.return_value
-        cache = NeighborhoodCache(30)
-        cache._expired = Mock(return_value=False)
-
-        n = cache.get('/p/')
-        M.Neighborhood.query.get.assert_called_once_with(url_prefix='/p/')
-        assert_equal(n, ret)
-
-        # don't hit mongo second time
-        n = cache.get('/p/')
-        assert_equal(M.Neighborhood.query.get.call_count, 1)
-        assert_equal(n, ret)
-
-        # and hits if cache is expired
-        cache._expired.return_value = True
-        n = cache.get('/p/')
-        assert_equal(M.Neighborhood.query.get.call_count, 2)
-        assert_equal(n, ret)
-
-    @patch('allura.lib.app_globals.datetime', autospec=True)
-    def test_expired(self, dt_mock):
-        dt_mock.timedelta = dt.timedelta  # restore original
-        _now = dt.datetime(2015, 02, 05, 11, 53)
-        dt_mock.datetime.utcnow.return_value = _now
-
-        cache = NeighborhoodCache(0)
-        assert_equal(cache._expired({'ts': _now}), True)
-        assert_equal(cache._expired({'ts': _now - dt.timedelta(seconds=1)}), True)
-
-        cache = NeighborhoodCache(30)
-        assert_equal(cache._expired({'ts': _now - dt.timedelta(seconds=29)}), False)
-        assert_equal(cache._expired({'ts': _now - dt.timedelta(seconds=30)}), True)
 
 
 class TestIconRender(object):
