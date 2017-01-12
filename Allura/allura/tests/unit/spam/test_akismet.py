@@ -22,6 +22,8 @@ import mock
 import unittest
 import urllib
 
+from bson import ObjectId
+
 from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
 
 
@@ -37,9 +39,14 @@ class TestAkismet(unittest.TestCase):
             # akismet can be successfully urlencoded
             urllib.urlencode(kw.get('data', {}))
         self.akismet.service.comment_check = mock.Mock(side_effect=side_effect)
-        self.fake_artifact = mock.Mock(**{'main_url.return_value': 'artifact url'})
+        self.fake_artifact = mock.Mock(**{
+            'main_url.return_value': 'artifact url',
+            'project_id': ObjectId(),
+            'ref': None,
+        })
         self.fake_user = mock.Mock(display_name=u'Søme User',
-                                   email_addresses=['user@domain'])
+                                   email_addresses=['user@domain'],
+                                   _id=ObjectId())
         self.fake_headers = dict(
             USER_AGENT='some browser',
             REFERER='some url')

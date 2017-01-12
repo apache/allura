@@ -22,6 +22,7 @@ import mock
 import unittest
 import urllib
 
+from bson import ObjectId
 
 from allura.lib.spam.mollomfilter import MOLLOM_AVAILABLE, MollomSpamFilter
 
@@ -42,7 +43,8 @@ class TestMollom(unittest.TestCase):
                                                      return_value=dict(spam=2))
         self.fake_artifact = mock.Mock(**{'url.return_value': 'artifact url'})
         self.fake_user = mock.Mock(display_name=u'Søme User',
-                                   email_addresses=['user@domain'])
+                                   email_addresses=['user@domain'],
+                                   _id=ObjectId())
         self.fake_headers = dict(
             USER_AGENT='some browser',
             REFERER='some url')
@@ -52,6 +54,8 @@ class TestMollom(unittest.TestCase):
             authorIP='some ip')
         self.artifact = mock.Mock()
         self.artifact.spam_check_id = 'test_id'
+        self.artifact.project_id = ObjectId()
+        self.artifact.ref = None
 
     @mock.patch('allura.lib.spam.mollomfilter.c')
     @mock.patch('allura.lib.spam.mollomfilter.request')

@@ -45,8 +45,8 @@ class SpamFilter(object):
         filter_name = self.__class__.__name__.replace('SpamFilter', '').lower()
         log.info("spam=%s (%s): %s" % (str(result), filter_name, artifact.url() if artifact else ''))
         r = SpamCheckResult(
-            ref=artifact.ref,
-            project_id=artifact.project_id,
+            ref=artifact.ref if artifact else None,
+            project_id=artifact.project_id if artifact else None,
             user=user,
             result=result,
         )
