@@ -18,9 +18,8 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form {{widget.j2_attrs({'name':name, 'id':id, 'method':method, 'action':action, 'enctype':enctype})}}
-      {{attrs|default({}, true)|xmlattr}}>
+    {{attrs|default({}, true)|xmlattr}}>
   <fieldset class="grid-19">
-    <legend>Update marked posts</legend>
     <input type="submit" name="approve" value="Approve Marked"/>
     <input type="submit" name="spam" value="Spam Marked"/>
     <input type="submit" name="delete" value="Delete Marked"/>
@@ -42,7 +41,7 @@
     <tbody>
       {% for post in value.posts %}
         <tr>
-          <td>
+          <td class="col-checkbox">
             <input type="hidden" name="post-{{loop.index0}}._id" value="{{post._id}}"/>
             <input type="checkbox" name="post-{{loop.index0}}.checked"/>
           </td>

@@ -27,15 +27,11 @@ Moderation Queue
 {% endblock %}
 
 {% block content %}
-<div class="grid-19">
-  <div>
-    Displaying page {{pgnum}} / {{pages}}
-  </div>
-  <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page-limit}}">Previous Page</a>
-  <a href="?status={{status}}&amp;flag={{flag}}&amp;page={{page+limit}}">Next Page</a>
-</div>
+<h3>Filter Posts</h3>
 {{c.post_filter.display(action=discussion.url()+'moderate', value=dict(status=status, flag=flag, username=username))}}
+<h3>Update Marked Posts</h3>
 {{c.moderate_posts.display(value=dict(posts=posts), action=discussion.url()+'moderate/save_moderation')}}
+{{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}
 
 {% block extra_css %}

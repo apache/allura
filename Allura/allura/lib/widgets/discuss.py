@@ -89,33 +89,37 @@ class ModeratePosts(ew.SimpleForm):
               });
               return false;
           });
+          $('.col-checkbox').click(function(e){
+            if (e.target.tagName === "INPUT") { return; };
+            var checkbox = $(this).find('input[type=checkbox]').get(0);
+            checkbox.checked = !checkbox.checked;
+          });
       }(jQuery));''')
 
 
 class PostFilter(ff.ForgeForm):
     defaults = dict(
         ew.SimpleForm.defaults,
+        class_name='foo',
         submit_text=None,
         method='GET')
     fields = [
         ew.HiddenField(
             name='page',
             validator=fev.Int()),
-        ew.FieldSet(label='Post Filter', fields=[
-            ew.SingleSelectField(
-                    name='status',
-                    label='Show posts with status',
-                    options=[
-                        ew.Option(py_value='-', label='Any'),
-                        ew.Option(py_value='spam', label='Spam'),
-                        ew.Option(py_value='pending',
-                                  label='Pending moderation'),
-                        ew.Option(py_value='ok', label='Ok')],
-                    if_missing='pending'),
-            ew.InputField(name='username',
-                          label='Show post filtered by username'),
-            ew.SubmitButton(label='Filter Posts')
-        ])
+        ew.SingleSelectField(
+                name='status',
+                label='Filter By Status',
+                options=[
+                    ew.Option(py_value='-', label='Any'),
+                    ew.Option(py_value='spam', label='Spam'),
+                    ew.Option(py_value='pending',
+                                label='Pending moderation'),
+                    ew.Option(py_value='ok', label='Ok')],
+                if_missing='pending'),
+        ew.InputField(name='username',
+                        label='Filter by Username'),
+        ew.SubmitButton(label='Filter Posts')
     ]
 
 
