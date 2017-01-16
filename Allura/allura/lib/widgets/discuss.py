@@ -100,7 +100,6 @@ class ModeratePosts(ew.SimpleForm):
 class PostFilter(ff.ForgeForm):
     defaults = dict(
         ew.SimpleForm.defaults,
-        class_name='foo',
         submit_text=None,
         method='GET')
     fields = [

@@ -435,7 +435,7 @@ class TestForum(TestController):
         username = 'test_username1'
         r = self.app.get(
             '/discussion/testforum/moderate?username=%s' % username)
-        input_field = r.html.fieldset.find('input', {'value': username})
+        input_field = r.html.find('input', {'value': username})
         assert input_field is not None
 
         username = None
