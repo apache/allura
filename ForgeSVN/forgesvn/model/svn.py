@@ -63,20 +63,6 @@ class Repository(M.Repository):
     def _impl(self):
         return SVNImplementation(self)
 
-    def clone_command(self, category, username=''):
-        '''Return a string suitable for copy/paste that would clone this repo locally
-           category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
-        '''
-        if not username and c.user not in (None, User.anonymous()):
-            username = c.user.username
-        tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
-                              tg.config.get('scm.clone.%s' % self.tool))
-        return tpl.substitute(dict(username=username,
-                                   source_url=self.clone_url(
-                                       category, username) + c.app.config.options.get(
-                                       'checkout_url'),
-                                   dest_path=self.suggested_clone_dest_path()))
-
     def latest(self, branch=None):
         if self._impl is None:
             return None

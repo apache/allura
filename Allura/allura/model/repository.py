@@ -612,9 +612,11 @@ class Repository(Artifact, ActivityObject):
         if self.app.config.options.get('external_checkout_url', None):
             tpl = string.Template(self.app.config.options.external_checkout_url)
         else:
-            tpl = string.Template(
-                tg.config.get('scm.host.%s.%s' % (category, self.tool)))
-        return tpl.substitute(dict(username=username, path=self.url_path + self.name))
+            tpl = string.Template(tg.config.get('scm.host.%s.%s' % (category, self.tool)))
+        url = tpl.substitute(dict(username=username, path=self.url_path + self.name))
+        # this is an svn option, but keeps clone_*() code from diverging
+        url += c.app.config.options.get('checkout_url', '')
+        return url
 
     def clone_command(self, category, username=''):
         '''Return a string suitable for copy/paste that would clone this repo locally
@@ -625,8 +627,7 @@ class Repository(Artifact, ActivityObject):
         tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
-                                   source_url=self.clone_url(
-                                       category, username),
+                                   source_url=self.clone_url(category, username),
                                    dest_path=self.suggested_clone_dest_path()))
 
     def merge_requests_by_statuses(self, *statuses):
