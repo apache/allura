@@ -28,9 +28,17 @@
     {% set hide_left_bar = True %}
 {% endif %}
 
+{% set clone_categories = repo.clone_command_categories(anon=not h.has_access(c.app, 'write')()) %}
+
 {% block extra_css %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="{{c.app.url}}feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="{{c.app.url}}feed.atom"/>
+    <style type="text/css">
+        #access_urls .btn-set {
+            {# we need a min-width to prevent this block from wrapping, but its size can vary, so we have to do this ugly guesstimate #}
+            min-width: {{ clone_categories|join('', attribute='name')|length + clone_categories|length + 1}}em;
+        }
+    </style>
 {% endblock %}
 
 {% block extra_js %}
@@ -91,34 +99,25 @@
 {% macro clone_info(repo) %}
   {% if repo %}
     <div id="access_urls" class="btn-bar grid-19">
-      <div class="btn-set{% if not h.has_access(c.app, 'write')() %} duo{% endif %}">
-        {% if h.has_access(c.app, 'write')() %}
-        <a class="btn" data-url="{{repo.clone_command('rw')}}" title="Read/Write">
-          RW
-        </a>
-        <a href="#" class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
-          RO
-        </a>
-        <a href="#" class="btn" data-url="{{repo.clone_command('https')}}" title="HTTP">
-          HTTP
-        </a>
-        {% else %}
-        <a href="#" class="btn" data-url="{{repo.clone_command('ro')}}" title="Read Only">
-          RO
-        </a>
-        <a href="#" class="btn" data-url="{{repo.clone_command('https_anon')}}" title="HTTP">
-          HTTP
-        </a>
-        {% endif %}
-      </div>
-      <span></span>
-      <input id="access_url" readonly type="text"
+      {% if clone_categories|length > 1 %}
+        <div class="btn-set{% if clone_categories|length == 2 %} duo{% endif %}">
+          {% for clone_cat in clone_categories %}
+            <a class="btn" data-url="{{repo.clone_command(clone_cat['key'])}}" title="{{ clone_cat.get('title', '') }}">
+              {{ clone_cat['name'] }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <span>{{ clone_categories[0]['title'] }} access</span>
+      <div>
+        <input id="access_url" readonly type="text"
              class="selectText"
-             value=""/>
+             value="{{repo.clone_command(clone_categories[0]['key'])}}"/>
+      </div>
     </div>
     {% if not c.user.is_anonymous() and c.user.get_pref('multifactor') and h.has_access(c.app, 'write') %}
         <div id="http-2fa-msg" class="grid-19 info" style="display: none">
-        When using HTTP access with two-factor auth, you will need to enter your password and current token together as
+        When using HTTPS access with two-factor auth, you will need to enter your password and current token together as
         the password (e.g. "p4ssw0Rd123456")
         </div>
     {% endif %}

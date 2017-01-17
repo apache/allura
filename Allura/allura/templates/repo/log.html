@@ -38,6 +38,7 @@
 {% endblock %}
 
 {% block extra_css %}
+{{ super() }}
 <style type="text/css">
     .rev.selected {
         background-color: #FFFFBE;
@@ -46,6 +47,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ super() }}
 <script>
     function check_revisions(){
         $("tr.rev").toggleClass("selected", false);

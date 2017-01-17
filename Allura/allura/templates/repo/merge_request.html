@@ -161,6 +161,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
 
 {% block extra_css %}
+{{ super() }}
 <style type="text/css">
   .merge-help-text { display: none; }
   .merge-ok { color: green; }

@@ -136,7 +136,7 @@ class TestRootController(_TestCase):
 
     def test_index(self):
         resp = self.app.get('/src-git/').follow().follow()
-        assert 'git://' in resp
+        assert 'git clone /srv/git' in resp
 
     def test_index_empty(self):
         self.app.get('/git/')
@@ -641,9 +641,9 @@ class TestFork(_TestCase):
                      '/p/test2/code/ci/%s/tree' % c_id)
         assert_equal(browse_links[0].getText(), 'Tree')
         merge_instructions = r.html.findAll('textarea')[0].getText()
-        assert 'git checkout master' in merge_instructions
-        assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
-        assert 'git merge {}'.format(c_id) in merge_instructions
+        assert_in('git checkout master', merge_instructions)
+        assert_in('git fetch /srv/git/p/test2/code master', merge_instructions)
+        assert_in('git merge {}'.format(c_id), merge_instructions)
         assert_regexp_matches(str(r), r'[0-9]+ seconds? ago')
 
         merge_form = r.html.find('div', {'class': 'merge-help-text merge-ok'})

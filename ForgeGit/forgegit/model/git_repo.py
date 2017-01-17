@@ -82,7 +82,7 @@ class Repository(M.Repository):
         '''Return the command to merge a given commit to a given target branch'''
         if merge_request.source_branch:
             fetch_command = 'git fetch {} {}'.format(
-                merge_request.downstream_repo_url,
+                merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username),
                 merge_request.source_branch,
             )
         else:
@@ -90,7 +90,7 @@ class Repository(M.Repository):
                 'git remote add merge_request {}\n'
                 'git fetch merge_request'
             ).format(
-                merge_request.downstream_repo_url,
+                merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username),
             )
         return 'git checkout %s\n%s\ngit merge %s' % (
             merge_request.target_branch,

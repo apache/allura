@@ -526,11 +526,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_clone_url(self):
         assert_equal(
-            self.repo.clone_url('rw', 'nobody'),
-            'ssh://nobody@localhost:8022/scm-repo/p/test/testgit')
-        assert_equal(
-            self.repo.clone_url('https', 'nobody'),
-            'https://nobody@localhost:8022/scm-repo/p/test/testgit')
+            self.repo.clone_url('file', 'nobody'),
+            '/srv/git/p/test/testgit')
         with h.push_config(self.repo.app.config.options, external_checkout_url='https://$username@foo.com/'):
             assert_equal(
                 self.repo.clone_url('https', 'user'),

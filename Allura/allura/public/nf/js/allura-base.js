@@ -100,7 +100,7 @@ $(function(){
         // http://stackoverflow.com/questions/3150275/jquery-input-select-all-on-focus/3150369#3150369
         window.setTimeout(function() {
             field.select();
-        }, 0);
+        }, 10);
     });
 });
 

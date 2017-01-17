@@ -80,7 +80,7 @@ If there is no output, that is fine (it's an empty repo).
 
     This configuration has no authentication and is suitable for development only.  See :ref:`below <auth_apache>` for auth config.
 
-Now you will want to change the :samp:`scm.host.{*}.git`
+Now you will want to change the :samp:`scm.host.{*}.git` and :samp:`scm.clonechoices.git`
 settings in :file:`development.ini`, so that the proper commands are shown to your visitors
 when they browse the code repo web pages.  The exact values to use will depend on the
 hostnames and port numbers you are using.
@@ -120,7 +120,7 @@ run :command:`killall svnserve`  More info at http://svnbook.red-bean.com/en/1.8
     This configuration has no authentication and is suitable for development only.
     (Maybe Allura could gain SASL support someday and use `svnserve with SASL <http://svnbook.red-bean.com/en/1.7/svn.serverconfig.svnserve.html#svn.serverconfig.svnserve.sasl>`_)
 
-Now you will want to change the :samp:`scm.host.{*}.svn`
+Now you will want to change the :samp:`scm.host.{*}.svn` and :samp:`scm.clonechoices.svn`
 settings in :file:`development.ini`, so that the proper commands are shown to your visitors
 when they browse the code repo web pages.
 

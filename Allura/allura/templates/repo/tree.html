@@ -30,6 +30,7 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 {% endblock %}
 
 {% block extra_css %}
+{{ super() }}
 <style>
 form.tarball {
   display: inline;

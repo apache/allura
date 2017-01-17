@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import json
 import os
 import stat
 import mimetypes
@@ -615,12 +615,21 @@ class Repository(Artifact, ActivityObject):
             tpl = string.Template(tg.config.get('scm.host.%s.%s' % (category, self.tool)))
         url = tpl.substitute(dict(username=username, path=self.url_path + self.name))
         # this is an svn option, but keeps clone_*() code from diverging
-        url += c.app.config.options.get('checkout_url', '')
+        url += self.app.config.options.get('checkout_url', '')
         return url
+
+    def clone_url_first(self, anon, username=''):
+        '''
+        Get first clone_url option, useful for places where we need to show just one
+
+        :param bool anon: Anonymous or not
+        :param str username: optional
+        '''
+        cat = self.clone_command_categories(anon=anon)[0]['key']
+        return self.clone_url(cat, username)
 
     def clone_command(self, category, username=''):
         '''Return a string suitable for copy/paste that would clone this repo locally
-           category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
         '''
         if not username and c.user not in (None, User.anonymous()):
             username = c.user.username
@@ -629,6 +638,32 @@ class Repository(Artifact, ActivityObject):
         return tpl.substitute(dict(username=username,
                                    source_url=self.clone_url(category, username),
                                    dest_path=self.suggested_clone_dest_path()))
+
+    def clone_command_first(self, anon, username=''):
+        '''
+        Get first clone_command option, useful for places where we need to show just one
+
+        :param bool anon: Anonymous or not
+        :param str username: optional
+        '''
+        cat = self.clone_command_categories(anon=anon)[0]['key']
+        return self.clone_command(cat, username)
+
+    def clone_command_categories(self, anon):
+        conf = tg.config.get('scm.clonechoices{}.{}'.format('_anon' if anon else '', self.tool))
+        if not conf and anon:
+            # check for a non-anon config
+            conf = tg.config.get('scm.clonechoices.{}'.format(self.tool))
+        if conf:
+            return json.loads(conf)
+        elif anon:
+            # defaults to match historical scm.clone.* configs, in case someone updates Allura but not their .ini
+            return [{"name": "RO", "key": "ro", "title": "Read Only"},
+                    {"name": "HTTPS", "key": "https_anon", "title": "HTTPS"}]
+        else:
+            return [{"name": "RW", "key": "rw", "title": "Read/Write"},
+                    {"name": "RO", "key": "ro", "title": "Read Only"},
+                    {"name": "HTTPS", "key": "https", "title": "HTTPS"}]
 
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
@@ -794,13 +829,6 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     def downstream_repo(self):
         with self.push_downstream_context():
             return c.app.repo
-
-    @LazyProperty
-    def downstream_repo_url(self):
-        with self.push_downstream_context():
-            return c.app.repo.clone_url(
-                category='ro',
-                username=c.user.username)
 
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)

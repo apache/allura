@@ -87,6 +87,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% endblock %}
 
 {% block extra_css %}
+{{ super() }}
 <style type="text/css">
     #snapshot_status {
       margin: 0 10px;

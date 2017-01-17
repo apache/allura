@@ -59,9 +59,10 @@
       <code>/branches</code>, and <code>/tags</code> directory at the root of each
       repository. If you'd like to do that, follow these instructions:
     <p>
+
     <div class="codehilite">
       <pre>
-{{c.app.repo.clone_command('rw')}}
+{{c.app.repo.clone_command_first(anon=False, username=c.user.username)}}
 cd {{c.app.repo.suggested_clone_dest_path()}}
 mkdir trunk branches tags
 svn add trunk branches tags
@@ -79,7 +80,7 @@ svn ci -m "Add initial directories"
     <h2>Import project on disk to Subversion</h2>
     <div class="codehilite">
       <pre>cd existing-{{c.app.repo.suggested_clone_dest_path()}}
-svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</pre>
+svn import {{c.app.repo.clone_url_first(anon=False, username=c.user.username)}} -m "Initial commit"</pre>
     </div>
 
     <h2>Import remote repository to Subversion</h2>

@@ -20,7 +20,7 @@
 <form>
   <label class="grid-13" for="checkout_url">Checkout branch:</label>
   <div class="grid-9" style="text-align:right">
-    {{app.repo.clone_url('ro', app)}}
+    {{ app.repo.clone_url_first(anon=True) }}
     {% if allow_config %}
       <input type="text" name="checkout_url"
              id="checkout_url"

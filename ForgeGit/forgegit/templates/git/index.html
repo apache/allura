@@ -55,14 +55,14 @@
     </div>
 
     <h2>First time using Git</h2>
-
+    {% set origin = c.app.repo.clone_url_first(anon=False, username=c.user.username) %}
     <div class="codehilite">
       <pre>cd myproject
 git init
 # add all your files.  Users can specify file names or directories instead of '.'
 git add .
 git commit -a -m 'Initial commit'
-git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
+git remote add origin {{ origin }}
 git push -u origin master</pre>
     </div>
 
@@ -70,7 +70,7 @@ git push -u origin master</pre>
 
     <div class="codehilite">
       <pre>cd myproject
-git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
+git remote add origin {{ origin }}
 git push -u origin master</pre>
     </div>
     &nbsp;
