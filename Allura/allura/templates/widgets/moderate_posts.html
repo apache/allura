@@ -55,7 +55,7 @@
           <td>
           {% if c.app.config.tool_name.lower() != 'discussion' %}
             {% if post and post.thread and post.thread.artifact %}
-              <a href="{{post.thread.artifact.url()}}">[{{post.thread.artifact.shorthand_id()}}]</a>
+              <a href="{{post.thread.artifact.url()}}#{{ post.slug }}">[{{post.thread.artifact.shorthand_id()}}]</a>
             {% else %}
                 <!-- debug: missing pointers
                 {% if post %} post._id: {{ post._id }} {% endif %}

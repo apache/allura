@@ -24,7 +24,7 @@
     <!-- post_thread replies -->
     <ul>
       {%- if children %}
-      {%- for child in children if child.post.status == 'ok' %}
+      {%- for child in children if h.has_access(value, 'read') or child.post.status == 'ok' %}
       {{widget.display(value=child.post, children=child.children, indent=indent+1)}}
       {%- endfor %}
       {%- endif %}

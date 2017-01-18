@@ -108,7 +108,7 @@
   <hr style="margin-top: 1em; margin-bottom: 2em; clear:both;">
   {{lib.related_artifacts(page)}}
   {% if page.discussion_thread and c.app.show_discussion %}
-      {% if h.has_access(page, 'edit')() or page.discussion_thread.num_replies > 0 %}
+      {% if h.has_access(page, 'post')() or page.discussion_thread.num_replies > 0 %}
           <div id="discussion_holder"><h2>Discussion</h2>
           {% set thread = page.discussion_thread %}
           <div>{{ c.thread.display(value=thread,page=pagenum,limit=limit,count=count) }}</div>
