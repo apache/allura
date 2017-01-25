@@ -128,7 +128,7 @@
                 </h2>
                 {% block edit_box %}{% endblock %}
                 <div{% if show_right_bar %}
-                    class="{% block inner_grid %}grid-{{ inner_width }}"{% endblock %}{% endif %}>
+                    class="{% block inner_grid scoped %}grid-{{ inner_width }}{% endblock %}"{% endif %}>
                     {% block before_content %}{% endblock %}
                     {% block content %}{% endblock %}
                 </div>
