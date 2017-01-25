@@ -43,7 +43,7 @@ oauthlib==0.4.2
 requests-oauthlib==0.4.0
 # for taskd proc name switching
 setproctitle==1.1.9
-six==1.7.3
+six==1.10.0
 # dep of pypeline
 textile==2.1.5
 # dep of colander
