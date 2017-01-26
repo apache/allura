@@ -516,6 +516,7 @@ class TestForum(TestController):
         thread = self.app.post('/discussion/save_new_topic', params=params,
                                extra_environ=dict(username='*anonymous')).follow()
 
+        # assert post awaiting moderation
         r = self.app.get(thread.request.url,
                          extra_environ=dict(username='*anonymous'))
         assert 'Post awaiting moderation' in r
@@ -523,6 +524,21 @@ class TestForum(TestController):
         assert 'name="approve"' not in r
         assert 'name="spam"' not in r
 
+        # assert unapproved thread replies do not appear
+        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
+        rep_url = f.get('action')
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
+        params[f.find('textarea')['name']] = 'anon reply to anon post content'
+        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username='*anonymous'))
+        r = self.app.get(thread.request.url,
+                         extra_environ=dict(username='*anonymous'))
+        assert 'anon reply to anon post' not in r
+
+        # assert moderation controls appear for admin
         r = self.app.get(thread.request.url)
         assert '<div class="display_post moderate">' in r
         assert '<i class="fa fa-reply"></i>' in r
@@ -531,9 +547,14 @@ class TestForum(TestController):
         assert 'name="approve"' in r
         assert 'name="spam"' in r
         assert 'Post content' in r
+
+        # assert anon posts appear in moderation queue
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')
+        post2 = FM.ForumPost.query.get(text='anon reply to anon post content')
         link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
+        assert link in r, link
+        link = '<a href="%s">[%s]</a>' % (post2.thread.url() + '?limit=25#' + post2.slug, post2.shorthand_id())
         assert link in r, link
 
     @td.with_tool('test2', 'Discussion', 'discussion')

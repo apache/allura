@@ -54,8 +54,9 @@
           <td>{{post.attachments|length}}</td>
           <td>
           {% if c.app.config.tool_name.lower() != 'discussion' %}
-            {% if post and post.thread and post.thread.artifact %}
-              <a href="{{post.thread.artifact.url()}}#{{ post.slug }}">[{{post.thread.artifact.shorthand_id()}}]</a>
+          {% if post and post.thread and post.thread.artifact %}
+              {% set paginator = post.thread.artifact.url_paginated or post.thread.artifact.url %}
+              <a href="{{ paginator() }}#{{ post.slug }}">[{{post.thread.artifact.shorthand_id()}}]</a>
             {% else %}
                 <!-- debug: missing pointers
                 {% if post %} post._id: {{ post._id }} {% endif %}
