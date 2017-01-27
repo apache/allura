@@ -345,7 +345,7 @@ class AddWebsiteForm(ForgeForm):
         newwebsite = ew.TextField(
             label='New website url',
             attrs={'value': ''},
-            validator=fev.URL())
+            validator=fev.URL(not_empty=True))
 
     def display(self, **kw):
         initial_value = kw.get('initial_value', '')
