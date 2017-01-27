@@ -27,11 +27,12 @@ from xml.etree import ElementTree as ET
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist
 import formencode as fe
-import json
 from webob import exc
+import PIL
 
+from allura.lib.decorators import memoize
 from ming import schema as S
 from ming.utils import LazyProperty
 from ming.orm import ThreadLocalORMSession
@@ -62,6 +63,8 @@ log = logging.getLogger(__name__)
 
 # max sitemap entries per tool type
 SITEMAP_PER_TOOL_LIMIT = 10
+
+DEFAULT_ICON_WIDTH = 48
 
 
 class ProjectFile(File):
@@ -354,11 +357,32 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             project_id=self._id,
             category='screenshot')).sort('sort').all()
 
-    @LazyProperty
+    @property
     def icon(self):
-        return ProjectFile.query.get(
-            project_id=self._id,
-            category='icon')
+        return self.icon_sized(DEFAULT_ICON_WIDTH)
+
+    @memoize
+    def icon_sized(self, w):
+        allowed_sizes = map(int, aslist(config.get('project_icon_sizes', '48 72 96')))
+        if w not in allowed_sizes:
+            raise ValueError('Width must be one of {} (see project_icon_sizes in your .ini file)'.format(allowed_sizes))
+        if w == DEFAULT_ICON_WIDTH:
+            icon_cat_name = 'icon'
+        else:
+            icon_cat_name = 'icon-{}'.format(w)
+        sized = ProjectFile.query.get(project_id=self._id, category=icon_cat_name)
+        if not sized and w != DEFAULT_ICON_WIDTH:
+            orig = ProjectFile.query.get(project_id=self._id, category='icon_original')
+            if not orig:
+                return None
+            sized = orig.save_thumbnail(filename='',
+                                        image=PIL.Image.open(orig.rfile()),
+                                        content_type=orig.content_type,
+                                        thumbnail_size=(w, w),
+                                        thumbnail_meta=dict(project_id=c.project._id, category=icon_cat_name),
+                                        square=True,
+                                        )
+        return sized
 
     @property
     def description_html(self):

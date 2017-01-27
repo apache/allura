@@ -128,7 +128,6 @@ class File(MappedClass):
                        thumbnail_size=None,
                        thumbnail_meta=None,
                        square=False):
-        format = image.format
         height = image.size[0]
         width = image.size[1]
         if square and height != width:
@@ -151,6 +150,7 @@ class File(MappedClass):
         thumbnail_meta = thumbnail_meta or {}
         thumbnail = cls(
             filename=filename, content_type=content_type, **thumbnail_meta)
+        format = image.format or 'png'
         with thumbnail.wfile() as fp_w:
             if 'transparency' in image.info:
                 image.save(fp_w,

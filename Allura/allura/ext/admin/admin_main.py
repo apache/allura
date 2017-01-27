@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+import re
 from collections import OrderedDict
 from datetime import datetime
 from urlparse import urlparse
@@ -348,8 +349,7 @@ class ProjectAdminController(BaseController):
             c.project.removal = removal
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
-            M.ProjectFile.query.remove(
-                dict(project_id=c.project._id, category='icon'))
+            M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             M.AuditLog.log('remove project icon')
             h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
@@ -448,13 +448,15 @@ class ProjectAdminController(BaseController):
 
         if icon is not None and icon != '':
             if c.project.icon:
-                M.ProjectFile.remove(
-                    dict(project_id=c.project._id, category='icon'))
+                M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             M.AuditLog.log('update project icon')
             M.ProjectFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48, 48),
-                thumbnail_meta=dict(project_id=c.project._id, category='icon'))
+                thumbnail_meta=dict(project_id=c.project._id, category='icon'),
+                save_original=True,
+                original_meta=dict(project_id=c.project._id, category='icon_original'),
+            )
         g.post_event('project_updated')
         flash('Saved', 'success')
         redirect('overview')

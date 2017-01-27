@@ -947,6 +947,7 @@ class ProjectRegistrationProvider(object):
                 project_template['icon']['filename'], icon_file,
                 square=True, thumbnail_size=(48, 48),
                 thumbnail_meta=dict(project_id=p._id, category='icon'))
+            # FIXME
 
         if user_project:
             # Allow for special user-only tools
