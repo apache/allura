@@ -420,8 +420,12 @@ class ProjectController(FeedController):
             project.url())
 
     @expose()
-    def icon(self, **kw):
-        icon = c.project.icon
+    def icon(self, w=48, **kw):
+        try:
+            icon = c.project.icon_sized(w=int(w))
+        except ValueError as e:
+            log.info('Invalid project icon size: %s on %s', e, request.url)
+            icon = None
         if not icon:
             raise exc.HTTPNotFound
         return icon.serve()
