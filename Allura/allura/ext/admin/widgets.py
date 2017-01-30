@@ -149,7 +149,7 @@ class ScreenshotAdmin(ff.ForgeForm):
     def fields(self):
         fields = [
             ew.InputField(name='screenshot', field_type='file',
-                          label='New Screenshot'),
+                          label='New Screenshot', attrs={'accept': 'image/*'}),
             ew.InputField(name='caption',
                           field_type="text",
                           label='Caption',
@@ -213,7 +213,7 @@ class MetadataAdmin(ff.AdminForm):
             append_to='bottom',
             extra_field_on_focus_name='feature',
             field=FeaturesField())
-        icon = ew.FileField(label='Icon')
+        icon = ew.FileField(label='Icon', attrs={'accept': 'image/*'})
         external_homepage = ew.InputField(field_type="text", label='Homepage',
                                           validator=fev.URL(add_http=True))
         video_url = ew.InputField(field_type="text", label="Video (YouTube)",
