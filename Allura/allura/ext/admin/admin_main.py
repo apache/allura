@@ -23,6 +23,7 @@ from urlparse import urlparse
 import json
 from operator import itemgetter, attrgetter
 import pkg_resources
+
 from pylons import tmpl_context as c, app_globals as g, response
 from pylons import request
 from paste.deploy.converters import asbool, aslist
@@ -32,12 +33,12 @@ from webob import exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.odm import session
-from ming.utils import LazyProperty
+import PIL
+
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
-from allura.lib.repository import RepositoryApp
 from allura.lib.security import has_access, require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
@@ -46,7 +47,6 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.tasks import export_tasks
 from allura.lib.widgets.project_list import ProjectScreenshots
-from allura.lib.utils import is_ajax
 
 from . import widgets as aw
 
@@ -350,6 +350,7 @@ class ProjectAdminController(BaseController):
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
+            c.project.set_tool_data('allura', icon_original_size=None)
             M.AuditLog.log('remove project icon')
             h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
@@ -450,13 +451,16 @@ class ProjectAdminController(BaseController):
             if c.project.icon:
                 M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             M.AuditLog.log('update project icon')
-            M.ProjectFile.save_image(
+            icon_orig, icon_thumb = M.ProjectFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48, 48),
                 thumbnail_meta=dict(project_id=c.project._id, category='icon'),
                 save_original=True,
                 original_meta=dict(project_id=c.project._id, category='icon_original'),
             )
+            # store the dimensions so we don't have to read the whole image each time we need to know
+            icon_orig_img = PIL.Image.open(icon_orig.rfile())
+            c.project.set_tool_data('allura', icon_original_size=icon_orig_img.size)
         g.post_event('project_updated')
         flash('Saved', 'success')
         redirect('overview')

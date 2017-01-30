@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div class="list card{% if show_proj_icon%} proj_icon{% endif %}"
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
   {% if accolades %}
@@ -23,11 +24,11 @@
       <div class="feature">
         <a href="{{accolades[0].award_url}}" title="{{accolades[0].comment}}">{{accolades[0].award.short}}</a>
       </div>
-      {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
+      {% if icon_url %}<img {{ lib.project_icon_srcs(project=value, icon_url=icon_url) }} alt="{{value.name}} Logo" width="48" height="48"/>{% endif %}
     </div>
   {% elif icon_url %}
     <div class="box">
-      <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
+      <img {{ lib.project_icon_srcs(value, icon_url=icon_url) }} alt="{{value.name}} Logo" width="48" height="48"/>
     </div>
   {% endif %}
   <h2><a href="{{value.url()}}">{{value.name}}</a></h2>

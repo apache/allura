@@ -559,6 +559,9 @@ class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
                        + html5lib.sanitizer.HTMLSanitizer.mathml_elements \
                        + html5lib.sanitizer.HTMLSanitizer.svg_elements
 
+    # srcset is used in our own project_list/project_summary widgets which are used as macros so go through markdown
+    allowed_attributes = html5lib.sanitizer.HTMLSanitizer.allowed_attributes + ['srcset']
+
     valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
 
     _prev_token_was_ok_iframe = False

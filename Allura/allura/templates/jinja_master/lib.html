@@ -200,6 +200,20 @@
     {{ g.icons['restore'].render(show_title=True, id='restore-content') }}
 {%- endmacro %}
 
+{#
+ icon_url param is entirely optional; only pass it if you already have one for effeciency
+#}
+{%- macro project_icon_srcs(project, icon_url=None) %}
+    {% set icon_url = icon_url or project.url() + 'icon' %}
+    src="{{icon_url}}?{{project.icon_timestamp}}"
+    {% if project.icon_max_size >= 72 -%}
+        srcset="{{icon_url}}?w=72&amp;{{project.icon_timestamp}} 1.5x,
+        {% if project.icon_max_size >= 96 -%}
+            {{icon_url}}?w=96&amp;{{project.icon_timestamp}} 2x,
+        {%- endif -%}
+        "
+   {%- endif -%}
+{%- endmacro %}
 
 
 {% macro markdown_syntax(id='') %}
