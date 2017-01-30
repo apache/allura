@@ -17,6 +17,7 @@
 #       under the License.
 
 import logging
+from calendar import timegm
 from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
@@ -372,7 +373,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             icon_cat_name = 'icon-{}'.format(w)
         sized = ProjectFile.query.get(project_id=self._id, category=icon_cat_name)
         if not sized and w != DEFAULT_ICON_WIDTH:
-            orig = ProjectFile.query.get(project_id=self._id, category='icon_original')
+            orig = self.icon_original
             if not orig:
                 return None
             sized = orig.save_thumbnail(filename='',
@@ -383,6 +384,25 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                                         square=True,
                                         )
         return sized
+
+    @LazyProperty
+    def icon_original(self):
+        return ProjectFile.query.get(project_id=self._id, category='icon_original')
+
+    @LazyProperty
+    def icon_max_size(self):
+        stored_original_size = self.get_tool_data('allura', 'icon_original_size')
+        if stored_original_size:
+            # max not min, since non-square images get white padding added
+            return max(stored_original_size)
+        elif self.icon:
+            return DEFAULT_ICON_WIDTH
+        else:
+            return None
+
+    @LazyProperty
+    def icon_timestamp(self):
+        return timegm(self.icon._id.generation_time.timetuple())
 
     @property
     def description_html(self):
@@ -503,8 +523,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': result.keys()},
                 category='icon')):
-            result[icon.project_id] = project_index[
-                icon.project_id].url() + 'icon'
+            result[icon.project_id] = project_index[icon.project_id].url() + 'icon'
         return result
 
     @classmethod
