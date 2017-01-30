@@ -132,7 +132,7 @@ class File(MappedClass):
         width = image.size[1]
         if square and height != width:
             sz = max(width, height)
-            if 'transparency' in image.info:
+            if image.mode == 'RGBA':
                 new_image = PIL.Image.new('RGBA', (sz, sz))
             else:
                 new_image = PIL.Image.new('RGB', (sz, sz), 'white')
