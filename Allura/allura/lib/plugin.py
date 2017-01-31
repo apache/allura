@@ -941,13 +941,8 @@ class ProjectRegistrationProvider(object):
                     troves.append(
                         M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
         if 'icon' in project_template:
-            icon_file = StringIO(
-                urlopen(project_template['icon']['url']).read())
-            M.ProjectFile.save_image(
-                project_template['icon']['filename'], icon_file,
-                square=True, thumbnail_size=(48, 48),
-                thumbnail_meta=dict(project_id=p._id, category='icon'))
-            # FIXME
+            icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+            p.save_icon(project_template['icon']['filename'], icon_file)
 
         if user_project:
             # Allow for special user-only tools
