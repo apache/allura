@@ -358,6 +358,18 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             project_id=self._id,
             category='screenshot')).sort('sort').all()
 
+    def save_icon(self, filename, file_input, content_type=None):
+        icon_orig, icon_thumb = ProjectFile.save_image(
+            filename, file_input, content_type=content_type,
+            square=True, thumbnail_size=(48, 48),
+            thumbnail_meta=dict(project_id=self._id, category='icon'),
+            save_original=True,
+            original_meta=dict(project_id=self._id, category='icon_original'),
+        )
+        # store the dimensions so we don't have to read the whole image each time we need to know
+        icon_orig_img = PIL.Image.open(icon_orig.rfile())
+        self.set_tool_data('allura', icon_original_size=icon_orig_img.size)
+
     @property
     def icon(self):
         return self.icon_sized(DEFAULT_ICON_WIDTH)
