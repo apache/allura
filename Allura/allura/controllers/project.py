@@ -433,7 +433,7 @@ class ProjectController(FeedController):
     @expose()
     def user_icon(self, **kw):
         try:
-            return self.icon()
+            return self.icon(**kw)
         except exc.HTTPNotFound:
             redirect(g.forge_static('images/user.png'))
 
