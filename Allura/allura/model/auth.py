@@ -624,7 +624,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
     @memoize
-    def icon_url(self, gravatar_default_url=None):
+    def icon_url(self, gravatar_default_url=None, return_more=False):
         icon_url = None
         try:
             private_project = self.private_project()
@@ -632,14 +632,21 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             log.warn('Error getting/creating user-project for %s',
                      self.username, exc_info=True)
             private_project = None
+        icon_source = None
         if private_project and private_project.icon:
             icon_url = self.url() + 'user_icon'
+            icon_source = 'local'
         elif self.preferences.email_address:
             gravatar_args = {}
             if gravatar_default_url:
                 gravatar_args['d'] = gravatar_default_url
             icon_url = g.gravatar(self.preferences.email_address, **gravatar_args)
-        return icon_url
+            icon_source = 'gravatar'
+
+        if return_more:
+            return icon_url, private_project, icon_source
+        else:
+            return icon_url
 
     @classmethod
     def upsert(cls, username):
