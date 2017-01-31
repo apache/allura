@@ -165,7 +165,13 @@ class Neighborhood(MappedClass):
 
     @property
     def icon(self):
-        return NeighborhoodFile.query.get(neighborhood_id=self._id)
+        # New icon storage uses the neighborhood_project object, so Project.icon* methods can be shared
+        if self.neighborhood_project.get_tool_data('allura', 'icon_original_size'):
+            icon = self.neighborhood_project.icon
+        else:
+            # fallback to older storage location
+            icon = NeighborhoodFile.query.get(neighborhood_id=self._id)
+        return icon
 
     @property
     def allow_custom_css(self):

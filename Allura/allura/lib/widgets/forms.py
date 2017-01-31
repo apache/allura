@@ -805,7 +805,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         css = ffw.AutoResizeTextarea()
         project_template = ffw.AutoResizeTextarea(
             validator=V.JsonValidator(if_empty=''))
-        icon = ew.FileField()
+        icon = ew.FileField(attrs={'accept': 'image/*'})
         tracking_id = ew.TextField()
         project_list_url = ew.TextField()
         anchored_tools = ffw.AutoResizeTextarea()

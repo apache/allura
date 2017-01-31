@@ -16,11 +16,12 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% if not neighborhood or not neighborhood.show_title %}
   <div id="nav_menu_missing"></div>
 {% else %}
     {% if neighborhood.icon %}
-      <a href="{{neighborhood.url()}}"><img src="{{neighborhood.url()}}icon" class="project_icon" alt="{{neighborhood.name}} Logo"/></a>
+      <a href="{{neighborhood.url()}}"><img {{ lib.project_icon_srcs(neighborhood.neighborhood_project) }} class="project_icon" alt="{{neighborhood.name}} Logo"/></a>
     {% endif %}
 	<h1 class="project_title"><a href="{{neighborhood.url()}}">{{neighborhood.name}}</a></h1>
   {% if neighborhood.project_list_url %}

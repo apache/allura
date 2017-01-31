@@ -131,7 +131,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- macro project_header_right(project, app) %}
   {% if project.neighborhood.icon %}
   <div class="neighborhood_block">
-    <a href="{{project.neighborhood.url()}}"><img src="{{project.neighborhood.url()}}icon" class="neighborhood_icon"
+    <a href="{{project.neighborhood.url()}}"><img {{ lib.project_icon_srcs(project.neighborhood.neighborhood_project) }} class="neighborhood_icon"
        alt="Return to {{project.neighborhood.name}}" title="Return to {{project.neighborhood.name}}"></a>
        <div class="neighborhood_title">
          <h3><a href="{{project.neighborhood.url()}}">{{project.neighborhood.name}}</a></h3>

@@ -246,8 +246,15 @@ class NeighborhoodController(object):
         redirect(c.project.script_name + 'admin/?first-visit')
 
     @expose()
-    def icon(self, **kw):
-        icon = self.neighborhood.icon
+    def icon(self, w=None, **kw):
+        try:
+            icon = c.project.icon_sized(w=int(w or 48))
+        except ValueError as e:
+            log.info('Invalid project icon size: %s on %s', e, request.url)
+            icon = None
+        if icon is None and w is None:
+            # fallback to older icons stored with neighborhood_id rather than using the nbhd project_id
+            icon = self.neighborhood.icon
         if not icon:
             raise exc.HTTPNotFound
         return icon.serve()
@@ -674,11 +681,9 @@ class NeighborhoodAdminController(object):
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
+                M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             M.AuditLog.log('update neighborhood icon')
-            M.NeighborhoodFile.save_image(
-                icon.filename, icon.file, content_type=icon.type,
-                square=True, thumbnail_size=(48, 48),
-                thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
+            c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
         redirect('overview')
 
     @expose('jinja:allura:templates/neighborhood_help.html')
