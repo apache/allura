@@ -158,11 +158,9 @@ Test at http://localhost/svn/p/test/code/ (`localhost:8088` if using Vagrant)
 
 That configuration works only for the repositories in a single project.  You must either
 create a new configuration for each project within Allura, or compile a patch
-to make `SVNParentPath` be recursive.  The patch is at http://pastie.org/8550810
-and must be applied to the source of Subversion 1.7's mod_dav_svn and then
-recompiled and installed.  (See http://subversion.tigris.org/issues/show_bug.cgi?id=3588
-for the request to include this patch in Subversion itself).  Once that is working,
-you can modify :file:`dav_svn.conf` to look like:
+to make `SVNParentPath` be recursive.  The patch is at https://issues.apache.org/jira/browse/SVN-3588
+and must be applied to the source of Subversion's mod_dav_svn and then
+recompiled and installed.  Once that is working, you can modify :file:`dav_svn.conf` to look like:
 
 .. code-block:: apache
 
