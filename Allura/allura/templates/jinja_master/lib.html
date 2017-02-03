@@ -61,7 +61,7 @@
          {% elif icon_source == 'gravatar' %}
              src="{{ icon_url }}"
              srcset="{{icon_url}}&s={{ size*1.5 }} 1.5x,
-                     {{icon_url}}&s={{ size*2 }} 2x,"
+                     {{icon_url}}&s={{ size*2 }} 2x"
          {% endif %}
          alt="{{display_name}}"
          title="{{display_name}}"
@@ -214,9 +214,9 @@
     {% set icon_url = icon_url or project.url() + 'icon' %}
     src="{{icon_url}}?{{project.icon_timestamp}}"
     {% if project.icon_max_size >= 72 -%}
-        srcset="{{icon_url}}?w=72&amp;{{project.icon_timestamp}} 1.5x,
-        {% if project.icon_max_size >= 96 -%}
-            {{icon_url}}?w=96&amp;{{project.icon_timestamp}} 2x,
+        srcset="{{icon_url}}?w=72&amp;{{project.icon_timestamp}} 1.5x
+        {% if project.icon_max_size >= 96 -%},
+            {{icon_url}}?w=96&amp;{{project.icon_timestamp}} 2x
         {%- endif -%}
         "
    {%- endif -%}
