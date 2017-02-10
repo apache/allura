@@ -168,7 +168,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
 
     # Send notifications
     if notify:
-        send_notifications(repo, commit_ids)
+        send_notifications(repo, reversed(commit_ids))
 
 
 def refresh_commit_trees(ci, cache):

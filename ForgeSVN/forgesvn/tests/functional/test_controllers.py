@@ -118,11 +118,11 @@ class TestRootController(SVNTestController):
                          'Recent changes to SVN repository in test project')
             link = channel.find('link').text
             assert_equal(link, 'http://localhost/p/test/src/')
-            commit = channel.find('item')
-            assert_equal(commit.find('title').text, 'Create readme')
+            earliest_commit = channel.findall('item')[-1]
+            assert_equal(earliest_commit.find('title').text, 'Create readme')
             link = 'http://localhost/p/test/src/1/'
-            assert_equal(commit.find('link').text, link)
-            assert_equal(commit.find('guid').text, link)
+            assert_equal(earliest_commit.find('link').text, link)
+            assert_equal(earliest_commit.find('guid').text, link)
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'
         r = self.app.get('/src/feed.atom')
@@ -130,10 +130,10 @@ class TestRootController(SVNTestController):
         assert_equal(title, 'test SVN changes')
         link = r.xml.find(prefix + 'link').attrib['href']
         assert_equal(link, 'http://localhost/p/test/src/')
-        commit = r.xml.find(prefix + 'entry')
-        assert_equal(commit.find(prefix + 'title').text, 'Create readme')
+        earliest_commit = r.xml.findall(prefix + 'entry')[-1]
+        assert_equal(earliest_commit.find(prefix + 'title').text, 'Create readme')
         link = 'http://localhost/p/test/src/1/'
-        assert_equal(commit.find(prefix + 'link').attrib['href'], link)
+        assert_equal(earliest_commit.find(prefix + 'link').attrib['href'], link)
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')

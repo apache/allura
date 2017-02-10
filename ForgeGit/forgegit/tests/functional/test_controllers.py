@@ -24,7 +24,7 @@ import shutil
 import tempfile
 
 from datadiff.tools import assert_equal as dd_assert_equal
-from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
+from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal, assert_less
 import tg
 import pkg_resources
 from nose.tools import assert_regexp_matches
@@ -219,11 +219,12 @@ class TestRootController(_TestCase):
                          'Recent changes to Git repository in test project')
             link = channel.find('link').text
             assert_equal(link, 'http://localhost/p/test/src-git/')
-            commit = channel.find('item')
-            assert_equal(commit.find('title').text, 'Initial commit')
+            earliest_commit = channel.findall('item')[-1]
+            assert_equal(earliest_commit.find('title').text, 'Initial commit')
             link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
-            assert_equal(commit.find('link').text, link)
-            assert_equal(commit.find('guid').text, link)
+            assert_equal(earliest_commit.find('link').text, link)
+            assert_equal(earliest_commit.find('guid').text, link)
+
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'
         r = self.app.get('/src-git/feed.atom')
@@ -231,10 +232,10 @@ class TestRootController(_TestCase):
         assert_equal(title, 'test Git changes')
         link = r.xml.find(prefix + 'link').attrib['href']
         assert_equal(link, 'http://localhost/p/test/src-git/')
-        commit = r.xml.find(prefix + 'entry')
-        assert_equal(commit.find(prefix + 'title').text, 'Initial commit')
+        earliest_commit = r.xml.findall(prefix + 'entry')[-1]
+        assert_equal(earliest_commit.find(prefix + 'title').text, 'Initial commit')
         link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
-        assert_equal(commit.find(prefix + 'link').attrib['href'], link)
+        assert_equal(earliest_commit.find(prefix + 'link').attrib['href'], link)
 
     def test_tree(self):
         ci = self._get_ci()
@@ -309,6 +310,12 @@ class TestRootController(_TestCase):
         common_suffix = tg.config['forgemail.domain']
         email = 'noreply@%s%s' % (domain, common_suffix)
         assert_in(email, notification['reply_to_address'])
+
+        commit1_loc = notification.text.find('Initial commit')
+        assert commit1_loc != -1
+        commit2_loc = notification.text.find('Remove file')
+        assert commit2_loc != -1
+        assert_less(commit1_loc, commit2_loc)
 
     def test_file_force_display(self):
         ci = self._get_ci()
