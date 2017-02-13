@@ -63,6 +63,9 @@
 
 {% endblock %}
 
+
+{% do g.register_forge_js('js/jquery-ui.min.js', location='body_top_js') %}
+
 {% block extra_css %}
 <link rel="stylesheet" type="text/css" href="{{g.forge_static('css/smoothness/jquery-ui.min.css')}}"/>
 <link rel="stylesheet" type="text/css" href="{{g.forge_static('css/forge/ui.daterangepicker.css')}}"/>

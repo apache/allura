@@ -67,6 +67,7 @@ class LabelEdit(ew.InputField):
             return ','.join(value)
 
     def resources(self):
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.JSLink('js/jquery.tagsinput.js')
         yield ew.CSSLink('css/jquery.tagsinput.css')
         yield onready('''
@@ -114,6 +115,7 @@ class ProjectUserSelect(ew.InputField):
     def resources(self):
         for r in super(ProjectUserSelect, self).resources():
             yield r
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.project_user_select').autocomplete({
@@ -148,6 +150,7 @@ class ProjectUserCombo(ew.SingleSelectField):
     def resources(self):
         for r in super(ProjectUserCombo, self).resources():
             yield r
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')
         yield ew.CSSLink('css/combobox.css')
         yield ew.JSLink('js/combobox.js')
@@ -178,6 +181,7 @@ class NeighborhoodProjectSelect(ew.InputField):
     def resources(self):
         for r in super(NeighborhoodProjectSelect, self).resources():
             yield r
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.neighborhood-project-select').autocomplete({
@@ -449,6 +453,7 @@ class DateField(JQueryMixin, ew.TextField):
     def resources(self):
         for r in super(DateField, self).resources():
             yield r
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.CSSLink('css/jquery.ui.datepicker.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
 

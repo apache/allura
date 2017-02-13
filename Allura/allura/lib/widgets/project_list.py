@@ -120,5 +120,6 @@ class ProjectScreenshots(ew_core.Widget):
         draggable=False)
 
     def resources(self):
+        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.JSLink('js/screenshots.js')
         yield ew.CSSLink('css/screenshots.css')

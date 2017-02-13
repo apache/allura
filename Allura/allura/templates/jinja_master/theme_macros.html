@@ -151,6 +151,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {% if not login_overlay %}
 {%- macro login_overlay() %}
     {% do g.register_js('js/jquery.lightbox_me.js') %}
+    {% do g.register_forge_js('js/jquery-ui.min.js') %}
     {% do g.register_js('js/login_overlay.js') %}
     <div id="login_overlay" class="ui-widget-content">
         <h2 class="dark title">Login Required</h2>

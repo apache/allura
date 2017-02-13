@@ -305,7 +305,6 @@ class Post(HierWidget):
         (function () {
             $('div.discussion-post').each(function () {
                 var post = this;
-                $('.submit', post).button();
                 $('.moderate_post', post).click(function(e){
                     e.preventDefault();
                     var mod = $(this).text();
@@ -392,7 +391,6 @@ class Post(HierWidget):
                         $reply_post_form.show();
                         cm.focus();
                     });
-                    $('.reply_post', post).button();
                 }
                 if($('.add_attachment', post)){
                     $('.add_attachment', post).click(function (evt) {

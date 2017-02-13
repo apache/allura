@@ -19,6 +19,7 @@
 {% extends g.theme.master %}
 
 {% do g.register_forge_css('css/forge/deck.css') %}
+{% do g.register_forge_js('js/jquery-ui.min.js', location='body_top_js') %}
 {% do g.register_forge_js('js/project_groups.js', location='body_js_tail') %}
 
 {% block title %}{{c.project.name}} / User Permissions {% endblock %}
