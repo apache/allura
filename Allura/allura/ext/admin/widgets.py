@@ -167,7 +167,7 @@ class FeaturesField(ew.CompoundField):
     fields = [ew.TextField(name='feature', attrs={'style': 'width:89%'})]
 
     def resources(self):
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.8.4.custom.css', compress=False)  # compress will also serve from a different location, breaking image refs
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
 
 class MetadataAdmin(ff.AdminForm):

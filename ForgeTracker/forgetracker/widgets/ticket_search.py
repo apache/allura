@@ -55,7 +55,7 @@ class TicketSearchResults(ew_core.SimpleForm):
 
     def resources(self):
         yield ew.JSLink('tracker_js/jquery.multiselect.min.js')
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.8.4.custom.css')
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css')
         yield ew.CSSLink('tracker_css/jquery.multiselect.css')
         yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')
