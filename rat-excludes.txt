@@ -29,7 +29,6 @@ Allura/allura/lib/widgets/resources/js/simplemde.min.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/css/chosen.min.css
 Allura/allura/public/nf/css/font-awesome.min.css
-Allura/allura/public/nf/css/forge/accordion.css
 Allura/allura/public/nf/css/forge/tooltipster.css
 Allura/allura/public/nf/css/forge/ui.daterangepicker.css
 Allura/allura/public/nf/css/smoothness/jquery-ui.min.css
