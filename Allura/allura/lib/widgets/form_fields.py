@@ -116,7 +116,7 @@ class ProjectUserSelect(ew.InputField):
         for r in super(ProjectUserSelect, self).resources():
             yield r
         yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield onready('''
           $('input.project_user_select').autocomplete({
             source: function (request, response) {
@@ -151,7 +151,7 @@ class ProjectUserCombo(ew.SingleSelectField):
         for r in super(ProjectUserCombo, self).resources():
             yield r
         yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield ew.CSSLink('css/combobox.css')
         yield ew.JSLink('js/combobox.js')
         yield onready('''
@@ -182,7 +182,7 @@ class NeighborhoodProjectSelect(ew.InputField):
         for r in super(NeighborhoodProjectSelect, self).resources():
             yield r
         yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield onready('''
           $('input.neighborhood-project-select').autocomplete({
             source: function (request, response) {
@@ -454,7 +454,7 @@ class DateField(JQueryMixin, ew.TextField):
         for r in super(DateField, self).resources():
             yield r
         yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('css/jquery.ui.datepicker.css', compress=False)  # compress will also serve from a different location, breaking image refs
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
 
 class FieldCluster(ew.CompoundField):

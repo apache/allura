@@ -221,7 +221,6 @@ under the MIT license.  For details, see the individual files:
     Allura/allura/public/nf/js/jquery-base.js
     Allura/allura/public/nf/js/jquery-ui.min.js
     Allura/allura/public/nf/css/smoothness/jquery-ui.min.css
-    Allura/allura/lib/widgets/resources/css/jquery.ui.datepicker.css
     Allura/allura/public/nf/js/jquery.daterangepicker.js
     Allura/allura/public/nf/css/forge/ui.daterangepicker.css
     Allura/allura/lib/widgets/resources/css/autocomplete.css
