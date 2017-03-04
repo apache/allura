@@ -1164,7 +1164,8 @@ class GroupsController(BaseController):
         if not username or username == '*anonymous':
             return dict(error='You must choose a user to add.')
         group = M.ProjectRole.query.get(_id=ObjectId(role_id))
-        user = M.User.by_username(username.strip())
+        user = M.User.query.get(username=username.strip(), pending=False)
+
         if not group:
             return dict(error='Could not find group with id %s' % role_id)
         if not user:
