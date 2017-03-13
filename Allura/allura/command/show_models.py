@@ -289,7 +289,13 @@ class EnsureIndexCommand(base.Command):
             base.log.info('...... ensure %s:%s', collection.name, idx)
             while True:
                 try:
-                    collection.ensure_index(idx.index_spec, **idx.index_options)
+                    index_options = idx.index_options.copy()
+                    if idx.fields == ('_id',):
+                        # as of mongo 3.4 _id fields can't have these options set
+                        # _id is always non-sparse and unique anyway
+                        del index_options['sparse']
+                        del index_options['unique']
+                    collection.ensure_index(idx.index_spec, **index_options)
                     break
                 except DuplicateKeyError, err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
