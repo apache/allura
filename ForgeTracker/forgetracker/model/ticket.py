@@ -1216,8 +1216,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 # also query for choices for filter options right away
                 params = kw.copy()
                 params.update(tsearch.FACET_PARAMS)
+                q_ = q
+                if not show_deleted:
+                    q_ = cls.not_deleted_query(q_)
                 matches = search_artifact(
-                    cls, q, short_timeout=True,
+                    cls, q_, short_timeout=True,
                     rows=limit, sort=refined_sort, start=start, fl='ticket_num_i',
                     filter=filter, **params)
             else:
@@ -1255,6 +1258,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     solr_error=solr_error, **kw)
 
     @classmethod
+    def not_deleted_query(cls, search_query):
+        """Update query to exclude deleted tickets
+        search_query - query in solr syntax
+        """
+        return search_query + ' && deleted:False'
+
+    @classmethod
     def paged_query_or_search(cls, app_config, user, query, search_query, filter,
                               limit=None, page=0, sort=None, **kw):
         """Switch between paged_query and paged_search based on filter.
@@ -1272,6 +1282,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
             t = cls.query.find().first()
             if t:
+                if not kw.get('show_deleted',False):
+                    search_query = cls.not_deleted_query(search_query)
                 search_query = cls.translate_query(search_query, t.index())
             result['filter_choices'] = tsearch.query_filter_choices(search_query)
         else:

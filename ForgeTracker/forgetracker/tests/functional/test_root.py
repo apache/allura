@@ -2406,7 +2406,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/')
         assert '<option value="open">open (2)</option>' in r
         assert query_filter_choices.call_count == 1
-        assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed'
+        assert query_filter_choices.call_args[0][0] == '!status_s:wont-fix && !status_s:closed && deleted_b:False'
 
     def test_rate_limit_new(self):
         self.new_ticket(summary='First ticket')

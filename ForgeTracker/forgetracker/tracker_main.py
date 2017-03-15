@@ -720,7 +720,9 @@ class RootController(BaseController, FeedController):
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]
-
+        elif deleted and not has_access(c.app, 'delete'):
+            deleted = False
+            
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)
         result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
@@ -823,7 +825,9 @@ class RootController(BaseController, FeedController):
     def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None,
                deleted=False, filter=None, **kw):
         require(has_access(c.app, 'read'))
-
+   
+        if deleted and not has_access(c.app, 'delete'):
+            deleted = False
         if query and not q:
             q = query
         c.bin_form = W.bin_form
@@ -1937,7 +1941,9 @@ class MilestoneController(BaseController):
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]
-
+        elif deleted and not has_access(c.app, 'delete'):
+            deleted = False
+            
         result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
                                                  self.mongo_query,
                                                  self.solr_query,
