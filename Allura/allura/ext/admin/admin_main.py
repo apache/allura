@@ -161,7 +161,7 @@ class AdminApp(Application):
                 SitemapEntry('User Permissions', admin_url + 'groups/', className="admin-nav-user-perms"))
         if not c.project.is_root and has_access(c.project, 'admin')():
             links.append(
-                SitemapEntry('Permissions', admin_url + 'groups/'))
+                SitemapEntry('Permissions', admin_url + 'permissions/'))
         if len(c.project.neighborhood_invitations):
             links.append(
                 SitemapEntry('Invitation(s)', admin_url + 'invitations'))
@@ -203,6 +203,7 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'admin')
 
     def __init__(self):
+        self.permissions = PermissionsController()
         self.groups = GroupsController()
         self.audit = AuditController()
         self.ext = AdminExtensionLookup()
@@ -1000,6 +1001,67 @@ class ProjectAdminRestController(BaseController):
         if app is None or app.admin_api_root is None:
             raise exc.HTTPNotFound, name
         return app.admin_api_root, remainder
+
+
+class PermissionsController(BaseController):
+    def _check_security(self):
+        require_access(c.project, 'admin')
+
+    @with_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/project_permissions.html')
+    def index(self, **kw):
+        c.card = W.permission_card
+        return dict(permissions=self._index_permissions())
+
+    @without_trailing_slash
+    @expose()
+    @h.vardec
+    @require_post()
+    def update(self, card=None, **kw):
+        permissions = self._index_permissions()
+        old_permissions = dict(permissions)
+        for args in card:
+            perm = args['id']
+            new_group_ids = args.get('new', [])
+            group_ids = args.get('value', [])
+            if isinstance(new_group_ids, basestring):
+                new_group_ids = [new_group_ids]
+            if isinstance(group_ids, basestring):
+                group_ids = [group_ids]
+            # make sure the admin group has the admin permission
+            if perm == 'admin':
+                if c.project.is_root:
+                    pid = c.project._id
+                else:
+                    pid = c.project.parent_id
+                admin_group_id = str(
+                    M.ProjectRole.query.get(project_id=pid, name='Admin')._id)
+                if admin_group_id not in group_ids + new_group_ids:
+                    flash(
+                        'You cannot remove the admin group from the admin permission.', 'warning')
+                    group_ids.append(admin_group_id)
+            permissions[perm] = []
+            role_ids = map(ObjectId, group_ids + new_group_ids)
+            permissions[perm] = role_ids
+        c.project.acl = []
+        for perm, role_ids in permissions.iteritems():
+            role_names = lambda ids: ','.join(sorted(
+                pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
+            old_role_ids = old_permissions.get(perm, [])
+            if old_role_ids != role_ids:
+                M.AuditLog.log('updated "%s" permissions: "%s" => "%s"',
+                               perm, role_names(old_role_ids), role_names(role_ids))
+            c.project.acl += [M.ACE.allow(rid, perm) for rid in role_ids]
+        g.post_event('project_updated')
+        redirect('.')
+
+    def _index_permissions(self):
+        permissions = dict(
+            (p, []) for p in c.project.permissions)
+        for ace in c.project.acl:
+            if ace.access == M.ACE.ALLOW:
+                permissions[ace.permission].append(ace.role_id)
+        return permissions
 
 
 class GroupsController(BaseController):
