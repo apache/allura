@@ -38,21 +38,6 @@
 
 #threshold-config > span > input {
     width: 2rem;
-    background-color: #F2F2F2;
-    color: #333;
-    font-weight: bold;
-}
-
-#top_nav_admin {
-    overflow: hidden;
-    width: 918px; /* 940px - 32px for toggle-admin-btn */
-}
-
-#top_nav {
-    border-bottom: 1px solid #ccc;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    box-shadow: 0 1px 1px #ccc;
 }
 
 #top_nav_admin ul.dropdown {
@@ -125,14 +110,12 @@
     background: #ccc;
 }
 
-/* .react-drag used to distinguish container used in locked vs unlocked modes */
 #add-tool-container {
     float: left;
-    margin-left: 10px;
 }
-
-#add-tool-container .add-tool-toggle {
-    margin-top: 5px;
+/* .react-drag used to distinguish container used in locked vs unlocked modes */
+.react-drag #add-tool-container {
+    margin-left: 10px;
 }
 
 .tb-item-edit a {
@@ -189,7 +172,6 @@
     display: none;
     background: white;
     position: absolute;
-    top: 32px;
     white-space: nowrap;
 }
 
@@ -256,7 +238,6 @@
     border: 1px dashed #B9B9B9;
     color: #0077aa;
     padding: 3px 7px;
-    margin-top: -4px;
     float: left;
     border-radius: 2px;
     cursor: pointer;
@@ -267,16 +248,7 @@
     user-select: none;
 }
 
-#top_nav .add-tool-toggle:hover {
-    color: #0099cc;
-    background: #F4F4F4;
-    text-decoration: underline;
-}
-
 .contextMenu {
-    background: #f0f0f0;
-    border: 1px solid #999;
-    box-shadow: -2px 2px 6px #555;
     position: absolute;
     margin-top: 20px;
     margin-left: 15px;
@@ -284,6 +256,7 @@
     z-index: 20200;
     white-space: nowrap;
     clear: both;
+    border: none;
 }
 
 .contextMenu > ul {
@@ -293,15 +266,13 @@
     visibility: visible !important;
 }
 
-#add-tool-container > div > div {
-    margin-left: -10px;
-}
-
 #add-tool-container .contextMenu {
     border: none;
     background: white;
     text-align: left;
-    top: 15px;
+    top: 100%;
+    margin-top: 0;
+    margin-left: -10px;
 }
 
 #add-tool-container .contextMenu ul {
@@ -315,24 +286,11 @@
 
 #add-tool-container li {
     overflow: auto;
-    border: 1px solid #e5e5e5;
     border-bottom: none;
     min-width: 100px;
     margin: 0;
     display: block;
     padding: 0.3em 0.5em 0.3em 0.3em !important;
-}
-
-#add-tool-container li:hover {
-    color: white;
-    background-color: #09c;
-    background-image: linear-gradient(#09c, #07a);
-    border-color: #07a;
-}
-
-#add-tool-container li:hover a {
-    color: white !important;
-
 }
 
 #add-tool-container li:first-child {
@@ -347,8 +305,4 @@
 
 #top_nav_admin .tool_option > a {
     border-right: none !important;
-}
-
-.unlocked-container{
-    margin-top: 10px;
 }

@@ -3896,3 +3896,55 @@ tr.rev div.markdown_content p {
 #usergroup_admin .fa-ban {
   color: red;
 }
+
+
+
+/*
+Nav bar styles moved out of navbar.css since they are more stylistic than layout, and a different theme probably won't want them.
+ */
+#threshold-config > span > input {
+    background-color: #F2F2F2;
+    color: #333;
+    font-weight: bold;
+}
+#top_nav_admin {
+    overflow: hidden;
+    width: 918px;  /* 940px - 32px for toggle-admin-btn */
+}
+#top_nav {
+    border-bottom: 1px solid #ccc;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 1px 1px #ccc;
+}
+.tb-item-grouper {
+    top: 32px;
+}
+#top_nav .add-tool-toggle {
+    margin-top: -4px;
+}
+#top_nav .add-tool-toggle:hover {
+    color: #0099cc;
+    background: #F4F4F4;
+    text-decoration: underline;
+}
+.contextMenu {
+    background: #f0f0f0;
+    border: 1px solid #999;
+    box-shadow: -2px 2px 6px #555;
+}
+#add-tool-container li {
+    border: 1px solid #e5e5e5;
+}
+#add-tool-container li:hover {
+    color: white;
+    background-color: #09c;
+    background-image: linear-gradient(#09c, #07a);
+    border-color: #07a;
+}
+#add-tool-container li:hover a {
+    color: white !important;
+}
+.unlocked-container{
+    margin-top: 10px;
+}
