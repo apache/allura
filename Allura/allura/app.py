@@ -774,7 +774,7 @@ class Application(object):
                 path,
                 os.path.basename(attachment.filename)
             )
-            with open(attachment_path, 'w') as fl:
+            with open(attachment_path.encode('utf8', 'replace'), 'wb') as fl:
                 fl.write(attachment.rfile().read())
 
 

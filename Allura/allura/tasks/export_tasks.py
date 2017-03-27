@@ -60,7 +60,7 @@ class BulkExport(object):
         if exported:
             zipdir(export_path,
                    os.path.join(os.path.dirname(export_path), export_filename))
-        shutil.rmtree(export_path)
+        shutil.rmtree(export_path.encode('utf8'))  # must encode into bytes or it'll fail on non-ascii filenames
 
         if not user:
             log.info('No user. Skipping notification.')
