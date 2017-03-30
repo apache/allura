@@ -26,10 +26,11 @@
 #toggle-admin-btn {
     position: absolute;
     background: white;
-    right: -11px;
-    top: -1px;
+    right: -6px;
+    top: -0.5px;
     width: 1.8rem;
     height: 1.8rem;
+    margin: 4px 10px 4px 0;
 }
 
 #toggle-admin-btn:focus {
