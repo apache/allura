@@ -424,7 +424,7 @@ class Globals(MappedClass):
             if message != '':
                 changes[ticket._id] = message
                 changed_tickets[ticket._id] = ticket
-                ticket.discussion_thread.post(message, notify=False)
+                ticket.discussion_thread.post(message, notify=False, is_meta=True)
                 ticket.commit()
 
         filtered_changes = self.filtered_by_subscription(changed_tickets)
