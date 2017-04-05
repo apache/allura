@@ -41,6 +41,9 @@
   padding: 0;
   vertical-align: top;
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .activity ul.timeline li .avatar {
   float: left;

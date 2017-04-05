@@ -44,9 +44,9 @@ class TestPostModel(WithDatabase):
         self.post.text = """\
 This is a **bold thing**, 40 chars here.
 * Here's the first item in our list.
-* And here's the second item."""
+* And here's the second item.""" + ','.join(map(str, range(200)))
         assert 'allura_id' in self.post.activity_extras
         summary = self.post.activity_extras['summary']
-        assert summary == "This is a bold thing, 40 chars here. " + \
-                          "Here's the first item in our list. " + \
-                          "And here's..."
+        assert summary.startswith("This is a bold thing, 40 chars here. Here's the first item in our list. "
+                                  "And here's the second item.")
+        assert summary.endswith('125,126,127...')
