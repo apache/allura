@@ -48,6 +48,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% block extra_js %}
 {{ super() }}
   <script type="text/javascript">
+    function color_diff(selector) {
+      var overflow = $(selector).find("pre").get(0);
+      var len = overflow.scrollWidth - 5;
+      $(selector).find(".gi, .gd, .gu").width(len);
+    }
+
     function ld(diff, callback) {
       $(diff.selector).load(encodeURI(diff.url), callback);
     }
@@ -78,6 +84,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         if (diff_queue.length == 0) {
           clearInterval(document.diff_queue_timer);
         }
+        color_diff(diff.selector);
       });
     }
     $(document).ready(function() {
@@ -93,6 +100,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
           $('#' + diffid).load(href, function() {
             self.attr('data-diformat', 'regular');
             self.text('Switch to side-by-side view');
+            color_diff('#' + diffid);
           });
         } else {
           href = href + '&diformat=sidebyside';

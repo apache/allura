@@ -71,6 +71,15 @@
   {% endif %}
 {% endblock %}
 
+{% block extra_js %}
+{{ super() }}
+<script type="text/javascript">
+  var overflow = $("pre").get(0);
+  var len = overflow.scrollWidth - 30;
+  $(".gi, .gd, .gu").width(len);
+</script>
+{% endblock %}
+
 {% block extra_css %}
   {{ super() }}
   <style type="text/css">
