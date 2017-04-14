@@ -708,7 +708,7 @@ class SVNImplementation(M.RepositoryImplementation):
                                 (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' %
                                    (archive_name, '.tmp'))
-        rmtree(dest, ignore_errors=True)
+        rmtree(dest.encode('utf8'), ignore_errors=True)  # must encode into bytes or it'll fail on non-ascii filenames
         path = os.path.join(self._url, path)
         try:
             # need to set system locale to handle all symbols in filename
@@ -722,7 +722,7 @@ class SVNImplementation(M.RepositoryImplementation):
             zipdir(dest, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
-            rmtree(dest, ignore_errors=True)
+            rmtree(dest.encode('utf8'), ignore_errors=True)
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
 
