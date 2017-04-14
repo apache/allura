@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     subversion \
     python-svn \
     curl \
+    locales \
     sudo
 
 # up-to-date version of node & npm
