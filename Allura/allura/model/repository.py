@@ -1059,7 +1059,7 @@ class Commit(RepoObject, ActivityObject):
     @property
     def activity_extras(self):
         d = ActivityObject.activity_extras.fget(self)
-        d.update(summary=self.summary)
+        d.update(summary=self._summary(limit=500))
         if self.repo:
             d.update(app_config_id=self.repo.app.config._id)
         return d
@@ -1121,9 +1121,12 @@ class Commit(RepoObject, ActivityObject):
 
     @LazyProperty
     def summary(self):
+        return self._summary()
+
+    def _summary(self, limit=50):
         message = h.really_unicode(self.message)
         first_line = message.split('\n')[0]
-        return h.text.truncate(first_line, 50)
+        return h.text.truncate(first_line, limit)
 
     def shorthand_id(self):
         if self.repo is None:
