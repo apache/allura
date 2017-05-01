@@ -24,7 +24,7 @@ from tg import expose, request, config, session
 from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
 from pylons import tmpl_context as c
-from pylons import app_globals as g
+from pylons import response
 from paste.deploy.converters import asbool
 
 from allura.app import SitemapEntry
@@ -97,6 +97,12 @@ class RootController(WsgiDispatchController):
             c.user.track_active(request)
             if asbool(config.get('force_ssl.logged_in')):
                 session.secure = True
+
+            # Make sure the page really isn't cached (not accessible by back button, etc)
+            # pylons.configuration defaults to "no-cache" only.
+            # See also http://blog.55minutes.com/2011/10/how-to-defeat-the-browser-back-button-cache/ and
+            # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=en#defining_optimal_cache-control_policy
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
 
     def _cleanup_request(self):
         pass
