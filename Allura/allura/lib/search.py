@@ -161,7 +161,8 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     fq = [
         'type_s:%s' % fields['type_s'],
         'project_id_s:%s' % c.project._id,
-        'mount_point_s:%s' % c.app.config.options.mount_point ]
+        'mount_point_s:%s' % c.app.config.options.mount_point]
+    fq += kw.pop('fq', [])
     for name, values in (filter or {}).iteritems():
         field_name = name + '_s'
         parts = []
