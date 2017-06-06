@@ -19,7 +19,6 @@
 import logging
 import urllib2
 import json
-import re
 
 # Non-stdlib imports
 import pymongo
@@ -335,7 +334,7 @@ class RootController(BaseController, FeedController):
         """
         return FeedArgs(
             dict(project_id=project._id, app_config_id=app.config._id,
-                 link=re.compile(r'^[^#]+$'),  # no target in the link, meaning no comments
+                 link=BM.BlogPost.link_regex
                  ),
             'Recent posts to %s' % app.config.options.mount_point,
             app.url)
@@ -403,8 +402,6 @@ class PostController(BaseController, FeedController):
         require_access(self.post, 'write')
         rate_limit()
         if delete:
-            # Remove from the Rss Feed.
-            M.Feed.update(self.post, delete=True)
             self.post.delete()
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))

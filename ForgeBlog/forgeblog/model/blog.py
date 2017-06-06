@@ -17,6 +17,7 @@
 
 import difflib
 import functools
+import re
 from datetime import datetime
 from random import randint
 
@@ -120,6 +121,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     state = FieldProperty(
         schema.OneOf('draft', 'published'), if_missing='draft')
     neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=None)
+
+    link_regex = re.compile(r'^[^#]+$')  # no target in the link, meaning no comments
 
     @property
     def activity_name(self):
@@ -254,21 +257,19 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
             elif v2.state == 'published':
+                feed_item = self.feed_item()
+                feed_item.title = self.title
+                feed_item.description = g.markdown.convert(self.text)
                 if v1.title != v2.title:
                     activity('renamed', self)
                     subject = '%s renamed post %s to %s' % (
                         c.user.username, v1.title, v2.title)
-                    M.Feed.update(self, self.title, self.text, author=self.author(),
-                                pubdate=self.get_version(1).timestamp)
                 else:
                     activity('modified', self)
                     subject = '%s modified post %s' % (
                         c.user.username, self.title)
-                    M.Feed.update(self, self.title, self.text, author=self.author(),
-                                pubdate=self.get_version(1).timestamp)
             elif v1.state == 'published' and v2.state == 'draft':
-                ### Delete it from the feed.
-                M.Feed.update(v2)
+                self.feed_item().delete()
         else:
             description = self.text
             subject = '%s created post %s' % (
@@ -303,6 +304,14 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     text=self.text,
                     labels=list(self.labels),
                     state=self.state)
+
+    def feed_item(self):
+        return M.Feed.query.get(ref_id=self.index_id(),
+                                link=self.link_regex)
+
+    def delete(self):
+        self.feed_item().delete()
+        super(BlogPost, self).delete()
 
 
 class Attachment(M.BaseAttachment):

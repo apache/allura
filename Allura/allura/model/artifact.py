@@ -935,23 +935,6 @@ class Feed(MappedClass):
         return item
 
     @classmethod
-    def update(cls, artifact, title=None, description=None, author=None,
-               author_link=None, author_name=None, pubdate=None, link=None, delete=False, **kw):
-        """
-        For a blog post which is present already but to be updated.
-        """
-        if not Feed.has_access(artifact):
-            return
-        v1 = Feed.query.find({'ref_id': artifact.index_id()}).first()
-        if artifact.state == 'draft' or delete:
-            Feed.delete(v1)
-        # Modify the previous version.
-        else:
-            v1.title = title
-            v1.description = g.markdown.convert(description)
-            return v1
-
-    @classmethod
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, page=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
