@@ -1,3 +1,68 @@
+Version 1.7.0  (June 2017)
+
+New Features
+
+ * [#8143] Support hi-res logos
+ * Adds ability for neighborhood home to use Wiki home content
+
+Upgrade Instructions
+
+  Run `pip install -r requirements.txt` to install updated dependencies
+
+Bug Fixes & Minor Improvements
+
+ Security:
+ * [#8140] After password change, change current session id
+ * update Pypeline for .rst XSS fix
+ General:
+ * [#5867] Table display too wide, displaying very wide content in comments
+ * [#6016] Personal Contacts Remove button not working
+ * [#8120] CSS problem in help tooltip
+ * Allow for a lot more text in activity entries; do real truncation client-side
+ Code Repositories:
+ * [#7811] Coloring of long lines in diffs stops too early
+ * [#7814] Showing diffs for renamed files
+ * [#8144] When pushing multiple commits, email/rss list them backwards
+ * [#8142] Allow more configuration of types of checkout commands
+ * Remove unneeded broken icon link
+ Admin:
+ * [#7839] Failed to change permission of discussion
+ * [#7232] some unmoderated posts missing from in-line discussion view
+ * [#8021] Surface to spammy users to site admins
+ * [#8055] Moderate page has wrong params for next/prev page
+ * [#8073] Prevent pending users from being added to project ACLs
+ * [#8148] Error exporting with certain attachments
+ * Remove space in middle of URL that shows where a new tool will be installed at
+ * Fix broken export control link
+ Tickets:
+ * [#8059] Ticket search's dropdown filter choices should not show options from deleted tickets
+ * [#8150] Bulk edit change comment not shown as meta
+ * [#8154] Ticket searches not matching properly
+ * On new ticket page, hide helper text that was showing at bottom of page; regression from [#8145] most likely.  Rules copied from jquery-ui.css which isn't included on that page
+ News:
+ * [#8112] Filter out comments from rss feeds
+ * Fix RSS updates to blog posts, when post has comments.
+ For Developers:
+ * [#8145] Minimize jquery ui JS
+ * [#8146] Index error with mongo 3.4
+ * [#8152] UnicodeDecodeError on svn tarball export's cleanup
+ * [#8153] Stronger no-cache headers
+ * Updates to installation (libffi-dev needed for cffi package if not installing from wheel)
+ * Some SVN errors have critical info after the "Unable to connect" lines (e.g. unreadable repo formats from a newer SVN versions), and should not be treated like an empty/missing dir
+ * Latest ubuntu requires locales pkg for locale-gen cmd
+ * Move "stylistic" rules from navbar.css to site_style.css so that different themes can more easily style the nav bar
+ * Remove unneeded backslashes
+ * Upgrade jquery.lightbox_me.js so it can work with jQuery 2 (no $.browser)
+ * Change the ForgeUserStats tests' git repos to be unique from each other so they can be run in parallel safely
+ * Update link to SVN patch for recursive repos
+ * Allow spam checks where artifact=None; text fixes; for [ca8b596]
+ * Update six to latest, to match with latest setuptools' six requirement
+ * Fix inner_grid for right_bar. Closing quote and variable scoping were wrong.  Not used in core allura currently, so hadn't been a problem
+ * Removes neighborhood cache
+ * Avoid importer requests hanging indefinitely
+ * Better debugging with docker
+
+
 Version 1.6.0  (December 2016)
 
 New Features
