@@ -51,7 +51,7 @@ Before we begin, you'll need to install some system packages.
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install git-core python2.7-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo apt-get install git-core python2.7-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
@@ -153,6 +153,7 @@ We have a custom config ready for use.
 .. code-block:: bash
 
     (env-allura)~$ cd tmp
+    (env-allura)/tmp$ sudo apt-get install default-jre-headless unzip
     (env-allura)/tmp$ wget -nv http://archive.apache.org/dist/lucene/solr/5.3.1/solr-5.3.1.tgz
     (env-allura)/tmp$ tar xvf solr-5.3.1.tgz solr-5.3.1/bin/install_solr_service.sh --strip-components=2
     (env-allura)/tmp$ sudo ./install_solr_service.sh solr-5.3.1.tgz
