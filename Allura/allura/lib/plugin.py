@@ -164,11 +164,17 @@ class AuthenticationProvider(object):
         raise NotImplementedError('_login')
 
     def login(self, user=None, multifactor_success=False):
+        from allura import model as M
         if user is None:
-            user = self._login()  # raises exception if auth fails
+            try:
+                user = self._login()  # raises exception if auth fails
+            except exc.HTTPUnauthorized:
+                h.auditlog_user('Failed login', user=M.User.by_username(self.request.params['username']))
+                raise
 
         if user.get_pref('multifactor') and not multifactor_success:
             self.session['multifactor-username'] = user.username
+            h.auditlog_user('Multifactor login - password ok, code not entered yet', user=user)
             self.session.save()
             return None
         else:
@@ -180,6 +186,7 @@ class AuthenticationProvider(object):
             h.auditlog_user('Password expired', user=user)
         else:
             self.session['username'] = user.username
+            h.auditlog_user('Successful login', user=user)
 
         if 'rememberme' in self.request.params:
             remember_for = int(config.get('auth.remember_for', 365))
