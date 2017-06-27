@@ -167,7 +167,8 @@ def audits(*messages, **kwargs):
     if kwargs.get('user'):
         actor = kwargs.get('actor', '.*')
         ip_addr = kwargs.get('ip_addr', '.*')
-        preamble = '(Done by user: {}\n)?IP Address: {}\n'.format(actor, ip_addr)
+        user_agent = kwargs.get('user_agent', '.*')
+        preamble = '(Done by user: {}\n)?IP Address: {}\nUser-Agent: {}\n'.format(actor, ip_addr, user_agent)
     else:
         preamble = ''
     for message in messages:
