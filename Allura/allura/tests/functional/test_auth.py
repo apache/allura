@@ -71,13 +71,19 @@ class TestAuth(TestController):
         r = self.app.get('/auth/verify_addr', params=dict(a=ea.nonce))
         assert json.loads(self.webflash(r))['status'] == 'ok', self.webflash(r)
         r = self.app.get('/auth/logout')
-        r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='foo',
-            _session_id=self.app.cookies['_session_id']))
-        r = self.app.post('/auth/do_login', params=dict(
-            username='test-user', password='food',
-            _session_id=self.app.cookies['_session_id']))
-        assert 'Invalid login' in str(r), r.showbrowser()
+
+        with audits('Successful login', user=True):
+            r = self.app.post('/auth/do_login', params=dict(
+                username='test-user', password='foo',
+                _session_id=self.app.cookies['_session_id']))
+            assert_equal(r.headers['Location'], 'http://localhost/')
+
+        with audits('Failed login', user=True):
+            r = self.app.post('/auth/do_login', params=dict(
+                username='test-user', password='food',
+                _session_id=self.app.cookies['_session_id']))
+            assert 'Invalid login' in str(r), r.showbrowser()
+
         r = self.app.post('/auth/do_login', params=dict(
             username='test-usera', password='foo',
             _session_id=self.app.cookies['_session_id']))
@@ -2222,7 +2228,8 @@ class TestTwoFactor(TestController):
         r = self.app.get('/auth/?return_to=/p/foo')
         r.form['username'] = 'test-admin'
         r.form['password'] = 'foo'
-        r = r.form.submit()
+        with audits('Multifactor login - password ok, code not entered yet', user=True):
+            r = r.form.submit()
 
         # check results
         assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
@@ -2231,7 +2238,8 @@ class TestTwoFactor(TestController):
 
         # try an invalid code
         r.form['code'] = 'invalid-code'
-        r = r.form.submit()
+        with audits('Multifactor login - invalid code', user=True):
+            r = r.form.submit()
         assert_in('Invalid code', r)
         assert not r.session.get('username')
 
@@ -2239,7 +2247,8 @@ class TestTwoFactor(TestController):
         totp = TotpService().Totp(self.sample_key)
         code = totp.generate(time_time())
         r.form['code'] = code
-        r = r.form.submit()
+        with audits('Successful login', user=True):
+            r = r.form.submit()
 
         # confirm login and final page
         assert_equal(r.session['username'], 'test-admin')
@@ -2268,7 +2277,8 @@ class TestTwoFactor(TestController):
         totp = TotpService().Totp(self.sample_key)
         code = totp.generate(time_time())
         r.form['code'] = code
-        r = r.form.submit()
+        with audits('Multifactor login - rate limit', user=True):
+            r = r.form.submit()
 
         assert_in('rate limit exceeded', r)
         assert not r.session.get('username')

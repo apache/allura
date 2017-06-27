@@ -367,9 +367,11 @@ class AuthController(BaseController):
                 h.auditlog_user('Logged in using a multifactor recovery code', user=user)
         except (InvalidToken, InvalidRecoveryCode):
             c.form_errors['code'] = 'Invalid code, please try again.'
+            h.auditlog_user('Multifactor login - invalid code', user=user)
             return self.multifactor(mode=mode, **kwargs)
         except MultifactorRateLimitError:
             c.form_errors['code'] = 'Multifactor rate limit exceeded, slow down and try again later.'
+            h.auditlog_user('Multifactor login - rate limit', user=user)
             return self.multifactor(mode=mode, **kwargs)
         else:
             plugin.AuthenticationProvider.get(request).login(user=user, multifactor_success=True)
