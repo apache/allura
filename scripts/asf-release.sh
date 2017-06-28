@@ -137,4 +137,4 @@ Thanks & Regards
 EOF
 echo "-------------------------------------------------------------"
 echo "After a successful vote (just in case you have to redo the release), you can push the tag:"
-echo "    git push --tags"
+echo "    git push origin $RELEASE_TAG"
