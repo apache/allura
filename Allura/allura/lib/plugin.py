@@ -163,6 +163,12 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError('_login')
 
+    def after_login(self, user, request):
+        '''
+        This is a hook so that custom AuthenticationProviders can do things after a successful login.
+        '''
+        pass
+
     def login(self, user=None, multifactor_success=False):
         from allura import model as M
         if user is None:
@@ -187,6 +193,7 @@ class AuthenticationProvider(object):
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
+            self.after_login(user, self.request)
 
         if 'rememberme' in self.request.params:
             remember_for = int(config.get('auth.remember_for', 365))
