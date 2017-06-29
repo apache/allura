@@ -460,14 +460,15 @@ class TestAuth(TestController):
         old_pass = user.get_pref('password')
 
         # Change password
-        self.app.post('/auth/preferences/change_password',
-                      extra_environ=dict(username='test-admin'),
-                      params={
-                          'oldpw': 'foo',
-                          'pw': 'asdfasdf',
-                          'pw2': 'asdfasdf',
-                          '_session_id': self.app.cookies['_session_id'],
-                      })
+        with audits('Password changed', user=True):
+            self.app.post('/auth/preferences/change_password',
+                          extra_environ=dict(username='test-admin'),
+                          params={
+                              'oldpw': 'foo',
+                              'pw': 'asdfasdf',
+                              'pw2': 'asdfasdf',
+                              '_session_id': self.app.cookies['_session_id'],
+                          })
 
         # Confirm password was changed.
         assert_not_equal(old_pass, user.get_pref('password'))
@@ -475,6 +476,12 @@ class TestAuth(TestController):
         # Confirm any existing tokens were reset.
         assert_equal(user.get_tool_data('AuthPasswordReset', 'hash'), '')
         assert_equal(user.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
+
+        # Confirm an email was sent
+        tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'], 'Password Changed')
+        assert_in('The password for your', tasks[0].kwargs['text'])
 
     @td.with_user_project('test-admin')
     def test_prefs(self):

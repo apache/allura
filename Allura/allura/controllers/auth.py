@@ -651,6 +651,11 @@ class PreferencesController(BaseController):
             redirect('.')
         flash('Password changed')
         h.auditlog_user('Password changed')
+        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md').render(dict(
+            user=c.user,
+            config=config,
+        ))
+        send_system_mail_to_user(c.user, u'Password Changed', email_body)
         redirect('.')
 
     @expose()
