@@ -378,7 +378,7 @@ def send_notifications(repo, commit_ids):
     :param repo: A repository artifact instance.
     :type repo: Repository
 
-    :param commit_ids: A list of commit hash strings.
+    :param commit_ids: A list of commit hash strings, oldest to newest
     :type commit_ids: list
     """
     from allura.model import Feed, Notification
@@ -405,21 +405,21 @@ def send_notifications(repo, commit_ids):
                 unique_id=href)
 
             summary = g.markdown_commit.convert(ci.message) if ci.message else ""
-
-            current_branch = repo.symbolics_for_commit(ci)[0]
-            if last_branch == current_branch:
-                branches = []
-            else:
-                branches = current_branch
-                last_branch = branches
-
+            current_branch = repo.symbolics_for_commit(ci)[0]  # only the head of a branch will have this
             commit_msgs.append(dict(
                 author=ci.authored.name,
                 date=ci.authored.date.strftime("%m/%d/%Y %H:%M"),
                 summary=summary,
-                branches=branches,
+                branches=current_branch,
                 commit_url=base_url + href,
                 shorthand_id=ci.shorthand_id()))
+
+    # fill out the branch info for all the other commits
+    prev_branch = None
+    for c_msg in reversed(commit_msgs):
+        if not c_msg['branches']:
+            c_msg['branches'] = prev_branch
+        prev_branch = c_msg['branches']
 
     if commit_msgs:
         if len(commit_msgs) > 1:
@@ -427,8 +427,9 @@ def send_notifications(repo, commit_ids):
         else:
             commit = commit_msgs[0]
             subject = u'New commit {} by {}'.format(commit['shorthand_id'], commit['author'])
-        template = g.jinja2_env.get_template("allura:templates/mail/commits.md")
-        text = u"\n\n-----".join([template.render(d) for d in commit_msgs])
+        text = g.jinja2_env.get_template("allura:templates/mail/commits.md").render(
+            commit_msgs=commit_msgs
+        )
 
         Notification.post(
             artifact=repo,

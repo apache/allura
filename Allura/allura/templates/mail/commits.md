@@ -16,9 +16,16 @@
        specific language governing permissions and limitations
        under the License.
 --> #}
-{% if branches %}## Branch: {% for b in branches %} {{ b }}  {% endfor%}{% endif %}
+{%- for cm in commit_msgs %}
+{%- if cm.branches and cm.branches != last_branch|default %}
+## Branch: {% for b in cm.branches %}{{ b }}  {% endfor%}
+{% endif %}
+{% set last_branch = cm.branches -%}
 
-{{summary}}
+{{ cm.summary }}
 
-By {{ author }} on {{ date }}
-[**View Changes**]({{ commit_url }})
+By {{ cm.author }} on {{ cm.date }}
+[**View Changes**]({{ cm.commit_url }})
+
+{% if not loop.last %}-----{% endif %}
+{% endfor %}

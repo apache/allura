@@ -380,11 +380,30 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         n = M.Notification.query.find({'subject': u'[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
         assert n
         assert_in('Change README', n.text)
-        send_notifications(
-            self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
+
+    def test_notification_email_multiple_commits(self):
+        send_notifications(self.repo, ['df30427c488aeab84b2352bdf88a3b19223f9d7a',
+                                       '1e146e67985dcd71c74de79613719bef7bddca4a',
+                                       ])
         ThreadLocalORMSession.flush_all()
-        assert M.Notification.query.find(
+        n = M.Notification.query.find(
             dict(subject=u'[test:src-git] 2 new commits to Git')).first()
+        assert n
+        assert n.text.startswith('\n## Branch: master'), n.text
+        assert n.text.find('Add README') < n.text.find('Change README'), n.text
+
+    def test_notification_email_multiple_branches(self):
+        send_notifications(self.repo, ['df30427c488aeab84b2352bdf88a3b19223f9d7a',
+                                       '1e146e67985dcd71c74de79613719bef7bddca4a',
+                                       '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+                                       ])
+        ThreadLocalORMSession.flush_all()
+        n = M.Notification.query.find(
+            dict(subject=u'[test:src-git] 3 new commits to Git')).first()
+        assert n
+        assert n.text.startswith('\n## Branch: master'), n.text
+        assert n.text.find('Add README') < n.text.find('Change README'), n.text
+        assert n.text.find('Change README') < n.text.find('## Branch: zz') < n.text.find('Not repo root'), n.text
 
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
