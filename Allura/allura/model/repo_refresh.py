@@ -24,6 +24,7 @@ import bson
 
 import tg
 import jinja2
+from paste.deploy.converters import asint
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.base import Object
@@ -428,7 +429,8 @@ def send_notifications(repo, commit_ids):
             commit = commit_msgs[0]
             subject = u'New commit {} by {}'.format(commit['shorthand_id'], commit['author'])
         text = g.jinja2_env.get_template("allura:templates/mail/commits.md").render(
-            commit_msgs=commit_msgs
+            commit_msgs=commit_msgs,
+            max_num_commits=asint(tg.config.get('scm.notify.max_commits', 100)),
         )
 
         Notification.post(

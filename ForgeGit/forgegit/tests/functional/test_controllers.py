@@ -303,20 +303,6 @@ class TestRootController(_TestCase):
         assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
         assert '<table class="side-by-side-diff">' in r
 
-    def test_refresh(self):
-        notification = M.Notification.query.find({'subject': '[test:src-git] 5 new commits to Git'}).first()
-        assert notification
-        domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
-        common_suffix = tg.config['forgemail.domain']
-        email = 'noreply@%s%s' % (domain, common_suffix)
-        assert_in(email, notification['reply_to_address'])
-
-        commit1_loc = notification.text.find('Initial commit')
-        assert commit1_loc != -1
-        commit2_loc = notification.text.find('Remove file')
-        assert commit2_loc != -1
-        assert_less(commit1_loc, commit2_loc)
-
     def test_file_force_display(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')

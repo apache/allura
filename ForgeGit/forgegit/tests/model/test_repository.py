@@ -29,7 +29,7 @@ from pylons import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_equal, assert_in, assert_less
 from testfixtures import TempDirectory
 from datadiff.tools import assert_equals
 
@@ -372,6 +372,21 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
+    def test_refresh(self):
+        # test results of things that ran during setUp
+        notification = M.Notification.query.find({'subject': '[test:src-git] 5 new commits to Git'}).first()
+        assert notification
+        domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
+        common_suffix = tg.config['forgemail.domain']
+        email = 'noreply@%s%s' % (domain, common_suffix)
+        assert_in(email, notification['reply_to_address'])
+
+        commit1_loc = notification.text.find('Initial commit')
+        assert commit1_loc != -1
+        commit2_loc = notification.text.find('Remove file')
+        assert commit2_loc != -1
+        assert_less(commit1_loc, commit2_loc)
+
     def test_notification_email(self):
         send_notifications(
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
@@ -404,6 +419,20 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert n.text.startswith('\n## Branch: master'), n.text
         assert n.text.find('Add README') < n.text.find('Change README'), n.text
         assert n.text.find('Change README') < n.text.find('## Branch: zz') < n.text.find('Not repo root'), n.text
+
+    @mock.patch.dict(tg.config, {'scm.notify.max_commits': '3'})
+    def test_notification_email_max_commits(self):
+        send_notifications(self.repo, ['9a7df788cf800241e3bb5a849c8870f2f8259d98',
+                                       '6a45885ae7347f1cac5103b0050cc1be6a1496c8',
+                                       'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+                                       '1e146e67985dcd71c74de79613719bef7bddca4a',
+                                       ])
+        ThreadLocalORMSession.flush_all()
+        n = M.Notification.query.find(
+            dict(subject=u'[test:src-git] 4 new commits to Git')).first()
+        assert n
+        assert n.text.startswith('\n## Branch: master'), n.text
+        assert n.text.endswith('And 1 more commits.\n'), n.text
 
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
