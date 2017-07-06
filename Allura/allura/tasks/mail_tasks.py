@@ -103,6 +103,27 @@ def route_email(
                 log.exception('Error routing mail to %s', addr)
 
 
+def create_multipart_msg(text, metalink=None):
+    """
+    Convert Markdown text to plaintext & HTML, combine into a multipart email Message
+    :param text:
+    :param metalink:
+    :return:
+    """
+
+    plain_text = text
+    plain_text = HTMLParser.HTMLParser().unescape(plain_text)  # put literal HTML tags back into plaintext
+    plain_msg = mail_util.encode_email_part(plain_text, 'plain')
+
+    html_text = g.forge_markdown(email=True).convert(text)
+    if metalink:
+        html_text = html_text + mail_meta_content(metalink)
+    html_msg = mail_util.encode_email_part(html_text, 'html')
+
+    multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
+    return multi_msg, html_msg, plain_msg
+
+
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
              message_id, in_reply_to=None, sender=None, references=None, metalink=None):
@@ -157,14 +178,8 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
                 addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
-    htmlparser = HTMLParser.HTMLParser()
-    plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
-    html_text = g.forge_markdown(email=True).convert(text)
-    if metalink != None:
-        html_text = html_text + mail_meta_content(metalink)
 
-    html_msg = mail_util.encode_email_part(html_text, 'html')
-    multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
+    multi_msg, html_msg, plain_msg = create_multipart_msg(text, metalink)
     smtp_client.sendmail(
         addrs_multi, fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg, sender=sender, references=references)
@@ -217,11 +232,7 @@ def sendsimplemail(
         else:
             toaddr = user.email_address_header()
 
-    htmlparser = HTMLParser.HTMLParser()
-    plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
-    html_text = g.forge_markdown(email=True).convert(text)
-    html_msg = mail_util.encode_email_part(html_text, 'html')
-    multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
+    multi_msg, html_msg, plain_msg = create_multipart_msg(text)
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg, sender=sender, references=references, cc=cc, to=toaddr)
@@ -232,7 +243,7 @@ def send_system_mail_to_user(user_or_emailaddr, subject, text):
     Sends a standard email from the Allura system itself, to a user.
     This is a helper function around sendsimplemail() that generates a new task
 
-    :param user_or_emailaddr: an email addres (str) or a User object
+    :param user_or_emailaddr: an email address (str) or a User object
     :param subject: subject of the email
     :param text: text of the email (markdown)
     '''
