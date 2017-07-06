@@ -630,7 +630,7 @@ class GitImplementation(M.RepositoryImplementation):
         skip = 0
         while commit_id and not files:
             output = self._git.git.log(
-                commit_id, '--', *paths,
+                commit_id, '--', *[p.encode('utf-8') for p in paths],
                 pretty='format:%H',
                 name_only=True,
                 max_count=1,
