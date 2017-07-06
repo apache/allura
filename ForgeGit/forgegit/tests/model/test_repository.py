@@ -434,6 +434,54 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert n.text.startswith('\n## Branch: master'), n.text
         assert n.text.endswith('And 1 more commits.\n'), n.text
 
+    @td.with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
+    def _setup_weird_chars_repo(self):
+        h.set_context('test', 'weird-chars', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename('forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'weird-chars.git'
+        ThreadLocalORMSession.flush_all()
+        c.app.repo.refresh()
+
+    def test_notification_html_and_plaintext(self):
+        M.MonQTask.query.remove({})  # remove other stuff from setup()
+        self._setup_weird_chars_repo()
+
+        with mock.patch('allura.tasks.mail_tasks.smtp_client.sendmail') as sendmail:
+            while M.MonQTask.run_ready():  # have to run them all multiple times since one task creates another
+                pass
+        text_msg = sendmail.call_args_list[1][0][6]
+        html_msg = sendmail.call_args_list[2][0][6]
+        text_body = text_msg.get_payload(decode=True)
+        html_body = html_msg.get_payload(decode=True)
+
+        # no extra HTML in commit messages
+        assert_in('''-----
+
+Add foo.txt.  Commit ref [616d24f8dd4e95cadd8e93df5061f09855d1a066] *bold* <b>bold</b>
+
+* one
+* two
+* three
+
+http://example.com/
+
+By Dave Brondsema''', text_body)
+        # these bracketed links could look like HTML tags, ensure they don't get removed
+        assert_in('further messages, please visit <http://localhost:8080/auth/subscriptions/>', text_body)
+
+        # limited markdown handling of commit messages (see `markdown_commit`)
+        # and HTML escaped
+        assert_in('''<hr/>
+<div class="markdown_content"><p>Add foo.txt.  Commit ref <a class="alink" href="http://localhost:8080/p/test/weird-chars/ci/616d24f8dd4e95cadd8e93df5061f09855d1a066/">[616d24f8dd4e95cadd8e93df5061f09855d1a066]</a> *bold* &lt;b&gt;bold&lt;/b&gt;</p>
+<p>* one<br/>
+* two<br/>
+* three</p>
+<p>http://example.com/</p></div>
+
+<p>By Dave Brondsema''', html_body)
+
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
@@ -894,6 +942,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             rev = GM.Repository.query.get(_id=self.repo['_id'])
             tags = rev._impl._get_refs('tags')
             assert_equal(rev.cached_tags, tags)
+
 
 class TestGitImplementation(unittest.TestCase):
 

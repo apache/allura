@@ -17,9 +17,11 @@
 
 import logging
 import HTMLParser
+import re
 
 from pylons import tmpl_context as c, app_globals as g, config
 from bson import ObjectId
+import markupsafe
 
 from allura.lib import helpers as h
 from allura.lib.decorators import task
@@ -111,7 +113,18 @@ def create_multipart_msg(text, metalink=None):
     :return:
     """
 
+    def replace_html(matchobj):
+        text_within_div = matchobj.group(1)
+        text_within_div = text_within_div.replace('</p>', '\n')
+        text_within_div = markupsafe._striptags_re.sub('', text_within_div)
+        return text_within_div
+
     plain_text = text
+    plain_text = re.sub(r'<div class="markdown_content">(.*)</div>',  # strip HTML from markdown generated blocks
+                        replace_html,
+                        plain_text,
+                        flags=re.DOTALL,  # match newlines too
+                        )
     plain_text = HTMLParser.HTMLParser().unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
 

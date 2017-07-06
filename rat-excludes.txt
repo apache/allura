@@ -59,7 +59,6 @@ Allura/docs/Makefile
 Allura/docs/_build/
 Allura/run/dummy.txt
 CHANGES
-ForgeGit/forgegit/data/post-receive_tmpl
 ForgeImporters/docs/make.bat
 ForgeImporters/docs/Makefile
 ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
