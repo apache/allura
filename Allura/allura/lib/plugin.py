@@ -189,11 +189,11 @@ class AuthenticationProvider(object):
         if self.is_password_expired(user):
             self.session['pwd-expired'] = True
             self.session['expired-username'] = user.username
-            h.auditlog_user('Password expired', user=user)
+            h.auditlog_user('Successful login; Password expired', user=user)
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
-            self.after_login(user, self.request)
+        self.after_login(user, self.request)
 
         if 'rememberme' in self.request.params:
             remember_for = int(config.get('auth.remember_for', 365))
