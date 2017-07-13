@@ -24,6 +24,7 @@ from formencode import Invalid
 from webob import exc
 
 from .forms import ForgeForm
+from pylons import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
 from allura import model as M
@@ -36,10 +37,10 @@ class LoginForm(ForgeForm):
     @property
     def fields(self):
         fields = [
-            ew.TextField(name='username', label='Username', attrs={
+            ew.TextField(name=g.antispam.enc('username'), label='Username', attrs={
                 'autofocus': 'autofocus',
             }),
-            ew.PasswordField(name='password', label='Password'),
+            ew.PasswordField(name=g.antispam.enc('password'), label='Password'),
             ew.Checkbox(
                 name='rememberme',
                 label='Remember Me',
@@ -53,6 +54,12 @@ class LoginForm(ForgeForm):
                     name='link',
                     text='<a href="/auth/forgotten_password" style="margin-left:162px" target="_top">'
                          'Forgot password?</a>'))
+
+        if g.antispam:
+            for fld in g.antispam.extra_fields():
+                fields.append(
+                    ew_core.Widget(template=ew.Snippet(fld)))
+
         return fields
 
     @validator

@@ -375,8 +375,9 @@ class TestRestHome(TestRestApiBase):
 
         # regular login to get a session cookie set up
         r = self.app.get('/auth/')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
         r.form.submit()
 
         # simulate CORS ajax request withCredentials (cookie headers)
