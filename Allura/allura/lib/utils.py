@@ -247,12 +247,12 @@ class AntiSpam(object):
         Please don't fill out this field.</label><br>
     <input id="$fld_id" name="$fld_name" type="text"><br></p>''')
 
-    def __init__(self, request=None, num_honey=2):
+    def __init__(self, request=None, num_honey=2, timestamp=None, spinner=None):
         self.num_honey = num_honey
         if request is None or request.method == 'GET':
             self.request = pylons.request
-            self.timestamp = int(time.time())
-            self.spinner = self.make_spinner()
+            self.timestamp = timestamp if timestamp else int(time.time())
+            self.spinner = spinner if spinner else self.make_spinner()
             self.timestamp_text = str(self.timestamp)
             self.spinner_text = self._wrap(self.spinner)
         else:
@@ -382,6 +382,10 @@ class AntiSpam(object):
             try:
                 new_params = cls.validate_request(params=params)
                 params.update(new_params)
+
+                if tg.request.POST:
+                    # request.params is immutable, but will reflect changes to request.POST
+                    tg.request.POST.update(new_params)
             except (ValueError, TypeError, binascii.Error):
                 testing = pylons.request.environ.get('paste.testing', False)
                 if testing:
@@ -389,6 +393,7 @@ class AntiSpam(object):
                     raise
                 else:
                     # regular antispam failure handling
+                    tg.flash(error_msg, 'error')
                     raise Invalid(error_msg, params, None)
         return before_validate(antispam_hook)
 

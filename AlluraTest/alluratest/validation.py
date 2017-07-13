@@ -214,8 +214,8 @@ def validate_page(html_or_response):
 class AntiSpamTestApp(TestApp):
 
     def post(self, *args, **kwargs):
+        antispam = utils.AntiSpam()
         if kwargs.pop('antispam', False):
-            antispam = utils.AntiSpam()
             params = {
                 'timestamp': antispam.timestamp_text,
                 'spinner': antispam.spinner_text,
@@ -224,8 +224,27 @@ class AntiSpamTestApp(TestApp):
             }
             for k, v in kwargs['params'].iteritems():
                 params[antispam.enc(k)] = v
+            params['_session_id'] = kwargs['params'].get('_session_id')  # exclude csrf token from encryption
             kwargs['params'] = params
         return super(AntiSpamTestApp, self).post(*args, **kwargs)
+
+    def antispam_field_names(self, form):
+        """
+        :param form: a WebTest form (i.e. from a self.app.get response)
+        :return: a dict of field names -> antispam encoded field names
+        """
+        timestamp = form['timestamp'].value
+        spinner = form['spinner'].value
+        antispam = utils.AntiSpam(timestamp=int(timestamp), spinner=utils.AntiSpam._unwrap(spinner))
+        names = form.fields.keys()
+        name_mapping = {}
+        for name in names:
+            try:
+                decoded = antispam.dec(name)
+            except Exception:
+                decoded = name
+            name_mapping[decoded] = name
+        return name_mapping
 
 
 class PostParamCheckingTestApp(AntiSpamTestApp):

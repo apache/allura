@@ -40,8 +40,9 @@ from nose.tools import (
     assert_not_in,
     assert_true,
     assert_false,
+    assert_raises
 )
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 
 from allura.tests import TestController
@@ -75,16 +76,22 @@ class TestAuth(TestController):
         with audits('Successful login', user=True):
             r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo',
-                _session_id=self.app.cookies['_session_id']))
+                _session_id=self.app.cookies['_session_id']),
+                antispam=True)
             assert_equal(r.headers['Location'], 'http://localhost/')
 
+        with assert_raises(ValueError) as ex:
+            r = self.app.post('/auth/do_login', antispam=True, params=dict(
+                username='test-user', password='foo', honey1='robot',
+                _session_id=self.app.cookies['_session_id']))
+
         with audits('Failed login', user=True):
-            r = self.app.post('/auth/do_login', params=dict(
+            r = self.app.post('/auth/do_login', antispam=True, params=dict(
                 username='test-user', password='food',
                 _session_id=self.app.cookies['_session_id']))
             assert 'Invalid login' in str(r), r.showbrowser()
 
-        r = self.app.post('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-usera', password='foo',
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
@@ -93,10 +100,13 @@ class TestAuth(TestController):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
         nav_pattern = ('nav', {'class': 'nav-main'})
         r = self.app.get('/auth/')
-        f = r.forms[0]
-        f['username'] = 'test-user'
-        f['password'] = 'foo'
-        r = f.submit().follow()
+
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            _session_id=self.app.cookies['_session_id']),
+            extra_environ={'REMOTE_ADDR': '127.0.0.1'},
+            antispam=True).follow()
+
         logged_in_session = r.session['_id']
         links = r.html.find(*nav_pattern).findAll('a')
         assert_equal(links[-1].string, "Log Out")
@@ -116,15 +126,17 @@ class TestAuth(TestController):
         self.app.get('/')  # establish session
         self.app.post('/auth/do_login',
                       headers={'User-Agent': 'browser'},
-                      extra_environ={'REMOTE_ADDR': 'addr'},
+                      extra_environ={'REMOTE_ADDR': '127.0.0.1'},
                       params=dict(
                           username='test-user',
                           password='foo',
                           _session_id=self.app.cookies['_session_id'],
-                      ))
+                      ),
+                      antispam=True,
+                      )
         user = M.User.by_username('test-user')
         assert_not_equal(user.last_access['login_date'], None)
-        assert_equal(user.last_access['login_ip'], 'addr')
+        assert_equal(user.last_access['login_ip'], '127.0.0.1')
         assert_equal(user.last_access['login_ua'], 'browser')
 
     def test_rememberme(self):
@@ -136,7 +148,7 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             _session_id=self.app.cookies['_session_id'],
-        ))
+        ), antispam=True)
         assert_equal(r.session['username'], username)
         assert_equal(r.session['login_expires'], True)
 
@@ -148,7 +160,7 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo', rememberme='on',
             _session_id=self.app.cookies['_session_id'],
-        ))
+        ), antispam=True)
         assert_equal(r.session['username'], username)
         assert_not_equal(r.session['login_expires'], True)
 
@@ -752,7 +764,7 @@ class TestAuth(TestController):
         r = self.app.post(
             '/auth/do_login',
             params=dict(username='aaa', password='12345678',
-                        _session_id=self.app.cookies['_session_id']),
+                        _session_id=self.app.cookies['_session_id']), antispam=True,
             status=302)
 
     def test_create_account_require_email(self):
@@ -886,25 +898,27 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='/foo',
-            _session_id=self.app.cookies['_session_id']))
+            _session_id=self.app.cookies['_session_id']),
+            antispam=True
+        )
         assert_equal(r.location, 'http://localhost/foo')
 
         r = self.app.get('/auth/logout')
-        r = self.app.post('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://localhost:8080/foo',
             _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost:8080/foo')
 
         r = self.app.get('/auth/logout')
-        r = self.app.post('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://example.com/foo',
             _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost/')
 
         r = self.app.get('/auth/logout')
-        r = self.app.post('/auth/do_login', params=dict(
+        r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='//example.com/foo',
             _session_id=self.app.cookies['_session_id']))
@@ -1812,10 +1826,13 @@ class TestDisableAccount(TestController):
 
 class TestPasswordExpire(TestController):
     def login(self, username='test-user', pwd='foo', query_string=''):
-        r = self.app.get('/auth/' + query_string, extra_environ={'username': '*anonymous'})
+        extra = extra_environ={'username': '*anonymous', 'REMOTE_ADDR':'127.0.0.1'}
+        r = self.app.get('/auth/' + query_string, extra_environ=extra)
+
         f = r.forms[0]
-        f['username'] = username
-        f['password'] = pwd
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = username
+        f[encoded['password']] = pwd
         return f.submit(extra_environ={'username': '*anonymous'})
 
     def assert_redirects(self, where='/'):
@@ -2007,13 +2024,15 @@ class TestPasswordExpire(TestController):
 class TestCSRFProtection(TestController):
     def test_blocks_invalid(self):
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': 'True'}
+        self.app.extra_environ = {'disable_auth_magic': 'True', 'REMOTE_ADDR': '127.0.0.1'}
 
         # regular login
         r = self.app.get('/auth/')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
-        r.form.submit()
+
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-admin', password='foo',
+            _session_id=self.app.cookies['_session_id']),
+            antispam=True)
 
         # regular form submit
         r = self.app.get('/admin/overview')
@@ -2233,8 +2252,9 @@ class TestTwoFactor(TestController):
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
         with audits('Multifactor login - password ok, code not entered yet', user=True):
             r = r.form.submit()
 
@@ -2269,8 +2289,10 @@ class TestTwoFactor(TestController):
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
+        encoded = self.app.antispam_field_names(r.form)
+
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
         r = r.form.submit()
         r = r.follow()
 
@@ -2298,8 +2320,9 @@ class TestTwoFactor(TestController):
 
         # regular login
         r = self.app.get('/auth/')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
         r = r.form.submit()
         r = r.follow()
 
@@ -2326,8 +2349,9 @@ class TestTwoFactor(TestController):
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
-        r.form['username'] = 'test-admin'
-        r.form['password'] = 'foo'
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
         r = r.form.submit()
 
         # check results

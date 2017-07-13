@@ -40,9 +40,9 @@ class TestStats(TestController):
         user = User.by_username('test-user')
         init_logins = user.stats.tot_logins_count
         self.app.get('/')  # establish session
-        self.app.post('/auth/do_login', params=dict(
+        self.app.post('/auth/do_login', antispam=True, params=dict(
             username=user.username, password='foo',
-            _session_id=self.app.cookies['_session_id']
+            _session_id=self.app.cookies['_session_id'],
         ))
 
         assert user.stats.tot_logins_count == 1 + init_logins

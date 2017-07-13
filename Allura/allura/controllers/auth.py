@@ -51,6 +51,7 @@ from allura.lib.widgets import (
 from allura.lib.widgets import forms, form_fields as ffw
 from allura.lib import mail_util
 from allura.lib.multifactor import TotpService, RecoveryCodeService
+from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 
@@ -320,6 +321,7 @@ class AuthController(BaseController):
     @expose()
     @require_post()
     @validate(F.login_form, error_handler=index)
+    @utils.AntiSpam.validate('Spambot protection engaged')
     def do_login(self, return_to=None, **kw):
         location = '/'
 
