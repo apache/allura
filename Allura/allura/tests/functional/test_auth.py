@@ -81,10 +81,9 @@ class TestAuth(TestController):
             assert_equal(r.headers['Location'], 'http://localhost/')
 
         with assert_raises(ValueError) as ex:
-            with audits('Honeypot login', user=True):
-                r = self.app.post('/auth/do_login', antispam=True, params=dict(
-                    username='test-user', password='foo', honey1='robot',
-                    _session_id=self.app.cookies['_session_id']))
+            r = self.app.post('/auth/do_login', antispam=True, params=dict(
+                username='test-user', password='foo', honey1='robot',
+                _session_id=self.app.cookies['_session_id']))
 
         with audits('Failed login', user=True):
             r = self.app.post('/auth/do_login', antispam=True, params=dict(
@@ -2036,7 +2035,7 @@ class TestCSRFProtection(TestController):
             antispam=True)
 
         # regular form submit
-        r = self.app.get('/admin/overview') # ahh i'm dead here
+        r = self.app.get('/admin/overview')
         r = r.form.submit()
         assert_equal(r.location, 'http://localhost/admin/overview')
 

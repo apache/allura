@@ -213,12 +213,8 @@ def validate_page(html_or_response):
 
 class AntiSpamTestApp(TestApp):
 
-    def __init__(self, *args):
-        self.antispam = utils.AntiSpam()
-        super(AntiSpamTestApp, self).__init__(*args)
-
     def post(self, *args, **kwargs):
-        antispam = self.antispam
+        antispam = utils.AntiSpam()
         if kwargs.pop('antispam', False):
             params = {
                 'timestamp': antispam.timestamp_text,

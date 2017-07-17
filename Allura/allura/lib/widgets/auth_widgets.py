@@ -55,10 +55,9 @@ class LoginForm(ForgeForm):
                     text='<a href="/auth/forgotten_password" style="margin-left:162px" target="_top">'
                          'Forgot password?</a>'))
 
-        if g.antispam:
-            for fld in g.antispam.extra_fields():
-                fields.append(
-                    ew_core.Widget(template=ew.Snippet(fld)))
+        for fld in g.antispam.extra_fields():
+            fields.append(
+                ew_core.Widget(template=ew.Snippet(fld)))
 
         return fields
 
