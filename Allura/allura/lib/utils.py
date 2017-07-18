@@ -53,7 +53,6 @@ from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
 
-
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
 
@@ -113,6 +112,7 @@ class lazy_logger(object):
             raise AttributeError(name)
         return getattr(self._logger, name)
 
+log = lazy_logger(__name__)
 
 class TimedRotatingHandler(logging.handlers.BaseRotatingHandler):
 
@@ -340,11 +340,11 @@ class AntiSpam(object):
         if timestamp is None:
             timestamp = self.timestamp
         try:
-            client_ip = ip_address(self.request)
+            self.client_ip = ip_address(self.request)
         except (TypeError, AttributeError):
-            client_ip = '127.0.0.1'
+            self.client_ip = '127.0.0.1'
         plain = '%d:%s:%s' % (
-            timestamp, client_ip, pylons.config.get('spinner_secret', 'abcdef'))
+            timestamp, self.client_ip, pylons.config.get('spinner_secret', 'abcdef'))
         return hashlib.sha1(plain).digest()
 
     @classmethod
@@ -355,23 +355,31 @@ class AntiSpam(object):
             params = request.params
         new_params = dict(params)
         if not request.method == 'GET':
-            new_params.pop('timestamp', None)
-            new_params.pop('spinner', None)
-            obj = cls(request)
-            if now is None:
-                now = time.time()
-            if obj.timestamp > now + 5:
-                raise ValueError('Post from the future')
-            if now - obj.timestamp > 24 * 60 * 60:
-                raise ValueError('Post from the distant past')
-            if obj.spinner != obj.make_spinner(obj.timestamp):
-                raise ValueError('Bad spinner value')
-            for k in new_params.keys():
-                new_params[obj.dec(k)] = new_params.pop(k)
-            for fldno in range(obj.num_honey):
-                value = new_params.pop('honey%s' % fldno)
-                if value:
-                    raise ValueError('Value in honeypot field: %s' % value)
+            obj = None
+            try:
+                new_params.pop('timestamp', None)
+                new_params.pop('spinner', None)
+                obj = cls(request)
+                expected_spinner = obj.make_spinner(obj.timestamp)
+                if now is None:
+                    now = time.time()
+                if obj.timestamp > now + 5:
+                    raise ValueError('Post from the future')
+                if now - obj.timestamp > 24 * 60 * 60:
+                    raise ValueError('Post from the distant past')
+                if obj.spinner != expected_spinner:
+                    raise ValueError('Bad spinner value')
+                for k in new_params.keys():
+                    new_params[obj.dec(k)] = new_params.pop(k)
+                for fldno in range(obj.num_honey):
+                    value = new_params.pop('honey%s' % fldno)
+                    if value:
+                        raise ValueError('Value in honeypot field: %s' % value)
+            except Exception as ex:
+                attrs = dict(now=now, obj=vars(obj) if obj else None)
+                log.info('Form validation failure: {}'.format(attrs))
+                log.info('Error is', exc_info=ex)
+                raise ex
         return new_params
 
     @classmethod
