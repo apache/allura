@@ -370,7 +370,11 @@ class AntiSpam(object):
                 if obj.spinner != expected_spinner:
                     raise ValueError('Bad spinner value')
                 for k in new_params.keys():
-                    new_params[obj.dec(k)] = new_params.pop(k)
+                    try:
+                        new_params[obj.dec(k)] = new_params[k]
+                        new_params.pop(k)
+                    except:
+                        pass
                 for fldno in range(obj.num_honey):
                     value = new_params.pop('honey%s' % fldno)
                     if value:

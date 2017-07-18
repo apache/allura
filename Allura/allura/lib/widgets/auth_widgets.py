@@ -42,7 +42,7 @@ class LoginForm(ForgeForm):
             }),
             ew.PasswordField(name=g.antispam.enc('password'), label='Password'),
             ew.Checkbox(
-                name='rememberme',
+                name=g.antispam.enc('rememberme'),
                 label='Remember Me',
                 attrs={'style': 'margin-left: 162px;'}),
             ew.HiddenField(name='return_to'),
