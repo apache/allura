@@ -125,7 +125,8 @@ class TestAntispam(unittest.TestCase):
     def test_valid_submit(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form),
-                          environ={'remote_addr': '127.0.0.1'})
+                          environ={'remote_addr': '127.0.0.1'}
+                          )
         validated = utils.AntiSpam.validate_request(r)
         assert dict(a='1', b='2') == validated, validated
 

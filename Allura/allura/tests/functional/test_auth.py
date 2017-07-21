@@ -29,7 +29,7 @@ from bson import ObjectId
 import re
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
-from mock import patch
+from mock import patch, Mock
 import mock
 from nose.tools import (
     assert_equal,
@@ -95,6 +95,28 @@ class TestAuth(TestController):
             username='test-usera', password='foo',
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
+
+    def login_diff_ips_ok(self):
+        extra = {'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.44'}
+        r = self.app.get('/auth/', extra_environ=extra)
+
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Successful login', user=True):
+            r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99'})
+
+    def login_diff_ips_bad(self):
+        extra = {'username': '*anonymous', 'REMOTE_ADDR': '24.52.32.123'}
+        r = self.app.get('/auth/', extra_environ=extra)
+
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with assert_raises(ValueError) as ex:
+            r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99'})
 
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}

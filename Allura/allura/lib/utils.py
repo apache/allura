@@ -343,8 +343,14 @@ class AntiSpam(object):
             self.client_ip = ip_address(self.request)
         except (TypeError, AttributeError):
             self.client_ip = '127.0.0.1'
+
+        if not self.client_ip:
+            # this is primarily for tests that sometimes don't have a remote_addr set on the request
+            self.client_ip = '127.0.0.1'
+        octets = self.client_ip.split('.')
+        ip_chunk = '.'.join(octets[0:3])
         plain = '%d:%s:%s' % (
-            timestamp, self.client_ip, pylons.config.get('spinner_secret', 'abcdef'))
+            timestamp, ip_chunk, pylons.config.get('spinner_secret', 'abcdef'))
         return hashlib.sha1(plain).digest()
 
     @classmethod

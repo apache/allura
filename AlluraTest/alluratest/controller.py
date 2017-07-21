@@ -124,7 +124,7 @@ def setup_unit_test():
     REGISTRY.register(g, Globals())
     REGISTRY.register(c, mock.Mock())
     REGISTRY.register(url, lambda: None)
-    REGISTRY.register(request, Request.blank('/'))
+    REGISTRY.register(request, Request.blank('/', remote_addr='127.0.0.1'))
     REGISTRY.register(response, Response())
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     c.model_cache = None
