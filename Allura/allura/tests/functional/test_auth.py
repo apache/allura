@@ -29,7 +29,7 @@ from bson import ObjectId
 import re
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
-from mock import patch
+from mock import patch, Mock
 import mock
 from nose.tools import (
     assert_equal,
@@ -96,6 +96,7 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
         nav_pattern = ('nav', {'class': 'nav-main'})
@@ -2244,6 +2245,7 @@ class TestTwoFactor(TestController):
         assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Disabled')
         assert_in('disabled two-factor authentication', tasks[0].kwargs['text'])
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_login_totp(self):
         self._init_totp()
 
@@ -2281,6 +2283,7 @@ class TestTwoFactor(TestController):
         assert_equal(r.session['username'], 'test-admin')
         assert r.location.endswith('/p/foo'), r
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_login_rate_limit(self):
         self._init_totp()
 
@@ -2312,6 +2315,7 @@ class TestTwoFactor(TestController):
         assert_in('rate limit exceeded', r)
         assert not r.session.get('username')
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_login_totp_disrupted(self):
         self._init_totp()
 
@@ -2341,6 +2345,7 @@ class TestTwoFactor(TestController):
         r = r.follow()
         assert_in('Password Login', r)
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_login_recovery_code(self):
         self._init_totp()
 

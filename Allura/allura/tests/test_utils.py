@@ -104,6 +104,7 @@ class TestChunkedList(unittest.TestCase):
 
 class TestAntispam(unittest.TestCase):
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def setUp(self):
         setup_unit_test()
         self.a = utils.AntiSpam()
@@ -114,6 +115,7 @@ class TestAntispam(unittest.TestCase):
         assert 'name="spinner"' in fields, fields
         assert ('class="%s"' % self.a.honey_class) in fields, fields
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_invalid_old(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form))
@@ -122,6 +124,7 @@ class TestAntispam(unittest.TestCase):
             utils.AntiSpam.validate_request,
             r, now=time.time() + 24 * 60 * 60 + 1)
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_valid_submit(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form),
@@ -129,6 +132,7 @@ class TestAntispam(unittest.TestCase):
         validated = utils.AntiSpam.validate_request(r)
         assert dict(a='1', b='2') == validated, validated
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_invalid_future(self):
         form = dict(a='1', b='2')
         r = Request.blank('/', POST=self._encrypt_form(**form))
@@ -137,6 +141,7 @@ class TestAntispam(unittest.TestCase):
             utils.AntiSpam.validate_request,
             r, now=time.time() - 10)
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_invalid_spinner(self):
         form = dict(a='1', b='2')
         eform = self._encrypt_form(**form)
@@ -144,6 +149,7 @@ class TestAntispam(unittest.TestCase):
         r = Request.blank('/', POST=eform)
         self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
 
+    @patch('allura.lib.utils.ip_address', Mock(return_value="1.2.3.4"))
     def test_invalid_honey(self):
         form = dict(a='1', b='2', honey0='a')
         eform = self._encrypt_form(**form)
