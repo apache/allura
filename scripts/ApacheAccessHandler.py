@@ -54,6 +54,7 @@ this authorization code without Allura set up and configured on the git host.
 from mod_python import apache
 import os
 import json
+import re
 
 
 requests = None  # will be imported on demand, to allow for virtualenv
@@ -124,9 +125,31 @@ def check_authentication(req):
     if not username or not password:
         return False
     auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
+
+    # work through our own Antispam protection
+    auth_form_url = auth_url.replace('/do_login', '/')
+    auth_form_page = requests.get(auth_form_url, allow_redirects=False).text
+    auth_inputs = re.findall(r'(<input.*?>)', auth_form_page, re.I)
+    re_name = re.compile(r''' name=["']?(.*?)["' />]''')
+    re_value = re.compile(r''' value=["']?(.*?)["' />]''')
+    for i, input in enumerate(auth_inputs):
+        if 'password' in input:
+            password_field = re_name.search(input).group(1)
+            username_field = re_name.search(auth_inputs[i-1]).group(1)
+        if 'spinner' in input:
+            spinner_value = re_value.search(input).group(1)
+            honey1_field = re_name.search(auth_inputs[i+1]).group(1)
+            honey2_field = re_name.search(auth_inputs[i+2]).group(1)
+        if 'timestamp' in input:
+            timestamp_value = re_value.search(input).group(1)
+
     r = requests.post(auth_url, allow_redirects=False, data={
-        'username': username,
-        'password': password,
+        username_field: username,
+        password_field: password,
+        'timestamp': timestamp_value,
+        'spinner': spinner_value,
+        honey1_field: '',
+        honey2_field: '',
         'return_to': '/login_successful',
         '_session_id': 'this-is-our-session',
     }, cookies={
@@ -140,8 +163,12 @@ def check_authentication(req):
         log(req, 'trying multifactor for user: %s' % username)
         sess = requests.Session()
         r = sess.post(auth_url, allow_redirects=False, data={
-            'username': username,
-            'password': password,
+            username_field: username,
+            password_field: password,
+            'timestamp': timestamp_value,
+            'spinner': spinner_value,
+            honey1_field: '',
+            honey2_field: '',
             'return_to': '/login_successful',
             '_session_id': 'this-is-our-session',
         }, cookies={
