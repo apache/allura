@@ -863,7 +863,7 @@ class TestRootController(TestController):
         menu = [li.find('span').getText() for li in menu.findAll('li')]
         assert_equal(
             menu,
-            ['Set Home', 'Permissions', 'Options', 'Rename', 'Delete'])
+            ['Set Home', 'Permissions', 'Options', 'Rename', 'Delete Everything'])
 
     def test_sidebar_admin_menu_is_expanded(self):
         r = self.app.get('/p/test/admin/wiki/permissions')

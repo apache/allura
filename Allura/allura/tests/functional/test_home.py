@@ -71,7 +71,7 @@ class TestProjectHome(TestController):
                            'href': '/p/test/admin/wiki/permissions',
                            }, m['admin_options'])
                 assert_in({'className': 'admin_modal',
-                           'text': 'Delete',
+                           'text': 'Delete Everything',
                            'href': '/p/test/admin/wiki/delete',
                            }, m['admin_options'])
                 break

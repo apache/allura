@@ -655,7 +655,7 @@ class Application(object):
         anchored = self.tool_label.lower() in anchored_tools.keys()
         if self.uninstallable and not anchored:
             return SitemapEntry(
-                label='Delete',
+                label='Delete Everything',
                 url=self.admin_url + 'delete',
                 className='admin_modal',
             )

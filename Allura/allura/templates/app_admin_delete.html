@@ -19,7 +19,7 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 <form method="POST" action="{{c.project.url()}}admin/update_mounts">
-<p>Warning: This will destroy all data in the '{{ app.config.options.mount_point }}' tool and is irreversible!</p>
+<p>Warning: This will destroy ALL DATA in the '{{ app.config.options.mount_point }}' tool and is irreversible!</p>
 <hr>
 <p>
   <input type="submit" value="Delete" class="delete-tool">
