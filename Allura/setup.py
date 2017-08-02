@@ -24,6 +24,8 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+from allura.version import __version__
+
 exec open('allura/version.py').read()
 
 PROJECT_DESCRIPTION = '''
