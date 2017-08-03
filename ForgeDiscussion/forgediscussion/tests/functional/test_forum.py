@@ -523,6 +523,7 @@ class TestForum(TestController):
         assert 'name="delete"' not in r
         assert 'name="approve"' not in r
         assert 'name="spam"' not in r
+        assert_equal(spam_checker.check.call_args[0][0], 'Test Thread\nPost content')
 
         # assert unapproved thread replies do not appear
         f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
@@ -537,6 +538,7 @@ class TestForum(TestController):
         r = self.app.get(thread.request.url,
                          extra_environ=dict(username='*anonymous'))
         assert 'anon reply to anon post' not in r
+        assert_equal(spam_checker.check.call_args[0][0], 'anon reply to anon post content')
 
         # assert moderation controls appear for admin
         r = self.app.get(thread.request.url)
@@ -566,7 +568,7 @@ class TestForum(TestController):
         M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
         ThreadLocalORMSession.flush_all()
         t = M.Thread()
-        p = M.Post()
+        p = M.Post(thread=t)
         assert_in('TestRole', [r.name for r in c.project.named_roles])
         assert_false(t.is_spam(p))
 

@@ -82,11 +82,14 @@ class TestDiscuss(TestDiscussBase):
         r = r.follow()
         return r
 
+    @patch('allura.controllers.discuss.g.spam_checker.check')
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
-    def test_post(self, submit_spam):
+    def test_post(self, submit_spam, check_spam):
         thread_link = self._thread_link()
         r = self._make_post('This is a post')
         assert 'This is a post' in r, r
+        assert_equal(check_spam.call_args[0][0], 'This is a post')
+
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.get(post_link[:-2], status=302)

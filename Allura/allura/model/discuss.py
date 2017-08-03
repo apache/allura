@@ -182,7 +182,7 @@ class Thread(Artifact, ActivityObject):
                          os.path.basename(attach.filename))
                      ) for attach in page.attachments]
 
-    def attachemtns_for_json(self, page):
+    def attachments_for_json(self, page):
         return [dict(bytes=attach.length,
                      url=h.absurl(attach.url())) for attach in page.attachments]
 
@@ -200,7 +200,7 @@ class Thread(Artifact, ActivityObject):
                         author_icon_url=h.absurl(p.author().icon_url()),
                         timestamp=p.timestamp,
                         last_edited=p.last_edit_date,
-                        attachments=self.attachment_for_export(p) if is_export else self.attachemtns_for_json(p))
+                        attachments=self.attachment_for_export(p) if is_export else self.attachments_for_json(p))
                    for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
                    ]
         )
@@ -284,9 +284,17 @@ class Thread(Artifact, ActivityObject):
         self.post_to_feed(p)
         return p
 
+    def include_subject_in_spam_check(self, post):
+        return (post.primary() == post  # only artifacts where the discussion is the main thing i.e. ForumPost
+                and
+                self.num_replies == 0)  # only first post in thread
+
     def is_spam(self, post):
         roles = [r.name for r in c.project.named_roles]
-        spammy = g.spam_checker.check(post.text, artifact=post, user=c.user)
+        spam_check_text = post.text
+        if self.include_subject_in_spam_check(post):
+            spam_check_text = self.subject + u'\n' + spam_check_text
+        spammy = g.spam_checker.check(spam_check_text, artifact=post, user=c.user)
         if c.user in c.project.users_with_role(*roles):
             # always run the check, so it's logged.  But don't act on it for admins/developers of their own project
             return False
