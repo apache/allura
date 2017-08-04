@@ -679,7 +679,7 @@ class TestCachedMarkdown(unittest.TestCase):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_non_ascii(self):
         self.post.text = u'å∫ç'
         expected = u'<p>å∫ç</p>'
@@ -688,7 +688,7 @@ class TestCachedMarkdown(unittest.TestCase):
         # test with primed cache
         self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_empty_cache(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
@@ -697,7 +697,7 @@ class TestCachedMarkdown(unittest.TestCase):
                          self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_stale_cache(self):
         old = self.md.cached_convert(self.post, 'text')
         self.post.text = u'new, different source text'
@@ -708,7 +708,7 @@ class TestCachedMarkdown(unittest.TestCase):
                          self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_valid_cache(self):
         from jinja2 import Markup
         self.md.cached_convert(self.post, 'text')
