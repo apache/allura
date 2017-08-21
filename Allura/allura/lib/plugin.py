@@ -1021,6 +1021,7 @@ class ProjectRegistrationProvider(object):
         solr_del_project_artifacts.post(pid)
         if disable_users:
             # Disable users if necessary BEFORE removing all project-related documents
+            log.info("Disabling users because we're purging project %s", project.url())
             self.disable_project_users(project, reason)
         app_config_ids = [ac._id for ac in AppConfig.query.find(dict(project_id=pid))]
         for m in Mapper.all_mappers():
@@ -1040,13 +1041,18 @@ class ProjectRegistrationProvider(object):
         users = project.admins() + project.users_with_role('Developer')
         for user in users:
             if user.disabled:
+                log.info('User %s is already disabled', user.username)
                 continue
             provider.disable_user(user, audit=False)
             msg = u'Account disabled because project {}{} is deleted. Reason: {}'.format(
                 project.neighborhood.url_prefix,
                 project.shortname,
                 reason)
-            h.auditlog_user(msg, user=user)
+            auditlog = h.auditlog_user(msg, user=user)
+            if auditlog:
+                session(auditlog).flush(auditlog)
+            else:
+                log.error('For some reason no auditlog written in disable_project_users for: %s %s', user, msg)
             # `users` can contain duplicates. Make sure changes are visible
             # to next iterations, so that `user.disabled` check works.
             session(user).expunge(user)
