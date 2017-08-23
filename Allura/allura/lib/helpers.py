@@ -455,12 +455,7 @@ def absurl(url):
         return None
     if '://' in url:
         return url
-    try:
-        # try request first, so we can get proper http/https value
-        host = request.host_url
-    except TypeError:
-        # for tests, etc
-        host = tg.config['base_url'].rstrip('/')
+    host = tg.config['base_url'].rstrip('/')
     return host + url
 
 

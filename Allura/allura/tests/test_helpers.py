@@ -491,15 +491,8 @@ class TestUrlOpen(TestCase):
         self.assertEqual(urlopen.call_count, 1)
 
 
-def test_absurl_no_request():
+def test_absurl():
     assert_equals(h.absurl('/p/test/foobar'), 'http://localhost/p/test/foobar')
-
-
-@patch.object(h, 'request',
-              new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
-def test_absurl_with_request():
-    assert_equals(h.absurl('/p/test/foobar'),
-                  'https://www.mysite.com/p/test/foobar')
 
 
 def test_daterange():

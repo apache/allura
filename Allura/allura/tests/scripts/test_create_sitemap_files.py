@@ -50,9 +50,9 @@ class TestCreateSitemapFiles(object):
             xml_index = ET.parse(os.path.join(tmpdir.path, 'sitemap.xml'))
             ns = {'ns0': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
             locs = [loc.text for loc in xml_index.findall('ns0:sitemap/ns0:loc', ns)]
-            assert_in('http://localhost:8080/allura_sitemap/sitemap-0.xml', locs)
+            assert_in('http://localhost/allura_sitemap/sitemap-0.xml', locs)
 
             xml_0 = ET.parse(os.path.join(tmpdir.path, 'sitemap-0.xml'))
             urls = [loc.text for loc in xml_0.findall('ns0:url/ns0:loc', ns)]
-            assert_in('http://localhost:8080/p/wiki/', urls)
-            assert_in('http://localhost:8080/p/test/sub1/', urls)
+            assert_in('http://localhost/p/wiki/', urls)
+            assert_in('http://localhost/p/test/sub1/', urls)
