@@ -74,9 +74,6 @@ def test_app_globals():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         assert g.app_static(
             'css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
-        assert g.url(
-            '/foo', a='foo bar') == 'http://localhost/foo?a=foo+bar', g.url('/foo', a='foo bar')
-        assert g.url('/foo') == 'http://localhost/foo', g.url('/foo')
 
 
 @with_setup(setUp)
@@ -443,7 +440,7 @@ Some text in a regular paragraph
     for i in range(10):
         print i
 ''')
-    assert_in('http://localhost:8080/', g.forge_markdown(email=True).convert('[Home]'))
+    assert_in('http://localhost/', g.forge_markdown(email=True).convert('[Home]'))
     assert 'class="codehilite"' in g.markdown.convert('''
 ~~~~
 def foo(): pass

@@ -213,7 +213,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
             c = f.read()
         self.assertIn(
-            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src-git/\n', c)
+            'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
@@ -247,7 +247,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
                 c = f.read()
             self.assertIn(
-                'curl -s http://localhost:8080/auth/refresh_repo/p/test/src-git/\n', c)
+                'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
 
@@ -469,12 +469,12 @@ http://example.com/
 
 By Dave Brondsema''', text_body)
         # these bracketed links could look like HTML tags, ensure they don't get removed
-        assert_in('further messages, please visit <http://localhost:8080/auth/subscriptions/>', text_body)
+        assert_in('further messages, please visit <http://localhost/auth/subscriptions/>', text_body)
 
         # limited markdown handling of commit messages (see `markdown_commit`)
         # and HTML escaped
         assert_in('''<hr/>
-<div class="markdown_content"><p>Add foo.txt.  Commit ref <a class="alink" href="http://localhost:8080/p/test/weird-chars/ci/616d24f8dd4e95cadd8e93df5061f09855d1a066/">[616d24f8dd4e95cadd8e93df5061f09855d1a066]</a> *bold* &lt;b&gt;bold&lt;/b&gt;</p>
+<div class="markdown_content"><p>Add foo.txt.  Commit ref <a class="alink" href="http://localhost/p/test/weird-chars/ci/616d24f8dd4e95cadd8e93df5061f09855d1a066/">[616d24f8dd4e95cadd8e93df5061f09855d1a066]</a> *bold* &lt;b&gt;bold&lt;/b&gt;</p>
 <p>* one<br/>
 * two<br/>
 * three</p>

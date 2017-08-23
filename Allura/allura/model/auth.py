@@ -206,7 +206,8 @@ please visit the following URL:
 %s
 ''' % (self.email,
        self.claimed_by_user(include_pending=True).username,
-       g.url('/auth/verify_addr', a=self.nonce))
+       h.absurl('/auth/verify_addr?a={}'.format(h.urlquote(self.nonce))),
+       )
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
             fromaddr=g.noreply,

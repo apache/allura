@@ -544,13 +544,6 @@ class Globals(object):
         'h.set_context() is preferred over this method'
         c.app = c.project.app_instance(name)
 
-    def url(self, base, **kw):
-        params = urlencode(kw)
-        if params:
-            return '%s%s?%s' % (request.host_url, base, params)
-        else:
-            return '%s%s' % (request.host_url, base)
-
     def postload_contents(self):
         text = '''
 '''

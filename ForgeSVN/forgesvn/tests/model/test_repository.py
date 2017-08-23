@@ -166,7 +166,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             hook_data = f.read()
         self.assertIn(
-            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src/\n',
+            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n',
             hook_data)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', hook_data)
 
@@ -218,7 +218,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
         self.assertIn(
-            'curl -s http://localhost:8080/auth/refresh_repo/p/test/src/\n', c)
+            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
@@ -877,7 +877,7 @@ class TestRepo(_TestWithRepo):
         for n in notifications:
             if '100 new commits' in n.subject:
                 assert_in(u'By Test Committer on 10/08/2010 15:32', n.text)
-                assert_in(u'http://localhost:8080/ci/foo99/', n.text)
+                assert_in(u'http://localhost/ci/foo99/', n.text)
                 break
         else:
             assert False, 'Did not find notification'

@@ -2396,7 +2396,7 @@ class TestFunctionalController(TrackerTestController):
             # check subject
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
             # check html, need tags escaped
-            assert_in('<p><strong> <a class="alink" href="http://localhost:8080/p/test/bugs/1/">[bugs:#1]</a>'
+            assert_in('<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a>'
                       ' test &lt;h2&gt; ticket</strong></p>',
                       body)
             # check plaintext (ok to have "html" tags)

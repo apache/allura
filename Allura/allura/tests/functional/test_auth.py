@@ -928,9 +928,9 @@ class TestAuth(TestController):
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
-            return_to='http://localhost:8080/foo',
+            return_to='http://localhost/foo',
             _session_id=self.app.cookies['_session_id']))
-        assert_equal(r.location, 'http://localhost:8080/foo')
+        assert_equal(r.location, 'http://localhost/foo')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
