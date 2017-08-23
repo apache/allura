@@ -62,7 +62,7 @@ from .session import repository_orm_session
 log = logging.getLogger(__name__)
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
-    common_prefix='forgemail.url')
+)
 
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
 VIEWABLE_EXTENSIONS = frozenset([

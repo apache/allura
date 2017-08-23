@@ -688,7 +688,7 @@ class MailFooter(object):
         return cls._render('mail/footer.txt',
                            domain=config['domain'],
                            notification=notification,
-                           prefix=config['forgemail.url'],
+                           prefix=config['base_url'],
                            allow_email_posting=allow_email_posting,
                            **kw)
 
