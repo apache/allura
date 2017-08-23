@@ -232,6 +232,7 @@ class SMTPClient(object):
         message['Reply-To'] = AddrHeader(reply_to)
         message['Subject'] = Header(subject)
         message['Message-ID'] = Header('<' + message_id + u'>')
+        message['Date'] = email.utils.formatdate()
         if sender:
             message['Sender'] = AddrHeader(sender)
         if cc:
