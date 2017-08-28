@@ -778,7 +778,7 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
     else:
         fmt = g.pypeline_markup.can_render(name)
         if fmt == 'markdown':
-            txt = g.markdown.convert(txt)
+            txt = g.markdown.convert(really_unicode(txt))
         else:
             txt = g.pypeline_markup.render(name, txt)
         if not fmt:
