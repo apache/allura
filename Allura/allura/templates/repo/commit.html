@@ -55,7 +55,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     }
 
     function ld(diff, callback) {
-      $(diff.selector).load(encodeURI(diff.url), callback);
+      $(diff.selector).load(diff.url, callback);
     }
 
     function load_diff() {
