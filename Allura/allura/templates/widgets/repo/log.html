@@ -74,7 +74,7 @@
               </a>
               {%if is_file%}
               <br/>
-              <a class="download" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}?format=raw">Download</a>
+              <a class="download" rel="nofollow" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}?format=raw">Download</a>
               {%endif%}
               {% if commit.rename_details %}
                   {%set path=commit.rename_details['path']%}

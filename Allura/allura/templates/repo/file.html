@@ -74,10 +74,10 @@
 {% endblock %}
 {% block content %}
   {% if blob.has_image_view %}
-    <p><a href="?format=raw">Download this file</a></p>
+    <p><a rel="nofollow" href="?format=raw">Download this file</a></p>
     <img src="?format=raw" alt=""/>
   {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
-    <p><a href="?format=raw">Download this file</a></p>
+    <p><a rel="nofollow" href="?format=raw">Download this file</a></p>
     <div class="clip grid-19 codebrowser">
       <h3>
         {{ stats.line_count }} lines ({{ stats.data_line_count }} with data), {{ stats.code_size|filesizeformat }}
@@ -90,7 +90,7 @@
     </div>
   {% else %}
     <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
-    Try to <a href="?force=True">display it</a> anyway or
-    <a href="?format=raw">download it</a> instead.</p>
+    Try to <a rel="nofollow" href="?force=True">display it</a> anyway or
+    <a rel="nofollow" href="?format=raw">download it</a> instead.</p>
   {% endif %}
 {% endblock %}

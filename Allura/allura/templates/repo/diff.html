@@ -60,7 +60,7 @@
           {% set switch_url = request.url.replace('&diformat=regular', '') + '&diformat=sidebyside' %}
           {% set switch_text = 'side-by-side' %}
         {% endif %}
-        <a href="{{ switch_url }}">Switch to {{ switch_text }} view</a>
+        <a rel="nofollow" href="{{ switch_url }}">Switch to {{ switch_text }} view</a>
       </h3>
     {% if session.diformat == 'sidebyside' %}
       {{diff|safe}}

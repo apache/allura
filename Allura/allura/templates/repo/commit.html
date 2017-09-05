@@ -148,7 +148,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% if obj_type != 'tree' and is_text %}
                     {% set diff_url = file_url + '?barediff=' + (prev[0]._id if prev else '') %}
                     <a class="commit-diff-link" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
-                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{ diff_url }}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                    <a class="commit-diff-link switch-diff-format-link" rel="nofollow" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{ diff_url }}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
                 {% endif %}
             {% elif type == 'removed' %}
                 {% set file_url = prev[0].url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
@@ -161,7 +161,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% if file.ratio != 1 %}
                     {% set diff_url = new_file_url + '?barediff=' + (prev[0]._id if prev else '') + '&prev_file=' + h.urlquote(h.really_unicode(file['old'])) %}
                     <a class="commit-diff-link" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
-                    <a class="commit-diff-link switch-diff-format-link" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{diff_url}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
+                    <a class="commit-diff-link switch-diff-format-link" rel="nofollow" data-diformat="{{session.diformat}}" data-diffid="diff-{{loop.index}}" href="{{diff_url}}">Switch to {{'unified' if session.diformat == 'sidebyside' else 'side-by-side'}} view</a>
                 {% endif %}
             {% endif %}
             </h6>
