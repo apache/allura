@@ -139,6 +139,7 @@
             </li>
           {% endfor %}
         </ul>
+        <a href="/nf/admin/delete_projects/?projects={% for p in projects %}{{ p.url() }}%0A{% endfor %}&reason=%0A%0A%0A(projects by user {{user.username}})">Delete all these projects</a>
       </fieldset>
     </div>
   {% endblock user_projects %}
