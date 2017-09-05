@@ -258,6 +258,12 @@ def test_render_any_markup_formatting():
                   '&lt;/script&gt;</span> bar\n</pre></div>\n\n</div>')
 
 
+def test_render_any_markdown_encoding():
+    # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
+    assert_equals(h.render_any_markup('README.md', u'Müller'.encode('utf8')),
+                  u'<div class="markdown_content"><p>Müller</p></div>')
+
+
 class AuditLogMock(Mock):
     logs = list()
 
