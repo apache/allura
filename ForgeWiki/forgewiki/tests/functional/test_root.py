@@ -243,7 +243,7 @@ class TestRootController(TestController):
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you can revert to an old revison, but not the current one
-        assert response.html.find('a', {'data-dialog-id': '1'})
+        assert response.html.find('a', {'data-dialog-id': '1'}), response.html
         assert not response.html.find('a', {'data-dialog-id': '2'})
         response = self.app.get('/wiki/tést/history',
                                 extra_environ=dict(username='*anonymous'))

@@ -385,7 +385,6 @@ def send_notifications(repo, commit_ids):
     from allura.model import Feed, Notification
     commit_msgs = []
     base_url = tg.config['base_url']
-    last_branch = []
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
         index = dict(
@@ -422,6 +421,13 @@ def send_notifications(repo, commit_ids):
             c_msg['branches'] = prev_branch
         prev_branch = c_msg['branches']
 
+    # mark which ones are first on a branch and need the branch name shown
+    last_branch = None
+    for c_msg in commit_msgs:
+        if c_msg['branches'] != last_branch:
+            c_msg['show_branch_name'] = True
+        last_branch = c_msg['branches']
+
     if commit_msgs:
         if len(commit_msgs) > 1:
             subject = u"{} new commits to {}".format(len(commit_msgs), repo.app.config.options.mount_label)
@@ -444,7 +450,7 @@ def _title(message):
     if not message:
         return ''
     line = message.splitlines()[0]
-    return jinja2.filters.do_truncate(line, 200, True)
+    return jinja2.filters.do_truncate(None, line, 200, killwords=True, leeway=3)
 
 
 def _summarize(message):

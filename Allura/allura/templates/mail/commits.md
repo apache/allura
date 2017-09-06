@@ -17,11 +17,9 @@
        under the License.
 --> #}
 {%- for cm in commit_msgs[:max_num_commits] %}
-{%- if cm.branches and cm.branches != last_branch|default %}
+{%- if cm.branches and cm.show_branch_name|default %}
 ## Branch: {% for b in cm.branches %}{{ b }}  {% endfor%}
 {% endif %}
-{% set last_branch = cm.branches -%}
-
 {{ cm.summary }}
 
 By {{ cm.author }} on {{ cm.date }}
