@@ -39,7 +39,10 @@ from cStringIO import StringIO
 
 import tg
 import genshi.template
-import chardet
+try:
+    import cchardet as chardet
+except ImportError:
+    import chardet
 import pkg_resources
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
