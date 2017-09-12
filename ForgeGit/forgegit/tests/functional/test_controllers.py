@@ -320,9 +320,9 @@ class TestRootController(_TestCase):
         header = r.html.find('h2', {'class': 'dark title'}).contents[2]
         assert 'index.html' in header, header
         content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
-        assert ('<span class="nt">&lt;h1&gt;</span>'
+        assert ('<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>'
                 'index.html'
-                '<span class="nt">&lt;/h1&gt;</span>') in content, content
+                ) in content, content
 
         # `index` dir in repo root
         r = self.app.get(ci + 'tree/index/')
@@ -334,9 +334,9 @@ class TestRootController(_TestCase):
         assert 'index' in header.contents[3], header.contents[3]
         assert 'index.htm' in header.contents[4], header.contents[4]
         content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
-        assert ('<span class="nt">&lt;h1&gt;</span>'
+        assert ('<span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>'
                 'index/index.htm'
-                '<span class="nt">&lt;/h1&gt;</span>') in content, content
+                ) in content, content
 
     def test_subscribe(self):
         user = M.User.query.get(username='test-user')
@@ -760,7 +760,7 @@ class TestFork(_TestCase):
 </li>
 </ul>
 <p>Diff:</p>
-<div class="codehilite"><pre><span class="gd">--- old</span>
+<div class="codehilite"><pre><span></span><span class="gd">--- old</span>
 <span class="gi">+++ new</span>
 <span class="gu">@@ -1 +1 @@</span>
 <span class="gd">-description</span>
