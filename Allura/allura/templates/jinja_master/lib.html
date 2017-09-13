@@ -57,9 +57,9 @@
   {% set icon_url, user_proj, icon_source = user.icon_url(gravatar_default_url, return_more=True) %}
   {% if icon_url %}
     <img {% if icon_source == 'local' %}
-             {{ project_icon_srcs(user_proj, icon_url=icon_url) }}
+             {{ project_icon_srcs(user_proj, icon_url=icon_url, base_size=size) }}
          {% elif icon_source == 'gravatar' %}
-             src="{{ icon_url }}"
+             src="{{ icon_url }}&s={{size}}"
              srcset="{{icon_url}}&s={{ size*1.5 }} 1.5x,
                      {{icon_url}}&s={{ size*2 }} 2x"
          {% endif %}
@@ -210,13 +210,13 @@
 {#
  icon_url param is entirely optional; only pass it if you already have one for effeciency
 #}
-{%- macro project_icon_srcs(project, icon_url=None) %}
+{%- macro project_icon_srcs(project, icon_url=None, base_size=48) %}
     {% set icon_url = icon_url or project.url() + 'icon' %}
-    src="{{icon_url}}?{{project.icon_timestamp}}"
-    {% if project.icon_max_size >= 72 -%}
-        srcset="{{icon_url}}?w=72&amp;{{project.icon_timestamp}} 1.5x
-        {% if project.icon_max_size >= 96 -%},
-            {{icon_url}}?w=96&amp;{{project.icon_timestamp}} 2x
+    src="{{icon_url}}?{{project.icon_timestamp}}{% if base_size != 48 and project.icon_max_size >= base_size %}&amp;w={{base_size}}{% endif %}"
+    {% if project.icon_max_size >= base_size*1.5 -%}
+        srcset="{{icon_url}}?w={{ (base_size*1.5)|int }}&amp;{{project.icon_timestamp}} 1.5x
+        {% if project.icon_max_size >= base_size*2 -%},
+            {{icon_url}}?w={{ base_size*2 }}&amp;{{project.icon_timestamp}} 2x
         {%- endif -%}
         "
    {%- endif -%}
