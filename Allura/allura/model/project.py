@@ -376,7 +376,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     @memoize
     def icon_sized(self, w):
-        allowed_sizes = map(int, aslist(config.get('project_icon_sizes', '48 72 96')))
+        allowed_sizes = map(int, aslist(config.get('project_icon_sizes', '16 24 32 48 64 72 96')))
         if w not in allowed_sizes:
             raise ValueError('Width must be one of {} (see project_icon_sizes in your .ini file)'.format(allowed_sizes))
         if w == DEFAULT_ICON_WIDTH:
