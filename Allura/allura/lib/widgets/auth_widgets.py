@@ -39,8 +39,12 @@ class LoginForm(ForgeForm):
         fields = [
             ew.TextField(name=g.antispam.enc('username'), label='Username', attrs={
                 'autofocus': 'autofocus',
+                'placeholder': 'Username' if plugin.ThemeProvider.get().use_input_placeholders() else ''
+
             }),
-            ew.PasswordField(name=g.antispam.enc('password'), label='Password'),
+            ew.PasswordField(name=g.antispam.enc('password'), label='Password', attrs={
+                'placeholder': 'Password' if plugin.ThemeProvider.get().use_input_placeholders() else ''
+            }),
             ew.Checkbox(
                 name=g.antispam.enc('rememberme'),
                 label='Remember Me',

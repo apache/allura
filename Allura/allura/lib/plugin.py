@@ -1392,6 +1392,9 @@ class ThemeProvider(object):
             max_age=timedelta(days=365))
         return note
 
+    def use_input_placeholders(self):
+        return False
+
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
