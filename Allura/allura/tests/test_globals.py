@@ -466,7 +466,7 @@ def test_markdown_autolink():
               g.markdown.convert('a blahttp://sdf.com z'))
     assert_in('literal <code>http://domain.net</code> literal',
               g.markdown.convert('literal `http://domain.net` literal'))
-    assert_in('<pre>preformatted http://domain.net\n</pre>',
+    assert_in('<pre><span></span>preformatted http://domain.net\n</pre>',
               g.markdown.convert('    :::text\n'
                                  '    preformatted http://domain.net'))
 

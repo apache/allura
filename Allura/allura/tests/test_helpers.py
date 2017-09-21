@@ -253,7 +253,7 @@ def test_render_any_markup_formatting():
     assert_equals(h.render_any_markup('README.md', '### foo\n'
                                       '    <script>alert(1)</script> bar'),
                   '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
-                  '<div class="codehilite"><pre><span class="nt">'
+                  '<div class="codehilite"><pre><span></span><span class="nt">'
                   '&lt;script&gt;</span>alert(1)<span class="nt">'
                   '&lt;/script&gt;</span> bar\n</pre></div>\n\n</div>')
 
