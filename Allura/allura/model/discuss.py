@@ -369,7 +369,7 @@ class Thread(Artifact, ActivityObject):
         self.num_replies = self.post_class().query.find(
             dict(thread_id=self._id, status='ok', deleted=False)).count()
 
-    @property
+    @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
             thread_id=self._id,
