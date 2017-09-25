@@ -53,6 +53,7 @@ $(window).load(function() {
 
             var editor = new SimpleMDE({
               element: $textarea[0],
+              autoDownloadFontAwesome: false,
               autofocus: false,
               spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
               indentWithTabs: false,
