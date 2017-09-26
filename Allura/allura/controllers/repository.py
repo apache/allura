@@ -359,6 +359,7 @@ class MergeRequestController(object):
         page=None, limit=None, page_size=None, count=None,
         style='linear')
     mr_dispose_form = SCMMergeRequestDisposeWidget()
+    subscribe_form = SubscribeForm(thing='merge request')
 
     def __init__(self, num):
         self.req = M.MergeRequest.query.get(
@@ -373,9 +374,18 @@ class MergeRequestController(object):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
         c.mr_dispose_form = self.mr_dispose_form
+        c.subscribe_form = self.subscribe_form
+
         limit, page = h.paging_sanitizer(limit, page)
         with self.req.push_downstream_context():
             downstream_app = c.app
+
+        tool_subscribed = M.Mailbox.subscribed()
+        if tool_subscribed:
+            subscribed = False
+        else:
+            subscribed = M.Mailbox.subscribed(artifact=self.req)
+
         result = dict(
             downstream_app=downstream_app,
             req=self.req,
@@ -384,7 +394,9 @@ class MergeRequestController(object):
             merge_status=self.req.merge_task_status(),
             page=page,
             limit=limit,
-            count=self.req.discussion_thread.post_count)
+            count=self.req.discussion_thread.post_count,
+            subscribed=subscribed,
+        )
         try:
             result['commits'] = self.req.commits
         except Exception:
@@ -494,6 +506,21 @@ class MergeRequestController(object):
     def can_merge_result(self, **kw):
         """Return result from the cache. Used by js, after task was completed."""
         return {'can_merge': self.req.can_merge()}
+
+    @expose('json:')
+    @require_post()
+    @validate(subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
+        if subscribe:
+            self.req.subscribe()
+        elif unsubscribe:
+            self.req.unsubscribe()
+        return {
+            'status': 'ok',
+            'subscribed': M.Mailbox.subscribed(artifact=self.req),
+            'subscribed_to_tool': M.Mailbox.subscribed(),
+            'subscribed_to_entire_name': 'code repository',
+        }
 
 
 class RefsController(object):
