@@ -20,6 +20,6 @@
 
 ---
 
-{{ data.creator_name }} has requested that you merge changes from `{{ data.downstream_repo.clone_url_first(anon=False) }}` at commit `{{data.downstream_repo.shorthand_for_commit(data.downstream.commit_id)}}` into the branch `{{ data.target_branch }}`
+{{ data.creator_name }} has requested to merge changes from `{{ data.downstream_repo.clone_url_first(anon=False) }}` at commit `{{data.downstream_repo.shorthand_for_commit(data.downstream.commit_id)}}` into the branch `{{ data.target_branch }}`
 
 {{ data.description }}
