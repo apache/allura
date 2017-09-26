@@ -807,6 +807,12 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     def activity_name(self):
         return 'merge request #%s' % self.request_number
 
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(summary=self.summary)
+        return d
+
     @LazyProperty
     def creator(self):
         from allura import model as M

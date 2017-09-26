@@ -67,7 +67,8 @@ class TestRepoTasks(unittest.TestCase):
     @mock.patch('allura.tasks.repo_tasks.session', autospec=True)
     @mock.patch.object(M, 'MergeRequest', autospec=True)
     def test_merge(self, MR, session):
-        mr = mock.Mock(_id='_id')
+        mr = mock.Mock(_id='_id',
+                       activity_name='merge req', activity_url='/fake/url', activity_extras={}, node_id=None)
         MR.query.get.return_value = mr
         repo_tasks.merge(mr._id)
         mr.app.repo.merge.assert_called_once_with(mr)
