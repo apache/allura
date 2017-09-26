@@ -197,6 +197,7 @@ class RepoRootController(BaseController, FeedController):
                 source_branch=kw['source_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
+            mr.subscribe(user=c.user)
             M.Notification.post(
                 mr, 'merge_request',
                 subject='Merge request: ' + mr.summary)
