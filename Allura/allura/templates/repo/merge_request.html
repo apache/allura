@@ -27,6 +27,9 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
 
 {% block actions %}
+  {% if c.user and c.user != c.user.anonymous() %}
+    {{ c.subscribe_form.display(value=subscribed, action='subscribe', style='icon') }}
+  {% endif %}
   {% if h.has_access(req, 'write')() %}
     {{ g.icons['edit'].render(href='edit', show_title=True) }}
   {% endif %}
