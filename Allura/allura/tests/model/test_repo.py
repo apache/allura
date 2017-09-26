@@ -691,8 +691,9 @@ class TestMergeRequest(object):
         self.mr = M.MergeRequest(
             app_config=mock.Mock(_id=ObjectId()),
             downstream={'commit_id': '12345'},
+            request_number=1,
         )
-        self.mr.app = mock.Mock(forkable=True)
+        self.mr.app = mock.Mock(forkable=True, url='/mock-app-url/')
         self.mr.app.repo.commit.return_value = mock.Mock(_id='09876')
         self.mr.merge_allowed = mock.Mock(return_value=True)
         self.mr.discussion_thread = mock.Mock()

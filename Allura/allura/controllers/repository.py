@@ -207,6 +207,8 @@ class RepoRootController(BaseController, FeedController):
                 subject='Discussion for Merge Request #:%s: %s' % (
                     mr.request_number, mr.summary))
             session(t).flush()
+            g.director.create_activity(c.user, 'created', mr,
+                                       related_nodes=[c.project], tags=['merge-request'])
             redirect(mr.url())
 
     @without_trailing_slash
@@ -466,6 +468,9 @@ class MergeRequestController(object):
 
         if changes:
             self.req.add_meta_post(changes=changes)
+            g.director.create_activity(c.user, 'updated', self.req,
+                                       related_nodes=[c.project], tags=['merge-request'])
+
         redirect(self.req.url())
 
     @expose()
@@ -475,6 +480,8 @@ class MergeRequestController(object):
         if status and self.req.status != status and \
            (has_access(self.req, 'write') or (self.req.creator == c.user and status == 'rejected')):
             self.req.add_meta_post(changes={'Status': [self.req.status, status]})
+            g.director.create_activity(c.user, 'updated', self.req,
+                                       related_nodes=[c.project], tags=['merge-request'])
             self.req.status = status
         redirect('.')
 
