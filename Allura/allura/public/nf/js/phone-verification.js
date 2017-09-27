@@ -62,7 +62,7 @@ var FormStepMixin = {
       type: 'text',
       ref: 'mainInput',
       className: grid,
-      value: this.props.state[this.getKey()],
+      value: this.props.state[this.getKey()] || '',
       disabled: this.isInputDisabled(),
       onChange: this.handleChange,
       onKeyDown: this.onKeyDown,

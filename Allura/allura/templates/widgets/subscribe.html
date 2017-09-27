@@ -18,8 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
-{% do g.register_forge_js('js/react-with-addons' + ('' if h.asbool(tg.config.get('debug')) else '.min') + '.js') %}
-{% do g.register_forge_js('js/react-dom.js') %}
+{% do lib.register_react_js_files() %}
 
 <div id="subscription-form" style="display: inline;">{# see subscription.js #}</div>
 

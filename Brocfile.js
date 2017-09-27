@@ -39,11 +39,14 @@ tree = sourceMapConcat(tree, {
 });
 
 /* exactly what's needed for the navbar, so separate apps may use it too */
-var react_file = 'public/nf/js/react-with-addons' + (production ? '.min' : '') + '.js';
+var react_file = 'public/nf/js/react.' + (production ? 'production.min' : 'development') + '.js';
+var react_dom_file = 'public/nf/js/react-dom.' + (production ? 'production.min' : 'development') + '.js';
 var navbar = funnel('Allura/allura', {
     include: ['public/nf/js/underscore-min.js',
               react_file,
-              'public/nf/js/react-dom.js',
+              react_dom_file,
+              'public/nf/js/create-react-class.min.js',
+              'public/nf/js/prop-types.min.js',
               'public/nf/js/react-drag.min.js',
               'public/nf/js/react-reorderable.min.js',
               'lib/widgets/resources/js/jquery.lightbox_me.js',

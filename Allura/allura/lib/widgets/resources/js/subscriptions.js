@@ -49,7 +49,8 @@ SubscriptionForm = React.createClass({
     return dom('a', opts);
   },
 
-  handleClick: function() {
+  handleClick: function(e) {
+    e.preventDefault();
     var url = this.props.url;
     var csrf = $.cookie('_session_id');
     var data = {_session_id: csrf};

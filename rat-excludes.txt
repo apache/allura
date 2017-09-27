@@ -34,6 +34,7 @@ Allura/allura/public/nf/css/smoothness/jquery-ui.min.css
 Allura/allura/public/nf/fonts/
 Allura/allura/public/nf/js/browser-polyfill.min.js
 Allura/allura/public/nf/js/chosen.jquery.min.js
+Allura/allura/public/nf/js/create-react-class.min.js
 Allura/allura/public/nf/js/jquery-base.js
 Allura/allura/public/nf/js/jquery-ui.min.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
@@ -43,12 +44,13 @@ Allura/allura/public/nf/js/jquery.tablesorter.js
 Allura/allura/public/nf/js/jquery.tooltipster.js
 Allura/allura/public/nf/js/jquery.viewport.js
 Allura/allura/public/nf/js/pb.transformie.min.js
-Allura/allura/public/nf/js/react.min.js
-Allura/allura/public/nf/js/react-dom.js
+Allura/allura/public/nf/js/prop-types.min.js
+Allura/allura/public/nf/js/react.development.js
+Allura/allura/public/nf/js/react.production.min.js
+Allura/allura/public/nf/js/react-dom.development.js
+Allura/allura/public/nf/js/react-dom.production.min.js
 Allura/allura/public/nf/js/react-drag.min.js
 Allura/allura/public/nf/js/react-reorderable.min.js
-Allura/allura/public/nf/js/react-with-addons.js
-Allura/allura/public/nf/js/react-with-addons.min.js
 Allura/allura/public/nf/js/sylvester.js
 Allura/allura/public/nf/js/twemoji.min.js
 Allura/allura/public/nf/js/underscore-min.js
