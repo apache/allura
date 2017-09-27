@@ -199,12 +199,13 @@ class RepoRootController(BaseController, FeedController):
                 description=kw['description'])
             M.Notification.post(
                 mr, 'merge_request',
-                subject='Merge request: ' + mr.summary)
+                subject=mr.email_subject,
+                message_id=mr.message_id(),
+            )
             t = M.Thread.new(
                 discussion_id=c.app.config.discussion_id,
-                artifact_reference=mr.index_id(),
-                subject='Discussion for Merge Request #:%s: %s' % (
-                    mr.request_number, mr.summary))
+                ref_id=mr.index_id(),
+            )
             session(t).flush()
             redirect(mr.url())
 
