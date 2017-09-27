@@ -387,7 +387,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         if not sized and w != DEFAULT_ICON_WIDTH:
             orig = self.icon_original
             if not orig:
-                return None
+                if w > DEFAULT_ICON_WIDTH:
+                    return None
+                else:
+                    orig = self.icon
             sized = orig.save_thumbnail(filename='',
                                         image=PIL.Image.open(orig.rfile()),
                                         content_type=orig.content_type,
