@@ -65,7 +65,10 @@ navbar = babelTranspiler(navbar, {
 });
 var navbar = sourceMapConcat(navbar, {
     // headerFiles & footerFiles used to specify some that must come before or after others
-    headerFiles: [react_file],
+    headerFiles: [react_file,
+                  react_dom_file,
+                  'public/nf/js/create-react-class.min.js',
+                  'public/nf/js/prop-types.min.js'],
     inputFiles: ['**/*.js'],
     footerFiles: ['public/nf/js/navbar.js',], // this used to be navbar.es6.js but the babel transpiler dropped the .es6
     outputFile: '/navbar.js',

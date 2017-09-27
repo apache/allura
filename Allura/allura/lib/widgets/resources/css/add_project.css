@@ -103,7 +103,9 @@ div.welcome div.grid-3{
     border: 1px solid black;
 }
 div.button-row {
-    margin: 30px 0 100px 20px;
+    float: left;
+    clear: left;
+    margin: 30px 0 0 20px;
 }
 div.tool {
     float: left;
