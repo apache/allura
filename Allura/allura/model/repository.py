@@ -868,9 +868,13 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         result.update(
             name_s='Merge Request #%d' % self.request_number,
             type_s=self.type_s,
-            title='Merge Request #%d of %s:%s' % (
-                self.request_number, self.project.name, self.app.repo.name))
+            title=self.email_subject,
+        )
         return result
+
+    @property
+    def email_subject(self):
+        return u'Merge request: ' + self.summary
 
     def merge_allowed(self, user):
         """
