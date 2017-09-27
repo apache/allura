@@ -854,3 +854,15 @@ This page is based on some examples from Greg Schueler, <a href="mailto:greg@var
 </p>
 </div>
 {% endmacro %}
+
+{% macro register_react_js_files(location='body_js') %}
+    {%- do g.register_forge_js('js/react.' + ('development' if h.asbool(tg.config.get('debug')) else 'production.min') + '.js', location=location) %}
+    {%- do g.register_forge_js('js/react-dom.' + ('development' if h.asbool(tg.config.get('debug')) else 'production.min') + '.js', location=location) %}
+    {# These 2 separate libraries are needed to migrate past React 15.5.0
+       see https://facebook.github.io/react/blog/2017/04/07/react-v15.5.0.html
+       they were downloaded from unpkg.com since we don't do a npm/webpack build
+       a single line was added to the end of each so we don't have to change our code (or react-drag & react-reorderable code)
+    #}
+    {%- do g.register_forge_js('js/create-react-class.min.js', location=location) %}
+    {%- do g.register_forge_js('js/prop-types.min.js', location=location) %}
+{%- endmacro %}

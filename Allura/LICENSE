@@ -246,11 +246,14 @@ For details, see allura/public/nf/css/blueprint/
 Sylvester, which is available under the MIT license.
 For details, see allura/public/nf/js/sylvester.js
 
-React.js, which is available under the BSD license.
+React.js, which is available under the MIT license.
 For details, see:
-    allura/public/nf/js/react-dom.js
-    allura/public/nf/js/react-with-addons.js
-    allura/public/nf/js/react-with-addons.min.js
+    allura/public/nf/js/react.development.js
+    allura/public/nf/js/react.production.min.js
+    allura/public/nf/js/react-dom.development.js
+    allura/public/nf/js/react-dom.production.min.js
+    allura/public/nf/js/create-react-class.min.js
+    allura/public/nf/js/prop-types.min.js
 
 React plugins, which are available under the MIT license.
 For details, see:

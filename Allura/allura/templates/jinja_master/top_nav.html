@@ -45,8 +45,7 @@
 {% if h.has_access(c.project, 'admin')() %}
     {% do g.register_forge_js('js/underscore-min.js') %}
     {% do g.register_forge_js('js/browser-polyfill.min.js') %}
-    {% do g.register_forge_js('js/react-with-addons' + ('' if h.asbool(config.get('debug')) else '.min') + '.js') %}
-    {% do g.register_forge_js('js/react-dom.js') %}
+    {% do lib.register_react_js_files() %}
     {% do g.register_forge_js('js/react-drag.min.js') %}
     {% do g.register_forge_js('js/react-reorderable.min.js') %}
     {% do g.register_forge_js('js/build/transpiled.js') %} {# if we do more es6, we'll need to register this in other places, or maybe even global #}

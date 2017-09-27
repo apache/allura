@@ -176,7 +176,6 @@ var NormalNavItem = React.createClass({
         children: React.PropTypes.object,
         classes: React.PropTypes.string
     },
-    mixins: [React.addons.PureRenderMixin],
     render: function() {
         return (
             <li key={`tb-norm-${_.uniqueId()}`}>
