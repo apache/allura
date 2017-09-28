@@ -1,0 +1,143 @@
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
+
+
+##
+# How to use this file:
+#
+# Change these settings:
+#    VIRTUAL_HOST
+#    LETSENCRYPT_HOST
+#    LETSENCRYPT_EMAIL
+#
+# Copy Allura/production-docker-example.ini to /allura-data/production.ini and review its contents,
+#  making changes as appropriate
+#
+# In comparision to the development version of docker-compose.yml, this production ready version:
+#  * only exposes ports that are necessary, limiting them to within docker, or to 127.0.0.1
+#  * sets containers to always restart
+#  * has an nginx proxy to provide HTTPS via letsencrypt.  May take a little time to configure itself
+#  * has no debugging "outmail" container, emails should go out into the real world
+#  * git-http container serves git and also proxies back to the "web" container
+##
+
+version: "2"
+services:
+  web:
+    build: .
+    environment: &env
+      # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
+      - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    expose:
+      - "8080"
+    volumes: &volumes
+      - .:/allura  # Allura source code from local host
+      - /allura-data:/allura-data  # for virtualenv, scm repos, etc
+    links:
+      - mongo
+      - solr
+    command: gunicorn --paste /allura-data/production.ini
+    restart: always
+
+  taskd:
+    image: allura_web
+    working_dir: /allura/Allura
+    environment: *env
+    command: paster taskd /allura-data/production.ini
+    volumes: *volumes
+    links:
+      - mongo
+      - solr
+    restart: always
+
+  # This is a single-purpose container that does not auto-restart, good for running commands like:
+  # docker-compose run --rm oneoff paster ensure_index /allura-data/production.ini
+  oneoff:
+    image: allura_web
+    working_dir: /allura/Allura
+    environment: *env
+    volumes: *volumes
+    command: ls /dev/null
+    links:
+      - mongo
+
+  solr:
+    image: solr:6-alpine  # alpine is a very small distro base
+    expose:
+      - "8983"
+    volumes:
+      - ./solr_config/allura:/opt/solr/server/solr/allura
+      - /allura-data/solr:/opt/solr/server/solr/allura/data
+    restart: always
+
+  mongo:
+    image: mongo:3.4
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - /allura-data/mongo:/data/db
+    command: mongod --storageEngine wiredTiger
+    restart: always
+
+  inmail:
+    image: allura_web
+    working_dir: /allura/Allura
+    environment: *env
+    volumes: *volumes
+    command: paster smtp_server /allura-data/production.ini
+    ports:
+      - "127.0.0.1:8825:8825"
+    links:
+      - mongo
+    restart: always
+
+  git-http:
+    build: scm_config/git-http/
+    expose:
+      - "80"
+    volumes: *volumes
+    links:
+      - mongo
+      - web
+    restart: always
+    environment:
+      VIRTUAL_HOST: allura-vm2.apache.org
+      LETSENCRYPT_HOST: allura-vm2.apache.org
+      LETSENCRYPT_EMAIL: dave@brondsema.net
+
+  # References for how we set up the nginx-proxy and letsencrypt-nginx-proxy-companion containers
+  # https://github.com/dataminelab/docker-jenkins-nginx-letsencrypt
+  # https://github.com/dmitrym0/simple-lets-encrypt-docker-compose-sample/blob/master/docker-compose.yml
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./nginx/vhost.d:/etc/nginx/vhost.d"
+      - "./nginx/html:/usr/share/nginx/html"
+      - "./nginx/certs:/etc/nginx/certs"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+    restart: always
+
+  letsencrypt-nginx-proxy-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    volumes_from:
+      - "nginx-proxy"
+    restart: always

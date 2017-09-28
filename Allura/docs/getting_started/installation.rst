@@ -500,13 +500,19 @@ emails sent to that address will be added as comments on the ticket.  To set up 
 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.
-To change the port number, edit `development.ini` and change `forgemail.port` to the appropriate port number for your environment.
+To change the port number, edit :file:`development.ini` and change :samp:`forgemail.port` to the appropriate port number for your environment.
 
 SMTP in development
 ^^^^^^^^^^^^^^^^^^^
 
-The following command can be used for quick and easy monitoring of smtp during development.
-Just be sure the port matches the `smtp_port` from your `development.ini` (8826 by default).
+The following command can be used for quick and easy monitoring of outgoing email during development.
+
+.. code-block:: bash
+
+    docker-compose logs -f outmail
+
+If you are running locally without docker, run this command.  Be sure the port matches the :samp:`smtp_port` from
+your :file:`development.ini` (8826 by default).
 
 .. code-block:: bash
 

@@ -23,7 +23,7 @@ services:
       # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
       - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     ports:
-      - "8080:8080"
+      - "8088:8088"
     volumes: &volumes
       - .:/allura  # Allura source code from local host
       - /allura-data:/allura-data  # for virtualenv, scm repos, etc
@@ -78,10 +78,10 @@ services:
     links:
       - mongo
 
-  git-http:
+  http:
     build: scm_config/git-http/
     ports:
-      - "8081:80"
+      - "8080:80"
     volumes: *volumes
     links:
       - mongo

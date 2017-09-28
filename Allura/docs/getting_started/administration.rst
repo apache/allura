@@ -84,14 +84,14 @@ Overview
 --------
 
 Allura has many commands and scripts that can be run from the server commandline to
-administrate Allura.  There are also tasks that can be run through the `taskd` system
+administrate Allura.  There are also tasks that can be run through the :code:`taskd` system
 in the background.  These tasks can be submitted via the web at
 http://MYSITE/nf/admin/task_manager  Some paster scripts have been set up
 so that they are runnable as tasks too, giving you the convenience of starting
-them through the web and letting `taskd` execute them, rather than from a server
+them through the web and letting :code:`taskd` execute them, rather than from a server
 shell.
 
-Commands can be discovered and run via the `paster` command when you are in the
+Commands can be discovered and run via the :code:`paster` command when you are in the
 'Allura' directory that has your .ini file.  For example::
 
      paster help
@@ -103,7 +103,7 @@ Commands can be discovered and run via the `paster` command when you are in the
      paster create-neighborhood development.ini myneighborhood myuser ...
 
 
-Scripts are in the `scripts/` directory and run slightly differently, via `paster script`.  An extra
+Scripts are in the :file:`scripts/` directory and run slightly differently, via :code:`paster script`.  An extra
 :kbd:`--` is required to separate script arguments from paster arguments.  Example::
 
      paster script development.ini ../scripts/add_user_to_group.py -- --help
@@ -111,16 +111,21 @@ Scripts are in the `scripts/` directory and run slightly differently, via `paste
 
      paster script development.ini ../scripts/add_user_to_group.py -- --nbhd /u/ johndoe Admin
 
-To run these when using docker, prefix with :code:`docker-compose run taskd` and use :code:`docker-dev.ini` like::
+To run these when using docker, prefix with :code:`docker-compose run taskd` and use :file:`docker-dev.ini` like::
 
     docker-compose run taskd paster create-neighborhood docker-dev.ini myneighborhood myuser ...
+
+Or with the docker *production* setup::
+
+    docker-compose run --rm oneoff paster create-neighborhood /allura-data/production.ini myneighborhood myuser ...
+
 
 Tasks can be run via the web interface at http://MYSITE/nf/admin/task_manager  You must know
 the full task name, e.g. :code:`allura.tasks.admin_tasks.install_app`  You can
 optionally provide a username and project and app which will get set on the
-current context (`c`).  You should specify what args and kwargs will be passed
+current context (:kbd:`c`).  You should specify what args and kwargs will be passed
 as parameters to the task.  They are specified in JSON format on the form.  If you are
-running a script via this interface, the `args/kwargs` JSON should be like::
+running a script via this interface, the :kbd:`args/kwargs` JSON should be like::
 
     {
         "args": ["--foo --bar baz"],

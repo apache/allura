@@ -40,11 +40,11 @@ ENV APACHE_SERVERNAME localhost
 ENV APACHE_SERVERALIAS docker.localhost
 ENV APACHE_DOCUMENTROOT /var/www
 
+RUN a2enmod cgi proxy proxy_http
+
 ADD ./git-http.conf /etc/apache2/sites-available/
 RUN a2dissite 000-default.conf
 RUN a2ensite git-http.conf
-
-RUN a2enmod cgi
 
 # so that git operations run as root, and can modify the scm repo files
 RUN chmod u+s /usr/lib/git-core/git-http-backend

@@ -32,6 +32,9 @@ mkdir -p /allura-data/solr
 echo -e "Changing it's permissions to 777 so that container will have access to it\n"
 chmod 777 /allura-data/solr
 
+mkdir -p /allura-data/www-misc
+echo "# No robots.txt rules here" > /allura-data/www-misc/robots.txt
+
 # share venv to allow update and sharing across containers
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
