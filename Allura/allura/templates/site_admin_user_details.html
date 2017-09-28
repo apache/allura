@@ -20,7 +20,7 @@
 {% extends 'allura:templates/site_admin.html' %}
 {% set hide_left_bar=True %}
 
-{% block title %}User Details{% endblock %}
+{% block title %}User Details - {{ user.username }}{% endblock %}
 {% block header %}User Details{% endblock %}
 
 {% block content %}
