@@ -26,6 +26,7 @@ from formencode import validators as fev
 from alluratest.controller import setup_unit_test
 from allura import app
 from allura.lib.app_globals import Icon
+from allura.lib import mail_util
 
 
 def setUp():
@@ -148,3 +149,29 @@ def test_handle_artifact_unicode(qg):
     msg = dict(payload="\x94my quote\x94", message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
     assert_equal(post.attach.call_args[0][1].getvalue(), '\x94my quote\x94')
+
+    # assert against prod example
+    msg_raw = """Message-Id: <1502352031.3216858.1068961568.19EF48C6@webmail.messagingengine.com>
+From: foo <foo@bar.com>
+To: "[forge:site-support]" <15391@site-support.forge.p.re.sf.net>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: multipart/alternative; boundary="_----------=_150235203132168580"
+Date: Thu, 10 Aug 2017 10:00:31 +0200
+Subject: Re: [forge:site-support] #15391 Unable to join (my own) mailing list
+This is a multi-part message in MIME format.
+--_----------=_150235203132168580
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Hi
+--_----------=_150235203132168580
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="utf-8"
+<!DOCTYPE html>
+<html><body>Hi</body></html>
+--_----------=_150235203132168580--
+    """
+    msg = mail_util.parse_message(msg_raw)
+    for p in filter(lambda p: p['payload'] != None, msg['parts']):
+        # filter here mimics logic in `route_email`
+        a.handle_artifact_message(ticket, p)

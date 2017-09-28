@@ -712,7 +712,7 @@ class Application(object):
 
             try:
                 fp = StringIO(message['payload'].encode('utf-8'))
-            except UnicodeDecodeError as ex:
+            except UnicodeDecodeError:
                 fp = StringIO(message['payload'])
 
             post.attach(
