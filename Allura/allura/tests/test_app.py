@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -121,3 +123,28 @@ def test_sitemap():
     sm.extend([app.SitemapEntry('a', 'a/')[
         app.SitemapEntry('d', 'd/')]])
     assert len(sm.children) == 3
+
+
+@mock.patch('allura.app.Application.PostClass.query.get')
+def test_handle_artifact_unicode(qg):
+    """
+    Tests that app.handle_artifact_message can accept utf strings
+    """
+    ticket = mock.MagicMock()
+    ticket.get_discussion_thread.return_value = (mock.MagicMock(), mock.MagicMock())
+    post = mock.MagicMock()
+    qg.return_value = post
+
+    a = app.Application(c.project, c.app.config)
+
+    msg = dict(payload=u'foo ƒ†©¥˙¨ˆ', message_id=1, headers={})
+    a.handle_artifact_message(ticket, msg)
+    assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ')
+
+    msg = dict(payload='foo', message_id=1, headers={})
+    a.handle_artifact_message(ticket, msg)
+    assert_equal(post.attach.call_args[0][1].getvalue(), 'foo')
+
+    msg = dict(payload="\x94my quote\x94", message_id=1, headers={})
+    a.handle_artifact_message(ticket, msg)
+    assert_equal(post.attach.call_args[0][1].getvalue(), '\x94my quote\x94')

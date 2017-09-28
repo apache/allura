@@ -709,7 +709,12 @@ class Application(object):
             log.info(
                 'Existing message_id %s found - saving this as text attachment' %
                 message_id)
-            fp = StringIO(message['payload'])
+
+            try:
+                fp = StringIO(message['payload'].encode('utf-8'))
+            except UnicodeDecodeError as ex:
+                fp = StringIO(message['payload'])
+
             post.attach(
                 'alternate', fp,
                 content_type=message.get(
