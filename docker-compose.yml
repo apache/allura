@@ -15,75 +15,74 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-web:
-  build: .
-  environment: &env
-    # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
-    - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-  ports:
-    - "8080:8080"
-  volumes:
-    - .:/allura  # Allura source code from local host
-    - /allura-data:/allura-data  # for virtualenv, scm repos, etc
-  links:
-    - mongo
-    - solr
+version: "2"
+services:
+  web:
+    build: .
+    environment: &env
+      # PATH=/allura-data/virtualenv/bin:$PATH doesn't work; see https://github.com/docker/compose/issues/650
+      - PATH=/allura-data/virtualenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    ports:
+      - "8080:8080"
+    volumes: &volumes
+      - .:/allura  # Allura source code from local host
+      - /allura-data:/allura-data  # for virtualenv, scm repos, etc
+    links:
+      - mongo
+      - solr
 
-taskd:
-  image: allura_web
-  working_dir: /allura/Allura
-  environment: *env
-  command: paster taskd docker-dev.ini
-  volumes_from:
-    - web
-  links:
-    - mongo
-    - solr
-    - outmail
+  taskd:
+    image: allura_web
+    working_dir: /allura/Allura
+    environment: *env
+    command: paster taskd docker-dev.ini
+    volumes: *volumes
+    links:
+      - mongo
+      - solr
+      - outmail
 
-solr:
-  image: solr:6-alpine  # alpine is a very small distro base
-  ports:
-    - "8983:8983"
-  volumes:
-    - ./solr_config/allura:/opt/solr/server/solr/allura
-    - /allura-data/solr:/opt/solr/server/solr/allura/data
+  solr:
+    image: solr:6-alpine  # alpine is a very small distro base
+    ports:
+      - "8983:8983"
+    volumes:
+      - ./solr_config/allura:/opt/solr/server/solr/allura
+      - /allura-data/solr:/opt/solr/server/solr/allura/data
 
-mongo:
-  image: mongo:3.4
-  ports:
-    - "27017:27017"
-  volumes:
-    - /allura-data/mongo:/data/db
-  command: mongod --storageEngine wiredTiger
+  mongo:
+    image: mongo:3.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - /allura-data/mongo:/data/db
+    command: mongod --storageEngine wiredTiger
 
-outmail:
-  image: allura_web
-  environment: *env
-  volumes_from:
-    - web
-  command: python -u -m smtpd -n -c alluratest.smtp_debug.BetterDebuggingServer 0.0.0.0:8826
-  expose:
-    - "8826"
+  outmail:
+    image: allura_web
+    environment: *env
+    volumes_from:
+      - web
+    command: python -u -m smtpd -n -c alluratest.smtp_debug.BetterDebuggingServer 0.0.0.0:8826
+    expose:
+      - "8826"
 
-inmail:
-  image: allura_web
-  working_dir: /allura/Allura
-  environment: *env
-  command: paster smtp_server docker-dev.ini
-  volumes_from:
-    - web
-  ports:
-    - "8825:8825"
-  links:
-    - mongo
+  inmail:
+    image: allura_web
+    working_dir: /allura/Allura
+    environment: *env
+    volumes: *volumes
+    command: paster smtp_server docker-dev.ini
+    ports:
+      - "8825:8825"
+    links:
+      - mongo
 
-git-http:
-  build: scm_config/git-http/
-  ports:
-    - "8081:80"
-  volumes_from:
-    - web
-  links:
-    - mongo
-    - web
+  git-http:
+    build: scm_config/git-http/
+    ports:
+      - "8081:80"
+    volumes: *volumes
+    links:
+      - mongo
+      - web
