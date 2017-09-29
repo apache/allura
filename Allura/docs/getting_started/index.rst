@@ -25,6 +25,7 @@ Getting Started
 
     about
     installation
+    install_each_step
     using
     administration
     scm_host
