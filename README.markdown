@@ -40,8 +40,8 @@ Website: <https://allura.apache.org/>
 
 Before hacking on Allura, you’ll need to get an Allura instance up and running so you can see and test the changes you make. You can install Allura from scratch, or by using our Docker container images. Instructions for these approaches can be found here:
 
-- [Install from scratch](https://forge-allura.apache.org/docs/getting_started/installation.html#step-by-step-install)
-- [Install using Docker](https://forge-allura.apache.org/docs/getting_started/installation.html#docker-install)
+- [Install using Docker](https://forge-allura.apache.org/docs/getting_started/installation.html)
+- [Install from scratch](https://forge-allura.apache.org/docs/getting_started/install_each_step.html)
 
 To install Allura, see `Allura/docs/getting_started/installation.rst` or <https://forge-allura.apache.org/docs/getting_started/installation.html>.
 
