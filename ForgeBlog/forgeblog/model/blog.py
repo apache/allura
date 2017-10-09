@@ -258,8 +258,12 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     c.user.username, self.title)
             elif v2.state == 'published':
                 feed_item = self.feed_item()
-                feed_item.title = self.title
-                feed_item.description = g.markdown.convert(self.text)
+                if feed_item:
+                    feed_item.title = self.title
+                    feed_item.description = g.markdown.convert(self.text)
+                else:
+                    M.Feed.post(self, self.title, self.text, author=self.author(),
+                                pubdate=self.get_version(1).timestamp)
                 if v1.title != v2.title:
                     activity('renamed', self)
                     subject = '%s renamed post %s to %s' % (
@@ -269,7 +273,9 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     subject = '%s modified post %s' % (
                         c.user.username, self.title)
             elif v1.state == 'published' and v2.state == 'draft':
-                self.feed_item().delete()
+                feed_item = self.feed_item()
+                if feed_item:
+                    feed_item.delete()
         else:
             description = self.text
             subject = '%s created post %s' % (
@@ -310,7 +316,9 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                                 link=self.link_regex)
 
     def delete(self):
-        self.feed_item().delete()
+        feed_item = self.feed_item()
+        if feed_item:
+            feed_item.delete()
         super(BlogPost, self).delete()
 
 
