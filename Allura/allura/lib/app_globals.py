@@ -105,7 +105,7 @@ class ForgeMarkdown(markdown.Markdown):
                 field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
-        bugfix_rev = 3  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
+        bugfix_rev = 4  # increment this if we need all caches to invalidated (e.g. xss in markdown rendering fixed)
         md5 = None
         # If a cached version exists and it is valid, return it.
         if cache.md5 is not None:

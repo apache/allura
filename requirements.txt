@@ -20,7 +20,7 @@ html5lib==0.999
 httplib2==0.7.4
 iso8601==0.1.4
 Jinja2==2.9.6
-Markdown==2.2.0
+Markdown==2.2.1
 Ming==0.5.5
 oauth2==1.5.170
 # tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
