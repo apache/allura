@@ -76,8 +76,8 @@ from forgetracker import search as tsearch
 
 log = logging.getLogger(__name__)
 
-CUSTOM_FIELD_SOLR_TYPES = dict(boolean='_b', number='_i')
-SOLR_TYPE_DEFAULTS = dict(_b=False, _i=0)
+CUSTOM_FIELD_SOLR_TYPES = dict(boolean='_b', number='_d')
+SOLR_TYPE_DEFAULTS = dict(_b=False, _d=0)
 
 
 def get_default_for_solr_type(solr_type):
