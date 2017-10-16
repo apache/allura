@@ -523,6 +523,14 @@ By Dave Brondsema''', text_body)
                 'summary': u'Change README'},
             'name': u'README'}])
 
+    def test_ls_with_prev(self):
+        c.lcid_cache = {}  # else it'll be a mock
+
+        # build the previous last-commit-doc.  This causes different behavior when generating the next one.
+        self.repo.commit('HEAD^').tree.ls()
+
+        self.test_ls()
+
     def test_tarball_status(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):

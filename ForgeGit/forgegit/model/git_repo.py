@@ -650,7 +650,7 @@ class GitImplementation(M.RepositoryImplementation):
         return self._git.git.log(
             commit_id,
             name_only=True,
-            pretty='format:',
+            pretty='format:%H',
             max_count=1).splitlines()[1:]
 
     def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
