@@ -981,7 +981,7 @@ CommitDoc = collection(
     Field('child_ids', [str], index=True),
     Field('repo_ids', [S.ObjectId()], index=True))
 
-# Basic tree information (also see TreesDoc)
+# Basic tree information
 TreeDoc = collection(
     'repo_tree', main_doc_session,
     Field('_id', str),
@@ -1000,13 +1000,6 @@ LastCommitDoc = collection(
         name=str,
         commit_id=str)]))
 
-# List of all trees contained within a commit
-# TreesDoc._id = CommitDoc._id
-# TreesDoc.tree_ids = [ TreeDoc._id, ... ]
-TreesDoc = collection(
-    'repo_trees', main_doc_session,
-    Field('_id', str),
-    Field('tree_ids', [str]))
 
 # List of commit runs (a run is a linear series of single-parent commits)
 # CommitRunDoc.commit_ids = [ CommitDoc._id, ... ]

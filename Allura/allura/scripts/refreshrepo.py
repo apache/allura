@@ -69,17 +69,10 @@ class RefreshRepo(ScriptTask):
                         ci_ids = list(c.app.repo.all_commit_ids())
                         log.info("Deleting mongo data for %i commits...",
                                  len(ci_ids))
-                        # like the tree_ids themselves below, we need to process these in
-                        # chunks to avoid hitting the BSON max size limit
-                        tree_ids = []
-                        for ci_ids_chunk in chunked_list(ci_ids, 3000):
-                            tree_ids.extend([
-                                tree_id for doc in
-                                M.repository.TreesDoc.m.find(
-                                    {"_id": {"$in": ci_ids_chunk}},
-                                    {"tree_ids": 1})
-                                for tree_id in doc.get("tree_ids", [])])
 
+                        # delete these in chunks, otherwise the query doc can
+                        # exceed the max BSON size limit (16MB at the moment)
+                        for ci_ids_chunk in chunked_list(ci_ids, 3000):
                             i = M.repository.CommitDoc.m.find(
                                 {"_id": {"$in": ci_ids_chunk}}).count()
                             if i:
@@ -87,34 +80,17 @@ class RefreshRepo(ScriptTask):
                                 M.repository.CommitDoc.m.remove(
                                     {"_id": {"$in": ci_ids_chunk}})
 
-                        # delete these in chunks, otherwise the query doc can
-                        # exceed the max BSON size limit (16MB at the moment)
-                        for tree_ids_chunk in chunked_list(tree_ids, 300000):
-                            i = M.repository.TreeDoc.m.find(
-                                {"_id": {"$in": tree_ids_chunk}}).count()
-                            if i:
-                                log.info("Deleting %i TreeDoc docs...", i)
-                                M.repository.TreeDoc.m.remove(
-                                    {"_id": {"$in": tree_ids_chunk}})
-                        del tree_ids
+                        # we used to have a TreesDoc (plural) collection to provide a mapping of commit_id to tree_id
+                        # so that we could clear the relevant TreeDoc records
+                        # its ok though, since they are created in refresh_tree_info() and overwrite existing records
 
-                        # delete these after TreeDoc and LastCommitDoc so that if
-                        # we crash, we don't lose the ability to delete those
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
-                            # delete TreesDocs
-                            i = M.repository.TreesDoc.m.find(
-                                {"_id": {"$in": ci_ids_chunk}}).count()
-                            if i:
-                                log.info("Deleting %i TreesDoc docs...", i)
-                                M.repository.TreesDoc.m.remove(
-                                    {"_id": {"$in": ci_ids_chunk}})
-
                             # delete LastCommitDocs
                             i = M.repository.LastCommitDoc.m.find(
                                 dict(commit_id={'$in': ci_ids_chunk})).count()
                             if i:
                                 log.info(
-                                    "Deleting %i remaining LastCommitDoc docs, by repo id...", i)
+                                    "Deleting %i LastCommitDoc docs...", i)
                                 M.repository.LastCommitDoc.m.remove(
                                     dict(commit_id={'$in': ci_ids_chunk}))
 

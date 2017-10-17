@@ -439,10 +439,6 @@ class SVNImplementation(M.RepositoryImplementation):
         if is_new:
             commit_id = self._oid(infos[0][1].last_changed_rev.number)
             path = tree_path.strip('/')
-            RM.TreesDoc.m.update_partial(
-                {'_id': commit._id},
-                {'$addToSet': {'tree_ids': tree_id}},
-                upsert=True)
             RM.LastCommitDoc.m.update_partial(
                 {'commit_id': commit_id, 'path': path},
                 {'commit_id': commit_id, 'path':
