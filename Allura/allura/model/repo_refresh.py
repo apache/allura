@@ -32,7 +32,7 @@ from ming.orm import mapper, session, ThreadLocalORMSession
 
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.model.repository import CommitDoc, TreeDoc, TreesDoc
+from allura.model.repository import CommitDoc, TreeDoc
 from allura.model.repository import CommitRunDoc
 from allura.model.repository import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
@@ -101,6 +101,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     # Refresh trees
     # Like diffs below, pre-computing trees for some SCMs is too expensive,
     # so we skip it here, then do it on-demand later.
+    """
     if repo._refresh_precompute:
         cache = {}
         for i, oid in enumerate(commit_ids):
@@ -108,12 +109,13 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             cache = refresh_commit_trees(ci, cache)
             if (i + 1) % 100 == 0:
                 log.info('Refresh commit trees %d: %s', (i + 1), ci._id)
+    """
 
-    # Compute diffs
     cache = {}
     # For some SCMs, we don't want to pre-compute the LCDs because that
     # would be too expensive, so we skip them here and do them on-demand
     # with caching.
+    """
     if repo._refresh_precompute:
         model_cache = ModelCache()
         lcid_cache = {}
@@ -124,6 +126,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             ThreadLocalORMSession.flush_all()
             if (i + 1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i + 1), ci._id)
+    """
 
     # Clear any existing caches for branches/tags
     if repo.cached_branches:
@@ -172,18 +175,18 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
         send_notifications(repo, reversed(commit_ids))
 
 
-def refresh_commit_trees(ci, cache):
-    '''Refresh the list of trees included withn a commit'''
-    if ci.tree_id is None:
-        return cache
-    trees_doc = TreesDoc(dict(
-        _id=ci._id,
-        tree_ids=list(trees(ci.tree_id, cache))))
-    trees_doc.m.save(safe=False)
-    new_cache = dict(
-        (oid, cache[oid])
-        for oid in trees_doc.tree_ids)
-    return new_cache
+# def refresh_commit_trees(ci, cache):
+#     '''Refresh the list of trees included withn a commit'''
+#     if ci.tree_id is None:
+#         return cache
+#     trees_doc = TreesDoc(dict(
+#         _id=ci._id,
+#         tree_ids=list(trees(ci.tree_id, cache))))
+#     trees_doc.m.save(safe=False)
+#     new_cache = dict(
+#         (oid, cache[oid])
+#         for oid in trees_doc.tree_ids)
+#     return new_cache
 
 
 def refresh_commit_repos(all_commit_ids, repo):
@@ -348,7 +351,7 @@ class CommitRunBuilder(object):
                 break
             del self.runs[p_run_id]
 
-
+"""
 def trees(id, cache):
     '''Recursively generate the list of trees contained within a given tree ID'''
     yield id
@@ -360,7 +363,7 @@ def trees(id, cache):
     for i in entries:
         for x in trees(i, cache):
             yield x
-
+"""
 
 def unknown_commit_ids(all_commit_ids):
     '''filter out all commit ids that have already been cached'''
@@ -541,6 +544,7 @@ def last_known_commit_id(all_commit_ids, new_commit_ids):
     return all_commit_ids[all_commit_ids.index(new_commit_ids[0]) - 1]
 
 
+"""
 def compute_lcds(commit, model_cache, lcid_cache):
     '''
     Compute LastCommit data for every Tree node under this tree.
@@ -566,6 +570,7 @@ def _compute_lcds(tree, cache):
     for x in tree.tree_ids:
         sub_tree = _pull_tree(cache, x.id, tree, x.name)
         _compute_lcds(sub_tree, cache)
+"""
 
 
 def _pull_tree(cache, tree_id, *context):

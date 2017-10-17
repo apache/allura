@@ -71,7 +71,9 @@ class RefreshRepo(ScriptTask):
                                  len(ci_ids))
                         # like the tree_ids themselves below, we need to process these in
                         # chunks to avoid hitting the BSON max size limit
+                        """
                         tree_ids = []
+                        # FIXME: TreesDoc provides a mapping of commit_id to tree_id so that cleanup knows what TreeDocs to del
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
                             tree_ids.extend([
                                 tree_id for doc in
@@ -97,18 +99,9 @@ class RefreshRepo(ScriptTask):
                                 M.repository.TreeDoc.m.remove(
                                     {"_id": {"$in": tree_ids_chunk}})
                         del tree_ids
+                        """
 
-                        # delete these after TreeDoc and LastCommitDoc so that if
-                        # we crash, we don't lose the ability to delete those
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
-                            # delete TreesDocs
-                            i = M.repository.TreesDoc.m.find(
-                                {"_id": {"$in": ci_ids_chunk}}).count()
-                            if i:
-                                log.info("Deleting %i TreesDoc docs...", i)
-                                M.repository.TreesDoc.m.remove(
-                                    {"_id": {"$in": ci_ids_chunk}})
-
                             # delete LastCommitDocs
                             i = M.repository.LastCommitDoc.m.find(
                                 dict(commit_id={'$in': ci_ids_chunk})).count()

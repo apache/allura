@@ -150,6 +150,7 @@ class RefreshLastCommits(ScriptTask):
                 continue
             commit.set_context(c.app.repo)
             with time(timings):
+                # FIXME call LastCommit._build() instead?  or remove this script?
                 M.repo_refresh.compute_lcds(commit, model_cache, lcid_cache)
                 ThreadLocalORMSession.flush_all()
             if i % 100 == 0:

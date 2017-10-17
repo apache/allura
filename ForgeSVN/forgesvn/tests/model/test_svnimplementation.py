@@ -36,10 +36,9 @@ class TestSVNImplementation(object):
         self._test_compute_tree_new('trunk/foo')
 
     @patch('allura.model.repository.LastCommitDoc.m.update_partial')
-    @patch('allura.model.repository.TreesDoc.m.update_partial')
     @patch('allura.model.repository.Tree.upsert')
     @patch('allura.model.repository.Tree.query.get')
-    def _test_compute_tree_new(self, path, tree_get, tree_upsert, treesdoc_partial, lcd_partial):
+    def _test_compute_tree_new(self, path, tree_get, tree_upsert, lcd_partial):
         repo = Mock(fs_path=g.tmpdir + '/')
         repo.name = 'code'
         impl = SVNImplementation(repo)
@@ -54,7 +53,6 @@ class TestSVNImplementation(object):
 
         assert_equal(impl._svn.info2.call_args[0]
                      [0], 'file://' + g.tmpdir + '/code/trunk/foo')
-        assert treesdoc_partial.called
         assert lcd_partial.called
 
     def test_last_commit_ids(self):
