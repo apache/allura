@@ -134,13 +134,11 @@ class RefreshLastCommits(ScriptTask):
 
     @classmethod
     def refresh_repo_lcds(cls, commit_ids, options):
-        tree_cache = {}
-        timings = []
         model_cache = M.repository.ModelCache(
             max_instances={M.repository.LastCommit: 4000},
             max_queries={M.repository.LastCommit: 4000},
         )
-        lcid_cache = {}
+        c.model_cache = model_cache
         timings = []
         print 'Processing last commits'
         for i, commit_id in enumerate(commit_ids):
@@ -150,13 +148,29 @@ class RefreshLastCommits(ScriptTask):
                 continue
             commit.set_context(c.app.repo)
             with time(timings):
-                M.repo_refresh.compute_lcds(commit, model_cache, lcid_cache)
+                tree = commit.tree
+                cls._get_lcds(tree, model_cache)
                 ThreadLocalORMSession.flush_all()
             if i % 100 == 0:
                 cls._print_stats(i, timings, 100)
             if options.limit and i >= options.limit:
                 break
         ThreadLocalORMSession.flush_all()
+
+    @classmethod
+    def _get_lcds(cls, tree, cache):
+        M.repository.LastCommit.get(tree)
+        """
+        FIXME: if its needed to recurse into subdirectories, and compute their LCDs as well, something along these
+        lines should be enabled.  This is not working as-is, and is not really necessary as this script doesn't
+        get used any more anyway.
+
+        for subtree in tree.tree_ids:
+            if subtree.name in tree.commit.changed_paths:
+                subtree_doc = cache.get(M.repository.Tree, dict(_id=subtree.id))
+                subtree_doc.set_context(tree)
+                cls._get_lcds(subtree_doc, cache)
+        """
 
     @classmethod
     def _clean(cls, commit_ids):

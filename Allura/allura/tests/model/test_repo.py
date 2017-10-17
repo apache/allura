@@ -443,14 +443,6 @@ class TestModelCache(unittest.TestCase):
         tr_get.assert_called_once_with(_id='foo')
         self.assertEqual(val, tree1)
 
-    @mock.patch.object(M.repository.TreesDoc.m, 'get')
-    def test_get_doc(self, tr_get):
-        trees = tr_get.return_value = mock.Mock(
-            spec=['_id', 'val'], _id='foo', val='bar')
-        val = self.cache.get(M.repository.TreesDoc, {'_id': 'foo'})
-        tr_get.assert_called_once_with(_id='foo')
-        self.assertEqual(val, trees)
-
     def test_set(self):
         tree = mock.Mock(spec=['_id', 'test_set'], _id='foo', val='test_set')
         self.cache.set(M.repository.Tree, {'val': 'test_set'}, tree)

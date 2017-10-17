@@ -1002,7 +1002,6 @@ class TestCommit(_TestWithRepo):
             'removed': [],
             'total': 5,
         }
-        M.repo_refresh.refresh_commit_trees(self.ci, {})
         assert_equal(self.ci.diffs.added,
                      ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
@@ -1027,7 +1026,6 @@ class TestCommit(_TestWithRepo):
             'removed': ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'],
             'total': 10,
         }
-        M.repo_refresh.refresh_commit_trees(ci, {})
         assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
         assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
@@ -1063,7 +1061,6 @@ class TestCommit(_TestWithRepo):
             'renamed': [],
             'total': 2
         }
-        M.repo_refresh.refresh_commit_trees(ci, {})
         assert_equal(ci.diffs.added, [u'b/a/z', u'b/c'])
         assert_equal(ci.diffs.changed, [])
         assert_equal(ci.diffs.removed, [u'/b/a/b', u'b/b'])
