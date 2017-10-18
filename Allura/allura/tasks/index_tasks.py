@@ -20,7 +20,9 @@ import logging
 from contextlib import contextmanager
 
 from pylons import app_globals as g
+from pylons import tmpl_context as c
 
+from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 from allura.lib.solr import make_solr_from_config
@@ -87,19 +89,21 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                 artifact = ref.artifact
                 if artifact is None:
                     continue
-                s = artifact.solarize()
-                if s is None:
-                    continue
-                if update_solr:
-                    solr_updates.append(s)
-                if update_refs:
-                    if isinstance(artifact, M.Snapshot):
+                # c.app is normally set, so keep using it.  During a reindex its not though, so set it from artifact
+                with h.push_config(c, app=getattr(c, 'app', None) or artifact.app):
+                    s = artifact.solarize()
+                    if s is None:
                         continue
-                    # Find shortlinks in the raw text, not the escaped html
-                    # created by the `solarize()`.
-                    link_text = artifact.index().get('text') or ''
-                    shortlinks = find_shortlinks(link_text)
-                    ref.references = [link.ref_id for link in shortlinks]
+                    if update_solr:
+                        solr_updates.append(s)
+                    if update_refs:
+                        if isinstance(artifact, M.Snapshot):
+                            continue
+                        # Find shortlinks in the raw text, not the escaped html
+                        # created by the `solarize()`.
+                        link_text = artifact.index().get('text') or ''
+                        shortlinks = find_shortlinks(link_text)
+                        ref.references = [link.ref_id for link in shortlinks]
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
