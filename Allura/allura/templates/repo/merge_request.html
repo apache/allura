@@ -93,8 +93,8 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     {% if req.merge_allowed(c.user) %}
         <form action="merge" method="POST" onsubmit="return confirm('Do you really want to Accept this Merge Request?');">
           {{ lib.csrf_token() }}
-          <button type="submit" id="merge-btn">
-            <i class="fa fa-code-fork fa-flip-vertical" aria-hidden="true" {% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}></i> Merge
+          <button type="submit" id="merge-btn" {% if not can_merge or merge_status in ('ready', 'busy') %}disabled="disabled"{% endif %}>
+            <i class="fa fa-code-fork fa-flip-vertical" aria-hidden="true"></i> Merge
           </button>
         </form>
     {% endif %}
