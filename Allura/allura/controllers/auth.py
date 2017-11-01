@@ -701,7 +701,10 @@ class PreferencesController(BaseController):
 
         qr = totp_service.get_qr_code(totp, c.user)
         h.auditlog_user('Visited multifactor new TOTP page')
+        provider = plugin.AuthenticationProvider.get(request)
+
         return dict(
+            menu = provider.account_navigation(),
             qr=qr,
             setup=True,
         )
@@ -717,9 +720,12 @@ class PreferencesController(BaseController):
         totp = totp_service.get_totp(c.user)
         qr = totp_service.get_qr_code(totp, c.user)
         h.auditlog_user('Viewed multifactor TOTP config page')
+        provider = plugin.AuthenticationProvider.get(request)
+
         return dict(
             qr=qr,
             setup=False,
+            menu = provider.account_navigation(),
         )
 
     @expose('jinja:allura:templates/user_totp.html')
@@ -803,8 +809,11 @@ class PreferencesController(BaseController):
         if not codes:
             codes = recovery.regenerate_codes(c.user)
         h.auditlog_user('Viewed multifactor recovery codes')
+        provider = plugin.AuthenticationProvider.get(request)
+
         return dict(
             codes=codes,
+            menu = provider.account_navigation(),
         )
 
     @expose()
