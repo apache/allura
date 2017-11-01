@@ -26,7 +26,7 @@
       <li id="{{ item.tabid }}">
       <a href="{{ item.target }}">
           {{ item.title }}
-          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+          <div class="marker{% if current_menu_item|default == item.target or item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
       </a>
       </li>
       {%- endfor %}
