@@ -722,6 +722,10 @@ class RootController(BaseController, FeedController):
             show_deleted = [False, True]
         elif deleted and not has_access(c.app, 'delete'):
             deleted = False
+
+        if not isinstance(filter, dict):
+            # JsonConverter above can return an int, string, etc, if users give bad inputs, but it needs to be a dict
+            filter = {}
             
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)
