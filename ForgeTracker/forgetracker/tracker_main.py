@@ -874,13 +874,16 @@ class RootController(BaseController, FeedController):
             feed = FG.Rss201rev2Feed(**d)
         for t in result['tickets']:
             url = h.absurl(t.url().encode('utf-8'))
-            feed.add_item(title=t.summary,
-                          link=url,
-                          pubdate=t.mod_date,
-                          description=t.description,
-                          unique_id=url,
-                          author_name=t.reported_by.display_name,
-                          author_link=h.absurl(t.reported_by.url()))
+            feed_kwargs = dict(title=t.summary,
+                               link=url,
+                               pubdate=t.mod_date,
+                               description=t.description,
+                               unique_id=url,
+                               )
+            if t.reported_by:
+                feed_kwargs['author_name'] = t.reported_by.display_name
+                feed_kwargs['author_link'] = h.absurl(t.reported_by.url())
+            feed.add_item(**feed_kwargs)
         return feed.writeString('utf-8')
 
     @expose()
