@@ -692,6 +692,16 @@ def skip_mod_date(model_cls):
         session(model_cls)._get().skip_mod_date = skip_mod_date
 
 
+@contextmanager
+def skip_last_updated(model_cls):
+    skip_last_updated = getattr(session(model_cls)._get(), 'skip_last_updated', False)
+    session(model_cls)._get().skip_last_updated = True
+    try:
+        yield
+    finally:
+        session(model_cls)._get().skip_last_updated = skip_last_updated
+
+
 def unique_attachments(attachments):
     """Given a list of :class:`allura.model.attachments.BaseAttachment` return
     a list where each filename present only once. If original list contains

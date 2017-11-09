@@ -38,11 +38,12 @@ import pygments
 import pygments.lexers
 import pygments.formatters
 import pygments.util
-from tg import config, session
+from tg import config
 from pylons import request
 from pylons import tmpl_context as c
 from paste.deploy.converters import asbool, asint, aslist
 from pypeline.markup import markup as pypeline_markup
+from ming.odm import session
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -133,9 +134,9 @@ class ForgeMarkdown(markdown.Markdown):
             cache.md5, cache.html, cache.render_time = md5, html, render_time
             cache.fix7528 = bugfix_rev  # flag to indicate good caches created after [#7528] and other critical bugs were fixed.
 
-            # Prevent cache creation from updating the mod_date timestamp.
-            _session = artifact_orm_session._get()
-            _session.skip_mod_date = True
+            with utils.skip_mod_date(artifact.__class__), \
+                 utils.skip_last_updated(artifact.__class__):
+                session(artifact).flush(artifact)
         return html
 
 
