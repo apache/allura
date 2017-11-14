@@ -963,7 +963,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     def add_meta_post(self, changes):
         tmpl = g.jinja2_env.get_template('allura:templates/repo/merge_request_changed.html')
         message = tmpl.render(changes=changes)
-        self.discussion_thread.add_post(text=message, is_meta=True)
+        self.discussion_thread.add_post(text=message, is_meta=True, ignore_security=True)
 
 
 
