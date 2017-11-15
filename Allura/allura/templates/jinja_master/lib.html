@@ -173,6 +173,9 @@
 {% endmacro %}
 
 {% macro path_links(parts) %}
+  {% if parts != [''] %}
+      <a href="{{'./' + '../' * parts|length }}"><b class="fa fa-folder-open-o" title="Root directory"></b></a> /
+  {% endif %}
   {% for part in parts %}
     <a href="{{'./' + '../' * loop.revindex0 }}">{{part}}</a> /
   {% endfor %}

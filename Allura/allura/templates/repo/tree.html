@@ -25,8 +25,8 @@
 {% endblock %}
 
 {% block header %}
-Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}} /
-{{lib.path_links(path.split('/')[1:])}}
+Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
+{{lib.path_links(path.strip('/').split('/'))}}
 {% endblock %}
 
 {% block extra_css %}
