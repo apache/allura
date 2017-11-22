@@ -47,6 +47,10 @@
   {% if c.app and c.app.searchable %}
     <form id="search" method="GET" action="{{c.app.url + 'search/'}}">
       <input name="q" type="text" title="Search {{c.app.config.options.mount_label}}" placeholder="Search {{c.app.config.options.mount_label}}">
+      <label>
+        <input type="submit" style="display:none">
+        <b class="fa fa-search" title="Submit"></b>
+      </label>
     </form>
   {% else %}
     <div>&nbsp;</div>
