@@ -115,7 +115,7 @@
       {% endblock %}
     </fieldset>
 
-    <fieldset id="tool-fields">
+    <div id="tool-fields">
         {% if c.form_errors['tools'] %}
         <div class="error">{{c.form_errors['tools']}}</div>
         {% endif %}
@@ -135,7 +135,7 @@
             {{tool_importer.tool_description}}
         </div>
         {% endfor %}
-    </fieldset>
+    </div>
 
     <div style="margin:5px">
       You'll receive an email after each tool import finishes.
