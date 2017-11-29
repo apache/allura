@@ -1752,6 +1752,23 @@ a.active {
   position: relative;
   z-index: 2;
 }
+#sidebar #search {
+  position: relative;
+}
+#sidebar #search .fa-search {
+  position: absolute;
+  z-index: 2;
+  top: 15px;
+  right: 0;
+  font-size: 14px;
+  text-align: center;
+  height: 23px;
+  width: 23px;
+  line-height: 23px;
+}
+#sidebar #search .fa-search:hover {
+  cursor: pointer;
+}
 #sidebar ul {
   border: 1px solid #aaaaaa;
   -moz-border-radius: 4px;
