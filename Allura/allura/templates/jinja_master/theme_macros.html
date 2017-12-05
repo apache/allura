@@ -173,3 +173,9 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {% endif %}
 {%- endmacro %}
 {% endif %}
+
+{% if not placeholder_project_icon %}
+{%- macro placeholder_project_icon() %}
+    <div class="placeholder-icon"></div>
+{%- endmacro %}
+{% endif %}

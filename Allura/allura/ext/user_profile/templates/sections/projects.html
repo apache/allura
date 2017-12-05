@@ -18,6 +18,7 @@
 -#}
 {% extends "allura.ext.user_profile:templates/profile_section_base.html" %}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import g.theme.jinja_macros as theme_macros with context %}
 
 {% block title %}
     Projects
@@ -38,7 +39,7 @@
             {% if project.icon -%}
                 <img {{ lib.project_icon_srcs(project) }} alt="Project Logo" width="48" height="48"/>
             {%- else -%}
-                <img src="{{g.forge_static('images/project_default.png')}}" alt="Project Logo" width="48" height="48"/>
+                {{ theme_macros.placeholder_project_icon() }}
             {%- endif -%}
             <span class="project-info">
                 <a href="{{project.url()}}">{{project.name}}</a>
