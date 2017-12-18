@@ -553,7 +553,7 @@ class GitImplementation(M.RepositoryImplementation):
         cache = getattr(self._repo, cache_name, None)
 
         if cache:
-            return cache
+            return cache._deinstrument()  # always return a plain list
 
         refs = []
         start_time = time()
