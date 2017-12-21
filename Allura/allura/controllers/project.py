@@ -442,7 +442,11 @@ class ProjectController(FeedController):
         try:
             return self.icon(**kw)
         except exc.HTTPNotFound:
-            redirect(g.forge_static('images/user.png'))
+            if config.get('default_avatar_image'):
+                default_image_url = config['default_avatar_image']
+            else:
+                default_image_url = g.forge_static('images/user.png')
+            redirect(default_image_url)
 
     @expose('json:')
     def user_search(self, term='', **kw):

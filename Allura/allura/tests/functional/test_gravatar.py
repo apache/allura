@@ -17,6 +17,10 @@
 
 from urlparse import urlparse, parse_qs
 
+import tg
+from nose.tools import assert_equal
+from mock import patch
+
 from allura.tests import TestController
 import allura.lib.gravatar as gravatar
 
@@ -43,9 +47,17 @@ class TestGravatar(TestController):
         assert url.netloc == 'secure.gravatar.com'
         assert url.path == '/avatar/' + expected_id
 
-    def test_defaults(self):
+    def test_default_override(self):
         email = 'Wolf@example.com'
         url = urlparse(gravatar.url(email=email, rating='x'))
         query = parse_qs(url.query)
-        assert 'r' not in query
-        assert query['rating'] == ['x']
+        assert_equal(query,
+                     {'rating': ['x']})
+
+    @patch.dict(tg.config, {'default_avatar_image': 'https://example.com/img/icon.png'})
+    def test_default_image(self):
+        email = 'Wolf@example.com'
+        url = urlparse(gravatar.url(email=email))
+        query = parse_qs(url.query)
+        assert_equal(query,
+                     {'r': ['pg'], 'd': ['https://example.com/img/icon.png']})
