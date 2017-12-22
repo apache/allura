@@ -19,6 +19,11 @@ import re
 import urllib
 import hashlib
 
+from tg import config
+
+from allura.lib import helpers as h
+
+
 _wrapped_email = re.compile(r'.*<(.+)>')
 
 
@@ -79,6 +84,8 @@ def url(email=None, gravatar_id=None, **kw):
         gravatar_id = id(email)
     if 'r' not in kw and 'rating' not in kw:
         kw['r'] = 'pg'
+    if 'd' not in kw and config.get('default_avatar_image'):
+        kw['d'] = h.absurl(config['default_avatar_image'])
     return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
 
 

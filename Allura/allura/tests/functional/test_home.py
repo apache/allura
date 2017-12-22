@@ -17,11 +17,13 @@
 
 import json
 import re
+import os
 
 from pylons import tmpl_context as c
 from nose.tools import assert_equal, assert_not_in, assert_in
 from ming.orm import ThreadLocalORMSession
 
+import allura
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
@@ -143,6 +145,24 @@ class TestProjectHome(TestController):
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
         assert_not_in('Profile', r.follow().body)
+
+    def test_user_icon_missing(self):
+        r = self.app.get('/u/test-user/user_icon', status=302)
+        assert r.location.endswith('images/user.png')
+
+    def test_user_icon(self):
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(allura.__path__[0], 'nf', 'allura', 'images', file_name)
+        file_data = file(file_path).read()
+        upload = ('icon', file_name, file_data)
+        with td.audits('update project icon'):
+            self.app.post('/u/test-admin/admin/update', params=dict(
+                name='Test Project',
+                shortname='test',
+                short_description='A Test Project'),
+                upload_files=[upload])
+        r = self.app.get('/u/test-admin/user_icon')
+        assert_equal(r.content_type, 'image/png')
 
     def test_user_search(self):
         r = self.app.get('/p/test/user_search?term=test', status=200)

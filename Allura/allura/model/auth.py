@@ -643,6 +643,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                 gravatar_args['d'] = gravatar_default_url
             icon_url = g.gravatar(self.preferences.email_address, **gravatar_args)
             icon_source = 'gravatar'
+        elif config.get('default_avatar_image'):
+            icon_url = config['default_avatar_image']
+            icon_source = 'default'
 
         if return_more:
             return icon_url, private_project, icon_source
