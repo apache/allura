@@ -52,15 +52,26 @@ DFL_APP_NAME = 'main'
 __test__ = False
 
 
-def get_config_file(config=None):
+def get_config_file(config=None, current_pkg=None):
     if not config:
         config = 'test.ini'
+    if not current_pkg:
+        current_pkg = 'allura'
 
-    try:
-        conf_dir = tg.config.here
-    except AttributeError:
+    conf_dir = pkg_resources.resource_filename(current_pkg, '..')
+    conf_file = os.path.join(conf_dir, config)
+
+    # split on "#" since it could be foo.ini#main
+    if not os.path.exists(conf_file.split('#')[0]) and current_pkg != 'allura':
+        # if there isn't a forgewiki/test.ini for example, then fall back to regular allura
         conf_dir = pkg_resources.resource_filename('allura', '..')
-    return os.path.join(conf_dir, config)
+        conf_file = os.path.join(conf_dir, config)
+
+    if not os.path.exists(conf_file.split('#')[0]):
+        raise EnvironmentError(u'Cannot find .ini config file {}'.format(conf_file))
+    else:
+        return conf_file
+
 
 
 def setup_config_test(config_file=None, force=False):
@@ -100,9 +111,9 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
 setup_basic_test.__test__ = False  # sometimes __test__ above isn't sufficient
 
 
-def setup_functional_test(config=None, app_name=DFL_APP_NAME):
+def setup_functional_test(config=None, app_name=DFL_APP_NAME, current_pkg=None):
     '''Create clean environment for running tests.  Also return WSGI test app'''
-    config = get_config_file(config)
+    config = get_config_file(config, current_pkg=current_pkg)
     setup_basic_test(config, app_name)
     conf_dir = tg.config.here
     wsgiapp = loadapp('config:%s#%s' % (config, app_name),
@@ -153,8 +164,9 @@ class TestController(object):
 
     def setUp(self):
         """Method called by nose before running each test"""
+        pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(
-            setup_functional_test(app_name=self.application_under_test))
+            setup_functional_test(app_name=self.application_under_test, current_pkg=pkg))
         self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
