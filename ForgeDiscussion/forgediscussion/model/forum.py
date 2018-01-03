@@ -215,6 +215,11 @@ class ForumPost(M.Post):
         history_class = ForumPostHistory
         indexes = [
             'timestamp',  # for the posts_24hr site_stats query
+            (  # for last_post queries on thread listing page
+                'thread_id',
+                'deleted',
+                ('timestamp', pymongo.DESCENDING),
+            ),
         ]
     type_s = 'Post'
 
@@ -244,5 +249,6 @@ class ForumAttachment(M.DiscussionAttachment):
     class __mongometa__:
         polymorphic_identity = 'ForumAttachment'
     attachment_type = FieldProperty(str, if_missing='ForumAttachment')
+
 
 Mapper.compile_all()
