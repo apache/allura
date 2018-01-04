@@ -16,6 +16,7 @@
 #       under the License.
 
 from pylons import app_globals as g
+from activitystream.storage.mingstorage import Activity
 
 from allura.lib.decorators import task
 
@@ -23,3 +24,14 @@ from allura.lib.decorators import task
 @task
 def create_timelines(node_id):
     g.director.create_timelines(node_id)
+
+
+@task
+def change_user_name(user_id, new_name):
+    Activity.query.update(
+        {'actor.node_id': "User:{}".format(user_id)},
+        {'$set': {
+            "actor.activity_name": new_name,
+        }},
+        multi=True
+    )

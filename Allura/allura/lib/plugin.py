@@ -54,6 +54,7 @@ from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
 from allura.lib import utils
+from allura.tasks import activity_tasks
 from allura.tasks.index_tasks import solr_del_project_artifacts
 
 log = logging.getLogger(__name__)
@@ -1489,6 +1490,9 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
             return getattr(user, pref_name)
 
     def set_pref(self, user, pref_name, pref_value):
+        if pref_name == 'display_name' and asbool(config.get('activitystream.recording.enabled', False)):
+            activity_tasks.change_user_name.post(user._id, pref_value)
+
         if pref_name in user.preferences:
             user.preferences[pref_name] = pref_value
         else:
