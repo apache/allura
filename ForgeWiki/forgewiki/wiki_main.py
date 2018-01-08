@@ -489,18 +489,18 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/create_page.html')
-    def create_wiki_page(self):
+    def create_wiki_page(self, **kw):
         return {}
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax.html')
-    def markdown_syntax(self):
+    def markdown_syntax(self, **kw):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self):
+    def markdown_syntax_dialog(self, **kw):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 

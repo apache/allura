@@ -1023,7 +1023,7 @@ class WebhooksLookup(BaseController, AdminControllerMixin):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/app_admin_webhooks_list.html')
-    def index(self):
+    def index(self, **kw):
         webhooks = self.app._webhooks
         if len(webhooks) == 0:
             raise exc.HTTPNotFound()

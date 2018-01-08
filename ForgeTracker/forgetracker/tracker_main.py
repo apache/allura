@@ -897,7 +897,7 @@ class RootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/search_help.html')
-    def search_help(self):
+    def search_help(self, **kw):
         'Static page with search help'
         return dict()
 
@@ -913,12 +913,12 @@ class RootController(BaseController, FeedController):
                     description=description, summary=summary, labels=labels)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
-    def markdown_syntax(self):
+    def markdown_syntax(self, **kw):
         """Static page explaining markdown."""
         return dict()
 
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self):
+    def markdown_syntax_dialog(self, **kw):
         """Static page explaining markdown."""
         return dict()
 

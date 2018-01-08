@@ -1280,7 +1280,7 @@ class GroupController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_group.html')
-    def index(self):
+    def index(self, **kw):
         if self._group.name in ('Admin', 'Developer', 'Member'):
             show_settings = False
             action = None

@@ -103,7 +103,7 @@ class SiteAdminController(object):
 
     @expose('jinja:allura:templates/site_admin_index.html')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         return {}
 
     def subscribe_artifact(self, url, user):
@@ -430,7 +430,7 @@ class SiteNotificationController(object):
 
     @expose('jinja:allura:templates/site_admin_site_notifications_list.html')
     @with_trailing_slash
-    def index(self, page=0, limit=25):
+    def index(self, page=0, limit=25, **kw):
         c.page_list = W.page_list
         c.page_size = W.page_size
 
@@ -521,7 +521,7 @@ class TaskManagerController(object):
 
     @expose('jinja:allura:templates/site_admin_task_list.html')
     @without_trailing_slash
-    def index(self, page_num=1, minutes=10, state=None, task_name=None, host=None):
+    def index(self, page_num=1, minutes=10, state=None, task_name=None, host=None, **kw):
         now = datetime.utcnow()
         try:
             page_num = int(page_num)
@@ -628,7 +628,7 @@ class StatsController(object):
     """Show neighborhood stats."""
     @expose('jinja:allura:templates/site_admin_stats.html')
     @with_trailing_slash
-    def index(self):
+    def index(self, **kw):
         neighborhoods = []
         for n in M.Neighborhood.query.find():
             project_count = M.Project.query.find(

@@ -505,7 +505,7 @@ class ScreenshotController(object):
         return self._screenshot.serve(embed)
 
     @expose()
-    def thumb(self, embed=True):
+    def thumb(self, embed=True, **kwargs):
         return self._thumb.serve(embed)
 
     @LazyProperty

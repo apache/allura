@@ -161,13 +161,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
         return d
 
     @expose('jinja:allura:templates/markdown_syntax.html')
-    def markdown_syntax(self):
+    def markdown_syntax(self, **kw):
         'Static page explaining markdown.'
         return dict()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self):
+    def markdown_syntax_dialog(self, **kw):
         'Static dialog page about how to use markdown.'
         return dict()
 

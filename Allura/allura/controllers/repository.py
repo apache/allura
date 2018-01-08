@@ -79,7 +79,7 @@ class RepoRootController(BaseController, FeedController):
         require_access(c.app, 'read')
 
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self):
+    def markdown_syntax_dialog(self, **kw):
         """Static page explaining markdown."""
         return dict()
 
