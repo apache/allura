@@ -21,7 +21,7 @@
 /*global jQuery, window */
 
 (function ($) {
-    
+
     /* BEGIN: John Resig's microtemplating stuff */
     var cache = {};
 
@@ -91,11 +91,11 @@
         }
         helper();
     }
-    
+
     function sanitize(str) {
         return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
-    
+
     $.fn.notifier = function(options){
         var opts = $.extend({}, $.fn.notify.defaults, options);
         return $(this).each(function() {
@@ -104,13 +104,13 @@
             if (o.scrollcss) {
                 $(window).scroll(function() {
                     $(self).css(o.scrollcss);
-                }); 
+                });
             }
             $('.' + o.messageClass, self).addClass(o.newClass);
             scanMessages(self, o);
         });
     };
-    
+
     $.fn.notify = function(msg_or_opts, options) {
         var opts;
         // For backwards compatibility
@@ -145,7 +145,7 @@
             }
         });
     };
-    
+
     $.fn.notify.defaults = {
         status: 'info',
         interval: 500,
@@ -154,7 +154,6 @@
         title: '',
         sanitize: true,
         tmpl: '<div class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><h6><%=title%></h6><% } %><div class="content"><%=message%></div></div>',
-        scrollcss: { position: 'fixed', top: '20px' },
         stickyClass: 'notify-sticky',
 		persistentClass: 'notify-persistent',
 		persistentCookie: 'notify-persistent-closed',
@@ -164,5 +163,5 @@
         messageClass: 'message',
         closeIcon: '<b title="Close" class="fa fa-close" style="float:right;"></b>'
     };
-    
+
 }(jQuery));

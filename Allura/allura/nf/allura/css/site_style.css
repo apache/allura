@@ -607,7 +607,7 @@ img.nav-logo {
 
 /* message */
 #messages {
-  position: absolute;
+  position: fixed;
   z-index: 100000;
   top: 50px;
   right: 20px;
