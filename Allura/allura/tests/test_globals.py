@@ -338,8 +338,8 @@ def test_macro_embed(oembed_fetch):
         "title": "Nature's 3D Printer: MIND BLOWING Cocoon in Rainforest - Smarter Every Day 94",
     }
     r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
-    assert_in('<div class="grid-20"><iframe height="270" '
-              'src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>',
+    assert_in('<p><iframe height="270" '
+              'src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>',
               r.replace('\n', ''))
 
 
