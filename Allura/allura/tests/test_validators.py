@@ -17,7 +17,7 @@
 
 import unittest
 import formencode as fe
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 
 from allura import model as M
 from allura.lib import validators as v
