@@ -39,7 +39,7 @@
     /*global confirm: true*/
     $(document).ready(function () {
       $.maxlength.setDefaults({feedbackText : '{r} characters left'})
-      
+
       var $metadata_form = $('#metadata_form');
       var $removal_original = $('input[name=removal]:checked');
       var $removal_delete_cb = $('#removal_delete_cb');
@@ -79,6 +79,9 @@
         var $parent = $this.closest('#project-icon');
         $('#project-icon-upload').removeClass('hidden');
       });
+      if($('#project-icon-upload .error').length) {
+        $('#project-icon-upload').removeClass('hidden');
+      }
       $('#project-status a').click(function(e) {
         e.preventDefault();
         $('#project-status-edit').removeClass('hidden');

@@ -214,7 +214,8 @@ class MetadataAdmin(ff.AdminForm):
             append_to='bottom',
             extra_field_on_focus_name='feature',
             field=FeaturesField())
-        icon = ew.FileField(label='Icon', attrs={'accept': 'image/*'})
+        icon = ew.FileField(label='Icon', attrs={'accept': 'image/*'},
+                            validator=V.IconValidator())
         external_homepage = ew.InputField(field_type="text", label='Homepage',
                                           validator=fev.URL(add_http=True))
         video_url = ew.InputField(field_type="text", label="Video (YouTube)",

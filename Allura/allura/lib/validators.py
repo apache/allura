@@ -427,3 +427,17 @@ def convertTime(timestring):
         except:
             pass
     return None
+
+
+class IconValidator(fev.FancyValidator):
+    regex = 'jpg|jpeg|gif|png$'
+    def _to_python(self, value, state):
+        p = re.compile(self.regex, flags=re.I)
+        result = p.search(value.filename)
+
+        if not result:
+            raise fe.Invalid(
+                'Project icons must be PNG, GIF, or JPG format.',
+                value, state)
+
+        return value

@@ -17,7 +17,7 @@
 
 import unittest
 import formencode as fe
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 
 from allura import model as M
 from allura.lib import validators as v
@@ -285,3 +285,25 @@ class TestNonHttpUrlValidator(unittest.TestCase):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('url')
         self.assertEqual(str(cm.exception), 'You must start your URL with a scheme')
+
+
+class TestIconValidator(unittest.TestCase):
+    val = v.IconValidator
+
+    def _mock(self, val):
+        # Mock has an attr `mixed`, which inadvertantly gets called by formencode to_python method :/
+        def f(filename): pass
+
+        m = Mock(spec=f)
+        m.filename = val
+        return m
+
+    def test_valid(self):
+        input = self._mock('foo.png')
+        self.assertEqual(input, self.val.to_python(input))
+
+    def test_invalid(self):
+        input = self._mock('foo.svg')
+        with self.assertRaises(fe.Invalid) as cm:
+            self.val.to_python(input)
+        self.assertEqual(str(cm.exception), 'Project icons must be PNG, GIF, or JPG format.')
