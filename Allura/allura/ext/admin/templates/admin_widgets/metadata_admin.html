@@ -94,7 +94,7 @@
   </div>
 
   <div class="grid-10">
-    <label>Icon:</label>
+    <label>Project Logo:</label>
     <br>
     <div id="project-icon" class="viewing">
       {% if value.icon %}
@@ -114,7 +114,7 @@
       <div id="project-icon-upload" class="hidden">
           {{widget.display_field(widget.fields.icon)}}
           <input type="submit" value="Save" name="save" style="float: none" />
-          <br><small>(best if square & hi-res)</small>
+          <br><small>(best if square & hi-res. JPG, GIF, or PNG files expected.)</small>
       </div>
     </div>
     {%if c.project.neighborhood.name != 'Users' or not value.is_root%}
