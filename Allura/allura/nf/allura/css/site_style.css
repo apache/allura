@@ -693,13 +693,24 @@ img.nav-logo {
   padding: 0 20px 20px;
 }
 /* modal */
-.modal {
+.modal:not(.lightmodal) {
   background: rgb(60, 60, 60) none;
   color: #fff;
+}
+.modal:not(.lightmodal) hr {
+  background-color: #595454;
+}
+.modal:not(.lightmodal) a {
+  color: #fff;
+}
+.modal.lightmodal {
+  background-color: #fff;
+}
+.modal {
   border-radius: 10px;
   display: inline-block;
   margin: 0 auto;
-  border: 3px solid #292929;
+  border: 2px solid #292929;
   top: 20px;
   left: 50%;
   margin-left: -312px;
@@ -724,7 +735,6 @@ img.nav-logo {
 .modal hr {
   border: none;
   padding: 0;
-  background-color: #595454;
 }
 input.validate_input:valid[type='text'] {
     border: 1px solid #d8ffd5;
@@ -734,7 +744,7 @@ input.validate_input:invalid[type='text'] {
     background: #fadad5;
 }
 .modal-form-error {
-    color: white;
+    color: red;
     padding: 2px;
     border-radius: 2px;
     font-size: smaller;
@@ -745,20 +755,11 @@ input.validate_input:invalid[type='text'] {
   margin: 0;
   display: block;
 }
-.modal img {
-  height: 335px;
-  width: 542px;
-  margin: 0 auto 10px;
-}
 .modal form {
   padding-top: 20px;
 }
 .modal a {
-  color: #fff;
   text-decoration: underline;
-}
-.modal .codehilite {
-  background-color: #777;
 }
 .modal .hidden_in_modal {
     display: none;
@@ -766,6 +767,10 @@ input.validate_input:invalid[type='text'] {
 
 .ie7 .modal, .ie8 .modal {
   border: 1px solid black;
+}
+
+.modal.markdown_help .codehilitetable {
+  width: inherit;
 }
 
 .markdown_syntax_toc_crumb {
