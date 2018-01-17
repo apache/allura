@@ -529,9 +529,10 @@ class PageController(BaseController, FeedController):
             require_access(self.page, 'read')
             if self.page.deleted:
                 require_access(self.page, 'delete')
-        else:
-            require_access(c.app, 'create')
+        elif has_access(c.app, 'create'):
             self.rate_limit()
+        else:
+            raise exc.HTTPNotFound
 
     def rate_limit(self):
         if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
@@ -849,6 +850,8 @@ class PageRestController(BaseController):
     def _check_security(self):
         if self.page:
             require_access(self.page, 'read')
+            if self.page.deleted:
+                require_access(self.page, 'delete')
 
     @h.vardec
     @expose('json:')

@@ -57,9 +57,9 @@ class TestRootController(TestController):
         assert u'tést' in r
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
-        r = self.app.get(page_url,
-                         extra_environ=dict(username='*anonymous')).follow()
-        assert 'Create Page' not in r
+        r = self.app.get('/wiki/Home',
+                         extra_environ=dict(username='*anonymous'))
+        assert 'Create Page' not in r, r
 
     @td.with_wiki
     def test_create_wiki_page(self):
@@ -150,14 +150,19 @@ class TestRootController(TestController):
         assert div is not None, "Can't find help text"
         assert_in('To search for an exact phrase', div.text)
 
-    def test_page_index(self):
-        response = self.app.get('/wiki/tést/')
-        assert 'tést' in response.follow()
+    def test_nonexistent_page_edit(self):
+        resp = self.app.get('/wiki/tést/')
+        assert resp.location.endswith(h.urlquote(u'/wiki/tést/edit')), resp.location
+        resp = resp.follow()
+        assert 'tést' in resp
 
-    def test_page_edit(self):
-        self.app.get('/wiki/tést/index')
-        response = self.app.post('/wiki/tést/edit')
-        assert 'tést' in response
+    def test_nonexistent_page_noedit(self):
+        self.app.get('/wiki/tést/',
+                     extra_environ=dict(username='*anonymous'),
+                     status=404)
+        self.app.get('/wiki/tést/',
+                     extra_environ=dict(username='test-user'),
+                     status=404)
 
     @patch('forgewiki.wiki_main.g.director.create_activity')
     def test_activity(self, create_activity):
