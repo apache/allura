@@ -41,11 +41,11 @@ class TestRelatedArtifacts(TemplateTest):
         html = self.jinja2_env.from_string('''
             {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
             {{ lib.related_artifacts(artifact) }}
-        ''').render(artifact=artifact)
+        ''').render(artifact=artifact, c=Mock())
         return strip_space(html)
 
     def test_none(self):
-        artifact = Mock(related_artifacts = lambda: [])
+        artifact = Mock(related_artifacts=lambda user: [])
         assert_equal(self._render_related_artifacts(artifact), '')
 
     def test_simple(self):
@@ -54,7 +54,7 @@ class TestRelatedArtifacts(TemplateTest):
         other.project.name = 'Test Project'
         other.app_config.options.mount_label = 'Foo'
         other.link_text.return_value = 'Bar'
-        artifact = Mock(related_artifacts = lambda: [other])
+        artifact = Mock(related_artifacts=lambda user: [other])
         assert_equal(self._render_related_artifacts(artifact), strip_space('''
             <h4>Related</h4>
             <p>
@@ -73,7 +73,7 @@ class TestRelatedArtifacts(TemplateTest):
             def url(self):
                 return '/p/test/code/ci/deadbeef'
 
-        artifact = Mock(related_artifacts = lambda: [CommitThing()])
+        artifact = Mock(related_artifacts=lambda user: [CommitThing()])
         assert_equal(self._render_related_artifacts(artifact), strip_space('''
             <h4>Related</h4>
             <p>

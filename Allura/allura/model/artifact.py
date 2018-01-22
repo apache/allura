@@ -103,7 +103,7 @@ class Artifact(MappedClass, SearchIndexable):
     import_id = FieldProperty(None, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
 
-    def __json__(self, posts_limit=None, is_export=False):
+    def __json__(self, posts_limit=None, is_export=False, user=None):
         """Return a JSON-encodable :class:`dict` representation of this
         Artifact.
 
@@ -112,7 +112,7 @@ class Artifact(MappedClass, SearchIndexable):
             _id=str(self._id),
             mod_date=self.mod_date,
             labels=list(self.labels),
-            related_artifacts=[a.url() for a in self.related_artifacts()],
+            related_artifacts=[a.url() for a in self.related_artifacts(user=user or c.user)],
             discussion_thread=self.discussion_thread.__json__(limit=posts_limit, is_export=is_export),
             discussion_thread_url=h.absurl('/rest%s' %
                                            self.discussion_thread.url()),
@@ -159,7 +159,7 @@ class Artifact(MappedClass, SearchIndexable):
         q = ArtifactReference.query.find(dict(references=self.index_id()))
         return [aref._id for aref in q]
 
-    def related_artifacts(self):
+    def related_artifacts(self, user=None):
         """Return all Artifacts that are related to this one.
 
         """
@@ -177,11 +177,12 @@ class Artifact(MappedClass, SearchIndexable):
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
                 continue
+            if user and not h.has_access(artifact, 'read', user):
+                continue
             # TODO: This should be refactored. We shouldn't be checking
             # artifact type strings in platform code.
             if artifact.type_s == 'Commit' and not artifact.repo:
-                ac = AppConfig.query.get(
-                    _id=ref.artifact_reference['app_config_id'])
+                ac = AppConfig.query.get(_id=ref.artifact_reference['app_config_id'])
                 app = ac.project.app_instance(ac) if ac else None
                 if app:
                     artifact.set_context(app.repo)

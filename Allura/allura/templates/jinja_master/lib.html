@@ -30,7 +30,7 @@
 {%- endmacro %}
 
 {% macro related_artifacts(artifact) -%}
-  {% set related_artifacts = artifact.related_artifacts() %}
+  {% set related_artifacts = artifact.related_artifacts(user=c.userr) %}
   {% if related_artifacts %}
     <h4>Related</h4>
     <p>
