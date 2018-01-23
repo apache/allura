@@ -194,7 +194,7 @@ class Globals(MappedClass):
                 # skip queries with $USER variable, hits will be inconsistent
                 # for them
                 continue
-            r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False)
+            r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False, fq=['-deleted_b:true'])
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         self._bin_counts_expire = \
