@@ -239,13 +239,14 @@ class Globals(MappedClass):
         # the task clears it when it's done.  However, in the off chance
         # that the task fails or is interrupted, we ignore the flag if it's
         # older than 5 minutes.
-        invalidation_expiry = datetime.utcnow() - timedelta(minutes=5)
+        delay = int(tg_config.get('forgetracker.bin_invalidate_delay', 5))
+        invalidation_expiry = datetime.utcnow() - timedelta(minutes=delay)
         if self._bin_counts_invalidated is not None and \
            self._bin_counts_invalidated > invalidation_expiry:
             return
         self._bin_counts_invalidated = datetime.utcnow()
         from forgetracker import tasks  # prevent circular import
-        tasks.update_bin_counts.post(self.app_config_id, delay=5)
+        tasks.update_bin_counts.post(self.app_config_id, delay=delay)
 
     def sortable_custom_fields_shown_in_search(self):
         def solr_type(field_name):

@@ -726,7 +726,7 @@ class RootController(BaseController, FeedController):
         if not isinstance(filter, dict):
             # JsonConverter above can return an int, string, etc, if users give bad inputs, but it needs to be a dict
             filter = {}
-            
+
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)
         result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
@@ -829,7 +829,7 @@ class RootController(BaseController, FeedController):
     def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None,
                deleted=False, filter=None, **kw):
         require(has_access(c.app, 'read'))
-   
+
         if deleted and not has_access(c.app, 'delete'):
             deleted = False
         if query and not q:
@@ -1458,6 +1458,7 @@ class TicketController(BaseController, FeedController):
             dt=datetime.utcnow())
         self.ticket.summary += suffix
         flash('Ticket successfully deleted')
+        c.app.globals.invalidate_bin_counts()
         return dict(location='../' + str(self.ticket.ticket_num))
 
     @without_trailing_slash
@@ -1470,6 +1471,7 @@ class TicketController(BaseController, FeedController):
             ' \d+:\d+:\d+ \d+-\d+-\d+$', '', self.ticket.summary)
         M.Shortlink.from_artifact(self.ticket)
         flash('Ticket successfully restored')
+        c.app.globals.invalidate_bin_counts()
         return dict(location='../' + str(self.ticket.ticket_num))
 
     @require_post()
@@ -1950,7 +1952,7 @@ class MilestoneController(BaseController):
             show_deleted = [False, True]
         elif deleted and not has_access(c.app, 'delete'):
             deleted = False
-            
+
         result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
                                                  self.mongo_query,
                                                  self.solr_query,
