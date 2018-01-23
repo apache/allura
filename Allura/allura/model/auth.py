@@ -481,61 +481,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def set_pref(self, pref_name, pref_value):
         return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
 
-    def add_socialnetwork(self, socialnetwork, accounturl):
-        if socialnetwork == 'Twitter' and not accounturl.startswith('http'):
-            accounturl = 'http://twitter.com/%s' % accounturl.replace('@', '')
-        self.socialnetworks.append(dict(
-            socialnetwork=socialnetwork,
-            accounturl=accounturl))
+    def add_multivalue_pref(self, pref_name, pref_data):
+        return plugin.UserPreferencesProvider.get().add_multivalue_pref(self, pref_name, pref_data)
 
-    def remove_socialnetwork(self, socialnetwork, oldurl):
-        for el in self.socialnetworks:
-            if el.socialnetwork == socialnetwork and el.accounturl == oldurl:
-                del self.socialnetworks[self.socialnetworks.index(el)]
-                return
-
-    def add_telephonenumber(self, telnumber):
-        self.telnumbers.append(telnumber)
-
-    def remove_telephonenumber(self, oldvalue):
-        for el in self.telnumbers:
-            if el == oldvalue:
-                del self.telnumbers[self.telnumbers.index(el)]
-                return
-
-    def add_webpage(self, webpage):
-        self.webpages.append(webpage)
-
-    def remove_webpage(self, oldvalue):
-        for el in self.webpages:
-            if el == oldvalue:
-                del self.webpages[self.webpages.index(el)]
-                return
-
-    def add_timeslot(self, weekday, starttime, endtime):
-        self.availability.append(
-            dict(week_day=weekday,
-                 start_time=starttime,
-                 end_time=endtime))
-
-    def remove_timeslot(self, weekday, starttime, endtime):
-        oldel = dict(week_day=weekday, start_time=starttime, end_time=endtime)
-        for el in self.availability:
-            if el == oldel:
-                del self.availability[self.availability.index(el)]
-                return
-
-    def add_inactive_period(self, startdate, enddate):
-        self.inactiveperiod.append(
-            dict(start_date=startdate,
-                 end_date=enddate))
-
-    def remove_inactive_period(self, startdate, enddate):
-        oldel = dict(start_date=startdate, end_date=enddate)
-        for el in self.inactiveperiod:
-            if el == oldel:
-                del self.inactiveperiod[self.inactiveperiod.index(el)]
-                return
+    def remove_multivalue_pref(self, pref_name, pref_data):
+        return plugin.UserPreferencesProvider.get().remove_multivalue_pref(self, pref_name, pref_data)
 
     def get_localized_availability(self, tz_name):
         week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
@@ -596,7 +546,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def get_availability_timeslots(self):
         retval = []
-        for el in self.availability:
+        for el in self.get_pref('availability'):
             start, end = (el.get('start_time'), el.get('end_time'))
             (starth, startm) = (start.get('h'), start.get('m'))
             (endh, endm) = (end.get('h'), end.get('m'))

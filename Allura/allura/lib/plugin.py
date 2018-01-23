@@ -1470,6 +1470,25 @@ class UserPreferencesProvider(object):
                 urls[attr_name] = attr_value
         return urls
 
+    def add_multivalue_pref(self, user, pref_name, entry):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :param str pref_name:
+        :param entry: can be a simple value, or a dict structure
+        :raises: AttributeError if pref_name not found
+        '''
+        self.get_pref(user, pref_name).append(entry)
+
+    def remove_multivalue_pref(self, user, pref_name, entry):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :param str pref_name:
+        :param entry: can be a simple value, or a dict structure
+        :raises: AttributeError if pref_name not found
+        :raises: ValueError if data not found
+        '''
+        self.get_pref(user, pref_name).remove(entry)
+
 
 class LocalUserPreferencesProvider(UserPreferencesProvider):
 

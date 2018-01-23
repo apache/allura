@@ -963,7 +963,12 @@ class UserContactsController(BaseController):
     @validate(F.add_socialnetwork_form, error_handler=index)
     def add_social_network(self, **kw):
         require_authenticated()
-        c.user.add_socialnetwork(kw['socialnetwork'], kw['accounturl'])
+
+        if kw['socialnetwork'] == 'Twitter' and not kw['accounturl'].startswith('http'):
+            kw['accounturl'] = 'http://twitter.com/%s' % kw['accounturl'].replace('@', '')
+
+        c.user.add_multivalue_pref('socialnetworks',
+                                   {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['accounturl']})
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -972,7 +977,8 @@ class UserContactsController(BaseController):
     @validate(F.remove_socialnetwork_form, error_handler=index)
     def remove_social_network(self, **kw):
         require_authenticated()
-        c.user.remove_socialnetwork(kw['socialnetwork'], kw['account'])
+        c.user.remove_multivalue_pref('socialnetworks',
+                                      {'socialnetwork': kw['socialnetwork'], 'accounturl': kw['account']})
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -981,7 +987,7 @@ class UserContactsController(BaseController):
     @validate(F.add_telnumber_form, error_handler=index)
     def add_telnumber(self, **kw):
         require_authenticated()
-        c.user.add_telephonenumber(kw['newnumber'])
+        c.user.add_multivalue_pref('telnumbers', kw['newnumber'])
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -990,7 +996,7 @@ class UserContactsController(BaseController):
     @validate(F.remove_textvalue_form, error_handler=index)
     def remove_telnumber(self, **kw):
         require_authenticated()
-        c.user.remove_telephonenumber(kw['oldvalue'])
+        c.user.remove_multivalue_pref('telnumbers', kw['oldvalue'])
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -999,7 +1005,7 @@ class UserContactsController(BaseController):
     @validate(F.add_website_form, error_handler=index)
     def add_webpage(self, **kw):
         require_authenticated()
-        c.user.add_webpage(kw['newwebsite'])
+        c.user.add_multivalue_pref('webpages', kw['newwebsite'])
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -1008,7 +1014,7 @@ class UserContactsController(BaseController):
     @validate(F.remove_textvalue_form, error_handler=index)
     def remove_webpage(self, **kw):
         require_authenticated()
-        c.user.remove_webpage(kw['oldvalue'])
+        c.user.remove_multivalue_pref('webpages', kw['oldvalue'])
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
@@ -1039,7 +1045,9 @@ class UserAvailabilityController(BaseController):
     @validate(F.add_timeslot_form, error_handler=index)
     def add_timeslot(self, **kw):
         require_authenticated()
-        c.user.add_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        c.user.add_multivalue_pref('availability',
+                                   {'week_day': kw['weekday'], 'start_time': kw['starttime'],
+                                    'end_time':  kw['endtime']})
         flash('Your availability timeslots were successfully updated!')
         redirect('.')
 
@@ -1048,7 +1056,9 @@ class UserAvailabilityController(BaseController):
     @validate(F.remove_timeslot_form, error_handler=index)
     def remove_timeslot(self, **kw):
         require_authenticated()
-        c.user.remove_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        c.user.remove_multivalue_pref('availability',
+                                      {'week_day': kw['weekday'], 'start_time': kw['starttime'],
+                                       'end_time':  kw['endtime']})
         flash('Your availability timeslots were successfully updated!')
         redirect('.')
 
@@ -1057,7 +1067,8 @@ class UserAvailabilityController(BaseController):
     @validate(F.add_inactive_period_form, error_handler=index)
     def add_inactive_period(self, **kw):
         require_authenticated()
-        c.user.add_inactive_period(kw['startdate'], kw['enddate'])
+        c.user.add_multivalue_pref('inactiveperiod',
+                                   {'start_date': kw['startdate'], 'end_date': kw['enddate']})
         flash('Your inactivity periods were successfully updated!')
         redirect('.')
 
@@ -1066,7 +1077,8 @@ class UserAvailabilityController(BaseController):
     @validate(F.remove_inactive_period_form, error_handler=index)
     def remove_inactive_period(self, **kw):
         require_authenticated()
-        c.user.remove_inactive_period(kw['startdate'], kw['enddate'])
+        c.user.remove_multivalue_pref('inactiveperiod',
+                                      {'start_date': kw['startdate'], 'end_date': kw['enddate']})
         flash('Your availability timeslots were successfully updated!')
         redirect('.')
 
