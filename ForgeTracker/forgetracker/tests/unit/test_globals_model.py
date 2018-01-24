@@ -114,7 +114,7 @@ class TestGlobalsModel(TrackerTestWithModel):
         gbl.update_bin_counts()
         assert mock_bin.query.find.called
         mock_search.assert_called_with(
-            forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False)
+            forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False, fq=['-deleted_b:true'])
         assert_equal(gbl._bin_counts_data, [{'summary': 'foo', 'hits': 5}])
         assert_equal(gbl._bin_counts_expire, now + timedelta(minutes=60))
         assert_equal(gbl._bin_counts_invalidated, None)
