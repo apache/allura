@@ -63,9 +63,9 @@
           You selected:
         </div>
         <div class="grid-12" style="margin-bottom:20px">      
-           <a href=".">List of all skills</a>
+           <a href="/auth/user_info/skills/">List of all skills</a>
            {% for cat in parents %}
-             &gt; <a href="{{cat.trove_cat_id}}">{{cat.fullname}}</a>
+             &gt; <a href="/auth/user_info/skills/{{cat.trove_cat_id}}">{{cat.fullname}}</a>
            {% endfor %}
            &gt; <b>{{selected_skill.fullname}}</b>
            <input type="hidden" name="upper_category" value="{{selected_skill.trove_parent_id}}"/>
@@ -81,8 +81,8 @@
       {%endif%}
       {{g.theme.select_subcategory_form.display(categories=skills_list)}}
     {% endif %}
-    {% if selected_skill %}
-      <h3>Add "{{selected_skill.fullname}}" to you set of skills</h3>
+    {% if selected_skill and not selected_skill.parent_only %}
+      <h3>Add "{{selected_skill.fullname}}" to your set of skills</h3>
       {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
            action="{}/save_skill".format(selected_skill.trove_cat_id)) }}
     {% endif %}
@@ -101,7 +101,7 @@
           {% endif %}
         {%endif%}
         <li>
-          <a href="/auth/prefs">Go to your profile</a> to set the remaining personal preferences.
+          <a href="/auth/user_info">Go back</a> to set other personal preferences.
         </li>
       </ul>
     </div>
