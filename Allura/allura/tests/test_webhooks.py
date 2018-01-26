@@ -714,8 +714,7 @@ class TestWebhookRestController(TestRestApiBase):
         dd.assert_equal(r.json, expected)
 
     def test_webhook_GET_404(self):
-        r = self.api_get(self.url + '/repo-push/invalid')
-        assert_equal(r.status_int, 404)
+        r = self.api_get(self.url + '/repo-push/invalid', status=404)
 
     def test_webhook_GET(self):
         webhook = self.webhooks[0]

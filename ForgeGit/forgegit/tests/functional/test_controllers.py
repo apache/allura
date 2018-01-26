@@ -255,9 +255,7 @@ class TestRootController(_TestCase):
     def test_tree_invalid(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/foo', status=404)
-        assert_equal(resp.status_int, 404)
         resp = self.app.get(ci + 'tree/foo/bar', status=404)
-        assert_equal(resp.status_int, 404)
 
     def test_file(self):
         ci = self._get_ci()

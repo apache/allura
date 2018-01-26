@@ -1338,32 +1338,27 @@ class TestRestInstallTool(TestRestApiBase):
 
 class TestRestAdminOptions(TestRestApiBase):
     def test_no_mount_point(self):
-        r = self.api_get('/rest/p/test/admin/admin_options/')
-        assert_equals(r.status, '400 Bad Request')
+        r = self.api_get('/rest/p/test/admin/admin_options/', status=400)
         assert_in('Must provide a mount point', r.body)
 
     def test_invalid_mount_point(self):
-        r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=asdf')
-        assert_equals(r.status, '400 Bad Request')
+        r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=asdf', status=400)
         assert_in('The mount point you provided was invalid', r.body)
 
     @td.with_tool('test', 'Git', 'git')
     def test_valid_mount_point(self):
-        r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=git')
-        assert_equals(r.status, '200 OK')
+        r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=git', status=200)
         assert_is_not_none(r.json['options'])
 
 
 class TestRestMountOrder(TestRestApiBase):
     def test_no_kw(self):
-        r = self.api_post('/rest/p/test/admin/mount_order/')
-        assert_equals(r.status, '400 Bad Request')
+        r = self.api_post('/rest/p/test/admin/mount_order/', status=400)
         assert_in('Expected kw params in the form of "ordinal: mount_point"', r.body)
 
     def test_invalid_kw(self):
         data = {'1': 'git', 'two': 'admin'}
-        r = self.api_post('/rest/p/test/admin/mount_order/', **data)
-        assert_equals(r.status, '400 Bad Request')
+        r = self.api_post('/rest/p/test/admin/mount_order/', status=400, **data)
         assert_in('Invalid kw: expected "ordinal: mount_point"', r.body)
 
     @td.with_wiki
@@ -1408,8 +1403,8 @@ class TestRestMountOrder(TestRestApiBase):
 class TestRestToolGrouping(TestRestApiBase):
     def test_invalid_grouping_threshold(self):
         for invalid_value in ('100', 'asdf'):
-            r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold=invalid_value)
-            assert_equals(r.status, '400 Bad Request')
+            r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold=invalid_value,
+                              status=400)
             assert_in('Invalid threshold. Expected a value between 1 and 10', r.body)
 
     @td.with_wiki
@@ -1417,16 +1412,14 @@ class TestRestToolGrouping(TestRestApiBase):
     @td.with_tool('test', 'Wiki', 'wiki3')
     def test_valid_grouping_threshold(self):
         # Set threshold to 2
-        r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold='2')
-        assert_equals(r.status, '200 OK')
+        r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold='2', status=200)
 
         # The 'wiki' mount_point should not exist at the top level
         result1 = self.app.get('/p/test/_nav.json')
         assert_not_in('wiki', [tool['mount_point'] for tool in result1.json['menu']])
 
         # Set threshold to 3
-        r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold='3')
-        assert_equals(r.status, '200 OK')
+        r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold='3', status=200)
 
         # The wiki mount_point should now be at the top level of the menu
         result2 = self.app.get('/p/test/_nav.json')
@@ -1435,6 +1428,5 @@ class TestRestToolGrouping(TestRestApiBase):
 
 class TestInstallableTools(TestRestApiBase):
     def test_installable_tools_response(self):
-        r = self.api_get('/rest/p/test/admin/installable_tools')
-        assert_equals(r.status, '200 OK')
+        r = self.api_get('/rest/p/test/admin/installable_tools', status=200)
         assert_in('External Link', [tool['tool_label'] for tool in r.json['tools']])

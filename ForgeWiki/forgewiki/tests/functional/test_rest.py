@@ -61,8 +61,7 @@ class TestWikiApi(TestRestApiBase):
         assert_equal(len(r['attachments']), 2)
 
     def test_page_does_not_exist(self):
-        r = self.api_get('/rest/p/test/wiki/fake/')
-        assert_equal(r.status_int, 404)
+        r = self.api_get('/rest/p/test/wiki/fake/', status=404)
 
     def test_update_page(self):
         data = {

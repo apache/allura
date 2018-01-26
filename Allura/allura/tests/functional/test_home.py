@@ -258,10 +258,7 @@ class TestProjectHome(TestController):
         })
 
         # Try to access the  installed tool as anon.
-        r = self.app.get('/p/test/test-mount/test-sub/',
-        extra_environ = dict(username='*anonymous'),
-        status=404)
-        assert (r.status_int == 403 or r.status_int == 404)
+        r = self.app.get('/p/test/test-mount/test-sub/', extra_environ=dict(username='*anonymous'), status=404)
 
         # Try to access the installed tool as Admin.
         r = self.app.get('/p/test/test-mount/test-sub/').follow()

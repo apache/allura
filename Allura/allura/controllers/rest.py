@@ -135,13 +135,17 @@ class OAuthNegotiator(object):
             # skip https check if auth invoked from tests
             testing = request.environ.get('paste.testing', False)
             debug = asbool(config.get('debug', False))
-            if not testing and request.scheme != 'https' and not debug:
+            if not any((testing,
+                        request.scheme == 'https',
+                        request.environ.get('HTTP_X_FORWARDED_SSL') == 'on',
+                        request.environ.get('HTTP_X_FORWARDED_PROTO') == 'https',
+                        debug)):
                 request.environ['pylons.status_code_redirect'] = True
-                raise exc.HTTPForbidden
+                raise exc.HTTPUnauthorized('HTTPS is required to use bearer tokens %s' % request.environ)
             access_token = M.OAuthAccessToken.query.get(api_key=access_token)
             if not (access_token and access_token.is_bearer):
                 request.environ['pylons.status_code_redirect'] = True
-                raise exc.HTTPForbidden
+                raise exc.HTTPUnauthorized
             return access_token
         req = oauth.Request.from_request(
             request.method,
@@ -150,23 +154,20 @@ class OAuthNegotiator(object):
             parameters=dict(request.params),
             query_string=request.query_string
         )
-        consumer_token = M.OAuthConsumerToken.query.get(
-            api_key=req['oauth_consumer_key'])
-        access_token = M.OAuthAccessToken.query.get(
-            api_key=req['oauth_token'])
+        consumer_token = M.OAuthConsumerToken.query.get(api_key=req['oauth_consumer_key'])
+        access_token = M.OAuthAccessToken.query.get(api_key=req['oauth_token'])
         if consumer_token is None:
             log.error('Invalid consumer token')
             return None
-            raise exc.HTTPForbidden
         if access_token is None:
             log.error('Invalid access token')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         consumer = consumer_token.consumer
         try:
             self.server.verify_request(req, consumer, access_token.as_token())
         except:
             log.error('Invalid signature')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         return access_token
 
     @expose()
@@ -182,13 +183,13 @@ class OAuthNegotiator(object):
             api_key=req['oauth_consumer_key'])
         if consumer_token is None:
             log.error('Invalid consumer token')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         consumer = consumer_token.consumer
         try:
             self.server.verify_request(req, consumer, None)
         except:
             log.error('Invalid signature')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         req_token = M.OAuthRequestToken(
             consumer_token_id=consumer_token._id,
             callback=req.get('oauth_callback', 'oob')
@@ -203,7 +204,7 @@ class OAuthNegotiator(object):
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
         if rtok is None:
             log.error('Invalid token %s', oauth_token)
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         rtok.user_id = c.user._id
         return dict(
             oauth_token=oauth_token,
@@ -245,14 +246,14 @@ class OAuthNegotiator(object):
             api_key=req['oauth_token'])
         if consumer_token is None:
             log.error('Invalid consumer token')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         if request_token is None:
             log.error('Invalid request token')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         pin = req['oauth_verifier']
         if pin != request_token.validation_pin:
             log.error('Invalid verifier')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         rtok = request_token.as_token()
         rtok.set_verifier(pin)
         consumer = consumer_token.consumer
@@ -260,7 +261,7 @@ class OAuthNegotiator(object):
             self.server.verify_request(req, consumer, rtok)
         except:
             log.error('Invalid signature')
-            raise exc.HTTPForbidden
+            raise exc.HTTPUnauthorized
         acc_token = M.OAuthAccessToken(
             consumer_token_id=consumer_token._id,
             request_token_id=request_token._id,

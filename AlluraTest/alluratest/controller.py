@@ -253,7 +253,7 @@ class TestRestApiBase(TestController):
         if wrap_args:
             params = {wrap_args: params}
         if status is None:
-            status = [200, 201, 301, 302, 400, 403, 404]
+            status = [200, 201, 301, 302]
         params = variabledecode.variable_encode(params, add_repetitions=False)
 
         token = self.token(user).api_key

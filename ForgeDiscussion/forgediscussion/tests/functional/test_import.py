@@ -40,8 +40,8 @@ class TestImportController(TestRestApiBase):  # TestController):
     def test_no_capability(self):
         with h.push_config(config, **{'oauth.can_import_forum': 'some,fake,tokens'}):
             resp = self.api_post('/rest/p/test/discussion/perform_import',
-                                 doc=self.json_text)
-            assert resp.status_int == 403
+                                 doc=self.json_text,
+                                 status=403)
 
         with h.push_config(config, **{'oauth.can_import_forum': self.token('test-admin').api_key}):
             resp = self.api_post('/rest/p/test/discussion/perform_import',
