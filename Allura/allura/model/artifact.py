@@ -177,8 +177,14 @@ class Artifact(MappedClass, SearchIndexable):
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
                 continue
-            if user and not h.has_access(artifact, 'read', user):
-                continue
+            try:
+                if user and not h.has_access(artifact, 'read', user):
+                    continue
+            except Exception:
+                log.debug('Error doing permission check on related artifacts of {}, '
+                          'probably because the "artifact" is a Commit not a real artifact'.format(self.index_id()),
+                          exc_info=True)
+
             # TODO: This should be refactored. We shouldn't be checking
             # artifact type strings in platform code.
             if artifact.type_s == 'Commit' and not artifact.repo:
