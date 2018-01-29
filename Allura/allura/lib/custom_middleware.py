@@ -66,6 +66,8 @@ class StaticFilesMiddleware(object):
             return exc.HTTPNotFound()(environ, start_response)
 
     def get_app(self, environ):
+        if '..' in environ['PATH_INFO']:
+            raise OSError
         for prefix, ep in self.directories:
             if environ['PATH_INFO'].startswith(prefix):
                 filename = environ['PATH_INFO'][len(prefix):]

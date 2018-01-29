@@ -21,6 +21,17 @@ from allura.tests import TestController
 class TestStatic(TestController):
 
     def test_static_controller(self):
+        # package directory
         self.app.get('/nf/_static_/wiki/js/browse.js')
         self.app.get('/nf/_static_/wiki/js/no_such_file.js', status=404)
         self.app.get('/nf/_static_/no_such_tool/js/comments.js', status=404)
+        # main allura resource
+        self.app.get('/nf/_static_/images/user.png')
+
+    def test_path_traversal(self):
+        # package directory
+        self.app.get('/nf/_static_/wiki/../../../setup.py', status=404)
+        self.app.get('/nf/_static_/wiki/..%2F..%2F..%2Fsetup.py', status=404)
+        self.app.get('/nf/_static_/wiki/.%2E/.%2E/.%2E/setup.py', status=404)
+        # main allura resource
+        self.app.get('/nf/_static_/../../../setup.py', status=404)
