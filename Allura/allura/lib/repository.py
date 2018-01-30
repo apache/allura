@@ -141,7 +141,18 @@ class RepositoryApp(Application):
                 SitemapEntry('Forks', c.app.url + 'forks/',
                              small=len(self.repo.forks))
             ]
+
+        has_upstream_repo = False
         if self.repo.upstream_repo.name:
+            try:
+                self.repo.push_upstream_context()
+            except Exception:
+                log.warn('Could not get upstream repo (perhaps it is gone) for: %s %s',
+                         self.repo, self.repo.upstream_repo.name, exc_info=True)
+            else:
+                has_upstream_repo = True
+
+        if has_upstream_repo:
             repo_path_parts = self.repo.upstream_repo.name.strip(
                 '/').split('/')
             links += [
