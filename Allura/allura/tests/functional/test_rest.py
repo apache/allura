@@ -21,6 +21,7 @@ from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
 from ming.odm import ThreadLocalODMSession
+from tg import config
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -45,8 +46,7 @@ class TestRestHome(TestRestApiBase):
         self._patch_token(OAuthAccessToken)
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 403)
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
         OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
 
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
@@ -57,8 +57,7 @@ class TestRestHome(TestRestApiBase):
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
         OAuthAccessToken.query.get.return_value = None
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 403)
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
 
     @mock.patch('allura.controllers.rest.request')
     @td.with_wiki
@@ -98,8 +97,7 @@ class TestRestHome(TestRestApiBase):
         self._patch_token(OAuthAccessToken)
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 403)
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
         OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
 
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
@@ -111,11 +109,11 @@ class TestRestHome(TestRestApiBase):
         request.scheme = 'https'
         self._patch_token(OAuthAccessToken)
         OAuthAccessToken.query.get.return_value = None
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 403)
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
 
     @mock.patch('allura.controllers.rest.request')
     @td.with_wiki
+    @mock.patch.dict(config, debug=False)
     def test_bearer_token_valid_via_headers(self, request):
         user = M.User.by_username('test-admin')
         consumer_token = M.OAuthConsumerToken(
@@ -141,20 +139,20 @@ class TestRestHome(TestRestApiBase):
             'Authorization': 'Bearer {}'.format(token)
         }
         request.scheme = 'https'
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 200)
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=200)
+        # reverse proxy situation
+        request.scheme = 'http'
+        request.environ['paste.testing'] = False
+        request.environ['HTTP_X_FORWARDED_PROTOx'] = 'https'
+        r = self.api_post('/rest/p/test/wiki', access_token='foo', status=200)
 
     def test_bad_path(self):
-        r = self.api_post('/rest/1/test/wiki/')
-        assert r.status_int == 404
-        r = self.api_post('/rest/p/1223/wiki/')
-        assert r.status_int == 404
-        r = self.api_post('/rest/p/test/12wiki/')
-        assert r.status_int == 404
+        r = self.api_post('/rest/1/test/wiki/', status=404)
+        r = self.api_post('/rest/p/1223/wiki/', status=404)
+        r = self.api_post('/rest/p/test/12wiki/', status=404)
 
     def test_no_api(self):
-        r = self.api_post('/rest/p/test/admin/')
-        assert r.status_int == 404
+        r = self.api_post('/rest/p/test/admin/', status=404)
 
     @td.with_wiki
     def test_project_ping(self):
@@ -256,8 +254,7 @@ class TestRestHome(TestRestApiBase):
         assert_equal(r.status_int, 200)
         assert_equal(r.json['title'], 'Home')
 
-        r = self.api_get('/rest/p/admin/installable_tools')
-        assert_equal(r.status_int, 403)
+        r = self.api_get('/rest/p/admin/installable_tools', status=403)
 
         r = self.api_get('/rest/p/admin/installable_tools', user='root')
         assert_equal(r.status_int, 200)
@@ -365,8 +362,7 @@ class TestRestHome(TestRestApiBase):
         with mock.patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
             Provider.get().shortname_validator.to_python.side_effect = Invalid(
                 'name', 'value', {})
-            r = self.api_get('/rest/p/test/')
-            assert r.status_int == 404
+            r = self.api_get('/rest/p/test/', status=404)
 
     @td.with_wiki
     def test_cors_POST_req_blocked_by_csrf(self):

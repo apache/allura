@@ -193,7 +193,6 @@ class Test(TestController):
 
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)
-        assert_equal(r.status_int, 404)
 
     def test_index_bad_url_params(self):
         self.app.get('/blog/?limit=blah&page=2x', status=200)

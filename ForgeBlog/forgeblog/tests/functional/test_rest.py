@@ -95,12 +95,10 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, delete='')
-        r = self.api_get(url)
-        assert_equal(r.status_int, 404)
+        r = self.api_get(url, status=404)
 
     def test_post_does_not_exist(self):
-        r = self.api_get('/rest/p/test/blog/2013/07/fake/')
-        assert_equal(r.status_int, 404)
+        r = self.api_get('/rest/p/test/blog/2013/07/fake/', status=404)
 
     def test_read_permissons(self):
         self.api_post('/rest/p/test/blog/', title='test',

@@ -1597,7 +1597,7 @@ class TestOAuth(TestController):
         Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key'}
         self.app.post('/rest/oauth/request_token',
-                      params={'key': 'value'}, status=403)
+                      params={'key': 'value'}, status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1611,7 +1611,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
-        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=403)
+        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=401)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -1632,7 +1632,7 @@ class TestOAuth(TestController):
         assert_in('api_key', r.body)
 
     def test_authorize_invalid(self):
-        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=403)
+        self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=401)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -1710,7 +1710,7 @@ class TestOAuth(TestController):
             'oauth_token': 'api_key',
             'oauth_verifier': 'good',
         }
-        self.app.get('/rest/oauth/access_token', status=403)
+        self.app.get('/rest/oauth/access_token', status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_no_request(self, Request):
@@ -1726,7 +1726,7 @@ class TestOAuth(TestController):
             description='ctok_desc',
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/rest/oauth/access_token', status=403)
+        self.app.get('/rest/oauth/access_token', status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_access_token_bad_pin(self, Request):
@@ -1749,7 +1749,7 @@ class TestOAuth(TestController):
             validation_pin='good',
         )
         ThreadLocalORMSession.flush_all()
-        self.app.get('/rest/oauth/access_token', status=403)
+        self.app.get('/rest/oauth/access_token', status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1774,7 +1774,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         Server().verify_request.side_effect = ValueError
-        self.app.get('/rest/oauth/access_token', status=403)
+        self.app.get('/rest/oauth/access_token', status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
