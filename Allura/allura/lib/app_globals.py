@@ -252,7 +252,10 @@ class Globals(object):
         def _cache_eps(section_name, dict_cls=dict):
             d = dict_cls()
             for ep in h.iter_entry_points(section_name):
-                value = ep.load()
+                try:
+                    value = ep.load()
+                except Exception:
+                    log.exception('Could not load entry point [%s] %s', section_name, ep)
                 d[ep.name] = value
             return d
 
