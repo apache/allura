@@ -552,7 +552,6 @@ class TestProjectAdmin(TestController):
         setup_trove_categories()
 
         r = self.app.get('/admin/trove')
-        print r
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database API</span>' not in r
         # add a cat
