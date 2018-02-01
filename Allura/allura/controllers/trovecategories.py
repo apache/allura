@@ -78,7 +78,8 @@ class TroveCategoryController(BaseController):
         return dict(
             categories=l,
             selected_cat=selected_cat,
-            hierarchy=hierarchy)
+            hierarchy=hierarchy,
+            kw=kw)
 
     def generate_category(self, category):
         if not category:
@@ -109,6 +110,7 @@ class TroveCategoryController(BaseController):
     def create(self, **kw):
         name = kw.get('categoryname')
         upper_id = int(kw.get('uppercategory_id', 0))
+        shortname = kw.get('shortname', None)
 
         upper = M.TroveCategory.query.get(trove_cat_id=upper_id)
         if upper_id == 0:
@@ -124,13 +126,11 @@ class TroveCategoryController(BaseController):
 
         newid = max(
             [el.trove_cat_id for el in M.TroveCategory.query.find()]) + 1
-        shortname = name.replace(" ", "_").lower()
-        shortname = ''.join([(c if (c in digits or c in lowercase) else "_")
-                             for c in shortname])
+        shortname = h.slugify(shortname or name)[1]
 
         oldcat = M.TroveCategory.query.get(shortname=shortname)
         if oldcat:
-            flash('Category "%s" already exists.' % name, "error")
+            flash('Category "%s" with shortname "%s" already exists.  Try a different, unique shortname' % (name, shortname), "error")
         else:
             category = M.TroveCategory(
                 trove_cat_id=newid,
@@ -144,9 +144,9 @@ class TroveCategoryController(BaseController):
             else:
                 flash('An error occured while crearing the category.', "error")
         if upper:
-            redirect('/categories/%s' % upper.trove_cat_id)
+            redirect('/categories/{}/?categoryname={}&shortname={}'.format(upper.trove_cat_id, name, shortname))
         else:
-            redirect('/categories')
+            redirect('/categories/?categoryname={}&shortname={}'.format(name, shortname))
 
     @expose()
     @require_post()

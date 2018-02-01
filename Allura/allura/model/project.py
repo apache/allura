@@ -296,7 +296,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return result
 
     def troves_by_type(self, trove_type):
-        troves = getattr(self, 'trove_%s' % trove_type)
+        troves = getattr(self, trove_type) if hasattr(self, trove_type) else None
         if troves:
             return TroveCategory.query.find({'_id': {'$in': troves}}).all()
         else:

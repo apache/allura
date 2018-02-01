@@ -24,6 +24,7 @@ import difflib
 import urllib
 import urllib2
 import re
+import unicodedata
 import json
 import logging
 import string
@@ -1294,3 +1295,17 @@ def base64uri(content_or_image, image_format='PNG', mimetype='image/png'):
         content = content_or_image
     data = base64.b64encode(content)
     return 'data:{};base64,{}'.format(mimetype, data)
+
+
+def slugify(name):
+    """
+    Returns a tuple with slug and lowered slug ased on name, according to our specific rules for commercial software.
+    """
+    slug = re.sub(r'(^-)|(-$)', '',  # leading - or trailing - gets removed
+                  unicode(
+                      re.sub(r'[^.\w]+', '-',  # replace non ". alphanum_" sequences into single -
+                             re.sub(r"'", '',  # remove any apostrophes
+                                    unicodedata.normalize('NFKD', name)
+                                    .encode('ascii', 'ignore')))
+                  ))
+    return slug, slug.lower()
