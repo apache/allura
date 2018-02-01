@@ -1,3 +1,118 @@
+Version 1.8.0  (February 2018)
+
+New Features
+
+ * Notify user of password changes, and more login audit logging
+ * [#7908] Docker setup for production environment
+
+Upgrade Instructions
+
+  Run `pip install -r requirements.txt` to install updated dependencies
+
+  To subscribe merge request creators to their own merge requests, run:
+  paster script config-file.ini ../scripts/migrations/032-subscribe-merge-request-submitters.py
+
+Bug Fixes & Minor Improvements
+
+Security:
+ * [#8155] Record logins to audit log
+ * [#8156] Notify user of password changes
+ * [#8158] Add antispam measures to login page
+ * [#8159] Loosen ip requirements for antispam checks
+
+General:
+ * [#6342] Errors in ForgeLinkPattern parsing
+ * [#8160] UnicodeEncodeError processing inbound email
+ * [#8169] Updating markdown cache should not affect last_updated
+ * [#8172] Markdown dialog shows same text repeatedly
+ * [#8176] Don't show related artifacts that user can't view
+ * Make Youtube embed work better with different CSS
+ * Allow a legacy icon (no original stored) to still be served when a larger width is requested
+ * If small icon requested, allow resizing down from old icons even if we don't have newer fullsize original
+ * Add a stylized search button to sidebar search boxes
+ * When reindexing, set c.app based on current artifact to avoid "Ambiguous link..."
+ * Make sure fontawesome never is downloaded twice, since we always provide it
+ * Upgrade to pygments 2.2 (includes faster HTML rendering for long lines)
+
+Code Repositories:
+ * [#7896] Better plaintext mail for commit notifications
+ * [#8048] Better email subjects for merge request updates
+ * [#8157] Improvements to multiple commits in single notification
+ * [#8164] Merge requests should notify the submitter of changes HAS MIGRATION SCRIPT
+ * Handle repo's upstream fork being gone, rather than whole sidebar being blank
+ * Fix git merge requests to not update project last_updated when viewed.
+ * Show a root directory icon in the repo directory breadcrumbs too
+ * If a user can "write" to a MR but not "post" to it, still let them reject their MR
+ * Clarify a bit that a repo refresh is different than just refreshing the page
+ * Put the disabled attr on the merge button, not the icon within it
+ * Handle git 2.x output for last-commit detection
+ * Fix url encoding of diff urls
+ * Ensure markdown always gets unicode input (e.g. for rendering files from a repo)
+ * Fix encoding errors noticed in test.log when running tests with weird-chars.git repo
+
+News:
+ * [#8167] errors when updating blog post, if feed item doesn't exist
+
+Activity:
+ * [#8171] Changing your name should update your activity records
+ * [#8173] Empty activity pages have floating "1"
+
+Wiki:
+ * [#8175] Better permission handling for non-existent wiki pages
+
+Tickets:
+ * [#8177] Search bin counts include deleted items
+ * [#8178] Configurable invalidation delay for bin counts update
+ * Don't error on search_feed if ticket has unresolvable reporter
+ * Avoid errors on ticket search if filter=123 or =foo instead of json dict
+
+Forum:
+ * Better labels & buttons for creating new forum
+ * Cache Thread.last_post, which avoids dupe queries when the prop is accessed frequently, e.g. in allura/templates/widgets/threads_table.html
+ * Include thread subject on spam check (for first post of forum threads)
+
+Admin:
+ * [#8162] When purging a project, admin users missing audit log
+ * [#8174] Improve messaging around icon uploads
+ * Improve user skills interface:
+ * Allow subprojects within User-projects to be removed (since you can create them, after all)
+ * Fix positioning of Create project button
+ * Add username to admin user detail page title
+ * Provide convenience link on admin user detail page to remove all their projects
+ * Stronger delete tool messaging (since some people may use it while on an individual thread page)
+
+For Developers:
+ * [#8161] Switch from React to Preact - or upgrade to React 16
+ * [#8168] Remove TreesDoc usage
+ * [#8179] Use PreferencesProvider for contacts and availability fields
+ * If an entry point is specified incorrectly, provide helpful error message and continue
+ * Flash message positioning moved CSS
+ * Add **kw to various @expose'd methods to avoid errors from extra url params
+ * Make merge instructions textarea height/width controllable by theme CSS
+ * Allow packages to have their own test.ini used automatically from their TestController tests
+ * Fix & clean up breadcrumbs link logic (loop scoping changed in jinja 2.9.x)
+ * Adds subnav to some account pages, allow explicit selection of current nav item
+ * Replace g.url usage with h.absurl; have it always use config.base_url so it works fine behind proxies, etc
+ * Adds extra content block for masthead, Adds optional textbox placeholders
+ * update jinja version; handle new jinja filter args and loop var scoping
+ * Add support for a size param in project_icon_srcs
+ * Tests can sometimes convert markdown in "0 seconds" making the caching not work, so use a slightly negative number
+ * Provide a AuthProvider hook to do things after login
+ * Release script: push single tag instead of all tags
+
+Deployment & Configuration:
+ * Better bearer token https check; Unauthorized instead of Forbidden
+ * Provide a good index for last_post queries, so mongo won't ever pick the 'timestamp' index which can be very slow
+ * Config option to customize the default user avatar image
+ * Remove SF branding from default icon (on profile pages), allow overriding
+ * Upgrade docker-compose file to v2 format
+ * Replace forgemail.url with base_url
+ * Include Date header in email, instead of assuming mail service will add it
+ * Ticket custom fields that are "number" need to be indexed in solr as double, not int
+ * Optional support for much faster cchardet, used in really_unicode()
+ * Use nofollow on raw (download) and mode switching links, to reduce crawling within repos a little bit
+
+
 Version 1.7.0  (June 2017)
 
 New Features
