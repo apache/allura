@@ -602,6 +602,9 @@ class RemoveTroveCategoryForm(ForgeForm):
                     ew.LinkField(
                         text=cat.fullname,
                         href="/categories/%s" % cat.trove_cat_id),
+                    ew.HTMLField(
+                        text=cat.shortname,
+                        attrs={'disabled':True, 'value':cat.shortname}),
                     ew.SubmitButton(
                         show_errors=False,
                         attrs={'value': 'Remove'})],
@@ -629,7 +632,12 @@ class AddTroveCategoryForm(ForgeForm):
             show_errors=False)
         categoryname = ew.TextField(
             label="Category name",
+            attrs={},
             validator=fev.UnicodeString(not_empty=True))
+        shortname = ew.TextField(
+            label="Short Name",
+            validator=fev.UnicodeString(),
+            attrs={'placeholder': 'optional'})
 
     def display(self, **kw):
         upper_category = kw.get('uppercategory_id', 0)

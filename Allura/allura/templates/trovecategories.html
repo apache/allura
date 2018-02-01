@@ -48,6 +48,7 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Short Name</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -67,9 +68,9 @@
   <div class="grid-20">
     <h2>Create a new item in this category</h2>
     {% if selected_cat %}
-      {{g.theme.add_trove_category.display(uppercategory_id=selected_cat.trove_cat_id)}}
+      {{g.theme.add_trove_category.display(uppercategory_id=selected_cat.trove_cat_id, value=kw)}}
     {% else %}
-      {{g.theme.add_trove_category.display(uppercategory_id=0)}}
+      {{g.theme.add_trove_category.display(uppercategory_id=0, value=kw)}}
     {% endif %}
     <div class="grid-20" style="margin-bottom:10px;">
       Are you done creating new categories? <a href="/auth/user_info/skills/{{selected_cat.trove_cat_id}}">Click here</a> to configure your skills!

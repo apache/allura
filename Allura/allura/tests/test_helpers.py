@@ -601,3 +601,15 @@ def test_base64uri_img():
 def test_base64uri_text():
     b64txt = h.base64uri('blah blah blah 123 456 foo bar baz', mimetype='text/plain')
     assert b64txt.startswith('data:text/plain;base64,'), b64txt
+
+
+def test_slugify():
+    assert_equals(h.slugify(u'Foo Bar Bat')[0], 'Foo-Bar-Bat')
+    assert_equals(h.slugify(u'Foo_Bar')[0], 'Foo_Bar')
+    assert_equals(h.slugify(u'Foo   ')[0], 'Foo')
+    assert_equals(h.slugify(u'    Foo   ')[0], 'Foo')
+    assert_equals(h.slugify(u'"    Foo   ')[0], 'Foo')
+    assert_equals(h.slugify(u'Fôö')[0], 'Foo')
+    assert_equals(h.slugify(u'Foo.Bar')[0], 'Foo-Bar')
+    assert_equals(h.slugify(u'Foo.Bar', True)[0], 'Foo.Bar')
+
