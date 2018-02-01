@@ -56,10 +56,9 @@ git commit -m "CHANGES updated for ASF release $VERSION"
 
 DEFAULT_KEY=`grep ^default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
 if [[ -z "$DEFAULT_KEY" ]]; then
-    DEFAULT_KEY=`gpg --list-secret-keys | head -3 | tail -1 | sed -e 's/^.*\///' | sed -e 's/ .*//'`
+    DEFAULT_KEY=`gpg --list-secret-keys | egrep '[0-9A-F]{8}' | head -1 | sed -e 's/\W//g'`
 fi
 prompt KEY "PGP Key to sign with" "$DEFAULT_KEY"
-FINGERPRINT=`gpg --fingerprint $KEY | grep fingerprint | cut -d' ' -f 17-20 | sed -e 's/ //g'`
 
 prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin (see scripts/src-license-check to create RAT report)"
 
@@ -112,8 +111,8 @@ Checksums:
 The KEYS file can be found at:
   http://www.apache.org/dist/allura/KEYS
 
-The release has been signed with key ($KEY):
-  http://pgp.mit.edu:11371/pks/lookup?op=vindex&search=0x$FINGERPRINT
+The release has been signed with key $KEY:
+  http://pgp.mit.edu:11371/pks/lookup?op=vindex&search=0x$KEY
 
 Source corresponding to this release can be found at:
   Commit: $COMMIT_SHA
