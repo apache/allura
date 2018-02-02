@@ -94,7 +94,7 @@
       </form>
     </div>
   </div>
-  {% for base in base_troves %}
+  {% for base in base_troves if hasattr(c.project, "trove_{}".format(base.shortname))%}
     {{show_trove_base_cat(base)}}
   {% endfor %}
 {% endblock %}

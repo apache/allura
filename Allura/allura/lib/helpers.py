@@ -1297,13 +1297,14 @@ def base64uri(content_or_image, image_format='PNG', mimetype='image/png'):
     return 'data:{};base64,{}'.format(mimetype, data)
 
 
-def slugify(name):
+def slugify(name, allow_periods=False):
     """
-    Returns a tuple with slug and lowered slug ased on name, according to our specific rules for commercial software.
+    Returns a tuple with slug and lowered slug based on name
     """
+    dash_collapse_pattern = r'[^.\w]+' if allow_periods else r'[^\w]+'
     slug = re.sub(r'(^-)|(-$)', '',  # leading - or trailing - gets removed
                   unicode(
-                      re.sub(r'[^.\w]+', '-',  # replace non ". alphanum_" sequences into single -
+                      re.sub(dash_collapse_pattern, '-',  # replace non ". alphanum_" sequences into single -
                              re.sub(r"'", '',  # remove any apostrophes
                                     unicodedata.normalize('NFKD', name)
                                     .encode('ascii', 'ignore')))

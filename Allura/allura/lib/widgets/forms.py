@@ -599,12 +599,12 @@ class RemoveTroveCategoryForm(ForgeForm):
                 show_errors=False,
                 show_label=False,
                 fields=[
-                    ew.HTMLField(
-                        text=cat.shortname,
-                        attrs={'disabled':True, 'value':cat.shortname}),
                     ew.LinkField(
                         text=cat.fullname,
                         href="/categories/%s" % cat.trove_cat_id),
+                    ew.HTMLField(
+                        text=cat.shortname,
+                        attrs={'disabled':True, 'value':cat.shortname}),
                     ew.SubmitButton(
                         show_errors=False,
                         attrs={'value': 'Remove'})],
@@ -643,8 +643,6 @@ class AddTroveCategoryForm(ForgeForm):
         upper_category = kw.get('uppercategory_id', 0)
 
         self.fields['uppercategory_id'].attrs['value'] = upper_category
-        # self.fields['shortname'].attrs['value'] = kw.get('shortname', '')
-        # self.fields['categoryname'].attrs['value'] = kw.get('categoryname', '')
         return super(ForgeForm, self).display(**kw)
 
     @ew_core.core.validator

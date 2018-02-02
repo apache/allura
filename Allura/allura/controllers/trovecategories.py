@@ -144,9 +144,9 @@ class TroveCategoryController(BaseController):
             else:
                 flash('An error occured while crearing the category.', "error")
         if upper:
-            redirect('/categories/{}/?categoryname={}&shortname={}'.format(upper.trove_cat_id, name, shortname))
+            redirect(u'/categories/{}/?categoryname={}&shortname={}'.format(upper.trove_cat_id, name, shortname))
         else:
-            redirect('/categories/?categoryname={}&shortname={}'.format(name, shortname))
+            redirect(u'/categories/?categoryname={}&shortname={}'.format(name, shortname))
 
     @expose()
     @require_post()
