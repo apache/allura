@@ -97,5 +97,6 @@ class SCMCommitBrowserWidget(ew_core.Widget):
     )
 
     def resources(self):
+        yield ew.JSLink('allura/js/hidpi-canvas.min.js')
         yield ew.JSLink('js/commit_browser.js')
         yield ew.CSSLink('css/commit_browser.css')

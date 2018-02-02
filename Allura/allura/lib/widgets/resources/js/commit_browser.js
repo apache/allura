@@ -84,8 +84,6 @@ if($('#commit_graph')){
     var commit_rows = [];
     var taken_coords = {};
 
-    canvas.height = 300;
-    highlighter.height = canvas.height;
     highlighter_ctx.fillStyle = "#ccc";
 
     function setHeight(cnt) {
@@ -101,8 +99,7 @@ if($('#commit_graph')){
     }
 
     function drawGraph(offset) {
-        // Clear the canvas and set the contetx
-        var canvas_ctx = canvas.getContext('2d');
+        // Clear the canvas
         highlighter_ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas_ctx.fillStyle = "rgb(0,0,0)";
