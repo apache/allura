@@ -35,6 +35,7 @@ Allura/allura/public/nf/fonts/
 Allura/allura/public/nf/js/browser-polyfill.min.js
 Allura/allura/public/nf/js/chosen.jquery.min.js
 Allura/allura/public/nf/js/create-react-class.min.js
+Allura/allura/public/nf/js/hidpi-canvas.min.js
 Allura/allura/public/nf/js/jquery-base.js
 Allura/allura/public/nf/js/jquery-ui.min.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
