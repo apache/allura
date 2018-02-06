@@ -43,7 +43,7 @@ class CreateNeighborhoodCommand(base.Command):
             name=shortname,
             url_prefix='/' + shortname + '/',
             features=dict(private_projects=False,
-                          max_projects=500,
+                          max_projects=None,
                           css='none',
                           google_analytics=False))
         project_reg = plugin.ProjectRegistrationProvider.get()
