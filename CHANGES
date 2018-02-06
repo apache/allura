@@ -15,6 +15,7 @@ Upgrade Instructions
 Bug Fixes & Minor Improvements
 
 Security:
+ * [#8180] StaticFilesMiddleware allows directory traversal CVE-2018-1299
  * [#8155] Record logins to audit log
  * [#8156] Notify user of password changes
  * [#8158] Add antispam measures to login page
