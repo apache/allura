@@ -86,3 +86,6 @@ def test_neighborhood():
 
     neighborhood.prohibited_tools = 'wiki, tickets'
     assert neighborhood.get_prohibited_tools() == ['wiki', 'tickets']
+
+    # Check properties
+    assert neighborhood.shortname == "p"
