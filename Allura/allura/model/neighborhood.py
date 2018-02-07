@@ -108,6 +108,10 @@ class Neighborhood(MappedClass):
     def acl(self):
         return self.neighborhood_project.acl
 
+    @property
+    def shortname(self):
+        return self.url_prefix.strip('/')
+
     def url(self):
         url = self.url_prefix
         if url.startswith('//'):
