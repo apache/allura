@@ -1337,6 +1337,11 @@ class TestPreferences(TestController):
 class TestPasswordReset(TestController):
     test_primary_email = 'testprimaryaddr@mail.com'
 
+    def setUp(self):
+        super(TestPasswordReset, self).setUp()
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_email_unconfirmed(self, gen_message_id, sendmail):
@@ -1413,20 +1418,38 @@ class TestPasswordReset(TestController):
     def test_password_reset(self, gen_message_id, sendmail):
         self.app.get('/')  # establish session
         user = M.User.query.get(username='test-admin')
-        email = M.EmailAddress.find(
-            {'claimed_by_user_id': user._id}).first()
+        email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
         old_pw_hash = user.password
-        with td.audits('Password recovery link sent to: '+ email.email, user=True):
+
+        # request a reset
+        with td.audits('Password recovery link sent to: ' + email.email, user=True):
             r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                                '_session_id': self.app.cookies['_session_id'],
                                                                })
+        # confirm some fields
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert hash is not None
         assert hash_expiry is not None
 
+        # confirm email sent
+        text = '''Your username is test-admin
+
+To reset your password on %s, please visit the following URL:
+
+%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
+        sendmail.post.assert_called_once_with(
+            sender='noreply@localhost',
+            toaddr=email.email,
+            fromaddr=u'"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
+            reply_to=config['forgemail.return_path'],
+            subject='Allura Password recovery',
+            message_id=gen_message_id(),
+            text=text)
+
+        # load reset form and fill it out
         r = self.app.get('/auth/forgotten_password/%s' % hash)
         assert_in('Enter a new password for: test-admin', r)
         assert_in('New Password:', r)
@@ -1436,30 +1459,30 @@ class TestPasswordReset(TestController):
         with td.audits('Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
+
+        # confirm password changed and works
         user = M.User.query.get(username='test-admin')
         assert_not_equal(old_pw_hash, user.password)
         provider = plugin.LocalAuthenticationProvider(None)
         assert_true(provider._validate_password(user, new_password))
 
-        text = '''Your username is test-admin
-
-To reset your password on %s, please visit the following URL:
-
-%s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
-
-        sendmail.post.assert_called_once_with(
-            sender='noreply@localhost',
-            toaddr=email.email,
-            fromaddr=u'"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
-            reply_to=config['forgemail.return_path'],
-            subject='Allura Password recovery',
-            message_id=gen_message_id(),
-            text=text)
+        # confirm reset fields cleared
         user = M.User.query.get(username='test-admin')
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
         assert_equal(hash, '')
         assert_equal(hash_expiry, '')
+
+        # confirm can log in now in same session
+        r = r.follow()
+        assert 'Log Out' not in r, r
+        form = r.forms[0]
+        encoded = self.app.antispam_field_names(r.form)
+        form[encoded['username']] = 'test-admin'
+        form[encoded['password']] = new_password
+        r = form.submit(status=302)
+        r = r.follow()
+        assert 'Log Out' in r, r
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
