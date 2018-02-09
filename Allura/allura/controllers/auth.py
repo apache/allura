@@ -174,6 +174,7 @@ class AuthController(BaseController):
         user = self._validate_hash(hash)
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
+        user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
         h.auditlog_user('Password changed (through recovery process)', user=user)
         flash('Password changed')
         redirect('/auth/?return_to=/')  # otherwise the default return_to would be the forgotten_password referrer page
