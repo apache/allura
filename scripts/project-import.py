@@ -178,6 +178,7 @@ class Project(col.MappingSchema):
     trove_natlanguages = TroveTranslations(missing=None)
     trove_environments = TroveUIs(missing=None)
     tool_data = col.SchemaNode(col.Mapping(unknown='preserve'), missing={})
+    icon = col.SchemaNode(col.Str(), missing=None)
     # more fields are added dynamically to the schema in main()
 
 
@@ -276,6 +277,11 @@ def create_project(p, nbhd, options):
                      award_id=a._id,
                      granted_to_project_id=project._id,
                      granted_by_neighborhood_id=nbhd._id)
+
+    if p.icon:
+        with open(p.icon) as icon_file:
+            project.save_icon(p.icon, icon_file)
+
     project.notifications_disabled = False
     with h.push_config(c, project=project, user=p.admin):
         ThreadLocalORMSession.flush_all()
