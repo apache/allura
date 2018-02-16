@@ -24,6 +24,7 @@ from email.MIMEText import MIMEText
 import mock
 from nose.tools import raises, assert_equal, assert_false, assert_true
 from ming.orm import ThreadLocalORMSession
+from tg import config as tg_config
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
@@ -55,6 +56,12 @@ class TestReactor(unittest.TestCase):
     @raises(AddressException)
     def test_parse_address_bad_domain(self):
         parse_address('foo@bar.com')
+
+    @td.with_wiki
+    @mock.patch.dict(tg_config, {'forgemail.domain.alternates': '.secondary.com .tertiary.com'})
+    def test_parse_address_alternate_domain(self):
+        parse_address('foo@wiki.test.p.secondary.com')
+        parse_address('foo@wiki.test.p.tertiary.com')
 
     @raises(AddressException)
     def test_parse_address_bad_project(self):

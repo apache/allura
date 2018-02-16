@@ -38,7 +38,9 @@ log = logging.getLogger(__name__)
 RE_MESSAGE_ID = re.compile(r'<(?:[^>]*/)?([^>]*)>')
 config = ConfigProxy(
     common_suffix='forgemail.domain',
-    return_path='forgemail.return_path')
+    common_suffix_alt='forgemail.domain.alternates',
+    return_path='forgemail.return_path',
+)
 EMAIL_VALIDATOR = fev.Email(not_empty=True)
 
 
@@ -100,9 +102,12 @@ def is_autoreply(msg):
 def parse_address(addr):
     userpart, domain = addr.split('@')
     # remove common domain suffix
-    if not domain.endswith(config.common_suffix):
+    for suffix in [config.common_suffix] + aslist(config.common_suffix_alt):
+        if domain.endswith(suffix):
+            domain = domain[:-len(suffix)]
+            break
+    else:
         raise exc.AddressException, 'Unknown domain: ' + domain
-    domain = domain[:-len(config.common_suffix)]
     path = '/'.join(reversed(domain.split('.')))
     project, mount_point = h.find_project('/' + path)
     if project is None:
