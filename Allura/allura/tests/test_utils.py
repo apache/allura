@@ -120,7 +120,7 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(
             ValueError,
             utils.AntiSpam.validate_request,
-            r, now=time.time() + 24 * 60 * 60 + 1)
+            r, now=time.time() + 24 * 60 * 60 * 4 + 1)
 
     def test_valid_submit(self):
         form = dict(a='1', b='2')
