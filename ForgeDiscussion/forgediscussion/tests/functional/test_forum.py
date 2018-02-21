@@ -523,6 +523,7 @@ class TestForum(TestController):
         assert 'name="delete"' not in r
         assert 'name="approve"' not in r
         assert 'name="spam"' not in r
+        assert "Post content" not in r
         assert_equal(spam_checker.check.call_args[0][0], 'Test Thread\nPost content')
 
         # assert unapproved thread replies do not appear
@@ -558,6 +559,22 @@ class TestForum(TestController):
         assert link in r, link
         link = '<a href="%s">[%s]</a>' % (post2.thread.url() + '?limit=25#' + post2.slug, post2.shorthand_id())
         assert link in r, link
+
+        # approve posts
+        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+            'post-0._id': post._id,
+            'post-0.checked': 'on',
+            'approve': 'Approve Marked'})
+        post = FM.ForumPost.query.get(text='Post content')
+
+        # assert anon can't edit their original post
+        r = self.app.get(thread.request.url,
+                    extra_environ=dict(username='*anonymous'))
+        assert 'Post content' in r
+        post_container = r.html.find('div', {'id': post.slug})
+        btn_edit = post_container.find('a', {'title': 'Edit'})
+        assert not btn_edit
+
 
     @td.with_tool('test2', 'Discussion', 'discussion')
     @mock.patch('allura.model.discuss.g.spam_checker')

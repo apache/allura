@@ -726,8 +726,9 @@ class Post(Message, VersionedArtifact, ActivityObject):
         author = self.author()
         author_role = ProjectRole.by_user(
             author, project=self.project, upsert=True)
-        security.simple_grant(
-            self.acl, author_role._id, 'moderate')
+        if not author.is_anonymous():
+            security.simple_grant(
+                self.acl, author_role._id, 'moderate')
         self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
                 and author._id != None):
