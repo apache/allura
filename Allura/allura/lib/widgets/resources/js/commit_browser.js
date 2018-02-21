@@ -164,7 +164,7 @@ if($('#commit_graph')){
         }
         pending = true;
         drawGraph(offset);
-        var params = {'limit': 500};
+        var params = {};
         if (data['next_commit']) {
             params['start'] = data['next_commit'];
         }
