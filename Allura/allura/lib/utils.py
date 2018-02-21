@@ -371,7 +371,7 @@ class AntiSpam(object):
                     now = time.time()
                 if obj.timestamp > now + 5:
                     raise ValueError('Post from the future')
-                if now - obj.timestamp > 24 * 60 * 60:
+                if now - obj.timestamp > int(pylons.config.get('spam.form_post_expiration', 24 * 60 * 60)):
                     raise ValueError('Post from the distant past')
                 if obj.spinner != expected_spinner:
                     raise ValueError('Bad spinner value')
