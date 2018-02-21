@@ -271,7 +271,7 @@ class Application(object):
     permissions_desc = {
         'unmoderated_post': 'Post comments without moderation.',
         'post': 'Post comments, subject to moderation.',
-        'moderate': 'Moderate comments.',
+        'moderate': 'Approve and edit all comments.',
         'configure': 'Set label and options. Requires admin permission.',
         'admin': 'Set permissions.',
     }
