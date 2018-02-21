@@ -25,16 +25,7 @@ from allura.lib import utils, security
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
 
 
-
-
 log = logging.getLogger(__name__)
-
-
-def add(acl, role):
-    if role not in acl:
-        acl.append(role)
-
-# migration script for change write permission to create + update
 
 
 def arguments():
@@ -53,11 +44,10 @@ def main():
     c.project = None # to avoid error in Artifact.__mongometa__.before_save
     project = M.Project.query.get(shortname=args.shortname)
     tool = project.app_config_by_tool_type(args.toolname)
-    
+
     for chunk in utils.chunked_find(ForumPost, {'app_config_id':tool._id}):
         for p in chunk:
             has_access = bool(security.has_access(p, 'moderate', M.User.anonymous()))
-            print "{} has access? {}".format(p.text, has_access)
 
             if has_access:
                 anon_role_id = None
@@ -67,9 +57,10 @@ def main():
                         anon_role_id = acl.role_id
 
                 if anon_role_id:
+                    print "revoking anon moderate privelege for '{}'".format(p._id)
                     security.simple_revoke(p.acl, anon_role_id, 'moderate')
                     session(p).flush(p)
-                
+
 
 if __name__ == '__main__':
     main()
