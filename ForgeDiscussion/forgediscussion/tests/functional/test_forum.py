@@ -846,6 +846,38 @@ class TestForum(TestController):
             'div', {'class': 'discussion-post'})
         assert_equal(len(posts), 2)
 
+    def test_rename_thread(self):
+        # make the topic
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                params[field['name']] = field.get('value') or ''
+        params[f.find('textarea')['name']] = 'aaa aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style': 'width: 90%'})['name']] = 'first subject'
+
+        resp = self.app.post(
+            '/discussion/save_new_topic', params=params).follow()
+        url = resp.request.url
+        resp = self.app.get(url)
+
+        assert 'first subject' in resp
+
+        f = resp.html.find('div', {'id':'mod_thread_form'}).find('form')
+        params=dict(
+            flags='',
+            discussion='general',
+            subject='changed subject')
+        resp = self.app.post(str(f.get('action')), params=params).follow()
+        resp = self.app.get(url)
+
+        assert 'first subject' not in resp.html
+        assert 'changed subject' in resp
+
+
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebar = r.html.find('div', {'id': 'sidebar'})

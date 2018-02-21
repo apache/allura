@@ -191,6 +191,7 @@ class ForumThreadController(ThreadController):
             tasks.calc_forum_stats.post(forum.shortname)
             self.thread.set_forum(forum)
         self.thread.flags = args.pop('flags', [])
+        self.thread.subject = args.pop('subject', self.thread.subject)
         redirect(self.thread.url())
 
     @expose('json:')
