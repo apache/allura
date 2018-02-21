@@ -726,7 +726,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         author = self.author()
         author_role = ProjectRole.by_user(
             author, project=self.project, upsert=True)
-        if True or not author.is_anonymous():
+        if not author.is_anonymous():
             security.simple_grant(
                 self.acl, author_role._id, 'moderate')
         self.commit()
