@@ -91,6 +91,7 @@ class ModerateThread(CsrfForm):
     submit_text = 'Save Changes'
 
     class fields(ew_core.NameList):
+        subject = ew.InputField(label='Change subject:', attrs={'style':'width: 50%'})
         discussion = _ForumSelector(label='Move to different forum:')
         flags = ew.CheckboxSet(label='Options', options=['Sticky', 'Announcement'])
 
