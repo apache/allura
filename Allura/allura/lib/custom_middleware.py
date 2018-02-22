@@ -260,6 +260,25 @@ class SSLMiddleware(object):
         return resp(environ, start_response)
 
 
+class SetRequestHostFromConfig(object):
+    """
+    Set request properties for host and port, based on the 'base_url' config setting.
+    This permits code to use request.host etc to construct URLs correctly, even when behind a proxy, like in docker
+    """
+    def __init__(self, app, config):
+        self.app = app
+        self.config = config
+
+    def __call__(self, environ, start_response):
+        environ['HTTP_HOST'] = tg.config['base_url'].split('://')[1]
+        # setting environ['wsgi.url_scheme'] would make some links use the right http/https scheme, but is not safe
+        # since the app may accept both http and https inbound requests, and many places in code need to check that
+        # potentially could set wsgi.url_scheme based on 'HTTP_X_FORWARDED_SSL' == 'on' and/or
+        #   'HTTP_X_FORWARDED_PROTO' == 'https'
+        resp = self.app
+        return resp(environ, start_response)
+
+
 class AlluraTimerMiddleware(TimerMiddleware):
 
     def timers(self):

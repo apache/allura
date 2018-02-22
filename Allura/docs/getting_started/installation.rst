@@ -44,6 +44,19 @@ you're in a directory that Virtual Box shares through to the VM (by default, any
    Then run :code:`export COMPOSE_FILE=docker-compose-prod.yml` and continue running the following commands.
    This will give you HTTPS, settings for better performance and no debugging, and only expose necessary ports.
 
+.. note::
+
+   If you are running Docker inside a VM (or access it by a different hostname for any reason), edit
+   :file:`Allura/docker-dev.ini` and add these lines after :code:`[app:main]`
+
+   .. code-block:: ini
+
+      domain = hostname-or-ip
+      base_url = http://hostname-or-ip:8080
+
+   Replace :kbd:`hostname-or-ip` with the actual hostname or external IP address.  If you change this setting later,
+   just run :kbd:`docker-compose restart web`
+
 
 Run the following commands in your allura directory:
 

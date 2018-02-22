@@ -58,6 +58,7 @@ from allura.lib.custom_middleware import CSRFMiddleware
 from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
+from allura.lib.custom_middleware import SetRequestHostFromConfig
 from allura.lib import helpers as h
 
 __all__ = ['make_app']
@@ -177,8 +178,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         # Converts exceptions to HTTP errors, shows traceback in debug mode
         # don't use TG footer with extra CSS & images that take time to load
         tg.error.footer_html = '<!-- %s %s -->'
-        app = tg.error.ErrorHandler(
-            app, global_conf, **config['pylons.errorware'])
+        app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+
+        app = SetRequestHostFromConfig(app, config)
 
         # Redirect some status codes to /error/document
         if asbool(config['debug']):

@@ -19,13 +19,11 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% if page == 0 %}
-  {% set params = None %}
+  {% set params = '' %}
 {% else %}
-  {% set params = dict(page=page, limit=limit) %}
+  {% set params = '?page={}&limit={}'.format(page, limit) %}
 {% endif %}
-{% set shortlink_url = tg.url(
-  request.scheme + '://' + request.host + url.current(), params)
-  + '#' + value.slug %}
+{% set shortlink_url = h.absurl(url.current() + params + '#' + value.slug) %}
 
 <div>
   <div id="{{value.slug}}" class="discussion-post{%if value.is_meta %} meta_post{% endif %}">
