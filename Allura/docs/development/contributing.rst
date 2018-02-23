@@ -186,11 +186,23 @@ foreground::
     # taskd
     pkill "^taskd"; paster taskd development.ini --nocapture
 
-Make a request to the web app, and when your line of code is hit, a debug
+Then make a request to the web app, and when your line of code is hit, a debug
 session will start on the console where the process is running.
 
 For more information about using ``pdb``, see the `official documentation
-<http://docs.python.org/2/library/pdb.html>`_.
+<http://docs.python.org/2/library/pdb.html>`_.  ``ipdb`` is version of ``pdb`` with
+support for IPython's tab completion, syntax highlighting etc.  Other debugger packages such
+as ``pudb`` are also available.
+
+.. note::
+
+   To do this with docker, the commands are::
+
+       docker-compose run web pip install ipdb
+       docker-compose stop web taskd
+       docker-compose run --service-ports web gunicorn --reload --paste Allura/docker-dev.ini
+       docker-compose run taskd paster taskd docker-dev.ini --nocapture
+
 
 Testing
 -------
