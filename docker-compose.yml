@@ -27,6 +27,7 @@ services:
     volumes: &volumes
       - .:/allura  # Allura source code from local host
       - /allura-data:/allura-data  # for virtualenv, scm repos, etc
+      - /allura-data/root/home:/root  # for persistent home dir, mainly for pudb
     links:
       - mongo
       - solr
