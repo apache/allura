@@ -48,7 +48,9 @@ class _ThreadsTable(DW._ThreadsTable):
 class ThreadSubscriptionForm(DW.SubscriptionForm):
 
     class fields(ew_core.NameList):
-        threads = _ThreadsTable()
+        # Careful! using the same name as the prop on the model will invoke the RelationalProperty,
+        # causing all related entities to be (re)fetched.
+        _threads = _ThreadsTable()
         page_list = ffw.PageList()
         page_size = ffw.PageSize()
 

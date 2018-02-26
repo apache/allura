@@ -221,7 +221,7 @@ class SubscriptionForm(ew.SimpleForm):
     class fields(ew_core.NameList):
         page_list = ffw.PageList()
         page_size = ffw.PageSize()
-        threads = _ThreadsTable()
+        _threads = _ThreadsTable()
 
     def resources(self):
         for r in super(SubscriptionForm, self).resources():

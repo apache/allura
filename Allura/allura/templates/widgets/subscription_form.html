@@ -24,7 +24,7 @@
     <div class="pagination_size">{{ pager_widget_output }}</div>
   {% endif %}
   <form method="{{method}}" action="{{action}}" {% if enctype %}enctype="{{enctype}}"{% endif %} class="follow_form">
-    {{widget.fields['threads'].display(value=threads)}}
+    {{widget.fields['_threads'].display(value=threads)}}
     {% if threads and not c.user.is_anonymous() and
             not c.subscribed and not c.tool_subscribed %}
     <p>
