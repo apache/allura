@@ -221,6 +221,9 @@ class SubscriptionForm(ew.SimpleForm):
     class fields(ew_core.NameList):
         page_list = ffw.PageList()
         page_size = ffw.PageSize()
+
+        # Careful! using the same name as the prop on the model will invoke the RelationalProperty,
+        # causing all related entities to be (re)fetched.
         _threads = _ThreadsTable()
 
     def resources(self):
