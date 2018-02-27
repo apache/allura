@@ -310,7 +310,7 @@ class AuthController(BaseController):
     @staticmethod
     def _verify_return_to(return_to):
         # protect against any "open redirect" attacks using an external URL
-        if not return_to:
+        if not return_to or '\n' in return_to:
             return_to = '/'
         rt_host = urlparse(urljoin(config['base_url'], return_to)).netloc
         base_host = urlparse(config['base_url']).netloc

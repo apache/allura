@@ -946,6 +946,18 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']))
         assert_equal(r.location, 'http://localhost/')
 
+    def test_no_injected_headers_in_return_to(self):
+        r = self.app.get('/auth/logout').follow()
+        r = self.app.post('/auth/do_login', params=dict(
+            username='test-user', password='foo',
+            return_to='/foo\nContent-Length: 777',
+            # WebTest actually will raise an error if there's an invalid header (webob itself does not)
+            _session_id=self.app.cookies['_session_id']),
+            antispam=True
+        )
+        assert_equal(r.location, 'http://localhost/')
+        assert_not_equal(r.content_length, 777)
+
 
 class TestPreferences(TestController):
     @td.with_user_project('test-admin')
