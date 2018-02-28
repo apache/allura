@@ -134,7 +134,7 @@ def create_multipart_msg(text, metalink=None):
     html_msg = mail_util.encode_email_part(html_text, 'html')
 
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
-    return multi_msg, html_msg, plain_msg
+    return multi_msg, plain_msg
 
 
 @task
@@ -149,7 +149,6 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     '''
     from allura import model as M
     addrs_plain = []
-    addrs_html = []
     addrs_multi = []
     if fromaddr is None:
         fromaddr = g.noreply
@@ -187,21 +186,16 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
                 continue
             if user.get_pref('email_format') == 'plain':
                 addrs_plain.append(addr)
-            elif user.get_pref('email_format') == 'html':
-                addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
 
-    multi_msg, html_msg, plain_msg = create_multipart_msg(text, metalink)
+    multi_msg, plain_msg = create_multipart_msg(text, metalink)
     smtp_client.sendmail(
         addrs_multi, fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg, sender=sender, references=references)
     smtp_client.sendmail(
         addrs_plain, fromaddr, reply_to, subject, message_id,
         in_reply_to, plain_msg, sender=sender, references=references)
-    smtp_client.sendmail(
-        addrs_html, fromaddr, reply_to, subject, message_id,
-        in_reply_to, html_msg, sender=sender, references=references)
 
 
 @task
@@ -245,7 +239,7 @@ def sendsimplemail(
         else:
             toaddr = user.email_address_header()
 
-    multi_msg, html_msg, plain_msg = create_multipart_msg(text)
+    multi_msg, plain_msg = create_multipart_msg(text)
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
         in_reply_to, multi_msg, sender=sender, references=references, cc=cc, to=toaddr)

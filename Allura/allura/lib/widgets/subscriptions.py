@@ -66,8 +66,7 @@ class SubscriptionForm(CsrfForm):
                 show_label=False,
                 options=[
                     ew.Option(py_value='plain', label='Plain Text'),
-                    ew.Option(py_value='html', label='HTML'),
-                    ew.Option(py_value='both', label='Combined')]),
+                    ew.Option(py_value='both', label='HTML')]),
         ]
 
 
