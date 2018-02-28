@@ -29,7 +29,7 @@
   {% if subscriptions %}
     <p><em>Mark tools that you want to subscribe to. Unmark tools that you want to unsubscribe from. Press 'Save' button.</em></p>
         <div class="grid-24">
-        {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions, email_format=c.user.preferences.email_format))}}
+        {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions, email_format=c.user.get_pref('email_format')))}}
         </div>
   {% else%}
     <p>No subscriptions.</p>

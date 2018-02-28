@@ -23,6 +23,7 @@ import stat
 import unittest
 import pkg_resources
 import datetime
+import email.iterators
 
 import mock
 from pylons import tmpl_context as c, app_globals as g
@@ -451,10 +452,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         with mock.patch('allura.tasks.mail_tasks.smtp_client.sendmail') as sendmail:
             while M.MonQTask.run_ready():  # have to run them all multiple times since one task creates another
                 pass
+        multipart_msg = sendmail.call_args_list[0][0][6]
         text_msg = sendmail.call_args_list[1][0][6]
-        html_msg = sendmail.call_args_list[2][0][6]
         text_body = text_msg.get_payload(decode=True)
-        html_body = html_msg.get_payload(decode=True)
+        html_body = email.iterators.typed_subpart_iterator(multipart_msg, 'text', 'html').next()\
+            .get_payload(decode=True)
 
         # no extra HTML in commit messages
         assert_in('''-----

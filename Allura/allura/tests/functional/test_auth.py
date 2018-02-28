@@ -736,11 +736,6 @@ class TestAuth(TestController):
     def test_format_email(self):
         self.app.get('/')  # establish session
         self.app.post('/auth/subscriptions/update_subscriptions',
-                      params={'email_format': 'html', 'subscriptions': '',
-                              '_session_id': self.app.cookies['_session_id']})
-        r = self.app.get('/auth/subscriptions/')
-        assert '<option selected value="html">HTML</option>' in r
-        self.app.post('/auth/subscriptions/update_subscriptions',
                       params={'email_format': 'plain', 'subscriptions': '',
                               '_session_id': self.app.cookies['_session_id']})
         r = self.app.get('/auth/subscriptions/')
@@ -749,7 +744,7 @@ class TestAuth(TestController):
                       params={'email_format': 'both', 'subscriptions': '',
                               '_session_id': self.app.cookies['_session_id']})
         r = self.app.get('/auth/subscriptions/')
-        assert '<option selected value="both">Combined</option>' in r
+        assert '<option selected value="both">HTML</option>' in r
 
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
