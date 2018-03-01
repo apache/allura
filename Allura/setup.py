@@ -106,6 +106,7 @@ setup(
     [allura.spam]
     akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
     mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
+    stopforumspam = allura.lib.spam.stopforumspamfilter:StopForumSpamSpamFilter
 
     [allura.phone]
     nexmo = allura.lib.phone.nexmo:NexmoPhoneService
