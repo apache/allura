@@ -23,7 +23,7 @@ import unittest
 from ming.odm import ThreadLocalORMSession
 from nose.tools import assert_equal
 
-from allura.lib.spam import SpamFilter
+from allura.lib.spam import SpamFilter, ChainedSpamFilter
 from allura import model as M
 from allura.model.artifact import SpamCheckResult
 from alluratest.controller import setup_basic_test
@@ -32,8 +32,19 @@ from forgewiki import model as WM
 
 class MockFilter(SpamFilter):
 
+    def __init__(self, config):
+        self.config = config
+
     def check(*args, **kw):
         raise Exception("test exception")
+
+
+class MockFilter2(SpamFilter):
+
+    def __init__(self, config):
+        self.config = config
+
+    def check(*args, **kw):
         return True
 
 
@@ -82,3 +93,20 @@ class TestSpamFilterFunctional(object):
         assert_equal(len(results), 1)
         assert_equal(results[0].result, True)
         assert_equal(results[0].user.username, 'test-user')
+
+
+class TestChainedSpamFilter(object):
+
+    def test(self):
+        config = {'spam.method': 'mock1 mock2', 'spam.settingA': 'bcd'}
+        entry_points = {'mock1': MockFilter, 'mock2': MockFilter2}
+        checker = SpamFilter.get(config, entry_points)
+        assert isinstance(checker, ChainedSpamFilter)
+        assert len(checker.filters) == 2, checker.filters
+        assert_equal(checker.filters[0].config, {'spam.method': 'mock1', 'spam.settingA': 'bcd'})
+        assert_equal(checker.filters[1].config, {'spam.method': 'mock2', 'spam.settingA': 'bcd'})
+
+        assert checker.check()  # True because first filter errors out, and 2nd returns True
+
+        checker.submit_spam('some text')
+        checker.submit_ham('some text')

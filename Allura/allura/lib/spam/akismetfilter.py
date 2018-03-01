@@ -38,13 +38,8 @@ class AkismetSpamFilter(SpamFilter):
 
     """Spam checking implementation via Akismet service.
 
-    To enable Akismet spam filtering in your Allura instance, first
-    enable the entry point in setup.py::
-
-        [allura.spam]
-        akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
-
-    Then include the following parameters in your .ini file::
+    To enable Akismet spam filtering in your Allura instance, first pip install akismet (see requirements-optional.txt)
+    and then include the following parameters in your .ini file::
 
         spam.method = akismet
         spam.key = <your Akismet key here>

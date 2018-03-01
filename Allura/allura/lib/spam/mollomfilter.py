@@ -38,13 +38,8 @@ class MollomSpamFilter(SpamFilter):
 
     """Spam checking implementation via Mollom service.
 
-    To enable Mollom spam filtering in your Allura instance, first
-    enable the entry point in setup.py::
-
-        [allura.spam]
-        mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
-
-    Then include the following parameters in your .ini file::
+    To enable Mollom spam filtering in your Allura instance, first pip install PyMollom (see requirements-optional.txt)
+    and then include the following parameters in your .ini file::
 
         spam.method = mollom
         spam.public_key = <your Mollom public key here>

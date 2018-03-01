@@ -256,7 +256,8 @@ class Globals(object):
                     value = ep.load()
                 except Exception:
                     log.exception('Could not load entry point [%s] %s', section_name, ep)
-                d[ep.name] = value
+                else:
+                    d[ep.name] = value
             return d
 
         class entry_point_loading_dict(dict):
