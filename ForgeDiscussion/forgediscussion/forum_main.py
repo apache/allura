@@ -329,7 +329,7 @@ class ForumAdminController(DefaultAdminController):
                 else:
                     forum.acl = []
         flash('Forums updated')
-        redirect(request.referrer)
+        redirect(request.referer or '/')
 
     @h.vardec
     @expose()

@@ -115,7 +115,7 @@ class AttachmentController(BaseController):
             self.handle_post(delete, **kw)
             if is_ajax(request):
                 return
-            redirect(request.referer)
+            redirect(request.referer or '/')
         if self.artifact.deleted:
             raise exc.HTTPNotFound
         embed = False

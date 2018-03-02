@@ -1214,7 +1214,7 @@ class BinController(BaseController, AdminControllerMixin):
     def delbin(self, bin=None):
         require(lambda: bin.app_config_id == self.app.config._id)
         bin.delete()
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @without_trailing_slash
     @h.vardec
@@ -1624,16 +1624,16 @@ class TicketController(BaseController, FeedController):
             tracker = M.AppConfig.query.get(_id=t_id)
             if tracker is None:
                 flash('Select valid tracker', 'error')
-                redirect(request.referer)
+                redirect(request.referer or '/')
 
             if tracker == self.ticket.app.config:
                 flash('Ticket already in a selected tracker', 'info')
-                redirect(request.referer)
+                redirect(request.referer or '/')
 
             if not has_access(tracker, 'admin')():
                 flash('You should have admin access to destination tracker',
                       'error')
-                redirect(request.referer)
+                redirect(request.referer or '/')
 
             new_ticket = self.ticket.move(tracker)
             c.app.globals.invalidate_bin_counts()
@@ -1721,7 +1721,7 @@ class TrackerAdminController(DefaultAdminController):
         for k, v in kw.iteritems():
             self.app.config.options[k] = v
         flash('Options updated')
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose()
     @require_post()
@@ -1731,7 +1731,7 @@ class TrackerAdminController(DefaultAdminController):
                 self.app.globals['show_in_search'][column] = True
             else:
                 self.app.globals['show_in_search'][column] = False
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose()
     def update_tickets(self, **post_data):
@@ -1824,7 +1824,7 @@ class TrackerAdminController(DefaultAdminController):
 
         self.app.globals.custom_fields = custom_fields
         flash('Fields updated')
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
 
 class RootRestController(BaseController, AppRestControllerMixin):

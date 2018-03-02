@@ -120,7 +120,7 @@ class AdminController(DefaultAdminController):
 
     @with_trailing_slash
     def index(self, **kw):
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose()
     @require_post()

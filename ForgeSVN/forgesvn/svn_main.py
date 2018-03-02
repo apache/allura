@@ -181,7 +181,7 @@ class SVNImportController(BaseController, AdminControllerMixin):
             M.Notification.post_user(
                 c.user, self.app.repo, 'error',
                 text="Can't import into non empty repository.")
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
 
 class SVNCommitBrowserController(BaseController):

@@ -104,6 +104,7 @@ class TestDeleteProjects(TestController):
     @patch('allura.lib.helpers.request', autospec=True)
     def test_userproject_does_disable(self, req, req2):
         req.remote_addr = None
+        req.user_agent = 'MozFoo'
         req2.url = None
         self.run_script(['u/test-user'])
         assert M.User.by_username('test-user').disabled
@@ -149,6 +150,7 @@ class TestDeleteProjects(TestController):
     @patch('allura.lib.helpers.request', autospec=True)
     def test_disable_users(self, req, req2):
         req.remote_addr = None
+        req.user_agent = 'MozFoo'
         req2.url = None
         self._disable_users(disable=True)
 
