@@ -136,7 +136,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             shortname=forum)
         if discussion.deleted and not has_access(c.app, 'configure')():
             flash('This forum has been removed.')
-            redirect(request.referrer)
+            redirect(request.referer or '/')
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]

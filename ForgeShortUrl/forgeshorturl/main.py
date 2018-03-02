@@ -200,7 +200,7 @@ class ShortURLAdminController(DefaultAdminController):
 
     @expose()
     def index(self, **kw):
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @without_trailing_slash
     @expose('json:')
@@ -228,7 +228,7 @@ class ShortURLAdminController(DefaultAdminController):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
                     error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')
-                redirect(request.referer)
+                redirect(request.referer or '/')
 
             shorturl = ShortUrl.query.find({
                 'app_config_id': self.app.config._id,
@@ -237,7 +237,7 @@ class ShortURLAdminController(DefaultAdminController):
             if shorturl is not None:
                 if not update:
                     flash('Short url %s already exists' % short_url, 'error')
-                    redirect(request.referer)
+                    redirect(request.referer or '/')
                 else:
                     msg = ('update short url %s from %s to %s'
                            % (short_url, shorturl.full_url, full_url))
@@ -258,7 +258,7 @@ class ShortURLAdminController(DefaultAdminController):
             shorturl.last_updated = datetime.utcnow()
 
             M.AuditLog.log(msg)
-            redirect(request.referer)
+            redirect(request.referer or '/')
         return dict(
             app=self.app,
             url_len=len(ShortUrl.build_short_url(c.app, short_name='')))

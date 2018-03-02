@@ -95,7 +95,7 @@ class DiscussionController(BaseController, FeedController):
             self.moderate = ModerationController(self)
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @h.vardec
     @expose()
@@ -110,7 +110,7 @@ class DiscussionController(BaseController, FeedController):
                 thread.unsubscribe()
             session(self.M.Thread)._get().skip_mod_date = True
             session(self.M.Thread)._get().skip_last_updated = True
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -212,7 +212,7 @@ class ThreadController(BaseController, FeedController):
                     show_moderate=kw.get('show_moderate'))
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @memorable_forget()
     @h.vardec
@@ -233,7 +233,7 @@ class ThreadController(BaseController, FeedController):
         if self.thread.ref:
             require_access(self.thread.ref.artifact, 'post')
         self.thread.labels = labels.split(',')
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose()
     def flag_as_spam(self, **kw):
@@ -264,14 +264,14 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     if not kw['text']:
         flash('Your post was not saved. You must provide content.',
               'error')
-        redirect(request.referer)
+        redirect(request.referer or '/')
     file_info = kw.get('file_info', None)
     p = thread.add_post(parent_id=parent_post_id, **kw)
     p.add_multiple_attachments(file_info)
     if thread.artifact:
         thread.artifact.mod_date = datetime.utcnow()
     flash('Message posted')
-    redirect(request.referer)
+    redirect(request.referer or '/')
 
 
 class PostController(BaseController):
@@ -327,7 +327,7 @@ class PostController(BaseController):
                                        target=self.post.thread.artifact or self.post.thread,
                                        related_nodes=[self.post.app_config.project],
                                        tags=['comment'])
-            redirect(request.referer)
+            redirect(request.referer or '/')
         elif request.method == 'GET':
             if self.post.deleted:
                 raise exc.HTTPNotFound
@@ -357,7 +357,7 @@ class PostController(BaseController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def update_markdown(self, text=None, **kw):  
+    def update_markdown(self, text=None, **kw):
         if has_access(self.post, 'moderate'):
             self.post.text = text
             self.post.edit_count = self.post.edit_count + 1
@@ -393,11 +393,11 @@ class PostController(BaseController):
         if r in utils.get_reaction_emoji_list():
             self.post.post_reaction(r, c.user)
         else:
-            status = 'error' 
+            status = 'error'
         return dict(status=status, counts=self.post.react_counts)
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @memorable_forget()
     @h.vardec
@@ -439,7 +439,7 @@ class PostController(BaseController):
     def attach(self, file_info=None):
         require_access(self.post, 'moderate')
         self.post.add_multiple_attachments(file_info)
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose()
     def _lookup(self, id, *remainder):
@@ -539,7 +539,7 @@ class ModerationController(BaseController):
                         posted.approve()
                         g.spam_checker.submit_ham(posted.text, artifact=posted, user=posted.author())
                         posted.thread.post_to_feed(posted)
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
 
 class PostRestController(PostController):

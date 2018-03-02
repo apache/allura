@@ -265,7 +265,7 @@ class AuthController(BaseController):
             flash('Verification link sent')
         else:
             flash('No such address', 'error')
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     def _verify_addr(self, addr, do_auth_check=True):
         confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
@@ -681,7 +681,7 @@ class PreferencesController(BaseController):
     @require_post()
     def user_message(self, allow_user_messages=False):
         c.user.set_pref('disable_user_messages', not allow_user_messages)
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose('jinja:allura:templates/user_totp.html')
     @without_trailing_slash
@@ -1204,7 +1204,7 @@ class SubscriptionsController(BaseController):
         if email_format:
             c.user.set_pref('email_format', email_format)
 
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
 
 class OAuthController(BaseController):

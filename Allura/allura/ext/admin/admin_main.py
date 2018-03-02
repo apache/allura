@@ -707,7 +707,7 @@ class ProjectAdminController(BaseController):
             re.search(c.project.url() + r'(admin\/|)' + tool[0]['mount_point']+ r'\/*', request.referer):
             # Redirect to root when deleting currect module
             redirect('../')
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None, with_attachments=False):

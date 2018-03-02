@@ -19,7 +19,7 @@ import logging
 
 from tg import expose
 from webob import exc
-from tg.controllers.dispatcher import ObjectDispatcher
+from crank.objectdispatcher import ObjectDispatcher
 from tg import redirect, flash
 from pylons import tmpl_context as c
 
@@ -40,7 +40,7 @@ class BaseController(object):
             msg = '{} rate limit exceeded. '.format(message)
             log.warn(msg + c.app.config.url())
             flash(msg + 'Please try again later.', 'error')
-            redirect(redir)
+            redirect(redir or '/')
 
 
 class DispatchIndex(object):

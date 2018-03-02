@@ -266,7 +266,7 @@ class RepoAdminController(DefaultAdminController):
     def set_default_branch_name(self, branch_name=None, **kw):
         if (request.method == 'POST') and branch_name:
             self.repo.set_default_branch(branch_name)
-            redirect(request.referer)
+            redirect(request.referer or '/')
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
@@ -302,7 +302,7 @@ class RepoAdminController(DefaultAdminController):
             flash(message,
                   'error' if 'Invalid' in message else 'ok')
 
-        redirect(request.referer)
+        redirect(request.referer or '/')
 
 
 class RepoAdminRestController(BaseController):
