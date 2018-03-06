@@ -80,7 +80,6 @@ tar czf $RELEASE_FILE $RELEASE_BASE
 rm -rf $RELEASE_FILE_EXTRACTED
 
 gpg --default-key $KEY --armor --output $RELEASE_FILE.asc --detach-sig $RELEASE_FILE
-MD5_CHECKSUM=`cd $RELEASE_DIR ; md5sum $RELEASE_FILENAME` ; echo "$MD5_CHECKSUM" > $RELEASE_FILE.md5
 SHA1_CHECKSUM=`cd $RELEASE_DIR ; shasum -a1 $RELEASE_FILENAME` ; echo "$SHA1_CHECKSUM" > $RELEASE_FILE.sha1
 SHA512_CHECKSUM=`cd $RELEASE_DIR ; shasum -a512 $RELEASE_FILENAME` ; echo "$SHA512_CHECKSUM" > $RELEASE_FILE.sha512
 
@@ -104,7 +103,6 @@ Source tarball, signature and checksums are available at:
   https://dist.apache.org/repos/dist/dev/allura/
 
 Checksums:
-  MD5:    $MD5_CHECKSUM
   SHA1:   $SHA1_CHECKSUM
   SHA512: $SHA512_CHECKSUM
 
