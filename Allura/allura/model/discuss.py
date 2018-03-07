@@ -326,11 +326,19 @@ class Thread(Artifact, ActivityObject):
         if message_id is not None:
             kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if ignore_security or not self.is_spam(post) and has_access(self, 'unmoderated_post')():
+
+        # unmoderated post -> autoapprove
+        # unmoderated post but is spammy -> don't approve it, it goes into moderation
+        # moderated post -> moderation
+        # moderated post but is spammy -> mark as spam
+        spammy = self.is_spam(post)
+        if ignore_security or (not spammy and has_access(self, 'unmoderated_post')):
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
             post.approve(file_info, notify=notify,
                          notification_text=notification_text)
+        elif not has_access(self, 'unmoderated_post') and spammy:
+            post.spam(submit_spam_feedback=False)  # no feedback since we're marking as spam automatically not manually
         else:
             self.notify_moderators(post)
         return post
@@ -786,9 +794,10 @@ class Post(Message, VersionedArtifact, ActivityObject):
             else:  # Send if no extra checks required
                 n.send_simple(artifact.monitoring_email)
 
-    def spam(self):
+    def spam(self, submit_spam_feedback=True):
         self.status = 'spam'
-        g.spam_checker.submit_spam(self.text, artifact=self, user=self.author())
+        if submit_spam_feedback:
+            g.spam_checker.submit_spam(self.text, artifact=self, user=self.author())
         session(self).flush(self)
         self.thread.update_stats()
 
