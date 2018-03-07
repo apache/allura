@@ -652,12 +652,6 @@ class RootController(BaseController, FeedController):
     def _check_security(self):
         require_access(c.app, 'read')
 
-    def rate_limit(self, redir='..'):
-        if TM.Ticket.is_limit_exceeded(c.app.config, user=c.user):
-            msg = 'Ticket creation rate limit exceeded. '
-            log.warn(msg + c.app.config.url())
-            flash(msg + 'Please try again later.', 'error')
-            redirect(redir)
 
     @expose('json:')
     def bin_counts(self, *args, **kw):
@@ -905,7 +899,7 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
     def new(self, description=None, summary=None, labels=None, **kw):
         require_access(c.app, 'create')
-        self.rate_limit(redir='..')
+        self.rate_limit(TM.Ticket, 'Ticket creation', redir='..')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew', '').strip()
         return dict(action=c.app.config.url() + 'save_ticket',
@@ -942,7 +936,7 @@ class RootController(BaseController, FeedController):
             require_access(ticket, 'update')
         else:
             require_access(c.app, 'create')
-            self.rate_limit(redir='.')
+            self.rate_limit(TM.Ticket, 'Ticket creation', redir='.')
             ticket = TM.Ticket.new()
         g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')

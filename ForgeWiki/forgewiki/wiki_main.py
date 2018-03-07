@@ -530,16 +530,9 @@ class PageController(BaseController, FeedController):
             if self.page.deleted:
                 require_access(self.page, 'delete')
         elif has_access(c.app, 'create'):
-            self.rate_limit()
+            self.rate_limit(WM.Page, 'Page create/edit')
         else:
             raise exc.HTTPNotFound
-
-    def rate_limit(self):
-        if WM.Page.is_limit_exceeded(c.app.config, user=c.user):
-            msg = 'Page create/edit rate limit exceeded. '
-            log.warn(msg + c.app.config.url())
-            flash(msg + 'Please try again later.', 'error')
-            redirect('..')
 
     def fake_page(self):
         return dict(
@@ -613,7 +606,7 @@ class PageController(BaseController, FeedController):
             page = self.page
         else:
             page = self.fake_page()
-        self.rate_limit()  # check before trying to save
+        self.rate_limit(WM.Page, 'Page create/edit')  # check before trying to save
         c.confirmation = W.confirmation
         c.markdown_editor = W.markdown_editor
         c.attachment_add = W.attachment_add
@@ -719,7 +712,7 @@ class PageController(BaseController, FeedController):
             flash('You must provide a title for the page.', 'error')
             redirect('edit')
         title = title.replace('/', '-')
-        self.rate_limit()
+        self.rate_limit(WM.Page, 'Page create/edit')
         if not self.page:
             # the page doesn't exist yet, so create it
             self.page = WM.Page.upsert(self.title)
