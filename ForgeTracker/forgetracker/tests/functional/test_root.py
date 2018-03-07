@@ -2592,7 +2592,7 @@ class TestEmailMonitoring(TrackerTestController):
     @patch('forgetracker.model.ticket.Notification.send_direct')
     @patch('allura.model.discuss.Thread.is_spam')
     def test_notifications_moderators(self, is_spam, send_direct):
-        is_spam.return_value = True
+        is_spam.return_value = False
         self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
         self.app.post('/doc-bugs/1/update_ticket', {
             'summary': 'test moderation',
@@ -2600,6 +2600,19 @@ class TestEmailMonitoring(TrackerTestController):
         }, extra_environ=dict(username='*anonymous'))
         send_direct.assert_called_with(
             str(M.User.query.get(username='test-admin')._id))
+
+    @td.with_tool('test', 'Tickets', 'doc-bugs', post_install_hook=post_install_hook)
+    @patch('forgetracker.model.ticket.Notification.send_direct')
+    @patch('allura.model.discuss.Thread.is_spam')
+    def test_notifications_off_spam(self, is_spam, send_direct):
+        # like test_notifications_moderators but no notification because it goes straight to spam status
+        is_spam.return_value = True
+        self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
+        self.app.post('/doc-bugs/1/update_ticket', {
+            'summary': 'test moderation',
+            'comment': 'test unmoderated post'
+        }, extra_environ=dict(username='*anonymous'))
+        assert not send_direct.called
 
     @patch('forgetracker.model.ticket.Notification.send_simple')
     def test_notifications_new(self, send_simple):

@@ -491,17 +491,18 @@ class TestForum(TestController):
         opt_auth = select.find(text='*authenticated').parent
         opt_admin = select.find(text='Admin').parent
         r = self.app.post('/admin/discussion/update', params={
-            'card-0.value': opt_admin['value'],
             'card-0.id': 'admin',
+            'card-0.value': opt_admin['value'],
             'card-4.id': 'read',
             'card-4.value': opt_anon['value'],
+            'card-3.id': 'post',
             'card-3.value': opt_auth['value'],
             'card-3.new': opt_anon['value'],
-            'card-3.id': 'post'})
+        })
 
     @mock.patch('allura.model.discuss.g.spam_checker')
     def test_anonymous_post(self, spam_checker):
-        spam_checker.check.return_value = True
+        spam_checker.check.return_value = False
         self._set_anon_allowed()
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
