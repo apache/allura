@@ -677,6 +677,7 @@ class TestModelCache(unittest.TestCase):
 
 
 class TestMergeRequest(object):
+
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
@@ -685,10 +686,19 @@ class TestMergeRequest(object):
             downstream={'commit_id': '12345'},
             request_number=1,
         )
-        self.mr.app = mock.Mock(forkable=True, url='/mock-app-url/')
-        self.mr.app.repo.commit.return_value = mock.Mock(_id='09876')
-        self.mr.merge_allowed = mock.Mock(return_value=True)
-        self.mr.discussion_thread = mock.Mock()
+        self._set_mr_mock_attrs(self.mr)
+
+    def _set_mr_mock_attrs(self, mr):
+        mr.app = mock.Mock(forkable=True, url='/mock-app-url/')
+        mr.app.repo.commit.return_value = mock.Mock(_id='09876')
+        mr.merge_allowed = mock.Mock(return_value=True)
+        mr.discussion_thread = mock.Mock()
+
+    def _reload_mr_from_db(self, mr):
+        session(mr).refresh(mr)
+        mr = M.MergeRequest.query.get(_id=mr._id)
+        self._set_mr_mock_attrs(mr)
+        return mr
 
     def test_can_merge_cache_key(self):
         key = self.mr.can_merge_cache_key()
@@ -720,9 +730,16 @@ class TestMergeRequest(object):
 
     @mock.patch('allura.tasks.repo_tasks.can_merge', autospec=True)
     def test_can_merge_cached(self, can_merge_task):
+        # this test has to flush `mr` to the db and then reload it after changes, because set_can_merge_cache
+        # does a $set to the db and doesn't update the in-memory copy
+        session(self.mr).flush(self.mr)
+
         self.mr.set_can_merge_cache(False)
+        self.mr = self._reload_mr_from_db(self.mr)
         assert_equal(self.mr.can_merge(), False)
+
         self.mr.set_can_merge_cache(True)
+        self.mr = self._reload_mr_from_db(self.mr)
         assert_equal(self.mr.can_merge(), True)
         assert_equal(can_merge_task.post.call_count, 0)
 

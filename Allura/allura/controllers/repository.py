@@ -466,15 +466,12 @@ class MergeRequestController(object):
         if self.req.description != kw['description']:
             changes['Description'] = h.unidiff(self.req.description, kw['description'])
             self.req.description = kw['description']
-        with self.req.push_downstream_context():
-            self.req.downstream['commit_id'] = c.app.repo.commit(kw['source_branch'])._id
 
         if changes:
             self.req.add_meta_post(changes=changes)
             g.director.create_activity(c.user, 'updated', self.req,
                                        related_nodes=[c.project], tags=['merge-request'])
-
-        redirect(self.req.url())
+        self.refresh()
 
     @expose()
     @require_post()
@@ -493,6 +490,7 @@ class MergeRequestController(object):
     def refresh(self, **kw):
         require_access(self.req, 'read')
         with self.req.push_downstream_context():
+            self.req.new_commits = None  # invalidate this cache
             self.req.downstream['commit_id'] = c.app.repo.commit(self.req.source_branch)._id
         redirect(self.req.url())
 
