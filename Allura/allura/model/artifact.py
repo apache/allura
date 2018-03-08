@@ -646,6 +646,7 @@ class VersionedArtifact(Artifact):
         if 'user' in kwargs:
             def distinct_artifacts_by_user():
                 # count distinct items, not total (e.g. many edits to a single wiki page doesn't count against you)
+                # query history here, as regular base artifacts have no author information
                 HC = cls.__mongometa__.history_class
                 artifacts = HC.query.find({'author.id': kwargs['user']._id}).distinct('artifact_id')
                 """

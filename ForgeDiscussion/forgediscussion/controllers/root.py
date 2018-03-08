@@ -123,6 +123,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @validate(W.new_topic, error_handler=create_topic)
     @AntiSpam.validate('Spambot protection engaged')
     def save_new_topic(self, subject=None, text=None, forum=None, **kw):
+        self.rate_limit(model.ForumPost, 'Topic creation', request.referer)
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
