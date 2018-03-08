@@ -802,6 +802,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     summary = FieldProperty(str)
     description = FieldProperty(str)
     can_merge_cache = FieldProperty({str: bool})
+    new_commits = FieldProperty([S.Anything], if_missing=None)  # don't access directly, use `commits` property
 
     @property
     def activity_name(self):
@@ -839,13 +840,17 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     def push_downstream_context(self):
         return h.push_context(self.downstream.project_id, self.downstream.mount_point)
 
-    @LazyProperty
+    @property
     def commits(self):
-        return self._commits()
+        if self.new_commits is not None:
+            return self.new_commits
 
-    def _commits(self):
         with self.push_downstream_context():
-            return c.app.repo.merge_request_commits(self)
+            # update the cache key only, being careful not to touch anything else that ming will try to flush later
+            # this avoids race conditions with the `set_can_merge_cache()` caching and clobbering fields
+            new_commits = c.app.repo.merge_request_commits(self)
+            self.query.update({'$set': {'new_commits': new_commits}})
+            return new_commits
 
     @classmethod
     def upsert(cls, **kw):
@@ -908,11 +913,12 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return self.can_merge_cache.get(key)
 
     def set_can_merge_cache(self, val):
-        from allura import model as M
         key = self.can_merge_cache_key()
-        with utils.skip_mod_date(M.MergeRequest):
-            self.can_merge_cache[key] = val
-            session(self).flush(self)
+        # update the cache key only, being careful not to touch anything else that ming will try to flush later
+        # this avoids race conditions with the `commits()` caching and clobbering fields
+        can_merge_cache = self.can_merge_cache._deinstrument()
+        can_merge_cache[key] = val
+        self.query.update({'$set': {'can_merge_cache': can_merge_cache}})
 
     def can_merge(self):
         """
