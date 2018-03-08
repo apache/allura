@@ -135,9 +135,9 @@ class TestDiscuss(TestDiscussBase):
         with h.push_config(config, **{'allura.rate_limits_per_user': '{"3600": 2}'}):
             for i in range(0, 2):
                 self._make_post('This is a post {}'.format(i))
-            with assert_raises(AppError):
-                self._make_post('This is a post that should fail.')
-            return 'foo'
+
+            r = self._make_post('This is a post that should fail.')
+            assert 'rate limit exceeded' in r.body
 
     def test_permissions(self):
         thread_url = self._thread_link()
