@@ -189,7 +189,7 @@
           var discussion_holder = $('#discussion_holder');
           var ticket_content = $('#ticket_content');
           var title_holder = $('h2.dark');
-          var original_title = title_holder.text();
+          var original_title = title_holder.html();
           var title_actions = title_holder.find('small');
           var vote = $('#vote');
 
@@ -218,7 +218,8 @@
             $(this).trigger('editTicket');
             return false;
           });
-          if ($('div > div.error').hasClass('error')){
+          var flashErrors = $('div > div.error');
+          if (flashErrors.hasClass('error') && flashErrors.html().indexOf('rate limit') < 0){
             $('a.edit_ticket').click();
           }
           $('a.cancel_form').click(function () {
@@ -226,7 +227,7 @@
             view_holder.show();
             discussion_holder.show();
             ticket_content.show();
-            title_holder.text(original_title);
+            title_holder.html(original_title);
             title_actions.appendTo(title_holder);
             title_actions.show();
             vote.show();
