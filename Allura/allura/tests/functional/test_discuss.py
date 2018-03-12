@@ -131,7 +131,7 @@ class TestDiscuss(TestDiscussBase):
         assert submit_spam.call_args[0] == (
             'This is a new post',), submit_spam.call_args[0]
 
-    def test_rate_limit(self):
+    def test_rate_limit_comments(self):
         with h.push_config(config, **{'allura.rate_limits_per_user': '{"3600": 2}'}):
             for i in range(0, 2):
                 r = self._make_post('This is a post {}'.format(i))

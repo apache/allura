@@ -25,7 +25,7 @@ import time
 import PIL
 from mock import Mock, patch
 from pylons import tmpl_context as c
-from nose.tools import eq_, assert_equals
+from nose.tools import eq_, assert_equals, assert_raises
 from IPython.testing.decorators import skipif, module_not_available
 from datadiff import tools as dd
 from webob import Request
@@ -34,6 +34,7 @@ from ming.orm import ThreadLocalORMSession
 from jinja2 import Markup
 
 from allura import model as M
+from allura.lib import exceptions as exc
 from allura.lib import helpers as h
 from allura.lib.search import inject_user
 from allura.lib.security import has_access
@@ -613,3 +614,34 @@ def test_slugify():
     assert_equals(h.slugify(u'Foo.Bar')[0], 'Foo-Bar')
     assert_equals(h.slugify(u'Foo.Bar', True)[0], 'Foo.Bar')
 
+
+class TestRateLimit(TestCase):
+    rate_limits = '{"60": 1, "120": 3, "900": 5, "1800": 7, "3600": 10, "7200": 15, "86400": 20, "604800": 50, "2592000": 200}'
+    key_comment = 'allura.rate_limits_per_user'
+
+    def test(self):
+        # Keys are number of seconds, values are max number allowed until that time period is reached
+        with h.push_config(h.tg.config, **{self.key_comment: self.rate_limits}):
+            now = datetime.utcnow()
+
+            start_date = now - timedelta(seconds=30)
+            h.rate_limit(self.key_comment, 0, start_date)
+            with assert_raises(exc.RatelimitError):
+                h.rate_limit(self.key_comment, 1, start_date)
+
+            start_date = now - timedelta(seconds=61)
+            h.rate_limit(self.key_comment, 1, start_date)
+            h.rate_limit(self.key_comment, 2, start_date)
+            with assert_raises(exc.RatelimitError):
+                h.rate_limit(self.key_comment, 3, start_date)
+
+            start_date = now - timedelta(seconds=86301)
+            h.rate_limit(self.key_comment, 19, start_date)
+            with assert_raises(exc.RatelimitError):
+                h.rate_limit(self.key_comment, 20, start_date)
+
+            start_date = now - timedelta(seconds=86401)
+            h.rate_limit(self.key_comment, 21, start_date)
+            h.rate_limit(self.key_comment, 49, start_date)
+            with assert_raises(exc.RatelimitError):
+                h.rate_limit(self.key_comment, 50, start_date)
