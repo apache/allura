@@ -19,8 +19,10 @@ from urllib import unquote
 from datetime import datetime
 import logging
 
-from tg import expose, redirect, validate, request, flash
-from tg.decorators import with_trailing_slash
+from tg import expose, redirect, validate, request, flash, response
+from tg.decorators import with_trailing_slash, before_render, before_validate
+from decorator import decorator
+
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 
@@ -32,7 +34,7 @@ from allura import model as M
 from base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import require_access
 
 from allura.lib.widgets import discuss as DW
@@ -202,6 +204,7 @@ class ThreadController(BaseController, FeedController):
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)
 
+    @memorable_forget()
     @h.vardec
     @expose()
     @require_post()

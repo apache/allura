@@ -215,6 +215,7 @@ class AuthenticationProvider(object):
         self.session.invalidate()
         self.session.save()
         response.delete_cookie('allura-loggedin')
+        response.set_cookie('memorable_forget', '/')
 
     def validate_password(self, user, password):
         '''Check that provided password matches actual user password

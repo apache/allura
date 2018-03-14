@@ -101,7 +101,7 @@ class GenericTicketForm(ew.SimpleForm):
     def fields(self):
         fields = [
             ew.TextField(name='summary', label='Title',
-                         attrs={'style': 'width: 425px',
+                         attrs={'style': 'width: 425px', 'class':'memorable',
                                 'placeholder': 'Title'},
                          validator=fev.UnicodeString(
                              not_empty=True, messages={

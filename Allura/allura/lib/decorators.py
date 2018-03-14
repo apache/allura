@@ -32,6 +32,8 @@ from tg import request, redirect, session, config
 from tg.render import render
 from webob import exc
 from pylons import tmpl_context as c
+from pylons import response
+from webob.exc import HTTPFound, WSGIHTTPException
 
 from allura.lib import helpers as h
 from allura.lib import utils
@@ -246,3 +248,51 @@ def memoize(func, *args):
         result = func(*args)
         dic[args] = result
         return result
+
+
+def memorable_forget():
+    """
+    Decorator to mark a controller action as needing to "forget" remembered input values on the next
+    page render, if we detect that the form post was processed successfully
+    """
+
+    def _ok_to_forget(response, controller_result, raised):
+        """
+        Look for signals that say it's probably ok to forget remembered inputs for the current form.
+        Checks here will need to be expanded for controller actions that behave differently
+        than others upon successful processing of their particular request
+        """
+        # if there is a flash message with type "ok", then we can forget.
+        if response.headers:
+            set_cookie = response.headers.get('Set-Cookie', '')
+            if 'status%22%3A%20%22ok' in set_cookie:
+                return True
+
+        # if the controller raised a 302, we can assume the value will be remembered by the app
+        # if needed, and forget.
+        if raised and isinstance(raised, HTTPFound):
+            return True
+
+        return False
+
+    def forget(controller_result, raised=None):
+        """
+        Check if the form's inputs can be forgotten, and set the cookie to forget if so.
+        :param res: the result of the controller action
+        :param raised: any error (redirect or exception) raised by the controller action
+        """
+        if _ok_to_forget(response, controller_result, raised):
+            response.set_cookie('memorable_forget', request.path)
+
+    @decorator
+    def _inner(func, *args, **kwargs):
+        res, raised = (None, None)
+        try:
+            res = func(*args, **kwargs)
+            forget(res)
+            return res
+        except WSGIHTTPException as ex:
+            forget(None, ex)
+            raise ex
+
+    return _inner

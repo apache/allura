@@ -40,7 +40,7 @@ from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.utils import JSONForExport
 from allura.lib.search import search_app
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib import exceptions as forge_exc
@@ -291,6 +291,7 @@ class RootController(BaseController, FeedController):
         c.form = W.new_post_form
         return dict(post=post)
 
+    @memorable_forget()
     @expose()
     @require_post()
     @validate(form=W.edit_post_form, error_handler=new)
@@ -386,6 +387,7 @@ class PostController(BaseController, FeedController):
         result = h.diff_text(p1.text, p2.text)
         return dict(p1=p1, p2=p2, edits=result)
 
+    @memorable_forget()
     @expose()
     @require_post()
     @validate(form=W.edit_post_form, error_handler=edit)

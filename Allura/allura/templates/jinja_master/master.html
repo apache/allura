@@ -40,6 +40,7 @@
        any css.  (Unlike other html files which are the top-level file and extend this master.html) #}
     {% do g.register_forge_css('css/navbar.css') %}
 {% endif %}
+{% do g.register_forge_js('js/memorable.js') %}
 {% do g.resource_manager.register_widgets(c) %}
 {# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
@@ -186,6 +187,7 @@
         }).blur(function () {
             $(this).tooltipster('hide');
         });
+
     });
 </script>
 </body>

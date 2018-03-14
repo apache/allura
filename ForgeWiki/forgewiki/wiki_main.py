@@ -36,7 +36,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_app
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import require_access, has_access
 from allura.lib.utils import is_ajax, JSONForExport
 from allura.lib import exceptions as forge_exc
@@ -699,6 +699,7 @@ class PageController(BaseController, FeedController):
         self.page.commit()
         return dict(location='.')
 
+    @memorable_forget()
     @without_trailing_slash
     @h.vardec
     @expose()

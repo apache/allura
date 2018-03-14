@@ -55,7 +55,7 @@ from allura.app import (
 )
 from allura.lib.search import search_artifact, SearchError
 from allura.lib.solr import escape_solr_arg
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import (require_access, has_access, require,
                                  require_authenticated)
 from allura.lib import widgets as w
@@ -916,6 +916,7 @@ class RootController(BaseController, FeedController):
         """Static page explaining markdown."""
         return dict()
 
+    @memorable_forget()
     @expose()
     @h.vardec
     @require_post()
@@ -1429,6 +1430,7 @@ class TicketController(BaseController, FeedController):
             post_data['labels'] = []
         self._update_ticket(post_data)
 
+    @memorable_forget()
     @expose()
     @require_post()
     @h.vardec
