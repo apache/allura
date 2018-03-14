@@ -35,7 +35,7 @@ from allura.lib.security import require_access, has_access, require_authenticate
 from allura.lib.search import search_app
 from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.controllers import BaseController, DispatchIndex
 from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedArgs, FeedController
@@ -117,6 +117,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
                 my_forums.append(f)
         return dict(forums=my_forums, current_forum=current_forum)
 
+    @memorable_forget()
     @h.vardec
     @expose()
     @require_post()

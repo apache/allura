@@ -29,6 +29,7 @@
 {% do g.register_forge_js('js/twemoji.min.js') %}
 {% do g.register_forge_js('js/pb.transformie.min.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
+{#{% do g.register_forge_js('js/sisyphus.js') %}#}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_forge_css('css/forge/tooltipster.css') %}
 {% do g.register_forge_css('css/font-awesome.min.css', compress=False) %}
@@ -186,6 +187,8 @@
         }).blur(function () {
             $(this).tooltipster('hide');
         });
+
+        {#$('form').sisyphus();#}
     });
 </script>
 </body>
