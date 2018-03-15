@@ -23,6 +23,7 @@ Performance:
  * [#8188] Config options for some scm limit params
 
 Security:
+ * [#8190] HTTP response splitting vulnerability CVE-2018-1319
  * Remove md5 from our release script, per latest ASF dist policy
  * Publicize previous security fix in changelog
 
