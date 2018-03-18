@@ -1,3 +1,33 @@
+Version 1.8.1  (March 2018)
+
+
+New Features
+ * [#8192] StopForumSpam filter and moderation+spam update
+ * [#8193] Allow rate-limiting of comments
+
+General
+ * [#4841] Anonymous updates should be moderated
+ * [#8182] Improve category management screens
+ * [#8183] Browse Commits graph should support hi-dpi
+ * [#8184] Project Importer should include optional icon
+ * [#8185] Allow additional domain patterns for inbound email
+ * [#8187] Make forum thread subjects editable
+ * [#8191] Remove html-only mailing options
+ * Adds convenience property for Neighborhood shortname
+ * Fix visual style on a modal cancel button
+ * Add tool_data field, use ProjectRegistrationProvider shortname validator, cleanup
+ * Ensure after a pwd reset, you can still log in.  Test improvements.
+
+Performance:
+ * [#8189] Fix slow forum listings
+ * [#8188] Config options for some scm limit params
+
+Security:
+ * [#8190] HTTP response splitting vulnerability CVE-2018-1319
+ * Remove md5 from our release script, per latest ASF dist policy
+ * Publicize previous security fix in changelog
+
+
 Version 1.8.0  (February 2018)
 
 New Features

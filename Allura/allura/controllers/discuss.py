@@ -209,6 +209,7 @@ class ThreadController(BaseController, FeedController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
         require_access(self.thread, 'post')
+        self.rate_limit(M.Post, "Comment", redir=request.referrer)
         if self.thread.ref:
             require_access(self.thread.ref.artifact, 'post')
         kw = self.W.edit_post.to_python(kw, None)
@@ -344,6 +345,7 @@ class PostController(BaseController):
     @require_post(redir='.')
     def reply(self, file_info=None, **kw):
         require_access(self.thread, 'post')
+        self.rate_limit(M.Post, "Comment", redir=request.referrer)
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
         p.add_multiple_attachments(file_info)

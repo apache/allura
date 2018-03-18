@@ -233,14 +233,6 @@ class ForgeBlogApp(Application):
                 self.save_attachments(post_path, post.attachments)
 
 
-def rate_limit():
-    if BM.BlogPost.is_limit_exceeded(c.app.config, user=c.user):
-        msg = 'Create/edit rate limit exceeded. '
-        log.warn(msg + c.app.config.url())
-        flash(msg + 'Please try again later.', 'error')
-        redirect(c.app.config.url())
-
-
 class RootController(BaseController, FeedController):
 
     def __init__(self):
@@ -293,7 +285,7 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def new(self, **kw):
         require_access(c.app, 'write')
-        rate_limit()
+        self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         post = dict(
             state='published')
         c.form = W.new_post_form
@@ -305,7 +297,7 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def save(self, **kw):
         require_access(c.app, 'write')
-        rate_limit()
+        self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         post = BM.BlogPost.new(**kw)
         g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=post,
                              user=c.user, content_type='blog-post')
@@ -373,7 +365,7 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     def edit(self, **kw):
         require_access(self.post, 'write')
-        rate_limit()
+        self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         c.form = W.edit_post_form
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
@@ -400,7 +392,7 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     def save(self, delete=None, **kw):
         require_access(self.post, 'write')
-        rate_limit()
+        self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         if delete:
             self.post.delete()
             flash('Post deleted', 'info')

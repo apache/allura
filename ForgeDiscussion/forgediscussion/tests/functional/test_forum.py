@@ -29,8 +29,9 @@ import pymongo
 
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
+from tg import config
 
-from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false
+from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false, assert_raises
 import feedparser
 
 from allura import model as M
@@ -466,6 +467,15 @@ class TestForum(TestController):
         assert '[Test Thread](' in n.text
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
+
+    def test_new_topic_rate_limit(self):
+        with h.push_config(config, **{'forgediscussion.rate_limits_per_user': '{"3600": 1}'}):
+            # first one should succeed
+            self.test_posting()
+
+            # second should fail
+            with assert_raises(Exception):
+                self.test_posting()
 
     def test_notifications_escaping(self):
         r = self.app.get('/discussion/create_topic/')

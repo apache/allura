@@ -17,12 +17,15 @@
 
 import os
 from mock import patch
-from nose.tools import assert_in, assert_not_in, assert_equal, assert_false, assert_true
-
+from nose.tools import assert_in, assert_not_in, assert_equal, assert_false, assert_true, assert_raises
+from webtest.app import AppError
 from ming.odm import session
 
 from allura.tests import TestController
 from allura import model as M
+from allura.lib import helpers as h
+from tg import config
+
 
 
 class TestDiscussBase(TestController):
@@ -127,6 +130,15 @@ class TestDiscuss(TestDiscussBase):
         self.app.post(permalinks[0] + 'moderate', params=dict(spam='spam'))
         assert submit_spam.call_args[0] == (
             'This is a new post',), submit_spam.call_args[0]
+
+    def test_rate_limit_comments(self):
+        with h.push_config(config, **{'allura.rate_limits_per_user': '{"3600": 2}'}):
+            for i in range(0, 2):
+                r = self._make_post('This is a post {}'.format(i))
+                assert 'rate limit exceeded' not in r.body
+
+            r = self._make_post('This is a post that should fail.')
+            assert 'rate limit exceeded' in r.body
 
     def test_permissions(self):
         thread_url = self._thread_link()
