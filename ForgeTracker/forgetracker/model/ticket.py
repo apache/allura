@@ -362,6 +362,10 @@ class Globals(MappedClass):
         if private:
             values['private'] = asbool(private)
 
+        deleted = post_data.get('deleted')
+        if deleted:
+            values['deleted'] = asbool(deleted)
+
         discussion_disabled = post_data.get('discussion_disabled')
         if discussion_disabled:
             values['disabled_discussion'] = asbool(discussion_disabled)
@@ -382,7 +386,16 @@ class Globals(MappedClass):
                 values['labels'] = self.append_new_labels(
                     ticket.labels, labels.split(','))
             for k, v in sorted(values.iteritems()):
-                if k == 'assigned_to_id':
+                if k == 'deleted':
+                    if v:
+                        ticket.deleted = True
+                        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
+                            dt=datetime.utcnow())
+                        ticket.summary += suffix
+                        c.app.globals.invalidate_bin_counts()
+                        break
+
+                elif k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
                     old_user = User.query.get(_id=getattr(ticket, k))
                     if new_user:
@@ -390,6 +403,7 @@ class Globals(MappedClass):
                             get_label(k),
                             new_user.display_name,
                             old_user.display_name)
+
                 elif k == 'private' or k == 'discussion_disabled':
                     def _text(val):
                         if val:
