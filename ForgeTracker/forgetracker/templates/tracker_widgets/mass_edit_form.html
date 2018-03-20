@@ -51,6 +51,14 @@
       </select>
     </div>
     <div class="grid-6">
+      <label for="deleted" class="cr">Delete:</label>
+      <select name="deleted" id="deleted">
+        <option value="" selected="selected">Don't change</option>
+        <option value="True">True</option>
+        <option value="False">False</option>
+      </select>
+    </div>
+    <div class="grid-6">
       <label for="assigned_to" class="cr">Owner:</label>
       {{c.user_select.display(name='assigned_to', id='assigned_to', value='', className='wide')}}
     </div>
