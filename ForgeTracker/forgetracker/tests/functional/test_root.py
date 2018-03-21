@@ -2458,6 +2458,29 @@ class TestFunctionalController(TrackerTestController):
         M.User.query.remove({'username': c.user.username})
         self.app.get('/p/test/bugs/1/', status=200)
 
+    def test_bulk_delete(self):
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        first_ticket = tm.Ticket.query.get(summary='test first ticket')
+        second_ticket = tm.Ticket.query.get(summary='test second ticket')
+
+        M.MonQTask.query.remove()
+        self.app.post('/p/test/bugs/update_tickets', {
+            '__search': '',
+            '__ticket_ids': (
+                first_ticket._id,
+                second_ticket._id),
+            'deleted': True})
+        M.MonQTask.run_ready()
+
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+        assert tm.Ticket.query.get(ticket_num=1).summary != 'test first ticket'
+        assert tm.Ticket.query.get(ticket_num=2).summary != 'test second ticket'
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):

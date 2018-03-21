@@ -1445,14 +1445,7 @@ class TicketController(BaseController, FeedController):
     @expose('json:')
     @require_post()
     def delete(self, **kw):
-        require_access(self.ticket, 'delete')
-        M.Shortlink.query.remove(dict(ref_id=self.ticket.index_id()))
-        self.ticket.deleted = True
-        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
-            dt=datetime.utcnow())
-        self.ticket.summary += suffix
-        flash('Ticket successfully deleted')
-        c.app.globals.invalidate_bin_counts()
+        self.ticket.soft_delete()
         return dict(location='../' + str(self.ticket.ticket_num))
 
     @without_trailing_slash

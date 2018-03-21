@@ -37,7 +37,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from tg import config as tg_config
+from tg import config as tg_config, flash
 
 from allura.model import (
     ACE,
@@ -60,6 +60,7 @@ from allura.model import (
     artifact_orm_session,
     project_orm_session,
     AlluraUserProperty,
+    Shortlink
 )
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
@@ -70,6 +71,7 @@ from allura.lib.search import search_artifact, SearchError
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
+from allura.lib.security import require_access
 from allura.tasks import mail_tasks
 from forgetracker import search as tsearch
 
@@ -388,11 +390,7 @@ class Globals(MappedClass):
             for k, v in sorted(values.iteritems()):
                 if k == 'deleted':
                     if v:
-                        ticket.deleted = True
-                        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
-                            dt=datetime.utcnow())
-                        ticket.summary += suffix
-                        c.app.globals.invalidate_bin_counts()
+                        ticket.soft_delete()
                         break
                 elif k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
@@ -1311,6 +1309,15 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             self.app.config.options.get('AllowEmailPosting', True),
             discussion_disabled=self.discussion_disabled)
 
+    def soft_delete(self):
+        require_access(self, 'delete')
+        Shortlink.query.remove(dict(ref_id=self.index_id()))
+        self.deleted = True
+        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
+            dt=datetime.utcnow())
+        self.summary += suffix
+        flash('Ticket successfully deleted')
+        c.app.globals.invalidate_bin_counts()
 
 
 class TicketAttachment(BaseAttachment):
