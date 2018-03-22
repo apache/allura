@@ -37,7 +37,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from tg import config as tg_config, flash
+from tg import config as tg_config
 
 from allura.model import (
     ACE,
@@ -1316,7 +1316,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(
             dt=datetime.utcnow())
         self.summary += suffix
-        flash('Ticket successfully deleted')
         c.app.globals.invalidate_bin_counts()
 
 

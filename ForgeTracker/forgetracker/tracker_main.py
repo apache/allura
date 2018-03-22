@@ -1446,6 +1446,7 @@ class TicketController(BaseController, FeedController):
     @require_post()
     def delete(self, **kw):
         self.ticket.soft_delete()
+        flash('Ticket successfully deleted')
         return dict(location='../' + str(self.ticket.ticket_num))
 
     @without_trailing_slash
