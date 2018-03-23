@@ -1,23 +1,31 @@
-/*global $, SF, console, jQuery, localStorage */
-window.SF = window.SF || {};
-SF.Memorable = {};
+/*global $, console, jQuery, localStorage */
+window.Memorable = {};
 
 /**
- * Class that describes the management of a memorable input - identifying, watching, saving, restoring, and forgetting.
+ * Class that describes the management of a memorable input - identifying, watching, saving, and restoring
  */
-SF.Memorable.InputManager = (function(){
+Memorable.InputManager = (function(){
+
+    var defaults = {
+        invalidInputName: /([A-Za-z0-9\-_]{28})/,
+        cancelSelectors: '.cancel_edit_post, .cancel_form'
+    };
 
     /**
      * @param inputObj - the InputBasic or InputMDE object representing the input to be tracked
      * @constructor
      */
-    function InputManager(inputObj){
+    function InputManager(inputObj, options){
+        this.options = $.extend({}, defaults, options);
+
         this.inputObj = inputObj;
         this.$form = this.inputObj.getForm();
 
+        //watch the Input object for change
         this.inputObj.watchObj.on(this.inputObj.watchEvent, this.handleSave.bind(this));
 
-        this.forget();
+        //watch "cancel"-style links, to forget immediately
+        $(this.options.cancelSelectors, this.$form).on('click', this.handleCancel.bind(this));
         this.restore();
     }
 
@@ -26,20 +34,17 @@ SF.Memorable.InputManager = (function(){
      * @returns {string}
      */
     InputManager.prototype.getStorageKey = function(){
+        var self = this;
         function isUsableName($el){
             var name = $el.attr('name');
-            if (name && name.length != 28){
+            if (name && !name.match(self.options.invalidInputName)){
                 return true;
             }
         }
         function getRelativeAction($f){
             var action = $f[0].action;
             var list = action.split('/');
-            var relativeAction = "";
-            for (i = 3; i < list.length; i++) {
-              relativeAction += "/";
-              relativeAction += list[i];
-            }
+            var relativeAction = "/" + list.slice(3).join('/');
             return relativeAction;
         }
 
@@ -81,7 +86,7 @@ SF.Memorable.InputManager = (function(){
     };
 
     /**
-     * Event handler for invoke the safe
+     * Event handler for invoking the save
      * @param e
      * @returns {boolean}
      */
@@ -93,6 +98,15 @@ SF.Memorable.InputManager = (function(){
         return false;
     };
 
+    /**
+     * Event handler for clicking "cancel"
+     * @param e
+     * @returns {boolean}
+     */
+    InputManager.prototype.handleCancel = function(e){
+        Memorable.forget(this.getStorageKey());
+        return true;
+    };
     /**
      * Fetches the tracked input's persisted value from storage
      * @returns {string}
@@ -111,20 +125,6 @@ SF.Memorable.InputManager = (function(){
         this.inputObj.setValue(this.storedValue());
     };
 
-    /**
-     * Forgets any successfully processed inputs from user
-     */
-    InputManager.prototype.forget = function(){
-        var key_prefix = $.cookie('memorable_forget');
-        if (key_prefix) {
-            for (var i = localStorage.length -1; i >=0; i--) {
-                if(localStorage.key(i).indexOf(key_prefix) == 0){
-                    localStorage.removeItem(localStorage.key(i));
-                }
-            }
-            $.removeCookie('memorable_forget', { path: '/' });
-        }
-    };
 
     return InputManager;
 })();
@@ -139,7 +139,7 @@ SF.Memorable.InputManager = (function(){
  * @property watchObj: the object instance to watch for events on. same as this.obj
  * @property $el: the jquery object representing the actual input field on the page. same as this.obj
  */
-SF.Memorable.InputBasic = (function() {
+Memorable.InputBasic = (function() {
     /**
      * @param obj: a selector or DOM Element identifying the basic input field to be remembered
      * @constructor
@@ -172,7 +172,7 @@ SF.Memorable.InputBasic = (function() {
  * @property watchObj: the object instance to watch for events on; editor.codemirror per their docs
  * @property $el: the jquery object representing the actual input field on the page
  */
-SF.Memorable.InputMDE = (function() {
+Memorable.InputMDE = (function() {
     /**
      * @param obj: A SimpleMDE object representing the input field
      * @constructor
@@ -199,11 +199,11 @@ SF.Memorable.InputMDE = (function() {
 /**
  * Takes an arbitrary object, and determines the best Input class to represent it
  */
-SF.Memorable.inputFactory = function(obj) {
+Memorable.inputFactory = function(obj) {
     if (obj.codemirror){
-        return SF.Memorable.InputMDE;
+        return Memorable.InputMDE;
     } else {
-        return SF.Memorable.InputBasic;
+        return Memorable.InputBasic;
     }
 };
 
@@ -212,25 +212,42 @@ SF.Memorable.inputFactory = function(obj) {
  * Convenience method to find any classes decorated with `.memorable` and create a related Input object for it
  * @param selector - use to override the selector used to find all fields to be remembered
  */
-SF.Memorable.initialize = function(selector){
+Memorable.initialize = function(selector){
+    Memorable.forget();
     var s = selector || '.memorable';
-    SF.Memorable.items = [];
+    Memorable.items = [];
     $(s).each(function(){
-        var cls = SF.Memorable.inputFactory(this);
-        SF.Memorable.items.push(new SF.Memorable.InputManager(new cls(this)));
+        Memorable.add(this);
     });
 };
+
+
+/**
+ * Forgets any successfully processed inputs from user
+ */
+Memorable.forget = function(key_prefix){
+    key_prefix = key_prefix || $.cookie('memorable_forget');
+    if (key_prefix) {
+        for (var i = localStorage.length -1; i >=0; i--) {
+            if(localStorage.key(i).indexOf(key_prefix) == 0){
+                localStorage.removeItem(localStorage.key(i));
+            }
+        }
+        $.removeCookie('memorable_forget', { path: '/' });
+    }
+};
+
 
 
 /**
  * Creates a new Input object to remember changes to an individual field
  * @param obj - the raw object representing the field to be tracked
  */
-SF.Memorable.add = function(obj){
-    var cls = SF.Memorable.inputFactory(obj);
-    SF.Memorable.items.push(new SF.Memorable.InputManager(new cls(obj)));
+Memorable.add = function(obj){
+    var cls = Memorable.inputFactory(obj);
+    Memorable.items.push(new Memorable.InputManager(new cls(obj)));
 };
 
 
 // Initialize
-$(function(){SF.Memorable.initialize();});
+$(function(){Memorable.initialize();});

@@ -280,7 +280,6 @@ class MarkdownEdit(ew.TextArea):
         yield ew.CSSLink('css/markitup_sf.css')
         yield ew.JSLink('js/simplemde.min.js')
         yield ew.JSLink('js/sf_markitup.js')
-        yield ew.JSLink('js/memorable.js')
 
 class PageList(ew_core.Widget):
     template = 'jinja:allura:templates/widgets/page_list.html'

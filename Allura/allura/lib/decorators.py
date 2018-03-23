@@ -33,7 +33,7 @@ from tg.render import render
 from webob import exc
 from pylons import tmpl_context as c
 from pylons import response
-from webob.exc import HTTPFound
+from webob.exc import HTTPFound, WSGIHTTPException
 
 from allura.lib import helpers as h
 from allura.lib import utils
@@ -291,7 +291,7 @@ def memorable_forget():
             res = func(*args, **kwargs)
             forget(res)
             return res
-        except Exception as ex:
+        except WSGIHTTPException as ex:
             forget(None, ex)
             raise ex
 

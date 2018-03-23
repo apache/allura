@@ -17,7 +17,7 @@
        under the License.
 */
 
-/*global SimpleMDE, _replaceSelection */
+/*global SimpleMDE, _replaceSelection, Memorable */
 $(window).load(function() {
     if(!window.markdown_init){
         window.markdown_init = true;
@@ -75,7 +75,7 @@ $(window).load(function() {
                   "toggleUnorderedList": null, // default is cmd-l, used to activate location bar
               }
             });
-            SF.Memorable.add(editor);
+            Memorable.add(editor);
             // https://github.com/codemirror/CodeMirror/issues/1576#issuecomment-19146595
             // can't use simplemde's shortcuts settings, since those only hook into bindings set up for each button
             editor.codemirror.options.extraKeys.Home = "goLineLeft";

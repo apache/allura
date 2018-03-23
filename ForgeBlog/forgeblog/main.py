@@ -291,6 +291,7 @@ class RootController(BaseController, FeedController):
         c.form = W.new_post_form
         return dict(post=post)
 
+    @memorable_forget()
     @expose()
     @require_post()
     @validate(form=W.edit_post_form, error_handler=new)
