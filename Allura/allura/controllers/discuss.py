@@ -340,6 +340,7 @@ class PostController(BaseController):
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)
 
+    @memorable_forget()
     @h.vardec
     @expose()
     @require_post()
