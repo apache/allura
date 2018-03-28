@@ -393,6 +393,7 @@ class Post(HierWidget):
                         var cm = get_cm($reply_post_form);
                         $reply_post_form.show();
                         cm.focus();
+                       $('form', $reply_post_form).trigger('replyRevealed');
                     });
                 }
                 if($('.add_attachment', post)){

@@ -7,7 +7,10 @@ window.Memorable = {};
 Memorable.InputManager = (function(){
 
     var defaults = {
+        // regex to determine if an input's name can't reliably identify it, as many inputs have randomized
+        // names for antispam purposes.
         invalidInputName: /([A-Za-z0-9\-_]{28})/,
+        // selectors of buttons that represent a user cancellation, and will clear remembered inputs in the form
         cancelSelectors: '.cancel_edit_post, .cancel_form'
     };
 
@@ -17,7 +20,6 @@ Memorable.InputManager = (function(){
      */
     function InputManager(inputObj, options){
         this.options = $.extend({}, defaults, options);
-
         this.inputObj = inputObj;
         this.$form = this.inputObj.getForm();
 
@@ -26,6 +28,11 @@ Memorable.InputManager = (function(){
 
         //watch "cancel"-style links, to forget immediately
         $(this.options.cancelSelectors, this.$form).on('click', this.handleCancel.bind(this));
+
+        //watch for hidden inputs that might be revealed
+        this.$form.on('replyRevealed', this.inputObj.refresh.bind(this.inputObj));
+
+        //restore from localStorage
         this.restore();
     }
 
@@ -125,7 +132,6 @@ Memorable.InputManager = (function(){
         this.inputObj.setValue(this.storedValue());
     };
 
-
     return InputManager;
 })();
 
@@ -159,6 +165,9 @@ Memorable.InputBasic = (function() {
     InputBasic.prototype.getForm = function () {
         return this.$el.parents('form').eq(0);
     };
+    InputBasic.prototype.refresh = function(){
+        return null;  // noop
+    };
     return InputBasic;
 })();
 
@@ -191,6 +200,9 @@ Memorable.InputMDE = (function() {
     };
     InputMDE.prototype.getForm = function () {
         return this.$el.parents('form').eq(0);
+    };
+    InputMDE.prototype.refresh = function(){
+        this.watchObj.refresh();
     };
     return InputMDE;
 })();
