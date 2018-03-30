@@ -31,6 +31,7 @@
 
   <div class="grid-23">
     {{ c.search_form.display(q=q, f=f) }}
+    <p>Use quotes for an exact literal match, or <code>*</code> for wildcard.  E.g. <code>"john doe"</code> or <code>test*</code></p>
   </div>
 
   {% if objects %}

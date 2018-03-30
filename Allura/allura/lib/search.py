@@ -194,7 +194,12 @@ def site_admin_search(model, q, field, **kw):
         q = obj.translate_query(q, fields)
     else:
         # construct query for a specific selected field
-        q = obj.translate_query(u'%s:%s' % (field, q), fields)
+        # use parens to group all the parts of the query with the field
+        # escaping spaces with '\ ' isn't sufficient for display_name_t since its stored as text_general (why??)
+        # and wouldn't handle foo@bar.com split on @ either
+        # This should work, but doesn't for unknown reasons: q = u'{!term f=%s}%s' % (field, q)
+        q = obj.translate_query(u'%s:(%s)' % (field, q), fields)
+        kw['q.op'] = 'AND'  # so that all terms within the () are required
     fq = [u'type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)
 
