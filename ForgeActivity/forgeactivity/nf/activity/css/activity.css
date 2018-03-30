@@ -49,6 +49,9 @@
   float: left;
   margin: 10px 10px 0 0;
 }
+.activity ul.timeline li input[name=delete] {
+  float: right;
+}
 .activity .page_list {
     margin-top: 5px;
 }

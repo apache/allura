@@ -20,7 +20,7 @@
 {% import 'forgeactivity:templates/macros.html' as am with context %}
 
 {% for a in timeline %}
-<li id="{{a._id}}" data-page="{{page}}">
+<li id="{{a._id}}" data-page="{{page}}" {% if h.has_access(c.project.neighborhood, 'admin') %}data-can-delete{% endif %}>
   <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
   <h1>
       {{ am.icon(a.actor, 32, 'avatar') }}
