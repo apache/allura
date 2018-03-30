@@ -17,8 +17,10 @@
 
 import logging
 import calendar
+from datetime import timedelta
 from itertools import islice, ifilter
 
+from bson import ObjectId
 from ming.orm import session
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -27,6 +29,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import asbool, asint
 from webob import exc
 from webhelpers import feedgenerator as FG
+from activitystream.storage.mingstorage import Activity
 
 from allura.app import Application
 from allura import version
@@ -207,6 +210,34 @@ class ForgeActivityController(BaseController):
             success=True,
             message=W.follow_toggle.success_message(follow),
             following=follow)
+
+    @require_post()
+    @expose('json:')
+    def delete_item(self, activity_id, **kwargs):
+        require_access(c.project.neighborhood, 'admin')
+        activity = Activity.query.get(_id=ObjectId(activity_id))
+        if not activity:
+            raise exc.HTTPGone
+        # find other copies of this activity on other user/projects timelines
+        # but only within a small time window, so we can do efficient searching
+        activity_ts = activity._id.generation_time
+        time_window = timedelta(hours=1)
+        all_copies = Activity.query.find({
+            '_id': {
+                '$gt': ObjectId.from_datetime(activity_ts - time_window),
+                '$lt': ObjectId.from_datetime(activity_ts + time_window),
+            },
+            'obj': activity.obj,
+            'target': activity.target,
+            'actor': activity.actor,
+            'verb': activity.verb,
+            'tags': activity.tags,
+        }).all()
+        log.info('Deleting %s copies of activity record: %s %s %s', len(all_copies),
+                 activity.actor.activity_url, activity.verb, activity.obj.activity_url)
+        for activity in all_copies:
+            activity.query.delete()
+        return {'success': True}
 
 
 class ForgeActivityRestController(BaseController, AppRestControllerMixin):

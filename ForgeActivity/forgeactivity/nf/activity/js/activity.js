@@ -282,9 +282,44 @@ $(function() {
         }
     }
 
+    function enableDeleteButtons() {
+        var confirmed = false;
+        $('.timeline').on('mouseenter', 'li[data-can-delete]', function() {
+            $(this).prepend('<input type=button value=Delete name=delete title="Permanently deletes this item from all users/projects activity records.<br>Only neighborhood admins can do this.">');
+            $('input[name=delete]', this).tooltipster({contentAsHTML: true});
+        });
+        $('.timeline').on('mouseleave', 'li[data-can-delete]', function() {
+            $('input[name=delete]', this).remove();
+        });
+        $('.timeline').on('click', 'li[data-can-delete] input[name=delete]', function() {
+            if (!confirmed) {
+                confirmed = confirm('Are you sure you want to delete this?  You cannot undo!');
+                if (!confirmed) {
+                    return;
+                }
+            }
+            $(this).prop('disabled', true);
+            $(this).val('Deleting...')
+            var $row = $(this).closest('[data-can-delete]');
+            $row.css('background', 'lightgray');
+            $.post('delete_item', {
+                activity_id: $row.attr('id'),
+                _session_id: $.cookie('_session_id')
+            }).done(function() {
+                $('input[name=delete]', $row).remove();
+                $row.css('text-decoration', 'line-through').removeAttr('data-can-delete');
+            }).fail(function() {
+                flash('Deleting failed.', 'error');
+                $row.css('background', 'orange');
+            });
+            return false;
+        });
+    }
+
     detectFeatures();
     enableScrollHistory();
     enableAdvancedPaging();
+    enableDeleteButtons();
 });
 
 function markTop() {

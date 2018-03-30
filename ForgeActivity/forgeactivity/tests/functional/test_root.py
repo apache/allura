@@ -15,13 +15,16 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from mock import patch
 from textwrap import dedent
-from tg import config
 
+from mock import patch
+from tg import config
+from bson import ObjectId
 import dateutil.parser
 from nose.tools import assert_equal
 from pylons import app_globals as g
+from activitystream.storage.mingstorage import Activity
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from alluratest.controller import TestController
@@ -411,3 +414,67 @@ class TestActivityController(TestController):
         assert_equal(
             activity.find('{http://www.w3.org/2005/Atom}link').get('href'),
             'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_delete_item_denied(self):
+        self.app.post('/u/test-user-1/activity/delete_item',
+                      {'activity_id': str(ObjectId())},
+                      status=403)
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_delete_item_gone(self):
+        self.app.post('/u/test-user-1/activity/delete_item',
+                      {'activity_id': str(ObjectId())},
+                      extra_environ={'username': 'root'},  # nbhd admin
+                      status=410)
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_delete_item_success(self):
+        activity_data = {
+            "obj": {
+                "activity_extras": {
+                    "summary": "Sensitive private info, oops"
+                },
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "a comment"
+            },
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
+            },
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
+            },
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
+        }
+        activity = Activity(**activity_data)
+        activity2 = Activity(**dict(activity_data, node_id='Project:123', owner_id='User:456'))
+        activity3 = Activity(**dict(activity_data, node_id='User:abc', owner_id='User:abc'))
+        ThreadLocalODMSession.flush_all()
+        activity_id = str(activity._id)
+        assert_equal(Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count(), 3)
+
+        self.app.post('/u/test-user-1/activity/delete_item',
+                      {'activity_id': activity_id},
+                      extra_environ={'username': 'root'},  # nbhd admin
+                      status=200)
+        ThreadLocalODMSession.flush_all()
+
+        assert_equal(Activity.query.find({'obj.activity_extras.summary': 'Sensitive private info, oops'}).count(), 0)
