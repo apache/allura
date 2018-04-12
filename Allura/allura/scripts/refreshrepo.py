@@ -17,8 +17,9 @@
 
 import argparse
 import logging
-
 import faulthandler
+from datetime import datetime
+
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 
@@ -65,11 +66,17 @@ class RefreshRepo(ScriptTask):
                                  c.app.repo.tool.lower())
                         continue
 
+                    ci_ids = []
                     if options.clean:
                         ci_ids = list(c.app.repo.all_commit_ids())
+                    elif options.clean_after:
+                        for ci in M.repository.CommitDoc.m.find({'repo_ids': c.app.repo._id,
+                                                                 'committed.date': {'$gt': options.clean_after}}):
+                            ci_ids.append(ci._id)
+
+                    if ci_ids:
                         log.info("Deleting mongo data for %i commits...",
                                  len(ci_ids))
-
                         # delete these in chunks, otherwise the query doc can
                         # exceed the max BSON size limit (16MB at the moment)
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
@@ -133,6 +140,8 @@ class RefreshRepo(ScriptTask):
                 repo_types.append(repo_type)
             return repo_types
 
+        date_format = '%Y-%m-%dT%H:%M:%S'
+
         parser = argparse.ArgumentParser(description='Scan repos on filesytem and '
                                          'update repo metadata in MongoDB. Run for all repos (no args), '
                                          'or restrict by neighborhood, project, or code tool mount point.')
@@ -156,6 +165,11 @@ class RefreshRepo(ScriptTask):
         parser.add_argument('--clean', action='store_true', dest='clean',
                             default=False, help='Remove repo-related mongo docs (for '
                             'project(s) being refreshed only) before doing the refresh.')
+        parser.add_argument('--clean-after', metavar='DATETIME', dest='clean_after',
+                            type=lambda d: datetime.strptime(d, date_format),
+                            help='Like --clean but only docs for commits after date ({} format)'.format(
+                                    date_format.replace('%', '%%')
+                            ))
         parser.add_argument(
             '--all', action='store_true', dest='all', default=False,
             help='Refresh all commits (not just the ones that are new).')
