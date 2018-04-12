@@ -699,13 +699,13 @@ class Repository(Artifact, ActivityObject):
         from allura.model.repo_refresh import unknown_commit_ids as unknown_commit_ids_repo
         return unknown_commit_ids_repo(self.all_commit_ids())
 
-    def refresh(self, all_commits=False, notify=True, new_clone=False):
+    def refresh(self, all_commits=False, notify=True, new_clone=False, commits_are_new=None):
         '''Find any new commits in the repository and update'''
         try:
             from allura.model.repo_refresh import refresh_repo
             log.info('... %r analyzing', self)
             self.set_status('analyzing')
-            refresh_repo(self, all_commits, notify, new_clone)
+            refresh_repo(self, all_commits, notify, new_clone, commits_are_new)
         finally:
             log.info('... %s ready', self)
             self.set_status('ready')

@@ -20,6 +20,7 @@ import logging
 import faulthandler
 from datetime import datetime
 
+from paste.util.converters import asbool
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 
@@ -119,11 +120,12 @@ class RefreshRepo(ScriptTask):
                         if options.profile:
                             import cProfile
                             cProfile.runctx(
-                                'c.app.repo.refresh(options.all, notify=options.notify)',
+                                'c.app.repo.refresh(options.all, notify=options.notify, '
+                                '   commits_are_new=options.commits_are_new)',
                                 globals(), locals(), 'refresh.profile')
                         else:
                             c.app.repo.refresh(
-                                options.all, notify=options.notify)
+                                options.all, notify=options.notify, commits_are_new=options.commits_are_new)
                     except:
                         log.exception('Error refreshing %r', c.app.repo)
             ThreadLocalORMSession.flush_all()
@@ -175,6 +177,10 @@ class RefreshRepo(ScriptTask):
             help='Refresh all commits (not just the ones that are new).')
         parser.add_argument('--notify', action='store_true', dest='notify',
                             default=False, help='Send email notifications of new commits.')
+        parser.add_argument('--commits-are-new', dest='commits_are_new',
+                            type=asbool, metavar='true/false', default=None,
+                            help='Specify true/false to override smart default.  Controls creating activity entries, '
+                                 'stats, sending webhook etc.')
         parser.add_argument('--dry-run', action='store_true', dest='dry_run',
                             default=False, help='Log names of projects that would have their '
                             'repos refreshed, but do not perform the actual refresh.')

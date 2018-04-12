@@ -44,7 +44,10 @@ log = logging.getLogger(__name__)
 QSIZE = 100
 
 
-def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
+def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_are_new=None):
+    if commits_are_new is None:
+        commits_are_new = not all_commits and not new_clone
+
     all_commit_ids = commit_ids = list(repo.all_commit_ids())
     if not commit_ids:
         # the repo is empty, no need to continue
@@ -111,7 +114,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     repo.get_branches()
     repo.get_tags()
 
-    if not all_commits and not new_clone:
+    if commits_are_new:
         for commit in commit_ids:
             new = repo.commit(commit)
             user = User.by_email_address(new.committed.email)
