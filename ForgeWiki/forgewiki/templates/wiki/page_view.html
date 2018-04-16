@@ -41,9 +41,11 @@
 
 {% block actions %}
   {% if not page['deleted'] %}
-    {% if c.user and c.user != c.user.anonymous() %}
-      {{ g.icons['edit'].render(href='edit', show_title=True) }}
-    {% endif %}
+      {% if h.has_access(page, 'edit') %}
+        {{ g.icons['edit'].render(href='edit', show_title=True) }}
+      {% elif c.user.is_anonymous() and h.is_allowed_by_role(page, 'edit', '*authenticated', c.project) %}
+          <a href="{{ tg.config.get('auth.login_url', '/auth/') }}">Log in to Edit</a>
+      {% endif %}
       {{ g.icons['history'].render(href='history') }}
   {% elif h.has_access(page, 'delete')() %}
     {{ g.icons['undelete'].render(extra_css='post-link') }}
