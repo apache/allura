@@ -1286,13 +1286,17 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
                 raise exception()
 
 
-def base64uri(content_or_image, image_format='PNG', mimetype='image/png'):
+def base64uri(content_or_image, image_format='PNG', mimetype='image/png', windows_line_endings=False):
     if hasattr(content_or_image, 'save'):
         output = StringIO()
         content_or_image.save(output, format=image_format)
         content = output.getvalue()
     else:
         content = content_or_image
+
+    if windows_line_endings:
+        content = content.replace('\n', '\r\n')
+
     data = base64.b64encode(content)
     return 'data:{};base64,{}'.format(mimetype, data)
 

@@ -812,9 +812,12 @@ class PreferencesController(BaseController):
         h.auditlog_user('Viewed multifactor recovery codes')
         provider = plugin.AuthenticationProvider.get(request)
 
+        windows_line_endings = "WINDOWS" in request.headers.get('USER_AGENT', '').upper()
+
         return dict(
             codes=codes,
             menu = provider.account_navigation(),
+            windows_line_endings=windows_line_endings
         )
 
     @expose()

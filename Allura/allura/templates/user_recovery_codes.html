@@ -26,9 +26,9 @@
 
 
 {% macro plaintext(codes) %}
-{{ config['site_name'] }} Recovery Codes:
+{{- config['site_name'] }} Recovery Codes:
 {% for code in codes %}
-{{ code }}
+{{ code -}}
 {% endfor %}
 {% endmacro %}
 
@@ -38,7 +38,7 @@
     <h2 class="subtitle">Your {{ config['site_name'] }} Recovery Codes</h2>
     <p>
         <a href="#" class="print"><strong>Print</strong></a> these!
-        <a href="{{ h.base64uri(plaintext(codes), mimetype='text/plain') }}" download="{{ config['site_name'] }} recovery codes.txt" class="download"><strong>Download</strong></a> them!
+        <a href="{{ h.base64uri(plaintext(codes), mimetype='text/plain', windows_line_endings=windows_line_endings) }}" download="{{ config['site_name'] }} recovery codes.txt" class="download"><strong>Download</strong></a> them!
         Keep them safe.
     </p>
     <p>
