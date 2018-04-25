@@ -364,6 +364,18 @@ class TestFunctionalController(TrackerTestController):
         assert 'test new ticket form' in response
         assert 'test new ticket form description' in response
 
+    def test_new_ticket_prepop_from_url(self):
+        response = self.app.get('/bugs/new/?summary=very buggy&description=descr&labels=label1,label2&private=true'
+                                '&assigned_to=test-user&_milestone=2.0&status=pending')
+        form = self._find_new_ticket_form(response)
+        assert_equal(form['ticket_form.summary'].value, 'very buggy')
+        assert_equal(form['ticket_form.description'].value, 'descr')
+        assert_equal(form['ticket_form.labels'].value, 'label1,label2')
+        assert_equal(form['ticket_form.assigned_to'].value, 'test-user')
+        assert_equal(form['ticket_form._milestone'].value, '2.0')
+        assert_equal(form['ticket_form.status'].value, 'pending')
+        assert_equal(form['ticket_form.private'].checked, True)
+
     def test_mass_edit(self):
         self.new_ticket(summary='First Ticket').follow()
         self.new_ticket(summary='Second Ticket').follow()

@@ -897,14 +897,12 @@ class RootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
-    def new(self, description=None, summary=None, labels=None, **kw):
+    def new(self, **kw):
         require_access(c.app, 'create')
         self.rate_limit(TM.Ticket, 'Ticket creation', redir='..')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew', '').strip()
-        return dict(action=c.app.config.url() + 'save_ticket',
-                    help_msg=help_msg,
-                    description=description, summary=summary, labels=labels)
+        return dict(action=c.app.config.url() + 'save_ticket', help_msg=help_msg, url_params=kw)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self, **kw):
