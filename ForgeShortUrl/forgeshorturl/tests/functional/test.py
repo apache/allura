@@ -42,25 +42,24 @@ class TestRootController(TestController):
         response.form['short_url'] = 'test'
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
-        redirected = self.app.get('/url/test').follow()
-        assert redirected.request.url == 'http://www.google.com/'
+        redir = self.app.get('/url/test', status=302)
+        assert_equal(redir.location, 'http://www.google.com/')
 
     def test_shorturl_http_head(self):
         response = self.app.get('/admin/url/add')
         response.form['short_url'] = 'test'
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
-        r = self.app.head('/url/test')
-        assert r.status_int == 302
-        assert r.headers['Location'] == 'http://www.google.com/'
+        r = self.app.head('/url/test', status=302)
+        assert_equal(r.location, 'http://www.google.com/')
 
     def test_shorturl_update(self):
         response = self.app.get('/admin/url/add')
         response.form['short_url'] = 'g'
         response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
-        redirected = self.app.get('/url/g').follow()
-        assert redirected.request.url == 'http://www.google.com/'
+        redir = self.app.get('/url/g', status=302)
+        assert_equal(redir.location, 'http://www.google.com/')
 
         response = self.app.get('/url/')
         form = response.forms['short-url-form']
@@ -69,8 +68,8 @@ class TestRootController(TestController):
         form['full_url'] = 'http://www.yahoo.com/'
         form.action = '/admin/url/add/'
         form.submit()
-        redirected = self.app.get('/url/g').follow()
-        assert_equal(redirected.request.url, 'http://www.yahoo.com/')
+        redir = self.app.get('/url/g', status=302)
+        assert_equal(redir.location, 'http://www.yahoo.com/')
 
     def test_shorturl_not_found(self):
         self.app.post('/admin/url/add',

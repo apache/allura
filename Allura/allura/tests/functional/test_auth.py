@@ -1613,7 +1613,7 @@ class TestOAuth(TestController):
         r = self.app.post('/rest/oauth/request_token', params={'key': 'value'})
         Request.from_request.assert_called_once_with(
             'POST', 'http://localhost/rest/oauth/request_token',
-            headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
+            headers={'Host': 'localhost', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
             parameters={'key': 'value'},
             query_string='')
         Server().verify_request.assert_called_once_with(req, consumer_token.consumer, None)
