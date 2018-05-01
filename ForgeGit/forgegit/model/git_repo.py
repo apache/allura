@@ -585,7 +585,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def head(self):
-        if not self._git or not self._git.heads:
+        if not self._git:
             return None
         # if the repo's HEAD file doesn't point to a valid branch, we need to select one
         # this can happen in particular with masterless repos
