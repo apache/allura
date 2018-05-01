@@ -1314,3 +1314,13 @@ def slugify(name, allow_periods=False):
                                     .encode('ascii', 'ignore')))
                   ))
     return slug, slug.lower()
+
+
+email_re = re.compile(r'(([a-z0-9_]|\-|\.)+)@([\w\.-]+)', re.IGNORECASE)
+
+
+def hide_private_info(message):
+    if asbool(tg.config.get('hide_private_info', 'true')) and message:
+        return email_re.sub(r'\1@...', message)
+    else:
+        return message

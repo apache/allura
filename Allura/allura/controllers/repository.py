@@ -272,7 +272,7 @@ class RepoRootController(BaseController, FeedController):
             url = c.app.repo.url_for_commit(Object(_id=oid))
             msg_split = ci.message.splitlines()
             if msg_split:
-                msg = msg_split[0]
+                msg = h.hide_private_info(msg_split[0])
             else:
                 msg = "No commit message."
             result.append(dict(
