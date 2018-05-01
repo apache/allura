@@ -65,7 +65,7 @@
       <td>
         <a href="{{dirent.last_commit.href}}">
           {{dirent.last_commit.shortlink}}
-          {{dirent.last_commit.summary}}
+          {{ h.hide_private_info(dirent.last_commit.summary) }}
         </a>
       </td>
     </tr>

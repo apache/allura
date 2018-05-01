@@ -645,3 +645,13 @@ class TestRateLimit(TestCase):
             h.rate_limit(self.key_comment, 49, start_date)
             with assert_raises(exc.RatelimitError):
                 h.rate_limit(self.key_comment, 50, start_date)
+
+
+def test_hide_private_info():
+    assert_equals(h.hide_private_info(None), None)
+    assert_equals(h.hide_private_info(''), '')
+    assert_equals(h.hide_private_info('foo bar baz@bing.com'), 'foo bar baz@...')
+    assert_equals(h.hide_private_info('some <1@2.com>\nor asdf+asdf.f@g.f.x'), 'some <1@...>\nor asdf+asdf.f@...')
+
+    with h.push_config(h.tg.config, hide_private_info=False):
+        assert_equals(h.hide_private_info('foo bar baz@bing.com'), 'foo bar baz@bing.com')
