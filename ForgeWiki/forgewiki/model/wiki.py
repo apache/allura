@@ -175,6 +175,7 @@ class Page(VersionedArtifact, ActivityObject):
     def email_address(self):
         if context.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
+            self.title.replace(' ', '_')
             return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
@@ -224,6 +225,24 @@ class Page(VersionedArtifact, ActivityObject):
             ss = HC.query.find(
                 {'artifact_id': pg._id, 'version': int(version)}).one()
             return ss
+
+    @classmethod
+    def find_page(cls, title, version=None):
+        """Find page with `title`"""
+        if version is None:
+            # Check for existing page object
+            obj = cls.query.get(
+                app_config_id=context.app.config._id,
+                title=title)
+            return obj
+        else:
+            pg = cls.find_page(title)
+            if pg is not None:
+                HC = cls.__mongometa__.history_class
+                ss = HC.query.find(
+                    {'artifact_id': pg._id, 'version': int(version)}).one()
+                return ss
+            return pg
 
     @classmethod
     def attachment_class(cls):

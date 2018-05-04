@@ -127,11 +127,13 @@ class ForgeWikiApp(Application):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        try:
-            page = WM.Page.upsert(topic)
-        except:
+        page = WM.Page.find_page(topic)
+        if page is None:
+            page = WM.Page.find_page(topic.replace('_', ' '))
+        if page is not None:
+            self.handle_artifact_message(page, message)
+        else:
             log.exception('Error getting artifact %s', topic)
-        self.handle_artifact_message(page, message)
 
     @property
     def root_page_name(self):
