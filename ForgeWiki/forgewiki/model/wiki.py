@@ -227,22 +227,13 @@ class Page(VersionedArtifact, ActivityObject):
             return ss
 
     @classmethod
-    def find_page(cls, title, version=None):
+    def find_page(cls, title):
         """Find page with `title`"""
-        if version is None:
-            # Check for existing page object
-            obj = cls.query.get(
-                app_config_id=context.app.config._id,
-                title=title)
-            return obj
-        else:
-            pg = cls.find_page(title)
-            if pg is not None:
-                HC = cls.__mongometa__.history_class
-                ss = HC.query.find(
-                    {'artifact_id': pg._id, 'version': int(version)}).one()
-                return ss
-            return pg
+        # Check for existing page object
+        obj = cls.query.get(
+            app_config_id=context.app.config._id,
+            title=title)
+        return obj
 
     @classmethod
     def attachment_class(cls):
