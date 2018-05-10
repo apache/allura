@@ -175,8 +175,8 @@ class Page(VersionedArtifact, ActivityObject):
     def email_address(self):
         if context.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
-            self.title.replace(' ', '_')
-            return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
+            title = self.title.replace(' ', '_')
+            return '%s@%s%s' % (title.replace('/', '.'), domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
