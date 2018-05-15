@@ -168,6 +168,7 @@ class Project(col.MappingSchema):
     private = col.SchemaNode(col.Bool(), missing=False)
     labels = Labels(missing=[])
     external_homepage = col.SchemaNode(col.Str(), missing='')
+    video_url = col.SchemaNode(col.Str(), missing='')
     trove_root_databases = TroveDatabases(missing=None)
     trove_developmentstatuses = TroveStatuses(validator=col.Length(max=6), missing=None)
     trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=None)
@@ -256,6 +257,7 @@ def create_project(p, nbhd, options):
     project.summary = p.summary
     project.short_description = p.description
     project.external_homepage = p.external_homepage
+    project.video_url = p.video_url
     project.last_updated = datetime.datetime.utcnow()
     # These properties may have been populated by nbhd template defaults in
     # register_project(). Overwrite if we have data, otherwise keep defaults.
