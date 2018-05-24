@@ -77,6 +77,8 @@
     {% block head %}
     {% endblock %}
     {% if g.production_mode %}{{ g.analytics.display() }}{% endif %}
+    {% block head_bottom -%}
+    {% endblock %}
 </head>
 
 <body{% block body_attrs %}{% endblock %} class="{% block body_css_class %}{% endblock %}" id="forge">
