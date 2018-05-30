@@ -20,7 +20,7 @@
 """Main Controller"""
 import logging
 
-from tg import expose, request, config, session
+from tg import expose, request, config, session, redirect
 from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
 from pylons import tmpl_context as c
@@ -33,6 +33,7 @@ from allura.lib import plugin
 from allura.controllers.error import ErrorController
 from allura import model as M
 from allura.lib.widgets import project_list as plw
+from allura.ext.personal_dashboard.dashboard_main import DashboardController
 from .auth import AuthController
 from .trovecategories import TroveCategoryController
 from .search import SearchController, ProjectBrowseController
@@ -73,6 +74,7 @@ class RootController(WsgiDispatchController):
     search = SearchController()
     rest = RestController()
     categories = TroveCategoryController()
+    dashboard = DashboardController()
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
@@ -107,10 +109,17 @@ class RootController(WsgiDispatchController):
     def _cleanup_request(self):
         pass
 
-    @expose('jinja:allura:templates/neighborhood_list.html')
+    @expose()
     @with_trailing_slash
     def index(self, **kw):
         """Handle the front-page."""
+        if not c.user.is_anonymous():
+            redirect('/dashboard')
+        else:
+            redirect('/neighborhood')
+
+    @expose('jinja:allura:templates/neighborhood_list.html')
+    def neighborhood(self, **kw):
         neighborhoods = M.Neighborhood.query.find().sort('name')
         categories = M.ProjectCategory.query.find(
             {'parent_id': None}).sort('name').all()

@@ -121,6 +121,12 @@ setup(
     skills = allura.ext.user_profile.user_main:SkillsSection
     tools = allura.ext.user_profile.user_main:ToolsSection
     social = allura.ext.user_profile.user_main:SocialSection
+    
+    [allura.personal_dashboard.sections]
+    projects = allura.ext.personal_dashboard.dashboard_main:ProjectsSection
+    tickets = allura.ext.personal_dashboard.dashboard_main:TicketsSection
+    merge_requests = allura.ext.personal_dashboard.dashboard_main:MergeRequestsSection
+    followers = allura.ext.personal_dashboard.dashboard_main:FollowersSection
 
     [allura.webhooks]
     repo-push = allura.webhooks:RepoPushWebhookSender

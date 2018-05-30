@@ -118,7 +118,10 @@ class AuthController(BaseController):
         elif orig_request:
             return_to = orig_request.url
         else:
-            return_to = request.referer
+            if request.referer.split('/')[-1] == 'neighborhood':
+                return_to = '/'
+            else:
+                return_to = request.referer
         c.form = F.login_form
         return dict(return_to=return_to)
 
