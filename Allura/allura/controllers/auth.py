@@ -118,7 +118,7 @@ class AuthController(BaseController):
         elif orig_request:
             return_to = orig_request.url
         else:
-            if request.referer.split('/')[-1] == 'neighborhood':
+            if request.referer is not None and request.referer.split('/')[-1] == 'neighborhood':
                 return_to = '/'
             else:
                 return_to = request.referer
