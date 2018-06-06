@@ -66,6 +66,8 @@ class RootController(WsgiDispatchController):
     Keep in mind that WSGI applications shouldn't be mounted directly: They
     must be wrapped around with :class:`tg.controllers.WSGIAppController`.
 
+    When testing the root, BasetestProjectRootController should be considered as the root controller
+
     """
 
     auth = AuthController()

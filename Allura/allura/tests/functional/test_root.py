@@ -52,7 +52,14 @@ class TestRootController(TestController):
         n_adobe.register_project('adobe-2', u_admin)
 
     def test_index(self):
+        response = self.app.get('/', extra_environ=dict(username='*anonymous'))
+        assert_equal(response.location, 'http://localhost/neighborhood')
+
         response = self.app.get('/')
+        assert_equal(response.location, 'http://localhost/dashboard')
+
+    def test_neighborhood(self):
+        response = self.app.get('/neighborhood')
         assert_equal(response.html.find('h2', {'class': 'dark title'}).contents[
                      0].strip(), 'All Neighborhoods')
         nbhds = response.html.findAll('div', {'class': 'nbhd_name'})
@@ -67,7 +74,7 @@ class TestRootController(TestController):
         M.ProjectCategory(name='test-xss', label='<script>alert(1)</script>')
         ThreadLocalORMSession.flush_all()
 
-        response = self.app.get('/')
+        response = self.app.get('/neighborhood')
         # inject it into the sidebar data
         content = str(response.html.find('div', {'id': 'content_base'}))
         assert '<script>' not in content
