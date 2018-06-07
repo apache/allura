@@ -76,7 +76,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
         """
         if neighborhood is None:
             neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
-        value = h.really_unicode(value or '').encode('utf-8').lower()
+        value = h.really_unicode(value or '').encode('utf-8')
         self._validate_shortname(value, neighborhood, state)
         if check_allowed:
             self._validate_allowed(value, neighborhood, state)

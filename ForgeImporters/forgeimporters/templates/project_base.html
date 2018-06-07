@@ -37,17 +37,11 @@
 {% block extra_js %}
     {{ super() }}
     <script type="text/javascript">
-        var timers = {};
-        function delay(callback, ms) {
-            clearTimeout(timers[callback]);
-            timers[callback] = setTimeout(callback, ms);
-        }
-
         var manual = false;
         function suggest_name() {
             var $project_shortname = $('#project_shortname');
             if (!manual) {
-                $project_shortname.val($('#project_name').val().replace(/\s/g, '').toLowerCase());
+                $project_shortname.val($('#project_name').val().replace(/[^A-Za-z0-9]+/g, '-').toLowerCase());
             }
             $project_shortname.trigger('change');
         }
@@ -72,14 +66,14 @@
 
         $(function() {
             $('#project_name').bind('change keyup', suggest_name);
-
             $('#project_shortname').bind('change keyup', function(event) {
                 if (event.type == 'keyup') {
                     manual = true;
                 }
                 update_url();
-                delay(check_names, 500);
             });
+            $('#project_name').bind('blur', check_names);
+            $('#project_shortname').bind('blur', check_names);
         });
     </script>
 {% endblock %}
