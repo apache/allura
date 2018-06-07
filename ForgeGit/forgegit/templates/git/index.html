@@ -85,7 +85,7 @@ git push -u origin master</pre>
     {% endif %}
   {% elif c.app.repo.status == 'ready' %}
     {% if h.has_access(c.app, 'write')() %}
-    <p>The metadata for this repository is missing.  To fix, please try a <a href="{{c.app.url}}refresh">Repository Refresh</a>.</p>
+    <p>Browsing this repo on the web is unavailable currently.  To fix, please try a <a href="{{c.app.url}}refresh">Repository Refresh</a>.  Committing and pulling code should still work.</p>
     {% else %}
     <p><b>No (more) commits</b></p>
     {% endif %}

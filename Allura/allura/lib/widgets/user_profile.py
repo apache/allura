@@ -46,4 +46,4 @@ class SendMessageForm(ForgeForm):
                 style='width: 425px; height:200px'),
             label='Message')
 
-        cc = ew.Checkbox(label='CC Sender')
+        cc = ew.Checkbox(label='Send me a copy')
