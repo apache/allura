@@ -77,8 +77,8 @@ class TestAuth(TestController):
             r = self.app.post('/auth/do_login', params=dict(
                 username='test-user', password='foo',
                 _session_id=self.app.cookies['_session_id']),
-                antispam=True)
-            assert_equal(r.headers['Location'], 'http://localhost/')
+                antispam=True).follow()
+            assert_equal(r.headers['Location'], 'http://localhost/dashboard')
 
         with assert_raises(ValueError) as ex:
             r = self.app.post('/auth/do_login', antispam=True, params=dict(
@@ -127,13 +127,13 @@ class TestAuth(TestController):
             username='test-user', password='foo',
             _session_id=self.app.cookies['_session_id']),
             extra_environ={'REMOTE_ADDR': '127.0.0.1'},
-            antispam=True).follow()
+            antispam=True).follow().follow()
 
         logged_in_session = r.session['_id']
         links = r.html.find(*nav_pattern).findAll('a')
         assert_equal(links[-1].string, "Log Out")
 
-        r = self.app.get('/auth/logout').follow()
+        r = self.app.get('/auth/logout').follow().follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
         links = r.html.find(*nav_pattern).findAll('a')
@@ -145,7 +145,7 @@ class TestAuth(TestController):
         assert_equal(user.last_access['login_ip'], None)
         assert_equal(user.last_access['login_ua'], None)
 
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login',
                       headers={'User-Agent': 'browser'},
                       extra_environ={'REMOTE_ADDR': '127.0.0.1'},
@@ -164,7 +164,7 @@ class TestAuth(TestController):
     def test_rememberme(self):
         username = M.User.query.get(username='test-user').username
 
-        r = self.app.get('/')  # establish session
+        r = self.app.get('/').follow()  # establish session
 
         # Login as test-user with remember me checkbox off
         r = self.app.post('/auth/do_login', params=dict(
@@ -195,7 +195,7 @@ class TestAuth(TestController):
         email_address = 'test_abcd_123@domain.net'
         user = M.User.query.get(username='test-admin')
         addresses_number = len(user.email_addresses)
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/preferences/update_emails',
                       params={
                           'new_addr.addr': email_address,
@@ -227,7 +227,7 @@ class TestAuth(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_user_added_claimed_address_by_other_user_confirmed(self, gen_message_id, sendsimplemail):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         email_address = 'test_abcd_123@domain.net'
 
         # test-user claimed & confirmed email address
@@ -285,7 +285,7 @@ class TestAuth(TestController):
 
         user1 = M.User.query.get(username='test-user-1')
         addresses_number = len(user1.email_addresses)
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/preferences/update_emails',
                           params={
                               'new_addr.addr': email_address,
@@ -309,7 +309,7 @@ class TestAuth(TestController):
     @patch('allura.lib.helpers.gen_message_id')
     def test_user_cannot_claim_more_than_max_limit(self, gen_message_id, sendsimplemail):
         with h.push_config(config, **{'user_prefs.maximum_claimed_emails': '2'}):
-            self.app.get('/')  # establish session
+            self.app.get('/').follow()  # establish session
             r = self.app.post('/auth/preferences/update_emails',
                               params={
                                   'new_addr.addr': 'test_abcd_1@domain.net',
@@ -339,7 +339,7 @@ class TestAuth(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_verification_link_for_confirmed_email(self, gen_message_id, sendsimplemail):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         email_address = 'test_abcd@domain.net'
 
         # test-user claimed email address
@@ -370,7 +370,7 @@ class TestAuth(TestController):
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
     def test_invalidate_verification_link_if_email_was_confirmed(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         email_address = 'test_abcd@domain.net'
 
         # test-user claimed email address
@@ -398,7 +398,7 @@ class TestAuth(TestController):
         assert not email.confirmed
 
     def test_verify_addr_correct_session(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         email_address = 'test_abcd@domain.net'
 
         # test-user claimed email address
@@ -481,7 +481,7 @@ class TestAuth(TestController):
         user = self._create_password_reset_hash()
         session(user).flush(user)
 
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         change_params['_session_id'] = self.app.cookies['_session_id']
         self.app.post('/auth/preferences/update_emails',
                       extra_environ=dict(username='test-admin'),
@@ -494,7 +494,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_change_password(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         # Get and assert user with password reset token.
         user = self._create_password_reset_hash()
         old_pass = user.get_pref('password')
@@ -579,7 +579,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_email_prefs_change_requires_password(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         # Claim new email
         new_email_params = {
             'new_addr.addr': 'test@example.com',
@@ -734,7 +734,7 @@ class TestAuth(TestController):
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     def test_format_email(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/subscriptions/update_subscriptions',
                       params={'email_format': 'plain', 'subscriptions': '',
                               '_session_id': self.app.cookies['_session_id']})
@@ -765,7 +765,7 @@ class TestAuth(TestController):
                 display_name='Test Me',
                 _session_id=self.app.cookies['_session_id'],
             ))
-        r = r.follow()
+        r = r.follow().follow()
         assert 'User "aaa" registered' in unentity(r.body)
         r = self.app.post(
             '/auth/save_new',
@@ -785,7 +785,7 @@ class TestAuth(TestController):
             status=302)
 
     def test_create_account_require_email(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         with h.push_config(config, **{'auth.require_email_addr': 'false'}):
             self.app.post(
                 '/auth/save_new',
@@ -817,7 +817,7 @@ class TestAuth(TestController):
 
     def test_verify_email(self):
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
-            self.app.get('/')  # establish session
+            self.app.get('/').follow()  # establish session
             r = self.app.post(
                 '/auth/save_new',
                 params=dict(
@@ -852,7 +852,7 @@ class TestAuth(TestController):
 
     def test_create_account_disabled_submit_fails(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
-            self.app.get('/')  # establish session
+            self.app.get('/').follow()  # establish session
             self.app.post('/auth/save_new',
                           params=dict(
                               username='aaa',
@@ -869,7 +869,7 @@ class TestAuth(TestController):
            an admin page."""
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/save_new', params=dict(
             username='aaa',
             pw='12345678',
@@ -911,7 +911,7 @@ class TestAuth(TestController):
         assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
 
     def test_no_open_return_to(self):
-        r = self.app.get('/auth/logout').follow()
+        r = self.app.get('/auth/logout').follow().follow()
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='/foo',
@@ -931,18 +931,18 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://example.com/foo',
-            _session_id=self.app.cookies['_session_id']))
-        assert_equal(r.location, 'http://localhost/')
+            _session_id=self.app.cookies['_session_id'])).follow()
+        assert_equal(r.location, 'http://localhost/dashboard')
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='//example.com/foo',
-            _session_id=self.app.cookies['_session_id']))
-        assert_equal(r.location, 'http://localhost/')
+            _session_id=self.app.cookies['_session_id'])).follow()
+        assert_equal(r.location, 'http://localhost/dashboard')
 
     def test_no_injected_headers_in_return_to(self):
-        r = self.app.get('/auth/logout').follow()
+        r = self.app.get('/auth/logout').follow().follow()
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             return_to='/foo\nContent-Length: 777',
@@ -1312,7 +1312,7 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_user_message(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         assert not M.User.query.get(username='test-admin').get_pref('disable_user_messages')
         self.app.post('/auth/preferences/user_message',
                       params={'_session_id': self.app.cookies['_session_id'],
@@ -1357,7 +1357,7 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = False
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                        '_session_id': self.app.cookies['_session_id'],
                                                        })
@@ -1372,7 +1372,7 @@ class TestPasswordReset(TestController):
             {'claimed_by_user_id': user._id}).first()
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                        '_session_id': self.app.cookies['_session_id'],
                                                        })
@@ -1382,7 +1382,7 @@ class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_only_primary_email_reset_allowed(self, gen_message_id, sendmail):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
         user.claim_address(self.test_primary_email)
         user.set_pref('email_address', self.test_primary_email)
@@ -1403,7 +1403,7 @@ class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_non_primary_email_reset_allowed(self, gen_message_id, sendmail):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
         email1 = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         user.claim_address(self.test_primary_email)
@@ -1423,7 +1423,7 @@ class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
     def test_password_reset(self, gen_message_id, sendmail):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = True
@@ -1488,7 +1488,7 @@ To reset your password on %s, please visit the following URL:
         form[encoded['username']] = 'test-admin'
         form[encoded['password']] = new_password
         r = form.submit(status=302)
-        r = r.follow()
+        r = r.follow().follow()
         assert 'Log Out' in r, r
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -1499,7 +1499,7 @@ To reset your password on %s, please visit the following URL:
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
                                                            '_session_id': self.app.cookies['_session_id'],
                                                            })
@@ -1548,7 +1548,7 @@ class TestOAuth(TestController):
 
     def test_generate_revoke_access_token(self):
         # generate
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/oauth/register',
                           params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
                                   '_session_id': self.app.cookies['_session_id'],
@@ -1856,7 +1856,7 @@ class TestDisableAccount(TestController):
         assert form is not None
 
     def test_bad_password(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/disable/do_disable', {'password': 'bad',
                                                        '_session_id': self.app.cookies['_session_id'], })
         assert_in('Invalid password', r)
@@ -1864,7 +1864,7 @@ class TestDisableAccount(TestController):
         assert_equal(user.disabled, False)
 
     def test_disable(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/disable/do_disable', {'password': 'foo',
                                                        '_session_id': self.app.cookies['_session_id'], })
         assert_equal(r.status_int, 302)
@@ -1893,8 +1893,8 @@ class TestPasswordExpire(TestController):
         except exc.HTTPFound as e:
             assert_equal(e.location, '/auth/pwd_expired?' + urlencode({'return_to': where}))
 
-    def assert_not_redirects(self):
-        self.app.get('/', extra_environ={'username': 'test-user'}, status=200)
+    def assert_not_redirects(self, where='/neighborhood'):
+        self.app.get(where, extra_environ={'username': 'test-user'}, status=200)
 
     def test_disabled(self):
         r = self.login()
@@ -1973,8 +1973,8 @@ class TestPasswordExpire(TestController):
             assert_not_equal(user.password, old_password)
 
             # Can log in with new password and change isn't required anymore
-            r = self.login(pwd='qwerty')
-            assert_equal(r.location, 'http://localhost/')
+            r = self.login(pwd='qwerty').follow()
+            assert_equal(r.location, 'http://localhost/dashboard')
             assert_not_in('Invalid login', r)
             assert_false(self.expired(r))
             self.assert_not_redirects()

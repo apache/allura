@@ -39,7 +39,7 @@ class TestStats(TestController):
     def test_login(self):
         user = User.by_username('test-user')
         init_logins = user.stats.tot_logins_count
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login', antispam=True, params=dict(
             username=user.username, password='foo',
             _session_id=self.app.cookies['_session_id'],

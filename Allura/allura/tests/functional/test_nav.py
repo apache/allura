@@ -55,7 +55,7 @@ class TestNavigation(TestController):
 
     def test_global_nav_links_present(self):
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_left = response.html.find(*self.global_nav_pattern)
         assert len(nav_left.findAll('a')) == 1
         assert nav_left.a.get('href') == self.nav_data['url']
@@ -64,13 +64,13 @@ class TestNavigation(TestController):
     @mock.patch.object(g, 'global_nav', return_value=[])
     def test_global_nav_links_absent(self, global_nav):
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_left = response.html.find(*self.global_nav_pattern)
         assert len(nav_left.findAll('a')) == 0
 
     def test_logo_absent_if_not_image_path(self):
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         assert len(nav_logo.findAll('a')) == 0
 
@@ -78,7 +78,7 @@ class TestNavigation(TestController):
         self.logo_data = {
             "link": "/", "path": "user.png"}
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         assert len(nav_logo.findAll('a')) == 1
         assert self.logo_data['path'] in nav_logo.a.img.get('src')
@@ -87,7 +87,7 @@ class TestNavigation(TestController):
         self.logo_data = {
             "link": "", "path": "user.png"}
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         assert len(nav_logo.findAll('a')) == 1
         assert nav_logo.a.get('href') == '/'
@@ -97,7 +97,7 @@ class TestNavigation(TestController):
             "link": "", "path": "user.png",
             "width": 20, "height": 20}
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         width = self.width % self.logo_data["width"]
         height = self.height % self.logo_data["height"]
@@ -109,7 +109,7 @@ class TestNavigation(TestController):
             "link": "", "path": "user.png",
             "height": 20}
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         height = self.height % self.logo_data["height"]
         assert nav_logo.find(
@@ -120,7 +120,7 @@ class TestNavigation(TestController):
             "link": "/", "path": "user.png",
             "width": 20}
         with h.push_config(config, **self._set_config()):
-            response = self.app.get('/')
+            response = self.app.get('/').follow()
         nav_logo = response.html.find(*self.logo_pattern)
         width = self.width % self.logo_data["width"]
         assert nav_logo.find(

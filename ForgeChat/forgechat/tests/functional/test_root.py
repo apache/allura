@@ -35,7 +35,7 @@ class TestRootController(TestController):
 
     @with_chat
     def test_admin_configure(self):
-        self.app.get('/')  # establish session
+        self.app.get('/').follow()  # establish session
         data = {'channel': 'test channel',
                 '_session_id': self.app.cookies['_session_id']}
         ch = CM.ChatChannel.query.get()

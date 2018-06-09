@@ -2172,15 +2172,17 @@ class TestFunctionalController(TrackerTestController):
 
     def test_move_ticket_bad_data(self):
         self.new_ticket(summary='test')
-        r = self.app.post('/p/test/bugs/1/move').follow()  # empty POST
+        r = self.app.post('/p/test/bugs/1/move', extra_environ={'HTTP_REFERER': '/p/test/bugs/1/'}).follow()  # empty POST
         assert 'Select valid tracker' in r, r
         r = self.app.post('/p/test/bugs/1/move',
-                          params={'tracker': 'invalid tracker id'}).follow()
+                          params={'tracker': 'invalid tracker id'},
+                          extra_environ={'HTTP_REFERER': '/p/test/bugs/1/'}).follow()
         assert 'Select valid tracker' in r, r
         p = M.Project.query.get(shortname='test')
         tracker = p.app_instance('bugs')
         r = self.app.post('/p/test/bugs/1/move',
-                          params={'tracker': str(tracker.config._id)}).follow()
+                          params={'tracker': str(tracker.config._id)},
+                          extra_environ={'HTTP_REFERER': '/p/test/bugs/1/'}).follow()
         assert 'Ticket already in a selected tracker' in r, r
 
     def test_move_ticket_access(self):
