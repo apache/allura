@@ -69,8 +69,8 @@ class Repository(M.Repository):
         return self._impl.commit('HEAD')
 
     def tarball_filename(self, revision, path=None):
-        fn = super(Repository, self).tarball_filename(revision, path)
-        path = self._impl._path_to_root(path, revision)
+        fn = super(Repository, self).tarball_filename('r'+revision, path)
+        path = self._impl._tarball_path_clean(path, revision)
         fn += ('-' + '-'.join(path.split('/'))) if path else ''
         return fn
 
@@ -672,30 +672,17 @@ class SVNImplementation(M.RepositoryImplementation):
             log_entry = Object(date='', message='', changed_paths=[])
         return [p.path for p in log_entry.changed_paths]
 
-    def _path_to_root(self, path, rev=None):
-        '''Return tag/branch/trunk root for given path inside svn repo'''
+    def _tarball_path_clean(self, path, rev=None):
         if path:
-            path = path.strip('/').split('/')
-            idx = None
-            if 'tags' in path:
-                idx = path.index('tags')
-            elif 'branches' in path:
-                idx = path.index('branches')
-            # e.g. path/tags/tag-1.0/...
-            if idx is not None and idx < len(path) - 1:
-                return '/'.join(path[:idx + 2])  # path/tags/tag-1.0
-            if 'trunk' in path:
-                idx = path.index('trunk')
-                return '/'.join(path[:idx + 1])  # path/trunk
-        # no tag/brach/trunk in path
-        trunk_exists = svn_path_exists(
-            'file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'), rev)
-        if trunk_exists:
-            return 'trunk'
-        return ''
+            return path.strip('/')
+        else:
+            trunk_exists = svn_path_exists('file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'), rev)
+            if trunk_exists:
+                return 'trunk'
+            return ''
 
     def tarball(self, commit, path=None):
-        path = self._path_to_root(path, commit)
+        path = self._tarball_path_clean(path, commit)
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit, path)
