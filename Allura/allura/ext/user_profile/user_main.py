@@ -16,7 +16,6 @@
 #       under the License.
 
 import logging
-import re
 
 import pkg_resources
 from pylons import tmpl_context as c
@@ -41,7 +40,7 @@ from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.controllers.rest import AppRestControllerMixin
 from allura.lib.decorators import require_post
-from allura.lib.widgets.user_profile import SendMessageForm
+from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil
 
 log = logging.getLogger(__name__)
 
@@ -116,15 +115,7 @@ class UserProfileApp(Application):
         """
         if hasattr(UserProfileApp, '_sections'):
             return UserProfileApp._sections
-        sections = {}
-        for ep in h.iter_entry_points('allura.user_profile.sections'):
-            sections[ep.name] = ep.load()
-        section_ordering = tg.config.get('user_profile_sections.order', '')
-        ordered_sections = []
-        for section in re.split(r'\s*,\s*', section_ordering):
-            if section in sections:
-                ordered_sections.append(sections.pop(section))
-        UserProfileApp._sections = ordered_sections + sections.values()
+        UserProfileApp._sections = SectionsUtil.load_sections('user_profile')
         return UserProfileApp._sections
 
 

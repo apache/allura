@@ -16,7 +16,6 @@
 #       under the License.
 
 import logging
-import re
 
 import tg
 from jinja2 import Markup
@@ -30,6 +29,7 @@ from allura.controllers import BaseController
 from allura.controllers.feed import FeedController
 from allura.lib import helpers as h
 from allura.lib.plugin import AuthenticationProvider
+from allura.lib.widgets.user_profile import SectionsUtil
 
 log = logging.getLogger(__name__)
 
@@ -40,17 +40,8 @@ class DashboardController(BaseController, FeedController):
     def index(self, **kw):
         if not c.user.is_anonymous():
             user = c.user
-            sections = {}
-            for ep in h.iter_entry_points('allura.personal_dashboard.sections'):
-                sections[ep.name] = ep.load()
-            section_ordering = tg.config.get('personal_dashboard_sections.order', '')
-            ordered_sections = []
-            for section in re.split(r'\s*,\s*', section_ordering):
-                if section in sections:
-                    ordered_sections.append(sections.pop(section))
-            dashboard_sections = ordered_sections + sections.values()
             sections = [section(user)
-                        for section in dashboard_sections]
+                        for section in SectionsUtil.load_sections('personal_dashboard')]
             return dict(user=user, sections=sections, title="Personal Dashboard")
         else:
             redirect('/neighborhood')

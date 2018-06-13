@@ -15,10 +15,18 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
+import re
+
 import ew as ew_core
 import ew.jinja2_ew as ew
+import tg
 from formencode import validators as fev
+
+from allura.lib import helpers as h
 from .forms import ForgeForm
+
+log = logging.getLogger(__name__)
 
 
 class SendMessageForm(ForgeForm):
@@ -47,3 +55,19 @@ class SendMessageForm(ForgeForm):
             label='Message')
 
         cc = ew.Checkbox(label='Send me a copy')
+
+
+class SectionsUtil(object):
+
+    @staticmethod
+    def load_sections(app):
+        sections = {}
+        for ep in h.iter_entry_points('allura.%s.sections' % app):
+            sections[ep.name] = ep.load()
+        section_ordering = tg.config.get('%s_sections.order' % app, '')
+        ordered_sections = []
+        for section in re.split(r'\s*,\s*', section_ordering):
+            if section in sections:
+                ordered_sections.append(sections.pop(section))
+        sections = ordered_sections + sections.values()
+        return sections
