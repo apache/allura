@@ -123,18 +123,7 @@
     <div id="project-status">
         {% set proj_text = 'Project' if value.is_root else 'Subproject' %}
         {{proj_text}} Status:
-        {% if value.removal == '' %}
-            Active
-        {% elif value.removal == 'moved' %}
-            Moved to: {{value.moved_to_url}}
-        {% elif value.removal == 'abandoned' -%}
-            Abandoned
-        {% elif value.removal == 'deleted' -%}
-            Deleted
-        {% endif %}
-        {{ g.icons['edit'].render() }}
-        <div id="project-status-edit" class="{% if not c.form_errors %}hidden{% endif %}">
-            <br>
+        <div>
             {% if c.form_errors.get('moved_to_url') %}
                 <div class="error">{{c.form_errors.get('moved_to_url')}}</div>
             {% endif %}
@@ -145,7 +134,7 @@
             <input name="removal" type="radio" value="moved" id="removal_moved_cb"
                    {% if value.removal == 'moved' %} checked{% endif %}>
             <label for="removal_moved_cb">Moved {{proj_text}} to: </label>
-            <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 50%">
+            <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 60%" placeholder="http://new-website.com/example">
             <br>
             <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
                    {% if value.removal == 'abandoned' %} checked{% endif %}>
@@ -156,6 +145,8 @@
                    {% if value.removal == 'deleted' %} checked{% endif %}>
             <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} {{proj_text}}</label>
             {% endif %}
+            {% block status_choices_end -%}
+            {% endblock %}
         </div>
     </div>
     {% endif%}
@@ -188,3 +179,6 @@
   </div>
   {{lib.csrf_token()}}
 </form>
+
+{% block extra_css %}
+{% endblock %}
