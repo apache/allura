@@ -18,29 +18,26 @@
 import logging
 
 import pkg_resources
-from pylons import tmpl_context as c
-from pylons import app_globals as g
-from pylons import request
-from formencode import validators
-from tg import expose, redirect, validate, flash
-import tg
-from webob import exc
-from jinja2 import Markup
-from pytz import timezone
 from datetime import datetime
-from paste.deploy.converters import asbool
+
+from formencode import validators
+from pylons import request
+from pylons import tmpl_context as c
+from pytz import timezone
+from tg import expose, redirect, validate, flash
+from webob import exc
 
 from allura import version
 from allura.app import Application, SitemapEntry
-from allura.lib import helpers as h
-from allura.lib.security import require_access
-from allura.lib.plugin import AuthenticationProvider
-from allura.model import User, ACE, ProjectRole
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.controllers.rest import AppRestControllerMixin
+from allura.lib import helpers as h
 from allura.lib.decorators import require_post
-from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil
+from allura.lib.plugin import AuthenticationProvider
+from allura.lib.security import require_access
+from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil, SectionBase
+from allura.model import User, ACE, ProjectRole
 
 log = logging.getLogger(__name__)
 
@@ -219,7 +216,7 @@ class UserProfileRestController(AppRestControllerMixin):
         return json
 
 
-class ProfileSectionBase(object):
+class ProfileSectionBase(SectionBase):
 
     """
     This is the base class for sections on the Profile tool.
@@ -233,7 +230,6 @@ class ProfileSectionBase(object):
     Sections must be pointed to by an entry-point in the group
     ``[allura.user_profile.sections]``.
     """
-    template = ''
 
     def __init__(self, user, project):
         """
@@ -241,50 +237,8 @@ class ProfileSectionBase(object):
         :param:`project`.  Stores the values as attributes of
         the same name.
         """
-        self.user = user
+        super(ProfileSectionBase, self).__init__(user)
         self.project = project
-
-    def check_display(self):
-        """
-        Should return True if the section should be displayed.
-        """
-        return True
-
-    def prepare_context(self, context):
-        """
-        Should be overridden to add any values to the template context prior
-        to display.
-        """
-        return context
-
-    def display(self, *a, **kw):
-        """
-        Renders the section using the context from :meth:`prepare_context`
-        and the :attr:`template`, if :meth:`check_display` returns True.
-
-        If overridden or this base class is not used, this method should
-        return either plain text (which will be escaped) or a `jinja2.Markup`
-        instance.
-        """
-        if not self.check_display():
-            return ''
-        try:
-            tmpl = g.jinja2_env.get_template(self.template)
-            context = self.prepare_context({
-                'h': h,
-                'c': c,
-                'g': g,
-                'user': self.user,
-                'config': tg.config,
-                'auth': AuthenticationProvider.get(request),
-            })
-            return Markup(tmpl.render(context))
-        except Exception as e:
-            log.exception('Error rendering profile section %s: %s', type(self).__name__, e)
-            if asbool(tg.config.get('debug')):
-                raise
-            else:
-                return ''
 
 
 class PersonalDataSection(ProfileSectionBase):

@@ -20,10 +20,15 @@ import re
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from jinja2 import Markup
+from paste.deploy.converters import asbool
 import tg
 from formencode import validators as fev
-
+from pylons import app_globals as g
+from pylons import request
+from pylons import tmpl_context as c
 from allura.lib import helpers as h
+from allura.lib.plugin import AuthenticationProvider
 from .forms import ForgeForm
 
 log = logging.getLogger(__name__)
@@ -71,3 +76,59 @@ class SectionsUtil(object):
                 ordered_sections.append(sections.pop(section))
         sections = ordered_sections + sections.values()
         return sections
+
+
+class SectionBase(object):
+    """
+    This is the base class for sections in Profile tool and Dashboard.
+    """
+    template = ''
+
+    def __init__(self, user):
+        """
+        Creates a section for the given :param:`user`. Stores the values as attributes of
+        the same name.
+        """
+        self.user = user
+
+    def check_display(self):
+        """
+        Should return True if the section should be displayed.
+        """
+        return True
+
+    def prepare_context(self, context):
+        """
+        Should be overridden to add any values to the template context prior
+        to display.
+        """
+        return context
+
+    def display(self, *a, **kw):
+        """
+        Renders the section using the context from :meth:`prepare_context`
+        and the :attr:`template`, if :meth:`check_display` returns True.
+
+        If overridden or this base class is not used, this method should
+        return either plain text (which will be escaped) or a `jinja2.Markup`
+        instance.
+        """
+        if not self.check_display():
+            return ''
+        try:
+            tmpl = g.jinja2_env.get_template(self.template)
+            context = self.prepare_context({
+                'h': h,
+                'c': c,
+                'g': g,
+                'user': self.user,
+                'config': tg.config,
+                'auth': AuthenticationProvider.get(request),
+            })
+            return Markup(tmpl.render(context))
+        except Exception as e:
+            log.exception('Error rendering section %s: %s', type(self).__name__, e)
+            if asbool(tg.config.get('debug')):
+                raise
+            else:
+                return ''
