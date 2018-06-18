@@ -22,8 +22,8 @@ from tg import expose, redirect
 
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedController
-from allura.lib.widgets.user_profile import SectionBase
-from allura.lib.widgets.user_profile import SectionsUtil
+from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
+
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class DashboardSectionBase(SectionBase):
     """
 
 
-class ProjectsSection(DashboardSectionBase):
+class ProjectsSection(DashboardSectionBase, ProjectsSectionBase):
     template = 'allura.ext.personal_dashboard:templates/sections/projects.html'
 
 

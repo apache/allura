@@ -36,7 +36,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post
 from allura.lib.plugin import AuthenticationProvider
 from allura.lib.security import require_access
-from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil, SectionBase
+from allura.lib.widgets.user_profile import SendMessageForm, SectionsUtil, SectionBase, ProjectsSectionBase
 from allura.model import User, ACE, ProjectRole
 
 log = logging.getLogger(__name__)
@@ -265,31 +265,8 @@ class PersonalDataSection(ProfileSectionBase):
             availability=self.user.get_pref('availability')._deinstrument())
 
 
-class ProjectsSection(ProfileSectionBase):
+class ProjectsSection(ProfileSectionBase, ProjectsSectionBase):
     template = 'allura.ext.user_profile:templates/sections/projects.html'
-
-    def get_projects(self):
-        return [
-            project
-            for project in self.user.my_projects()
-            if project != c.project
-            and (self.user == c.user or h.has_access(project, 'read'))
-            and not project.is_nbhd_project
-            and not project.is_user_project]
-
-    def prepare_context(self, context):
-        context['projects'] = self.get_projects()
-        return context
-
-    def __json__(self):
-        projects = [
-            dict(
-                name=project['name'],
-                url=project.url(),
-                summary=project['summary'],
-                last_updated=project['last_updated'])
-            for project in self.get_projects()]
-        return dict(projects=projects)
 
 
 class SkillsSection(ProfileSectionBase):

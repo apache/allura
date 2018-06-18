@@ -17,13 +17,50 @@
        under the License.
 -#}
 {% extends "allura.ext.personal_dashboard:templates/dashboard_section_base.html" %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import g.theme.jinja_macros as theme_macros with context %}
 
 {% block title %}
     Projects
 {% endblock %}
 
-{% block actions %}{% endblock %}
+{% block actions %}
+    {% if user == c.user %}
+        <a href="/{{ config.get('default_neighborhood', 'p') }}/add_project">Add Project</a>
+    {% endif %}
+{% endblock %}
 
 {% block section_class %}projects{% endblock %}
 
-{% block content %}{% endblock %}
+{% block content %}
+    <ul>
+        {% for project in projects %}
+            <li{% if loop.index > 5 %} class="hidden"{% endif %}>
+                {% if project.icon -%}
+                    <img {{ lib.project_icon_srcs(project) }} alt="Project Logo" width="48" height="48"/>
+                {%- else -%}
+                    {{ theme_macros.placeholder_project_icon() }}
+                {%- endif -%}
+                <span class="project-info">
+                <a href="{{ project.url() }}">{{ project.name }}</a>
+                {{ project.summary or '&nbsp;'|safe }}
+            </span>
+                <span class="project-last-updated">
+                Last Updated:
+                <time datetime="{{ project.last_updated }}" title="{{ project.last_updated }}">
+                    {{ h.ago(project.last_updated) }}
+                </time>
+            </span>
+            </li>
+        {% else %}
+            <li class="empty">No projects to display.</li>
+        {% endfor %}
+    </ul>
+    {% if projects|length > 5 %}
+        <div class="show-more-projects">
+            <button onclick="$(this).hide().closest('.section-body').find('li.hidden').show()">
+                {{ g.icons['add'].render(title='Show More', show_title=True, tag='b') }}
+            </button>
+        </div>
+    {% endif %}
+{% endblock %}

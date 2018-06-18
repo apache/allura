@@ -132,3 +132,29 @@ class SectionBase(object):
                 raise
             else:
                 return ''
+
+
+class ProjectsSectionBase(SectionBase):
+
+    def get_projects(self):
+        return [
+            project
+            for project in self.user.my_projects()
+            if project != c.project
+               and (self.user == c.user or h.has_access(project, 'read'))
+               and not project.is_nbhd_project
+               and not project.is_user_project]
+
+    def prepare_context(self, context):
+        context['projects'] = self.get_projects()
+        return context
+
+    def __json__(self):
+        projects = [
+            dict(
+                name=project['name'],
+                url=project.url(),
+                summary=project['summary'],
+                last_updated=project['last_updated'])
+            for project in self.get_projects()]
+        return dict(projects=projects)
