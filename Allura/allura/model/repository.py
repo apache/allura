@@ -395,6 +395,15 @@ class Repository(Artifact, ActivityObject):
                             self.project.shortname,
                             self.name)
 
+    @property
+    def tarball_tmpdir(self):
+        return os.path.join(tg.config.get('scm.repos.tarball.tmpdir', tg.config.get('scm.repos.tarball.root', '/')),
+                            self.tool,
+                            self.project.shortname[:1],
+                            self.project.shortname[:2],
+                            self.project.shortname,
+                            self.name)
+
     def tarball_filename(self, revision, path=None):
         shortname = c.project.shortname.replace('/', '-')
         mount_point = c.app.config.options.mount_point

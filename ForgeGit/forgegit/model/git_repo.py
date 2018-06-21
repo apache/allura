@@ -514,6 +514,9 @@ class GitImplementation(M.RepositoryImplementation):
         return tree._id
 
     def tarball(self, commit, path=None):
+        """
+        :param path: is currently ignored.  Can't request a snapshot of a subdirectory
+        """
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit)

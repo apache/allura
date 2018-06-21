@@ -682,30 +682,38 @@ class SVNImplementation(M.RepositoryImplementation):
             return ''
 
     def tarball(self, commit, path=None):
+        """
+        Makes a svn export at `tmpdest`
+            then zips that into `dest/tmpfilename`
+            then renames that to `dest/filename`
+        """
         path = self._tarball_path_clean(path, commit)
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
+        if not os.path.exists(self._repo.tarball_tmpdir):
+            os.makedirs(self._repo.tarball_tmpdir)
         archive_name = self._repo.tarball_filename(commit, path)
         dest = os.path.join(self._repo.tarball_path, archive_name)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' %
-                                (archive_name, '.zip'))
-        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' %
-                                   (archive_name, '.tmp'))
+        tmpdest = os.path.join(self._repo.tarball_tmpdir, archive_name)
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
         rmtree(dest.encode('utf8'), ignore_errors=True)  # must encode into bytes or it'll fail on non-ascii filenames
+        rmtree(tmpdest.encode('utf8'), ignore_errors=True)
         path = os.path.join(self._url, path)
         try:
             # need to set system locale to handle all symbols in filename
             import locale
             locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
             self._svn.export(path,
-                             dest,
+                             tmpdest,
                              revision=pysvn.Revision(
                                  pysvn.opt_revision_kind.number, commit),
                              ignore_externals=True)
-            zipdir(dest, tmpfilename)
+            zipdir(tmpdest, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
             rmtree(dest.encode('utf8'), ignore_errors=True)
+            rmtree(tmpdest.encode('utf8'), ignore_errors=True)
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
 
