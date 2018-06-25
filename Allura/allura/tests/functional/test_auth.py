@@ -1847,6 +1847,8 @@ class TestDisableAccount(TestController):
         r = self.app.get('/auth/disable/')
         user = M.User.by_username('test-admin')
         for p in user.my_projects_by_role_name('Admin'):
+            if p.name == 'u/test-admin':
+                continue
             assert_in(p.name, r)
             assert_in(p.url(), r)
 
