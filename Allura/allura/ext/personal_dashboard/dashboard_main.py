@@ -23,7 +23,7 @@ from tg import expose, redirect
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedController
 from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
-
+from allura.lib.widgets import form_fields as ffw
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +62,47 @@ class ProjectsSection(DashboardSectionBase, ProjectsSectionBase):
 
 class TicketsSection(DashboardSectionBase):
     template = 'allura.ext.personal_dashboard:templates/sections/tickets.html'
+
+    def query_tickets(self, page, limit):
+        from forgetracker.model import Ticket
+
+        q = ' or '.join(['assigned_to:' + str(self.user['username']), 'reported_by:' + str(self.user['username'])])
+        result = Ticket.paged_search(None, self.user, q, limit=limit, page=page)
+
+        tickets = [
+            dict(
+                ticket_num=ticket['ticket_num'],
+                url=ticket.url(),
+                summary=ticket['summary'],
+                created_date=ticket['created_date'],
+                reported_by=ticket['reported_by'],
+                assigned_to_id=ticket['assigned_to_id'],
+                assigned_to=ticket['assigned_to'],
+                milestone=ticket['_milestone'],
+                status=ticket['status'])
+            for ticket in result.get('tickets')
+        ]
+        return dict(tickets=tickets, count=result.get('count'), solr_error=result.get('solr_error'))
+
+    def prepare_context(self, context):
+        page = 0
+        limit = 25
+
+        page_string = context['c'].form_values.get('page')
+        limit_string = context['c'].form_values.get('limit')
+        if page_string is not None:
+            page = int(page_string)
+        if limit_string is not None:
+            limit = int(limit_string)
+        result = self.query_tickets(page, limit)
+        context['page_size'] = ffw.PageSize()
+        context['page_list'] = ffw.PageList()
+        context['page'] = page
+        context['limit'] = limit
+        context['tickets'] = result.get('tickets')
+        context['count'] = result.get('count')
+        context['solr_error'] = result.get('solr_error')
+        return context
 
 
 class MergeRequestsSection(DashboardSectionBase):

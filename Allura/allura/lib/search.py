@@ -156,12 +156,17 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     if a is None:
         return  # if there are no instance of atype, we won't find anything
     fields = a.index()
+    fq = ['type_s:%s' % fields['type_s']]
     # Now, we'll translate all the fld:
-    q = atype.translate_query(q, fields)
-    fq = [
-        'type_s:%s' % fields['type_s'],
-        'project_id_s:%s' % c.project._id,
-        'mount_point_s:%s' % c.app.config.options.mount_point]
+    if c.app is not None:
+        q = atype.translate_query(q, fields)
+        fq.append('mount_point_s:%s' % c.app.config.options.mount_point)
+    else:
+        q = SearchIndexable.translate_query(q, fields)
+
+    if c.project is not None:
+        fq.append('project_id_s:%s' % c.project._id)
+
     fq += kw.pop('fq', [])
     for name, values in (filter or {}).iteritems():
         field_name = name + '_s'

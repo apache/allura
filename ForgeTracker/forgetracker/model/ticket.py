@@ -1244,8 +1244,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
             # but query, unfortunately, returns results in arbitrary order
-            query = cls.query.find(
-                dict(app_config_id=app_config._id, ticket_num={'$in': ticket_numbers}))
+            if app_config is not None:
+                query = cls.query.find(
+                    dict(app_config_id=app_config._id, ticket_num={'$in': ticket_numbers}))
+            else:
+                query = cls.query.find(
+                    dict(ticket_num={'$in': ticket_numbers}))
             # so stick all the results in a dictionary...
             ticket_for_num = {}
             for t in query:
@@ -1256,7 +1260,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 if tn in ticket_for_num:
                     show_deleted = show_deleted and security.has_access(
                         ticket_for_num[tn], 'delete', user, app_config.project.root_project)
-                    if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project.root_project) and
+                    if (app_config is not None) and(security.has_access(ticket_for_num[tn], 'read', user, app_config.project.root_project) and
+                            (show_deleted or ticket_for_num[tn].deleted == False)):
+                        tickets.append(ticket_for_num[tn])
+                    elif (app_config is None) and(security.has_access(ticket_for_num[tn], 'read', user) and
                             (show_deleted or ticket_for_num[tn].deleted == False)):
                         tickets.append(ticket_for_num[tn])
                     else:
