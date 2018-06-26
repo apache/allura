@@ -49,18 +49,23 @@ class BulkExport(object):
 
     def process(self, project, tools, user, filename=None, send_email=True, with_attachments=False):
         export_filename = filename or project.bulk_export_filename()
-        export_path = self.get_export_path(
-            project.bulk_export_path(), export_filename)
+        tmp_path = os.path.join(
+            project.bulk_export_path(rootdir=tg.config.get('bulk_export_tmpdir', tg.config['bulk_export_path'])),
+            os.path.splitext(export_filename)[0],  # e.g. test-backup-2018-06-26-210524 without the .zip
+        )
+        export_path = project.bulk_export_path(rootdir=tg.config['bulk_export_path'])
+        export_fullpath = os.path.join(export_path, export_filename)
+        if not os.path.exists(tmp_path):
+            os.makedirs(tmp_path)
         if not os.path.exists(export_path):
             os.makedirs(export_path)
         apps = [project.app_instance(tool) for tool in tools]
         exportable = self.filter_exportable(apps)
-        results = [self.export(export_path, app, with_attachments) for app in exportable]
+        results = [self.export(tmp_path, app, with_attachments) for app in exportable]
         exported = self.filter_successful(results)
         if exported:
-            zipdir(export_path,
-                   os.path.join(os.path.dirname(export_path), export_filename))
-        shutil.rmtree(export_path.encode('utf8'))  # must encode into bytes or it'll fail on non-ascii filenames
+            zipdir(tmp_path, export_fullpath)
+        shutil.rmtree(tmp_path.encode('utf8'))  # must encode into bytes or it'll fail on non-ascii filenames
 
         if not user:
             log.info('No user. Skipping notification.')
@@ -68,8 +73,7 @@ class BulkExport(object):
         if not send_email:
             return
 
-        tmpl = g.jinja2_env.get_template(
-            'allura:templates/mail/bulk_export.html')
+        tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
         instructions = tg.config.get('bulk_export_download_instructions', '')
         instructions = instructions.format(
             project=project.shortname,
@@ -87,14 +91,6 @@ class BulkExport(object):
         mail_tasks.send_system_mail_to_user(user,
                                             u'Bulk export for project %s completed' % project.shortname,
                                             tmpl.render(tmpl_context))
-
-    def get_export_path(self, export_base_path, export_filename):
-        """Create temporary directory for export files"""
-        # Name temporary directory after project shortname,
-        # thus zipdir() will use proper prefix inside the archive.
-        tmp_dir_suffix = os.path.splitext(export_filename)[0]
-        path = os.path.join(export_base_path, tmp_dir_suffix)
-        return path
 
     def filter_exportable(self, apps):
         return [app for app in apps if app and app.exportable]

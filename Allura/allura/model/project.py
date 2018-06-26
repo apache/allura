@@ -1124,7 +1124,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 accounturl=accounturl
             ))
 
-    def bulk_export_path(self):
+    def bulk_export_path(self, rootdir=None):
+        """
+        :param rootdir: a directory path, using {nbhd} {project} or {c..} substitution vars if desired
+        :return: a bulk export path for the current project
+        """
         shortname = self.shortname
         if self.is_nbhd_project:
             shortname = self.url().strip('/')
@@ -1132,7 +1136,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             shortname = self.shortname.split('/')[1]
         elif not self.is_root:
             shortname = self.shortname.split('/')[0]
-        return config['bulk_export_path'].format(
+        return rootdir.format(
             nbhd=self.neighborhood.url_prefix.strip('/'),
             project=shortname,
             c=c,

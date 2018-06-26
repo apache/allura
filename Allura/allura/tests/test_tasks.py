@@ -525,11 +525,11 @@ class TestExportTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
         project = M.Project.query.get(shortname='test')
-        shutil.rmtree(project.bulk_export_path(), ignore_errors=True)
+        shutil.rmtree(project.bulk_export_path(tg.config['bulk_export_path']), ignore_errors=True)
 
     def tearDown(self):
         project = M.Project.query.get(shortname='test')
-        shutil.rmtree(project.bulk_export_path(), ignore_errors=True)
+        shutil.rmtree(project.bulk_export_path(tg.config['bulk_export_path']), ignore_errors=True)
 
     def test_bulk_export_filter_exportable(self):
         exportable = mock.Mock(exportable=True)
@@ -542,11 +542,6 @@ class TestExportTasks(unittest.TestCase):
         BE = export_tasks.BulkExport()
         self.assertEqual(
             BE.filter_successful(['foo', None, '0']), ['foo', '0'])
-
-    def test_get_export_path(self):
-        BE = export_tasks.BulkExport()
-        path = BE.get_export_path('/tmp/bulk_export/p/test/', 'test-0.zip')
-        self.assertEqual(path, '/tmp/bulk_export/p/test/test-0')
 
     @mock.patch('allura.tasks.export_tasks.shutil')
     @mock.patch('allura.tasks.export_tasks.zipdir')
