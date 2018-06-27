@@ -200,6 +200,11 @@ class TestTrackerImporter(TestCase):
                 'created_at': '2013-09-12T10:14:00Z',
                 'event': 'assigned',
             },
+            {
+                'actor': None,  # aka "ghost" user, when an account is removed from github
+                'created_at': '2013-09-12T10:14:00Z',
+                'event': 'assigned',
+            },
         ]
         importer = tracker.GitHubTrackerImporter()
         importer.process_events(extractor, ticket, issue)
@@ -216,6 +221,10 @@ class TestTrackerImporter(TestCase):
             ignore_security=True))
         self.assertEqual(args[2], mock.call(
             text='- **assigned_to**: [luke](https://github.com/luke)',
+            timestamp=datetime(2013, 9, 12, 10, 14, 0),
+            ignore_security=True))
+        self.assertEqual(args[3], mock.call(
+            text='- **assigned_to**: [ghost](https://github.com/ghost)',
             timestamp=datetime(2013, 9, 12, 10, 14, 0),
             ignore_security=True))
 
