@@ -200,16 +200,17 @@ class GitHubTrackerImporter(ToolImporter):
     def process_events(self, extractor, ticket, issue):
         for event in extractor.iter_events(issue):
             prefix = text = ''
+            actor = event['actor']
             if event['event'] in ('reopened', 'closed'):
                 prefix = '*Ticket changed by:* {}\n\n'.format(
-                    self.get_user_link(event['actor']['login']))
+                    self.get_user_link(actor['login'] if actor else 'ghost'))
             if event['event'] == 'reopened':
                 text = '- **status**: closed --> open'
             elif event['event'] == 'closed':
                 text = '- **status**: open --> closed'
             elif event['event'] == 'assigned':
                 text = '- **assigned_to**: {}'.format(
-                    self.get_user_link(event['actor']['login']))
+                    self.get_user_link(actor['login'] if actor else 'ghost'))
 
             text = prefix + text
             if not text:
