@@ -1124,7 +1124,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 accounturl=accounturl
             ))
 
-    def bulk_export_path(self, rootdir=None):
+    def bulk_export_path(self, rootdir):
         """
         :param rootdir: a directory path, using {nbhd} {project} or {c..} substitution vars if desired
         :return: a bulk export path for the current project

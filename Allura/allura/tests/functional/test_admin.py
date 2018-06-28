@@ -1072,7 +1072,7 @@ class TestExport(TestController):
     @td.with_user_project('test-user')
     def test_bulk_export_path_for_user_project(self):
         project = M.Project.query.get(shortname='u/test-user')
-        assert_equals(project.bulk_export_path(),
+        assert_equals(project.bulk_export_path(tg.config['bulk_export_path']),
                       '/tmp/bulk_export/u/test-user')
 
     @td.with_user_project('test-user')
@@ -1086,7 +1086,7 @@ class TestExport(TestController):
 
     def test_bulk_export_path_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
-        assert_equals(project.bulk_export_path(), '/tmp/bulk_export/p/p')
+        assert_equals(project.bulk_export_path(tg.config['bulk_export_path']), '/tmp/bulk_export/p/p')
 
     @mock.patch('allura.model.session.project_doc_session')
     def test_export_page_contains_check_all_checkbox(self, session):
