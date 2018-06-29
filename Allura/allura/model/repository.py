@@ -953,10 +953,10 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             from allura.tasks import repo_tasks
             repo_tasks.merge.post(self._id)
 
-    def merge_task_status(self):
+    def _task_status(self, task_name):
         task = MonQTask.query.find({
             'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
-            'task_name': 'allura.tasks.repo_tasks.merge',
+            'task_name': task_name,
             'args': [self._id],
             'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)},  # constrain on index further
         }).sort('_id', -1).limit(1).first()
@@ -964,16 +964,14 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return task.state
         return None
 
+    def merge_task_status(self):
+        return self._task_status('allura.tasks.repo_tasks.merge')
+
     def can_merge_task_status(self):
-        task = MonQTask.query.find({
-            'state': {'$in': ['busy', 'complete', 'error', 'ready']},  # needed to use index
-            'task_name': 'allura.tasks.repo_tasks.can_merge',
-            'args': [self._id],
-            'time_queue': {'$gt': datetime.utcnow() - timedelta(days=1)},  # constrain on index further
-        }).sort('_id', -1).limit(1).first()
-        if task:
-            return task.state
-        return None
+        return self._task_status('allura.tasks.repo_tasks.can_merge')
+
+    def commits_task_status(self):
+        return self._task_status('allura.tasks.repo_tasks.determine_mr_commits')
 
     def add_meta_post(self, changes):
         tmpl = g.jinja2_env.get_template('allura:templates/repo/merge_request_changed.html')

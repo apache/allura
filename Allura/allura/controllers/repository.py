@@ -401,16 +401,23 @@ class MergeRequestController(object):
             limit=limit,
             count=self.req.discussion_thread.post_count,
             subscribed=subscribed,
+            commits_task_started=False,
         )
-        try:
-            result['commits'] = self.req.commits
-        except Exception:
-            log.info(
-                "Can't get commits for merge request %s",
-                self.req.url(),
-                exc_info=True)
+        if self.req.new_commits is not None:
+            try:
+                result['commits'] = self.req.commits
+            except Exception:
+                log.info(
+                    "Can't get commits for merge request %s",
+                    self.req.url(),
+                    exc_info=True)
+                result['commits'] = []
+                result['error'] = True
+        else:
+            if self.req.commits_task_status() not in ('busy', 'ready'):
+                allura.tasks.repo_tasks.determine_mr_commits.post(self.req._id)
             result['commits'] = []
-            result['error'] = True
+            result['commits_task_started'] = True
         return result
 
     @property
@@ -514,6 +521,21 @@ class MergeRequestController(object):
     def can_merge_result(self, **kw):
         """Return result from the cache. Used by js, after task was completed."""
         return {'can_merge': self.req.can_merge()}
+
+    @expose()
+    def commits_html(self, **kw):
+        if self.req.new_commits is not None:
+            with self.req.push_downstream_context():
+                downstream_app = c.app
+            return SCMLogWidget().display(value=self.req.commits, app=downstream_app)
+
+        task_status = self.req.commits_task_status()
+        if task_status is None:
+            raise exc.HTTPNotFound
+        elif task_status == 'error':
+            raise exc.HTTPInternalServerError
+        elif task_status in ('busy', 'ready'):
+            raise exc.HTTPAccepted
 
     @expose('json:')
     @require_post()

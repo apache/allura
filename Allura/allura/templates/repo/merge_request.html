@@ -119,9 +119,16 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
     </div>
 
-    {{ c.log_widget.display(value=commits, app=downstream_app) }}
-
-    <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
+    {% if commits_task_started %}
+        <div class='grid-19 commits-loading'>
+            <p>
+            <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner"/>
+            Determining commits...
+            </p>
+        </div>
+    {% else %}
+        {{ c.log_widget.display(value=commits, app=downstream_app) }}
+    {% endif %}
 
     {% if h.has_access(c.app, 'write')() %}
       <div class="grid-19">
@@ -171,6 +178,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   .merge-conflicts { color: red; }
   .can-merge-in-progress { color: grey; }
   .merge-instructions { width:80%; height:60px; }
+  .merge-toolbar { padding-bottom: 1em; }
 
   #merge_task_status .{{ merge_status }} { display: inline-block; }
   #can_merge_task_status .{{ can_merge_status }} { display: inline-block; }
@@ -186,9 +194,10 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {{ super() }}
 <script type="text/javascript">
 $(function() {
+    var delay = 500;
+    var delay_threshold = 60000;
+
     function make_status_watcher(spinner_selector, status_url, on_complete, on_progress, on_error) {
-      var delay = 500;
-      var delay_threshold = 60000;
 
       var check_status = function() {
         $.get(status_url, function(data) {
@@ -203,7 +212,7 @@ $(function() {
               on_error();
             }
             if (delay < delay_threshold) {
-              delay = delay * 2;
+              delay = delay * 1.5;
             }
             window.setTimeout(check_status, delay);
           }
@@ -268,6 +277,24 @@ $(function() {
       }
       var start_watcher = make_status_watcher(spinner, url, on_complete, on_progress, on_error);
       start_watcher();
+    {% endif %}
+
+    {% if commits_task_started %}
+      var check_commits = function() {
+        $.get('{{ request.path.rstrip('/') }}/commits_html', function(data, textStatus, jqXHR) {
+            if (jqXHR.status === 200) {
+                $('.commits-loading').replaceWith(data);
+            } else if (jqXHR.status === 500) {
+                $('.commits-loading').replaceWith('<p>An error occurred while determining the commits in this merge request.</p>')
+            } else {
+                if (delay < delay_threshold) {
+                    delay = delay * 1.5;
+                }
+                window.setTimeout(check_commits, delay);
+            }
+        });
+      };
+      check_commits();
     {% endif %}
 });
 </script>
