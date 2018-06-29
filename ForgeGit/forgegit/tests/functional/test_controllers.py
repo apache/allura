@@ -619,27 +619,45 @@ class TestFork(_TestCase):
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
-        assert 'wants to merge' in r, r.showbrowser()
-        assert 'Improve documentation' in r, r.showbrowser()
-        revs = r.html.findAll('tr', attrs={'class': 'rev'})
-        assert_equal(len(revs), 1)
-        rev_links = revs[0].findAll('a', attrs={'class': 'rev'})
-        browse_links = revs[0].findAll('a', attrs={'class': 'browse'})
-        c_id = self.forked_repo.get_heads()[0]['object_id']
-        assert_equal(rev_links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
-        assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
-        assert_equal(browse_links[0].get('href'),
-                     '/p/test2/code/ci/%s/tree' % c_id)
-        assert_equal(browse_links[0].getText(), 'Tree')
+        assert_in('wants to merge', r)
+
         merge_instructions = r.html.findAll('textarea')[0].getText()
         assert_in('git checkout master', merge_instructions)
         assert_in('git fetch /srv/git/p/test2/code master', merge_instructions)
+        c_id = self.forked_repo.get_heads()[0]['object_id']
         assert_in('git merge {}'.format(c_id), merge_instructions)
         assert_regexp_matches(str(r), r'[0-9]+ seconds? ago')
 
         merge_form = r.html.find('div', {'class': 'merge-help-text merge-ok'})
         assert merge_form
         assert_in('Merge request has no conflicts. You can merge automatically.', merge_form.getText())
+
+        assert_not_in('Improve documentation', r)  # no details yet
+
+        # a task is busy/ready to compute
+        r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=202)  # 202 used for "busy"
+        # run task to compute the commits list
+        task = M.MonQTask.query.get(task_name='allura.tasks.repo_tasks.determine_mr_commits', state='ready')
+        task()
+        ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
+
+        def assert_commit_details(r):
+            assert_in('Improve documentation', r.body)
+            revs = r.html.findAll('tr', attrs={'class': 'rev'})
+            assert_equal(len(revs), 1)
+            rev_links = revs[0].findAll('a', attrs={'class': 'rev'})
+            browse_links = revs[0].findAll('a', attrs={'class': 'browse'})
+            assert_equal(rev_links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
+            assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
+            assert_equal(browse_links[0].get('href'),
+                         '/p/test2/code/ci/%s/tree' % c_id)
+            assert_equal(browse_links[0].getText(), 'Tree')
+
+        r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=200)
+        assert_commit_details(r)
+
+        r = self.app.get('/p/test/src-git/merge-requests/1/', status=200)
+        assert_commit_details(r)
 
     def test_merge_request_detail_noslash(self):
         self._request_merge()
@@ -691,20 +709,32 @@ class TestFork(_TestCase):
         assert_equal(_select_val(r, 'target_branch'), 'zz')
 
     def test_merge_request_with_branch(self):
+        def get_mr_page(r):
+            r = r.follow()  # get merge request page; creates bg task for determining commits
+            task = M.MonQTask.query.get(task_name='allura.tasks.repo_tasks.determine_mr_commits', state='ready')
+            task()
+            ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
+            r = self.app.get(r.request.url)  # refresh, data should be there now
+            return r
+
         r = self.app.post('/p/test2/code/do_request_merge',
                           params={
                               'source_branch': 'zz',
                               'target_branch': 'zz',
                               'summary': 'summary',
-                              'description': 'description'}).follow()
+                              'description': 'description'})
+        r = get_mr_page(r)
         assert '[5c4724]' not in r
+
+        # again with different branch
         r = self.app.post('/p/test2/code/do_request_merge',
                           params={
                               'source_branch': 'zz',
                               'target_branch': 'master',
                               'summary': 'summary',
-                              'description': 'description'}).follow()
-        assert '[5c4724]' in r
+                              'description': 'description'})
+        r = get_mr_page(r)
+        assert '[5c4724]' in r, r
 
     def test_merge_request_edit(self):
         r = self.app.post('/p/test2/code/do_request_merge',
@@ -775,8 +805,9 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         mr_commits.side_effect = Exception
         r = self.app.get('/p/test/src-git/merge-requests/%s/' % mr_num)
-        err = r.html.find('div', attrs={'class': 'grid-19 error'})
-        assert_in("Can't find commits to merge", err.getText())
+        # errors don't show up on the page directly any more, so just assert that the bg task is there
+        assert_in('commits-loading', r)
+        self.app.get('/p/test/src-git/merge-requests/%s/commits_html' % mr_num, status=202)  # 202 used for "busy"
 
 
 class TestDiff(TestController):
