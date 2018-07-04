@@ -67,7 +67,8 @@ class TicketsSection(DashboardSectionBase):
         from forgetracker.model import Ticket
 
         q = ' or '.join(['assigned_to:' + str(self.user['username']), 'reported_by:' + str(self.user['username'])])
-        result = Ticket.paged_search(None, self.user, q, limit=limit, page=page)
+        sort = 'mod_date_dt desc'
+        result = Ticket.paged_search(None, self.user, q, limit=limit, page=page, sort=sort)
 
         tickets = [
             dict(
@@ -75,6 +76,7 @@ class TicketsSection(DashboardSectionBase):
                 url=ticket.url(),
                 summary=ticket['summary'],
                 created_date=ticket['created_date'],
+                mod_date=ticket['mod_date'],
                 reported_by=ticket['reported_by'],
                 assigned_to_id=ticket['assigned_to_id'],
                 assigned_to=ticket['assigned_to'],
