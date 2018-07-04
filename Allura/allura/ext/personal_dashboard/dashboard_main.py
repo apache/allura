@@ -110,6 +110,26 @@ class TicketsSection(DashboardSectionBase):
 class MergeRequestsSection(DashboardSectionBase):
     template = 'allura.ext.personal_dashboard:templates/sections/merge_requests.html'
 
+    def get_merge_requests(self):
+        return [
+            merge_request
+            for merge_request in self.user.my_merge_requests()]
+
+    def prepare_context(self, context):
+        context['requests'] = self.get_merge_requests()
+        return context
+
+    def __json__(self):
+        merge_requests = [
+            dict(
+                status=merge_request['status'],
+                summary=merge_request['summary'],
+                repository=merge_request['repository'],
+                created=merge_request['created'],
+                updated=merge_request['updated'])
+            for merge_request in self.get_merge_requests()]
+        return dict(merge_requests=merge_requests)
+
 
 class FollowersSection(DashboardSectionBase):
     template = 'allura.ext.personal_dashboard:templates/sections/followers.html'

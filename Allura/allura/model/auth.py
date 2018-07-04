@@ -735,6 +735,13 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         from .project import Project
 
         return Project.query.find({'_id': {'$in': projects}, 'deleted': False}).all()
+    def my_merge_requests(self):
+        if self.is_anonymous():
+            return
+
+        from .repository import MergeRequest
+
+        return MergeRequest.query.find({'creator_id': self._id}).sort('request_number', pymongo.ASCENDING)
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
