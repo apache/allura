@@ -49,7 +49,7 @@ from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
 
-from allura.lib.security import has_access
+from allura.lib.security import has_access, Credentials
 from allura.lib import helpers as h
 from allura.lib.search import SearchError
 from allura.tests import decorators as td
@@ -95,7 +95,7 @@ class TrackerTestController(TestController):
 
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
-        resp = form.submit()
+        resp = form.submit(extra_environ=extra_environ)
         assert resp.status_int != 200, resp
         return resp
 
@@ -2468,8 +2468,27 @@ class TestFunctionalController(TrackerTestController):
             assert_equal(t, None)
 
     def test_user_missing(self):
-        self.new_ticket(summary='foo bar', assigned_to=c.user.username)
-        M.User.query.remove({'username': c.user.username})
+        # add test-user to project so it can be assigned the ticket
+        testuser = M.User.by_username('test-user')
+        c.project.add_user(testuser, ['Developer'])
+        Credentials.get().clear()
+        # make a ticket created by & assigned to test-user
+        self.new_ticket(summary='foo bar', assigned_to='test-user', private=True,
+                        extra_environ={'username': 'test-user'})
+        # but then remove the user
+        M.User.query.remove({'username': 'test-user'})
+
+        self.app.get('/p/test/bugs/1/', status=200)
+
+        r = self.app.post('/p/test/bugs/1/update_ticket', {
+            'summary': 'new summary',
+            'description': 'new description',
+            'status': 'closed',
+            'assigned_to': '',
+            'labels': '',
+            'private': '1',
+            'comment': 'closing ticket of a user that is gone'
+        })
         self.app.get('/p/test/bugs/1/', status=200)
 
     def test_bulk_delete(self):

@@ -834,13 +834,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def _set_private(self, bool_flag):
         if bool_flag:
             role_developer = ProjectRole.by_name('Developer')
-            role_creator = ProjectRole.by_user(self.reported_by, upsert=True)
+            role_creator = ProjectRole.by_user(self.reported_by, upsert=True) if self.reported_by else None
             def _allow_all(role, perms):
                 return [ACE.allow(role._id, perm) for perm in perms]
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else
             acl = _allow_all(role_developer, security.all_allowed(self, role_developer))
-            if role_creator != ProjectRole.anonymous():
+            if role_creator and role_creator != ProjectRole.anonymous():
                 acl += _allow_all(role_creator, security.all_allowed(self, role_creator))
             acl += [DENY_ALL]
             self.acl = acl
