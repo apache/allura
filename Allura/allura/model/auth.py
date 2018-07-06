@@ -742,7 +742,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
         from .repository import MergeRequest
 
-        return MergeRequest.query.find({'creator_id': self._id}).sort('mod_date', pymongo.ASCENDING)
+        return MergeRequest.query.find({'creator_id': self._id}).sort('mod_date', pymongo.DESCENDING)
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
