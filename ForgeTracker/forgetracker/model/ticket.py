@@ -1229,13 +1229,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 params.update(tsearch.FACET_PARAMS)
                 if not show_deleted:
                     params['fq'] = ['deleted_b:False']
-                if app_config is None:
-                    fl = 'id'
-                else:
-                    fl = 'ticket_num_i'
+
                 matches = search_artifact(
                     cls, q, short_timeout=True,
-                    rows=limit, sort=refined_sort, start=start, fl=fl,
+                    rows=limit, sort=refined_sort, start=start, fl='id',
                     filter=filter, **params)
             else:
                 matches = None
@@ -1245,31 +1242,24 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             matches = None
         if matches:
             count = matches.hits
-            if app_config is not None:
-                # ticket_matches is in sorted order
-                ticket_matches = [match['ticket_num_i'] for match in matches.docs]
-
-                # but query, unfortunately, returns results in arbitrary order
-                query = cls.query.find(
-                    dict(app_config_id=app_config._id, ticket_num={'$in': ticket_matches}))
-            else:
-                ticket_matches = [ObjectId(match['id']).split('#')[1] for match in matches.docs]
-                query = cls.query.find(
-                    dict(_id={'$in': ticket_matches}))
+            # ticket_matches is in sorted order
+            ticket_matches = [ObjectId(match['id'].split('#')[1]) for match in matches.docs]
+            query = cls.query.find(
+                dict(_id={'$in': ticket_matches}))
             # so stick all the results in a dictionary...
-            ticket_for_num = {}
+            ticket_by_id = {}
             for t in query:
-                ticket_for_num[t.ticket_num] = t
+                ticket_by_id[t._id] = t
             # and pull them out in the order given by ticket_numbers
             tickets = []
-            for tn in ticket_matches:
-                if tn in ticket_for_num:
+            for t_id in ticket_matches:
+                if t_id in ticket_by_id:
                     show_deleted = show_deleted and security.has_access(
-                        ticket_for_num[tn], 'delete', user, app_config.project.root_project)
-                    if (security.has_access(ticket_for_num[tn], 'read', user,
+                        ticket_by_id[t_id], 'delete', user, app_config.project.root_project)
+                    if (security.has_access(ticket_by_id[t_id], 'read', user,
                                             app_config.project.root_project if app_config else None) and
-                            (show_deleted or ticket_for_num[tn].deleted == False)):
-                        tickets.append(ticket_for_num[tn])
+                            (show_deleted or ticket_by_id[t_id].deleted == False)):
+                        tickets.append(ticket_by_id[t_id])
                     else:
                         count = count - 1
         return dict(tickets=tickets,
