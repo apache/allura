@@ -211,23 +211,10 @@ class ThreadController(BaseController, FeedController):
     @validate(pass_validator, error_handler=error_handler)
     @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
-        require_access(self.thread, 'post')
-        self.rate_limit(M.Post, "Comment", redir=request.referrer)
-        if self.thread.ref:
-            require_access(self.thread.ref.artifact, 'post')
-        kw = self.W.edit_post.to_python(kw, None)
-        if not kw['text']:
-            flash('Your post was not saved. You must provide content.',
-                  'error')
-            redirect(request.referer)
-
-        file_info = kw.get('file_info', None)
-        p = self.thread.add_post(**kw)
-        p.add_multiple_attachments(file_info)
-        if self.thread.artifact:
-            self.thread.artifact.mod_date = datetime.utcnow()
-        flash('Message posted')
-        redirect(request.referer)
+        handle_post_or_reply(thread=self.thread,
+                             edit_widget=self.W.edit_post,
+                             rate_limit=self.rate_limit,
+                             kw=kw)
 
     @expose()
     @require_post()
@@ -256,6 +243,25 @@ class ThreadController(BaseController, FeedController):
             dict(ref_id=self.thread.index_id()),
             'Recent posts to %s' % (self.thread.subject or '(no subject)'),
             self.thread.url())
+
+
+def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=None):
+    require_access(thread, 'post')
+    rate_limit(M.Post, "Comment", redir=request.referrer)
+    if thread.ref:
+        require_access(thread.ref.artifact, 'post')
+    kw = edit_widget.to_python(kw, None)
+    if not kw['text']:
+        flash('Your post was not saved. You must provide content.',
+              'error')
+        redirect(request.referer)
+    file_info = kw.get('file_info', None)
+    p = thread.add_post(parent_id=parent_post_id, **kw)
+    p.add_multiple_attachments(file_info)
+    if thread.artifact:
+        thread.artifact.mod_date = datetime.utcnow()
+    flash('Message posted')
+    redirect(request.referer)
 
 
 class PostController(BaseController):
@@ -347,13 +353,12 @@ class PostController(BaseController):
     @validate(pass_validator, error_handler=error_handler)
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post(redir='.')
-    def reply(self, file_info=None, **kw):
-        require_access(self.thread, 'post')
-        self.rate_limit(M.Post, "Comment", redir=request.referrer)
-        kw = self.W.edit_post.to_python(kw, None)
-        p = self.thread.add_post(parent_id=self.post._id, **kw)
-        p.add_multiple_attachments(file_info)
-        redirect(request.referer)
+    def reply(self, **kw):
+        handle_post_or_reply(thread=self.thread,
+                             parent_post_id=self.post._id,
+                             edit_widget=self.W.edit_post,
+                             rate_limit=self.rate_limit,
+                             kw=kw)
 
     @h.vardec
     @expose()
