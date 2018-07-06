@@ -43,9 +43,9 @@
         <tbody>
         {% for req in requests %}
             <tr>
-                <td><a href="{{ req.request_number }}/">{{ req.request_number }}</a></td>
-                <td><a href="{{ req.request_number }}/">{{ req.status }}</a></td>
-                <td><a href="{{ req.request_number }}/">{{ req.summary }}</a></td>
+                <td><a href="{{ req.url() }}">{{ req.request_number }}</a></td>
+                <td><a href="{{ req.url() }}">{{ req.status }}</a></td>
+                <td><a href="{{ req.url() }}">{{ req.summary }}</a></td>
                 <td>{% if req.downstream_repo %}
                     <a href="{{ req.downstream_url }}">{{ req.downstream_url }}</a>
                 {% else %}

@@ -794,7 +794,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
     class __mongometa__:
         name = 'merge-request'
-        indexes = ['commit_id']
+        indexes = ['commit_id', 'creator_id']
         unique_indexes = [('app_config_id', 'request_number')]
     type_s = 'MergeRequest'
 
