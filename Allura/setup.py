@@ -126,7 +126,7 @@ setup(
     projects = allura.ext.personal_dashboard.dashboard_main:ProjectsSection
     tickets = allura.ext.personal_dashboard.dashboard_main:TicketsSection
     merge_requests = allura.ext.personal_dashboard.dashboard_main:MergeRequestsSection
-    followers = allura.ext.personal_dashboard.dashboard_main:FollowersSection
+    followers = allura.ext.personal_dashboard.dashboard_main:ActivitySection
 
     [allura.webhooks]
     repo-push = allura.webhooks:RepoPushWebhookSender

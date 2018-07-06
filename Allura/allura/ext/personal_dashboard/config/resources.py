@@ -15,18 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equal, assert_in
-
-from allura.tests import TestController
+import pkg_resources
 
 
-class TestPersonalDashboard(TestController):
-
-    def test_profile(self):
-        r = self.app.get('/dashboard')
-        assert_equal('Test Admin / Dashboard', r.html.find('h1', 'project_title').text)
-        sections = set([c for s in r.html.findAll(None, 'profile-section') for c in s['class'].split()])
-        assert_in('tickets', sections)
-        assert_in('projects', sections)
-        assert_in('merge_requests', sections)
-        assert_in('activity', sections)
+def register_ew_resources(manager):
+    manager.register_directory(
+        'activity_js', pkg_resources.resource_filename('forgeactivity', 'widgets/resources/js'))

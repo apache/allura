@@ -17,13 +17,18 @@
 
 import logging
 
-from pylons import tmpl_context as c
-from tg import expose, redirect
+from pylons import tmpl_context as c, app_globals as g
+from tg import expose, redirect, config
+from itertools import islice, ifilter
+from ming.orm import session
 
+from allura.model.timeline import perm_check, get_activity_object
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedController
 from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
 from allura.lib.widgets import form_fields as ffw
+from paste.deploy.converters import asbool
+from forgeactivity.widgets.follow import FollowToggle
 
 log = logging.getLogger(__name__)
 
@@ -131,5 +136,41 @@ class MergeRequestsSection(DashboardSectionBase):
         return dict(merge_requests=merge_requests)
 
 
-class FollowersSection(DashboardSectionBase):
-    template = 'allura.ext.personal_dashboard:templates/sections/followers.html'
+class ActivitySection(DashboardSectionBase):
+    template = 'allura.ext.personal_dashboard:templates/sections/activity.html'
+
+    def __init__(self, user):
+        super(DashboardSectionBase, self).__init__(user)
+        self.activity_app = c.user.private_project().app_instance('activity')
+
+    def check_display(self):
+        app_installed = self.activity_app is not None
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
+        return app_installed and activity_enabled
+
+    def prepare_context(self, context):
+        full_timeline = g.director.get_timeline(
+            self.user, page=0, limit=100,
+            actor_only=False,
+        )
+        filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
+                                        0, 8))
+        for activity in filtered_timeline:
+            # Get the project for the activity.obj so we can use it in the
+            # template. Expunge first so Ming doesn't try to flush the attr
+            # we create to temporarily store the project.
+            #
+            # The get_activity_object() calls are cheap, pulling from
+            # the session identity map instead of mongo since identical
+            # calls are made by perm_check() above.
+            session(activity).expunge(activity)
+            activity_obj = get_activity_object(activity.obj)
+            activity.obj.project = getattr(activity_obj, 'project', None)
+
+        context['follow_toggle'] = FollowToggle(),
+        context['following'] = g.director.is_connected(c.user, self.user),
+        context['timeline'] = filtered_timeline
+        context['activity_app'] = self.activity_app
+
+        g.register_js('activity_js/follow.js')
+        return context
