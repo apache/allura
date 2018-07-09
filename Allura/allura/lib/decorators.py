@@ -19,6 +19,7 @@ import inspect
 import sys
 import json
 import logging
+from Cookie import Cookie
 from collections import defaultdict
 from urllib import unquote
 
@@ -262,11 +263,15 @@ def memorable_forget():
         Checks here will need to be expanded for controller actions that behave differently
         than others upon successful processing of their particular request
         """
-        # if there is a flash message with type "ok", then we can forget.
+        # if there is a flash message with status "ok", then we can forget.  If it is "error" we cannot.
         if response.headers:
-            set_cookie = response.headers.get('Set-Cookie', '')
-            if 'status%22%3A%20%22ok' in set_cookie:
-                return True
+            cookies = Cookie(response.headers.get('Set-Cookie', ''))
+            if cookies and 'webflash' in cookies:
+                webflash_value = json.loads(unquote(cookies['webflash'].value))
+                if webflash_value['status'] == 'ok':
+                    return True
+                elif webflash_value['status'] == 'error':
+                    return False
 
         # if the controller raised a 302, we can assume the value will be remembered by the app
         # if needed, and forget.
