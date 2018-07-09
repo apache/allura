@@ -34,26 +34,5 @@
 {% block section_class %}activity{% endblock %}
 
 {% block content %}
-    {% if not timeline %}
-        <p class="empty">No activity to display.</p>
-    {% else %}
-    <ul class="timeline">
-        {% for a in timeline %}
-        <li>
-            <b>
-                {{a.verb.capitalize()}} {{am.activity_obj(a.obj)}}
-                {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
-                {% if a.obj.project %}on <a href="{{a.obj.project.url()}}">{{a.obj.project.name}}</a>{% endif %}
-            </b>
-            {% if a.obj.activity_extras.get('summary') %}
-            <p>
-                {{ a.obj.activity_extras.get('summary') }}
-            </p>
-            {% endif %}
-            <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
-        </li>
-        {% endfor %}
-    </ul>
-    <a class="view-all" href="{{activity_app.url}}">View All</a>
-    {% endif %}
+    {{ am.timeline_section(timeline, activity_app) }}
 {% endblock %}

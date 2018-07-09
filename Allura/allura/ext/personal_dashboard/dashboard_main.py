@@ -28,7 +28,6 @@ from allura.controllers.feed import FeedController
 from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
 from allura.lib.widgets import form_fields as ffw
 from paste.deploy.converters import asbool
-from forgeactivity.widgets.follow import FollowToggle
 
 log = logging.getLogger(__name__)
 
@@ -167,10 +166,7 @@ class ActivitySection(DashboardSectionBase):
             activity_obj = get_activity_object(activity.obj)
             activity.obj.project = getattr(activity_obj, 'project', None)
 
-        context['follow_toggle'] = FollowToggle(),
-        context['following'] = g.director.is_connected(c.user, self.user),
         context['timeline'] = filtered_timeline
         context['activity_app'] = self.activity_app
 
-        g.register_js('activity_js/follow.js')
         return context
