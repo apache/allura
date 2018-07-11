@@ -15,14 +15,17 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equal, assert_in
+import mock
+import tg
+from nose.tools import assert_equal, assert_in, assert_not_in
 
+from allura.lib.widgets.user_profile import SectionsUtil
 from allura.tests import TestController
 
 
 class TestPersonalDashboard(TestController):
 
-    def test_profile(self):
+    def test_dashboard(self):
         r = self.app.get('/dashboard')
         assert_equal('Test Admin / Dashboard', r.html.find('h1', 'project_title').text)
         sections = set([c for s in r.html.findAll(None, 'profile-section') for c in s['class'].split()])
@@ -30,3 +33,27 @@ class TestPersonalDashboard(TestController):
         assert_in('projects', sections)
         assert_in('merge_requests', sections)
         assert_in('activity', sections)
+
+    def test_dashboard_sections(self):
+        def ep(n):
+            m = mock.Mock()
+            m.name = n
+            m.load()().display.return_value = 'Section %s' % n
+            return m
+        eps = map(ep, ['a', 'b', 'c', 'd'])
+        order = {'personal_dashboard_sections.order': 'b, d,c , f '}
+        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
+            with mock.patch.dict(tg.config, order):
+                iep.return_value = eps
+                sections = SectionsUtil.load_sections('personal_dashboard')
+                assert_equal(sections, [
+                    eps[1].load(),
+                    eps[3].load(),
+                    eps[2].load(),
+                    eps[0].load()])
+                r = self.app.get('/dashboard')
+                assert_in('Section a', r.body)
+                assert_in('Section b', r.body)
+                assert_in('Section c', r.body)
+                assert_in('Section d', r.body)
+                assert_not_in('Section f', r.body)
