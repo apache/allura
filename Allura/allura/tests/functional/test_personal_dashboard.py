@@ -19,8 +19,13 @@ import mock
 import tg
 from nose.tools import assert_equal, assert_in, assert_not_in
 
+from allura import model as M
 from allura.lib.widgets.user_profile import SectionsUtil
 from allura.tests import TestController
+from allura.tests import decorators as td
+from ming.orm.ormsession import ThreadLocalORMSession
+
+from forgetracker.tests.functional.test_root import TrackerTestController
 
 
 class TestPersonalDashboard(TestController):
@@ -57,3 +62,45 @@ class TestPersonalDashboard(TestController):
                 assert_in('Section c', r.body)
                 assert_in('Section d', r.body)
                 assert_not_in('Section f', r.body)
+
+
+class TestTicketsSection(TestController):
+
+    def _find_new_ticket_form(self, resp):
+        def cond(f):
+            return f.action.endswith('/save_ticket')
+
+        return self.find_form(resp, cond)
+
+    def new_ticket(self, mount_point='/bugs/', extra_environ=None, **kw):
+        extra_environ = extra_environ or {}
+        response = self.app.get(mount_point + 'new/',
+                                extra_environ=extra_environ)
+        form = self._find_new_ticket_form(response)
+        # If this is ProjectUserCombo's select populate it
+        # with all the users in the project. This is a workaround for tests,
+        # in real enviroment this is populated via ajax.
+        p = M.Project.query.get(shortname='test')
+        for f in form.fields:
+            field = form[f] if f else None
+            is_usercombo = (field and field.tag == 'select' and
+                            field.attrs.get('class') == 'project-user-combobox')
+            if is_usercombo:
+                field.options = [('', False)] + [(u.username, False)
+                                                 for u in p.users()]
+
+        for k, v in kw.iteritems():
+            form['ticket_form.%s' % k] = v
+        resp = form.submit(extra_environ=extra_environ)
+        assert resp.status_int != 200, resp
+        return resp
+
+    @td.with_tool('test/sub1', 'Tickets', 'tickets')
+    def test_tickets_section(self):
+        self.new_ticket(summary="my ticket", _milestone='1.0', mount_point="/sub1/tickets/")
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/dashboard')
+        ticket_rows = response.html.find('tbody')
+        assert_in('my ticket', str(ticket_rows))
