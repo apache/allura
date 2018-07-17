@@ -23,7 +23,6 @@ from allura import model as M
 from allura.lib.widgets.user_profile import SectionsUtil
 from allura.tests import TestController
 from allura.tests import decorators as td
-from ming.orm.ormsession import ThreadLocalORMSession
 
 from forgetracker.tests.functional.test_root import TrackerTestController
 
@@ -64,7 +63,13 @@ class TestPersonalDashboard(TestController):
                 assert_not_in('Section f', r.body)
 
 
-class TestTicketsSection(TestController):
+class TestTicketsSection(TrackerTestController):
+
+    @td.with_tracker
+    def setup_with_tools(self):
+        self.project = M.Project.query.get(shortname='test2')
+        self.tracker = self.project.app_instance('bugs')
+        self.new_ticket(summary='foo', _milestone='1.0', assigned_to='test-admin')
 
     def _find_new_ticket_form(self, resp):
         def cond(f):
@@ -95,12 +100,8 @@ class TestTicketsSection(TestController):
         assert resp.status_int != 200, resp
         return resp
 
-    @td.with_tool('test/sub1', 'Tickets', 'tickets')
+    @td.with_tool('test2', 'Tickets', 'tickets')
     def test_tickets_section(self):
-        self.new_ticket(summary="my ticket", _milestone='1.0', mount_point="/sub1/tickets/")
-        ThreadLocalORMSession.flush_all()
-        M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
         response = self.app.get('/dashboard')
         ticket_rows = response.html.find('tbody')
-        assert_in('my ticket', str(ticket_rows))
+        assert_in('foo', str(ticket_rows))
