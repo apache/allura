@@ -69,39 +69,12 @@ class TestTicketsSection(TrackerTestController):
     def setup_with_tools(self):
         self.project = M.Project.query.get(shortname='test2')
         self.tracker = self.project.app_instance('bugs')
+        self.new_ticket(summary='bar', _milestone='1.0')
         self.new_ticket(summary='foo', _milestone='1.0', assigned_to='test-admin')
-
-    def _find_new_ticket_form(self, resp):
-        def cond(f):
-            return f.action.endswith('/save_ticket')
-
-        return self.find_form(resp, cond)
-
-    def new_ticket(self, mount_point='/bugs/', extra_environ=None, **kw):
-        extra_environ = extra_environ or {}
-        response = self.app.get(mount_point + 'new/',
-                                extra_environ=extra_environ)
-        form = self._find_new_ticket_form(response)
-        # If this is ProjectUserCombo's select populate it
-        # with all the users in the project. This is a workaround for tests,
-        # in real enviroment this is populated via ajax.
-        p = M.Project.query.get(shortname='test')
-        for f in form.fields:
-            field = form[f] if f else None
-            is_usercombo = (field and field.tag == 'select' and
-                            field.attrs.get('class') == 'project-user-combobox')
-            if is_usercombo:
-                field.options = [('', False)] + [(u.username, False)
-                                                 for u in p.users()]
-
-        for k, v in kw.iteritems():
-            form['ticket_form.%s' % k] = v
-        resp = form.submit(extra_environ=extra_environ)
-        assert resp.status_int != 200, resp
-        return resp
 
     @td.with_tool('test2', 'Tickets', 'tickets')
     def test_tickets_section(self):
         response = self.app.get('/dashboard')
         ticket_rows = response.html.find('tbody')
         assert_in('foo', str(ticket_rows))
+        assert_in('bar', str(ticket_rows))
