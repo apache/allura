@@ -15,15 +15,21 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import pkg_resources
 import mock
 import tg
+
+from ming.orm import ThreadLocalORMSession, ThreadLocalODMSession
 from nose.tools import assert_equal, assert_in, assert_not_in
+from pylons import tmpl_context as c
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.lib.widgets.user_profile import SectionsUtil
 from allura.tests import TestController
 from allura.tests import decorators as td
-
+from alluratest.controller import setup_global_objects, setup_unit_test
+from forgegit.tests import with_git
 from forgetracker.tests.functional.test_root import TrackerTestController
 
 
@@ -76,3 +82,44 @@ class TestTicketsSection(TrackerTestController):
         response = self.app.get('/dashboard')
         ticket_rows = response.html.find('tbody')
         assert_in('foo', str(ticket_rows))
+
+
+class TestMergeRequestsSection(TestController):
+
+    def setUp(self):
+        super(TestMergeRequestsSection, self).setUp()
+        setup_unit_test()
+        self.setup_with_tools()
+        mr= self.merge_request
+        ThreadLocalODMSession.flush_all()
+
+    @with_git
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testgit.git'
+        self.repo = c.app.repo
+        self.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    @property
+    def merge_request(self):
+        user = M.User.by_username('test-admin')
+        project = M.Project.query.get(shortname='test')
+        cid = '5c47243c8e424136fd5cdd18cd94d34c66d1955c'
+        return M.MergeRequest(
+            downstream={'commit_id': cid, 'project_id': project._id},
+            source_branch='zz',
+            target_branch='master',
+            creator_id=user._id,
+            request_number=1,
+            summary='test request')
+
+    def test_merge_requests_section(self):
+        r = self.app.get('/dashboard')
+        merge_req_rows = r.html.find('tbody')
+        assert_in('test request', str(merge_req_rows))

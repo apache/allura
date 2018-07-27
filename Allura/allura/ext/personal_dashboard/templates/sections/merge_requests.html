@@ -29,32 +29,36 @@
 {% block section_class %}merge_requests{% endblock %}
 
 {% block content %}
-    <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Status</th>
-            <th>Summary</th>
-            <th>Repository</th>
-            <th>Created</th>
-            <th>Updated</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for req in requests %}
+    {% if requests %}
+        <table>
+            <thead>
             <tr>
-                <td><a href="{{ req.url() }}">{{ req.request_number }}</a></td>
-                <td><a href="{{ req.url() }}">{{ req.status }}</a></td>
-                <td><a href="{{ req.url() }}">{{ req.summary }}</a></td>
-                <td>{% if req.downstream_repo %}
-                    <a href="{{ req.downstream_url }}">{{ req.downstream_url }}</a>
-                {% else %}
-                    <i>(deleted)</i>
-                {% endif %}</td>
-                <td>{{ lib.abbr_date(req.created) }}</td>
-                <td>{{ lib.abbr_date(req.mod_date) }}</td>
+                <th>#</th>
+                <th>Status</th>
+                <th>Summary</th>
+                <th>Repository</th>
+                <th>Created</th>
+                <th>Updated</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for req in requests %}
+                <tr>
+                    <td><a href="{{ req.url() }}">{{ req.request_number }}</a></td>
+                    <td><a href="{{ req.url() }}">{{ req.status }}</a></td>
+                    <td><a href="{{ req.url() }}">{{ req.summary }}</a></td>
+                    <td>{% if req.downstream_repo %}
+                        <a href="{{ req.downstream_url }}">{{ req.downstream_url }}</a>
+                    {% else %}
+                        <i>(deleted)</i>
+                    {% endif %}</td>
+                    <td>{{ lib.abbr_date(req.created) }}</td>
+                    <td>{{ lib.abbr_date(req.mod_date) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <li class="empty">No merge requests to display.</li>
+    {% endif %}
 {% endblock %}
