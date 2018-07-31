@@ -36,6 +36,8 @@ from nose.tools import (
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 from tg import config
+import html5lib
+import html5lib.treewalkers
 
 from alluratest.controller import setup_unit_test
 
@@ -250,6 +252,12 @@ class TestCodeStats(unittest.TestCase):
 
 class TestHTMLSanitizer(unittest.TestCase):
 
+    def walker_from_text(self, text):
+        parsed = html5lib.parseFragment(text)
+        TreeWalker = html5lib.treewalkers.getTreeWalker("etree")
+        walker = TreeWalker(parsed)
+        return walker
+
     def simple_tag_list(self, sanitizer):
         # no attrs, no close tag flag check, just real simple
         return [
@@ -257,17 +265,20 @@ class TestHTMLSanitizer(unittest.TestCase):
         ]
 
     def test_html_sanitizer_iframe(self):
-        p = utils.ForgeHTMLSanitizer('<div><iframe></iframe></div>')
+        walker = self.walker_from_text('<div><iframe></iframe></div>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
         assert_equal(self.simple_tag_list(p), ['div', 'div'])
 
     def test_html_sanitizer_youtube_iframe(self):
-        p = utils.ForgeHTMLSanitizer(
+        walker = self.walker_from_text(
             '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
         assert_equal(
             self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
 
     def test_html_sanitizer_form_elements(self):
-        p = utils.ForgeHTMLSanitizer('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
+        walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
         assert_equal(self.simple_tag_list(p), ['p', 'p'])
 
 

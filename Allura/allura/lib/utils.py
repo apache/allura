@@ -15,17 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from contextlib import contextmanager
-
 import time
 import string
 import hashlib
 import binascii
 import logging.handlers
 import codecs
-
-from html5lib.constants import tokenTypes
-
-from ming.odm import session
 import os.path
 import datetime
 import random
@@ -47,11 +42,11 @@ from webhelpers.html import literal
 from webob import exc
 from pygments.formatters import HtmlFormatter
 from setproctitle import getproctitle
-import html5lib.sanitizer
-
+import html5lib.filters.sanitizer
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
+from ming.odm import session
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -570,40 +565,57 @@ def serve_file(fp, filename, content_type, last_modified=None,
         return iter(lambda: fp.read(block_size), '')
 
 
-class ForgeHTMLSanitizer(html5lib.sanitizer.HTMLSanitizer):
-    # remove some elements from the sanitizer whitelist
-    # <form> and <input> could be used for a social engineering attack to construct a form
-    # others are just unexpected and confusing, and have no need to be used in markdown
-    _form_elements = ('button', 'datalist', 'fieldset', 'form', 'input', 'label', 'legend', 'meter', 'optgroup',
-                      'option', 'output', 'progress', 'select', 'textarea')
-    _forge_acceptable_elements = [e for e in html5lib.sanitizer.HTMLSanitizer.acceptable_elements
-                                  if e not in (_form_elements)]
-    allowed_elements = _forge_acceptable_elements \
-                       + html5lib.sanitizer.HTMLSanitizer.mathml_elements \
-                       + html5lib.sanitizer.HTMLSanitizer.svg_elements
+class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
 
-    # srcset is used in our own project_list/project_summary widgets which are used as macros so go through markdown
-    allowed_attributes = html5lib.sanitizer.HTMLSanitizer.allowed_attributes + ['srcset']
+    def __init__(self, *args, **kwargs):
+        super(ForgeHTMLSanitizerFilter, self).__init__(*args, **kwargs)
+        # remove some elements from the sanitizer whitelist
+        # <form> and <input> could be used for a social engineering attack to construct a form
+        # others are just unexpected and confusing, and have no need to be used in markdown
+        ns_html = html5lib.constants.namespaces['html']
+        _form_elements = {(ns_html, 'button'),
+                          (ns_html, 'datalist'),
+                          (ns_html, 'fieldset'),
+                          (ns_html, 'form'),
+                          (ns_html, 'input'),
+                          (ns_html, 'label'),
+                          (ns_html, 'legend'),
+                          (ns_html, 'meter'),
+                          (ns_html, 'optgroup'),
+                          (ns_html, 'option'),
+                          (ns_html, 'output'),
+                          (ns_html, 'progress'),
+                          (ns_html, 'select'),
+                          (ns_html, 'textarea'),
+                          }
+        self.allowed_elements = set(html5lib.filters.sanitizer.allowed_elements) - _form_elements
 
-    valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
+        # srcset is used in our own project_list/project_summary widgets which are used as macros so go through markdown
+        self.allowed_attributes = html5lib.filters.sanitizer.allowed_attributes | {'srcset'}
 
-    _prev_token_was_ok_iframe = False
+        self.valid_iframe_srcs = ('https://www.youtube.com/embed/', 'https://www.gittip.com/')
+        self._prev_token_was_ok_iframe = False
 
     def sanitize_token(self, token):
-        if 'iframe' in self.allowed_elements:
-            self.allowed_elements.remove('iframe')
+        """
+        Allow iframe tags if the src attribute matches our list of valid sources.
+        Otherwise use default sanitization.
+        """
+
+        iframe_el = (html5lib.constants.namespaces['html'], 'iframe')
+        self.allowed_elements.discard(iframe_el)
         ok_opening_iframe = False
 
         if token.get('name') == 'iframe':
-            attrs = dict(token.get('data'))
-            if attrs.get('src', '').startswith(self.valid_iframe_srcs):
-                self.allowed_elements.append('iframe')
+            attrs = token.get('data') or {}
+            if attrs.get((None, 'src'), '').startswith(self.valid_iframe_srcs):
+                self.allowed_elements.add(iframe_el)
                 ok_opening_iframe = True
-            elif token.get('type') == tokenTypes["EndTag"] and self._prev_token_was_ok_iframe:
-                self.allowed_elements.append('iframe')
+            elif token.get('type') == "EndTag" and self._prev_token_was_ok_iframe:
+                self.allowed_elements.add(iframe_el)
 
         self._prev_token_was_ok_iframe = ok_opening_iframe
-        return super(ForgeHTMLSanitizer, self).sanitize_token(token)
+        return super(ForgeHTMLSanitizerFilter, self).sanitize_token(token)
 
 
 def ip_address(request):
