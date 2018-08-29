@@ -3649,6 +3649,15 @@ ul.dropdown ul li:first-child a {
 .profile-section.social dl dd a {
   margin: 0;
 }
+.profile-section.tickets {
+  margin-top: 10px;
+}
+.profile-section.tickets .section-body {
+  padding: 10px;
+}
+.profile-section.merge_requests .section-body {
+  padding: 10px;
+}
 #user-message {
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
