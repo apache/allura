@@ -148,7 +148,10 @@ class RootController(BaseController):
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = SearchResults()
-        c.help_modal = SearchHelp(comments=False, history=False)
+        c.help_modal = SearchHelp(comments=False, history=False,
+                                  fields={'sender_t': 'username',
+                                          'text': '"Message text"',
+                                          })
         search_params = kw
         search_params.update({
             'q': q or '',

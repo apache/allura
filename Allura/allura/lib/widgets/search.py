@@ -49,7 +49,7 @@ class SearchHelp(ffw.Lightbox):
         name='search_help_modal',
         trigger='a.search_help_modal')
 
-    def __init__(self, comments=True, history=True):
+    def __init__(self, comments=True, history=True, fields={}):
         super(SearchHelp, self).__init__()
         # can't use g.jinja2_env since this widget gets imported too early :(
         jinja2_env = jinja2.Environment(
@@ -57,4 +57,5 @@ class SearchHelp(ffw.Lightbox):
         self.content = jinja2_env.get_template('search_help.html').render(dict(
             comments=comments,
             history=history,
+            fields=fields,
         ))

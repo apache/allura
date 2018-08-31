@@ -73,7 +73,12 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     search_results = SearchResults()
-    help_modal = SearchHelp()
+    help_modal = SearchHelp(fields={'title': 'title',
+                                    'text': '"Page text"',
+                                    'mod_date_dt': 'Last modified.  Example: mod_date_dt:[2018-01-01T00:00:00Z TO *]',
+                                    'labels_t': 'labels',
+                                    'author_user_name_t': 'username (for comments only)',
+                                    })
     icons = {
         24: 'images/wiki_24.png',
         32: 'images/wiki_32.png',

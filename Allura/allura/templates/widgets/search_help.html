@@ -19,8 +19,16 @@
 <div style="height:400px; overflow:auto;">
 
 <h1>Searching</h1>
-<p>To search for an exact phrase, put it in quotes.  Example: "getting started docs"</p>
-<p>To exclude a word or phrase, put a dash in front of it.  Example: docs -help</p>
+<p>To search for an exact phrase, put it in quotes.  Example: <code>"getting started docs"</code></p>
+<p>To exclude a word or phrase, put a dash in front of it.  Example: <code>docs -help</code></p>
+{% if fields %}
+    <p>To search on specific fields, use these field names instead of a general text search.  You can group with <code>AND</code> or <code>OR</code>.</p>
+    <ul>
+    {% for fld, descr in fields.iteritems() %}
+        <li><b>{{ fld }}:</b>{{ descr }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
 {% if comments %}
 <p>You can use the 'Search comments?' checkbox to include comments in the search results.</p>
 {% endif %}
