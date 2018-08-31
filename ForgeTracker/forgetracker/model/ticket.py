@@ -1084,7 +1084,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         attach_metadata['type'] = 'thumbnail'
         self._move_attach(attachments, attach_metadata, app_config)
 
-        # move ticket's discussion thread, thus all new commnets will go to a
+        # move ticket's discussion thread, thus all new comments will go to a
         # new ticket's feed
         self.discussion_thread.app_config_id = app_config._id
         self.discussion_thread.discussion_id = app_config.discussion_id
@@ -1102,6 +1102,26 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         session(self).expunge(self)
         ticket = Ticket.query.find(dict(
             app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
+
+        # move individual subscriptions
+        # (may cause an unnecessary subscription if user is already subscribed to destination tool)
+        Mailbox.query.update({
+            'artifact_index_id': ticket.index_id(),  # this is unique
+            'project_id': prior_app.project._id,  # include this to use an index
+        }, {'$set': {
+            'project_id': app_config.project_id,
+            'app_config_id': app_config._id,
+            'artifact_url': ticket.url(),
+            'artifact_title': h.get_first(ticket.index(), 'title'),
+        }}, multi=True)
+        # create subscriptions for 'All artifacts' tool-level subscriptions
+        tool_subs = Mailbox.query.find({'project_id': prior_app.project._id,
+                                        'app_config_id': prior_app.config._id,
+                                        'artifact_index_id': None,
+                                        }).all()
+        for tool_sub in tool_subs:
+            Mailbox.subscribe(user_id=tool_sub.user_id, project_id=app_config.project_id, app_config_id=app_config._id,
+                              artifact=ticket)
 
         # creating MovedTicket to be able to redirect from this url
         moved_ticket = MovedTicket(
