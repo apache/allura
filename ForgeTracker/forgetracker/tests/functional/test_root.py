@@ -2269,6 +2269,54 @@ class TestFunctionalController(TrackerTestController):
         assert_in('[test:bugs]', n.subject)
         assert_in('[test:bugs]', n.reply_to_address)
 
+    @td.with_tool('test2', 'Tickets', 'features')
+    def test_move_ticket_subscriptions(self):
+        """Subscriptions should move along with the ticket"""
+        self.new_ticket(summary='test ticket')
+        self.new_ticket(summary='another test ticket')
+        p = M.Project.query.get(shortname='test')
+        bugs = p.app_instance('bugs')
+        p2 = M.Project.query.get(shortname='test2')
+        features = p2.app_instance('features')
+        admin = M.User.query.get(username='test-admin')
+        user = M.User.query.get(username='test-user')
+
+        # subscribe test-user to ticket #2
+        self.app.post('/p/test/bugs/2/subscribe', {'subscribe': True},
+                      extra_environ={'username': 'test-user'})
+        assert M.Mailbox.query.get(user_id=user._id,
+                                   project_id=p._id,
+                                   app_config_id=bugs.config._id,
+                                   artifact_title='Ticket 2',
+                                   artifact_url='/p/test/bugs/2/')
+
+        # remove test-admin's tool-wide subscription to test2/features so he can get a new individual one
+        M.Mailbox.query.remove({'user_id': admin._id,
+                                'project_id': p2._id,
+                                'app_config_id': features.config._id,
+                                'artifact_index_id': None,
+                                })
+
+        # move ticket to new project & tool: test/bugs/2 => test2/features/1
+        r = self.app.post('/p/test/bugs/2/move',
+                          params={'tracker': str(features.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test2/features/1/')
+
+        # test-user should be subscribed to it
+        assert M.Mailbox.query.get(user_id=user._id,
+                                   project_id=p2._id,
+                                   app_config_id=features.config._id,
+                                   artifact_title='Ticket 1',
+                                   artifact_url='/p/test2/features/1/'),\
+            "Could not find moved subscription.  User's record is %s" % M.Mailbox.query.get(user_id=user._id)
+        # test-admin (who had a tool-level subscription) should be too
+        assert M.Mailbox.query.get(user_id=admin._id,
+                                   project_id=p2._id,
+                                   app_config_id=features.config._id,
+                                   artifact_title='Ticket 1',
+                                   artifact_url='/p/test2/features/1/'),\
+            "Could not find moved subscription.  Admin's record is %s" % M.Mailbox.query.get(user_id=admin._id)
+
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_move_attachment(self):
         file_name = 'neo-icon-set-454545-256x350.png'
