@@ -577,7 +577,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                           (ns_html, 'datalist'),
                           (ns_html, 'fieldset'),
                           (ns_html, 'form'),
-                          (ns_html, 'input'),
+                          #(ns_html, 'input'),
                           (ns_html, 'label'),
                           (ns_html, 'legend'),
                           (ns_html, 'meter'),
