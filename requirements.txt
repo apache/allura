@@ -100,3 +100,6 @@ sphinxcontrib-programoutput==0.8
 
 # deployment
 gunicorn==19.4.5
+
+# markdown extensions
+markdown-checklist==0.4.1
