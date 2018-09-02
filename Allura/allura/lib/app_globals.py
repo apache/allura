@@ -415,7 +415,7 @@ class Globals(object):
             # 'fenced_code'
             extensions=['fenced_code', 'codehilite',
                         ForgeExtension(
-                            **kwargs), 'tables', 'toc', 'nl2br'],
+                            **kwargs), 'tables', 'toc', 'nl2br', 'markdown_checklist.extension'],
             output_format='html4')
 
     @property
