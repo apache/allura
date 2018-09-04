@@ -23,11 +23,9 @@
 {% block header %}Project Audit{% endblock %}
 
 {% block content %}
-<div class="grid-19">
   {% if not entries  %}
   <p>There are no entries in the audit log to display.</p>
   {% else %}
   {{ c.widget.display(entries=entries, limit=limit, page=page, count=count) }}
   {% endif %}
-</div>
 {% endblock %}
