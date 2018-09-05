@@ -82,10 +82,10 @@ class ForgeConfig(AppConfig):
                 import pylibmc
                 from jinja2 import MemcachedBytecodeCache
                 client = pylibmc.Client([config['memcached_host']])
-                bcc = MemcachedBytecodeCache(client)
+                bcc = MemcachedBytecodeCache(client, prefix='jinja2/{}/'.format(jinja2.__version__))
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
-                bcc = FileSystemBytecodeCache()
+                bcc = FileSystemBytecodeCache(pattern='__jinja2_{}_%s.cache'.format(jinja2.__version__))
         except:
             log.exception("Error encountered while setting up a" +
                           " %s-backed bytecode cache for Jinja" % cache_type)
