@@ -256,7 +256,7 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.NOIMG + '\\[([^ x\\]]+)\\]', md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
         # macro must be processed before links
         md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
@@ -290,6 +290,8 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         except IndexError:
             href = m.group(2)
             is_link_with_brackets = True
+            if(el.text == 'x' or el.text == ' '):
+                return '[' + el.text + ']'
         try:
             title = m.group(13)
         except IndexError:
