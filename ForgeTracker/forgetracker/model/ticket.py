@@ -161,7 +161,7 @@ class Globals(MappedClass):
 
     @property
     def closed_query(self):
-        return ' or '.join(['status:' + name for name in self.set_of_closed_status_names])
+        return ' OR '.join(['status:' + name for name in self.set_of_closed_status_names])
 
     @property
     def milestone_fields(self):

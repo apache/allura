@@ -70,7 +70,7 @@ class TicketsSection(DashboardSectionBase):
     def query_tickets(self, page, limit):
         from forgetracker.model import Ticket
 
-        q = ' or '.join(['assigned_to:' + str(self.user['username']), 'reported_by:' + str(self.user['username'])])
+        q = ' OR '.join(['assigned_to:' + str(self.user['username']), 'reported_by:' + str(self.user['username'])])
         sort = 'mod_date_dt desc'
         result = Ticket.paged_search(None, self.user, q, limit=limit, page=page, sort=sort)
 

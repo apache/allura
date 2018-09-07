@@ -16,10 +16,15 @@
 #       under the License.
 
 import shlex
+import logging
 
 from tg import config
 from paste.deploy.converters import asbool
 import pysolr
+
+
+log = logging.getLogger(__name__)
+
 
 escape_rules = {'+': r'\+',
                 '-': r'\-',
@@ -153,7 +158,10 @@ class MockSOLR(object):
         if fq:
             q_parts += fq
         for part in q_parts:
-            if part == '&&':
+            if part in ('&&', 'AND'):
+                continue
+            if part in ('||', 'OR'):
+                log.warn("MockSOLR doesn't implement OR yet; treating as AND")
                 continue
             if ':' in part:
                 field, value = part.split(':', 1)
