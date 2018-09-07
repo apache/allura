@@ -3559,7 +3559,7 @@ ul.dropdown ul li:first-child a {
   border-top: 1px solid #e5e5e5;
   padding: 10px;
 }
-.profile-section.projects ul img, .profile-section.projects ul .placeholder-icon {
+.profile-section.projects ul li > img, .profile-section.projects ul .placeholder-icon {
   vertical-align: top;
   margin-right: 10px;
   float: left;
