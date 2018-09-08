@@ -58,7 +58,7 @@ class ForgeLinkApp(Application):
             label='External Url',
             help_text='URL to which you wish to link',
             validator=fev.URL(not_empty=True, add_http=True),
-            extra_attrs={'type': 'url'}),
+            extra_attrs={'type': 'url', 'required' : '', 'placeholder' : 'https://example.com'}),
     ]
     config_on_install = ['url']
     searchable = True
