@@ -599,6 +599,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
     def sanitize_token(self, token):
         """
         Allow iframe tags if the src attribute matches our list of valid sources.
+        Allow input tags if the type attribute matches "checkbox"
         Otherwise use default sanitization.
         """
 
