@@ -37,11 +37,9 @@
             <tr>
                 <th data-sort="ticket_num_i">#</th>
                 <th data-sort="snippet_s">Summary</th>
-                <th data-sort="created_date_s">Created Date</th>
                 <th data-sort="mod_date_s">Updated Date</th>
                 <th data-sort="reported_by_s">Creator</th>
                 <th data-sort="assigned_to_s">Owner</th>
-                <th data-sort="_milestone_s">Milestone</th>
                 <th data-sort="status_s">Status</th>
             </tr>
             </thead>
@@ -50,11 +48,9 @@
                 <tr>
                     <td><a href="{{ t['url'] }}">{{ t['ticket_num'] }}</a></td>
                     <td><a href="{{ t['url'] }}">{{ t['summary'] }}</a></td>
-                    <td>{{ lib.abbr_date(t['created_date']) }}</td>
                     <td>{{ lib.abbr_date(t['mod_date']) }}</td>
                     <td>{{ t['reported_by'].display_name }}</td>
                     <td>{% if t['assigned_to_id'] %}{{ t['assigned_to'].display_name }}{% endif %}</td>
-                    <td>{{ t['milestone'] }}</td>
                     <td class="{{ t['status'] }}">{{ t['status'] }}</td>
                 </tr>
             {% endfor %}

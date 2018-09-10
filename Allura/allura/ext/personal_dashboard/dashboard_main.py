@@ -79,12 +79,10 @@ class TicketsSection(DashboardSectionBase):
                 ticket_num=ticket['ticket_num'],
                 url=ticket.url(),
                 summary=ticket['summary'],
-                created_date=ticket['created_date'],
                 mod_date=ticket['mod_date'],
                 reported_by=ticket['reported_by'],
                 assigned_to_id=ticket['assigned_to_id'],
                 assigned_to=ticket['assigned_to'],
-                milestone=ticket['_milestone'],
                 status=ticket['status'])
             for ticket in result.get('tickets')
         ]
