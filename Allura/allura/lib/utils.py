@@ -577,7 +577,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                           (ns_html, 'datalist'),
                           (ns_html, 'fieldset'),
                           (ns_html, 'form'),
-                          #(ns_html, 'input'),
+                          (ns_html, 'input'),
                           (ns_html, 'label'),
                           (ns_html, 'legend'),
                           (ns_html, 'meter'),
@@ -606,6 +606,9 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
         self.allowed_elements.discard(iframe_el)
         ok_opening_iframe = False
 
+        input_el = (html5lib.constants.namespaces['html'], 'input')
+        self.allowed_elements.discard(input_el)
+
         if token.get('name') == 'iframe':
             attrs = token.get('data') or {}
             if attrs.get((None, 'src'), '').startswith(self.valid_iframe_srcs):
@@ -615,6 +618,12 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                 self.allowed_elements.add(iframe_el)
 
         self._prev_token_was_ok_iframe = ok_opening_iframe
+
+        if token.get('name') == 'input':
+            attrs = token.get('data') or {}
+            if attrs.get((None, 'type'), '') == "checkbox":
+                self.allowed_elements.add(input_el)
+
         return super(ForgeHTMLSanitizerFilter, self).sanitize_token(token)
 
 
