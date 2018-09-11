@@ -281,6 +281,11 @@ class TestHTMLSanitizer(unittest.TestCase):
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert_equal(self.simple_tag_list(p), ['p', 'p'])
 
+    def test_html_sanitizer_checkbox(self):
+        walker = self.walker_from_text('<p><input type="checkbox" disabled/><input type="text" disabled/><input type="checkbox" disabled checked/></p>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
+        assert_equal(self.simple_tag_list(p), ['p', 'input', 'input', 'p'])
+
 
 def test_ip_address():
     req = Mock()
