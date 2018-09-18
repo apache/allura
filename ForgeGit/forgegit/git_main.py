@@ -82,19 +82,20 @@ class ForgeGitApp(RepositoryApp):
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeGitApp, self).install(project)
-        GM.Repository(
+        repo = GM.Repository(
             name=self.config.options.mount_point + '.git',
             tool='git',
             status='initializing',
             fs_path=self.config.options.get('fs_path'))
         ThreadLocalORMSession.flush_all()
-        cloned_from_project_id = self.config.options.get(
-            'cloned_from_project_id')
+        cloned_from_project_id = self.config.options.get('cloned_from_project_id')
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
         init_from_url = self.config.options.get('init_from_url')
         init_from_path = self.config.options.get('init_from_path')
         if cloned_from_project_id is not None:
             cloned_from = GM.Repository.query.get(_id=cloned_from_repo_id)
+            repo.default_branch_name = cloned_from.default_branch_name
+            repo.additional_viewable_extensions = cloned_from.additional_viewable_extensions
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=cloned_from.full_fs_path,
                 cloned_from_name=cloned_from.app.config.script_name(),
