@@ -16,12 +16,14 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-<form>
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+<form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_extensions">
   <label class="grid-13">Extensions:</label>
   <div class="grid-13">
     {% if allow_config %}
       <input type="text" name="additional_viewable_extensions"
-             id="additional_viewable_extensions" title="e.g., .svnignore,.gitignore,.ini"
+             id="additional_viewable_extensions" placeholder=".ini, .foo, Makefile"
              {% if additional_viewable_extensions %} value="{{additional_viewable_extensions}}"{% endif %}/>
     {% else %}
       <span>{{additional_viewable_extensions}}</span>
@@ -33,21 +35,8 @@
   <hr>
   <div class="grid-13">&nbsp;</div>
   <div class="grid-13">
-    <input type="button" onclick="save_extensions()" value="Save">
+    <input type="button" value="Save" class="submit">
+    {{lib.csrf_token()}}
   </div>
   {% endif %}
 </form>
-{% if allow_config %}
-  <script type="text/javascript">
-    function save_extensions() {
-        var cval = $.cookie('_session_id');
-        $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_extensions', {
-            additional_viewable_extensions: $('#additional_viewable_extensions').val(),
-            _session_id:cval
-        },
-        function () {
-            location.reload();
-        });
-    }
-  </script>
-{% endif %}

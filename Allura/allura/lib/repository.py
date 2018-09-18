@@ -258,8 +258,8 @@ class RepoAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_extensions(self, **post_data):
-        self.repo.additional_viewable_extensions = post_data[
-            'additional_viewable_extensions']
+        self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
+        redirect(request.referer)
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/default_branch.html')
