@@ -1,3 +1,74 @@
+Version 1.9.0  (September 2018)
+
+
+New Features
+
+ * Personal Dashboard, showing your own tickets, merge requests, projects, etc
+ * [#8196] Save content before form submission
+ * [#8085] Add support for checkboxes to the markdown converter
+
+Upgrade Instructions
+
+  Run `pip install -r requirements.txt` to install updated dependencies
+
+  Run: `paster ensure_index development.ini` in Allura dir
+
+General
+ * [#8212] Github import error on deleted users
+ * [#8217] Content doesn't get saved when rate limit is hit
+ * Improve new external link dialog
+ * Fix scrollbar issue in "get link" dialog
+ * Add search help about specific fields, to blog, chat, discussion, wiki tools
+ * Audit log table fits better
+ * Make project status UI more prominent
+ * Better project import validation
+
+Accounts
+ * [#8199] 2FA recovery codes file - line endings
+ * Don't list your own u/username project as going to be orphaned when disabling your account
+ * Only float profile project icon to left, avoid possible emoji img like in "Allura™"
+
+Administration
+ * [#8186] Make antispam form post expiration configurable
+ * [#8197] Site admin searches match better
+ * [#8198] Ability to remove activity entries
+ * [#8210] Use different tmp dir for code snapshots
+ * [#8211] Use different tmp dir for project exports
+
+Wiki
+ * [#1699] Fix incoming email for wiki pages with space in the title
+ * Show wiki edit link & login prompt, based on actual perms, not just whether user is logged in
+
+Code Repositories
+ * [#6070] Make code snapshots based on directory
+ * [#8194] Persist the list of commits on Merge requests
+ * [#8200] Update GitPython to support git >= 2.15
+ * [#8201] Mask/hide email addresses in commit messages
+ * [#8214] Compute merge request commits in background
+ * Avoid calling _git.heads unnecessarily
+
+Tickets
+ * [#6353] Pre-fill "private" using URL param
+ * [#8149] Bulk Delete for tickets
+ * [#8213] Nested replies don't update ticket timestamp
+ * [#8224] Ticket subscriptions orphaned when moving tickets
+ * Avoid error when closing a private ticket created by a deleted user
+
+For Developers
+ * [#8195] More test coverage for rate limiting
+ * Use correct capitalization for solr "OR"
+ * Upgrade jinja to 2.10 and avoid bytecode versioning problems
+ * wrap export controls area on metadata admin page
+ * Don't generate SHA1 files any more, per ASF policy update
+ * Provide another master template block to hook in after the "block head" that many individual templates are using (without calling super)
+ * Support video_url field in project import
+ * Add a note to the debug section about how to do it with docker
+ * Make debug pages and post permalinks work correctly when behind a proxy (like docker)
+ * refreshrepo.py option to control creating activity, firing webhooks, etc
+ * Option in refreshrepo.py to clean commits after certain date
+ * Publicize previous security fix in changelog
+
+
 Version 1.8.1  (March 2018)
 
 
