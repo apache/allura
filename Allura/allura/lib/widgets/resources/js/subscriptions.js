@@ -65,24 +65,21 @@ SubscriptionForm = React.createClass({
         set_state({
           subscribed: resp.subscribed,
         });
-        var link = this.getLinkNode();
         var text = null;
+        var msgStat = null;
         if (resp.subscribed_to_tool) {
+          msgStat = 'error';
           text = "You can't subscribe to this ";
           text += this.props.thing;
           text += " because you are already subscribed to the entire ";
           text += resp.subscribed_to_entire_name ? resp.subscribed_to_entire_name : "tool";
           text += ".";
         } else {
+          msgStat = 'info';
           var action = resp.subscribed ? 'subscribed to' : 'unsubscribed from';
           text = 'Successfully ' + action + ' this ' + this.props.thing + '.';
         }
-        $(link).tooltipster('content', text).tooltipster('show');
-        if (this.state.tooltip_timeout) {
-          clearTimeout(this.state.tooltip_timeout);
-        }
-        var t = setTimeout(function() { $(link).tooltipster('hide'); }, 4000);
-        this.setState({tooltip_timeout: t});
+        $('#messages').notify(text, {status: msgStat});
       }
     }.bind(this)).always(function() {
       set_state({in_progress: false});
@@ -95,10 +92,10 @@ SubscriptionForm = React.createClass({
   componentDidMount: function() {
     var link = this.getLinkNode();
     $(link).tooltipster({
-      content: '',
+      content: null,
       animation: 'fade',
       delay: 200,
-      trigger: 'custom',
+      trigger: 'hover',
       position: 'top',
       iconCloning: false,
       maxWidth: 300
