@@ -144,7 +144,7 @@ class Thread(Artifact, ActivityObject):
         ]
     type_s = 'Thread'
 
-    _id = FieldProperty(str, if_missing=lambda: h.nonce(8))
+    _id = FieldProperty(str, if_missing=lambda: h.nonce(10))
     discussion_id = ForeignIdProperty(Discussion)
     ref_id = ForeignIdProperty('ArtifactReference')
     subject = FieldProperty(str, if_missing='')
