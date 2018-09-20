@@ -521,6 +521,7 @@ class ProjectAdminController(BaseController):
             for screen in screenshots:
                 if screen.filename == screenshot.filename:
                     screenshot.filename = re.sub('(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
+                    # if filename already exists append a random number
                     break
             M.AuditLog.log('add screenshot')
             sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
