@@ -17,6 +17,7 @@
 
 import logging
 import re
+from random import randint
 from collections import OrderedDict
 from datetime import datetime
 from urlparse import urlparse
@@ -517,6 +518,10 @@ class ProjectAdminController(BaseController):
             flash('You may not have more than 6 screenshots per project.',
                   'error')
         elif screenshot is not None and screenshot != '':
+            for screen in screenshots:
+                if screen.filename == screenshot.filename:
+                    screenshot.filename = re.sub('(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
+                    break
             M.AuditLog.log('add screenshot')
             sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
             M.ProjectFile.save_image(
