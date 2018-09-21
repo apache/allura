@@ -39,7 +39,7 @@
         <input type="submit" value="Save Changes">
         {{lib.csrf_token()}}
       </form>
-      <form action="delete_screenshot" method="post">
+      <form action="delete_screenshot" method="post" class="delete_screenshot_form">
         <input type="hidden" value="{{ss._id}}" name="id">
         <input type="submit" value="Delete">
         {{lib.csrf_token()}}

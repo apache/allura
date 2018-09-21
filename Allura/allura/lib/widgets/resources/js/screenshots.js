@@ -32,5 +32,10 @@ $(function() {
       });
 
   });
+
+  $('.delete_screenshot_form').submit(function() {
+    return confirm('Really delete this screenshot?');
+  });
+  
 });
 
