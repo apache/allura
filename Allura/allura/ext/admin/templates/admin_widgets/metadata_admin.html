@@ -37,60 +37,69 @@
     {{widget.display_field(widget.fields.video_url) }}
     {% endif %}
 
+    <div class="summary-fields">
     {{ widget.display_label(widget.fields.summary) }}
     <br>
     {{widget.display_field(widget.fields.summary) }}
     <br>
-
-    {%if not c.project.is_user_project %}
-    {{ widget.display_label(widget.fields.short_description) }}
-    <br>
-    {{widget.display_field(widget.fields.short_description) }}
-
-    <div style="clear:both">&nbsp;</div>
-
-    <div id="features">
-      {{ widget.display_label(widget.fields.features) }}
-      {{ widget.display_field(widget.fields.features) }}
     </div>
-    <br>
 
-    {% if tg.config.get('support_tool_choices') %}
-    Preferred Support Page (for users of your project):<br>
-    {% if c.form_errors.get('support_page_url') %}
-        <div class="error">{{c.form_errors.get('support_page_url')}}</div>
-    {% endif %}
-    <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
-    <label for="support_page_none">None</label><br>
-    {% for ac in c.project.app_configs %}
-      {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
-        <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
-               {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
-        <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
-      {% endif %}
-    {% endfor %}
-    <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
-    <label for="support_page_members">Contact project admins</label><br>
-    <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
-           {% if value.support_page == '_url' %} checked{% endif %}>
-    <label for="support_page_url_cb">URL: </label>
-    <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
-    {% endif %}
+    {% if not c.project.is_user_project %}
+        <div class="description-fields">
+        {{ widget.display_label(widget.fields.short_description) }}
+        <br>
+        {{widget.display_field(widget.fields.short_description) }}
+        <div style="clear:both">&nbsp;</div>
+        </div>
 
-    {{ widget.display_label(widget.fields.twitter_handle) }}
-    <br>
-    {{widget.display_field(widget.fields.twitter_handle) }}
+        <div id="features">
+          {{ widget.display_label(widget.fields.features) }}
+          {{ widget.display_field(widget.fields.features) }}
+        </div>
+        <br>
 
-    {{ widget.display_label(widget.fields.facebook_page) }}
-    <br>
-    {{widget.display_field(widget.fields.facebook_page) }}
+        {% if tg.config.get('support_tool_choices') %}
+        <div class="support-page-fields">
+        Preferred Support Page (for users of your project):<br>
+        {% if c.form_errors.get('support_page_url') %}
+            <div class="error">{{c.form_errors.get('support_page_url')}}</div>
+        {% endif %}
+        <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
+        <label for="support_page_none">None</label><br>
+        {% for ac in c.project.app_configs %}
+          {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
+            <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
+                   {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
+            <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
+          {% endif %}
+        {% endfor %}
+        <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
+        <label for="support_page_members">Contact project admins</label><br>
+        <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
+               {% if value.support_page == '_url' %} checked{% endif %}>
+        <label for="support_page_url_cb">URL: </label>
+        <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
+        </div>
+        {% endif %}
 
-    {% if c.project.neighborhood.features['google_analytics'] %}
-    {{ widget.display_label(widget.fields.tracking_id) }}
-    <br>
-    {{widget.display_field(widget.fields.tracking_id) }}
-    {% endif %}
-      {% endif%}
+        <div class="social-media-fields">
+        {{ widget.display_label(widget.fields.twitter_handle) }}
+        <br>
+        {{widget.display_field(widget.fields.twitter_handle) }}
+
+        {{ widget.display_label(widget.fields.facebook_page) }}
+        <br>
+        {{widget.display_field(widget.fields.facebook_page) }}
+        </div>
+
+        {% if c.project.neighborhood.features['google_analytics'] %}
+        {{ widget.display_label(widget.fields.tracking_id) }}
+        <br>
+        {{widget.display_field(widget.fields.tracking_id) }}
+        {% endif %}
+    {% endif%}
+    {% block fields_column1_end -%}
+    {% endblock %}
   </div>
 
   <div class="grid-10">
