@@ -283,10 +283,10 @@ class TestNeighborhood(TestController):
         neighborhood.features['google_analytics'] = True
         r = self.app.get('/adobe/_admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Analytics Tracking ID' in r
+        assert 'Google Analytics ID' in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Analytics Tracking ID' in r
+        assert 'Google Analytics ID' in r
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Adobe', css='',
                                       homepage='# MozQ1', tracking_id='U-123456'),
@@ -303,10 +303,10 @@ class TestNeighborhood(TestController):
         neighborhood.features['google_analytics'] = False
         r = self.app.get('/adobe/_admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Analytics Tracking ID' not in r
+        assert 'Google Analytics ID' not in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
-        assert 'Analytics Tracking ID' not in r
+        assert 'Google Analytics ID' not in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
         assert "_add_tracking('nbhd', 'U-123456');" not in r

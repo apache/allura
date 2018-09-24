@@ -83,7 +83,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     }
 
     {%- for account in accounts %}
-    _add_tracking('sfnt{{ loop.index }}', '{{account}}');
+    _add_tracking('acct{{ loop.index }}', '{{account}}');
     {%- endfor %}
     {% if project and project.neighborhood.features['google_analytics'] -%}
       {% if project.neighborhood.tracking_id -%}
