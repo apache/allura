@@ -721,12 +721,21 @@ def paging_sanitizer(limit, page, total_count=sys.maxint, zero_based_pages=True)
     valid ranges based on total_count.
 
     Useful for sanitizing limit and page query params.
+
+    See also g.handle_paging which also checks prefs
     """
-    limit = max(int(limit), 1)
+    try:
+        limit = max(int(limit), 1)
+    except ValueError:
+        limit = 25
     limit = min(limit, asint(tg.config.get('limit_param_max', 500)))
     max_page = (total_count / limit) + (1 if total_count % limit else 0)
     max_page = max(0, max_page - (1 if zero_based_pages else 0))
-    page = min(max(int(page or 0), (0 if zero_based_pages else 1)), max_page)
+    try:
+        page = int(page or 0)
+    except ValueError:
+        page = 0
+    page = min(max(page, (0 if zero_based_pages else 1)), max_page)
     return limit, page
 
 
