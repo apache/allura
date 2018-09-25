@@ -17,6 +17,7 @@
 
 import logging
 import re
+import os
 from random import randint
 from collections import OrderedDict
 from datetime import datetime
@@ -518,8 +519,15 @@ class ProjectAdminController(BaseController):
             flash('You may not have more than 6 screenshots per project.',
                   'error')
         elif screenshot is not None and screenshot != '':
+            future_bmp = False
+            e_filename, e_fileext = os.path.splitext(screenshot.filename)
             for screen in screenshots:
-                if screen.filename == screenshot.filename:
+                c_filename, c_fileext = os.path.splitext(screen.filename)
+                if c_fileext == '.png' and e_fileext.lower() == '.bmp' and e_filename == c_filename:
+                    future_bmp = True
+                    # If both filename(without ext.) equals and exiting file ext. is png and given file ext is bmp, there will be two similar png files.
+
+                if screen.filename == screenshot.filename or future_bmp:
                     screenshot.filename = re.sub('(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
                     # if filename already exists append a random number
                     break
@@ -534,7 +542,7 @@ class ProjectAdminController(BaseController):
                     caption=caption,
                     sort=sort),
                 square=True, thumbnail_size=(150, 150),
-                thumbnail_meta=dict(project_id=c.project._id, category='screenshot_thumb'))
+                thumbnail_meta=dict(project_id=c.project._id, category='screenshot_thumb'), convert_bmp=True)
             g.post_event('project_updated')
         redirect('screenshots')
 

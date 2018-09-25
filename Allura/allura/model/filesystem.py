@@ -16,6 +16,7 @@
 #       under the License.
 
 import os
+import re
 from cStringIO import StringIO
 import logging
 
@@ -37,7 +38,8 @@ SUPPORTED_BY_PIL = set([
     'image/pjpeg',
     'image/png',
     'image/x-png',
-    'image/gif'])
+    'image/gif',
+    'image/bmp'])
 
 
 class File(MappedClass):
@@ -151,6 +153,8 @@ class File(MappedClass):
         thumbnail = cls(
             filename=filename, content_type=content_type, **thumbnail_meta)
         format = image.format or 'png'
+        if format == 'BMP': # use jpg format if bmp is provided
+            format = 'PNG'
         with thumbnail.wfile() as fp_w:
             if 'transparency' in image.info:
                 image.save(fp_w,
@@ -167,7 +171,8 @@ class File(MappedClass):
                    thumbnail_meta=None,
                    square=False,
                    save_original=False,
-                   original_meta=None):
+                   original_meta=None,
+                   convert_bmp=False):
         if content_type is None:
             content_type = utils.guess_mime_type(filename)
         if not content_type.lower() in SUPPORTED_BY_PIL:
@@ -182,6 +187,12 @@ class File(MappedClass):
             return None, None
 
         format = image.format
+
+        if format == 'BMP' and convert_bmp: # use jpg format if bitmap is provided
+            format = 'PNG'
+            content_type = 'image/png'
+            filename = re.sub('.bmp$', '.png', filename, flags=re.IGNORECASE)
+ 
         if save_original:
             original_meta = original_meta or {}
             original = cls(
