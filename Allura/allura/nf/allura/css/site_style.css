@@ -2854,7 +2854,7 @@ h1.title .viewer:hover {
 }
 
 .editable .editor .save_controls {
-  width: 115px;
+  width: 150px;
 }
 
 .editable .editor.multiline .save_holder {
@@ -2864,6 +2864,11 @@ h1.title .viewer:hover {
 .editable .editor.multiline.overlap {
   position: absolute;
   z-index: 10;
+}
+
+.editable .editor.multiline textarea{
+    width: 95%;
+    min-width: 300px;
 }
 
 .editable .editor .save_holder .cancel_btn {

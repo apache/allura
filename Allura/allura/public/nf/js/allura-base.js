@@ -47,7 +47,11 @@
         .find('input, select, textarea').each(function(i){
             var $this = $(this);
             var editor = $this.closest('.editor');
-            $this.attr('original_val', this.value);
+            if ($this.attr('type') === 'checkbox') {
+                $this.attr('original_val', this.checked);
+            } else {
+                $this.attr('original_val', this.value);
+            }
             if(!$('a.cancel_btn', editor).length){
                 var save_btns = $('<div class="save_holder"><input type="submit" value="Save"/><a href="#" class="cancel_btn">Cancel</a></div>');
                 if(editor.hasClass('multiline')){
@@ -69,12 +73,14 @@
         })
         .end()
         .find('.cancel_btn').click(function(e){
-            $(this).closest('.editable')
-                        .addClass('viewing')
-                        .removeClass('editing')
-                        .find('input, select, textarea').each(function(){
-                            $(this).val($(this).attr('original_val'));
-                        });
+            var $editable = $(this).closest('.editable');
+            $editable.addClass('viewing').removeClass('editing');
+            $editable.find('input:text, select, textarea').each(function(){
+                $(this).val($(this).attr('original_val'));
+            });
+            $editable.find('input[type=checkbox]').each(function(){
+                this.checked = ($(this).attr('original_val') === 'true');
+            });
             return false;
         });
 })(jQuery);
