@@ -355,7 +355,7 @@ def artifacts_from_index_ids(index_ids, model, objectid_id=True):
     # this could be made more flexible to not require the model passed in
     ids = [index_id.split('#')[1] for index_id in index_ids]
     if objectid_id:
-        ids = [bson.ObjectId(_id) for _id in ids if id != 'None']
+        ids = [bson.ObjectId(_id) for _id in ids if _id != 'None']
     return model.query.find({'_id': {'$in': ids}}).all()
 
 
