@@ -312,9 +312,9 @@ class TestIconValidator(unittest.TestCase):
         input = self._mock('foo.svg')
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python(input)
-        self.assertEqual(str(cm.exception), 'Project icons must be PNG, GIF, or JPG format.')
+        self.assertEqual(str(cm.exception), 'Project icons must be PNG, GIF, JPG, or BMP format.')
 
         input = self._mock('foogif.svg')
         with self.assertRaises(fe.Invalid) as cm:
             self.assertEqual(input, self.val.to_python(input))
-        self.assertEqual(str(cm.exception), 'Project icons must be PNG, GIF, or JPG format.')
+        self.assertEqual(str(cm.exception), 'Project icons must be PNG, GIF, JPG, or BMP format.')

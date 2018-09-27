@@ -366,6 +366,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             thumbnail_meta=dict(project_id=self._id, category='icon'),
             save_original=True,
             original_meta=dict(project_id=self._id, category='icon_original'),
+            convert_bmp=True,
         )
         # store the dimensions so we don't have to read the whole image each time we need to know
         icon_orig_img = PIL.Image.open(icon_orig.rfile())
