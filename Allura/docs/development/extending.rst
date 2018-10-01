@@ -29,7 +29,7 @@ to be specified in your ``.ini`` file, since you may only have one enabled at a 
 
 The available extension points for Allura are:
 
-* :class:`allura.app.Application` (aka tool) and :class:`allura.app.Artifact`
+* :class:`allura.app.Application` (aka tool) and :class:`allura.model.artifact.Artifact`
 * :class:`allura.lib.plugin.ThemeProvider`
 * :class:`allura.lib.plugin.ProjectRegistrationProvider`
 * :class:`allura.lib.plugin.AuthenticationProvider`
@@ -42,8 +42,8 @@ The available extension points for Allura are:
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
 * ``[allura.timers]`` functions which return a list or single :class:`timermiddleware.Timer` which will be included in stats.log timings
-* :mod:`allura.ext.user_profile`
-* :mod:`allura.ext.personal_dashboard`
+* :mod:`allura.ext.user_profile.user_main`
+* :mod:`allura.ext.personal_dashboard.dashboard_main`
 * ``[allura.middleware]`` classes, which are standard WSGI middleware.  They will receive the ``app`` instance and a ``config`` dict as constructor parameters.
   The middleware will be used for all requests.  By default the middleware wraps the base app directly and other middleware wrap around it.
   If your middleware needs to wrap around the other Allura middleware (except error handling), set ``when = 'outer'`` on your middleware.
