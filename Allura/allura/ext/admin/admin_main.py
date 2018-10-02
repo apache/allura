@@ -703,6 +703,8 @@ class ProjectAdminController(BaseController):
         except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
+        if re.search(tool[0]['mount_point']+ r'\/$', request.referer):
+            redirect('../')
         redirect(request.referer)
 
     @expose('jinja:allura.ext.admin:templates/export.html')
