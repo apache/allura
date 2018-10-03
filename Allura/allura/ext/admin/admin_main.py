@@ -703,7 +703,8 @@ class ProjectAdminController(BaseController):
         except forge_exc.ForgeError, exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
-        if re.search(tool[0]['mount_point']+ r'\/$', request.referer):
+        if tool is not None and 'delete' in tool[0] and re.search(c.project.url() + tool[0]['mount_point']+ r'\/*', request.referer):
+            # Redirect to root when deleting currect module
             redirect('../')
         redirect(request.referer)
 
