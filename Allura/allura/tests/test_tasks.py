@@ -28,7 +28,7 @@ import tg
 import mock
 from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
-from nose.tools import assert_in
+from nose.tools import assert_in, assert_less
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
@@ -422,6 +422,28 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+
+    def test_send_email_long_lines_use_quoted_printable(self):
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendsimplemail(
+                fromaddr=u'"По" <foo@bar.com>',
+                toaddr='blah@blah.com',
+                text=(u'0123456789' * 100) + u'\n\n' + (u'Громады стро ' * 100),
+                reply_to=g.noreply,
+                subject=u'По оживлённым берегам',
+                message_id=h.gen_message_id())
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+
+            for line in body:
+                assert_less(len(line), 991)
+
+            # plain text
+            assert_in('012345678901234567890123456789012345678901234567890123456789012345678901234=', body)
+            assert_in('=D0=93=D1=80=D0=BE=D0=BC=D0=B0=D0=B4=D1=8B =D1=81=D1=82=D1=80=D0=BE =D0=93=', body)
+            # html
+            assert_in('<div class=3D"markdown_content"><p>0123456789012345678901234567890123456789=', body)
+            assert_in('<p>=D0=93=D1=80=D0=BE=D0=BC=D0=B0=D0=B4=D1=8B =D1=81=D1=82=D1=80=D0=BE =D0=', body)
 
     @td.with_wiki
     def test_receive_email_ok(self):
