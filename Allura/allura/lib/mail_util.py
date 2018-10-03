@@ -175,11 +175,35 @@ def identify_sender(peer, email_address, headers, msg):
     return M.User.anonymous()
 
 
+# http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
+MAX_MAIL_LINE_OCTETS = 990
+
+
 def encode_email_part(content, content_type):
     try:
-        return MIMEText(content.encode('ascii'), content_type, 'ascii')
-    except:
-        return MIMEText(content.encode('utf-8'), content_type, 'utf-8')
+        # simplest email - plain ascii
+        encoded_content = content.encode('ascii')
+        encoding = 'ascii'
+    except Exception:
+        # utf8 will get base64 encoded so we only do it if ascii fails
+        encoded_content = content.encode('utf-8')
+        encoding = 'utf-8'
+
+    for line in encoded_content.splitlines():
+        if len(line) > MAX_MAIL_LINE_OCTETS:
+            # switch to Quoted-Printable encoding to avoid too-long lines
+            # we could always Quoted-Printabl, but it makes the output a little messier and less human-readable
+            # the particular order of all these operations seems to be very important for everything to end up right
+            msg = MIMEText(None, content_type)
+            msg.replace_header('content-transfer-encoding', 'quoted-printable')
+            cs = email.charset.Charset('utf-8')
+            cs.header_encoding = email.charset.QP
+            cs.body_encoding = email.charset.QP
+            payload = cs.body_encode(content.encode('utf-8'))
+            msg.set_payload(payload, 'utf-8')
+            return msg
+    else:
+        return MIMEText(encoded_content, content_type, encoding)
 
 
 def make_multipart_message(*parts):
