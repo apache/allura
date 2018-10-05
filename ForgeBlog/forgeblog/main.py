@@ -49,6 +49,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController, AppDiscussionRestController
+from allura.controllers.attachments import AttachmentController, AttachmentsController
 from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedArgs, FeedController
 
@@ -68,8 +69,6 @@ class W:
     new_post_form = widgets.NewPostForm()
     edit_post_form = widgets.EditPostForm()
     view_post_form = widgets.ViewPostForm()
-    label_edit = ffw.LabelEdit()
-    attachment_add = ffw.AttachmentAdd()
     attachment_list = ffw.AttachmentList()
     preview_post_form = widgets.PreviewPostForm()
     subscribe_form = SubscribeForm(thing='post')
@@ -207,7 +206,7 @@ class ForgeBlogApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        BM.Attachment.query.remove(dict(app_config_id=c.app.config._id))
+        BM.BlogAttachment.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPost.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeBlogApp, self).uninstall(project)
@@ -304,9 +303,12 @@ class RootController(BaseController, FeedController):
     def save(self, **kw):
         require_access(c.app, 'write')
         self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
+        attachment = kw.pop('attachment', None)
         post = BM.BlogPost.new(**kw)
         g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=post,
                              user=c.user, content_type='blog-post')
+        if attachment is not None:
+            post.add_multiple_attachments(attachment)
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
     @with_trailing_slash
@@ -338,22 +340,32 @@ class RootController(BaseController, FeedController):
             app.url)
 
 
+class BlogAttachmentController(AttachmentController):
+    AttachmentClass = BM.BlogAttachment
+
+
+class BlogAttachmentsController(AttachmentsController):
+    AttachmentControllerClass = BlogAttachmentController
+
+
 class PostController(BaseController, FeedController):
 
     def __init__(self, post):
         self.post = post
+        self.attachment = BlogAttachmentsController(self.post)
 
     def _check_security(self):
         require_access(self.post, 'read')
+        if self.post.state == 'draft':
+            require_access(self.post, 'write')
 
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
                    limit=validators.Int(if_empty=None, if_invalid=None)))
     def index(self, page=0, limit=None, **kw):
-        if self.post.state == 'draft':
-            require_access(self.post, 'write')
         c.form = W.view_post_form
+        c.attachment_list = W.attachment_list
         c.subscribe_form = W.subscribe_form
         c.thread = W.thread
         post_count = self.post.discussion_thread.post_count
@@ -373,9 +385,7 @@ class PostController(BaseController, FeedController):
         require_access(self.post, 'write')
         self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         c.form = W.edit_post_form
-        c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
-        c.label_edit = W.label_edit
         return dict(post=self.post)
 
     @without_trailing_slash
@@ -407,6 +417,9 @@ class PostController(BaseController, FeedController):
         else:
             g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=self.post,
                                  user=c.user, content_type='blog-post')
+        attachment = kw.pop('attachment', None)
+        if attachment is not None:
+            self.post.add_multiple_attachments(attachment)
         for k, v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()

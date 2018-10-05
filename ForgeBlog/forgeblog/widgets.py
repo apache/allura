@@ -31,6 +31,7 @@ class BlogPager(ffw.PageList):
 
 class NewPostForm(forms.ForgeForm):
     template = 'jinja:forgeblog:templates/blog_widgets/post_form.html'
+    enctype = 'multipart/form-data'
 
     class fields(ew_core.NameList):
         title = ew.TextField(validator=fev.UnicodeString(not_empty=True,
@@ -48,6 +49,8 @@ class NewPostForm(forms.ForgeForm):
                 ew.Option(py_value='published', label='Published')])
         labels = ffw.LabelEdit(placeholder='Add labels here',
                                title='Add labels here')
+        attachment = ew.InputField(label='Attachment', field_type='file', attrs={'multiple': 'True'},
+                                   validator=fev.FieldStorageUploadConverter(if_missing=None))
 
     def resources(self):
         for r in super(NewPostForm, self).resources():
