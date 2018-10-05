@@ -101,7 +101,7 @@
             <div class="attachment_item">
                 {% if att.is_image() %}
                     <div class="attachment_thumbnail">
-                        <a class="lightbox" data-src="{{att.url()}}" href="{{att.url()}}">
+                        <a class="lightbox" href="{{att.url()}}">
                             <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
                         </a>
                     </div>
@@ -168,9 +168,4 @@
       </li>
     </ul>
   </div>
-    <!-- lightbox_me div that will dynamically load attachment image -->
-  <div id="lightbox" style="display:none; height: 90%">
-      <img style="width: inherit; height: inherit; display: block; margin-left: auto; margin-right: auto;">
-  </div>
-
 </div>

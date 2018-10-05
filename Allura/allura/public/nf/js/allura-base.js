@@ -216,4 +216,19 @@ $(function(){
 
     twemoji.size = '36x36';
     twemoji.parse($('#content_base')[0]);
+
+    $('.lightbox').click(function(e) {
+        var image_source = $(this).data("src") || $(this).attr('href');
+        if ($('#lightbox').length === 0) {
+            $('body').append('<div id="lightbox" style="display:none; height: 90%"><img style="display: block; max-height: 100%; max-width: 100%; margin-left: auto; margin-right: auto;"></div>');
+        }
+        var image = $('#lightbox').find('img:first');
+        image.attr("src", image_source);
+
+        $('#lightbox').lightbox_me({
+            centered: true
+        });
+
+        e.preventDefault();
+    });
 });

@@ -417,19 +417,6 @@ class Post(HierWidget):
                     });
                 }
             });
-
-            //lightbox_me script to create lightbox of attached images
-            $('.lightbox').click(function(e) {
-                var image_source = $(this).data("src");
-                var image = $('#lightbox').find('img:first');
-                image.attr("src", image_source);
-
-                $('#lightbox').lightbox_me({
-                    centered: true
-                });
-
-                e.preventDefault();
-            });
         }());
         ''')
 
