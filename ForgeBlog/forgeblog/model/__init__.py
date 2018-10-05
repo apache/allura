@@ -15,4 +15,4 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from blog import Globals, BlogPost, Attachment, BlogPostSnapshot
+from blog import Globals, BlogPost, BlogAttachment, BlogPostSnapshot

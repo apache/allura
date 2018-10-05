@@ -35,7 +35,9 @@
 
 {% block content %}
     {{c.form.display(value=post, base_post=base_post)}}
-    <div style="clear:both;"></div>
+    <div class="grid-19">
+        {{c.attachment_list.display(attachments=post.attachments, edit_mode=h.has_access(post, 'edit')())}}
+    </div>
     {% if post.discussion_thread and c.app.show_discussion %}
     <div style="margin-top: 10px">
       {{c.thread.display(value=post.discussion_thread,page=page,limit=limit,count=count)}}

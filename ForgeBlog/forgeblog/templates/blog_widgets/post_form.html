@@ -28,13 +28,17 @@
   <div class="grid-19">
     {{widget.display_field(widget.fields.text)}}
   </div>
-  <div class="grid-6">
+  <div class="grid-5">
     <label class="cr">State:</label>
     {{widget.display_field(widget.fields.state)}}
   </div>
-  <div class="grid-13">
+  <div class="grid-6">
     <label class="cr">Labels:</label>
     {{widget.display_field(widget.fields.labels)}}
+  </div>
+  <div class="grid-8">
+    <label class="cr">Add attachments:</label>
+    {{widget.display_field(widget.fields.attachment)}}
   </div>
   {% for field in widget.fields %}
     {% if field.field_type == 'hidden' %}

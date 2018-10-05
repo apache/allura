@@ -321,9 +321,13 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             feed_item.delete()
         super(BlogPost, self).delete()
 
+    @classmethod
+    def attachment_class(cls):
+        return BlogAttachment
 
-class Attachment(M.BaseAttachment):
-    ArtifactClass = BlogPost
+
+class BlogAttachment(M.BaseAttachment):
+    ArtifactType = BlogPost
 
     class __mongometa__:
         polymorphic_identity = 'BlogAttachment'

@@ -19,31 +19,23 @@ import datetime
 import json
 
 import tg
-from nose.tools import assert_equal, assert_in
+from nose.tools import assert_equal
 from mock import patch
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
 
-#---------x---------x---------x---------x---------x---------x---------x
-# RootController methods exposed:
-#     index, new_page, search
-# PageController methods exposed:
-#     index, edit, history, diff, raw, revert, update
-# CommentController methods exposed:
-#     reply, delete
-
 
 class Test(TestController):
 
-    def _post(self, slug='', **kw):
+    def _post(self, slug='', extra_app_post_params={}, **kw):
         d = {
             'title': 'My Post',
             'text': 'Nothing to see here',
             'labels': '',
             'state': 'published'}
         d.update(kw)
-        r = self.app.post('/blog%s/save' % slug, params=d)
+        r = self.app.post('/blog%s/save' % slug, params=d, **extra_app_post_params)
         return r
 
     def _blog_date(self):
@@ -168,6 +160,31 @@ class Test(TestController):
         response = self.app.get('/blog/%s/my-post/edit' % d,
                                 extra_environ=dict(username='*anonymous'))
         assert 'Nothing' not in response
+
+    def test_post_attachments(self):
+        # create
+        upload = ('attachment', 'nums.txt', '123412341234')
+        self._post(extra_app_post_params=dict(upload_files=[upload]))
+
+        # check it is listed
+        d = self._blog_date()
+        r = self.app.get('/blog/%s/my-post/' % d)
+        assert 'nums.txt' in r
+
+        # edit
+        slug = '/%s/my-post' % d
+        upload = ('attachment', 'letters.txt', 'abcdefghij')
+        self._post(slug=slug,
+                   extra_app_post_params=dict(upload_files=[upload]))
+
+        # check both are there
+        r = self.app.get('/blog/%s/my-post/' % d)
+        assert 'nums.txt' in r
+        assert 'letters.txt' in r
+
+        # check attachment is accessible
+        r = self.app.get('/blog/%s/my-post/attachment/letters.txt' % d)
+        assert 'abcdefghij' in r
 
     def test_post_history(self):
         self._post()
