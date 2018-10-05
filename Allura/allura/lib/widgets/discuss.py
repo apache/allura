@@ -191,6 +191,14 @@ class NewTopicPost(EditPost):
         show_subject=True,
         forums=None)
 
+    @property
+    def fields(self):
+        fields = super(NewTopicPost, self).fields
+        fields.append(ew.InputField(name='attachment', label='Attachment', field_type='file',
+                                    attrs={'multiple': 'True'},
+                                    validator=fev.FieldStorageUploadConverter(if_missing=None)))
+        return fields
+
 
 class _ThreadsTable(ew.TableField):
     template = 'jinja:allura:templates/widgets/threads_table.html'

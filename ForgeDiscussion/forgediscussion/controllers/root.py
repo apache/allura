@@ -139,6 +139,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]
         p = thd.post(subject, text)
+        if 'attachment' in kw:
+            p.add_multiple_attachments(kw['attachment'])
         thd.post_to_feed(p)
         flash('Message posted')
         redirect(thd.url())
