@@ -24,7 +24,7 @@
     <div class="attachment_images">
       {% for att in attachments if att.is_image() %}
           <div class="attachment_thumb">
-            <a href="{{att.url()}}">
+            <a href="{{att.url()}}" class="lightbox">
               <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
             <br/>
             {{att.filename}}
