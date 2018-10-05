@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-<form id="create_new_topic" method="post" action="{{action}}">
+<form id="create_new_topic" method="post" action="{{action}}" enctype='multipart/form-data'>
     {% if show_subject %}
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
@@ -40,6 +40,11 @@
     <div class="grid-19">
       <label for="{{ widget.context_for(widget.fields.text)['id'] }}" class="cr">Description:</label>
       {{widget.display_field(widget.fields.text)}}
+    </div>
+    <div class="grid-19">&nbsp;</div>
+    <div class="grid-19">
+        <label for="{{ widget.context_for(widget.fields.attachment)['id'] }}">Attachments:</label>
+        {{widget.display_field(widget.fields.attachment)}}
     </div>
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">

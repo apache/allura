@@ -26,6 +26,7 @@ from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 import pymongo
+import webtest
 
 from ming.odm import ThreadLocalORMSession
 from pylons import tmpl_context as c
@@ -888,7 +889,6 @@ class TestForum(TestController):
         assert 'first subject' not in resp.html
         assert 'changed subject' in resp
 
-
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebar = r.html.find('div', {'id': 'sidebar'})
@@ -962,6 +962,18 @@ class TestForum(TestController):
         assert u'téstforum'.encode('utf-8') in r
         r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
         assert u'<option value="téstforum" selected>Tést Forum</option>' in r
+
+    def test_create_topic_attachment(self):
+        r = self.app.get('/discussion/create_topic/')
+        form = self.fill_new_topic_form(r)
+        for field in form.fields.values():
+            field = field[0]
+            if field.id is None:
+                continue
+            if 'attachment' in field.id:
+                form[field.name] = ('myfile.txt', b'foo bar baz')  # webtest.Upload dooesn't work here
+        r = form.submit().follow()
+        assert 'myfile.txt' in r, r
 
     def test_viewing_a_thread_does_not_update_project_last_updated(self):
         # Create new topic/thread

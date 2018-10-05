@@ -2616,6 +2616,13 @@ div.attachment_item{
   display: none;
 }
 
+#create_new_topic select {
+  width: auto;
+}
+#create_new_topic input[type=file] {
+  margin-left: 1em;
+}
+
 .forum-list th .ico {
   margin-left: 4px;
 }
