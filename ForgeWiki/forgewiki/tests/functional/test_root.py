@@ -508,7 +508,7 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/TEST/attachment/' + filename + '/thumb')
 
         thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (255, 255)
+        assert thumbnail.size == (100, 100)
 
         # Make sure thumbnail is absent
         r = self.app.get('/wiki/TEST/')

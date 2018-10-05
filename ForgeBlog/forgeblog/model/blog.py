@@ -328,6 +328,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
 class BlogAttachment(M.BaseAttachment):
     ArtifactType = BlogPost
+    thumbnail_size = (100, 100)
 
     class __mongometa__:
         polymorphic_identity = 'BlogAttachment'

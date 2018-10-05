@@ -26,8 +26,9 @@
           <div class="attachment_thumb">
             <a href="{{att.url()}}">
               <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
-            </a><br/>
+            <br/>
             {{att.filename}}
+            </a>
             {% if edit_mode %}
             <form method="post" action="{{att.url()}}" onsubmit="{{onsubmit}}">
               <input type="hidden" name="delete" value="True"/>

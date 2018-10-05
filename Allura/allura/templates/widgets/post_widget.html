@@ -116,7 +116,7 @@
                  <div class="attachment_toolbar">
                     <form method="POST" action="{{att.url()}}">
                         {% if h.has_access(value, 'moderate')()%}
-                            <a href="javascript: void(0)"  onclick="$(this).closest('form').submit();" title="Remove Attachment"" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
+                            <a href="javascript: void(0)"  onclick="$(this).closest('form').submit();" title="Remove Attachment" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
                                 <span><i class="fa fa-trash-o" aria-hidden="true"></i></span>
                             </a>
                         {% endif %}

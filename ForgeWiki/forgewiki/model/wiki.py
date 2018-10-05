@@ -281,6 +281,7 @@ class Page(VersionedArtifact, ActivityObject):
 
 class WikiAttachment(BaseAttachment):
     ArtifactType = Page
+    thumbnail_size = (100, 100)
 
     class __mongometa__:
         polymorphic_identity = 'WikiAttachment'
