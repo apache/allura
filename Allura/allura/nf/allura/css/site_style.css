@@ -2292,8 +2292,10 @@ div.attachment_thumb .file {
     top: 0;
     right: -40px;
 }
-div.attachment_thumb .file_type {
+div.attachment_thumb img {
   border: 1px solid #ccc;
+}
+div.attachment_thumb .file_type {
   display: block;
   height: 100px;
   width: 100px;
@@ -2303,9 +2305,6 @@ div.attachment_thumb .file_type {
   font-weight: bold;
   font-size: 1.2em;
   margin-bottom: .5em;
-  background: #ccc;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(#cccccc), from(white));
-  background-image: -moz-linear-gradient(100% 100% 90deg, #cccccc, white 100%);
 }
 div.attachment_thumb .file_type span {
   display: block;
