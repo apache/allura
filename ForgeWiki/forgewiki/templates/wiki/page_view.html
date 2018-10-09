@@ -71,7 +71,7 @@
 {% endblock %}
 
 {% block wiki_content %}
-{{page.html_text}}
+<div class="active-md" data-markdownlink="">{{page.html_text}}</div>
 {% endblock %}
 
 {% block wiki_meta %}
@@ -118,4 +118,26 @@
       {% endif %}
   {% endif %}
   {{c.confirmation.display(content='')}}
+{% endblock %}
+
+{% block wiki_extra_js %}
+    {% if h.has_access(page, 'edit') %}
+        <script>
+                new Checklists(".active-md", function(checkbox, callback) {
+                var uri = $(checkbox).closest('.active-md').data('markdownlink');
+                $.get(uri + 'get_markdown', callback);
+            }, function(markdown, checkbox, callback) {
+                var uri = $(checkbox).closest('.active-md').data('markdownlink');
+                $.ajax({
+                    type: 'post',
+                    url: uri + 'update_markdown',
+                    data: {
+                        'text' : markdown,
+                        '_session_id' : $.cookie('_session_id')
+                    },
+                    success: callback
+                });
+            });
+        </script>
+    {% endif %}
 {% endblock %}

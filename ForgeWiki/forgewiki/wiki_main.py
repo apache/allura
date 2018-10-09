@@ -770,6 +770,30 @@ class PageController(BaseController, FeedController):
                  .encode('utf-8') + ('/' if not name_conflict else '/edit'))
 
     @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def update_markdown(self, text=None, **kw):  
+        if has_access(self.page, 'edit'):
+            self.page.text = text
+            self.page.commit()
+            g.spam_checker.check(text, artifact=self.page,
+                user=c.user, content_type='wiki')
+            g.director.create_activity(c.user, 'modified', self.page,
+                related_nodes=[c.project], tags=['wiki'])
+            return {
+                'status' : 'success'
+            }
+        else:
+            return {
+                'status' : 'no_permission'
+            }
+
+    @without_trailing_slash
+    @expose()
+    def get_markdown(self):  
+        return self.page.text
+
+    @without_trailing_slash
     @expose()
     @require_post()
     def attach(self, file_info=None, **kw):
