@@ -1550,6 +1550,30 @@ class TicketController(BaseController, FeedController):
         c.app.globals.invalidate_bin_counts()
         redirect('.')
 
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def update_markdown(self, text=None, **kw):  
+        if has_access(self.ticket, 'update'):
+            self.ticket.description = text
+            self.ticket.commit()
+            g.director.create_activity(c.user, 'modified', self.ticket,
+                            related_nodes=[c.project], tags=['ticket'])
+            g.spam_checker.check(text, artifact=self.ticket,
+                user=c.user, content_type='ticket')
+            return {
+                'status' : 'success'
+            }
+        else:
+            return {
+                'status' : 'no_permission'
+            }
+
+    @expose()
+    @without_trailing_slash
+    def get_markdown(self):
+        return self.ticket.description
+
     @expose('json:')
     @require_post()
     @validate(W.subscribe_form)
