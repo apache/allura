@@ -426,6 +426,28 @@ class PostController(BaseController, FeedController):
         redirect('.')
 
     @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def update_markdown(self, text=None, **kw):  
+        if has_access(self.post, 'edit'):
+            self.post.text = text
+            self.post.commit()
+            g.spam_checker.check(text, artifact=self.post,
+                user=c.user, content_type='blog-post')
+            return {
+                'status' : 'success'
+            }
+        else:
+            return {
+                'status' : 'no_permission'
+            }
+
+    @expose()
+    @without_trailing_slash
+    def get_markdown(self):
+        return self.post.text
+
+    @without_trailing_slash
     @require_post()
     @expose()
     def revert(self, version, **kw):

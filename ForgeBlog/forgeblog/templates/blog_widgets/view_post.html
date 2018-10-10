@@ -18,7 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
-{{value.html_text|safe}}
+<div class="active-md" data-markdownlink="">{{value.html_text|safe}}</div>
 {{lib.related_artifacts(value)}}
 <em class="grid-19">
   Posted by {{lib.user_link(base_post.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
