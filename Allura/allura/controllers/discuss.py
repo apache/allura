@@ -20,7 +20,7 @@ from datetime import datetime
 import logging
 
 from tg import expose, redirect, validate, request, flash, response
-from tg.decorators import with_trailing_slash, before_render, before_validate
+from tg.decorators import with_trailing_slash, without_trailing_slash, before_render, before_validate
 from decorator import decorator
 
 from pylons import tmpl_context as c, app_globals as g
@@ -35,7 +35,7 @@ from base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post, memorable_forget
-from allura.lib.security import require_access
+from allura.lib.security import has_access, require_access
 
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
@@ -342,6 +342,30 @@ class PostController(BaseController):
                 post = self.post
             return dict(discussion=self.post.discussion,
                         post=post)
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def update_markdown(self, text=None, **kw):  
+        if has_access(self.post, 'moderate'):
+            self.post.text = text
+            self.post.commit()
+            g.director.create_activity(c.user, 'modified', self.post,
+                            target=self.post.thread.artifact or self.post.thread,
+                            related_nodes=[self.post.app_config.project],
+                            tags=['comment'])
+            return {
+                'status' : 'success'
+            }
+        else:
+            return {
+                'status' : 'no_permission'
+            }
+
+    @expose()
+    @without_trailing_slash
+    def get_markdown(self):
+        return self.post.text
 
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)
