@@ -293,3 +293,7 @@ Build scripts from Sphinx (http://sphinx-doc.org/):
     Allura/docs/Makefile
     ForgeImporters/docs/make.bat
     ForgeImporters/docs/Makefile
+
+Python markdown extension for checklists (https://github.com/FND/markdown-checklist) is available under the MIT
+license. For details, see:
+    Allura/allura/public/nf/js/checklist.js

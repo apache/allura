@@ -75,4 +75,5 @@ requirements*
 solr_config/allura/core.properties
 # tmp can have tons of files from the broccoli build process
 tmp/**
+Allura/allura/public/nf/js/checklist.js
 
