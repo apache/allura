@@ -32,7 +32,7 @@ var Checklists = (function($) {
     Checklists.prototype.checkboxSelector = "> li > input:checkbox";
     Checklists.prototype.onChange = function(ev, self) {
         var checkbox = $(this).prop("disabled", true);
-        var index = $("ul" + self.checkboxSelector, self.container).index(this);
+        var index = $("ul" + self.checkboxSelector, $(this).closest('.active-md')).index(this);
         var reactivate = function() { checkbox.prop("disabled", false); };
         self.retriever(checkbox, function(markdown) {
             markdown = self.toggleCheckbox(index, markdown);
