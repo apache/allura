@@ -187,12 +187,16 @@ class File(MappedClass):
             return None, None
 
         format = image.format
+        save_anim = False
 
         if format == 'BMP' and convert_bmp: # use jpg format if bitmap is provided
             format = 'PNG'
             content_type = 'image/png'
             filename = re.sub('.bmp$', '.png', filename, flags=re.IGNORECASE)
- 
+
+        if format == 'GIF':
+            save_anim = True # save all frames if GIF is provided
+        
         if save_original:
             original_meta = original_meta or {}
             original = cls(
@@ -201,9 +205,9 @@ class File(MappedClass):
                 try:
                     if 'transparency' in image.info:
                         image.save(fp_w,
-                                   format, transparency=image.info['transparency'])
+                                   format, transparency=image.info['transparency'], save_all=save_anim)
                     else:
-                        image.save(fp_w, format)
+                        image.save(fp_w, format, save_all=save_anim)
                 except Exception as e:
                     session(original).expunge(original)
                     log.error('Error saving image %s %s', filename, e)
