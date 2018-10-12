@@ -54,6 +54,14 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- endmacro %}
 {% endif %}
 
+
+{% if not all_content_wrapper %}
+{% macro all_content_wrapper() -%}
+{{- caller(**kwargs) -}}
+{%- endmacro %}
+{% endif %}
+
+
 {% if not footer %}
 {%- macro footer(year, path_to_static='') %}
 <footer id="site-footer">
