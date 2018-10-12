@@ -800,6 +800,12 @@ class TestHandlePaging(unittest.TestCase):
         # handle paging must not mess up user preferences
         self.assertEqual(c.user.get_pref('results_per_page'), 25)
 
+    def test_with_invalid_limit(self):
+        self.assertEqual(g.handle_paging('foo', 0, 30), (30, 0, 0))
+
+        c.user.set_pref('results_per_page', 'bar')
+        self.assertEqual(g.handle_paging(None, 0, 30), (30, 0, 0))
+
 
 class TestIconRender(object):
 

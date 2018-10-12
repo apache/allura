@@ -369,7 +369,11 @@ class Globals(object):
                 limit = default
             else:
                 limit = c.user.get_pref('results_per_page') or default
-        return int(limit)
+        try:
+            limit = int(limit)
+        except ValueError:
+            limit = default
+        return limit
 
     def document_class(self, neighborhood):
         classes = ''
