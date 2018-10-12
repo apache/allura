@@ -95,7 +95,9 @@ class TestUserProfile(TestController):
         test_user.set_pref('email_address', 'test-user@example.com')
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
+        assert 'you currently have user messages disabled' not in response
         assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
+
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
                               'message': 'test message',
@@ -167,6 +169,19 @@ class TestUserProfile(TestController):
         r = self.app.get('/u/test-user/profile/send_message', status=302)
         assert 'This user has disabled direct email messages' in self.webflash(
             r)
+
+    @td.with_user_project('test-admin')
+    @td.with_user_project('test-user')
+    def test_user_messages_sender_disabled(self):
+        admin_user = User.by_username('test-admin')
+        admin_user.set_pref('email_address', 'admin@example.com')
+        admin_user.set_pref('disable_user_messages', True)
+
+        test_user = User.by_username('test-user')
+        test_user.set_pref('email_address', 'user@example.com')
+
+        r = self.app.get('/u/test-user/profile/send_message', status=200)
+        assert 'you currently have user messages disabled' in r
 
     @td.with_user_project('test-user')
     def test_profile_sections(self):
