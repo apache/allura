@@ -191,6 +191,31 @@ class TestDiscuss(TestDiscussBase):
         assert M.Post.query.find().count() == 1
         assert M.Post.query.find({'deleted': False}).count() == 0
 
+    def test_comment_get_markdown(self):
+        r = self._make_post('This is a post')
+        post_id = str(
+            r.html.find('div', {'class': 'discussion-post'})['id'])
+        response = self.app.get(self._thread_link() + post_id + '/get_markdown')
+        assert 'This is a post' in response
+
+    def test_comment_update_markdown(self):
+        r = self._make_post('This is a post')
+        post_id = str(
+            r.html.find('div', {'class': 'discussion-post'})['id'])
+        update_link = str(self._thread_link() + post_id + '/update_markdown')
+        response = self.app.post(
+            update_link,
+            params={
+                'text': '- [x] checkbox'})
+        assert response.json['status'] == 'success'
+        # anon users can't edit markdown
+        response = self.app.post(
+            update_link,
+            params={
+                'text': '- [x] checkbox'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['status'] == 'no_permission'
+
     def test_user_filter(self):
         r = self._make_post('Test post')
         post_link = str(

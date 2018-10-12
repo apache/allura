@@ -307,6 +307,27 @@ class TestFunctionalController(TrackerTestController):
         assert_true(summary in ticket_view)
         opts = self.subscription_options(ticket_view)
         assert_equal(opts['subscribed'], False)
+        
+    def test_ticket_get_markdown(self):
+        self.new_ticket(summary='my ticket', description='my description')
+        response = self.app.get('/bugs/1/get_markdown')
+        assert 'my description' in response
+
+    def test_ticket_update_markdown(self):
+        self.new_ticket(summary='my ticket', description='my description')
+        response = self.app.get('/bugs/1/get_markdown')
+        response = self.app.post(
+            '/bugs/1/update_markdown',
+            params={
+                'text': '- [x] checkbox'})
+        assert response.json['status'] == 'success'
+        # anon users can't edit markdown
+        response = self.app.post(
+            '/bugs/1/update_markdown',
+            params={
+                'text': '- [x] checkbox'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['status'] == 'no_permission'
 
     def test_labels(self):
         ticket_view = self.new_ticket(summary='summary', labels="test label").follow()

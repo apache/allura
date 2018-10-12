@@ -161,6 +161,28 @@ class Test(TestController):
                                 extra_environ=dict(username='*anonymous'))
         assert 'Nothing' not in response
 
+    def test_post_get_markdown(self):
+        self._post()
+        d = self._blog_date()
+        response = self.app.get('/blog/%s/my-post/get_markdown' % d)
+        assert 'Nothing' in response
+
+    def test_post_update_markdown(self):
+        self._post()
+        d = self._blog_date()
+        response = self.app.post(
+            '/blog/%s/my-post/update_markdown' % d,
+            params={
+                'text': '- [x] checkbox'})
+        assert response.json['status'] == 'success'
+        # anon users can't edit markdown
+        response = self.app.post(
+            '/blog/%s/my-post/update_markdown' % d,
+            params={
+                'text': '- [x] checkbox'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['status'] == 'no_permission'
+
     def test_post_attachments(self):
         # create
         upload = ('attachment', 'nums.txt', '123412341234')

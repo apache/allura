@@ -400,6 +400,39 @@ class TestRootController(TestController):
         assert_equal(spam_checker.check.call_args[0][0], u'tést\nsometext')
         assert 'tést' in response
 
+    def test_page_get_markdown(self):
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title': 'tést',
+                'text': '- [ ] checkbox',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
+        response = self.app.get('/wiki/tést/get_markdown')
+        assert '- [ ] checkbox' in response
+
+
+    def test_page_update_markdown(self):
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title': 'tést',
+                'text': '- [ ] checkbox',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
+        response = self.app.post(
+            '/wiki/tést/update_markdown',
+            params={
+                'text': '- [x] checkbox'})
+        assert response.json['status'] == 'success'
+        # anon users can't edit markdown
+        response = self.app.post(
+            '/wiki/tést/update_markdown',
+            params={
+                'text': '- [x] checkbox'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['status'] == 'no_permission'
+
     def test_page_label_unlabel(self):
         self.app.get('/wiki/tést/')
         response = self.app.post(
