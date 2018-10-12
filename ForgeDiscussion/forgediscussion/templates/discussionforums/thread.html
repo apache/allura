@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% if h.has_access(thread, 'moderate') %}
+    {% if h.has_access(thread, 'edit') %}
         <script>
                 new Checklists(".active-md", function(checkbox, callback) {
                 var uri = $(checkbox).closest('.active-md').data('markdownlink');
