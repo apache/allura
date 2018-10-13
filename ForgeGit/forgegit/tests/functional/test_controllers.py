@@ -800,6 +800,38 @@ class TestFork(_TestCase):
         r = self.app.get('/p/test/src-git/merge-requests').follow()
         assert '<a href="1/">changed summary</a>' in r
 
+    def test_merge_request_get_markdown(self):
+        self.app.post('/p/test2/code/do_request_merge',
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'master',
+                              'summary': 'summary',
+                              'description': 'description',
+                          })
+        response = self.app.get('/p/test/src-git/merge-requests/1/get_markdown')
+        assert 'description' in response
+
+    def test_merge_request_update_markdown(self):
+        self.app.post('/p/test2/code/do_request_merge',
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'master',
+                              'summary': 'summary',
+                              'description': 'description',
+                          })
+        response = self.app.post(
+            '/p/test/src-git/merge-requests/1/update_markdown',
+            params={
+                'text': '- [x] checkbox'})
+        assert response.json['status'] == 'success'
+        # anon users can't edit markdown
+        response = self.app.post(
+            '/p/test/src-git/merge-requests/1/update_markdown',
+            params={
+                'text': '- [x] checkbox'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['status'] == 'no_permission'
+
     @patch.object(GM.Repository, 'merge_request_commits', autospec=True)
     def test_merge_request_commits_error(self, mr_commits):
         r, mr_num = self._request_merge()
