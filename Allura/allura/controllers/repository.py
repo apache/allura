@@ -480,6 +480,28 @@ class MergeRequestController(object):
                                        related_nodes=[c.project], tags=['merge-request'])
         self.refresh()
 
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def update_markdown(self, text=None, **kw):  
+        if has_access(self.req, 'write'):
+            self.req.description = text
+            self.req.commit()
+            g.director.create_activity(c.user, 'updated', self.req,
+                                       related_nodes=[c.project], tags=['merge-request'])
+            return {
+                'status' : 'success'
+            }
+        else:
+            return {
+                'status' : 'no_permission'
+            }
+
+    @expose()
+    @without_trailing_slash
+    def get_markdown(self):
+        return self.req.description
+
     @expose()
     @require_post()
     @validate(mr_dispose_form)

@@ -65,7 +65,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       {{lib.abbr_date(req.mod_date)}}
     </p>
 
-    <div>{{g.markdown.convert(req.description)}}</div>
+    <div{% if h.has_access(req, 'write') %} class="active-md" data-markdownlink="" {% endif %}>{{g.markdown.convert(req.description)}}</div>
 
     {% if error %}
       <div class='grid-19 error'>
