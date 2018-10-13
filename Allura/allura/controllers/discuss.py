@@ -347,7 +347,7 @@ class PostController(BaseController):
     @expose('json:')
     @require_post()
     def update_markdown(self, text=None, **kw):  
-        if has_access(self.post, 'edit'):
+        if has_access(self.post, 'moderate'):
             self.post.text = text
             self.post.edit_count = self.post.edit_count + 1
             self.post.last_edit_date = datetime.utcnow()
