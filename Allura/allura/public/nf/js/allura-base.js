@@ -235,19 +235,22 @@ $(function(){
 
 // Interactive checkboxes
 $(function(){
-    new Checklists(".active-md", function(checkbox, callback) {
-        var uri = $(checkbox).closest('.active-md').data('markdownlink');
-        $.get(uri + 'get_markdown', callback);
-    }, function(markdown, checkbox, callback) {
-        var uri = $(checkbox).closest('.active-md').data('markdownlink');
-        $.ajax({
-            type: 'post',
-            url: uri + 'update_markdown',
-            data: {
-                'text' : markdown,
-                '_session_id' : $.cookie('_session_id')
-            },
-            success: callback
+    $('.active-md').each(function() {
+        var $active_md = $(this);
+        new Checklists($active_md, function(checkbox, callback) {
+            var uri = $active_md.data('markdownlink');
+            $.get(uri + 'get_markdown', callback);
+        }, function(markdown, checkbox, callback) {
+            var uri = $active_md.data('markdownlink');
+            $.ajax({
+                type: 'post',
+                url: uri + 'update_markdown',
+                data: {
+                    'text' : markdown,
+                    '_session_id' : $.cookie('_session_id')
+                },
+                success: callback
+            });
         });
     });
 });
