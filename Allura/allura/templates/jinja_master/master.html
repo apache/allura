@@ -90,10 +90,11 @@
     {% endfor %}
 {% endblock %}
 
+{% set flash = tg.flash_obj.render('flash', use_js=False) %}
+
 {% call theme_macros.all_content_wrapper() %}
     {{ theme_macros.header(g.login_url, '/auth/logout') }}
     {{ theme_macros.site_notification() }}
-    {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     {% block masthead %}{% endblock %}
     <section id="page-body" class="{{ g.document_class(neighborhood) }} {% block page_body_classes %}{% endblock %}">
         <div id="nav_menu_holder">
