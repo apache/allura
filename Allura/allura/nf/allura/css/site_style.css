@@ -3716,7 +3716,8 @@ fieldset.preferences legend {
 }
 .spam-present {
   display: none;
-  margin-left: 75px;
+  margin-left: 95px; /* account for gravatar */
+  margin-top: 1em; /* match .comment-row */
 }
 .spam-text {
   float: left;
