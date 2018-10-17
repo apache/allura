@@ -19,8 +19,7 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 <div>
-  <div class="row">
-     <div class="column grid_12">
+  <div class="comment-row">
       {% if limit %}
         {{widgets.page_list.display(limit=limit, page=page, count=count)}}
       {% endif %}
@@ -46,13 +45,12 @@
       </div>
       {% endif %}
       <div style="clear:both"></div>
-    </div>
   </div>
 </div>
 {% if h.has_access(value, 'post')() %}
   <div id="new_post_holder">
     <span id="add_comment"></span>
-    <div class="row" style="padding-top:10px;">
+    <div class="comment-row" style="padding-top:10px;">
       <div class="reply">
         <div class="grid-2 tcenter">
           <p class="gravatar">
