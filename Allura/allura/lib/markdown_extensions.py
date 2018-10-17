@@ -273,6 +273,33 @@ class ForgeExtension(markdown.Extension):
         self.forge_link_tree_processor.reset()
 
 
+class EmojiExtension(markdown.Extension):
+
+    EMOJI_RE = r'(:[+\-\w]+:)'
+    EMOJI_LIST = {
+        ':+1:' : u'\U0001F44D',
+        ':smile:' : u'\U0001F642'
+    }
+
+    def __init__(self, **kwargs):
+        markdown.Extension.__init__(self)
+        
+    def extendMarkdown(self, md, md_globals):
+        pattern = EmojiInlinePattern(self.EMOJI_RE, self.EMOJI_LIST)
+        md.inlinePatterns.add('emoji', pattern,'<not_strong')
+
+        
+class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
+    
+    def __init__(self, pattern, emojis):
+        markdown.inlinepatterns.Pattern.__init__(self, pattern)
+        self.emojis = emojis
+        
+    def handleMatch(self, m):
+        emoji_code = m.group(2)
+        return self.emojis.get(emoji_code)
+
+
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
