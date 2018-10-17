@@ -539,7 +539,7 @@ class TestForum(TestController):
         assert_equal(spam_checker.check.call_args[0][0], 'Test Thread\nPost content')
 
         # assert unapproved thread replies do not appear
-        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
+        f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')
@@ -617,7 +617,7 @@ class TestForum(TestController):
         url = thread.request.url
 
         # test reply to post
-        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
+        f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')
@@ -633,7 +633,7 @@ class TestForum(TestController):
         assert thread.html.findAll(
             'div', {'class': 'display_post'})[1].find('p').string == 'bbb'
         assert thread.response.body.count(
-            '<div class="row reply_post_form') == 2
+            '<div class="comment-row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2
 
         # test edit post
@@ -677,7 +677,7 @@ class TestForum(TestController):
                 params[field['name']] = field.get('value') or ''
         self.app.post(str(subscribe_url), params=params)
         self.app.post('/discussion/general/subscribe_to_forum', {'subscribe': True})
-        f = thread.html.find('div', {'class': 'row reply_post_form'}).find('form')
+        f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')
@@ -835,7 +835,7 @@ class TestForum(TestController):
         url = thread.request.url
         # make a reply
         f = thread.html.find(
-            'div', {'class': 'row reply_post_form'}).find('form')
+            'div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
         inputs = f.findAll('input')

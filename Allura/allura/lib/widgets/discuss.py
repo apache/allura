@@ -353,7 +353,7 @@ class Post(HierWidget):
 
                 function spam_block_display($post, display_type) {
                     var spam_block = $post.find('.info.grid-15.spam-present');
-                    var row = $post.find('.row').eq(0);
+                    var row = $post.find('.comment-row').eq(0);
 
                     if (display_type == 'show_spam') {
                         spam_block.show();

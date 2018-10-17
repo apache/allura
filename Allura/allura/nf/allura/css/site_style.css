@@ -2485,7 +2485,7 @@ div.attachment_item{
 }
 
 /* Discussion */
-#comment .row {
+#comment .comment-row {
   position: relative;
   float: right;
   clear: right;
@@ -2514,21 +2514,21 @@ div.attachment_item{
     max-width: 100%;
 }
 
-#comment .row .options {
+#comment .comment-row .options {
   position: relative;
   padding-top: 5px;
 }
 
-#comment ul ul .row .options {
+#comment ul ul .comment-row .options {
   right: 0;
 }
 
-#comment .row .options a.little_link {
+#comment .comment-row .options a.little_link {
   width: 50px;
   height: 20px;
 }
 
-#comment .row .options a.little_link span {
+#comment .comment-row .options a.little_link span {
   position: absolute;
   left: 27px;
 }
@@ -2567,17 +2567,13 @@ div.attachment_item{
   overflow: auto;
 }
 
-#comment ul .row {
+#comment ul .comment-row {
   margin: 0;
   padding-top: 1em;
 }
 
-#comment ul ul .row {
+#comment ul ul .comment-row {
   position: relative;
-}
-
-#comment ul .column.grid_8 {
-  width: 74%;
 }
 
 #comment .edit_post_form ul,
@@ -3780,14 +3776,14 @@ fieldset.preferences legend {
     border-right-color: #e5e5e5;
 }
 
-:target > .row > .post-content {
+:target > .comment-row > .post-content {
     border-color: black;
 }
-:target > .row > .bubble::before {
+:target > .comment-row > .bubble::before {
     border-right-color: black;
 }
 
-.discussion-post .row .emboss{
+.discussion-post .comment-row .emboss{
     box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
     -webkit-box-shadow: rgba(0, 0, 0, 0.0) 0 1px 5px 0;
 

@@ -23,9 +23,6 @@
 div.content {
     font-family: Helvetica;
 }
-div.content div.row > div.column {
-    width: 100%
-}
 div.welcome { margin: 2em 0 1em; }
 div.welcome input {
     width: 88%;

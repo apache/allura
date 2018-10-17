@@ -41,7 +41,7 @@
       <a href="{{value.thread.discussion.url()}}moderate?username={{value.author().username}}&status=pending">here</a>
     </div>
     {% endif %}
-    <div class="row">
+    <div class="comment-row">
       <div class="grid-2 tcenter gravatar">
        <p class="gravatar">
         {% set size = value.parent and 32 or 48 %}
@@ -143,7 +143,7 @@
     <ul>
       <li>
         {% if h.has_access(value.thread, 'post')() %}
-        <div class="row reply_post_form" style="display:none">
+        <div class="comment-row reply_post_form" style="display:none">
           <div class="reply">
             <div class="grid-2 tcenter">
               <p class="gravatar">
