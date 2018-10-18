@@ -20,7 +20,7 @@
   <label class="grid-13">Wiki Home Page:</label>
   <div class="grid-13">
     {% if allow_config %}
-     <input type="text" name="new_home" id="new_home" value="{{home}}"/>
+     <input type="text" name="new_home" id="new_home" value="{{home}}" required/>
     {% else %}
       <span>{{home}}</span>
     {% endif %}
