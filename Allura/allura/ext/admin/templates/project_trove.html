@@ -65,12 +65,14 @@
           {% if trove_recommendations[base.shortname] %}style="display:none"{% endif -%}
           >
       <input type="hidden" name="type" value="{{base.shortname}}">
-      <select name="new_trove" id="new_trove_{{base.shortname}}" data-placeholder="Choose one...">
-        <option value=""></option>
-        {% for cat in base.children if not cat.parent_only %}
-            <option value="{{cat.trove_cat_id}}">{{cat.fullpath_within_type}}</option>
-        {% endfor %}
-      </select>
+      <div>
+        <select name="new_trove" id="new_trove_{{base.shortname}}" data-placeholder="Choose one...">
+          <option value=""></option>
+          {% for cat in base.children if not cat.parent_only %}
+              <option value="{{cat.trove_cat_id}}">{{cat.fullpath_within_type}}</option>
+          {% endfor %}
+        </select>
+      </div>
       <br>
       <input type="submit" value="Add">
       {{lib.csrf_token()}}
