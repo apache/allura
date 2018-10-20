@@ -28,7 +28,7 @@ $(document).ready(function () {
         maxWidth: 400
     });
 
-    $('input[name=pw]').tooltipster('content', 'Password must have charactors between ' + $("input[name=pw]").attr('minlength') + ' and ' + $("input[name=pw]").attr('maxlength'));
+    $('input[name=pw]').tooltipster('content', 'Password must have between ' + $("input[name=pw]").attr('minlength') + ' and ' + $("input[name=pw]").attr('maxlength') + ' characters');
     $('input[name=pw2]').tooltipster('content', 'Passwords don\'t match');
 
     $("input[name=pw]").keyup(function() {
