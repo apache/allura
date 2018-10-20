@@ -140,6 +140,7 @@ class PasswordChangeBase(ForgeForm):
             ew.PasswordField(
                 name='pw',
                 label='New Password',
+                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
                 validator=fev.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -157,6 +158,8 @@ class PasswordChangeBase(ForgeForm):
             raise formencode.Invalid('Passwords must match', value, state)
         return d
 
+    def resources(self):
+        yield ew.JSLink('js/password-validator.js')
 
 class PasswordChangeForm(PasswordChangeBase):
 
@@ -170,7 +173,7 @@ class PasswordChangeForm(PasswordChangeBase):
             ew.PasswordField(
                 name='pw',
                 label='New Password',
-                attrs=dict(minlength=6, maxlength=30),
+                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
                 validator=fev.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -191,8 +194,6 @@ class PasswordChangeForm(PasswordChangeBase):
                 value, state)
         return d
 
-    def resources(self):
-        yield ew.JSLink('js/password-validator.js')
 
 class PersonalDataForm(ForgeForm):
     _fields = None
@@ -774,7 +775,7 @@ class RegistrationForm(ForgeForm):
             ew.PasswordField(
                 name='pw',
                 label='New Password',
-                attrs=dict(minlength=6, maxlength=30),
+                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
                 validator=fev.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
