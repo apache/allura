@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -231,6 +233,15 @@ class Test(TestController):
         assert '<del> Nothing to see here </del> <ins> sometext </ins>' in response
         assert '<script>alert' not in response
         assert '<ins> &lt;script&gt;alert' in response
+
+    def test_post_revert(self):
+        self._post()
+        d = self._blog_date()
+        self._post('/%s/my-post' % d, text='sometést')
+        response = self.app.post('/blog/%s/my-post/revert' % d, params=dict(version='1'))
+        assert '.' in response.json['location']
+        response = self.app.get('/blog/%s/my-post/' % d)
+        assert 'Nothing to see here' in response
 
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)
