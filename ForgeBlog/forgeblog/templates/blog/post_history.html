@@ -44,7 +44,19 @@
                   <td>
                     <a href="./?version={{p.version}}" class="btn">View Revision</a>
                     {% if loop.index0 != 0 and h.has_access(p, 'edit')() %}
-                    <a href="./revert?version={{p.version}}" class="btn">Revert to version {{p.version}}</a>
+                    <a href="#" class="btn post-link" data-dialog-id="{{p.version}}">Revert to version {{p.version}}</a>
+                    <div class="confirmation_dialog_{{p.version}}" style="display:none">
+                      {{ g.icons['close'].render(tag='b', extra_css='close') }}
+                      <h1>Confirm revert to version {{p.version}}</h1>
+                      <p>
+                        Do you really want to revert page to version {{p.version}}?
+                        You can undo it later by reverting changes made by this revert.
+                      </p>
+                      <p>
+                        <button class="continue_confirm" href="./revert?version={{p.version}}">Yes</button>
+                        <input type="button" value="Cancel" class="cancel_confirmation close">
+                      </p>
+                    </div>
                     {% endif %}
                   </td>
                 </tr>
@@ -52,4 +64,30 @@
               </tbody>
             </table>
           </form>
+{{c.confirmation.display(content='')}}
+{% block extra_js %}
+    <script type="text/javascript">
+        $('.post-link').click(function () {
+            var dialog_text;
+            var version = $(this).data("dialog-id");
+            if (version) {
+                dialog_text = $(".confirmation_dialog_" + version);
+            } else {
+                dialog_text = $(".confirmation_dialog");
+            }
+
+            var modal = $('#lightbox_confirm');
+            modal.html(dialog_text.html());
+
+            modal.find('.continue_confirm').click(function (evt) {
+                var cval = $.cookie('_session_id');
+                evt.preventDefault();
+                $.post($(this).attr('href'), {_session_id: cval}, function (val) {
+                    window.location = val.location;
+                }, 'json');
+            });
+        });
+    </script>
+{% endblock %}
+
 {% endblock %}

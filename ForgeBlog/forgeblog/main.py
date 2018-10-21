@@ -70,6 +70,9 @@ class W:
     edit_post_form = widgets.EditPostForm()
     view_post_form = widgets.ViewPostForm()
     attachment_list = ffw.AttachmentList()
+    confirmation = ffw.Lightbox(name='confirm',
+                            trigger='a.post-link',
+                            options="{ modalCSS: { minHeight: 0, width: 'inherit', top: '150px'}}")
     preview_post_form = widgets.PreviewPostForm()
     subscribe_form = SubscribeForm(thing='post')
     search_results = SearchResults()
@@ -391,6 +394,7 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_history.html')
     def history(self, **kw):
+        c.confirmation = W.confirmation
         posts = self.post.history()
         return dict(title=self.post.title, posts=posts)
 
@@ -449,14 +453,14 @@ class PostController(BaseController, FeedController):
 
     @without_trailing_slash
     @require_post()
-    @expose()
+    @expose('json:')
     def revert(self, version, **kw):
         require_access(self.post, 'write')
         orig = self._get_version(version)
         if orig:
             self.post.text = orig.text
         self.post.commit()
-        redirect('.')
+        return dict(location='.')
 
     @expose('json:')
     @require_post()
