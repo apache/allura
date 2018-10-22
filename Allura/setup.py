@@ -155,6 +155,9 @@ setup(
     set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
     reclone-repo = allura.command.reclone_repo:RecloneRepoCommand
 
+    [allura.theme.override]
+    responsive = allura.templates_responsive.responsive_overrides:ResponsiveOverrides
+
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
 
