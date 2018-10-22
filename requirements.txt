@@ -103,3 +103,6 @@ gunicorn==19.4.5
 
 # markdown extensions
 markdown-checklist==0.4.1
+
+# emoji library
+emoji==0.5.1

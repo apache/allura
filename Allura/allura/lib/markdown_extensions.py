@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -25,6 +27,7 @@ import html5lib
 import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
 import markdown
+import emoji
 
 from . import macro
 from . import helpers as h
@@ -275,29 +278,24 @@ class ForgeExtension(markdown.Extension):
 
 class EmojiExtension(markdown.Extension):
 
-    EMOJI_RE = r'(:[+\-\w]+:)'
-    EMOJI_LIST = {
-        ':+1:' : u'\U0001F44D',
-        ':smile:' : u'\U0001F642'
-    }
+    EMOJI_RE = u'(%s[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#*]+%s)' % (':', ':')
 
     def __init__(self, **kwargs):
         markdown.Extension.__init__(self)
         
     def extendMarkdown(self, md, md_globals):
-        pattern = EmojiInlinePattern(self.EMOJI_RE, self.EMOJI_LIST)
+        pattern = EmojiInlinePattern(self.EMOJI_RE)
         md.inlinePatterns.add('emoji', pattern,'<not_strong')
 
         
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
     
-    def __init__(self, pattern, emojis):
+    def __init__(self, pattern):
         markdown.inlinepatterns.Pattern.__init__(self, pattern)
-        self.emojis = emojis
         
     def handleMatch(self, m):
         emoji_code = m.group(2)
-        return self.emojis.get(emoji_code)
+        return emoji.emojize(emoji_code, use_aliases=True)
 
 
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
