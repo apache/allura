@@ -214,7 +214,7 @@ $(function(){
         return false;
     });
 
-    twemoji.size = '36x36';
+    twemoji.size = '72x72';
     twemoji.parse($('#content_base')[0]);
 
     $('.lightbox').click(function(e) {
