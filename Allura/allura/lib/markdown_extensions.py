@@ -284,8 +284,7 @@ class EmojiExtension(markdown.Extension):
         markdown.Extension.__init__(self)
         
     def extendMarkdown(self, md, md_globals):
-        pattern = EmojiInlinePattern(self.EMOJI_RE)
-        md.inlinePatterns.add('emoji', pattern,'<not_strong')
+        md.inlinePatterns["emoji"] = EmojiInlinePattern(self.EMOJI_RE)
 
         
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):

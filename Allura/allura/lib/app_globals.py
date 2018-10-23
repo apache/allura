@@ -442,7 +442,7 @@ class Globals(object):
 
         """
         app = getattr(c, 'app', None)
-        return ForgeMarkdown(extensions=[CommitMessageExtension(app), 'nl2br'],
+        return ForgeMarkdown(extensions=[CommitMessageExtension(app), EmojiExtension(), 'nl2br'],
                              output_format='html4')
 
     @property
