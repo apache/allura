@@ -1,3 +1,4 @@
+
 # Responsive Migration
 
 As we plot a course to migrate allura's default layout to be responsive, new templates can be placed in this directory to supercede their legacy counterparts.
