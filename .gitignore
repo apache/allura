@@ -27,6 +27,7 @@ var/
 env
 env-docker
 Allura/allura/public/nf/js/build/
+Allura/allura/nf/responsive/css/*
 Allura/allura/templates/home
 Allura/allura/templates/var
 Allura/production.ini

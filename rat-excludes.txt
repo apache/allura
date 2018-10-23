@@ -25,6 +25,7 @@ Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
 Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
 Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
 Allura/allura/lib/widgets/resources/js/simplemde.min.js
+Allura/allura/nf/responsive/scss/_settings.scss
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/css/chosen.min.css
 Allura/allura/public/nf/css/font-awesome.min.css

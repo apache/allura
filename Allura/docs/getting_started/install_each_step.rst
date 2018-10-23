@@ -192,7 +192,7 @@ Allura uses a background task service called "taskd" to do async tasks like send
 A few more steps, if using git
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're using a released version of Allura, these are already done for you.  This transpiles JS into a version all browsers support.
+If you're using a released version of Allura, these are already done for you.  These commands will prepare final JS & CSS files.
 For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/ for other options to replace the first line here:
 
 .. code-block:: bash
@@ -202,6 +202,7 @@ For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/
     (env-allura)~$ cd ~/src/allura
     (env-allura)~$ npm install
     (env-allura)~$ npm run build
+    (env-allura)~$ npm run css
 
 
 The application server
