@@ -102,6 +102,10 @@ setup(
 
     [allura.theme]
     allura = allura.lib.plugin:ThemeProvider
+    responsive = allura.lib.plugin:ResponsiveTheme
+
+    [allura.theme.override]
+    responsive = allura.templates_responsive.responsive_overrides:ResponsiveOverrides
 
     [allura.spam]
     akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
@@ -154,9 +158,6 @@ setup(
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
     reclone-repo = allura.command.reclone_repo:RecloneRepoCommand
-
-    [allura.theme.override]
-    responsive = allura.templates_responsive.responsive_overrides:ResponsiveOverrides
 
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources

@@ -1398,6 +1398,12 @@ class ThemeProvider(object):
         return False
 
 
+class ResponsiveTheme(ThemeProvider):
+    def require(self):
+        g.register_theme_css('../allura/css/site_style.css', compress=False)  # temporarily include original theme too
+        g.register_theme_css('css/styles.css', compress=False)
+
+
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
 

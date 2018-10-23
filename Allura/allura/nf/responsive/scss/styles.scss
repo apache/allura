@@ -23,6 +23,14 @@
 @import 'foundation';
 // @import 'motion-ui';
 
+
+
+/*
+NOTE: this includes pretty much everything initially
+      it will probably have some CSS rule conflicts
+      we will soon need to limit this to just the files we want */
+
+
 @include foundation-global-styles;
 // @include foundation-grid;
 @include foundation-flex-grid;
