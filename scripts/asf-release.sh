@@ -68,12 +68,13 @@ COMMIT_SHA=`git rev-parse $RELEASE_TAG`
 mkdir -p $RELEASE_DIR
 git archive -o $RELEASE_FILE --prefix $RELEASE_BASE/ $RELEASE_TAG
 
-# expand archive, run broccoli in it, rebuild archive
+# expand archive, run broccoli & sass in it, rebuild archive
 cd $RELEASE_DIR
 tar xzf $RELEASE_FILE
 cd $RELEASE_FILE_EXTRACTED
 npm install >/dev/null
-BROCCOLI_ENV=production npm run build
+NODE_ENV=production npm run build
+NODE_ENV=production npm run css
 rm -rf node_modules
 cd ..
 tar czf $RELEASE_FILE $RELEASE_BASE

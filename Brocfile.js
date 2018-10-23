@@ -22,7 +22,7 @@ var funnel = require('broccoli-funnel');
 var uglifyJavaScript = require('broccoli-uglify-js');
 var mergeTrees = require('broccoli-merge-trees');
 
-var production = (process.env.BROCCOLI_ENV === 'production');
+var production = (process.env.BROCCOLI_ENV === 'production' || process.env.NODE_ENV === 'production');
 
 /* main output tree */
 var tree = funnel('Allura/allura/public/nf/js', {
