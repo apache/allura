@@ -757,8 +757,6 @@ class TestEmojis(unittest.TestCase):
         assert u'<p>\U0001F44D</p>' in output
         output = g.markdown.convert(':Bosnia_&_Herzegovina:')
         assert u'<p>\U0001F1E7\U0001F1E6</p>' in output
-        output = g.markdown.convert(':+1:')
-        assert u'<p>\U0001F44D</p>' in output
         output = g.markdown.convert(u':Åland_Islands:') # emoji code with non-asciii charactor
         assert u'<p>\U0001F1E6\U0001F1FD</p>' in output
 
@@ -777,6 +775,12 @@ class TestEmojis(unittest.TestCase):
         assert u':Curaçao:' in output
         output = g.markdown.convert(u'~~~\n:Curaçao:\n~~~')
         assert u':Curaçao:' in output
+
+    def test_markdown_commit_with_emojis(self):
+        output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')
+        assert u'Thumbs up emoji \U0001F44D wow!' in output
+        output = g.markdown.convert(u'More emojis :+1::camel::three_o’clock: wow!')
+        assert u'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 class TestHandlePaging(unittest.TestCase):
 
