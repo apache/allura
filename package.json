@@ -13,8 +13,10 @@
     "lint-es6": "eslint -c .eslintrc-es6  --ignore-path .eslintignore-es6 Allura/allura/public/**/*.es6.js || true",
     "lint": "npm run lint-es5 && npm run lint-es6",
     "node-sass": "node-sass",
-    "css": "node-sass --include-path node_modules/foundation-sites/scss/ --source-map true Allura/allura/nf/responsive/scss/ --output Allura/allura/nf/responsive/css/",
-    "css-watch": "npm run css -- --watch"
+    "css": "per-env",
+    "css:development": "node-sass --include-path node_modules/foundation-sites/scss/ --source-map true Allura/allura/nf/responsive/scss/ --output Allura/allura/nf/responsive/css/",
+    "css:production": "node-sass --include-path node_modules/foundation-sites/scss/ --output-style compressed Allura/allura/nf/responsive/scss/ --output Allura/allura/nf/responsive/css/",
+    "css-watch": "npm run css:development -- --watch"
   },
   "repository": {
     "type": "git",
@@ -40,6 +42,7 @@
     "eslint-plugin-react": "^3.16.1",
     "esprima-fb": "^15001.1001.0-dev-harmony-fb",
     "foundation-sites": "^6.4.3",
-    "node-sass": "^4.9.4"
+    "node-sass": "^4.9.4",
+    "per-env": "^1.0.2"
   }
 }
