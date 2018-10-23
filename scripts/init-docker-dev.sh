@@ -59,4 +59,12 @@ if [ ! -e /allura/Allura/allura/public/nf/js/build/transpiled.js ]; then
   npm run build
 fi
 
+if [ ! -e /allura/Allura/allura/nf/responsive/css/styles.css ]; then
+  echo -e "Installing npm packages"
+  npm install  # if we want more progress displayed:  --loglevel http
+
+  echo -e "\nCompiling CSS"
+  npm run css
+fi
+
 echo "Done"
