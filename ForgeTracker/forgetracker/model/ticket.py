@@ -687,7 +687,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title='Ticket %s' % self.ticket_num,
+            title='Ticket #%d: %s' % (self.ticket_num, self.summary),
             version_i=self.version,
             type_s=self.type_s,
             created_date_dt=self.created_date,

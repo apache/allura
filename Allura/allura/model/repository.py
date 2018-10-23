@@ -882,7 +882,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         result.update(
             name_s='Merge Request #%d' % self.request_number,
             type_s=self.type_s,
-            title=self.email_subject,
+            title='Merge Request #%d: %s' % (self.request_number, self.summary),
         )
         return result
 
