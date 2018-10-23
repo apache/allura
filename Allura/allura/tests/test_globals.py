@@ -750,6 +750,34 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(required_keys, keys)
 
 
+class TestEmojis(unittest.TestCase):
+
+    def test_markdown_emoji_atomic(self):
+        output = g.markdown.convert(':+1:')
+        assert u'<p>\U0001F44D</p>' in output
+        output = g.markdown.convert(':Bosnia_&_Herzegovina:')
+        assert u'<p>\U0001F1E7\U0001F1E6</p>' in output
+        output = g.markdown.convert(':+1:')
+        assert u'<p>\U0001F44D</p>' in output
+        output = g.markdown.convert(u':Åland_Islands:') # emoji code with non-asciii charactor
+        assert u'<p>\U0001F1E6\U0001F1FD</p>' in output
+
+    def test_markdown_emoji_with_text(self):
+        output = g.markdown.convert('Thumbs up emoji :+1: wow!')
+        assert u'<p>Thumbs up emoji \U0001F44D wow!</p>' in output
+        output = g.markdown.convert(u'More emojis :+1::camel::three_o’clock: wow!')
+        assert u'<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>' in output
+        output = g.markdown.convert(':man_bouncing_ball_medium-light_skin_tone:emoji:+1:')
+        assert u'<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>' in output
+
+    def test_markdown_emoji_in_code(self):
+        output = g.markdown.convert('This will not become an emoji `:+1:`')
+        assert u'<p>This will not become an emoji <code>:+1:</code></p>' in output
+        output = g.markdown.convert(u'```html\n<p>:Curaçao:</p>\n```')
+        assert u':Curaçao:' in output
+        output = g.markdown.convert(u'~~~\n:Curaçao:\n~~~')
+        assert u':Curaçao:' in output
+
 class TestHandlePaging(unittest.TestCase):
 
     def setUp(self):
