@@ -2308,7 +2308,7 @@ class TestFunctionalController(TrackerTestController):
         assert M.Mailbox.query.get(user_id=user._id,
                                    project_id=p._id,
                                    app_config_id=bugs.config._id,
-                                   artifact_title='Ticket 2',
+                                   artifact_title='Ticket #2: another test ticket',
                                    artifact_url='/p/test/bugs/2/')
 
         # remove test-admin's tool-wide subscription to test2/features so he can get a new individual one
@@ -2327,14 +2327,14 @@ class TestFunctionalController(TrackerTestController):
         assert M.Mailbox.query.get(user_id=user._id,
                                    project_id=p2._id,
                                    app_config_id=features.config._id,
-                                   artifact_title='Ticket 1',
+                                   artifact_title='Ticket #1: another test ticket',
                                    artifact_url='/p/test2/features/1/'),\
             "Could not find moved subscription.  User's record is %s" % M.Mailbox.query.get(user_id=user._id)
         # test-admin (who had a tool-level subscription) should be too
         assert M.Mailbox.query.get(user_id=admin._id,
                                    project_id=p2._id,
                                    app_config_id=features.config._id,
-                                   artifact_title='Ticket 1',
+                                   artifact_title='Ticket #1: another test ticket',
                                    artifact_url='/p/test2/features/1/'),\
             "Could not find moved subscription.  Admin's record is %s" % M.Mailbox.query.get(user_id=admin._id)
 
