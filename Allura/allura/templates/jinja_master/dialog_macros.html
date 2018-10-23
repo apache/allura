@@ -1,0 +1,40 @@
+{#-
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-#}
+
+{#
+Each macro is wrapped with an 'if' clause so that a custom theme may extend this file and override individual macros
+http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
+#}
+
+{% if not revert_confirmation_dialog %}
+{%- macro revert_confirmation_dialog(version) %}
+    <div class="confirmation_dialog_{{version}}" style="display:none">
+        {{ g.icons['close'].render(tag='b', extra_css='close') }}
+        <h1>Confirm revert to version {{version}}</h1>
+        <p>
+        Do you really want to revert page to version {{version}}?
+        You can undo it later by reverting changes made by this revert.
+        </p>
+        <p>
+        <button class="continue_confirm" href="./revert?version={{version}}">Yes</button>
+        <input type="button" value="Cancel" class="cancel_confirmation close">
+        </p>
+    </div>
+{%- endmacro %}
+{% endif %}

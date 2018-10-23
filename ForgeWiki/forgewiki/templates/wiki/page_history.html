@@ -18,6 +18,7 @@
 -#}
 {% extends 'forgewiki:templates/wiki/master.html' %}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
+{% import 'allura:templates/jinja_master/dialog_macros.html' as dialog_macros with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{title}}{% endblock %}
 
@@ -55,18 +56,7 @@
                   extra_css='post-link',
                   title='Revert to version {}'.format(p.version),
                   **{'data-dialog-id': p.version}) }}
-              <div class="confirmation_dialog_{{p.version}}" style="display:none">
-                {{ g.icons['close'].render(tag='b', extra_css='close') }}
-                <h1>Confirm revert to version {{p.version}}</h1>
-                <p>
-                  Do you really want to revert page to version {{p.version}}?
-                  You can undo it later by reverting changes made by this revert.
-                </p>
-                <p>
-                  <button class="continue_confirm" href="./revert?version={{p.version}}">Yes</button>
-                  <input type="button" value="Cancel" class="cancel_confirmation close">
-                </p>
-              </div>
+              {{ dialog_macros.revert_confirmation_dialog(p.version) }}
             {% endif %}
             {{ g.icons['eye'].render(href='./?version={}'.format(p.version), title='View Revision') }}
           </td>

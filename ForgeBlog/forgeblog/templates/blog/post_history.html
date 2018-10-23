@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-
+{% import 'allura:templates/jinja_master/dialog_macros.html' as dialog_macros with context %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}  / {{title}}{% endblock %}
 
 {% block header %}{{title}}{% endblock %}
@@ -45,18 +45,7 @@
                     <a href="./?version={{p.version}}" class="btn">View Revision</a>
                     {% if loop.index0 != 0 and h.has_access(p, 'edit')() %}
                     <a href="#" class="btn post-link" data-dialog-id="{{p.version}}">Revert to version {{p.version}}</a>
-                    <div class="confirmation_dialog_{{p.version}}" style="display:none">
-                      {{ g.icons['close'].render(tag='b', extra_css='close') }}
-                      <h1>Confirm revert to version {{p.version}}</h1>
-                      <p>
-                        Do you really want to revert page to version {{p.version}}?
-                        You can undo it later by reverting changes made by this revert.
-                      </p>
-                      <p>
-                        <button class="continue_confirm" href="./revert?version={{p.version}}">Yes</button>
-                        <input type="button" value="Cancel" class="cancel_confirmation close">
-                      </p>
-                    </div>
+                    {{ dialog_macros.revert_confirmation_dialog(p.version) }}
                     {% endif %}
                   </td>
                 </tr>
