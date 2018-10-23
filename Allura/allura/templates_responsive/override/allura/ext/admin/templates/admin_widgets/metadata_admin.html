@@ -1,0 +1,196 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+<form method="POST" action="update" enctype="multipart/form-data" id="metadata_form" class="row">
+  <div class="column small-12 medium-6">
+    {%if not c.project.is_user_project %}
+    {{ widget.display_label(widget.fields.name) }}
+    <br>
+    {{widget.display_field(widget.fields.name) }}
+    <label for="shortname">Unixname</label>
+    <br>
+    <input id="shortname" type="text" disabled="disabled"
+           value="{{c.project.shortname}}">
+
+    {{ widget.display_label(widget.fields.external_homepage) }}
+    <br>
+    {{widget.display_field(widget.fields.external_homepage) }}
+    <br>
+    {{ widget.display_label(widget.fields.video_url) }}
+    <br>
+    {{widget.display_field(widget.fields.video_url) }}
+    {% endif %}
+
+    <div class="summary-fields">
+    {{ widget.display_label(widget.fields.summary) }}
+    <br>
+    {{widget.display_field(widget.fields.summary) }}
+    <br>
+    </div>
+
+    {% if not c.project.is_user_project %}
+        <div class="description-fields">
+        {{ widget.display_label(widget.fields.short_description) }}
+        <br>
+        {{widget.display_field(widget.fields.short_description) }}
+        <div style="clear:both">&nbsp;</div>
+        </div>
+
+        <div id="features">
+          {{ widget.display_label(widget.fields.features) }}
+          {{ widget.display_field(widget.fields.features) }}
+        </div>
+        <br>
+
+        {% if tg.config.get('support_tool_choices') %}
+        <div class="support-page-fields">
+        Preferred Support Page (for users of your project):<br>
+        {% if c.form_errors.get('support_page_url') %}
+            <div class="error">{{c.form_errors.get('support_page_url')}}</div>
+        {% endif %}
+        <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
+        <label for="support_page_none">None</label><br>
+        {% for ac in c.project.app_configs %}
+          {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
+            <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
+                   {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
+            <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
+          {% endif %}
+        {% endfor %}
+        <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
+        <label for="support_page_members">Contact project admins</label><br>
+        <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
+               {% if value.support_page == '_url' %} checked{% endif %}>
+        <label for="support_page_url_cb">URL: </label>
+        <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
+        </div>
+        {% endif %}
+
+        <div class="social-media-fields">
+        {{ widget.display_label(widget.fields.twitter_handle) }}
+        <br>
+        {{widget.display_field(widget.fields.twitter_handle) }}
+
+        {{ widget.display_label(widget.fields.facebook_page) }}
+        <br>
+        {{widget.display_field(widget.fields.facebook_page) }}
+        </div>
+
+        {% if c.project.neighborhood.features['google_analytics'] %}
+        {{ widget.display_label(widget.fields.tracking_id) }}
+        <br>
+        {{widget.display_field(widget.fields.tracking_id) }}
+        {% endif %}
+    {% endif%}
+    {% block fields_column1_end -%}
+    {% endblock %}
+  </div>
+
+  <div class="column small-12 medium-6">
+    <label>Project Logo:</label>
+    <br>
+    <div id="project-icon" class="viewing">
+      {% if value.icon %}
+        <div class="viewer" style="overflow: auto">
+          <img {{ lib.project_icon_srcs(value) }} style="float:left; margin-right: 1em;" alt="">
+          {{ g.icons['edit'].render(id='edit-icon', style='display:inline-block;margin-top:15px') }}
+          {{ g.icons['delete'].render(id='delete-icon', style='display:inline-block;margin-top:15px') }}
+        </div>
+      {% else %}
+        <div class="viewer">
+          No {% if c.project.is_user_project %}user{% endif %} icon.
+          {{ g.icons['edit'].render(id='edit-icon', title='Upload one', show_title=True) }}
+        {% if c.project.is_user_project %}<br><small>
+            Or a  <a href="http://gravatar.com/">gravatar.com</a> image will be used if available.</small>{% endif %}
+        </div>
+      {% endif %}
+      <div id="project-icon-upload" class="hidden">
+          {{widget.display_field(widget.fields.icon)}}
+          <input type="submit" value="Save" name="save" style="float: none" />
+          <br><small>(best if square & hi-res. JPG, GIF, or PNG files expected.)</small>
+      </div>
+    </div>
+    {%if c.project.neighborhood.name != 'Users' or not value.is_root%}
+    <div style="clear:both">&nbsp;</div>
+
+    <div id="project-status">
+        {% set proj_text = 'Project' if value.is_root else 'Subproject' %}
+        {{proj_text}} Status:
+        <div>
+            {% if c.form_errors.get('moved_to_url') %}
+                <div class="error">{{c.form_errors.get('moved_to_url')}}</div>
+            {% endif %}
+            <input name="removal" type="radio" value="" id="removal_active_cb"
+                   {% if value.removal == '' %} checked{% endif %}>
+            <label for="removal_active_cb">Active {{proj_text}}</label>
+            <br>
+            <input name="removal" type="radio" value="moved" id="removal_moved_cb"
+                   {% if value.removal == 'moved' %} checked{% endif %}>
+            <label for="removal_moved_cb">Moved {{proj_text}} to: </label>
+            <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 60%" placeholder="http://new-website.com/example">
+            <br>
+            <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
+                   {% if value.removal == 'abandoned' %} checked{% endif %}>
+            <label for="removal_abandoned_cb">Abandoned {{proj_text}}</label>
+            {% if allow_project_delete or not value.is_root %}
+            <br>
+            <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
+                   {% if value.removal == 'deleted' %} checked{% endif %}>
+            <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} {{proj_text}}</label>
+            {% endif %}
+            {% block status_choices_end -%}
+            {% endblock %}
+        </div>
+    </div>
+    {% endif%}
+    {% if show_export_control %}
+    <div id="export_control">
+      <div style="clear:both">&nbsp;</div>
+      <label for="export_controlled">Export Control: <small><a href="#" id="why_export">Why?</a></small></label>
+      <br>
+      <input id="export_controlled" name="export_controlled" type="checkbox" value="True"
+             {% if value.export_controlled == True %} checked{% endif %}> This project incorporates, accesses, calls upon or otherwise uses encryption software with a symmetric key length greater than 64 bits ("encryption"). This review does not include products that use encryption for authentication only.<br>
+      <div id="export_details" style="margin-left: 1em;{% if value.export_controlled == False %} display:none;{% endif %}">
+        <label>
+          <input name="export_control_type" type="radio" value="less_than_10"
+               {% if value.export_control_type == "less_than_10" %} checked{% endif %}> This Project has less than 10% U.S.-origin parts or components.<br>
+        </label>
+        <label>
+          <input name="export_control_type" type="radio" value="less_than_25"
+               {% if value.export_control_type == "less_than_25" %} checked{% endif %}> This Project has more than 10% but less than 25% U.S.-origin parts or components.<br>
+        </label>
+        <label>
+          <input id="export_restricted" name="export_control_type" type="radio" value="more_than_25"
+               {% if value.export_control_type == "more_than_25" %} checked{% endif %}> This Project has more than 25% U.S-origin parts or components.<br>
+        </label>
+      </div>
+      <div id="export_warning" class="notice"{% if value.export_controlled == False or value.export_control_type == "less_than_10" or value.export_control_type == "less_than_25" %} style="display:none"{% endif %}>You must notify BIS and the ENC Encryption Request Coordinator via e-mail of the Internet location (e.g., URL or Internet address) of the publicly available encryption source code or provide each of them a copy of the publicly available encryption source code. If you update or modify the source code, you must also provide additional copies to each of them each time the cryptographic functionality of the source code is updated or modified. In addition, if you posted the source code on the Internet, you must notify BIS and the ENC Encryption Request Coordinator each time the Internet location is changed, but you are not required to notify them of updates or modifications made to the encryption source code at the previously notified location. In all instances, submit the notification or copy to <a href="mailto:crypt@bis.doc.gov">crypt@bis.doc.gov</a> and to <a href="mailto:enc@nsa.gov">enc@nsa.gov</a>.</div>
+    </div>
+    {% endif %}
+  </div>
+  <hr class="column small-12" style="margin-top: 1em; margin-bottom: 1em;">
+  <div class="column small-12">
+    <input type="submit" value="Save">
+  </div>
+  {{lib.csrf_token()}}
+</form>
+
+{% block extra_css %}
+{% endblock %}
