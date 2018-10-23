@@ -18,94 +18,99 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
-<form method="POST" action="update" enctype="multipart/form-data" id="metadata_form" class="row">
+<form method="POST" action="update" enctype="multipart/form-data" id="metadata_form" class="row align-justify">
   <div class="column small-12 medium-6">
     {%if not c.project.is_user_project %}
-    {{ widget.display_label(widget.fields.name) }}
-    <br>
-    {{widget.display_field(widget.fields.name) }}
-    <label for="shortname">Unixname</label>
-    <br>
-    <input id="shortname" type="text" disabled="disabled"
-           value="{{c.project.shortname}}">
+        <div class="field">
+        {{ widget.display_label(widget.fields.name) }}
+        {{ widget.display_field(widget.fields.name) }}
+        </div>
+        <div class="field">
+            <label for="shortname">Unixname</label>
+            <input id="shortname" type="text" disabled="disabled" value="{{c.project.shortname}}">
+        </div>
 
-    {{ widget.display_label(widget.fields.external_homepage) }}
-    <br>
-    {{widget.display_field(widget.fields.external_homepage) }}
-    <br>
-    {{ widget.display_label(widget.fields.video_url) }}
-    <br>
-    {{widget.display_field(widget.fields.video_url) }}
+        <div class="field">
+        {{ widget.display_label(widget.fields.external_homepage) }}
+        {{widget.display_field(widget.fields.external_homepage) }}
+        </div>
+
+        <div class="field">
+        {{ widget.display_label(widget.fields.video_url) }}
+        {{widget.display_field(widget.fields.video_url) }}
+        </div>
     {% endif %}
 
-    <div class="summary-fields">
-    {{ widget.display_label(widget.fields.summary) }}
-    <br>
-    {{widget.display_field(widget.fields.summary) }}
-    <br>
+
+
+    <div class="summary-fields field">
+        {{ widget.display_label(widget.fields.summary) }}
+        {{widget.display_field(widget.fields.summary) }}
+        <br>
     </div>
 
     {% if not c.project.is_user_project %}
-        <div class="description-fields">
+        <div class="description-fields field">
         {{ widget.display_label(widget.fields.short_description) }}
-        <br>
-        {{widget.display_field(widget.fields.short_description) }}
-        <div style="clear:both">&nbsp;</div>
+        {{ widget.display_field(widget.fields.short_description) }}
         </div>
 
-        <div id="features">
+        <div id="features" class="">
           {{ widget.display_label(widget.fields.features) }}
           {{ widget.display_field(widget.fields.features) }}
         </div>
-        <br>
 
         {% if tg.config.get('support_tool_choices') %}
-        <div class="support-page-fields">
-        Preferred Support Page (for users of your project):<br>
-        {% if c.form_errors.get('support_page_url') %}
-            <div class="error">{{c.form_errors.get('support_page_url')}}</div>
-        {% endif %}
-        <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
-        <label for="support_page_none">None</label><br>
-        {% for ac in c.project.app_configs %}
-          {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
-            <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
-                   {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
-            <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
-          {% endif %}
-        {% endfor %}
-        <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
-        <label for="support_page_members">Contact project admins</label><br>
-        <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
-               {% if value.support_page == '_url' %} checked{% endif %}>
-        <label for="support_page_url_cb">URL: </label>
-        <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
+        <div class="support-page-fields new-visual-group">
+            Preferred Support Page (for users of your project):<br>
+            {% if c.form_errors.get('support_page_url') %}
+                <div class="error">{{c.form_errors.get('support_page_url')}}</div>
+            {% endif %}
+
+            <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
+            <label for="support_page_none">None</label><br>
+            {% for ac in c.project.app_configs %}
+              {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
+                <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
+                       {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
+                <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
+              {% endif %}
+            {% endfor %}
+
+            <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
+            <label for="support_page_members">Contact project admins</label><br>
+            <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
+                   {% if value.support_page == '_url' %} checked{% endif %}>
+            <label for="support_page_url_cb">URL: </label>
+            <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
         </div>
         {% endif %}
 
-        <div class="social-media-fields">
-        {{ widget.display_label(widget.fields.twitter_handle) }}
-        <br>
-        {{widget.display_field(widget.fields.twitter_handle) }}
+        <div class="social-media- new-visual-group">
+            <div class="field">
+                {{ widget.display_label(widget.fields.twitter_handle) }}
+                {{widget.display_field(widget.fields.twitter_handle) }}
+            </div>
 
-        {{ widget.display_label(widget.fields.facebook_page) }}
-        <br>
-        {{widget.display_field(widget.fields.facebook_page) }}
+            <div class="field">
+            {{ widget.display_label(widget.fields.facebook_page) }}
+            {{widget.display_field(widget.fields.facebook_page) }}
+            </div>
         </div>
 
         {% if c.project.neighborhood.features['google_analytics'] %}
+        <div class="field new-visual-group">
         {{ widget.display_label(widget.fields.tracking_id) }}
-        <br>
-        {{widget.display_field(widget.fields.tracking_id) }}
+        {{ widget.display_field(widget.fields.tracking_id) }}
+        </div>
         {% endif %}
     {% endif%}
     {% block fields_column1_end -%}
     {% endblock %}
   </div>
 
-  <div class="column small-12 medium-6">
+  <div class="column small-12 medium-5">
     <label>Project Logo:</label>
-    <br>
     <div id="project-icon" class="viewing">
       {% if value.icon %}
         <div class="viewer" style="overflow: auto">
