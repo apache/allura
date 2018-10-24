@@ -18,6 +18,7 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
+
 <form method="POST" action="update" enctype="multipart/form-data" id="metadata_form" class="row align-justify">
   <div class="column small-12 medium-6">
     {%if not c.project.is_user_project %}
@@ -55,7 +56,7 @@
         {{ widget.display_field(widget.fields.short_description) }}
         </div>
 
-        <div id="features" class="">
+        <div id="features" class="new-visual-group">
           {{ widget.display_label(widget.fields.features) }}
           {{ widget.display_field(widget.fields.features) }}
         </div>
@@ -86,7 +87,7 @@
         </div>
         {% endif %}
 
-        <div class="social-media- new-visual-group">
+        <div class="social-media-fields new-visual-group">
             <div class="field">
                 {{ widget.display_label(widget.fields.twitter_handle) }}
                 {{widget.display_field(widget.fields.twitter_handle) }}
@@ -132,9 +133,8 @@
           <br><small>(best if square & hi-res. JPG, GIF, or PNG files expected.)</small>
       </div>
     </div>
-    {%if c.project.neighborhood.name != 'Users' or not value.is_root%}
-    <div style="clear:both">&nbsp;</div>
 
+    {%if c.project.neighborhood.name != 'Users' or not value.is_root%}
     <div id="project-status">
         {% set proj_text = 'Project' if value.is_root else 'Subproject' %}
         {{proj_text}} Status:
@@ -165,9 +165,9 @@
         </div>
     </div>
     {% endif%}
+
     {% if show_export_control %}
-    <div id="export_control">
-      <div style="clear:both">&nbsp;</div>
+    <div id="export_control" class="new-visual-group">
       <label for="export_controlled">Export Control: <small><a href="#" id="why_export">Why?</a></small></label>
       <br>
       <input id="export_controlled" name="export_controlled" type="checkbox" value="True"
@@ -189,6 +189,7 @@
       <div id="export_warning" class="notice"{% if value.export_controlled == False or value.export_control_type == "less_than_10" or value.export_control_type == "less_than_25" %} style="display:none"{% endif %}>You must notify BIS and the ENC Encryption Request Coordinator via e-mail of the Internet location (e.g., URL or Internet address) of the publicly available encryption source code or provide each of them a copy of the publicly available encryption source code. If you update or modify the source code, you must also provide additional copies to each of them each time the cryptographic functionality of the source code is updated or modified. In addition, if you posted the source code on the Internet, you must notify BIS and the ENC Encryption Request Coordinator each time the Internet location is changed, but you are not required to notify them of updates or modifications made to the encryption source code at the previously notified location. In all instances, submit the notification or copy to <a href="mailto:crypt@bis.doc.gov">crypt@bis.doc.gov</a> and to <a href="mailto:enc@nsa.gov">enc@nsa.gov</a>.</div>
     </div>
     {% endif %}
+
   </div>
   <hr class="column small-12" style="margin-top: 1em; margin-bottom: 1em;">
   <div class="column small-12">

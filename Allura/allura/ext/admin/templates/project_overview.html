@@ -18,6 +18,9 @@
 -#}
 {% extends g.theme.master %}
 
+{%- do g.register_js('allura/js/jquery-ui.min.js', location='body_top_js') %}
+{%- do g.register_js('allura/js/jquery.ui.touch-punch.min.js', location='body_top_js') %}
+
 {% block title %}{{c.project.name}} / Metadata{% endblock %}
 
 {% block header %}Project Admin{% endblock %}
