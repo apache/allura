@@ -224,11 +224,13 @@ class Test(TestController):
     def test_post_diff(self):
         self._post()
         d = self._blog_date()
-        self._post('/%s/my-post' % d, text='sometext')
+        self._post('/%s/my-post' % d, text='sometext\n<script>alert(1)</script>')
         self.app.post('/blog/%s/my-post/revert' % d, params=dict(version='1'))
-        response = self.app.get('/blog/%s/my-post/' % d)
-        response = self.app.get('/blog/%s/my-post/diff?v1=0&v2=0' % d)
+        response = self.app.get('/blog/%s/my-post/diff?v2=2&v1=1' % d)
         assert 'My Post' in response
+        assert '<del> Nothing to see here </del> <ins> sometext </ins>' in response
+        assert '<script>alert' not in response
+        assert '<ins> &lt;script&gt;alert' in response
 
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)

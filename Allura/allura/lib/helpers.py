@@ -37,6 +37,7 @@ import shlex
 import socket
 from functools import partial
 from cStringIO import StringIO
+import cgi
 
 import tg
 import genshi.template
@@ -476,14 +477,18 @@ def diff_text(t1, t2, differ=None):
     if differ is None:
         differ = difflib.SequenceMatcher(None, t1_words, t2_words)
     result = []
+
+    def escape_list(words_list):
+        return [cgi.escape(words) for words in words_list]
+
     for tag, i1, i2, j1, j2 in differ.get_opcodes():
         if tag in ('delete', 'replace'):
-            result += ['<del>'] + t1_words[i1:i2] + ['</del>']
+            result += ['<del>'] + escape_list(t1_words[i1:i2]) + ['</del>']
         if tag in ('insert', 'replace'):
-            result += ['<ins>'] + t2_words[j1:j2] + ['</ins>']
+            result += ['<ins>'] + escape_list(t2_words[j1:j2]) + ['</ins>']
         if tag == 'equal':
-            result += t1_words[i1:i2]
-    return ' '.join(result).replace('\n', '<br/>\n')
+            result += escape_list(t1_words[i1:i2])
+    return Markup(' '.join(result).replace('\n', '<br/>\n'))
 
 
 def gen_message_id(_id=None):

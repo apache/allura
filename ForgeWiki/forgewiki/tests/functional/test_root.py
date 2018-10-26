@@ -338,12 +338,16 @@ class TestRootController(TestController):
 
                                             Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
 
-                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
+                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding
+                                            
+                                            <script>alert(1)</script>""")
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
         assert_in('# Now fix <del> permissons. </del> <ins> permissions. </ins> '
                   'Wrong permissions may cause <ins> a </ins> massive slowdown!',
                   response)
+        assert_not_in('<script>alert', response)
+        assert_in('&lt;script&gt;alert', response)
         response = self.app.get('/wiki/testdiff/diff?v1=2&v2=1')
         assert_in('# Now fix <del> permissions. </del> <ins> permissons. </ins> '
                   'Wrong permissions may cause <del> a </del> massive slowdown!',
