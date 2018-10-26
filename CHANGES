@@ -1,3 +1,70 @@
+Version 1.10.0  (October 2018)
+
+New Features
+
+ * [#8230] Make markdown checklists interactive
+ * [#6923] Support emoji shortcodes
+ * [#6299] Support attachments on blog posts and new forum topics
+
+Upgrade Instructions
+
+  Run: `pip install -r requirements.txt` to install updated dependencies
+
+  Run: `paster script your-ini-file.ini ../scripts/migrations/034-update_subscriptions_ticket_and_mr_titles.py` in Allura dir
+
+  If you have your own .ini file (recommended), add `disable_entry_points.allura.theme.override = responsive` to it
+
+Security
+ * [#8255] Escape html on wiki & blog diff views
+
+Uploads & attachments
+ * [#2578] Handle BMP images
+ * [#6560] if same filename used, screenshot thumbnail not update
+ * [#8043] Animated gif attachment silently converted to static gif
+ * [#8238] Delete screenshot doesn't show any confirmation
+ * [#8239] Screenshots lightbox
+ * Add validation for screenshot file input
+
+Accounts
+ * [#7459] Show password requirements on forms
+ * [#8244] Warn user if attempting to send messages when messaging is disabled
+ * [#8081] Subscriptions page should have the issues' Title column
+ * [#8233] Add "title" to envelope icon
+
+Discussion Forums
+ * [#8232] DuplicateKeyError can happen on forum thread ids
+ * Make forums admin inline editing layout better
+
+Admin
+ * [#8225] Component delete everything end up with 404
+ * [#8242] When deleting module and user at permissions page still gives 404
+ * [#8247] Project Categorization select and button are attached together
+ * [#8248] Module rename dialog accepts empty inputs
+ * Enforce a format for GA tracking id
+ * Fix _id var name (affects user searches where *anonymous/None is in results)
+
+Code Repositories
+ * [#8231] Forking a repo doesn't keep the default branch
+
+Wiki
+ * [#8246] Set Home dialog validation fix
+
+Blog
+ * [#8249] Blog revert gives 405 Method Not Allowed
+
+For Developers
+ * [#8093] Developing Mobile Web View
+ * [#8240] Personal Dashboard - Add dashboard docs
+ * [#8241] SMTP maximum allowed line length
+ * [#8243] Template extension point to wrap all content
+ * [#8245] Rename "row" and "column" classes
+ * Restore srcset support for img tags in HTML
+ * Upgrade paster packages to latest versions
+ * Allow more admin page customization via some div classes, and jinja block
+ * Santize more in paging_sanitizer() to avoid errors on invalid URL params
+ * Error handling around invalid pagination limits
+
+
 Version 1.9.0  (September 2018)
 
 
