@@ -17,25 +17,28 @@
        under the License.
  */
 $(function() {
-  $('.sortable').sortable({cursor: 'move'}).bind('sortupdate', function(e) {
-    var params = {'_session_id': $.cookie('_session_id')};
-    $(this).find('.screenshot').each(function(i) {
-      params[$(this).data('ss-id')] = i;
+    var updateSortOrder = function (e) {
+        var params = {'_session_id': $.cookie('_session_id')};
+        $(e.to).find('.screenshot').each(function (i) {
+            params[$(this).data('ss-id')] = i;
+        });
+
+        $.post('sort_screenshots', params)
+            .done(function () {
+                flash('New sort order saved.', 'success');
+            })
+            .fail(function () {
+                flash('Sorting failed. Please refresh the page and try again.', 'error');
+            });
+    };
+
+    var el = document.getElementsByClassName('sortable')[0];
+    if (el) {
+        var sortable = Sortable.create(el, {onUpdate: updateSortOrder, animation: 150, delay: 50, forceFallback: 1});
+    }
+
+    $('.delete_screenshot_form').submit(function () {
+        return confirm('Really delete this screenshot?');
     });
-
-    $.post('sort_screenshots', params)
-      .done(function() {
-        flash('New sort order saved.', 'success');
-      })
-      .fail(function() {
-        flash('Sorting failed. Please refresh the page and try again.', 'error');
-      });
-
-  });
-
-  $('.delete_screenshot_form').submit(function() {
-    return confirm('Really delete this screenshot?');
-  });
-  
 });
 

@@ -54,6 +54,7 @@ Allura/allura/public/nf/js/react-dom.production.min.js
 Allura/allura/public/nf/js/react-drag.min.js
 Allura/allura/public/nf/js/react-reorderable.min.js
 Allura/allura/public/nf/js/sylvester.js
+Allura/allura/public/nf/js/Sortable.min.js
 Allura/allura/public/nf/js/twemoji.min.js
 Allura/allura/public/nf/js/underscore-min.js
 Allura/allura/tests/data/genshi_hello_tmpl
