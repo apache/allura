@@ -138,7 +138,7 @@ class NewGroupSettings(ff.AdminForm):
         name = ew.InputField(label='Name')
 
 
-class ScreenshotAdmin(ff.ForgeForm):
+class ScreenshotAdmin(ff.ForgeFormResponsive):
     defaults = dict(
         ff.ForgeForm.defaults,
         enctype='multipart/form-data',
@@ -159,7 +159,7 @@ class ScreenshotAdmin(ff.ForgeForm):
                           label='Caption',
                           attrs={
                               'title': "Reuse your project name in screenshot file names and create a caption to briefly describe each screenshot.",
-                              'class': 'tooltip',
+                              'class': 'm-tooltip',
                           }
                           )
         ]
