@@ -132,6 +132,10 @@ class ForgeForm(ew.SimpleForm):
         return display
 
 
+class ForgeFormResponsive(ForgeForm):
+    template = 'jinja:allura:templates_responsive/widgets/forge_form.html'
+
+
 class PasswordChangeBase(ForgeForm):
 
     @property

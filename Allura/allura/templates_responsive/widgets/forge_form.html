@@ -1,0 +1,61 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+
+
+{#
+    Responsive alternate to core forge_form.html - but *not* overridden yet (as other templates are for responsive
+    transition)
+#}
+
+
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+<form method="{{method}}" class="row"
+      {% if enctype %}enctype="{{enctype}}"{% endif %}
+      {% if target %}target="{{target}}"{% endif %}
+      action="{{action}}">
+  {% if errors and not errors.iteritems and show_errors %}
+  <div class=""><span {{widget.j2_attrs({'class':error_class})}}>{{errors}}</span></div>
+  {% endif %}
+  {% for field in widget.fields %}
+    {% set ctx=widget.context_for(field) %}
+    {% if field.field_type != 'hidden' %}
+      {% if ctx.errors and field.show_errors -%}
+      <div class="column small-12 large-6"><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}</span></div>
+      {%- endif %}
+      {% if field.show_label and field.label %}
+      <label for="{{ctx.id}}" class="column small-12 large-3">{{field.label}}:</label>
+      <div class="column small-12 large-8">{{field.display(**ctx)}}</div>
+      {% else %}
+      <div class="column small-12 large-12">{{field.display(**ctx)}}</div>
+      {% endif %}
+    {% else %}
+      {{field.display(**ctx)}}
+    {% endif %}
+  {% endfor %}
+  {% if buttons %}
+    <div class="column small-12">
+      {% for b in buttons %}
+        {{b.display()}}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
+  {{fld}}{% endfor %}{% endif %}
+  {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
+</form>
