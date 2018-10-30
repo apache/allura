@@ -33,7 +33,9 @@ $(function() {
     };
 
     var el = document.getElementsByClassName('sortable')[0];
-    var sortable = Sortable.create(el, {onUpdate: updateSortOrder, animation: 150});
+    if (el) {
+        var sortable = Sortable.create(el, {onUpdate: updateSortOrder, animation: 150, delay: 100});
+    }
 
     $('.delete_screenshot_form').submit(function () {
         return confirm('Really delete this screenshot?');
