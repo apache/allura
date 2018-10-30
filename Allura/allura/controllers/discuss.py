@@ -370,6 +370,29 @@ class PostController(BaseController):
     def get_markdown(self):
         return self.post.text
 
+    @expose('json:')
+    @without_trailing_slash
+    @require_post()
+    def post_reaction(self, r, **kw):
+        if c.user.is_anonymous():
+            return {
+                'error' : 'no_permission'
+            }
+        status = 'ok'
+        if r in self.post.reaction_list:
+            self.post.post_reaction(r, c.user)
+        else:
+            status = 'error' 
+        return {
+            'status' : status,
+            'react_thumbs_up': self.post.react_thumbs_up,
+            'react_thumbs_down': self.post.react_thumbs_down,
+            'react_laugh': self.post.react_laugh,
+            'react_hooray': self.post.react_hooray,
+            'react_confused': self.post.react_confused,
+            'react_heart': self.post.react_heart
+        }
+
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)
 
