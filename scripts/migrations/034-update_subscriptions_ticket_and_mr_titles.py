@@ -37,13 +37,17 @@ def main():
     # Fix ticket artifcat titles
     title = re.compile('^Ticket [0-9]')
     subs_tickets = M.Mailbox.query.find(dict(artifact_title=title)).all()
-    print 'Found total %d old artifact titles (tickets).' % len(subs_tickets)
+    log.info('Found total %d old artifact titles (tickets).', len(subs_tickets))
     for sub in subs_tickets:
+        if not sub.artifact_index_id:
+            log.info('No artifact_index_id on %s', sub)
+            continue
         ticket = TM.Ticket.query.get(_id = ObjectId(sub.artifact_index_id.split('#')[1]))
         if not ticket:
-            print 'Could not find ticket for %s' % sub
+            log.info('Could not find ticket for %s', sub)
+            continue
         new_title = 'Ticket #%d: %s' % (ticket.ticket_num, ticket.summary)
-        print '"%s" --> "%s"' % (sub.artifact_title , new_title)
+        log.info('"%s" --> "%s"', sub.artifact_title, new_title)
         if(task != 'diff'):
             sub.artifact_title = new_title
         session(sub).flush(sub)
@@ -51,14 +55,18 @@ def main():
     # Fix merge request artifact titles
     title = re.compile('^Merge request: ')
     subs_mrs = M.Mailbox.query.find(dict(artifact_title=title)).all()
-    print 'Found total %d old artifact titles (merge_requests).' % len(subs_tickets)
+    log.info('Found total %d old artifact titles (merge_requests).', len(subs_tickets))
     for sub in subs_mrs:
+        if not sub.artifact_index_id:
+            log.info('No artifact_index_id on %s', sub)
+            continue
         merge_request = M.MergeRequest.query.get(_id = ObjectId(sub.artifact_index_id.split('#')[1]))
         if not merge_request:
-            print 'Could not find merge request for %s' % sub
+            log.info('Could not find merge request for %s', sub)
+            continue
         new_title = 'Merge Request #%d: %s' % (merge_request.request_number, merge_request.summary)
-        print '"%s" --> "%s"' % (sub.artifact_title , new_title)
-        if(task != 'diff'):
+        log.info('"%s" --> "%s"', sub.artifact_title , new_title)
+        if task != 'diff':
             sub.artifact_title = new_title
         session(sub).flush(sub)
 
