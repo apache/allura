@@ -3810,6 +3810,12 @@ fieldset.preferences legend {
     width: 100%;
 }
 
+.post-reactions-list img.emoji { 
+    width: 16px;
+    margin-left: 4px;
+    cursor: pointer;
+}
+
 .meta_post .bubble .header{
     background-color: #ffffff;
     font-size: 0.7em;
