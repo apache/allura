@@ -36,7 +36,7 @@ from allura.lib import security
 from allura.lib.security import require_access, has_access
 from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
-from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
+from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed, ReactableArtifact
 from .attachments import BaseAttachment
 from .auth import User, ProjectRole, AlluraUserProperty
 from .timeline import ActivityObject
@@ -489,7 +489,7 @@ class PostHistory(Snapshot):
         return result
 
 
-class Post(Message, VersionedArtifact, ActivityObject):
+class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     class __mongometa__:
         name = 'post'
