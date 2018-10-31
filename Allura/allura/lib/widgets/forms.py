@@ -135,9 +135,12 @@ class ForgeForm(ew.SimpleForm):
 class ForgeFormResponsive(ForgeForm):
     def __init__(self):
         super(ForgeFormResponsive, self).__init__()
-        base_template = super(ForgeFormResponsive, self).template
-        self.template = 'jinja:allura:templates_responsive/widgets/forge_form.html' \
-                            if config.get('theme') != 'allura' else base_template
+        # use alternate template if responsive overrides are on, but not actually using template override for this
+        # since that would change all forms, and we want to just do individual ones right now
+        for tmpl_override_ep in h.iter_entry_points('allura.theme.override'):
+            if tmpl_override_ep.name == 'responsive':
+                self.template = 'jinja:allura:templates_responsive/widgets/forge_form.html'
+                break
 
 
 class PasswordChangeBase(ForgeForm):
