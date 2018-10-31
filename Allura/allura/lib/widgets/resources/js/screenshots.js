@@ -34,7 +34,7 @@ $(function() {
 
     var el = document.getElementsByClassName('sortable')[0];
     if (el) {
-        var sortable = Sortable.create(el, {onUpdate: updateSortOrder, animation: 150, delay: 100});
+        var sortable = Sortable.create(el, {onUpdate: updateSortOrder, animation: 150, delay: 50, forceFallback: 1});
     }
 
     $('.delete_screenshot_form').submit(function () {
