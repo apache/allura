@@ -216,6 +216,69 @@ class TestDiscuss(TestDiscussBase):
             extra_environ=dict(username='*anonymous'))
         assert response.json['status'] == 'no_permission'
 
+    def test_comment_post_reaction_new(self):
+        r = self._make_post('This is a post')
+        post_id = str(
+            r.html.find('div', {'class': 'discussion-post'})['id'])
+        react_link = str(self._thread_link() + post_id + '/post_reaction')
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'heart'})
+        assert response.json['status'] == 'ok' and response.json['react_heart'] == 1
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'invalid'})
+        assert response.json['status'] == 'error' and response.json['react_heart'] == 1
+        # anon users can't react comments
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'heart'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['error'] == 'no_permission'
+        # even anon can't send invalid reactions
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'invalid'},
+            extra_environ=dict(username='*anonymous'))
+        assert response.json['error'] == 'no_permission'
+
+    def test_comment_post_reaction_change(self):
+        r = self._make_post('This is a post')
+        post_id = str(
+            r.html.find('div', {'class': 'discussion-post'})['id'])
+        react_link = str(self._thread_link() + post_id + '/post_reaction')
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'thumbs_down'})
+        assert response.json['status'] == 'ok' and response.json['react_thumbs_down'] == 1
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'thumbs_up'})
+        assert response.json['status'] == 'ok' and response.json['react_thumbs_up'] == 1
+        assert response.json['status'] == 'ok' and response.json['react_thumbs_down'] == 0
+
+    def test_comment_post_reaction_undo(self):
+        r = self._make_post('This is a post')
+        post_id = str(
+            r.html.find('div', {'class': 'discussion-post'})['id'])
+        react_link = str(self._thread_link() + post_id + '/post_reaction')
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'hooray'})
+        assert response.json['status'] == 'ok' and response.json['react_hooray'] == 1
+        response = self.app.post(
+            react_link,
+            params={
+                'r': 'hooray'})
+        assert response.json['status'] == 'ok' and response.json['react_hooray'] == 0
+
     def test_user_filter(self):
         r = self._make_post('Test post')
         post_link = str(
