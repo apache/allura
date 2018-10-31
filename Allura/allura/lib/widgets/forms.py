@@ -133,7 +133,11 @@ class ForgeForm(ew.SimpleForm):
 
 
 class ForgeFormResponsive(ForgeForm):
-    template = 'jinja:allura:templates_responsive/widgets/forge_form.html'
+    def __init__(self):
+        super(ForgeFormResponsive, self).__init__()
+        base_template = super(ForgeFormResponsive, self).template
+        self.template = 'jinja:allura:templates_responsive/widgets/forge_form.html' \
+                            if config.get('theme') != 'allura' else base_template
 
 
 class PasswordChangeBase(ForgeForm):
