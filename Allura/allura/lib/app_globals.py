@@ -34,6 +34,7 @@ import traceback
 import activitystream
 import pkg_resources
 import markdown
+import emoji
 import pygments
 import pygments.lexers
 import pygments.formatters
@@ -607,6 +608,10 @@ class Globals(object):
             "image_width": logo['image_width'],
             "image_height": logo['image_height']
         }
+
+    def emojize(self, text):
+        """Coverts emoji codes to unicode emojis"""
+        return emoji.emojize(text, use_aliases=True)
 
 
 class Icon(object):

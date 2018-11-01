@@ -84,24 +84,9 @@
 
             <div{% if h.has_access(value, 'moderate') %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
             <div class='reactions' style='user-select: none; cursor: default'>
-              {% if value.react_thumbs_up > 0 %}
-              <span>{{ '\U0001F44D' }}</span> {{ value.react_thumbs_up }}
-              {% endif %}
-              {% if value.react_thumbs_down > 0 %}
-              <span>{{ '\U0001F44E' }}</span> {{ value.react_thumbs_down }}
-              {% endif %}
-              {% if value.react_laugh > 0 %}
-              <span>{{ '\U0001F604' }}</span> {{ value.react_laugh }}
-              {% endif %}
-              {% if value.react_hooray > 0 %}
-              <span>{{ '\U0001F389' }}</span> {{ value.react_hooray }}
-              {% endif %}
-              {% if value.react_confused > 0 %}
-              <span>{{ '\U0001F615' }}</span> {{ value.react_confused }}
-              {% endif %}
-              {% if value.react_heart > 0 %}
-              <span>{{ '\U00002764' }}</span> {{ value.react_heart }}
-              {% endif %}
+              {% for reaction in value.react_counts %}
+                <span>{{ g.emojize(reaction) }}</span> {{ value.react_counts[reaction] }}
+              {% endfor %}
             </div>
             {{lib.related_artifacts(value)}}
             {% if value.edit_count %}

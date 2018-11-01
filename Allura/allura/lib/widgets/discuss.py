@@ -19,7 +19,10 @@ from formencode import validators as fev
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from pylons import app_globals as g
+from  tg import config
 
+from allura.lib import utils
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
@@ -300,6 +303,15 @@ class Post(HierWidget):
         attach_post=AttachPost(submit_text='Attach'),
         attachment=Attachment())
 
+    def get_reaction_tooltip_content(self):
+        """Construct html content for the reaction tooltip"""
+        html = ''
+        for em in utils.get_reaction_emoji_list():
+            emoji_u = g.emojize(em)
+            html += '<span onclick="reactComment(\'` + btnId +  `\', \'%s\')">` + twemoji.parse(\'%s\') + `</span>' % \
+            (em, emoji_u)
+        return html
+
     def resources(self):
         for r in super(Post, self).resources():
             yield r
@@ -427,6 +439,66 @@ class Post(HierWidget):
             });
         }());
         ''')
+        
+        yield ew.JSScript('''
+        // Reaction support
+        $(function(){
+
+        $('.reaction-button').tooltipster({
+            animation: 'fade',
+            delay: 200,
+            theme: 'tooltipster-default',
+            trigger: 'click',
+            position: 'top',
+            iconCloning: false,
+            maxWidth: 400,
+            contentAsHTML: true,
+            interactive: true
+        });
+
+        $('.reaction-button').each(function() {
+            var btnId = $(this).attr('id');
+            $(this).click(function(e) {
+                e.preventDefault();
+                var tooltiptext = `
+                <div class="post-reactions-list">
+                    %s
+                </div>
+                `;
+                $(this).tooltipster('content', tooltiptext);
+                $(this).tooltipster('show', function() {
+                    twemoji.parse($('.tooltipster-content')[0]);
+                });
+            });
+        });
+
+
+        });
+
+        function reactComment(btnId ,r) {
+        var btn = $('#' + btnId);
+        var reacts_list = btn.closest('.post-content').find('.reactions');
+        $.ajax({
+            type: 'post',
+            url: btn.data('commentlink') + 'post_reaction',
+            data: {
+                'r' : r,
+                '_session_id' : $.cookie('_session_id')
+            },
+            success: function(res) {
+                var react_html = '';
+
+                for (var i in res.counts) {
+                    react_html += '<span>' + res.emoji_unicode[i] + '</span> ' + res.counts[i];
+                }
+                
+                reacts_list.html(react_html);
+                twemoji.parse(reacts_list[0]);
+                btn.tooltipster('hide');
+            }
+        });
+        }
+        ''' % self.get_reaction_tooltip_content() ) 
 
 
 class PostThread(ew_core.Widget):

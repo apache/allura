@@ -30,6 +30,7 @@ import magic
 from itertools import groupby
 import operator as op
 import collections
+import emoji
 
 import tg
 import pylons
@@ -762,3 +763,14 @@ def umask(new_mask):
         yield
     finally:
         os.umask(cur_mask)
+
+
+def get_reaction_emoji_list():
+    """ Get reactions emoji list from .ini file. If not defined there get fixed 
+    default emoji list """
+    emo_list = tg.config.get('reactions.emoji_list')
+    if emo_list is None:
+        emo_list = [':+1:', ':-1:', ':smile:', ':tada:', ':confused:', ':heart:']
+    else:
+        emo_list = emo_list.split(',')
+    return emo_list

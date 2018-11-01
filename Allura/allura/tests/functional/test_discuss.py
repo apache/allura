@@ -224,18 +224,20 @@ class TestDiscuss(TestDiscussBase):
         response = self.app.post(
             react_link,
             params={
-                'r': 'heart'})
-        assert response.json['status'] == 'ok' and response.json['react_heart'] == 1
+                'r': ':+1:'})
+        assert response.json['status'] == 'ok' and response.json['counts'][':+1:'] == 1 and \
+        response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
         response = self.app.post(
             react_link,
             params={
                 'r': 'invalid'})
-        assert response.json['status'] == 'error' and response.json['react_heart'] == 1
+        assert response.json['status'] == 'error' and response.json['counts'][':+1:'] == 1 and \
+        response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
         # anon users can't react comments
         response = self.app.post(
             react_link,
             params={
-                'r': 'heart'},
+                'r': ':+1:'},
             extra_environ=dict(username='*anonymous'))
         assert response.json['error'] == 'no_permission'
         # even anon can't send invalid reactions
@@ -254,14 +256,16 @@ class TestDiscuss(TestDiscussBase):
         response = self.app.post(
             react_link,
             params={
-                'r': 'thumbs_down'})
-        assert response.json['status'] == 'ok' and response.json['react_thumbs_down'] == 1
+                'r': ':-1:'})
+        assert response.json['status'] == 'ok' and response.json['counts'][':-1:'] == 1 and \
+        response.json['emoji_unicode'][':-1:'] == u'\U0001F44E'
         response = self.app.post(
             react_link,
             params={
-                'r': 'thumbs_up'})
-        assert response.json['status'] == 'ok' and response.json['react_thumbs_up'] == 1
-        assert response.json['status'] == 'ok' and response.json['react_thumbs_down'] == 0
+                'r': ':+1:'})
+        assert response.json['status'] == 'ok' and response.json['counts'][':+1:'] == 1 and \
+        ':-1:' not in response.json['counts'] and ':-1:' not in response.json['emoji_unicode'] and \
+        response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
 
     def test_comment_post_reaction_undo(self):
         r = self._make_post('This is a post')
@@ -271,13 +275,15 @@ class TestDiscuss(TestDiscussBase):
         response = self.app.post(
             react_link,
             params={
-                'r': 'hooray'})
-        assert response.json['status'] == 'ok' and response.json['react_hooray'] == 1
+                'r': ':tada:'})
+        assert response.json['status'] == 'ok' and response.json['counts'][':tada:'] == 1 and \
+        response.json['emoji_unicode'][':tada:'] == u'\U0001F389'
         response = self.app.post(
             react_link,
             params={
-                'r': 'hooray'})
-        assert response.json['status'] == 'ok' and response.json['react_hooray'] == 0
+                'r': ':tada:'})
+        assert response.json['status'] == 'ok' and ':tada:' not in response.json['counts'] and \
+        ':tada:' not in response.json['emoji_unicode']
 
     def test_user_filter(self):
         r = self._make_post('Test post')

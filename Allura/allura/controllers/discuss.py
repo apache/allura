@@ -379,19 +379,15 @@ class PostController(BaseController):
                 'error' : 'no_permission'
             }
         status = 'ok'
-        if r in self.post.reaction_list:
+        if r in utils.get_reaction_emoji_list():
             self.post.post_reaction(r, c.user)
         else:
             status = 'error' 
-        return {
-            'status' : status,
-            'react_thumbs_up': self.post.react_thumbs_up,
-            'react_thumbs_down': self.post.react_thumbs_down,
-            'react_laugh': self.post.react_laugh,
-            'react_hooray': self.post.react_hooray,
-            'react_confused': self.post.react_confused,
-            'react_heart': self.post.react_heart
-        }
+        emoji_unicode = {}
+        # Need send back unicode emojis too for rendering :+1: .. etc
+        for em_code in self.post.react_counts:
+            emoji_unicode[em_code] = g.emojize(em_code)
+        return dict(status=status, counts=self.post.react_counts, emoji_unicode=emoji_unicode)
 
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)

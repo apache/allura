@@ -1055,21 +1055,10 @@ class ReactableArtifact(MappedClass):
 
     """Reaction support for the Artifact. Use as a mixin."""
 
-    class __mongometa__:
-        session = main_orm_session
-        name = 'reaction'
-
-    react_thumbs_up = FieldProperty(int, if_missing=0)
-    react_thumbs_down = FieldProperty(int, if_missing=0)
-    react_laugh = FieldProperty(int, if_missing=0)
-    react_hooray = FieldProperty(int, if_missing=0)
-    react_confused = FieldProperty(int, if_missing=0)
-    react_heart = FieldProperty(int, if_missing=0)
-
+    react_counts = FieldProperty({str: None}, if_missing=dict())
+    # dict to store reaction counts
     react_users = FieldProperty({str: None}, if_missing=dict())
     # dict to store reactions vs usernames
-
-    reaction_list = ['thumbs_up', 'thumbs_down', 'laugh', 'hooray', 'confused', 'heart']
 
     def post_reaction(self, r, user):
         current_reaction = self.user_reacted(user)
@@ -1079,11 +1068,13 @@ class ReactableArtifact(MappedClass):
                 self.react_users[r].append(user.username)
             else:
                 self.react_users[r] = [user.username]
-            self.update_react_count(r, 1)
+            self.update_react_count(r)
         elif current_reaction == r:
             # prev=current so remove
             self.react_users[r].remove(user.username)
-            self.update_react_count(r, -1)
+            self.update_react_count(r, add=False)
+            if len(self.react_users[r]) == 0:
+                self.react_users.pop(r)
         else:
             # prev!=currnet so remove prev then append
             self.react_users[current_reaction].remove(user.username)
@@ -1091,29 +1082,27 @@ class ReactableArtifact(MappedClass):
                 self.react_users[r].append(user.username)
             else:
                 self.react_users[r] = [user.username]
-            self.update_react_count(current_reaction, -1)
-            self.update_react_count(r, 1)
+            self.update_react_count(current_reaction, add=False)
+            self.update_react_count(r)
+            if len(self.react_users[current_reaction]) == 0:
+                self.react_users.pop(current_reaction)
 
     def user_reacted(self, user):
-        for i in self.reaction_list:
-            if i in self.react_users:
-                if user.username in self.react_users[i]:
-                    return i
+        for i in self.react_users:
+            if user.username in self.react_users[i]:
+                return i
         return 
     
-    def update_react_count(self, r, i):
-        if r == 'thumbs_up':
-            self.react_thumbs_up += i
-        elif r == 'thumbs_down':
-            self.react_thumbs_down += i
-        elif r == 'laugh':
-            self.react_laugh += i
-        elif r == 'hooray':
-            self.react_hooray += i
-        elif r == 'confused':
-            self.react_confused += i
-        elif r == 'heart':
-            self.react_heart += i
+    def update_react_count(self, r, add=True):
+        i = 1
+        if not add:
+            i = -1
+        if r in self.react_counts:
+            self.react_counts[r] += i
+            if self.react_counts[r] == 0:
+                self.react_counts.pop(r)
+        else:
+            self.react_counts[r] = 1
 
 class MovedArtifact(Artifact):
 
