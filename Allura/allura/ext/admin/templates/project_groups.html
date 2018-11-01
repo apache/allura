@@ -72,7 +72,7 @@
           {% for r in role.users_with_role() %}
           <li class="deleter" data-user="{{r.user.username}}">
             {{ g.icons['perm_delete'].render(
-                title='%s (%s)' % (r.user.display_name, r.user.username),
+                title=('<span>%s</span> (%s)' % (r.user.display_name | escape, r.user.username | escape)) | safe,
                 show_title=True,
                 extra_css='deleter',
                 **{'data-user': r.user.username}) }}

@@ -131,7 +131,7 @@ class GroupSettings(ff.CsrfForm):
         delete = ew.SubmitButton(label='Delete Group')
 
 
-class NewGroupSettings(ff.AdminForm):
+class NewGroupSettings(ff.AdminFormResponsive):
     submit_text = 'Save'
 
     class fields(ew_core.NameList):

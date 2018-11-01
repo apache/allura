@@ -818,6 +818,17 @@ class AdminForm(ForgeForm):
     template = 'jinja:allura:templates/widgets/admin_form.html'
 
 
+class AdminFormResponsive(ForgeForm):
+    def __init__(self):
+        super(AdminFormResponsive, self).__init__()
+        # use alternate template if responsive overrides are on, but not actually using template override for this
+        # since that would change all forms, and we want to just do individual ones right now
+        for tmpl_override_ep in h.iter_entry_points('allura.theme.override'):
+            if tmpl_override_ep.name == 'responsive':
+                self.template = 'jinja:allura:templates_responsive/widgets/admin_form.html'
+                break
+
+
 class NeighborhoodOverviewForm(ForgeForm):
     template = 'jinja:allura:templates/widgets/neighborhood_overview_form.html'
 
