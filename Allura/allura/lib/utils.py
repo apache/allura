@@ -36,6 +36,7 @@ import tg
 import pylons
 import json
 from formencode import Invalid
+from collections import OrderedDict
 from tg.decorators import before_validate
 from pylons.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
@@ -774,3 +775,11 @@ def get_reaction_emoji_list():
     else:
         emo_list = emo_list.split(',')
     return emo_list
+
+
+def get_reactions_json():
+    """ Returns global reactions json """
+    j = OrderedDict()
+    for em in get_reaction_emoji_list():
+        j[em] =  pylons.app_globals.emojize(em)
+    return json.dumps(j)
