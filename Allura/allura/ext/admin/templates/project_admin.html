@@ -83,10 +83,10 @@
 {% block content %}
     <p>This is the Admin area of your project, where you can set your project details, permissions, options and more.
         Your project has many tools available in the top menu, each with its own customization and settings.</p>
-    <p>Here's a quick tour of a few important things to get started:</p>
+    <p class="show-for-large">Here's a quick tour of a few important things to get started:</p>
 
     {% for step in tour.steps %}
-    <div class="tour-step-info">
+    <div class="tour-step-info show-for-large">
         <h2>{{ step.title }}</h2>
         <p>{{ step.content|safe }}
         </p>
