@@ -227,14 +227,12 @@ class TestDiscuss(TestDiscussBase):
                 'r': ':+1:'})
         assert response.json['status'] == 'ok'
         assert response.json['counts'][':+1:'] == 1
-        assert response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
         response = self.app.post(
             react_link,
             params={
                 'r': 'invalid'})
         assert response.json['status'] == 'error' 
         assert response.json['counts'][':+1:'] == 1
-        assert response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
         # anon users can't react comments
         response = self.app.post(
             react_link,
@@ -261,7 +259,6 @@ class TestDiscuss(TestDiscussBase):
                 'r': ':-1:'})
         assert response.json['status'] == 'ok'
         assert response.json['counts'][':-1:'] == 1
-        assert response.json['emoji_unicode'][':-1:'] == u'\U0001F44E'
         response = self.app.post(
             react_link,
             params={
@@ -269,8 +266,6 @@ class TestDiscuss(TestDiscussBase):
         assert response.json['status'] == 'ok'
         assert response.json['counts'][':+1:'] == 1
         assert ':-1:' not in response.json['counts']
-        assert ':-1:' not in response.json['emoji_unicode']
-        assert response.json['emoji_unicode'][':+1:'] == u'\U0001F44D'
 
     def test_comment_post_reaction_undo(self):
         r = self._make_post('This is a post')
@@ -283,14 +278,12 @@ class TestDiscuss(TestDiscussBase):
                 'r': ':tada:'})
         assert response.json['status'] == 'ok'
         assert response.json['counts'][':tada:'] == 1
-        assert response.json['emoji_unicode'][':tada:'] == u'\U0001F389'
         response = self.app.post(
             react_link,
             params={
                 'r': ':tada:'})
         assert response.json['status'] == 'ok'
         assert ':tada:' not in response.json['counts']
-        assert ':tada:' not in response.json['emoji_unicode']
 
     def test_user_filter(self):
         r = self._make_post('Test post')

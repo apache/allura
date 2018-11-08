@@ -383,11 +383,7 @@ class PostController(BaseController):
             self.post.post_reaction(r, c.user)
         else:
             status = 'error' 
-        emoji_unicode = {}
-        # Need send back unicode emojis too for rendering :+1: .. etc
-        for em_code in self.post.react_counts:
-            emoji_unicode[em_code] = g.emojize(em_code)
-        return dict(status=status, counts=self.post.react_counts, emoji_unicode=emoji_unicode)
+        return dict(status=status, counts=self.post.react_counts)
 
     def error_handler(self, *args, **kwargs):
         redirect(request.referer)

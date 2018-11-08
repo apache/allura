@@ -70,7 +70,7 @@ $.ajax({
         var react_html = '';
 
         for (var i in res.counts) {
-            react_html += '<span>' + res.emoji_unicode[i] + '</span> ' + res.counts[i];
+            react_html += '<span>' + global_reactions[i] + '</span> ' + res.counts[i];
         }
         
         reacts_list.html(react_html);
