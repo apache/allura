@@ -1399,8 +1399,13 @@ class ThemeProvider(object):
 
 
 class ResponsiveTheme(ThemeProvider):
+    master_template = 'allura:templates_responsive/jinja_master/master.html'
+    jinja_macros = 'allura:templates_responsive/jinja_master/theme_macros.html'
+    nav_menu = 'allura:templates_responsive/jinja_master/nav_menu.html'
+    top_nav = 'allura:templates_responsive/jinja_master/top_nav.html'
+    sidebar_menu = 'allura:templates_responsive/jinja_master/sidebar_menu.html'
+
     def require(self):
-        g.register_theme_css('../allura/css/site_style.css', compress=False)  # temporarily include original theme too
         g.register_theme_css('css/styles.css', compress=False)
 
 

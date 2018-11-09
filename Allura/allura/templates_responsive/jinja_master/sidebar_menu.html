@@ -1,0 +1,101 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set ul_active = [] %}
+{% macro sidebar_item(s) -%}
+  {% if s.url %}
+    {% if not ul_active[-1] %}
+      <ul class="sidebarmenu">
+      {% do ul_active.append(True) %}
+    {% endif %}
+  <li{% if request.path.find(s.url,-s.url.__len__()) != -1 %} class="active"{% endif %}>
+      {% if s.ui_icon %}
+        {{ s.ui_icon.render(href=s.url, extra_css=s.className, closing_tag=False, **s.extra_html_attrs) }}
+      {% else %}
+        <a href="{{ s.url }}" {{ s.extra_html_attrs|xmlattr }} {% if s.className %}class="{{ s.className or '' }}"{% endif %}>
+      {% endif %}
+      <span{% if s.small != None %} class="has_small"{% endif %}>{{ h.really_unicode(s.label) }}</span>
+      {% if s.small != None %}<small>{{ s.small }}</small>{% endif %}</a>
+  </li>
+  {% else %}
+    {% if ul_active[-1] %}
+      </ul>
+      {% do ul_active.append(False) %}
+    {% endif %}
+    {% if s.label %}
+      <h3 class="{{s.className or ''}}">{% if s.ui_icon %}{{ s.ui_icon.render() }}{% endif %}{{s.label}}</h3>
+    {% endif %}
+  {% endif %}
+{%- endmacro %}
+
+<div id="sidebar" class="column">
+  {% if c.app and c.app.searchable %}
+    <form id="search" method="GET" action="{{c.app.url + 'search/'}}">
+      <input name="q" type="text" title="Search {{c.app.config.options.mount_label}}" placeholder="Search {{c.app.config.options.mount_label}}">
+      <label>
+        <input type="submit" style="display:none">
+        <b class="fa fa-search" title="Submit"></b>
+      </label>
+    </form>
+  {% else %}
+    <div class="placeholder-no-searchbox">&nbsp;</div>
+  {% endif %}
+    {% if c.custom_sidebar_menu %}
+      {% for s in c.custom_sidebar_menu %}
+        {{sidebar_item(s)}}
+      {% endfor %}
+    {% endif %}
+    {% if c.app %}
+      {% if h.has_access(c.app, 'admin')() %}
+        {% if c.app.tool_label.lower() == 'wiki' %}
+          {% set admin_menu = c.app.admin_menu(skip_common_menu=True) %}
+        {% else %}
+          {% set admin_menu = c.app.admin_menu() %}
+        {% endif %}
+        {% if admin_menu %}
+          <a id='sidebar-admin-header' onclick='$("#sidebar-admin-menu").toggleClass("hidden");$("#sidebar-admin-header").toggleClass("expanded");return false;'
+             href='#' {% if request.path.startswith(c.app.admin_url) %}class="expanded"{% endif %}>
+            {{sidebar_item(c.app.admin_menu_collapse_button)}}
+          </a>
+          <div id='sidebar-admin-menu' {% if not request.path.startswith(c.app.admin_url) %}class='hidden'{% endif %}>
+            {% for s in admin_menu %}
+              {{sidebar_item(s)}}
+            {% endfor %}
+            {{sidebar_item(c.app.admin_menu_delete_button)}}
+            {{sidebar_item(None)}}
+          </div>
+        {% endif %}
+      {% endif %}
+      {% for s in c.app.sidebar_menu() %}
+        {{sidebar_item(s)}}
+      {% endfor %}
+    {% elif c.project %}
+      {% for s in c.project.sidebar_menu() %}
+        {{sidebar_item(s)}}
+      {% endfor %}
+    {% endif %}
+    {% if ul_active[-1] %}
+      </ul>
+      {% do ul_active.append(False) %}
+    {% endif %}
+    {% if c.app and c.app.sidebar_menu_js() %}
+      <script>
+        {{c.app.sidebar_menu_js()|safe}}
+      </script>
+    {% endif %}
+</div>

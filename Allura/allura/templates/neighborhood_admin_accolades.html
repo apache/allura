@@ -22,14 +22,6 @@
 
 {% block header %}Award Administration for {{neighborhood.name}}{% endblock %}
 
-{% block nav_menu %}
-{% include 'allura:templates/jinja_master/neigh_nav_menu.html' %}
-{% endblock %}
-
-{% block top_nav %}
-{% include 'allura:templates/jinja_master/top_nav.html' %}
-{% endblock %}
-
 {% block content %}
           {% if awards_count > 0 %}
           <p>

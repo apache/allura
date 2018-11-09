@@ -23,14 +23,6 @@
 
 {% block header %}{{neighborhood.name}} Moderation{% endblock %}
 
-{% block nav_menu %}
-{% include 'allura:templates/jinja_master/neigh_nav_menu.html' %}
-{% endblock %}
-
-{% block top_nav %}
-{% include 'allura:templates/jinja_master/top_nav.html' %}
-{% endblock %}
-
 {% block content %}
   <h2>Invite Projects?</h2>
   <form method="POST" action="invite" class="grid-10">

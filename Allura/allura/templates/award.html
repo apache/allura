@@ -22,14 +22,6 @@
 
 {% block header %}Award{% endblock %}
 
-{% block nav_menu %}
-{% include 'allura:templates/jinja_master/neigh_nav_menu.html' %}
-{% endblock %}
-
-{% block top_nav %}
-{% include 'allura:templates/jinja_master/top_nav.html' %}
-{% endblock %}
-
 {% block content %}
         <form action="{{award.longurl()}}/update" method="post" enctype="multipart/form-data">
           <table>

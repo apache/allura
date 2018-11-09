@@ -1,0 +1,40 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% if not neighborhood or not neighborhood.show_title %}
+    <!-- no nav menu -->
+{% else %}
+    <div class="row collapse">
+        <div class="column shrink project-icon">
+            {% if neighborhood.icon %}
+                <a href="{{neighborhood.url()}}"><img {{ lib.project_icon_srcs(neighborhood.neighborhood_project, base_size=90) }} alt="{{neighborhood.name}} Logo"/></a>
+            {% endif %}
+        </div>
+        <div class="column">
+            <h1 class="project_title"><a href="{{neighborhood.url()}}">{{neighborhood.name}}</a></h1>
+        </div>
+        {% if neighborhood.project_list_url %}
+            <div class="column shrink project_title_link">
+            <a href="{{neighborhood.project_list_url}}">
+              View Projects
+            </a>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
