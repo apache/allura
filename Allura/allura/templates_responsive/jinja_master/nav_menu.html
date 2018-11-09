@@ -1,0 +1,77 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import g.theme.jinja_macros as theme_macros with context %}
+{% set n = c.project.neighborhood %}
+{% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
+  <!-- no nav menu -->
+{% else %}
+    {% if not c.project.is_user_project %}
+    {{ theme_macros.breadcrumbs(c.project, c.app) }}
+    {% endif %}
+    <div class="row collapse">
+        <div class="column shrink project-icon">
+            {% if c.project.is_user_project %}
+                {{lib.gravatar(c.project.user_project_of, size=90)}}
+            {% elif c.project.icon %}
+                <img alt="Project Logo" {{ lib.project_icon_srcs(c.project, base_size=90) }}>
+            {% endif %}
+        </div>
+        <div class="column title">
+            <div class="row">
+            <h1>
+                <a href="{{c.project.url()}}">
+                    {%- if c.project.is_user_project -%}
+                        {{ c.project.user_project_of.display_name }}
+                    {%- elif not c.project.is_nbhd_project -%}
+                        {{ c.project.name }}
+                    {%- endif -%}
+                </a>
+            </h1>
+            {% set status = c.project.troves_by_type('developmentstatus')|sort(attribute='fullname') %}
+            {% set status = status[-1] %}
+            {% if status and status.shortname not in ['production', 'mature'] %}
+                <span class="{{ status.shortname }}">{{ status.shortname }}</span>
+            {% endif %}
+            </div>
+            {% if c.project.summary %}
+            <div class="row project_summary{% if c.project.icon %} with-icon{% endif %}">
+                {{c.project.summary}}
+            </div>
+            {% endif %}
+            {% if not c.project.is_user_project %}
+            <div class="row">
+            <div class="brought-by{% if c.project.icon %} with-icon{% endif %}">
+                Brought to you by:
+                {% set admins = c.project.admins()|sort(attribute='username') %}
+                {% for admin in admins[:5] %}
+                    {% if loop.last and admins|length > 5 -%}
+                        and <a href="{{ c.project.url() }}_members/">{{ admins|length - 4 }} others</a>
+                    {% else %}
+                        <a href="{{ admin.url() }}">{{ admin.username }}</a>{{ ',' if not loop.last }}
+                    {% endif %}
+                {%- endfor -%}
+            </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {{ theme_macros.project_header_right(c.project, c.app) }}
+    </div>
+{% endif %}

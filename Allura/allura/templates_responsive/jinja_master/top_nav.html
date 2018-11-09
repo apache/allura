@@ -1,0 +1,84 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% if c.project %}
+<div id="top_nav_admin" class="row">
+<ul class="menu dropdown" data-dropdown-menu>
+  {% for s in c.project.grouped_navbar_entries() %}
+    <li class="{% if s.matches_url(request) %}selected{% endif %}">
+        <a href="{{s.url}}" class="tool-{{(s.tool_name or 'admin').lower()}}-32">
+            {{s.label}}
+        </a>
+        {% set grouped_tool_count = s.matching_urls|length %}
+        {% if grouped_tool_count %}
+            <ul>
+                {%for tool in s.children%}
+                    <li class="{% if tool.matches_url(request) %}selected{% endif %}"><a href="{{tool.url}}">{{tool.label}}</a></li>
+                {%endfor%}
+            </ul>
+        {% endif %}
+    </li>
+  {% endfor %}
+  {% if h.has_access(c.project, 'admin')() %}
+    <li id="add-tool-container"><a href='#' class="add-tool-toggle">Add New...</a></li>
+    <button id="toggle-admin-btn" title="Click to unlock the toolbar and configure your project's tools.">
+        <i class="fa fa-lock"></i>
+    </button>
+  {% endif %}
+</ul>
+</div>
+{% if h.has_access(c.project, 'admin')() %}
+    {% do g.register_forge_js('js/underscore-min.js') %}
+    {% do g.register_forge_js('js/browser-polyfill.min.js') %}
+    {% do lib.register_react_js_files() %}
+    {% do g.register_forge_js('js/react-drag.min.js') %}
+    {% do g.register_forge_js('js/react-reorderable.min.js') %}
+    {% do g.register_forge_js('js/build/transpiled.js') %} {# if we do more es6, we'll need to register this in other places, or maybe even global #}
+    <script>
+        'use strict';
+        /*global ReactDOM, React, Main, ToggleAddNewTool */
+        var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe }};
+        $(document).ready(function () {
+            $('#toggle-admin-btn').click(function () {
+                if (typeof Main === 'undefined') {
+                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                    return;
+                }
+                ReactDOM.render(React.createElement(Main, {
+                    initialData: _data
+                }), document.getElementById("top_nav_admin"));
+            });
+
+            if (typeof ToggleAddNewTool === 'undefined') {
+                $('#add-tool-container').click(function(){
+                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                });
+            } else {
+                ReactDOM.render(React.createElement(ToggleAddNewTool, {
+                        installableTools: _data['installable_tools']
+                    }), document.getElementById('add-tool-container'));
+            }
+            $("#toggle-admin-btn").tooltipster({
+                delay: 200,
+                theme: 'tooltipster-light',
+                position: 'top'
+            });
+        });
+    </script>
+{% endif %}
+{% endif %}

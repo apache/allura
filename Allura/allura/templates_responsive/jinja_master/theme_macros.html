@@ -23,58 +23,75 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 #}
 
 
+{# account_links are used in primary nav, and off-canvas menu for small screens #}
+{% if not account_links %}
+{%- macro account_links(c, h, config, login_url, logout_url) %}
+    {% if c.user._id %}
+        <a href="/auth/preferences/">Account</a>
+        <a href="{{c.user.url()}}">{{name}}</a>
+        <a href="{{logout_url}}">Log Out</a>
+    {% else %}
+        {% if h.asbool(config.get('auth.allow_user_registration', True)) %}
+            <a href="/auth/create_account">Register</a>
+        {% endif %}
+        <a href="{{login_url}}">Log In</a>
+    {% endif %}
+{%- endmacro %}
+{% endif %}
+
 {%  if not header %}
 {%- macro header(login_url, logout_url) %}
-<header id="site-header">
-    <div class="wrapper">
-        <div class="nav-logo">
-          {% if g.nav_logo %}
-            <a class="link-left" href="{{ g.nav_logo['redirect_link'] }}"><img class="nav-logo" style="{% if g.nav_logo['image_width'] %}width: {{g.nav_logo['image_width']}}px;{% endif %} {% if g.nav_logo['image_height'] %}height: {{ g.nav_logo['image_height'] }}px;{% endif %}" src="{{ g.nav_logo['image_path'] }}" /></a>
-          {% endif %}
-        </div>
-        <nav class="nav-left">
-          {% for nav_link in g.global_nav %}
-            <a class="link-left" href="{{ nav_link['url'] }}">{{ nav_link['title'] }}</a>
-          {% endfor %}
-        </nav>
-        <nav class="nav-main">
-          {% if c.user._id %}
-            <a class="link-right" href="/auth/preferences/">Account</a>
-            <a class="link-right" href="{{c.user.url()}}">{{name}}</a>
-            <a class="link-right" href="{{logout_url}}">Log Out</a>
-          {% else %}
-            {% if h.asbool(config.get('auth.allow_user_registration', True)) %}
-              <a class="link-right" href="/auth/create_account">Register</a>
+{% set breakpoint='medium' %}
+<div class="row">
+    <header class="columns small-12 title-bar">
+        <div class="title-bar-left">
+            {% if g.nav_logo %}
+                <a href="{{ g.nav_logo['redirect_link'] }}"><img style="{% if g.nav_logo['image_width'] %}width: {{g.nav_logo['image_width']}}px;{% endif %} {% if g.nav_logo['image_height'] %}height: {{ g.nav_logo['image_height'] }}px;{% endif %}" src="{{ g.nav_logo['image_path'] }}" /></a>
             {% endif %}
-            <a class="link-right" href="{{login_url}}">Log In</a>
-          {% endif %}
-        </nav>
-    </div>
-</header>
+            {% for nav_link in g.global_nav %}
+                <a href="{{ nav_link['url'] }}" {% if g.nav_logo or not loop.first %}class="show-for-{{ breakpoint }}"{% endif %}>{{ nav_link['title'] }}</a>
+            {% endfor %}
+        </div>
+        <div class="title-bar-right show-for-{{ breakpoint }}">
+            {{ account_links(c, h, config, login_url, logout_url) }}
+        </div>
+        <button class="menu-icon hide-for-{{ breakpoint }}" type="button" data-open="offCanvas"></button>
+    </header>
+</div>
 {%- endmacro %}
 {% endif %}
 
 
 {% if not all_content_wrapper %}
 {% macro all_content_wrapper(login_url, logout_url) -%}
-{{- caller(**kwargs) -}}
+    <div class="off-canvas position-right" id="offCanvas" data-off-canvas>
+        <div class="menu vertical">
+        {% for nav_link in g.global_nav %}
+            <a href="{{ nav_link['url'] }}">{{ nav_link['title'] }}</a>
+        {% endfor %}
+        {{ account_links(c, h, config, login_url, logout_url) }}
+        </div>
+    </div>
+    <div class="off-canvas-content" data-off-canvas-content>
+        {{- caller(**kwargs) -}}
+    </div>
 {%- endmacro %}
 {% endif %}
 
 
 {% if not footer %}
 {%- macro footer(year, path_to_static='') %}
-<footer id="site-footer">
-  <nav>
-      <p>This project is powered by <a href="https://allura.apache.org/">Apache Allura</a>&trade;.</p>
-  </nav>
+<footer id="site-footer" class="row align-right">
+    <p>This project is powered by <a href="https://allura.apache.org/">Apache Allura</a>&trade;.</p>
 </footer>
 {%- endmacro %}
 {% endif %}
 
 {% if not custom_js %}
 {%- macro custom_js(path_to_static) %}
-
+<script>
+    $(document).foundation();
+</script>
 {%- endmacro %}
 {% endif %}
 
@@ -118,8 +135,8 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 
 {% if not breadcrumbs %}
 {%- macro breadcrumbs(project, app) %}
-    <nav id="breadcrumbs">
-        <ul>
+    <nav aria-label="You are here:" role="navigation" class="row">
+        <ul class="breadcrumbs">
             <li><a href="/">Home</a></li>
             {% for label,url in project.breadcrumbs() %}
                 {% if not loop.last or app %}
@@ -135,10 +152,12 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     </nav>
 {%- endmacro %}
 {% endif %}
+
+
 {% if not project_header_right %}
 {%- macro project_header_right(project, app) %}
   {% if project.neighborhood.icon %}
-  <div class="neighborhood_block">
+  <div class="column shrink neighborhood_block">
     <a href="{{project.neighborhood.url()}}"><img {{ lib.project_icon_srcs(project.neighborhood.neighborhood_project) }} class="neighborhood_icon"
        alt="Return to {{project.neighborhood.name}}" title="Return to {{project.neighborhood.name}}"></a>
        <div class="neighborhood_title">
@@ -173,9 +192,12 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {% set note = g.theme.get_site_notification() %}
     {% if note %}
         <div id="site-notification">
-            <section class="site-message info" data-notification-id="{{note._id}}">
+            <section class="callout primary" data-notification-id="{{note._id}}">
                 {{note.content|safe}}
-                <a href="" class="btn btn-close">Close</a>
+                <button class="close-button btn-close" aria-label="Dismiss alert" type="button">
+                  {#  .btn-close instead of data-close, since allura-base.js handles closing it, not Foundation #}
+                  <span aria-hidden="true">&times;</span>
+                </button>
             </section>
         </div>
     {% endif %}

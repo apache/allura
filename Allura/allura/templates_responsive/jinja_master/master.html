@@ -22,16 +22,16 @@
 {% if g.theme.jinja_macros %}
     {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
-{% do g.register_forge_js('js/jquery-base.js', location='head_js') %}
+{% do g.register_forge_js('js/jquery-base.js', location='head_js') %}{# TODO: upgrade #}
+{% do g.register_forge_js('js/foundation.min.js', location='head_js', compress=False) %}
 {% do g.register_forge_js('js/jquery.notify.js') %}
-{% do g.register_forge_js('js/jquery.tooltipster.js') %}
+{% do g.register_forge_js('js/jquery.tooltipster.js') %}{#  TODO: use foundation #}
 {% do g.register_forge_js('js/sylvester.js') %}
 {% do g.register_forge_js('js/twemoji.min.js') %}
-{% do g.register_forge_js('js/pb.transformie.min.js') %}
 {% do g.register_forge_js('js/allura-base.js') %}
 {% do g.register_forge_js('js/checklist.js') %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
-{% do g.register_forge_css('css/forge/tooltipster.css') %}
+{% do g.register_forge_css('css/forge/tooltipster.css') %}{#  TODO: use foundation #}
 {% do g.register_forge_css('css/font-awesome.min.css', compress=False) %}
 {% do g.theme.require() %}
 {% do g.register_forge_js('js/admin_modal.js') %}
@@ -44,16 +44,10 @@
 {% do g.register_forge_js('js/memorable.js') %}
 {% do g.resource_manager.register_widgets(c) %}
 
-
-{# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
-<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
-<!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
-<!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
-<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
-<!--[if (gt IE 9)|!(IE)]>-->
-<html lang="en" class="no-js"> <!--<![endif]-->
+<html lang="en" class="no-js">
 <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>{% block title %}Your title goes here{% endblock %}</title>
     {{ theme_macros.extra_header(g.theme_href('')) }}
     {% for blob in g.resource_manager.emit('head_css') %}
@@ -93,43 +87,31 @@
 
 {% set flash = tg.flash_obj.render('flash', use_js=False) %}
 
-{% call theme_macros.all_content_wrapper(login_url, logout_url) %}
+{% call theme_macros.all_content_wrapper(g.login_url, '/auth/logout') %}
     {{ theme_macros.header(g.login_url, '/auth/logout') }}
     {{ theme_macros.site_notification() }}
     {% block masthead %}{% endblock %}
     <section id="page-body" class="{{ g.document_class(neighborhood) }} {% block page_body_classes %}{% endblock %}">
-        <div id="nav_menu_holder">
-            {% if c.project and c.project.is_nbhd_project %}
-                {% set neighborhood=c.project.neighborhood %}
-                    {% include 'allura:templates/jinja_master/neigh_nav_menu.html' with context %}
-            {% else %}
-                {% block nav_menu %}
-                    {% include g.theme.nav_menu %}
-                {% endblock %}
-            {% endif %}
-        </div>
-        <div id="top_nav" class="">
-            {% block top_nav %}
-                {% include g.theme.top_nav %}
+        {% if c.project and c.project.is_nbhd_project %}
+            {% set neighborhood=c.project.neighborhood %}
+            {% include 'allura:templates_responsive/jinja_master/neigh_nav_menu.html' with context %}
+        {% else %}
+            {% block nav_menu %}
+                {% include g.theme.nav_menu %}
             {% endblock %}
-        </div>
-        <div id="content_base">
+        {% endif %}
+        {% block top_nav %}
+            {% include g.theme.top_nav %}
+        {% endblock %}
+        <div id="content_base" class="row">
             {% block content_base %}
                 {% if not hide_left_bar %}
                     {% block sidebar_menu %}
                         {% include g.theme.sidebar_menu %}
                     {% endblock %}
-                    {% set outer_width = 20 %}
-                {% else %}
-                    {% set outer_width = 24 %}
                 {% endif %}
-                {% if show_right_bar %}
-                    {% set inner_width = outer_width - 8 %}
-                {% else %}
-                    {% set inner_width = outer_width %}
-                {% endif %}
-                <div class="grid-{{ outer_width }} pad">
-                    <h2 class="dark{% block header_classes %} title{% endblock %}">{% block header %}{% endblock %}
+                <div class="column">
+                    <h2 class="{% block header_classes %} title{% endblock %}">{% block header %}{% endblock %}
                         <!-- actions -->
                         <small>
                             {% block actions %}{% endblock %}
@@ -137,13 +119,12 @@
                         <!-- /actions -->
                     </h2>
                     {% block edit_box %}{% endblock %}
-                    <div{% if show_right_bar %}
-                        class="{% block inner_grid scoped %}grid-{{ inner_width }}{% endblock %}"{% endif %}>
+                    <div>
                         {% block before_content %}{% endblock %}
                         {% block content %}{% endblock %}
                     </div>
                     {% if show_right_bar %}
-                        <div id="sidebar-right" class="grid-6 fright">
+                        <div class="columns">
                             {% block right_content %}{% endblock %}
                         </div>
                     {% endif %}
@@ -182,23 +163,5 @@
 {% if flash %}
     <script type="text/javascript">{{ flash | safe }}</script>
 {% endif %}
-<script>
-    $(document).ready(function () {
-        $(".tooltip, .m-tooltip").tooltipster({
-            animation: 'fade',
-            delay: 200,
-            theme: 'tooltipster-light',
-            trigger: 'hover',
-            position: 'right',
-            iconCloning: false,
-            maxWidth: 300
-        }).focus(function () {
-            $(this).tooltipster('show');
-        }).blur(function () {
-            $(this).tooltipster('hide');
-        });
-
-    });
-</script>
 </body>
 </html>
