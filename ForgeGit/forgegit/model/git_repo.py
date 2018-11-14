@@ -564,8 +564,8 @@ class GitImplementation(M.RepositoryImplementation):
         for ref in ref_list:
             try:
                 hex_sha = ref.commit.hexsha
-            except ValueError:
-                log.debug(u"Found invalid sha: {}".format(ref))
+            except (ValueError, AssertionError) as e:
+                log.debug(u"Found invalid sha: {}".format(ref), exc_info=e)
                 continue
             refs.append(Object(name=ref.name, object_id=hex_sha))
         time_taken = time() - start_time
