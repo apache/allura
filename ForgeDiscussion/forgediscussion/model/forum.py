@@ -196,7 +196,7 @@ class ForumThread(M.Thread):
             {'$set': dict(discussion_id=new_forum._id)}, multi=True)
         self.attachment_class().query.update(
             {'discussion_id': self.discussion_id, 'thread_id': self._id},
-            {'$set': dict(discussion_id=new_forum._id)})
+            {'$set': dict(discussion_id=new_forum._id)}, multi=True)
         self.discussion_id = new_forum._id
 
 
