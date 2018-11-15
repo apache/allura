@@ -447,8 +447,10 @@ def members(limit=20):
 @macro()
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
-    endpoint = oembed.OEmbedEndpoint(
-        'http://www.youtube.com/oembed', ['http://*.youtube.com/*', 'https://*.youtube.com/*'])
+    endpoint = oembed.OEmbedEndpoint('http://www.youtube.com/oembed',
+                                     ['http://*.youtube.com/*', 'https://*.youtube.com/*',
+                                      'http://*.youtube-nocookie.com/*', 'https://*.youtube-nocookie.com/*',
+                                      ])
     consumer.addEndpoint(endpoint)
     try:
         html = consumer.embed(url)['html']
@@ -460,6 +462,7 @@ def embed(url=None):
         html = html.rstrip(')')
 
         # convert iframe src from http to https, to avoid mixed security blocking when used on an https page
+        # and convert to youtube-nocookie.com
         html = BeautifulSoup(html)
         embed_url = html.find('iframe').get('src')
         if embed_url:
@@ -468,6 +471,7 @@ def embed(url=None):
                 embed_url = urlunparse(['https'] + list(embed_url[1:]))
             else:
                 embed_url = embed_url.geturl()
+            embed_url = embed_url.replace('www.youtube.com', 'www.youtube-nocookie.com')
             html.find('iframe')['src'] = embed_url
         return jinja2.Markup('<p>%s</p>' % html)
 
