@@ -273,8 +273,12 @@ class TestHTMLSanitizer(unittest.TestCase):
         walker = self.walker_from_text(
             '<div><iframe src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
         p = utils.ForgeHTMLSanitizerFilter(walker)
-        assert_equal(
-            self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
+        assert_equal(self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
+
+        walker = self.walker_from_text(
+            '<div><iframe src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
+        assert_equal(self.simple_tag_list(p), ['div', 'iframe', 'iframe', 'div'])
 
     def test_html_sanitizer_form_elements(self):
         walker = self.walker_from_text('<p>test</p><form method="post" action="http://localhost/foo.php"><input type=file><input type=text><textarea>asdf</textarea></form>')

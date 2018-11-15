@@ -339,7 +339,7 @@ def test_macro_embed(oembed_fetch):
     }
     r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
     assert_in('<p><iframe height="270" '
-              'src="https://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>',
+              'src="https://www.youtube-nocookie.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></p>',
               r.replace('\n', ''))
 
 
