@@ -283,4 +283,7 @@ license. For details, see:
     allura/public/nf/js/checklist.js
 
 Sortable, which is available under the MIT license (https://github.com/RubaXa/Sortable):
-    Allura/allura/public/nf/js/Sortable.min.js
+    allura/public/nf/js/Sortable.min.js
+
+Foundation, which is available under the MIT license
+    Allura/allura/public/nf/js/foundation.min.js
