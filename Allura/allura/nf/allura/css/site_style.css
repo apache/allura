@@ -3812,8 +3812,9 @@ fieldset.preferences legend {
 
 .post-reactions-list .emoji_button {
     padding: 1px 2px 1px 2px;
-    margin-left: 2px;
+    margin-left: 1px;
     display: inline-block;
+    border: transparent solid 1px;
 }
 
 .post-reactions-list .current {
