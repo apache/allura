@@ -619,6 +619,10 @@ class Globals(object):
         """Coverts emoji codes to unicode emojis"""
         return emoji.emojize(text, use_aliases=True)
 
+    def get_current_reaction(self, d):
+        """Return current selected reaction for given react_users dict"""
+        return utils.get_key_from_value(d, c.user.username)
+
 
 class Icon(object):
 

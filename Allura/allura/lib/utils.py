@@ -785,3 +785,11 @@ def get_reactions_json():
     for em in get_reaction_emoji_list():
         j[em] =  pylons.app_globals.emojize(em)
     return json.dumps(j)
+
+
+def get_key_from_value(d, val):
+    """ Get key from given value. return empty str if not exists """
+    for k, v in d.items():
+        if val in v:
+            return k
+    return ''

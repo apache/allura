@@ -42,10 +42,10 @@ $('.reaction-button').each(function() {
     var btnId = $(this).attr('id');
     $(this).click(function(e) {
         e.preventDefault();
-
+        var currentemoji = $(this).data('currentreact');
         var emohtml = '';
         for(var emo in global_reactions) {
-            emohtml += '<span class=\'emoji_button\' data-emoji=\'' + emo + '\'>' + 
+            emohtml += '<span class=\'emoji_button' + (currentemoji == emo ? ' current' : '') +  '\' data-emoji=\'' + emo + '\'>' + 
             twemoji.parse(global_reactions[emo]) + '</span>';
         }
         var tooltiptext = '<div class="post-reactions-list">' + emohtml + '</div>';
