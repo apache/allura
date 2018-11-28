@@ -33,7 +33,16 @@ $('.reaction-button').tooltipster({
     interactive: true,
     functionReady: function(instance, helper) {
         $(helper).find('.emoji_button').click(function() {
-            reactComment(instance, $(this).data('emoji'));
+            var r = $(this).data('emoji');
+            if($(this).hasClass('current')) {
+                $(this).removeClass('current');
+                $(instance).data('currentreact', '');
+            }
+            else {
+                $(this).addClass('current');
+                $(instance).data('currentreact', r);
+            }
+            reactComment(instance, r);
         });
     }
 });
@@ -45,8 +54,8 @@ $('.reaction-button').each(function() {
         var currentemoji = $(this).data('currentreact');
         var emohtml = '';
         for(var emo in global_reactions) {
-            emohtml += '<span class=\'emoji_button' + (currentemoji == emo ? ' current' : '') +  '\' data-emoji=\'' + emo + '\'>' + 
-            twemoji.parse(global_reactions[emo]) + '</span>';
+            emohtml += '<div class=\'emoji_button' + (currentemoji == emo ? ' current' : '') +  '\' data-emoji=\'' + emo + '\'>' + 
+            twemoji.parse(global_reactions[emo]) + '</div>';
         }
         var tooltiptext = '<div class="post-reactions-list">' + emohtml + '</div>';
         $(this).tooltipster('content', tooltiptext);

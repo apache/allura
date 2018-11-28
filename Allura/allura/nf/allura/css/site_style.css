@@ -3810,9 +3810,20 @@ fieldset.preferences legend {
     width: 100%;
 }
 
+.post-reactions-list .emoji_button {
+    padding: 1px 2px 1px 2px;
+    margin-left: 2px;
+    display: inline-block;
+}
+
+.post-reactions-list .current {
+    border: #999 solid 1px;
+    border-radius: 2px 2px;
+}
+
 .post-reactions-list img.emoji { 
     width: 16px;
-    margin-left: 4px;
+    margin: 2px 0px -2px 1px;
     cursor: pointer;
 }
 
