@@ -337,6 +337,7 @@ class PostController(BaseController):
                     attachments=self.post.attachments,
                     related_artifacts=self.post.related_artifacts,
                     parent_security_context=lambda: None,
+                    last_edit_by=lambda: self.post.last_edit_by()
                 )
             else:
                 post = self.post

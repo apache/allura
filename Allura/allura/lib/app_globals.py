@@ -136,9 +136,15 @@ class ForgeMarkdown(markdown.Markdown):
             cache.md5, cache.html, cache.render_time = md5, html, render_time
             cache.fix7528 = bugfix_rev  # flag to indicate good caches created after [#7528] and other critical bugs were fixed.
 
-            with utils.skip_mod_date(artifact.__class__), \
-                 utils.skip_last_updated(artifact.__class__):
-                session(artifact).flush(artifact)
+            try:
+                sess = session(artifact)
+            except AttributeError:
+                # this can happen if a non-artifact object is used
+                log.exception('Could not get session for %s', artifact)
+            else:
+                with utils.skip_mod_date(artifact.__class__), \
+                     utils.skip_last_updated(artifact.__class__):
+                    sess.flush(artifact)
         return html
 
 
