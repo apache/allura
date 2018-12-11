@@ -50,13 +50,14 @@
       </div>
       {% set pending = value.status == 'pending' %}
       {% set moderator = h.has_access(value, 'moderator')() %}
+      {% set current_reaction = h.get_current_reaction(value.react_users) %}
       <div class="grid-16 post-content bubble" style="width: {{indent == 0 and 652 or (indent <= 40 and 642-indent*10 or 65)}}px;  {% if indent != 0 %} margin-right:0px {% endif %}">
           <div class="header">
             {{lib.user_link(value.author())}} - <i style="color: #777">{{lib.abbr_date(value.timestamp)}}</i>
 
             <div class="tools">
             {% if not c.user.is_anonymous() %}
-                <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ h.get_current_reaction(value.react_users) }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+                <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ current_reaction }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
                     <span><i class="fa fa-smile-o" aria-hidden="true"></i></span></a>
             {% endif %}
             {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or moderator %}
@@ -84,9 +85,7 @@
 
             <div{% if h.has_access(value, 'moderate') %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
             <div class='reactions' style='user-select: none; cursor: default'>
-              {% for reaction in value.react_counts %}
-                <span>{{ h.emojize(reaction) }}</span> {{ value.react_counts[reaction] }}
-              {% endfor %}
+              {% for reaction in value.react_counts %}<div class="reaction{% if current_reaction == reaction %} reaction-current{% endif %}"><div class="emoj">{{ h.emojize(reaction) }}</div><div class="emoj-count">{{ value.react_counts[reaction] }}</div></div>{% endfor %}
             </div>
             {{lib.related_artifacts(value)}}
             {% if value.edit_count %}

@@ -2539,6 +2539,25 @@ div.attachment_item{
     padding: 5px;
 }
 
+#comment .display_post .reactions .reaction {
+    display: inline-block;
+    padding: 2px;
+}
+
+#comment .display_post .reactions .reaction-current {
+    background-color: rgb(240,240,240);
+    border-radius: 2px;
+}
+#comment .display_post .reactions .reaction .emoj {
+    display: inline-block;
+}
+
+#comment .display_post .reactions .reaction .emoj-count {
+    display: inline-block;
+    font-size: 11px;
+    margin-left: 3px;
+}
+
 #comment ul {
   list-style: none;
   margin: 0 0 0 0;

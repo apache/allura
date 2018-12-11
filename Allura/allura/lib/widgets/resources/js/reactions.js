@@ -67,24 +67,28 @@ $('.reaction-button').each(function() {
 });
 
 function reactComment(btn ,r) {
-var reacts_list = btn.closest('.post-content').find('.reactions');
-$.ajax({
-    type: 'post',
-    url: btn.data('commentlink') + 'post_reaction',
-    data: {
-        'r' : r,
-        '_session_id' : $.cookie('_session_id')
-    },
-    success: function(res) {
-        var react_html = '';
+    var reacts_list = btn.closest('.post-content').find('.reactions');
+    var currentemoji = $(btn).data('currentreact');
+    $.ajax({
+        type: 'post',
+        url: btn.data('commentlink') + 'post_reaction',
+        data: {
+            'r' : r,
+            '_session_id' : $.cookie('_session_id')
+        },
+        success: function(res) {
+            var react_html = '';
 
-        for (var i in res.counts) {
-            react_html += '<span>' + global_reactions[i] + '</span> ' + res.counts[i];
+            for (var i in res.counts) {
+                react_html += '<div class="reaction' + (currentemoji == i ? ' reaction-current' : '') + '">' +
+                                    '<div class="emoj">' + global_reactions[i] +'</div>' + 
+                                    '<div class="emoj-count">' + res.counts[i] + '</div>' + 
+                                '</div>';
+            }
+            
+            reacts_list.html(react_html);
+            twemoji.parse(reacts_list[0]);
+            btn.tooltipster('hide');
         }
-        
-        reacts_list.html(react_html);
-        twemoji.parse(reacts_list[0]);
-        btn.tooltipster('hide');
-    }
-});
+    });
 }
