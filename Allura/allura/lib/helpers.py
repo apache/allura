@@ -39,6 +39,7 @@ from functools import partial
 from cStringIO import StringIO
 import cgi
 
+import emoji
 import tg
 import genshi.template
 try:
@@ -1338,3 +1339,13 @@ def hide_private_info(message):
         return email_re.sub(r'\1@...', message)
     else:
         return message
+
+
+def emojize(text):
+    """Coverts emoji codes to unicode emojis"""
+    return emoji.emojize(text, use_aliases=True)
+
+
+def get_current_reaction(react_users_dict):
+    """Return current selected reaction for given react_users dict"""
+    return utils.get_key_from_value(react_users_dict, c.user.username)

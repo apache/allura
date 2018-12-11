@@ -56,7 +56,7 @@
 
             <div class="tools">
             {% if not c.user.is_anonymous() %}
-                <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ g.get_current_reaction(value.react_users) }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+                <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ h.get_current_reaction(value.react_users) }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
                     <span><i class="fa fa-smile-o" aria-hidden="true"></i></span></a>
             {% endif %}
             {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or moderator %}
@@ -85,7 +85,7 @@
             <div{% if h.has_access(value, 'moderate') %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
             <div class='reactions' style='user-select: none; cursor: default'>
               {% for reaction in value.react_counts %}
-                <span>{{ g.emojize(reaction) }}</span> {{ value.react_counts[reaction] }}
+                <span>{{ h.emojize(reaction) }}</span> {{ value.react_counts[reaction] }}
               {% endfor %}
             </div>
             {{lib.related_artifacts(value)}}

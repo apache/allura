@@ -30,9 +30,9 @@ import magic
 from itertools import groupby
 import operator as op
 import collections
-import emoji
 
 import tg
+import emoji
 import pylons
 import json
 from formencode import Invalid
@@ -783,7 +783,7 @@ def get_reactions_json():
     """ Returns global reactions json """
     j = OrderedDict()
     for em in get_reaction_emoji_list():
-        j[em] =  pylons.app_globals.emojize(em)
+        j[em] =  emoji.emojize(em, use_aliases=True)
     return json.dumps(j)
 
 
