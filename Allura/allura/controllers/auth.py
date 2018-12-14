@@ -123,7 +123,7 @@ class AuthController(BaseController):
             else:
                 return_to = request.referer
         c.form = F.login_form
-        return dict(return_to=return_to)
+        return dict(return_to=return_to, **kwargs)
 
     @expose('jinja:allura:templates/login_fragment.html')
     def login_fragment(self, *args, **kwargs):
