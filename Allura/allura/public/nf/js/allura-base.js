@@ -162,6 +162,10 @@ function addCommas(num) {
     return String(num).replace(new RegExp('(\\d)(?=(\\d\\d\\d)+(?!\\d))', 'g'), "$1,");
 }
 
+function get_cm($elem) {
+    return $('.CodeMirror', $elem)[0].CodeMirror;
+}
+
 $(function(){
     $('html').removeClass('no-js').addClass('js');
 

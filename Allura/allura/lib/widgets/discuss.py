@@ -181,9 +181,13 @@ class EditPost(ff.ForgeForm):
                 evt.preventDefault();
             });
             $("a.cancel_edit_post").click(function(evt){
-                $("textarea", this.parentNode).val($("input.original_value", this.parentNode).val());
-                $(".attachment_form_fields input", this.parentNode).val('');
                 evt.preventDefault();
+                var form = this.parentNode;
+                var orig_val = $("input.original_value", form).val();
+                $("textarea", form).val(orig_val);
+                get_cm(form).setValue(orig_val);
+                $("input.attachment_form_fields", form).val('');
+                $(this).closest('.reply_post_form').hide();
             });
          });''')
 
@@ -367,8 +371,6 @@ class Post(HierWidget):
                         row.show();
                     }
                 }
-
-                function get_cm($elem) { return $('.CodeMirror', $elem)[0].CodeMirror; }
 
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function (evt) {
