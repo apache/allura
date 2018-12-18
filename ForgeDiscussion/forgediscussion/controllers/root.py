@@ -127,7 +127,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @require_post()
     @validate(W.new_topic, error_handler=create_topic)
     @AntiSpam.validate('Spambot protection engaged')
-    def save_new_topic(self, subject=None, text=None, forum=None, **kw):
+    def save_new_topic(self, subject=None, text=None, forum=None, subscribe=False, **kw):
         self.rate_limit(model.ForumPost, 'Topic creation', request.referer)
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
@@ -138,7 +138,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]
-        p = thd.post(subject, text)
+        p = thd.post(subject, text, subscribe=subscribe)
         if 'attachment' in kw:
             p.add_multiple_attachments(kw['attachment'])
         thd.post_to_feed(p)

@@ -48,7 +48,14 @@
     </div>
     <div class="grid-19">&nbsp;</div>
     <div class="grid-19">
-      <input type="submit" value="{{submit_text}}"> <a href=".." class="btn link">Cancel</a>
+      <input type="submit" value="{{submit_text}}">
+      {% if c.user and c.user != c.user.anonymous() %}
+          {# TODO: if not already subscribed to whole tool, or to forum #}
+        <label class="subscribe">
+          <input type="checkbox" checked name="subscribe">Subscribe to this topic
+        </label>
+      {% endif %}
+      <a href=".." class="btn link cancel_form">Cancel</a>
     </div>
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
