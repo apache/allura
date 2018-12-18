@@ -303,10 +303,11 @@ class Thread(Artifact, ActivityObject):
 
     def post(self, text, message_id=None, parent_id=None, notify=True,
              notification_text=None, timestamp=None, ignore_security=False,
-             is_meta=False, **kw):
+             is_meta=False, subscribe=False, **kw):
         if not ignore_security:
             require_access(self, 'post')
-        self.primary().subscribe()
+        if subscribe:
+            self.primary().subscribe()
         if message_id is None:
             message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)

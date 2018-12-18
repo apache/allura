@@ -157,6 +157,7 @@ class EditPost(ff.ForgeForm):
         fields = ew_core.NameList()
         fields.append(ffw.MarkdownEdit(name='text'))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
+        fields.append(ew.Checkbox(name='subscribe', label='Subscribe', if_missing=False))
         if ew_core.widget_context.widget:
             # we are being displayed
             if ew_core.widget_context.render_context.get('show_subject', self.show_subject):
