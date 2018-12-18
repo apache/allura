@@ -129,6 +129,7 @@ class GenericTicketForm(ew.SimpleForm):
                                 'class': "ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num',
                            validator=fev.Int(if_missing=None)),
+            ew.Checkbox(name='subscribe', label='Subscribe'),
         ]
         # milestone is kind of special because of the layout
         # add it to the main form rather than handle with the other customs
@@ -157,11 +158,6 @@ class TicketForm(GenericTicketForm):
         // Sometimes IE11 is not firing jQuery's ready callbacks like
         // "$(function(){...})" or "$(document).ready(function(){...});"
         $(window).load(function(){
-            $('#show_attach').click(function(evt) {
-                $('#view_attach').show();
-                $('#show_attach').hide();
-                evt.preventDefault();
-            });
             $('form').submit(function() {
                 $('input[type=submit]', this).prop('disabled', true);
             });

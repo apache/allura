@@ -45,8 +45,8 @@
   {% set min_c_fields = widget.fields['_milestone'] and 1 or 0 %}
   {% if c.app.globals.custom_fields and c.app.globals.custom_fields.__len__() > min_c_fields %}
     {{widget.display_field_by_name('custom_fields', ignore_errors=True)}}
+    <div style="clear:both">&nbsp;</div>
   {% endif %}
-  <div style="clear:both">&nbsp;</div>
   <div class="grid-12">
     <label class="cr">Labels:</label>
     {{widget.display_field_by_name('labels')|safe}}
@@ -90,7 +90,8 @@
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
-    {% if ticket %}
+    <label class="simple">Attachments:</label>
+    {% if ticket and ticket.attachments %}
       <div class="clearfix">
       {% for att in ticket.attachments %}
           <div class="attachment_thumb">
@@ -104,15 +105,8 @@
           </div>
       {% endfor %}
       </div>
-      <div style="clear:both">&nbsp;</div>
     {% endif %}
-    <div>
-      <a href="#" id="show_attach">Add attachments</a>
-    </div>
-    <div style="clear:both">&nbsp;</div>
-    <div id="view_attach" style="display:none">
       {{widget.display_field_by_name('attachment')|safe}}
-    </div>
   </div>
   <div style="clear:both">&nbsp;</div>
   <div class="reply" style="position:relative;{% if not show_comment %} display:none{% endif %}">
@@ -132,6 +126,12 @@
   <div style="clear:both">&nbsp;</div>
   <div class="grid-18">
     {{widget.display_field_by_name('submit')|safe}}
+    {% if c.user and c.user != c.user.anonymous() and not ticket %}
+        {# TODO: if not already subscribed to whole tool #}
+        <label class="subscribe">
+          <input type="checkbox" checked name="ticket_form.subscribe">Subscribe to this ticket
+        </label>
+    {% endif %}
     <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>
   </div>
   {{lib.csrf_token()}}

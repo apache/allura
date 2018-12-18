@@ -867,7 +867,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return False
     discussion_disabled = property(_get_discussion_disabled, _set_discussion_disabled)
 
-    def commit(self, **kwargs):
+    def commit(self, subscribe=False, **kwargs):
         VersionedArtifact.commit(self)
         monitoring_email = self.app.config.options.get('TicketMonitoringEmail')
         if self.version > 1:
@@ -911,7 +911,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         tofile='description-new')))
             description = '\n'.join(changes)
         else:
-            self.subscribe()
+            if subscribe:
+                self.subscribe()
             if self.assigned_to_id:
                 user = User.query.get(_id=self.assigned_to_id)
                 g.statsUpdater.ticketEvent(
@@ -955,6 +956,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def update(self, ticket_form):
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
+        subscribe = ticket_form.pop('subscribe', False)
         self.labels = ticket_form.pop('labels', [])
         custom_users = set()
         other_custom_fields = set()
@@ -997,7 +999,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             # flush the session to make attachments available in the
             # notification email
             ThreadLocalORMSession.flush_all()
-        self.commit()
+        self.commit(subscribe=subscribe)
 
     def _move_attach(self, attachments, attach_metadata, app_config):
         for attach in attachments:
