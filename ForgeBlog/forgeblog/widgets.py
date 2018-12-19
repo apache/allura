@@ -29,31 +29,38 @@ class BlogPager(ffw.PageList):
     template = 'jinja:forgeblog:templates/blog_widgets/page_list.html'
 
 
-class NewPostForm(forms.ForgeForm):
+class BlogPostForm(forms.ForgeForm):
     template = 'jinja:forgeblog:templates/blog_widgets/post_form.html'
     enctype = 'multipart/form-data'
 
-    class fields(ew_core.NameList):
-        title = ew.TextField(validator=fev.UnicodeString(not_empty=True,
-                             messages={'empty': "You must provide a Title"}),
-                             attrs=dict(placeholder='Enter your title here',
-                                        title='Enter your title here',
-                                        style='width: 425px'))
-        text = ffw.MarkdownEdit(show_label=False,
-                                attrs=dict(
-                                    placeholder='Enter your content here',
-                                    title='Enter your content here'))
-        state = ew.SingleSelectField(
-            options=[
-                ew.Option(py_value='draft', label='Draft'),
-                ew.Option(py_value='published', label='Published')])
-        labels = ffw.LabelEdit(placeholder='Add labels here',
-                               title='Add labels here')
-        attachment = ew.InputField(label='Attachment', field_type='file', attrs={'multiple': 'True'},
-                                   validator=fev.FieldStorageUploadConverter(if_missing=None))
+    @property
+    def fields(self):
+        return ew_core.NameList([
+            ew.TextField(name='title',
+                         validator=fev.UnicodeString(not_empty=True,
+                                                     messages={'empty': "You must provide a Title"}),
+                         attrs=dict(placeholder='Enter your title here',
+                                    title='Enter your title here',
+                                    style='width: 425px')),
+            ffw.MarkdownEdit(name='text',
+                             show_label=False,
+                             attrs=dict(
+                                 placeholder='Enter your content here',
+                                 title='Enter your content here')),
+            ew.SingleSelectField(name='state',
+                                 options=[
+                                     ew.Option(py_value='draft', label='Draft'),
+                                     ew.Option(py_value='published', label='Published')]),
+            ffw.LabelEdit(name='labels',
+                          placeholder='Add labels here',
+                          title='Add labels here'),
+            ew.InputField(name='attachment',
+                          label='Attachment', field_type='file', attrs={'multiple': 'True'},
+                          validator=fev.FieldStorageUploadConverter(if_missing=None)),
+        ])
 
     def resources(self):
-        for r in super(NewPostForm, self).resources():
+        for r in super(BlogPostForm, self).resources():
             yield r
         yield ew.JSScript('''
             $(function() {
@@ -62,7 +69,16 @@ class NewPostForm(forms.ForgeForm):
         ''')
 
 
-class EditPostForm(NewPostForm):
+class NewPostForm(BlogPostForm):
+
+    @property
+    def fields(self):
+        fields = super(NewPostForm, self).fields
+        fields.append(ew.Checkbox(name='subscribe'))
+        return fields
+
+
+class EditPostForm(BlogPostForm):
 
     class buttons(ew_core.NameList):
         delete = ew.SubmitButton(label='Delete')

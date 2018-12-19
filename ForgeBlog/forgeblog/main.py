@@ -301,7 +301,8 @@ class RootController(BaseController, FeedController):
     @memorable_forget()
     @expose()
     @require_post()
-    @validate(form=W.edit_post_form, error_handler=new)
+    # both new & edit submit here, but validate with new since it adds a field (subscribe)
+    @validate(form=W.new_post_form, error_handler=new)
     @without_trailing_slash
     def save(self, **kw):
         require_access(c.app, 'write')

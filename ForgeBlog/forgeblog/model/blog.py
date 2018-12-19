@@ -234,10 +234,11 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         HC = self.__mongometa__.history_class
         return HC.query.find({'artifact_id': self._id, 'version': int(version)}).one()
 
-    def commit(self):
+    def commit(self, subscribe=False):
         activity = functools.partial(g.director.create_activity, c.user,
                                      related_nodes=[c.project], tags=['blog'])
-        self.subscribe()
+        if subscribe:
+            self.subscribe()
         super(BlogPost, self).commit()
         if self.version > 1:
             v1 = self.get_version(self.version - 1)
@@ -291,11 +292,12 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     @classmethod
     def new(cls, **kw):
         post = cls()
+        subscribe = kw.pop('subscribe', False)
         for k, v in kw.iteritems():
             setattr(post, k, v)
         post.neighborhood_id = c.project.neighborhood_id
         post.make_slug()
-        post.commit()
+        post.commit(subscribe=subscribe)
         M.Thread.new(
             discussion_id=post.app_config.discussion_id,
             ref_id=post.index_id(),
