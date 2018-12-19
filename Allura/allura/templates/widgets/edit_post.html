@@ -32,10 +32,10 @@
     <input type="file" class="text attachment_form_fields" style="display:none" multiple name="{{att_name}}" {% if att_id %}id="{{att_id}}"{% endif %}/>
     <br>
     <input type="submit" value="{{submit_text}}" />
-    {% if c.user and c.user != c.user.anonymous() %}
+    {% if primary_artifact and c.user and c.user != c.user.anonymous() %}
       {# TODO: if not already subscribed (to artifact, or to whole tool) #}
       <label class="subscribe">
-        <input type="checkbox" checked name="subscribe">Subscribe to this topic
+        <input type="checkbox" checked name="subscribe">Subscribe to this {{ primary_artifact.type_name }}
       </label>
     {% endif %}
     <a href="#" class="ui-button btn link cancel_edit_post">Cancel</a>

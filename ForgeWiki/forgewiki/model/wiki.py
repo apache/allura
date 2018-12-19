@@ -119,6 +119,10 @@ class Page(VersionedArtifact, ActivityObject):
         return 'a wiki page'
 
     @property
+    def type_name(self):
+        return 'wiki page'
+
+    @property
     def activity_extras(self):
         d = ActivityObject.activity_extras.fget(self)
         d.update(summary=self.title)

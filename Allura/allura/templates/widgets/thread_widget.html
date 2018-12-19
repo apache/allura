@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-
+{% set primary_artifact = value.primary() %}
 <div>
   <div class="comment-row">
       {% if limit %}
@@ -30,7 +30,7 @@
             <ul>
               {{widgets.post_thread.display(value=t['post'], children=t['children'],
                   indent=0, show_subject=show_subject,
-                  page=page, limit=limit)}}
+                  page=page, limit=limit, primary_artifact=primary_artifact)}}
             </ul>
             {% endfor %}
           {% endif %}
@@ -61,7 +61,7 @@
           </p>
         </div>
         <div class="grid-17">
-            {{widgets.edit_post.display(submit_text='Post', action=value.url() + 'post')}}
+            {{widgets.edit_post.display(submit_text='Post', action=value.url() + 'post', primary_artifact=primary_artifact)}}
         </div>
       </div>
     </div>

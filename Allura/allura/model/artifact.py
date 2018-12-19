@@ -329,6 +329,14 @@ class Artifact(MappedClass, SearchIndexable):
             snippet_s='',
             deleted_b=self.deleted)
 
+    @property
+    def type_name(self):
+        """
+        :return: a presentation name for this type of artifact
+        :rtype: str
+        """
+        return self.type_s.lower()
+
     def url(self):
         """Return the URL for this Artifact.
 

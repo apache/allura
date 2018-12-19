@@ -164,6 +164,10 @@ class ForumThread(M.Thread):
     first_post = RelationProperty('ForumPost', via='first_post_id')
 
     @property
+    def type_name(self):
+        return 'topic'
+
+    @property
     def status(self):
         if len(self.posts) == 1:
             return self.posts[0].status
