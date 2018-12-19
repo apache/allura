@@ -147,7 +147,9 @@ class Page(VersionedArtifact, ActivityObject):
                     labels=list(self.labels),
                     attachments=self.attachments_for_export() if is_export else self.attachments_for_json())
 
-    def commit(self):
+    def commit(self, subscribe=False):
+        if subscribe:
+            self.subscribe()
         ss = VersionedArtifact.commit(self)
         session(self).flush()
         if self.version > 1:

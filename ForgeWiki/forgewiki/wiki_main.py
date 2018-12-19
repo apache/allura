@@ -714,7 +714,9 @@ class PageController(BaseController, FeedController):
     def update(self, title=None, text=None,
                labels=None,
                viewable_by=None,
-               new_viewable_by=None, **kw):
+               new_viewable_by=None,
+               subscribe=False,
+               **kw):
         activity_verb = 'created'
         if not title:
             flash('You must provide a title for the page.', 'error')
@@ -745,7 +747,7 @@ class PageController(BaseController, FeedController):
             self.page.labels = labels.split(',')
         else:
             self.page.labels = []
-        self.page.commit()
+        self.page.commit(subscribe=subscribe)
         g.spam_checker.check(title + u'\n' + text, artifact=self.page,
                              user=c.user, content_type='wiki')
         g.director.create_activity(c.user, activity_verb, self.page,

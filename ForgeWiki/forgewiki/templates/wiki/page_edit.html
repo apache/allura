@@ -67,9 +67,15 @@
 	<div class="grid-14" style="margin-left:0">
 		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
   </div>
-  <div class="grid-19">
+  <div class="grid-20">
     <input type="submit" value="Save">
     <input type="reset" value="Cancel">
+    {% if c.user and c.user != c.user.anonymous() %}
+      {# TODO: if not already subscribed to whole tool #}
+      <label class="subscribe">
+        <input type="checkbox" checked name="subscribe">Subscribe to this wiki page
+      </label>
+    {% endif %}
 	</div>
     {{lib.csrf_token()}}
 </form>
