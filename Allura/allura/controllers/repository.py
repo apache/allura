@@ -45,7 +45,7 @@ from allura.lib.diff import HtmlSideBySideDiff
 from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
-from allura.lib.widgets.repo import SCMMergeRequestWidget
+from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestWidgetNew
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.controllers import AppDiscussionController
@@ -162,7 +162,7 @@ class RepoRootController(BaseController, FeedController):
             target_branches = [
                 b.name
                 for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
-        return SCMMergeRequestWidget(
+        return SCMMergeRequestWidgetNew(
             source_branches=source_branches,
             target_branches=target_branches)
 
@@ -197,7 +197,8 @@ class RepoRootController(BaseController, FeedController):
                 source_branch=kw['source_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
-            mr.subscribe(user=c.user)
+            if kw.get('subscribe'):
+                mr.subscribe(user=c.user)
             M.Notification.post(
                 mr, 'merge_request',
                 subject=mr.email_subject,

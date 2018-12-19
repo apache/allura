@@ -82,6 +82,16 @@ class SCMMergeRequestWidget(ff.ForgeForm):
         return result
 
 
+class SCMMergeRequestWidgetNew(SCMMergeRequestWidget):
+
+    @property
+    def buttons(self):
+        # add to after the default submit button
+        return ew_core.NameList([
+            ew.Checkbox(name='subscribe', label='Subscribe to this merge request', value=True),
+        ])
+
+
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):
 
     class fields(ew_core.NameList):

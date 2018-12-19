@@ -818,6 +818,10 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return 'merge request #%s' % self.request_number
 
     @property
+    def type_name(self):
+        return 'merge request'
+
+    @property
     def activity_extras(self):
         d = ActivityObject.activity_extras.fget(self)
         d.update(summary=self.summary)
