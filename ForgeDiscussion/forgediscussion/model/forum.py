@@ -185,6 +185,19 @@ class ForumThread(M.Thread):
     def primary(self):
         return self
 
+    def subscribed(self, user=None, include_parents=True):
+        subbed = super(ForumThread, self).subscribed(user=user, include_parents=include_parents)
+        if subbed:
+            return subbed
+        if include_parents:
+            if user is None:
+                user = c.user
+            forum = self.discussion
+            forum_subscribed = M.Mailbox.subscribed(artifact=forum, user_id=user._id)
+            if forum_subscribed:
+                return True
+        return False
+
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
         post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id, **kw)
         if not self.first_post_id:

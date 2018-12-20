@@ -40,7 +40,7 @@
         {% if not c.user.is_anonymous() and allow_subscriptions %}
           <td>
             <input type="checkbox" name="threads-{{loop.index0}}.subscription"
-                   {%- if thread.subscribed() or forum_subscribed or tool_subscribed %} checked="checked" {% endif -%}
+                   {%- if thread.subscribed(include_parents=False) or forum_subscribed or tool_subscribed %} checked="checked" {% endif -%}
                    {%- if forum_subscribed or tool_subscribed %}
                         disabled title="You are subscribed to this entire {% if forum_subscribed %}Forum. Unsubscribe with mail icon in upper right, or on Account - Subscriptions page.
                             {%- else %}Discussion tool.  Unsubscribe on Account - Subscriptions page.{% endif %}"

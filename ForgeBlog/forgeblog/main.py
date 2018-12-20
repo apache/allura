@@ -296,7 +296,9 @@ class RootController(BaseController, FeedController):
         post = dict(
             state='published')
         c.form = W.new_post_form
-        return dict(post=post)
+        return dict(post=post,
+                    subscribed_to_tool=M.Mailbox.subscribed(),
+                    )
 
     @memorable_forget()
     @expose()
@@ -390,7 +392,9 @@ class PostController(BaseController, FeedController):
         self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         c.form = W.edit_post_form
         c.attachment_list = W.attachment_list
-        return dict(post=self.post)
+        return dict(post=self.post,
+                    subscribed_to_tool=M.Mailbox.subscribed(),
+                    )
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_history.html')

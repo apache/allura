@@ -902,7 +902,11 @@ class RootController(BaseController, FeedController):
         self.rate_limit(TM.Ticket, 'Ticket creation', redir='..')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew', '').strip()
-        return dict(action=c.app.config.url() + 'save_ticket', help_msg=help_msg, url_params=kw)
+        return dict(action=c.app.config.url() + 'save_ticket',
+                    help_msg=help_msg,
+                    url_params=kw,
+                    subscribed_to_tool=M.Mailbox.subscribed(),
+                    )
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self, **kw):

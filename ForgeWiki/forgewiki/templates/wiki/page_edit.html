@@ -70,8 +70,7 @@
   <div class="grid-20">
     <input type="submit" value="Save">
     <input type="reset" value="Cancel">
-    {% if c.user and c.user != c.user.anonymous() %}
-      {# TODO: if not already subscribed to whole tool #}
+    {% if c.user and c.user != c.user.anonymous() and not subscribed_to_tool %}
       <label class="subscribe">
         <input type="checkbox" checked name="subscribe">Subscribe to this wiki page
       </label>

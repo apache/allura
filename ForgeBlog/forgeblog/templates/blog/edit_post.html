@@ -26,6 +26,6 @@
 
 {% block content %}
     <div class="content">
-      {{c.form.display(value=post, action='save')}}
+      {{c.form.display(value=post, action='save', subscribed_to_tool=subscribed_to_tool)}}
     </div>
 {% endblock %}

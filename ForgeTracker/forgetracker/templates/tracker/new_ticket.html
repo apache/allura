@@ -25,7 +25,7 @@
 {% block edit_box %}
 <div class="editbox">
   <div class="form_holder">
-      {{c.ticket_form.display(action=action, value=url_params, help_msg=help_msg)}}
+      {{c.ticket_form.display(action=action, value=url_params, help_msg=help_msg, subscribed_to_tool=subscribed_to_tool)}}
   </div>
 </div>
 {% endblock %}

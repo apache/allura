@@ -34,11 +34,10 @@ from allura.lib import security
 from allura.lib import utils
 from allura.lib import plugin
 from allura.lib import exceptions as forge_exc
-
+from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
 from .session import main_orm_session
 from .session import project_orm_session
-
 from .session import artifact_orm_session
 from .index import ArtifactReference
 from .types import ACL, MarkdownCache
@@ -233,16 +232,22 @@ class Artifact(MappedClass, SearchIndexable):
             app_config_id=self.app_config._id,
             artifact_index_id=self.index_id())
 
-    def subscribed(self, user=None):
+    @memoize  # since its called many times from edit_post.html within threaded comments
+    def subscribed(self, user=None, include_parents=True):
         from allura.model import Mailbox
         if user is None:
             user = c.user
-        return Mailbox.subscribed(
-            user_id=user._id,
-            project_id=self.app_config.project_id,
-            app_config_id=self.app_config._id,
-            artifact=self,
-        )
+        user_proj_app_q = dict(user_id=user._id,
+                               project_id=self.app_config.project_id,
+                               app_config_id=self.app_config._id)
+        art_subscribed = Mailbox.subscribed(artifact=self, **user_proj_app_q)
+        if art_subscribed:
+            return True
+        if include_parents:
+            tool_subscribed = Mailbox.subscribed(**user_proj_app_q)
+            if tool_subscribed:
+                return True
+        return False
 
     def primary(self):
         """If an artifact is a "secondary" artifact (discussion of a ticket, for

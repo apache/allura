@@ -45,7 +45,7 @@ from allura.lib.diff import HtmlSideBySideDiff
 from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
-from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestWidgetNew
+from allura.lib.widgets.repo import SCMMergeRequestWidget
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.controllers import AppDiscussionController
@@ -162,9 +162,12 @@ class RepoRootController(BaseController, FeedController):
             target_branches = [
                 b.name
                 for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
-        return SCMMergeRequestWidgetNew(
+            subscribed_to_upstream = M.Mailbox.subscribed()
+        return SCMMergeRequestWidget(
             source_branches=source_branches,
-            target_branches=target_branches)
+            target_branches=target_branches,
+            show_subscribe_checkbox=not subscribed_to_upstream,
+        )
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/request_merge.html')

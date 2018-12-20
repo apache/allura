@@ -63,6 +63,7 @@ class SCMTreeWidget(ew_core.Widget):
 class SCMMergeRequestWidget(ff.ForgeForm):
     source_branches = []
     target_branches = []
+    show_subscribe_checkbox = False
 
     @property
     def fields(self):
@@ -81,15 +82,13 @@ class SCMMergeRequestWidget(ff.ForgeForm):
             ffw.MarkdownEdit(name='description')]
         return result
 
-
-class SCMMergeRequestWidgetNew(SCMMergeRequestWidget):
-
     @property
     def buttons(self):
-        # add to after the default submit button
-        return ew_core.NameList([
-            ew.Checkbox(name='subscribe', label='Subscribe to this merge request', value=True),
-        ])
+        # add things after the default submit button
+        fields = ew_core.NameList()
+        if self.show_subscribe_checkbox:
+            fields.append(ew.Checkbox(name='subscribe', label='Subscribe to this merge request', value=True))
+        return fields
 
 
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):

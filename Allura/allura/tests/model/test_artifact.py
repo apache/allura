@@ -299,3 +299,31 @@ def test_feed_from_username():
            title='Something')
     ThreadLocalORMSession.flush_all()
     assert_equal(len(M.Feed.from_username('johndoe')), 1)
+
+
+@with_setup(setUp, tearDown)
+def test_subscribed():
+    pg = WM.Page(title='TestPage4a')
+    assert pg.subscribed(include_parents=True)  # tool is subscribed to admins by default
+    assert not pg.subscribed(include_parents=False)
+
+
+@with_setup(setUp, tearDown)
+def test_subscribed_no_tool_sub():
+    pg = WM.Page(title='TestPage4b')
+    M.Mailbox.unsubscribe(user_id=c.user._id,
+                          project_id=c.project._id,
+                          app_config_id=c.app.config._id)
+    pg.subscribe()
+    assert pg.subscribed(include_parents=True)
+    assert pg.subscribed(include_parents=False)
+
+
+@with_setup(setUp, tearDown)
+def test_not_subscribed():
+    pg = WM.Page(title='TestPage4c')
+    M.Mailbox.unsubscribe(user_id=c.user._id,
+                          project_id=c.project._id,
+                          app_config_id=c.app.config._id)
+    assert not pg.subscribed(include_parents=True)
+    assert not pg.subscribed(include_parents=False)

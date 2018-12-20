@@ -39,6 +39,7 @@ from allura.lib.decorators import require_post, memorable_forget
 from allura.controllers import BaseController, DispatchIndex
 from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedArgs, FeedController
+from allura import model as M
 
 from .forum import ForumController
 from forgediscussion import import_support
@@ -73,8 +74,6 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/index.html')
     def index(self, new_forum=False, **kw):
-        c.new_topic = self.W.new_topic
-        c.new_topic = self.W.new_topic
         c.add_forum = self.W.add_forum
         c.announcements_table = self.W.announcements_table
         announcements = model.ForumThread.query.find(dict(
@@ -111,15 +110,18 @@ class RootController(BaseController, DispatchIndex, FeedController):
                                              deleted=False))
         c.new_topic = self.W.new_topic
         my_forums = []
-        forum_name = h.really_unicode(unquote(
-            forum_name)) if forum_name else None
+        forum_name = h.really_unicode(unquote(forum_name)) if forum_name else None
         current_forum = None
         for f in forums:
             if forum_name == f.shortname:
                 current_forum = f
             if has_access(f, 'post')():
                 my_forums.append(f)
-        return dict(forums=my_forums, current_forum=current_forum)
+        return dict(forums=my_forums,
+                    current_forum=current_forum,
+                    subscribed=M.Mailbox.subscribed(artifact=current_forum),
+                    subscribed_to_tool=M.Mailbox.subscribed(),
+                    )
 
     @memorable_forget()
     @h.vardec
