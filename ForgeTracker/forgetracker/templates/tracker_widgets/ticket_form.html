@@ -128,7 +128,7 @@
     {{widget.display_field_by_name('submit')|safe}}
     {% if c.user and c.user != c.user.anonymous() and not ticket and not subscribed_to_tool|default %}
         <label class="subscribe">
-          <input type="checkbox" checked name="ticket_form.subscribe">Subscribe to this ticket
+          <input type="checkbox" checked name="ticket_form.subscribe" class="subscribe-checkbox">Subscribe to this ticket
         </label>
     {% endif %}
     <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>

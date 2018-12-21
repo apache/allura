@@ -53,7 +53,7 @@
     {% endfor %}
     {% if c.user and c.user != c.user.anonymous() and widget.fields.subscribe|default and not subscribed_to_tool %}
       <label class="subscribe">
-        <input type="checkbox" checked name="subscribe">Subscribe to this blog post
+        <input type="checkbox" checked name="subscribe" class="subscribe-checkbox">Subscribe to this blog post
       </label>
     {% endif %}
     <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>

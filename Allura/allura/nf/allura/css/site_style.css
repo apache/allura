@@ -2630,6 +2630,21 @@ div.attachment_item{
 .edit_post_form.reply .arw {
   display: none;
 }
+.edit_markdown_form .btn.link.attachment_form_add_button {
+    margin: 0 0 5px 5px;
+}
+.subscribe-checkbox {
+    margin-top: 7px;
+}
+.pad .editbox label.subscribe {
+    font-weight: normal;  /* override .pad .editbox label */
+}
+.btn.link.cancel_edit_post,
+.btn.link.cancel_form
+{
+    float:right;
+    margin-right: 35px;
+}
 
 #create_new_topic select {
   width: auto;
@@ -2918,6 +2933,10 @@ h1.title .viewer:hover {
 
 #forge_wiki_browse tr.deleted a {
   color: red;
+}
+#page_edit_form input[value=Cancel] {
+    float: right;
+    margin-right: 40px;
 }
 
 .scm-branch-label, .scm-tag-label {

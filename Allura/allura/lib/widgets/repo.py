@@ -87,7 +87,8 @@ class SCMMergeRequestWidget(ff.ForgeForm):
         # add things after the default submit button
         fields = ew_core.NameList()
         if self.show_subscribe_checkbox:
-            fields.append(ew.Checkbox(name='subscribe', label='Subscribe to this merge request', value=True))
+            fields.append(ew.Checkbox(name='subscribe', label='Subscribe to this merge request', value=True,
+                                      attrs={'class': 'subscribe-checkbox'}))
         return fields
 
 

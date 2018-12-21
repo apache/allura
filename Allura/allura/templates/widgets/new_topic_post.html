@@ -52,7 +52,7 @@
       {% if c.user and c.user != c.user.anonymous() and not (subscribed or subscribed_to_tool) %}
         {# subscribed is per-forum and won't change if they change the forum dropdown value, but better than nothing? :( #}
         <label class="subscribe">
-          <input type="checkbox" checked name="subscribe">Subscribe to this topic
+          <input type="checkbox" checked name="subscribe" class="subscribe-checkbox">Subscribe to this topic
         </label>
       {% endif %}
       <a href=".." class="btn link cancel_form">Cancel</a>
