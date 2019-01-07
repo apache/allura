@@ -22,6 +22,7 @@ from datetime import datetime
 from urllib import quote, unquote
 from collections import defaultdict, OrderedDict
 
+from ming.utils import LazyProperty
 from paste.deploy.converters import asbool
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -648,7 +649,10 @@ class CommitBrowser(BaseController):
         c.revision = revision
         if self._commit is None:
             raise exc.HTTPNotFound
-        self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
+
+    @LazyProperty
+    def tree(self):
+        return self.TreeBrowserClass(self._commit, tree=self._commit.tree)
 
     @expose('jinja:allura:templates/repo/commit.html')
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),

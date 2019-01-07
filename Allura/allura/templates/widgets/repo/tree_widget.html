@@ -40,7 +40,7 @@
     {% if not ls %}
     <tr><td colspan="5">&mdash; No files &mdash;</td></tr>
    {% endif %}
-    {% for dirent in tree.ls() %}
+    {% for dirent in ls %}
     <tr>
       <td class="nowrap">
         {% if dirent.kind == 'DIR' %}
