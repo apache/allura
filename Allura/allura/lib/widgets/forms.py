@@ -649,9 +649,9 @@ class AddTroveCategoryForm(ForgeForm):
             attrs={},
             validator=fev.UnicodeString(not_empty=True))
         shortname = ew.TextField(
-            label="Short Name",
+            label="Short name",
             validator=fev.UnicodeString(),
-            attrs={'placeholder': 'optional'})
+            attrs={'placeholder': 'optional; unique identifier'})
 
     def display(self, **kw):
         upper_category = kw.get('uppercategory_id', 0)
