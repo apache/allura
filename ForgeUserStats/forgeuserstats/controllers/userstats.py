@@ -14,17 +14,22 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from datetime import datetime
+import re
 
 from tg import expose, validate, redirect
 from tg.decorators import with_trailing_slash
-from datetime import datetime
+from pylons import tmpl_context as c
+from webob import exc
+
 from allura.controllers import BaseController
 import allura.model as M
-from forgeuserstats.model.stats import UserStats
-from pylons import tmpl_context as c
 from allura.lib.security import require_access
-from forgeuserstats.widgets.forms import StatsPreferencesForm
 from allura.lib.decorators import require_post
+
+from forgeuserstats.model.stats import UserStats
+from forgeuserstats.widgets.forms import StatsPreferencesForm
+
 
 stats_preferences_form = StatsPreferencesForm()
 
@@ -33,7 +38,9 @@ class ForgeUserStatsCatController(BaseController):
 
     @expose()
     def _lookup(self, category, *remainder):
-        cat = M.TroveCategory.query.get(shortname=category)
+        cat = M.TroveCategory.query.get(shortname=category, fullpath=re.compile(r'^Topic :: '))
+        if not cat:
+            raise exc.HTTPNotFound
         return ForgeUserStatsCatController(category=cat), remainder
 
     def __init__(self, category=None):
