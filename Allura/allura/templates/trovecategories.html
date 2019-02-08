@@ -78,3 +78,14 @@
 
   </div>
 {% endblock %}
+
+
+{% block extra_js %}
+<script type="text/javascript">
+$(function() {
+    $("input[value=Remove]").click(function(){
+        return confirm('Are you sure?  Before you remove it, make sure no projects use this category any more.');
+    });
+});
+</script>
+{% endblock %}
