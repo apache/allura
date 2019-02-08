@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+import re
 from collections import OrderedDict
 
 from tg import expose, flash, redirect, validate, config
@@ -128,25 +129,31 @@ class TroveCategoryController(BaseController):
             [el.trove_cat_id for el in M.TroveCategory.query.find()]) + 1
         shortname = h.slugify(shortname or name)[1]
 
-        oldcat = M.TroveCategory.query.get(shortname=shortname)
-        if oldcat:
-            flash('Category "%s" with shortname "%s" already exists.  Try a different, unique shortname' % (name, shortname), "error")
+        if upper:
+            trove_type = upper.fullpath.split(' :: ')[0]
+            fullpath_re = re.compile(r'^{} :: '.format(re.escape(trove_type)))  # e.g. scope within "Topic :: "
         else:
-            category = M.TroveCategory(
+            # no parent, so making a top-level.  Don't limit fullpath_re, so enforcing global uniqueness
+            fullpath_re = re.compile(r'')
+        oldcat = M.TroveCategory.query.get(shortname=shortname, fullpath=fullpath_re)
+        if oldcat:
+            flash('A category with shortname "%s" already exists (%s).  Try a different, unique shortname'
+                  % (shortname, oldcat.fullpath), "error")
+            redir_params = u'?categoryname={}&shortname={}'.format(name, shortname)
+        else:
+            M.TroveCategory(
                 trove_cat_id=newid,
                 trove_parent_id=upper_id,
                 fullname=name,
                 shortname=shortname,
                 fullpath=path,
                 show_as_skill=show_as_skill)
-            if category:
-                flash('Category "%s" successfully created.' % name)
-            else:
-                flash('An error occured while crearing the category.', "error")
+            flash('Category "%s" successfully created.' % name)
+            redir_params = ''
         if upper:
-            redirect(u'/categories/{}/?categoryname={}&shortname={}'.format(upper.trove_cat_id, name, shortname))
+            redirect(u'/categories/{}/{}'.format(upper.trove_cat_id, redir_params))
         else:
-            redirect(u'/categories/?categoryname={}&shortname={}'.format(name, shortname))
+            redirect(u'/categories/{}'.format(redir_params))
 
     @expose()
     @require_post()
