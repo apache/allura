@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-wip-us.apache.org/repos/asf/allura.git"
+    "url": "https://gitbox.apache.org/repos/asf/allura.git/"
   },
   "author": "Apache Allura team",
   "license": "Apache-2.0",

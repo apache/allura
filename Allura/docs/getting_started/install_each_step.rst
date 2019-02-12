@@ -103,7 +103,7 @@ Now we can get down to actually getting the Allura code and dependencies downloa
 
     (env-allura)~$ mkdir src
     (env-allura)~$ cd src
-    (env-allura)~/src$ git clone https://git-wip-us.apache.org/repos/asf/allura.git allura
+    (env-allura)~/src$ git clone https://gitbox.apache.org/repos/asf/allura.git/
 
 If you already reading this file from an Allura release or checkout, you're ready to continue.
 
