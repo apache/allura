@@ -405,6 +405,7 @@ class Globals(object):
                 cssclass='codehilite', linenos=False)
         else:
             formatter = self.pygments_formatter
+        text = h.really_unicode(text)
         if lexer is None:
             try:
                 lexer = pygments.lexers.get_lexer_for_filename(
@@ -412,7 +413,6 @@ class Globals(object):
             except pygments.util.ClassNotFound:
                 # no highlighting, but we should escape, encode, and wrap it in
                 # a <pre>
-                text = h.really_unicode(text)
                 text = cgi.escape(text)
                 return h.html.literal(u'<pre>' + text + u'</pre>')
         else:
