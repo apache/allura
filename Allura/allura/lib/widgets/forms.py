@@ -151,7 +151,12 @@ class PasswordChangeBase(ForgeForm):
             ew.PasswordField(
                 name='pw',
                 label='New Password',
-                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
+                attrs=dict(
+                    minlength=asint(tg.config.get('auth.min_password_len', 6)),
+                    maxlength=asint(tg.config.get('auth.max_password_len', 30)),
+                    required=True,
+                    autocomplete='new-password',
+                ),
                 validator=fev.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -159,7 +164,12 @@ class PasswordChangeBase(ForgeForm):
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=fev.UnicodeString(not_empty=True),
+                attrs=dict(
+                    required=True,
+                    autocomplete='new-password',
+                )
+            ),
         ]
 
     @ew_core.core.validator
@@ -172,6 +182,7 @@ class PasswordChangeBase(ForgeForm):
     def resources(self):
         yield ew.JSLink('js/password-validator.js')
 
+
 class PasswordChangeForm(PasswordChangeBase):
 
     @property
@@ -180,11 +191,21 @@ class PasswordChangeForm(PasswordChangeBase):
             ew.PasswordField(
                 name='oldpw',
                 label='Old Password',
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=fev.UnicodeString(not_empty=True),
+                attrs=dict(
+                    required=True,
+                    autocomplete='current-password',
+                ),
+            ),
             ew.PasswordField(
                 name='pw',
                 label='New Password',
-                attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
+                attrs=dict(
+                    minlength=asint(tg.config.get('auth.min_password_len', 6)),
+                    maxlength=asint(tg.config.get('auth.max_password_len', 30)),
+                    required=True,
+                    autocomplete='new-password',
+                ),
                 validator=fev.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
@@ -192,7 +213,12 @@ class PasswordChangeForm(PasswordChangeBase):
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=fev.UnicodeString(not_empty=True),
+                attrs=dict(
+                    required=True,
+                    autocomplete='new-password',
+                ),
+            ),
             ew.HiddenField(name='return_to'),
         ]
 

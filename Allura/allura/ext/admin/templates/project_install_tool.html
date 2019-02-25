@@ -42,7 +42,8 @@
     <div class="grid-13">
         <input id="id_url_input" type="text" name="new.mount_point"
                title="The url for this tool relative to {{ full_url }} " class="new_mount_point validate_input"
-               value="{{ tool.default_mount_point }}" data-regex="{{ mount_point_re }}" maxlength="{{ max_length}}">
+               value="{{ tool.default_mount_point }}" data-regex="{{ mount_point_re }}" maxlength="{{ max_length}}"
+               autocapitalize="none">
         <span id="url_error_message" class="modal-form-error"></span>
         <p><span id="full-url-preview">
             {{ full_url }}<strong style="color:orange"><span id="input-safe-preview"></span></strong>
