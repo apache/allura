@@ -41,7 +41,7 @@ from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib import widgets as w
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.diff import HtmlSideBySideDiff
 from allura.lib.security import require_access, require_authenticated, has_access
 from allura.lib.widgets import form_fields as ffw
@@ -186,6 +186,7 @@ class RepoRootController(BaseController, FeedController):
             'target_branch': target_branch,
         }
 
+    @memorable_forget()
     @expose()
     @require_post()
     def do_request_merge(self, **kw):
@@ -457,6 +458,7 @@ class MergeRequestController(object):
             'summary': self.req['summary']
         }
 
+    @memorable_forget()
     @expose()
     @require_post()
     def do_request_merge_edit(self, **kw):
