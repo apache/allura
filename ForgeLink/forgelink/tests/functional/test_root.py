@@ -16,7 +16,8 @@
 #       under the License.
 
 import json
-from nose.tools import assert_equal
+
+from nose.tools import assert_equal, assert_in
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -113,3 +114,15 @@ class TestConfigOptions(TestController):
         assert_equal(flash['status'], 'error')
         assert_equal(flash['message'], 'url: That is not a valid URL')
         self.assert_url('link', None)
+
+    @td.with_link
+    def test_menu_url(self):
+        resp = self.app.get('/p/test/admin/')
+        assert_in('/p/test/link/', str(resp.html.find(id='top_nav')))
+
+        response = self.app.get('/admin/link/options')
+        response.form['url'] = 'http://foo.bar/baz'
+        response.form.submit()
+
+        resp = self.app.get('/p/test/admin/')
+        assert_in('http://foo.bar/baz', str(resp.html.find(id='top_nav')))

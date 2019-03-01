@@ -82,7 +82,7 @@ class ForgeLinkApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_label
-        return [SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
+        return [SitemapEntry(menu_id, self.config.options.get('url') or '.')]
 
     def sidebar_menu(self):
         return []
