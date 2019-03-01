@@ -34,7 +34,7 @@ class TestRootController(TestController):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.com/'
         response.form.submit()
-        redir = self.app.get('/link/index', status=301)
+        redir = self.app.get('/link/index', status=302)
         assert_equal(redir.location, 'http://www.google.com/')
 
     @td.with_link
@@ -42,7 +42,7 @@ class TestRootController(TestController):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.com/'
         response.form.submit()
-        redir = self.app.get('/link', status=301)
+        redir = self.app.get('/link', status=302)
         assert_equal(redir.location, 'http://www.google.com/')
 
     @td.with_link
@@ -50,7 +50,7 @@ class TestRootController(TestController):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.com/'
         response.form.submit()
-        redir = self.app.get('/link/service', status=301)
+        redir = self.app.get('/link/service', status=302)
         assert_equal(redir.location, 'http://www.google.com/service')
 
     @td.with_link
@@ -58,7 +58,7 @@ class TestRootController(TestController):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.de/search?q='
         response.form.submit()
-        redir = self.app.get('/link/help', status=301)
+        redir = self.app.get('/link/help', status=302)
         assert_equal(redir.location, 'http://www.google.de/search?q=help')
 
 

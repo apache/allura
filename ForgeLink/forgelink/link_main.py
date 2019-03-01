@@ -20,7 +20,7 @@ import logging
 import json
 
 # Non-stdlib imports
-from tg import expose, jsonify
+from tg import expose, jsonify, redirect
 from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators as fev
@@ -29,7 +29,6 @@ from formencode import validators as fev
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.security import require_access
-from allura.lib.utils import permanent_redirect
 from allura import model as M
 from allura.controllers import BaseController
 from allura.controllers.rest import AppRestControllerMixin
@@ -121,7 +120,7 @@ class RootController(BaseController):
     def index(self, **kw):
         url = c.app.config.options.get('url')
         if url:
-            permanent_redirect(url)
+            redirect(url)
         return dict()
 
     @expose()
@@ -129,7 +128,7 @@ class RootController(BaseController):
         path = "/".join(remainder)
         url = c.app.config.options.get('url')
         if url:
-            permanent_redirect(url + h.really_unicode(path).encode('utf-8'))
+            redirect(url + h.really_unicode(path).encode('utf-8'))
         return dict()
 
 
