@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y \
     sudo
 
 # up-to-date version of node & npm
-RUN curl --silent --location https://deb.nodesource.com/setup_4.x | sudo bash - && \
+RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
     apt-get install --yes nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
