@@ -101,17 +101,17 @@ class CreateSitemapFiles(ScriptTask):
         locs = []
         file_count = 0
 
-        nbhd_id = []
-        if options.neighborhood:
-            prefix = ['/%s/' % n for n in options.neighborhood]
-            nbhd_id = [nbhd._id for nbhd in M.Neighborhood.query.find({'url_prefix': {'$in': prefix}})]
+        excl_nbhd_ids = []
+        if options.exclude_neighborhoods:
+            prefix = ['/%s/' % n for n in options.exclude_neighborhoods]
+            excl_nbhd_ids = [nbhd._id for nbhd in M.Neighborhood.query.find({'url_prefix': {'$in': prefix}})]
 
         # write sitemap files, MAX_SITEMAP_URLS per file
-        for chunk in utils.chunked_find(M.Project, {'deleted': False, 'neighborhood_id': {'$nin': nbhd_id}}):
+        for chunk in utils.chunked_find(M.Project, {'deleted': False, 'neighborhood_id': {'$nin': excl_nbhd_ids}}):
             for p in chunk:
                 c.project = p
                 try:
-                    for s in p.sitemap(excluded_tools=['git', 'hg', 'svn']):
+                    for s in p.sitemap(excluded_tools=options.exclude_tools):
                         url = config['base_url'] + s.url if s.url[0] == '/' else s.url
                         locs.append({'url': url,
                                      'date': p.last_updated.strftime("%Y-%m-%d")})
@@ -161,9 +161,13 @@ class CreateSitemapFiles(ScriptTask):
                             help='Number of URLs per sitemap file. [default: %(default)s, max: ' +
                             str(MAX_SITEMAP_URLS) + ']',
                             action=Validate)
-        parser.add_argument('-n', '--neighborhood', dest='neighborhood',
+        parser.add_argument('--exclude-neighborhood', '-n', '--neighborhood', dest='exclude_neighborhoods',
+                            help="URL prefix of excluded neighborhood(s)  Example: u",
+                            default=None, nargs='*', metavar='N')
+        parser.add_argument('--exclude-tools', dest='exclude_tools',
                             help="URL prefix of excluded neighborhood(s)",
-                            default=None, nargs='*')
+                            default=['link', 'git', 'hg', 'svn'],
+                            nargs='*', metavar='TOOL')
         parser.add_argument('--url-dir', dest='url_dir',
                             default='/allura_sitemap',
                             help='URL directory in which the files will be served from')
@@ -172,6 +176,7 @@ class CreateSitemapFiles(ScriptTask):
 
 def get_parser():
     return CreateSitemapFiles.parser()
+
 
 if __name__ == '__main__':
     CreateSitemapFiles.main()
