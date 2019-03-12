@@ -21,14 +21,14 @@
 <ul class="dropdown">
   {% for s in c.project.grouped_navbar_entries() %}
     <li class="{% if s.matches_url(request) %}selected{% endif %}">
-        <a href="{{s.url}}" class="tool-{{(s.tool_name or 'admin').lower()}}-32">
+        <a href="{{s.url}}" class="tool-{{(s.tool_name or 'admin').lower()}}-32" {{ s.extra_html_attrs|xmlattr }}>
             {{s.label}}
         </a>
         {% set grouped_tool_count = s.matching_urls|length %}
         {% if grouped_tool_count %}
             <ul>
                 {%for tool in s.children%}
-                    <li class="{% if tool.matches_url(request) %}selected{% endif %}"><a href="{{tool.url}}">{{tool.label}}</a></li>
+                    <li class="{% if tool.matches_url(request) %}selected{% endif %}"><a href="{{tool.url}}" {{ tool.extra_html_attrs|xmlattr }}>{{tool.label}}</a></li>
                 {%endfor%}
             </ul>
         {% endif %}

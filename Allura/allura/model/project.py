@@ -33,7 +33,6 @@ import formencode as fe
 from webob import exc
 import PIL
 
-from allura.lib.decorators import memoize
 from ming import schema as S
 from ming.utils import LazyProperty
 from ming.orm import ThreadLocalORMSession
@@ -46,8 +45,10 @@ from allura.lib import plugin
 from allura.lib import exceptions
 from allura.lib import security
 from allura.lib import validators as v
+from allura.lib.decorators import memoize
 from allura.lib.security import has_access
 from allura.lib.search import SearchIndexable
+from allura.lib.utils import is_nofollow_url
 from allura.model.types import MarkdownCache
 
 from .session import main_orm_session
@@ -626,6 +627,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     entry = sm.bind_app(app)
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
+                    if is_nofollow_url(entry.url):
+                        entry.extra_html_attrs = {'rel': 'nofollow'}
                     if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
                         ordinal = anchored_tools.keys().index(
                             entry.tool_name.lower())

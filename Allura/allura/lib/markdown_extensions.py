@@ -32,7 +32,7 @@ import emoji
 from . import macro
 from . import helpers as h
 from allura import model as M
-from allura.lib.utils import ForgeHTMLSanitizerFilter
+from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
 
 log = logging.getLogger(__name__)
 
@@ -473,10 +473,8 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             val = val.replace(' ', '%20')
             tag[attr] = val
         if '://' in val:
-            for domain in re.split(r'\s*,\s*', config.get('nofollow_exempt_domains', '')):
-                if domain and domain in val:
-                    return
-            tag['rel'] = 'nofollow'
+            if is_nofollow_url(val):
+                tag['rel'] = 'nofollow'
             return
         if val.startswith('/'):
             return

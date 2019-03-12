@@ -382,3 +382,19 @@ def unique_attachments():
     attachments = [pic1, file1, pic2, file2, pic2, other]
     expected = [file2, other, pic2]
     assert_equal(expected, ua(attachments))
+
+
+def test_is_nofollow_url():
+    with patch.dict(config, {'domain': 'localhost'}):
+        assert not utils.is_nofollow_url('relative/path')
+        assert not utils.is_nofollow_url('http://localhost/path')
+        assert utils.is_nofollow_url('http://google.com/')
+        assert utils.is_nofollow_url('https://google.com/')
+
+    with patch.dict(config, {'domain': 'localhost',
+                             'nofollow_exempt_domains': 'foo.com, bar.io'}):
+        assert utils.is_nofollow_url('http://google.com/')
+        assert utils.is_nofollow_url('http://xfoo.com/')
+        assert not utils.is_nofollow_url('http://foo.com/')
+        assert not utils.is_nofollow_url('http://bar.io/')
+        assert utils.is_nofollow_url('http://bar.iot/')

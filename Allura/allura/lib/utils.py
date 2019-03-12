@@ -30,6 +30,7 @@ import magic
 from itertools import groupby
 import operator as op
 import collections
+from urlparse import urlparse
 
 import tg
 import emoji
@@ -793,3 +794,9 @@ def get_key_from_value(d, val):
         if val in v:
             return k
     return ''
+
+
+def is_nofollow_url(url):
+    url_domain = urlparse(url).hostname
+    ok_domains = re.split(r'\s*,\s*', tg.config.get('nofollow_exempt_domains', '')) + [tg.config['domain']]
+    return url_domain and url_domain not in ok_domains
