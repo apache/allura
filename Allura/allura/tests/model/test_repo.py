@@ -62,39 +62,7 @@ class TestGitLikeTree(object):
 
 
 class RepoImplTestBase(object):
-    def test_commit_run(self):
-        M.repository.CommitRunDoc.m.remove()
-        commit_ids = list(self.repo.all_commit_ids())
-        # simulate building up a commit run from multiple pushes
-        for c_id in commit_ids:
-            crb = M.repo_refresh.CommitRunBuilder([c_id])
-            crb.run()
-            crb.cleanup()
-        runs = M.repository.CommitRunDoc.m.find().all()
-        self.assertEqual(len(runs), 1)
-        run = runs[0]
-        self.assertEqual(run.commit_ids, commit_ids)
-        self.assertEqual(len(run.commit_ids), len(run.commit_times))
-        self.assertEqual(run.parent_commit_ids, [])
-
-    def test_repair_commit_run(self):
-        commit_ids = list(self.repo.all_commit_ids())
-        # simulate building up a commit run from multiple pushes, but skip the
-        # last commit to simulate a broken commit run
-        for c_id in commit_ids[:-1]:
-            crb = M.repo_refresh.CommitRunBuilder([c_id])
-            crb.run()
-            crb.cleanup()
-        # now repair the commitrun by rebuilding with all commit ids
-        crb = M.repo_refresh.CommitRunBuilder(commit_ids)
-        crb.run()
-        crb.cleanup()
-        runs = M.repository.CommitRunDoc.m.find().all()
-        self.assertEqual(len(runs), 1)
-        run = runs[0]
-        self.assertEqual(run.commit_ids, commit_ids)
-        self.assertEqual(len(run.commit_ids), len(run.commit_times))
-        self.assertEqual(run.parent_commit_ids, [])
+    pass
 
 
 class RepoTestBase(unittest.TestCase):

@@ -27,58 +27,8 @@ from allura import model as M
 from allura.controllers.repository import topo_sort
 from allura.model.repository import zipdir, prefix_paths_union
 from allura.model.repo_refresh import (
-    CommitRunDoc,
-    CommitRunBuilder,
     _group_commits,
 )
-from alluratest.controller import setup_unit_test
-
-
-class TestCommitRunBuilder(unittest.TestCase):
-
-    def setUp(self):
-        setup_unit_test()
-        commits = [
-            M.repository.CommitDoc.make(dict(
-                _id=str(i)))
-            for i in range(10)]
-        for p, com in zip(commits, commits[1:]):
-            p.child_ids = [com._id]
-            com.parent_ids = [p._id]
-        for ci in commits:
-            ci.m.save()
-        self.commits = commits
-
-    def test_single_pass(self):
-        crb = CommitRunBuilder(
-            [ci._id for ci in self.commits])
-        crb.run()
-        self.assertEqual(CommitRunDoc.m.count(), 1)
-
-    def test_two_pass(self):
-        crb = CommitRunBuilder(
-            [ci._id for ci in self.commits[:5]])
-        crb.run()
-        crb = CommitRunBuilder(
-            [ci._id for ci in self.commits[5:]])
-        crb.run()
-        self.assertEqual(CommitRunDoc.m.count(), 2)
-        crb.cleanup()
-        self.assertEqual(CommitRunDoc.m.count(), 1)
-
-    def test_svn_like(self):
-        for ci in self.commits:
-            crb = CommitRunBuilder([ci._id])
-            crb.run()
-            crb.cleanup()
-        self.assertEqual(CommitRunDoc.m.count(), 1)
-
-    def test_reversed(self):
-        for ci in reversed(self.commits):
-            crb = CommitRunBuilder([ci._id])
-            crb.run()
-            crb.cleanup()
-        self.assertEqual(CommitRunDoc.m.count(), 1)
 
 
 class TestTopoSort(unittest.TestCase):

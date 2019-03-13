@@ -102,12 +102,6 @@ class RefreshRepo(ScriptTask):
                                 M.repository.LastCommitDoc.m.remove(
                                     dict(commit_id={'$in': ci_ids_chunk}))
 
-                            i = M.repository.CommitRunDoc.m.find(
-                                {"commit_ids": {"$in": ci_ids_chunk}}).count()
-                            if i:
-                                log.info("Deleting %i CommitRunDoc docs...", i)
-                                M.repository.CommitRunDoc.m.remove(
-                                    {"commit_ids": {"$in": ci_ids_chunk}})
                         del ci_ids
 
                     try:

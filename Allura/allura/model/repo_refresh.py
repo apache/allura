@@ -33,7 +33,6 @@ from ming.orm import mapper, session, ThreadLocalORMSession
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.model.repository import CommitDoc
-from allura.model.repository import CommitRunDoc
 from allura.model.repository import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 from allura.model.auth import User
@@ -81,25 +80,6 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         if (i + 1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s',
                      (i + 1), ci._id)
-
-    if repo._refresh_precompute:
-        # Refresh commit runs
-        commit_run_ids = commit_ids
-        # Check if the CommitRuns for the repo are in a good state by checking for
-        # a CommitRunDoc that contains the last known commit. If there isn't one,
-        # the CommitRuns for this repo are in a bad state - rebuild them
-        # entirely.
-        if commit_run_ids != all_commit_ids:
-            last_commit = last_known_commit_id(all_commit_ids, new_commit_ids)
-            log.info('Last known commit id: %s', last_commit)
-            if not CommitRunDoc.m.find(dict(commit_ids=last_commit)).count():
-                log.info('CommitRun incomplete, rebuilding with all commits')
-                commit_run_ids = all_commit_ids
-        log.info('Starting CommitRunBuilder for %s', repo.full_fs_path)
-        rb = CommitRunBuilder(commit_run_ids)
-        rb.run()
-        rb.cleanup()
-        log.info('Finished CommitRunBuilder for %s', repo.full_fs_path)
 
     # Clear any existing caches for branches/tags
     if repo.cached_branches:
@@ -193,122 +173,6 @@ def refresh_children(ci):
         dict(_id={'$in': ci.parent_ids}),
         {'$addToSet': dict(child_ids=ci._id)},
         multi=True)
-
-
-class CommitRunBuilder(object):
-
-    '''Class used to build up linear runs of single-parent commits'''
-
-    def __init__(self, commit_ids):
-        self.commit_ids = commit_ids
-        self.run_index = {}  # by commit ID
-        self.runs = {}          # by run ID
-        self.reasons = {}    # reasons to stop merging runs
-
-    def run(self):
-        '''Build up the runs'''
-        for oids in utils.chunked_iter(self.commit_ids, QSIZE):
-            oids = list(oids)
-            for ci in CommitDoc.m.find(dict(_id={'$in': oids})):
-                if ci._id in self.run_index:
-                    continue
-                self.run_index[ci._id] = ci._id
-                self.runs[ci._id] = CommitRunDoc(dict(
-                    _id=ci._id,
-                    parent_commit_ids=ci.parent_ids,
-                    commit_ids=[ci._id],
-                    commit_times=[ci.authored['date']]))
-            self.merge_runs()
-        log.info('%d runs', len(self.runs))
-        for rid, run in sorted(self.runs.items()):
-            log.info('%32s: %r', self.reasons.get(rid, 'none'), run._id)
-        for run in self.runs.itervalues():
-            run.m.save()
-        return self.runs
-
-    def _all_runs(self):
-        '''Find all runs containing this builder's commit IDs'''
-        runs = {}
-        for oids in utils.chunked_iter(self.commit_ids, QSIZE):
-            oids = list(oids)
-            for run in CommitRunDoc.m.find(dict(commit_ids={'$in': oids})):
-                runs[run._id] = run
-            for run in CommitRunDoc.m.find(dict(parent_commit_ids={'$in': oids})):
-                runs[run._id] = run
-        seen_run_ids = set()
-        runs = runs.values()
-        while runs:
-            run = runs.pop()
-            if run._id in seen_run_ids:
-                continue
-            seen_run_ids.add(run._id)
-            yield run
-            for run in CommitRunDoc.m.find(
-                    dict(commit_ids={'$in': run.parent_commit_ids})):
-                runs.append(run)
-
-    def cleanup(self):
-        '''Delete non-maximal runs and merge any new runs with existing runs'''
-        runs = dict(
-            (run['commit_ids'][0], run)
-            for run in self._all_runs())
-        for rid, run in runs.items():
-            p_cis = run['parent_commit_ids']
-            if len(p_cis) != 1:
-                continue
-            parent_run = runs.get(p_cis[0], None)
-            if parent_run is None:
-                continue
-            run['commit_ids'] += parent_run['commit_ids']
-            run['commit_times'] += parent_run['commit_times']
-            run['parent_commit_ids'] = parent_run['parent_commit_ids']
-            run.m.save()
-            parent_run.m.delete()
-            del runs[p_cis[0]]
-        for run1 in runs.values():
-            # if run1 is a subset of another run, delete it
-            if CommitRunDoc.m.find(dict(commit_ids={'$all': run1.commit_ids},
-                                        _id={'$ne': run1._id})).count():
-                log.info('... delete %r (subset of another run)', run1)
-                run1.m.delete()
-                continue
-            for run2 in CommitRunDoc.m.find(dict(
-                    commit_ids=run1.commit_ids[0])):
-                if run1._id == run2._id:
-                    continue
-                log.info('... delete %r (part of %r)', run2, run1)
-                run2.m.delete()
-
-    def merge_runs(self):
-        '''Find partial runs that may be merged and merge them'''
-        while True:
-            for run_id, run in self.runs.iteritems():
-                if len(run.parent_commit_ids) != 1:
-                    self.reasons[run_id] = '%d parents' % len(
-                        run.parent_commit_ids)
-                    continue
-                p_oid = run.parent_commit_ids[0]
-                p_run_id = self.run_index.get(p_oid)
-                if p_run_id is None:
-                    self.reasons[run_id] = 'parent commit not found'
-                    continue
-                p_run = self.runs.get(p_run_id)
-                if p_run is None:
-                    self.reasons[run_id] = 'parent run not found'
-                    continue
-                if p_run.commit_ids[0] != p_oid:
-                    self.reasons[
-                        run_id] = 'parent does not start with parent commit'
-                    continue
-                run.commit_ids += p_run.commit_ids
-                run.commit_times += p_run.commit_times
-                run.parent_commit_ids = p_run.parent_commit_ids
-                for oid in p_run.commit_ids:
-                    self.run_index[oid] = run_id
-                break
-            else:
-                break
-            del self.runs[p_run_id]
 
 
 def unknown_commit_ids(all_commit_ids):

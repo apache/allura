@@ -681,9 +681,6 @@ class _Test(unittest.TestCase):
 
     def _make_log(self, ci):
         session(ci).flush(ci)
-        rb = M.repo_refresh.CommitRunBuilder([ci._id])
-        rb.run()
-        rb.cleanup()
 
     def setUp(self):
         setup_basic_test()

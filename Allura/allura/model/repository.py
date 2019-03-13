@@ -1018,16 +1018,6 @@ LastCommitDoc = collection(
         commit_id=str)]))
 
 
-# List of commit runs (a run is a linear series of single-parent commits)
-# CommitRunDoc.commit_ids = [ CommitDoc._id, ... ]
-CommitRunDoc = collection(
-    'repo_commitrun', main_doc_session,
-    Field('_id', str),
-    Field('parent_commit_ids', [str], index=True),
-    Field('commit_ids', [str], index=True),
-    Field('commit_times', [datetime]))
-
-
 class RepoObject(object):
 
     def __repr__(self):  # pragma no cover
