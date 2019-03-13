@@ -22,6 +22,7 @@
 import tempfile
 import json
 import os
+from operator import attrgetter
 
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
@@ -69,7 +70,9 @@ class TestBulkExport(TestDiscussionApiBase):
     def test_export_with_attachments(self):
         project = M.Project.query.get(shortname='test')
         discussion = project.app_instance('discussion')
-        post = Forum.query.get(shortname='general').sorted_threads[0].first_post
+        thread = sorted(Forum.query.get(shortname='general').threads,
+                        key=attrgetter('last_post_date'))[-1]
+        post = thread.first_post
         test_file1 = FieldStorage()
         test_file1.name = 'file_info'
         test_file1.filename = 'test_file'
