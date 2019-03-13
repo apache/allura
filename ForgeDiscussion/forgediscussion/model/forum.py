@@ -59,16 +59,6 @@ class Forum(M.Discussion):
     def thread_class(cls):
         return ForumThread
 
-    @LazyProperty
-    def sorted_threads(self):
-        threads = self.thread_class().query.find(dict(discussion_id=self._id))
-        threads = threads.sort([('last_post_date', pymongo.DESCENDING)]).all()
-        sorted_threads = chain(
-            (t for t in threads if 'Announcement' in t.flags),
-            (t for t in threads if 'Sticky' in t.flags and 'Announcement' not in t.flags),
-            (t for t in threads if 'Sticky' not in t.flags and 'Announcement' not in t.flags))
-        return list(sorted_threads)
-
     @property
     def parent(self):
         return Forum.query.get(_id=self.parent_id)
