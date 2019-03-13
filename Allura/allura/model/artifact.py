@@ -968,6 +968,8 @@ class Feed(MappedClass):
             feed = RssFeed(**d)
         limit, page = h.paging_sanitizer(limit or 10, page)
         query = defaultdict(dict)
+        if callable(q):
+            q = q(since, until, page, limit)
         query.update(q)
         if since is not None:
             query['pubdate']['$gte'] = since
