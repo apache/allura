@@ -35,6 +35,15 @@ class FeedArgs(object):
     """
 
     def __init__(self, query, title, url, description=None):
+        """
+        :param query: mongo criteria to query the Feed collection.
+                      Pagination & filter criteria will be added in automatically
+                      Can be a function to return criteria, which will be passed args (since, until, page, limit) for
+                        advanced optimization.
+        :param title: feed title
+        :param url: feed's own url
+        :param description: feed description
+        """
         self.query = query
         self.title = title
         self.url = url

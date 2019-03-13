@@ -19,6 +19,7 @@ from urllib import unquote
 from datetime import datetime
 import logging
 
+import pymongo
 from tg import expose, redirect, validate, request, flash, response
 from tg.decorators import with_trailing_slash, without_trailing_slash, before_render, before_validate
 from decorator import decorator
@@ -118,9 +119,18 @@ class DiscussionController(BaseController, FeedController):
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
+        def query(since, until, page, limit, **kwargs):
+            if not since and not until and not page:
+                # simplest default case, so make the threads list shorter by grabbing only needed ones
+                discussion_threads = self.discussion.thread_class().query.find(dict(
+                    discussion_id=self.discussion._id,
+                    num_replies={'$gt': 0},  # exclude empty threads (spam/deleted) like ForumController does
+                )).sort([('last_post_date', pymongo.DESCENDING)]).limit(limit)
+            else:
+                discussion_threads = self.discussion.threads
+            return dict(ref_id={'$in': [t.index_id() for t in discussion_threads]})
         return FeedArgs(
-            dict(ref_id={'$in': [t.index_id()
-                 for t in self.discussion.threads]}),
+            query,
             'Recent posts to %s' % self.discussion.name,
             self.discussion.url())
 
