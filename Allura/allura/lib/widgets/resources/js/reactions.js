@@ -63,7 +63,7 @@ $(function () {
         });
     });
 
-    attachClickEvents($('.reactions .reaction'));
+    attachClickEvents($('.reactions-active .reaction'));
 
 });
 

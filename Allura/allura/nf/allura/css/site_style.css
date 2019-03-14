@@ -2542,7 +2542,10 @@ div.attachment_item{
 #comment .display_post .reactions .reaction {
     display: inline-block;
     padding: 2px;
-    cursor: pointer;
+}
+
+#comment .display_post .reactions-active .reaction {
+  cursor: pointer;
 }
 
 #comment .display_post .reactions .reaction-current {
