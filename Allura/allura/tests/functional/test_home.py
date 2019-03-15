@@ -127,7 +127,7 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wiki_menu = [m for m in menu if m['tool_name'] == 'wiki'][0]
         assert_equal(len(wiki_menu['children']), 10)
-        assert_in({'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': '_list',
+        assert_in({'url': '/p/test/_list/wiki', 'name': 'More...', 'mount_point': None,
                    'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_menu['children'])
 
     @td.with_wiki

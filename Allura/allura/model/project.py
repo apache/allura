@@ -590,8 +590,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 ordinal = sub.ordinal + delta_ordinal
                 if ordinal > max_ordinal:
                     max_ordinal = ordinal
+                mount_point = sub.shortname.split('/')[-1]
                 entries.append({'ordinal': sub.ordinal + delta_ordinal,
-                               'entry': SitemapEntry(sub.name, sub.url())})
+                                'entry': SitemapEntry(sub.name, sub.url(), mount_point=mount_point)})
 
         for ac in self.app_configs + [a.config for a in new_tools]:
             if per_tool_limit:
@@ -759,6 +760,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     elif len(grouped_nav[tool_name].children) == SITEMAP_PER_TOOL_LIMIT - 1:
                         e.url = self.url() + '_list/' + tool_name
                         e.label = 'More...'
+                        e.mount_point = None
+                        e.extra_html_attrs = {}
                         grouped_nav[tool_name].children.append(e)
         return grouped_nav.values()
 
