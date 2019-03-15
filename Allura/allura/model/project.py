@@ -682,32 +682,27 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         anchored_tools = self.neighborhood.get_anchored_tools()
         children = []
 
-        def make_entry(s, mount_point):
+        def make_entry(s):
             entry = dict(name=s.label,
                          url=s.url,
                          icon=s.ui_icon or 'tool-admin',
                          tool_name=s.tool_name or 'sub',
-                         mount_point=mount_point,
+                         mount_point=s.mount_point,
                          is_anchored=s.tool_name in anchored_tools.keys(),
                          )
-            if admin_options and s.tool_name and mount_point:
+            if admin_options and s.tool_name and s.mount_point:
                 try:
-                    entry['admin_options'] = ProjectAdminRestController().admin_options(mount_point)['options']
+                    entry['admin_options'] = ProjectAdminRestController().admin_options(s.mount_point)['options']
                 except exc.HTTPError:
-                    log.debug('Could not get admin_options mount_point for tool: %s', s.url)
+                    log.debug('Could not get admin_options mount_point for tool: %s', s.url, exc_info=True)
             if admin_options and not s.tool_name:
                 entry['admin_options'] = [dict(text='Subproject Admin', href=s.url + 'admin', className=None)]
             return entry
 
         for s in self.grouped_navbar_entries():
+            entry = make_entry(s)
             if s.children:
-                mount_point = None
-            else:
-                _offset = -2 if s.url.endswith("/") else -1
-                mount_point = s.url.split('/')[_offset]
-            entry = make_entry(s, mount_point=mount_point)
-            if s.children:
-                entry['children'] = [make_entry(child, mount_point=child.url.split('/')[-2]) for child in s.children]
+                entry['children'] = [make_entry(child) for child in s.children]
             children.append(entry)
 
         response = dict(grouping_threshold=grouping_threshold, menu=children)
@@ -746,13 +741,13 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 if tool_name not in grouped_nav:
                     child = deepcopy(e)
                     # change label to be the tool name (type)
-                    e.label = g.entry_points['tool'][
-                        tool_name].tool_label + u' \u25be'
+                    e.label = g.entry_points['tool'][tool_name].tool_label + u' \u25be'
                     # add tool url to list of urls that will match this nav entry
                     # have to do this before changing the url to the list page
                     e.matching_urls.append(e.url)
                     # change url to point to tool list page
                     e.url = self.url() + '_list/' + tool_name
+                    e.mount_point = None
                     e.children.append(child)
                     grouped_nav[tool_name] = e
                 else:

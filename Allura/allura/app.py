@@ -98,9 +98,18 @@ class SitemapEntry(object):
     """
 
     def __init__(self, label, url=None, children=None, className=None,
-                 ui_icon=None, small=None, tool_name=None, matching_urls=None, extra_html_attrs=None):
-        """Create a new SitemapEntry.
+                 ui_icon=None, small=None, tool_name=None, matching_urls=None, extra_html_attrs=None, mount_point=None):
+        """
+        Create a new SitemapEntry.
 
+        :param label: the name
+        :param url: the url
+        :param children: optional, list of SitemapEntry objects
+        :param className: optional, HTML class
+        :param tool_name: optional, tool_name (used for top-level menu items)
+        :param matching_urls: list of urls to consider "active" in menu display
+        :param extra_html_attrs: dict to show as HTML attributes
+        :param mount_point: used only for tracking project menu admin options
         """
         self.label = label
         self.className = className
@@ -111,6 +120,7 @@ class SitemapEntry(object):
         self.ui_icon = ui_icon
         self.children = children or []
         self.tool_name = tool_name
+        self.mount_point = mount_point
         self.matching_urls = matching_urls or []
         self.extra_html_attrs = extra_html_attrs or {}
 
@@ -155,13 +165,15 @@ class SitemapEntry(object):
             lbl = lbl(app)
         if url is not None:
             url = basejoin(app.url, url)
-        return SitemapEntry(lbl, url, [
-            ch.bind_app(app) for ch in self.children],
-            className=self.className,
-            ui_icon=self.ui_icon,
-            small=self.small,
-            tool_name=self.tool_name,
-            matching_urls=self.matching_urls)
+        return SitemapEntry(lbl, url,
+                            [ch.bind_app(app) for ch in self.children],
+                            className=self.className,
+                            ui_icon=self.ui_icon,
+                            small=self.small,
+                            tool_name=self.tool_name,
+                            matching_urls=self.matching_urls,
+                            mount_point=app.config.options.mount_point,
+                            )
 
     def extend(self, sitemap_entries):
         """Extend our children with ``sitemap_entries``.

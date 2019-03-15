@@ -126,3 +126,26 @@ class TestConfigOptions(TestController):
 
         resp = self.app.get('/p/test/admin/')
         assert_in('http://foo.bar/baz', str(resp.html.find(id='top_nav')))
+
+    def _check_configurable(self, admin_nav_data):
+        for menu_item in admin_nav_data['menu']:
+            if menu_item['tool_name'] == 'link':
+                assert_in({'className': 'admin_modal',
+                           'text': 'Options',
+                           'href': '/p/test/admin/link/options'},
+                          menu_item['admin_options'])
+                break
+        else:
+            raise AssertionError(u"Didn't find 'link' tool in {}".format(admin_nav_data['menu']))
+
+    @td.with_link
+    def test_menu_configurable(self):
+        admin_nav_data = self.app.get('/p/test/_nav.json?admin_options=true').json
+        self._check_configurable(admin_nav_data)
+
+        response = self.app.get('/admin/link/options')
+        response.form['url'] = 'http://foo.bar/baz'
+        response.form.submit()
+
+        admin_nav_data = self.app.get('/p/test/_nav.json?admin_options=true').json
+        self._check_configurable(admin_nav_data)
