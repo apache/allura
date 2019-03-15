@@ -496,41 +496,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return list(roles)
 
     @classmethod
-    def menus(cls, projects):
-        '''Return a dict[project_id] = sitemap of sitemaps, efficiently'''
-        from allura.app import SitemapEntry
-        pids = [p._id for p in projects]
-        project_index = dict((p._id, p) for p in projects)
-        entry_index = dict((pid, []) for pid in pids)
-        q_subprojects = cls.query.find(dict(
-            parent_id={'$in': pids},
-            deleted=False))
-        for sub in q_subprojects:
-            entry_index[sub.parent_id].append(
-                dict(ordinal=sub.ordinal, entry=SitemapEntry(sub.name, sub.url())))
-        q_app_configs = AppConfig.query.find(dict(
-            project_id={'$in': pids}))
-        for ac in q_app_configs:
-            App = ac.load()
-            project = project_index[ac.project_id]
-            app = App(project, ac)
-            if app.is_visible_to(c.user):
-                for sm in app.main_menu():
-                    entry = sm.bind_app(app)
-                    entry.ui_icon = 'tool-%s' % ac.tool_name
-                    ordinal = ac.options.get('ordinal', 0)
-                    entry_index[ac.project_id].append(
-                        {'ordinal': ordinal, 'entry': entry})
-
-        sitemaps = dict((pid, []) for pid in pids)
-        for pid, entries in entry_index.iteritems():
-            entries.sort(key=lambda e: e['ordinal'])
-            sitemap = sitemaps[pid]
-            for e in entries:
-                sitemap.append(e['entry'])
-        return sitemaps
-
-    @classmethod
     def icon_urls(cls, projects):
         '''Return a dict[project_id] = icon_url, efficiently'''
         project_index = dict((p._id, p) for p in projects)
