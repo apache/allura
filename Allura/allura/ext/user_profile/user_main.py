@@ -22,7 +22,7 @@ from datetime import datetime
 
 from formencode import validators
 from pylons import request
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from pytz import timezone
 from tg import expose, redirect, validate, flash
 from webob import exc
@@ -196,8 +196,8 @@ class UserProfileController(BaseController, FeedController):
             flash("Message sent.")
         else:
             flash("You can't send more than %i messages per %i seconds" % (
-                c.user.user_message_max_messages,
-                c.user.user_message_time_interval), 'error')
+                g.user_message_max_messages,
+                g.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
 
 
