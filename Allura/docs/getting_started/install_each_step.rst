@@ -29,11 +29,11 @@ Step-by-Step Installation
 
 For a simpler setup using Docker images, see :ref:`docker-install` instead.
 
-In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 16.04 <http://ubuntu.com>`_ (15.04 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
+In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and `Ubuntu 18.04 <http://ubuntu.com>`_  to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
 * Download and install `VirtualBox <http://www.virtualbox.org/wiki/Downloads>`__ for your platform.
 
-* Download a minimal `Ubuntu 16.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
+* Download a minimal `Ubuntu 18.04 64-bit ISO <https://help.ubuntu.com/community/Installation/MinimalCD>`_.
 
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
 
@@ -152,8 +152,8 @@ We have a custom config ready for use.
 
 .. code-block:: bash
 
-    (env-allura)~$ cd tmp
-    (env-allura)/tmp$ sudo apt-get install default-jre-headless unzip
+    (env-allura)~$ cd /tmp
+    (env-allura)/tmp$ sudo apt-get install openjdk-8-jre-headless unzip
     (env-allura)/tmp$ wget -nv http://archive.apache.org/dist/lucene/solr/5.3.1/solr-5.3.1.tgz
     (env-allura)/tmp$ tar xvf solr-5.3.1.tgz solr-5.3.1/bin/install_solr_service.sh --strip-components=2
     (env-allura)/tmp$ sudo ./install_solr_service.sh solr-5.3.1.tgz
