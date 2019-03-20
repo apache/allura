@@ -19,10 +19,6 @@
 
 """WSGI environment setup for allura."""
 
-import pylons.middleware
-import tg
-import tg.error
-
 from allura.config.app_cfg import base_config
 
 __all__ = ['load_environment']

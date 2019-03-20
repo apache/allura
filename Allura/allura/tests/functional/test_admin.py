@@ -27,7 +27,7 @@ import PIL
 from nose.tools import assert_equals, assert_in, assert_not_in, assert_is_not_none, assert_greater
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 import mock
 
 from allura.tests import TestController

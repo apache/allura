@@ -21,8 +21,8 @@ import pkg_resources
 from datetime import datetime
 
 from formencode import validators
-from pylons import request
-from pylons import tmpl_context as c, app_globals as g
+from tg import request
+from tg import tmpl_context as c, app_globals as g
 from pytz import timezone
 from tg import expose, redirect, validate, flash
 from webob import exc

@@ -65,9 +65,8 @@ class ForgeConfig(AppConfig):
         self.disable_request_extensions = True
 
     def after_init_config(self):
-        config['pylons.strict_c'] = True
+        config['tg.strict_tmpl_context'] = True
 
-    def setup_routes(self):
         map = Mapper()
         # Setup a default route for the root of object dispatch
         map.connect('*url', controller=self.root_controller,
@@ -106,9 +105,9 @@ class ForgeConfig(AppConfig):
         jinja2_env.filters['filter'] = lambda s,t=None: filter(t and jinja2_env.tests[t], s)
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
-        config['pylons.app_globals'].jinja2_env = jinja2_env
+        config['tg.app_globals'].jinja2_env = jinja2_env
         # Jinja's unable to request c's attributes without strict_c
-        config['pylons.strict_c'] = True
+        config['tg.strict_tmpl_context'] = True
         self.render_functions.jinja = tg.render.render_jinja
 
 
@@ -116,7 +115,7 @@ class JinjaEngine(ew.TemplateEngine):
 
     @property
     def _environ(self):
-        return config['pylons.app_globals'].jinja2_env
+        return config['tg.app_globals'].jinja2_env
 
     def load(self, template_name):
         try:

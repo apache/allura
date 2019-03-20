@@ -29,7 +29,7 @@ import pymongo
 import webtest
 
 from ming.odm import ThreadLocalORMSession
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from tg import config
 
 from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false, assert_raises

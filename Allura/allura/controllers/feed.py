@@ -18,7 +18,7 @@
 from tg import expose, validate, request, response
 from tg.decorators import without_trailing_slash
 from formencode import validators as V
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from webob import exc
 
 from allura import model as M

@@ -28,7 +28,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 
 from webob import exc
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from datetime import datetime
 from formencode import validators
 from formencode.compound import All

@@ -19,7 +19,7 @@ import bson
 import logging
 
 from ming.odm import Mapper
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from activitystream import ActivityDirector
 from activitystream.base import NodeBase, ActivityObjectBase

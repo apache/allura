@@ -25,7 +25,6 @@ import signal
 import sys
 
 import faulthandler
-import pylons
 from setproctitle import setproctitle, getproctitle
 import tg
 from paste.deploy import loadapp
@@ -103,7 +102,7 @@ class TaskdCommand(base.Command):
         name = '%s pid %s' % (os.uname()[1], os.getpid())
         wsgi_app = loadapp('config:%s#task' %
                            self.args[0], relative_to=os.getcwd())
-        poll_interval = asint(pylons.config.get('monq.poll_interval', 10))
+        poll_interval = asint(tg.config.get('monq.poll_interval', 10))
         only = self.options.only
         if only:
             only = only.split(',')

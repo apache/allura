@@ -21,7 +21,7 @@ from tg import expose
 from webob import exc
 from crank.objectdispatcher import ObjectDispatcher
 from tg import redirect, flash
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 
 log = logging.getLogger(__name__)

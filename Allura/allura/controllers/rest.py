@@ -25,8 +25,8 @@ import oauth2 as oauth
 from paste.util.converters import asbool
 from webob import exc
 from tg import expose, flash, redirect, config
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from tg import tmpl_context as c, app_globals as g
+from tg import request, response
 
 from ming.orm import session
 from ming.utils import LazyProperty

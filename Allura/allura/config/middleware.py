@@ -20,13 +20,12 @@
 """WSGI middleware initialization for the allura application."""
 import mimetypes
 
-import pylons.middleware  # needed within tg.error :(
 import tg
 import tg.error
 import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool, aslist, asint
-from paste.registry import RegistryManager
+from tg.support.registry import RegistryManager
 from routes.middleware import RoutesMiddleware
 from pylons.middleware import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
@@ -178,7 +177,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         # Converts exceptions to HTTP errors, shows traceback in debug mode
         # don't use TG footer with extra CSS & images that take time to load
         tg.error.footer_html = '<!-- %s %s -->'
-        app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+        app = tg.error.ErrorHandler(app, global_conf, **config['tg.errorware'])
 
         app = SetRequestHostFromConfig(app, config)
 
@@ -209,16 +208,15 @@ def allura_globals_middleware(app):
 
 
 def get_tg_vars(context):
-    import pylons
     import tg
     from allura.lib import helpers as h
     from urllib import quote, quote_plus
-    context.setdefault('g', pylons.app_globals)
-    context.setdefault('c', pylons.tmpl_context)
+    context.setdefault('g', tg.app_globals)
+    context.setdefault('c', tg.tmpl_context)
     context.setdefault('h', h)
-    context.setdefault('request', pylons.request)
-    context.setdefault('response', pylons.response)
-    context.setdefault('url', pylons.url)
+    context.setdefault('request', tg.request)
+    context.setdefault('response', tg.response)
+    context.setdefault('url', tg.url)
     context.setdefault('tg', dict(
         config=tg.config,
         flash_obj=tg.flash,

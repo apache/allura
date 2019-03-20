@@ -18,7 +18,7 @@
 import logging
 from getpass import getpass
 from optparse import OptionParser
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 import re
 import os
 from time import mktime

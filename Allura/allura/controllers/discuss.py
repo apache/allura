@@ -24,7 +24,7 @@ from tg import expose, redirect, validate, request, flash, response
 from tg.decorators import with_trailing_slash, without_trailing_slash, before_render, before_validate
 from decorator import decorator
 
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from webob import exc
 
 from ming.base import Object

@@ -22,8 +22,8 @@ import json
 import os
 
 # Non-stdlib imports
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from tg import tmpl_context as c, app_globals as g
+from tg import request
 from tg import expose, redirect, flash, validate, jsonify
 from tg.decorators import with_trailing_slash
 from bson import ObjectId

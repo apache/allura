@@ -19,7 +19,7 @@ import shutil
 import logging
 import traceback
 
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from ming.odm import session
 
 from allura.lib.decorators import task

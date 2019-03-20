@@ -18,6 +18,6 @@
 #       under the License.
 
 """The allura package"""
-from paste.registry import StackedObjectProxy
+from tg.support.registry import StackedObjectProxy
 
 credentials = StackedObjectProxy(name='credentials')

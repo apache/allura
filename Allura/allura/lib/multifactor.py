@@ -28,7 +28,7 @@ import errno
 import bson
 from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from tg import config
-from pylons import app_globals as g
+from tg import app_globals as g
 from paste.deploy.converters import asint
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.twofactor import InvalidToken

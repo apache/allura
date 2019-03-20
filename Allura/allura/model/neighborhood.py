@@ -25,8 +25,8 @@ from ming.orm import FieldProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 
-from pylons import request
-from pylons import tmpl_context as c, app_globals as g
+from tg import request
+from tg import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
 

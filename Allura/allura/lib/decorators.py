@@ -32,8 +32,8 @@ from tg.decorators import before_validate
 from tg import request, redirect, session, config
 from tg.render import render
 from webob import exc
-from pylons import tmpl_context as c
-from pylons import response
+from tg import tmpl_context as c
+from tg import response
 from webob.exc import HTTPFound, WSGIHTTPException
 
 from allura.lib import helpers as h

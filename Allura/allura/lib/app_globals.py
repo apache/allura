@@ -39,8 +39,8 @@ import pygments.lexers
 import pygments.formatters
 import pygments.util
 from tg import config
-from pylons import request
-from pylons import tmpl_context as c
+from tg import request
+from tg import tmpl_context as c
 from paste.deploy.converters import asbool, asint, aslist
 from pypeline.markup import markup as pypeline_markup
 from ming.odm import session

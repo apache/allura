@@ -22,7 +22,7 @@ from datetime import datetime
 import jinja2
 import pymongo
 from pymongo.errors import DuplicateKeyError
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 import tg
 
 from ming import schema

@@ -17,7 +17,7 @@
 
 import logging
 
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from tg import expose, redirect, config
 from itertools import islice, ifilter
 from ming.orm import session

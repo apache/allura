@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import FieldProperty
 from ming import schema as S
 
@@ -49,7 +49,7 @@ class BaseAttachment(File):
         return self.artifact.url() + 'attachment/' + h.urlquote(self.filename)
 
     def is_embedded(self):
-        from pylons import request
+        from tg import request
         return self.filename in request.environ.get('allura.macro.att_embedded', [])
 
     @classmethod

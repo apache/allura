@@ -19,7 +19,7 @@ import tempfile
 import json
 
 from nose.tools import assert_equal
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.tests import decorators as td
 from allura import model as M

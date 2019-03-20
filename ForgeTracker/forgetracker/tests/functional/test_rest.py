@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from datadiff.tools import assert_equal
 from nose.tools import assert_not_equal

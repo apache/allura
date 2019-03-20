@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.lib.search import search
 

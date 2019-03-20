@@ -26,8 +26,8 @@ from email import header
 import tg
 from paste.deploy.converters import asbool, asint, aslist
 from formencode import validators as fev
-from pylons import tmpl_context as c
-from pylons import app_globals as g
+from tg import tmpl_context as c
+from tg import app_globals as g
 
 from allura.lib.utils import ConfigProxy
 from allura.lib import exceptions as exc

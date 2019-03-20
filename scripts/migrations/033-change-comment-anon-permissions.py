@@ -18,7 +18,7 @@
 import sys
 import logging
 from ming.orm import ThreadLocalORMSession, session
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from allura import model as M
 from forgediscussion.model import ForumPost
 from allura.lib import utils, security

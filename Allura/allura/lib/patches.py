@@ -20,7 +20,7 @@ import re
 import webob
 import tg.decorators
 from decorator import decorator
-from pylons import request
+from tg import request
 import mock
 import simplejson
 

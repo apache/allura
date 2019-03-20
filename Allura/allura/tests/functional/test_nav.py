@@ -18,7 +18,7 @@
 import mock
 import json
 from tg import config
-from pylons import app_globals as g
+from tg import app_globals as g
 
 from allura.tests import TestController
 from allura.lib import helpers as h

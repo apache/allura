@@ -27,7 +27,7 @@ from time import time
 import tg
 import git
 import gitdb
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 from paste.deploy.converters import asbool
 

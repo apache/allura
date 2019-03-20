@@ -20,7 +20,7 @@ import logging
 from itertools import chain
 
 import pymongo
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming import schema
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper

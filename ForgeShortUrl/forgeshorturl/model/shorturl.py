@@ -17,7 +17,7 @@
 
 import pymongo
 from tg import config
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime
 from allura.model.auth import User

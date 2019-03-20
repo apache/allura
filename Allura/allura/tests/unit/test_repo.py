@@ -21,7 +21,7 @@ from mock import patch, Mock, MagicMock, call
 from nose.tools import assert_equal
 from datadiff import tools as dd
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura import model as M
 from allura.controllers.repository import topo_sort

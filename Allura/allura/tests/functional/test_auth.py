@@ -42,7 +42,7 @@ from nose.tools import (
     assert_false,
     assert_raises
 )
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from webob import exc
 
 from allura.tests import TestController

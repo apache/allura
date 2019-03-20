@@ -21,8 +21,8 @@ import json
 
 # Non-stdlib imports
 from tg import expose, jsonify, redirect
-from pylons import tmpl_context as c
-from pylons import request
+from tg import tmpl_context as c
+from tg import request
 from formencode import validators as fev
 
 # Pyforge-specific imports

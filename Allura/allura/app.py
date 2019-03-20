@@ -27,7 +27,7 @@ import pkg_resources
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
 from tg import config as tg_config
-from pylons import request, app_globals as g, tmpl_context as c
+from tg import request, app_globals as g, tmpl_context as c
 from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 from bson.errors import InvalidId

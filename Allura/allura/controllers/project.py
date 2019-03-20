@@ -23,7 +23,7 @@ from urllib import unquote
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
 import jinja2

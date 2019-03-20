@@ -17,7 +17,7 @@
 
 from mock import Mock, patch
 from nose.tools import assert_equal
-from pylons import app_globals as g
+from tg import app_globals as g
 
 from alluratest.controller import setup_unit_test
 from allura.model.repository import Commit

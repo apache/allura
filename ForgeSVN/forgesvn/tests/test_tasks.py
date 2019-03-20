@@ -23,7 +23,7 @@ import os
 
 import tg
 import mock
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from paste.deploy.converters import asbool
 from nose.tools import assert_equal
 

@@ -21,8 +21,8 @@ import re
 from formencode import validators as fev
 
 from ming.orm import session
-from pylons import tmpl_context as c
-from pylons import app_globals as g
+from tg import tmpl_context as c
+from tg import app_globals as g
 from tg import (
     expose,
     flash,

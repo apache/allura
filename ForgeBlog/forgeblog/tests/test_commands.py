@@ -16,7 +16,7 @@
 #       under the License.
 
 from datetime import datetime, timedelta
-from pylons import app_globals as g
+from tg import app_globals as g
 from datadiff.tools import assert_equal
 from IPython.testing.decorators import module_not_available, skipif
 import pkg_resources

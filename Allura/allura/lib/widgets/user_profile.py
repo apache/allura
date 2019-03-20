@@ -24,9 +24,9 @@ from jinja2 import Markup
 from paste.deploy.converters import asbool
 import tg
 from formencode import validators as fev
-from pylons import app_globals as g
-from pylons import request
-from pylons import tmpl_context as c
+from tg import app_globals as g
+from tg import request
+from tg import tmpl_context as c
 from allura.lib import helpers as h
 from allura.lib.plugin import AuthenticationProvider
 from .forms import ForgeForm

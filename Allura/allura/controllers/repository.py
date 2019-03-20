@@ -24,8 +24,8 @@ from collections import defaultdict, OrderedDict
 
 from ming.utils import LazyProperty
 from paste.deploy.converters import asbool
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from tg import tmpl_context as c, app_globals as g
+from tg import request, response
 from webob import exc
 import tg
 from tg import redirect, expose, flash, validate

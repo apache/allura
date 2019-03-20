@@ -26,10 +26,10 @@ from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
-from pylons import tmpl_context as c, app_globals as g
-from pylons import url, request, response, session
-import pylons
+from tg import tmpl_context as c, app_globals as g
+from tg import url, request, response, session
 import tg
+from tg.wsgiapp import RequestLocals
 from webob import Response, Request
 import ew
 from ming.orm import ThreadLocalORMSession
@@ -84,7 +84,7 @@ def setup_config_test(config_file=None, force=False):
     '''
     if not config_file:
         config_file = get_config_file()
-    already_loaded = pylons.config.get('pylons.app_globals')
+    already_loaded = tg.config.get('tg.app_globals')
     if not already_loaded or force:
         loadapp('config:' + config_file)
 setup_config_test.__test__ = False
@@ -132,12 +132,17 @@ def setup_unit_test():
     REGISTRY.prepare()
     REGISTRY.register(ew.widget_context,
                       ew.core.WidgetContext('http', ew.ResourceManager()))
-    REGISTRY.register(g, Globals())
-    REGISTRY.register(c, mock.Mock())
-    REGISTRY.register(url, lambda: None)
-    REGISTRY.register(request, Request.blank('/', remote_addr='127.0.0.1'))
-    REGISTRY.register(response, Response())
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
+
+    # turbogears has its own special magic wired up for its globals, can't use a regular Registry
+    tgl = RequestLocals()
+    tgl.app_globals = Globals()
+    tgl.tmpl_context = mock.Mock()
+    tgl.url = lambda: None
+    tgl.request = Request.blank('/', remote_addr='127.0.0.1')
+    tgl.response = Response()
+    tg.request_local.context._push_object(tgl)
+
     c.model_cache = None
     ThreadLocalORMSession.close_all()
 setup_unit_test.__test__ = False  # sometimes __test__ above isn't sufficient

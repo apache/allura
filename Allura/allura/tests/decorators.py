@@ -21,7 +21,7 @@ from functools import wraps
 import contextlib
 
 from ming.orm.ormsession import ThreadLocalORMSession
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from mock import patch
 import tg
 from paste.deploy.converters import asbool

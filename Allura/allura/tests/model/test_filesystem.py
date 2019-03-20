@@ -22,7 +22,7 @@ from unittest import TestCase
 from cStringIO import StringIO
 from io import BytesIO
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import session, Mapper
 from nose.tools import assert_equal
 from mock import patch
@@ -126,7 +126,7 @@ class TestFile(TestCase):
         f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
-                patch('allura.lib.utils.pylons.response', Response()) as response, \
+                patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
@@ -139,7 +139,7 @@ class TestFile(TestCase):
         f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
-                patch('allura.lib.utils.pylons.response', Response()) as response, \
+                patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,

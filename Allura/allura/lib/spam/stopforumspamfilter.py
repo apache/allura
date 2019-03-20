@@ -20,7 +20,7 @@ import csv
 from sys import getsizeof
 
 import ipaddress
-from pylons import request
+from tg import request
 
 from allura.lib import utils
 from allura.lib.spam import SpamFilter

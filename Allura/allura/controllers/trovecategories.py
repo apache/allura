@@ -18,11 +18,11 @@ import re
 from collections import OrderedDict
 
 from tg import expose, flash, redirect, validate, config
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from string import digits, lowercase
 from tg.decorators import without_trailing_slash
 from webob.exc import HTTPForbidden, HTTPNotFound
-from pylons import app_globals as g
+from tg import app_globals as g
 
 from allura import model as M
 from allura.controllers import BaseController

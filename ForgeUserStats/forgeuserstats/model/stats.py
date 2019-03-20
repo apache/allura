@@ -19,7 +19,7 @@ from ming.orm import FieldProperty
 from ming import schema as S
 from datetime import datetime, timedelta
 from ming.orm import Mapper
-from pylons import request
+from tg import request
 
 from allura.lib import plugin
 from allura.model.session import main_orm_session

@@ -22,10 +22,11 @@
 import logging
 
 import activitystream
+import tg
 from tg import config
-import pylons
 from paste.deploy.converters import asbool
-from paste.registry import Registry
+from tg.support.registry import Registry
+from tg.wsgiapp import RequestLocals
 
 from allura.lib import helpers as h
 
@@ -38,10 +39,15 @@ def setup_schema(command, conf, vars):
     import ming
     import allura
 
+    # turbogears has its own special magic wired up for its globals, can't use a regular Registry
+    tgl = RequestLocals()
+    tgl.tmpl_context = EmptyClass()
+    tgl.app_globals = config['tg.app_globals']
+    tg.request_local.context._push_object(tgl)
+
     REGISTRY.prepare()
-    REGISTRY.register(pylons.tmpl_context, EmptyClass())
-    REGISTRY.register(pylons.app_globals, config['pylons.app_globals'])
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
+
     ming.configure(**conf)
     if asbool(conf.get('activitystream.recording.enabled', False)):
         activitystream.configure(**h.convert_bools(conf, prefix='activitystream.'))

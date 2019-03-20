@@ -26,8 +26,8 @@ import json
 from operator import itemgetter, attrgetter
 import pkg_resources
 
-from pylons import tmpl_context as c, app_globals as g, response
-from pylons import request
+from tg import tmpl_context as c, app_globals as g, response
+from tg import request
 from paste.deploy.converters import asbool, aslist
 from tg import expose, redirect, flash, validate, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash

@@ -27,8 +27,8 @@ import requests
 from bson import ObjectId
 from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c
-from pylons import response, request
+from tg import tmpl_context as c
+from tg import response, request
 from formencode import validators as fev, schema, Invalid
 from ming.odm import session
 from webob import exc

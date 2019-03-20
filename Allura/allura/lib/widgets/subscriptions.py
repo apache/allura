@@ -17,7 +17,7 @@
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw

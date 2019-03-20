@@ -21,7 +21,7 @@ import logging
 import shutil
 
 import tg
-from pylons import app_globals as g, tmpl_context as c
+from tg import app_globals as g, tmpl_context as c
 
 from allura.tasks import mail_tasks
 from allura.lib.decorators import task

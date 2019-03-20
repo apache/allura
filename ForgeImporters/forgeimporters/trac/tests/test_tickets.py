@@ -21,7 +21,7 @@ import os
 from unittest import TestCase
 from mock import Mock, patch
 from ming.orm import ThreadLocalORMSession
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from IPython.testing.decorators import module_not_available, skipif
 
 from allura.tests import TestController

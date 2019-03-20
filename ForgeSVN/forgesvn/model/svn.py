@@ -34,7 +34,7 @@ import tg
 import pysvn
 from paste.deploy.converters import asbool, asint
 from pymongo.errors import DuplicateKeyError
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty

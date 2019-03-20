@@ -22,7 +22,7 @@ from mock import Mock
 from nose.tools import assert_equal
 
 from allura.lib import helpers as h
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from forgetracker.tracker_main import MilestoneController
 
 

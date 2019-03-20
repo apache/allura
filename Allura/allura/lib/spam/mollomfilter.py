@@ -17,8 +17,8 @@
 
 import logging
 
-from pylons import request
-from pylons import tmpl_context as c
+from tg import request
+from tg import tmpl_context as c
 
 from allura.lib import helpers as h
 from allura.lib import utils

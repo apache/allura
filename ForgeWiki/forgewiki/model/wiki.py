@@ -20,8 +20,8 @@ import difflib
 import os
 
 # g is a namespace for globally accessable app helpers
-from pylons import app_globals as g
-from pylons import tmpl_context as context
+from tg import app_globals as g
+from tg import tmpl_context as context
 
 from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session

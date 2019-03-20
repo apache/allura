@@ -25,8 +25,8 @@ import bson
 import tg
 from tg import expose, flash, redirect, validate, config, session
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from tg import tmpl_context as c, app_globals as g
+from tg import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
 from cryptography.hazmat.primitives.twofactor import InvalidToken
