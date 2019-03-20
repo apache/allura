@@ -26,7 +26,7 @@ import logging
 
 import tg
 import mock
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
 from nose.tools import assert_in, assert_less
 from ming.orm import FieldProperty, Mapper

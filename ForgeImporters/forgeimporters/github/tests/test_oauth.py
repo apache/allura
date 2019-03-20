@@ -18,7 +18,7 @@
 from unittest import TestCase
 
 from mock import Mock, patch, MagicMock
-from pylons import tmpl_context as c, config
+from tg import tmpl_context as c, config
 from webob.exc import HTTPFound
 
 from allura.tests import TestController

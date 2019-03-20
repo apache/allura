@@ -26,8 +26,8 @@ import re
 from xml.etree import ElementTree as ET
 
 from tg import config
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from tg import tmpl_context as c, app_globals as g
+from tg import request
 from paste.deploy.converters import asbool, aslist
 import formencode as fe
 from webob import exc

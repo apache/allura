@@ -18,7 +18,7 @@
 from bson import ObjectId
 from bson.errors import InvalidId
 from ming.orm import ThreadLocalORMSession
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.command import base
 from allura import model as M

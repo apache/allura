@@ -18,8 +18,6 @@
 #       under the License.
 
 """The base Controller API."""
-from webob import exc
-import pylons
 from tg import TGController
 
 __all__ = ['WsgiDispatchController']
@@ -39,19 +37,6 @@ class WsgiDispatchController(TGController):
         '''Responsible for setting all the values we need to be set on pylons.tmpl_context'''
         raise NotImplementedError, '_setup_request'
 
-    def _cleanup_request(self):
-        raise NotImplementedError, '_cleanup_request'
-
     def __call__(self, environ, start_response):
-        try:
-            self._setup_request()
-            response = super(WsgiDispatchController, self).__call__(
-                environ, start_response)
-            return self.cleanup_iterator(response)
-        except exc.HTTPException, err:
-            return err(environ, start_response)
-
-    def cleanup_iterator(self, response):
-        for chunk in response:
-            yield chunk
-        self._cleanup_request()
+        self._setup_request()
+        return super(WsgiDispatchController, self).__call__(environ, start_response)

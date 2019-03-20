@@ -21,8 +21,8 @@
 import logging
 from urllib import unquote
 
-from pylons import tmpl_context as c
-from pylons import request
+from tg import tmpl_context as c
+from tg import request
 from webob import exc
 from tg import expose
 from paste.deploy.converters import asbool
@@ -87,9 +87,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
                 shortname='test', neighborhood_id=self.p_nbhd._id)
             count -= 1
             assert count > 0, 'Timeout waiting for test project to appear'
-
-    def _cleanup_request(self):
-        pass
 
     @expose()
     def _lookup(self, name, *remainder):

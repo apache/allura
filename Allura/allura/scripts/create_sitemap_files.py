@@ -33,9 +33,9 @@ from datetime import datetime
 import argparse
 
 from jinja2 import Template
-import pylons
+import tg
 import webob
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from tg import config
 
@@ -78,11 +78,11 @@ class CreateSitemapFiles(ScriptTask):
     def execute(cls, options):
         # This script will indirectly call app.sidebar_menu() for every app in
         # every project. Some of the sidebar_menu methods expect the
-        # pylons.request threadlocal object to be present. So, we're faking it.
+        # tg.request threadlocal object to be present. So, we're faking it.
         #
         # The fact that this isn't a 'real' request doesn't matter for the
         # purposes of the sitemap.
-        pylons.request._push_object(webob.Request.blank('/'))
+        tg.request_local.context.request = webob.Request.blank('/')
 
         output_path = options.output_dir
         if os.path.exists(output_path):

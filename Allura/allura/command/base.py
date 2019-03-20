@@ -19,11 +19,12 @@ import os
 import logging
 import shlex
 
-import pylons
+import tg
 from paste.script import command
 from paste.deploy import appconfig
 from paste.deploy.converters import asbool
-from paste.registry import Registry
+from tg.support.registry import Registry
+from tg.wsgiapp import RequestLocals
 
 import activitystream
 import ming
@@ -104,12 +105,12 @@ class Command(command.Command):
             ming.configure(**conf)
             if asbool(conf.get('activitystream.recording.enabled', False)):
                 activitystream.configure(**h.convert_bools(conf, prefix='activitystream.'))
-            pylons.tmpl_context.user = M.User.anonymous()
+            tg.tmpl_context.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
-            conf = pylons.config
-        self.tools = pylons.app_globals.entry_points['tool'].values()
+            conf = tg.config
+        self.tools = tg.app_globals.entry_points['tool'].values()
         for ep in h.iter_entry_points('allura.command_init'):
             log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
@@ -118,10 +119,12 @@ class Command(command.Command):
     def setup_globals(self):
         import allura.lib.app_globals
         self.registry.prepare()
-        self.registry.register(pylons.tmpl_context, EmptyClass())
-        self.registry.register(pylons.app_globals, self.globals)
-        self.registry.register(
-            allura.credentials, allura.lib.security.Credentials())
+        self.registry.register(allura.credentials, allura.lib.security.Credentials())
+        # turbogears has its own special magic wired up for its globals, can't use a regular Registry
+        tgl = RequestLocals()
+        tgl.tmpl_context = EmptyClass()
+        tgl.app_globals = self.globals
+        tg.request_local.context._push_object(tgl)
 
     def teardown_globals(self):
         self.registry.cleanup()

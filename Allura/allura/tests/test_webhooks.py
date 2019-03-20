@@ -30,7 +30,7 @@ from nose.tools import (
 from datadiff import tools as dd
 from formencode import Invalid
 from ming.odm import session
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from tg import config
 
 from allura import model as M

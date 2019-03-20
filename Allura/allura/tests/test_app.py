@@ -17,7 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 import mock
 from ming.base import Object
 from nose.tools import assert_equal, assert_raises

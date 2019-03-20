@@ -20,7 +20,7 @@ import argparse
 import logging
 
 from ming.odm import session
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.scripts import ScriptTask
 from allura import model as M

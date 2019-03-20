@@ -17,7 +17,7 @@
 
 from datetime import datetime
 from nose.tools import assert_equal, assert_true
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from forgeblog import model as M
 from forgeblog.tests.unit import BlogTestWithModel

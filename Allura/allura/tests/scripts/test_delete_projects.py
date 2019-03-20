@@ -17,7 +17,7 @@
 
 from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
-from pylons import app_globals as g
+from tg import app_globals as g
 from nose.tools import assert_equal
 
 from alluratest.controller import TestController
@@ -100,8 +100,8 @@ class TestDeleteProjects(TestController):
         del_solr.post.assert_called_once_with(pid)
 
     @with_user_project('test-user')
-    @patch('allura.model.auth.request', autospec=True)
-    @patch('allura.lib.helpers.request', autospec=True)
+    @patch('allura.model.auth.request')
+    @patch('allura.lib.helpers.request')
     def test_userproject_does_disable(self, req, req2):
         req.remote_addr = None
         req.user_agent = 'MozFoo'
@@ -146,8 +146,8 @@ class TestDeleteProjects(TestController):
         assert admin.disabled is disable
         assert dev.disabled is disable
 
-    @patch('allura.model.auth.request', autospec=True)
-    @patch('allura.lib.helpers.request', autospec=True)
+    @patch('allura.model.auth.request')
+    @patch('allura.lib.helpers.request')
     def test_disable_users(self, req, req2):
         req.remote_addr = None
         req.user_agent = 'MozFoo'

@@ -16,7 +16,7 @@
 #       under the License.
 
 from mock import Mock, patch
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.tests.unit.factories import (
     create_project,

@@ -24,7 +24,7 @@ from datetime import datetime
 
 from tg import config, session, redirect, request, expose
 from tg.decorators import without_trailing_slash
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from requests_oauthlib import OAuth2Session
 import requests
 from formencode import validators as fev

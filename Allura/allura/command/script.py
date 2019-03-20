@@ -20,8 +20,8 @@ import os.path
 import cProfile
 import warnings
 
-from pylons import tmpl_context as c
-import pylons
+from tg import tmpl_context as c
+import tg
 import webob
 
 from ming.orm import session
@@ -52,7 +52,7 @@ class ScriptCommand(base.Command):
             self.basic_setup()
             request = webob.Request.blank('--script--', environ={
                 'paste.registry': self.registry})
-            self.registry.register(pylons.request, request)
+            tg.request_local.context.request = request
             if self.options.pdb:
                 base.log.info('Installing exception hook')
                 sys.excepthook = utils.postmortem_hook

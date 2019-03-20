@@ -20,8 +20,8 @@ from collections import defaultdict
 from datetime import datetime
 
 import pymongo
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from tg import tmpl_context as c, app_globals as g
+from tg import request
 from ming import schema as S
 from ming.orm import state, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty

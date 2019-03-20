@@ -25,7 +25,7 @@ import shutil
 from textwrap import dedent
 
 import tg
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 import ew
 

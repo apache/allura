@@ -18,7 +18,7 @@
 import pkg_resources
 import unittest
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from alluratest.controller import TestController, setup_basic_test, setup_global_objects
 from allura.tests import decorators as td

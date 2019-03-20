@@ -18,7 +18,7 @@
 import logging
 
 import pkg_resources
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
 from formencode import validators as V

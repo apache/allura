@@ -19,7 +19,7 @@ import pkg_resources
 import unittest
 from datetime import datetime, timedelta
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from tg import config
 import mock
 

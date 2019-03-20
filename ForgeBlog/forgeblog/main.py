@@ -24,9 +24,9 @@ import json
 import pymongo
 from tg import config, expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c
-from pylons import app_globals as g
-from pylons import request
+from tg import tmpl_context as c
+from tg import app_globals as g
+from tg import request
 from paste.deploy.converters import asbool
 import formencode
 from formencode import validators

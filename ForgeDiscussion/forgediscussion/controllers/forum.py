@@ -23,7 +23,7 @@ from allura.lib.search import mapped_artifacts_from_index_ids
 
 from tg import expose, validate, redirect
 from tg import request
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from webob import exc
 from formencode import validators
 

@@ -20,7 +20,7 @@ import datetime
 
 from nose.tools import assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from alluratest.controller import TestController
 from allura import model as M

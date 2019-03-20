@@ -34,7 +34,6 @@ from urlparse import urlparse
 
 import tg
 import emoji
-import pylons
 import json
 from formencode import Invalid
 from collections import OrderedDict
@@ -248,7 +247,7 @@ class AntiSpam(object):
     def __init__(self, request=None, num_honey=2, timestamp=None, spinner=None):
         self.num_honey = num_honey
         if request is None or request.method == 'GET':
-            self.request = pylons.request
+            self.request = tg.request
             self.timestamp = timestamp if timestamp else int(time.time())
             self.spinner = spinner if spinner else self.make_spinner()
             self.timestamp_text = str(self.timestamp)
@@ -348,13 +347,13 @@ class AntiSpam(object):
         octets = self.client_ip.split('.')
         ip_chunk = '.'.join(octets[0:3])
         plain = '%d:%s:%s' % (
-            timestamp, ip_chunk, pylons.config.get('spinner_secret', 'abcdef'))
+            timestamp, ip_chunk, tg.config.get('spinner_secret', 'abcdef'))
         return hashlib.sha1(plain).digest()
 
     @classmethod
     def validate_request(cls, request=None, now=None, params=None):
         if request is None:
-            request = pylons.request
+            request = tg.request
         if params is None:
             params = request.params
         new_params = dict(params)
@@ -369,7 +368,7 @@ class AntiSpam(object):
                     now = time.time()
                 if obj.timestamp > now + 5:
                     raise ValueError('Post from the future')
-                if now - obj.timestamp > int(pylons.config.get('spam.form_post_expiration', 24 * 60 * 60)):
+                if now - obj.timestamp > int(tg.config.get('spam.form_post_expiration', 24 * 60 * 60)):
                     raise ValueError('Post from the distant past')
                 if obj.spinner != expected_spinner:
                     raise ValueError('Bad spinner value')
@@ -403,7 +402,7 @@ class AntiSpam(object):
                     # request.params is immutable, but will reflect changes to request.POST
                     tg.request.POST.update(new_params)
             except (ValueError, TypeError, binascii.Error):
-                testing = pylons.request.environ.get('paste.testing', False)
+                testing = tg.request.environ.get('paste.testing', False)
                 if testing:
                     # re-raise so we can see problems more easily
                     raise
@@ -545,19 +544,19 @@ def serve_file(fp, filename, content_type, last_modified=None,
         etag = u'{0}?{1}'.format(filename, last_modified).encode('utf-8')
     if etag:
         etag_cache(etag)
-    pylons.response.headers['Content-Type'] = ''
-    pylons.response.content_type = content_type.encode('utf-8')
-    pylons.response.cache_expires = cache_expires or asint(
+    tg.response.headers['Content-Type'] = ''
+    tg.response.content_type = content_type.encode('utf-8')
+    tg.response.cache_expires = cache_expires or asint(
         tg.config.get('files_expires_header_secs', 60 * 60))
-    pylons.response.last_modified = last_modified
+    tg.response.last_modified = last_modified
     if size:
-        pylons.response.content_length = size
-    if 'Pragma' in pylons.response.headers:
-        del pylons.response.headers['Pragma']
-    if 'Cache-Control' in pylons.response.headers:
-        del pylons.response.headers['Cache-Control']
+        tg.response.content_length = size
+    if 'Pragma' in tg.response.headers:
+        del tg.response.headers['Pragma']
+    if 'Cache-Control' in tg.response.headers:
+        del tg.response.headers['Cache-Control']
     if not embed:
-        pylons.response.headers.add(
+        tg.response.headers.add(
             'Content-Disposition',
             'attachment;filename="%s"' % filename.encode('utf-8'))
     # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension

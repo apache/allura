@@ -20,7 +20,7 @@ from formencode import validators as fev
 import json
 import ew as ew_core
 import ew.jinja2_ew as ew
-from pylons import app_globals as g
+from tg import app_globals as g
 from  tg import config
 
 from allura.lib import utils

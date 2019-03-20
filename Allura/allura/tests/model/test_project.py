@@ -22,7 +22,7 @@ Model tests for project
 """
 from nose import with_setup
 from nose.tools import assert_equals, assert_in
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 from formencode import validators as fev
 

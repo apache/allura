@@ -29,7 +29,7 @@ from nose.tools import (
     assert_not_in,
     assert_in,
 )
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch, Mock
 from datetime import datetime, timedelta

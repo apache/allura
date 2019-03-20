@@ -25,7 +25,7 @@ import base
 from allura.command import base as allura_base
 
 from ming.orm import session
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura import model as M
 from forgeblog import model as BM
@@ -59,9 +59,9 @@ class RssFeedsCommand(base.BlogCommand):
         # activity, User.url() will be called. This method defers to an
         # AuthenticationProvider, which depends on a request being setup in
         # the current thread. So, we set one up here.
-        import pylons
+        import tg
         import webob
-        pylons.request._push_object(webob.Request.blank('/'))
+        tg.request_local.context.request = webob.Request.blank('/')
 
         self.basic_setup()
         self.process_feed = exceptionless(

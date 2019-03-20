@@ -18,7 +18,7 @@
 import logging
 import re
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from ming.orm import ThreadLocalORMSession
 

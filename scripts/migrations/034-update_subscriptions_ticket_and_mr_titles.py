@@ -18,7 +18,7 @@
 import logging
 import re
 import sys
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from bson import ObjectId
 
 from ming.odm import session

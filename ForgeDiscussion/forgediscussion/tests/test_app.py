@@ -25,7 +25,7 @@ import os
 from operator import attrgetter
 
 from nose.tools import assert_equal
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from cStringIO import StringIO
 from ming.orm import ThreadLocalORMSession
 from cgi import FieldStorage

@@ -21,7 +21,7 @@ import re
 from datetime import datetime
 from random import randint
 
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from tg import config as tg_config
 from pymongo.errors import DuplicateKeyError
 

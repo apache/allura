@@ -21,7 +21,7 @@ import faulthandler
 from datetime import datetime
 
 from paste.util.converters import asbool
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M

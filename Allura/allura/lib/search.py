@@ -25,8 +25,8 @@ import bson
 import markdown
 import jinja2
 from tg import redirect, url
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from tg import tmpl_context as c, app_globals as g
+from tg import request
 from pysolr import SolrError
 
 from allura.lib import helpers as h

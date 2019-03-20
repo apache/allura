@@ -20,7 +20,7 @@ import re
 from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from . import helpers as h
 from datetime import datetime
 

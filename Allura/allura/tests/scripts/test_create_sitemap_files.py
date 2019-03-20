@@ -19,7 +19,7 @@ import os
 from shutil import rmtree
 import xml.etree.ElementTree as ET
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from nose.tools import assert_in
 from testfixtures import TempDirectory
 

@@ -19,7 +19,7 @@ import logging
 import HTMLParser
 import re
 
-from pylons import tmpl_context as c, app_globals as g, config
+from tg import tmpl_context as c, app_globals as g, config
 from bson import ObjectId
 import markupsafe
 

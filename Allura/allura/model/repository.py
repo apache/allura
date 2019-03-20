@@ -34,8 +34,8 @@ from difflib import SequenceMatcher
 
 import tg
 from paste.deploy.converters import asint, asbool
-from pylons import tmpl_context as c
-from pylons import app_globals as g
+from tg import tmpl_context as c
+from tg import app_globals as g
 import pymongo
 import pymongo.errors
 import bson

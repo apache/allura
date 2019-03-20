@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import app_globals as g
+from tg import app_globals as g
 from activitystream.storage.mingstorage import Activity
 
 from allura.lib.decorators import task

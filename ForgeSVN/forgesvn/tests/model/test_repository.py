@@ -25,7 +25,7 @@ from datetime import datetime
 from zipfile import ZipFile
 
 from collections import defaultdict
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in
 from datadiff.tools import assert_equals

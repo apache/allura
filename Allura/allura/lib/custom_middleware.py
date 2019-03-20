@@ -23,7 +23,7 @@ import tg
 import pkg_resources
 from paste import fileapp
 from paste.deploy.converters import aslist
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
@@ -189,7 +189,7 @@ class CSRFMiddleware(object):
         if cookie is None:
             cookie = h.cryptographic_nonce()
         if req.method == 'POST':
-            param = req.str_POST.pop(self._param_name, None)
+            param = req.POST.pop(self._param_name, None)
             if cookie != param:
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
                 environ.pop('HTTP_COOKIE', None)  # effectively kill the existing session

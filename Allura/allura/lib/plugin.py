@@ -42,7 +42,7 @@ except ImportError:
 import pkg_resources
 import tg
 from tg import config, request, redirect, response
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from webob import exc, Request
 from paste.deploy.converters import asbool, asint
 
@@ -1376,7 +1376,7 @@ class ThemeProvider(object):
         return note, set_cookie
 
     def get_site_notification(self):
-        from pylons import request, response
+        from tg import request, response
         tool_name = c.app.config.tool_name if c.app else ''
         r = self._get_site_notification(
             request.path_qs,

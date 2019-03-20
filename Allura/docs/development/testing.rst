@@ -60,7 +60,7 @@ fully-loaded wsgi app, you can do something like this:
 
 .. code-block:: python
 
-    from pylons import tmpl_context as c
+    from tg import tmpl_context as c
 
     from alluratest.controller import setup_unit_test
     from allura.lib import helpers a h

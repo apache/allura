@@ -19,12 +19,12 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 from ew.core import validator
 
-from pylons import request, tmpl_context as c
+from tg import request, tmpl_context as c
 from formencode import Invalid
 from webob import exc
 
 from .forms import ForgeForm
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
 from allura import model as M

@@ -32,8 +32,8 @@ except ImportError:
 from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
-from pylons import app_globals as g
-from pylons import tmpl_context as c
+from tg import app_globals as g
+from tg import tmpl_context as c
 from formencode import validators as fev, schema
 from webob import exc
 

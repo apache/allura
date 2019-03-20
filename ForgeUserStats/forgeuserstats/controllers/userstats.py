@@ -19,7 +19,7 @@ import re
 
 from tg import expose, validate, redirect
 from tg.decorators import with_trailing_slash
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from webob import exc
 
 from allura.controllers import BaseController

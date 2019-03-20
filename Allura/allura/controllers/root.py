@@ -23,8 +23,8 @@ import logging
 from tg import expose, request, config, session, redirect
 from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
-from pylons import tmpl_context as c
-from pylons import response
+from tg import tmpl_context as c
+from tg import response
 from paste.deploy.converters import asbool
 
 from allura.app import SitemapEntry
@@ -107,9 +107,6 @@ class RootController(WsgiDispatchController):
             # See also http://blog.55minutes.com/2011/10/how-to-defeat-the-browser-back-button-cache/ and
             # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=en#defining_optimal_cache-control_policy
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-
-    def _cleanup_request(self):
-        pass
 
     @expose()
     @with_trailing_slash

@@ -22,8 +22,8 @@ from itertools import islice, ifilter
 
 from bson import ObjectId
 from ming.orm import session
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from tg import tmpl_context as c, app_globals as g
+from tg import request, response
 from tg import expose, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import asbool, asint

@@ -32,7 +32,7 @@ class TemplateTest(object):
         setup_config_test()
         forge_config = ForgeConfig()
         forge_config.setup_jinja_renderer()
-        self.jinja2_env = config['pylons.app_globals'].jinja2_env
+        self.jinja2_env = config['tg.app_globals'].jinja2_env
 
 
 class TestRelatedArtifacts(TemplateTest):

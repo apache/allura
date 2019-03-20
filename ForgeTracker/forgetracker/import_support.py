@@ -22,7 +22,7 @@ from datetime import datetime
 from cStringIO import StringIO
 
 # Non-stdlib imports
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports

@@ -18,7 +18,7 @@
 import sys
 import logging
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from ming.orm import session
 from bson import ObjectId
 from mock import Mock, patch

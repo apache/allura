@@ -17,7 +17,7 @@
 
 #-*- python -*-
 import logging
-from pylons import tmpl_context as c, request
+from tg import tmpl_context as c, request
 
 # Non-stdlib imports
 from ming.utils import LazyProperty

@@ -53,8 +53,8 @@ from bson import ObjectId
 from paste.deploy import appconfig
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
-from pylons import tmpl_context as c, app_globals as g
-from pylons import response, request
+from tg import tmpl_context as c, app_globals as g
+from tg import response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode

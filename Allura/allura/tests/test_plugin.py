@@ -19,7 +19,7 @@ import datetime as dt
 import calendar
 
 import tg
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from webob import Request, exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -253,8 +253,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_no_note(self, request, response, SiteNotification):
         SiteNotification.current.return_value = None
         assert_is_none(ThemeProvider().get_site_notification())
@@ -262,8 +262,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_closed(self, request, response, SiteNotification):
         SiteNotification.current.return_value._id = 'deadbeef'
         SiteNotification.current.return_value.user_role = None
@@ -275,8 +275,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_impressions_over(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -290,8 +290,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_impressions_under(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -306,8 +306,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_impressions_persistent(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -320,8 +320,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_new_notification(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -336,8 +336,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_no_cookie(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -352,8 +352,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response')
-    @patch('pylons.request')
+    @patch('tg.response')
+    @patch('tg.request')
     def test_get_site_notification_bad_cookie(self, request, response, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
@@ -397,8 +397,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response', MagicMock())
-    @patch('pylons.request', MagicMock())
+    @patch('tg.response', MagicMock())
+    @patch('tg.request', MagicMock())
     def test_get_site_notification_with_role(self, SiteNotification, c):
         note = SiteNotification.current.return_value
         note.user_role = 'Test'
@@ -425,8 +425,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response', MagicMock())
-    @patch('pylons.request', MagicMock())
+    @patch('tg.response', MagicMock())
+    @patch('tg.request', MagicMock())
     def test_get_site_notification_without_role(self, SiteNotification):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -437,8 +437,8 @@ class TestThemeProvider(object):
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('re.search')
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response', MagicMock())
-    @patch('pylons.request', MagicMock())
+    @patch('tg.response', MagicMock())
+    @patch('tg.request', MagicMock())
     def test_get_site_notification_with_page_regex(self, SiteNotification, search):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -453,8 +453,8 @@ class TestThemeProvider(object):
 
     @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response', MagicMock())
-    @patch('pylons.request', MagicMock())
+    @patch('tg.response', MagicMock())
+    @patch('tg.request', MagicMock())
     def test_get_site_notification_with_page_tool_type(self, SiteNotification, c):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -472,10 +472,9 @@ class TestThemeProvider(object):
         assert_is(ThemeProvider().get_site_notification(), None)
 
     @patch('allura.lib.plugin.c')
-    @patch('pylons.request')
+    @patch('tg.request')
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.response', MagicMock())
-    @patch('pylons.request', MagicMock())
+    @patch('tg.response', MagicMock())
     def test_get_site_notification_with_page_tool_type_page_regex(self, SiteNotification, request, c):
         note = SiteNotification.current.return_value
         note.user_role = None
@@ -518,7 +517,7 @@ class TestThemeProvider(object):
         assert get_note[1] == 'test_id-1-False'
 
     @patch('allura.model.notification.SiteNotification')
-    @patch('pylons.request')
+    @patch('tg.request')
     def test_get_site_notifications_with_api_cookie(self, request, SiteNotification):
         note = SiteNotification.current.return_value
         note._id = 'test_id'

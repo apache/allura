@@ -56,7 +56,7 @@ try:
 except ImportError:
     RE2_INSTALLED = False
 
-from pylons import app_globals as g
+from tg import app_globals as g
 
 MAX_OUTPUT = 99999
 DUMMYTEXT = None

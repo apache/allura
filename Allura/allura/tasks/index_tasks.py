@@ -19,8 +19,8 @@ import sys
 import logging
 from contextlib import contextmanager
 
-from pylons import app_globals as g
-from pylons import tmpl_context as c
+from tg import app_globals as g
+from tg import tmpl_context as c
 
 from allura.lib import helpers as h
 from allura.lib.decorators import task

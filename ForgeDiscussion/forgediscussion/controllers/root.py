@@ -25,8 +25,8 @@ from collections import OrderedDict
 
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from tg import tmpl_context as c, app_globals as g
+from tg import request
 from formencode import validators
 from webob import exc
 import pymongo

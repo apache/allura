@@ -21,7 +21,7 @@ from contextlib import contextmanager
 from itertools import groupby
 
 from paste.deploy.converters import asbool
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError, InvalidDocument, OperationFailure
 
 from ming.orm import mapper, session, Mapper

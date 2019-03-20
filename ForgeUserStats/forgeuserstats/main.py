@@ -17,7 +17,7 @@
 
 #-*- python -*-
 import logging
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 from datetime import datetime
 
 from allura.app import Application, SitemapEntry

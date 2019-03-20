@@ -25,8 +25,8 @@ from paste.deploy.converters import aslist
 
 from BeautifulSoup import BeautifulSoup
 import git
-from pylons import app_globals as g
-from pylons import tmpl_context as c
+from tg import app_globals as g
+from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from formencode import validators as fev
 from tg import (

@@ -25,7 +25,7 @@ import os
 
 import pymongo
 from pymongo.errors import OperationFailure
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from pprint import pformat
 from paste.deploy.converters import aslist, asbool
 import jinja2

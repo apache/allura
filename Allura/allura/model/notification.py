@@ -39,7 +39,7 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 from tg import config
 import pymongo
 import jinja2

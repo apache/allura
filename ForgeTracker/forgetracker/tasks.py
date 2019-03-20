@@ -18,7 +18,7 @@
 import logging
 from datetime import datetime
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from allura.lib.decorators import task
 from allura.lib import helpers as h

@@ -18,7 +18,7 @@
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.base import Object
 
-from pylons import tmpl_context as c
+from tg import tmpl_context as c
 
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form

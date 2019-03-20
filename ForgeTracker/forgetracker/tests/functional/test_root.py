@@ -40,8 +40,8 @@ from nose.tools import (
     assert_not_equal,
 )
 from formencode.variabledecode import variable_encode
-from pylons import tmpl_context as c
-from pylons import app_globals as g
+from tg import tmpl_context as c
+from tg import app_globals as g
 from tg import config
 
 from alluratest.controller import TestController, setup_basic_test

@@ -18,7 +18,7 @@
 import logging
 
 import oauth2 as oauth
-from pylons import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g
 
 from paste.deploy.converters import aslist
 from tg import config

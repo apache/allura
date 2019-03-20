@@ -18,7 +18,7 @@
 import logging
 import warnings
 
-from pylons import app_globals as g, tmpl_context as c
+from tg import app_globals as g, tmpl_context as c
 from formencode import validators as fev
 import formencode
 import ew as ew_core
