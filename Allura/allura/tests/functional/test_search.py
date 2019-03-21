@@ -23,11 +23,11 @@ class TestSearch(TestController):
 
     @patch('allura.lib.search.search')
     def test_global_search_controller(self, search):
-        self.app.get('/gsearch/')
+        self.app.get('/search/')
         assert not search.called, search.called
-        self.app.get('/gsearch/', params=dict(q='Root'))
+        self.app.get('/search/', params=dict(q='Root'))
         assert search.called, search.called
 
     def test_project_search_controller(self):
-        self.app.get('/search/')
-        self.app.get('/search/', params=dict(q='Root'))
+        self.app.get('/p/test/search/')
+        self.app.get('/p/test/search/', params=dict(q='Root'))

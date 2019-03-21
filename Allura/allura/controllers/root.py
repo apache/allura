@@ -26,11 +26,13 @@ from tg.flash import TGFlash
 from tg import tmpl_context as c
 from tg import response
 from paste.deploy.converters import asbool
+from webob import exc
 
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
 from allura.lib import plugin
 from allura.controllers.error import ErrorController
+from allura.controllers.project import NeighborhoodController
 from allura import model as M
 from allura.lib.widgets import project_list as plw
 from allura.ext.personal_dashboard.dashboard_main import DashboardController
@@ -77,16 +79,20 @@ class RootController(WsgiDispatchController):
     rest = RestController()
     categories = TroveCategoryController()
     dashboard = DashboardController()
-
+    browse = ProjectBrowseController()
+    
     def __init__(self):
-        n_url_prefix = '/%s/' % request.path.split('/')[1]
+        super(RootController, self).__init__()
+        self.nf.admin = SiteAdminController()
+        
+    @expose()
+    def _lookup(self, nbhd_mount, *remainder):
+        n_url_prefix = '/%s/' % nbhd_mount
         n = self._lookup_neighborhood(n_url_prefix)
         if n and not n.url_prefix.startswith('//'):
-            n.bind_controller(self)
-        self.browse = ProjectBrowseController()
-        self.nf.admin = SiteAdminController()
-
-        super(RootController, self).__init__()
+            return NeighborhoodController(n), remainder
+        else:
+            raise exc.HTTPNotFound
 
     def _lookup_neighborhood(self, url_prefix):
         n = M.Neighborhood.query.get(url_prefix=url_prefix)

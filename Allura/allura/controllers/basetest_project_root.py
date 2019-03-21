@@ -42,10 +42,9 @@ log = logging.getLogger(__name__)
 
 
 class BasetestProjectRootController(WsgiDispatchController, ProjectController):
-    '''Root controller for testing -- it behaves just like a
-    ProjectController for test/ except that all tools are mounted,
-    on-demand, at the mount point that is the same as their entry point
-    name.
+    '''Root controller for testing -- it behaves just like the RootController
+    plus acts as shorthand for the ProjectController at /p/test/ plus all tools are mounted,
+    on-demand, at the mount point that is the same as their entry point name.
 
     Also, the test-admin is perpetually logged in here.
 
@@ -58,20 +57,20 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     '''
 
     def __init__(self):
-        for n in M.Neighborhood.query.find():
-            if n.url_prefix.startswith('//'):
-                continue
-            n.bind_controller(self)
-            if n.url_prefix == '/p/':
-                self.p_nbhd = n
+        self.p_nbhd = M.Neighborhood.query.get(url_prefix='/p/')
+        assert self.p_nbhd
 
-        proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
-        for attr in ('index', 'browse', 'auth', 'nf', 'error', 'categories', 'neighborhood', 'dashboard'):
-            setattr(self, attr, getattr(proxy_root, attr))
-        self.gsearch = proxy_root.search
-        self.rest = RestController()
+
+        # proxy root controller paths
+        self.real_root_controller = RootController()
+        for attr in dir(self.real_root_controller):
+            if not attr.startswith('_'):
+                setattr(self, attr, getattr(self.real_root_controller, attr))
+
+        # neighborhoods & projects handled in _lookup
+
         super(BasetestProjectRootController, self).__init__()
 
     def _setup_request(self):
@@ -90,8 +89,14 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     @expose()
     def _lookup(self, name, *remainder):
-        if not h.re_project_name.match(name):
-            raise exc.HTTPNotFound, name
+        # first try a neighborhood path through the real root controller
+        try:
+            return self.real_root_controller._lookup(name, *remainder)
+        except exc.HTTPNotFound:
+            pass
+
+        # magic shorthand helper lookups so self.app.get('/wiki') instantiates a wiki and calls /p/test/wiki controller
+
         subproject = M.Project.query.get(
             shortname=c.project.shortname + '/' + name,
             neighborhood_id=self.p_nbhd._id)
