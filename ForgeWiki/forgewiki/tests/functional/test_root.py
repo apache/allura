@@ -61,7 +61,6 @@ class TestRootController(TestController):
                          extra_environ=dict(username='*anonymous'))
         assert 'Create Page' not in r, r
 
-    @td.with_wiki
     def test_create_wiki_page(self):
         url = u"/p/test/wiki/create_wiki_page/"
         r = self.app.get(url)

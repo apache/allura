@@ -414,7 +414,7 @@ class PostController(BaseController):
                              kw=kw)
 
     @h.vardec
-    @expose()
+    @expose('json')
     @require_post()
     @validate(pass_validator, error_handler=error_handler)
     def moderate(self, **kw):

@@ -63,6 +63,8 @@ class TestGitHubOAuthMixin(TestController, TestCase):
     @patch('forgeimporters.github.session', MagicMock())
     @patch('forgeimporters.github.request', MagicMock())
     def test_oauth_callback_complete(self):
-        with patch.object(self.mix, 'oauth_callback_complete') as _mock, raises(HTTPFound):
+        with patch.object(self.mix, 'oauth_callback_complete') as _mock, \
+                patch('forgeimporters.github.redirect') as tg_redir:
             self.mix.oauth_callback()
         self.assertEqual(_mock.call_count, 1)
+        self.assertEqual(tg_redir.call_count, 1)

@@ -23,7 +23,7 @@
 {% else %}
   {% set params = '?page={}&limit={}'.format(page, limit) %}
 {% endif %}
-{% set shortlink_url = h.absurl(url.current() + params + '#' + value.slug) %}
+{% set shortlink_url = h.absurl(request.path + params + '#' + value.slug) %}
 
 <div>
   <div id="{{value.slug}}" class="discussion-post{%if value.is_meta %} meta_post{% endif %}">

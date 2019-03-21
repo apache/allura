@@ -22,7 +22,7 @@ import tg.decorators
 from decorator import decorator
 from tg import request
 import mock
-import simplejson
+import json
 
 from allura.lib import helpers as h
 
@@ -97,7 +97,7 @@ def apply():
     # and may attempt to render JSON data as HTML if the URL ends in .html
     original_tg_jsonify_GenericJSON_encode = tg.jsonify.GenericJSON.encode
     escape_pattern_with_lt = re.compile(
-        simplejson.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
+        json.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
 
     @h.monkeypatch(tg.jsonify.GenericJSON)
     def encode(self, o):
@@ -105,8 +105,8 @@ def apply():
         # encode_basestring_ascii() and encode_basestring_ascii may likely be c-compiled
         # and thus not monkeypatchable
         with h.push_config(self, ensure_ascii=False), \
-                h.push_config(simplejson.encoder, ESCAPE=escape_pattern_with_lt), \
-                mock.patch.dict(simplejson.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
+                h.push_config(json.encoder, ESCAPE=escape_pattern_with_lt), \
+                mock.patch.dict(json.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
             return original_tg_jsonify_GenericJSON_encode(self, o)
 
 
