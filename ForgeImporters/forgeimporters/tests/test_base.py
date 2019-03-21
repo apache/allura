@@ -309,13 +309,13 @@ class TestProjectToolsImportController(TestController):
                 ep('importer3', importer=TI3),
             ]
             import_main_page = admin_page.click('Import')
-        url = import_main_page.environ['PATH_INFO']
+        url = import_main_page.request.path
         assert url.endswith('/admin/ext/import/'), url
 
         with mock.patch.object(base.ToolImporter, 'by_name') as by_name:
             by_name.return_value = TI1
             import1_page = import_main_page.click('Import', href=r'importer1$')
-        url = import1_page.environ['PATH_INFO']
+        url = import1_page.request.path
         assert url.endswith('/admin/ext/import/importer1'), url
         assert_equal(import1_page.body, 'test importer 1 controller webpage')
 
@@ -328,7 +328,7 @@ class TestProjectToolsImportController(TestController):
         admin_page = self.app.get('/admin/')
         with h.push_config(config, hidden_importers='importer1'):
             import_main_page = admin_page.click('Import')
-        url = import_main_page.environ['PATH_INFO']
+        url = import_main_page.request.path
         assert url.endswith('/admin/ext/import/'), url
         assert not import_main_page.html.find('a', href='importer1')
         assert import_main_page.html.find('a', href='importer2')

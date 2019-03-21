@@ -54,7 +54,7 @@ from allura.lib import helpers as h
 
 
 def unentity(s):
-    return s.replace('&quot;', '"')
+    return s.replace('&quot;', '"').replace('&#34;', '"')
 
 
 class TestAuth(TestController):
@@ -1523,6 +1523,7 @@ To reset your password on %s, please visit the following URL:
         ap.authenticate_request()._id = user._id
         ap.by_username().username = user.username
         self.app.get('/auth/forgotten_password', status=404)
+        self.app.get('/').follow()  # establish session
         self.app.post('/auth/set_new_password',
                       {'pw': 'foo', 'pw2': 'foo', '_session_id': self.app.cookies['_session_id']},
                       status=404)
@@ -1611,11 +1612,17 @@ class TestOAuth(TestController):
         ThreadLocalORMSession.flush_all()
         req = Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
         r = self.app.post('/rest/oauth/request_token', params={'key': 'value'})
-        Request.from_request.assert_called_once_with(
-            'POST', 'http://localhost/rest/oauth/request_token',
-            headers={'Host': 'localhost', 'Content-Type': 'application/x-www-form-urlencoded; charset="utf-8"'},
-            parameters={'key': 'value'},
-            query_string='')
+
+        # dict-ify webob.EnvironHeaders
+        call = Request.from_request.call_args_list[0]
+        call[1]['headers'] = dict(call[1]['headers'])
+        # then check equality
+        assert_equal(Request.from_request.call_args_list, [
+            mock.call('POST', 'http://localhost/rest/oauth/request_token',
+                      headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded'},
+                      parameters={'key': 'value'},
+                      query_string='')
+        ])
         Server().verify_request.assert_called_once_with(req, consumer_token.consumer, None)
         request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
         assert_is_not_none(request_token)

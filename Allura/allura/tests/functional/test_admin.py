@@ -972,7 +972,7 @@ class TestProjectAdmin(TestController):
         with mock.patch.dict(g.entry_points, eps):
             main_page = self.app.get('/admin/')
             foo_page = main_page.click(description='Foo Settings')
-            url = foo_page.environ['PATH_INFO']
+            url = foo_page.request.path
             assert url.endswith('/admin/ext/foo'), url
             assert_equals('here the foo settings go', foo_page.body)
 
