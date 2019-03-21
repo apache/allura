@@ -52,24 +52,26 @@ log = logging.getLogger(__name__)
 
 class ForgeConfig(AppConfig):
 
-    def __init__(self, root_controller='root'):
-        AppConfig.__init__(self)
-        self.root_controller = root_controller
+    def __init__(self, root_controller=None):
+        AppConfig.__init__(self, minimal=True, root_controller=root_controller)
         self.package = allura
         self.renderers = ['json', 'genshi', 'mako', 'jinja']
-        self.default_renderer = 'genshi'
+        self.default_renderer = 'jinja'
         self.use_sqlalchemy = False
-        self.use_toscawidgets = True
+        self.use_toscawidgets = False
         self.use_transaction_manager = False
+        self.enable_routes = True
         self.handle_status_codes = [403, 404]
         self.disable_request_extensions = True
 
     def after_init_config(self):
         config['tg.strict_tmpl_context'] = True
 
+    def setup_routes(self):
         map = Mapper()
         # Setup a default route for the root of object dispatch
-        map.connect('*url', controller=self.root_controller,
+        # tg.root_controller is set by AppConfig.__init__
+        map.connect('*url', controller=self.get('tg.root_controller', 'root'),
                     action='routes_placeholder')
         config['routes.map'] = map
 
@@ -131,5 +133,6 @@ class JinjaEngine(ew.TemplateEngine):
         with ew.utils.push_context(ew.widget_context, render_context=context):
             text = template.render(**context)
             return literal(text)
+
 
 base_config = ForgeConfig()

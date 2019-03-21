@@ -62,13 +62,9 @@ from allura.lib import helpers as h
 
 __all__ = ['make_app']
 
-# Use base_config to setup the necessary PasteDeploy application factory.
-# make_base_app will wrap the TG2 app with all the middleware it needs.
-make_base_app = base_config.setup_tg_wsgi_app(load_environment)
-
 
 def make_app(global_conf, full_stack=True, **app_conf):
-    root = app_conf.get('override_root', 'root')
+    root = app_conf.get('override_root', None)
     return _make_core_app(root, global_conf, full_stack, **app_conf)
 
 
@@ -173,7 +169,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     app = RegistryManager(app, streaming=True)
 
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
-    if config.get('override_root') != 'task':
+    if config.get('override_root') not in ('task', 'basetest_project_root'):
         # Converts exceptions to HTTP errors, shows traceback in debug mode
         # don't use TG footer with extra CSS & images that take time to load
         tg.error.footer_html = '<!-- %s %s -->'
