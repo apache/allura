@@ -152,11 +152,6 @@ class Neighborhood(MappedClass):
         return provider.register_project(
             self, shortname, project_name, user or getattr(c, 'user', None), user_project, private_project, apps)
 
-    def bind_controller(self, controller):
-        from allura.controllers.project import NeighborhoodController
-        controller_attr = self.url_prefix[1:-1]
-        setattr(controller, controller_attr, NeighborhoodController(self))
-
     def get_custom_css(self):
         if self.allow_custom_css:
             return self.css

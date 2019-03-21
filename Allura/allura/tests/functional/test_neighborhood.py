@@ -290,10 +290,10 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Adobe', css='',
                                       homepage='# MozQ1', tracking_id='U-123456'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root'), status=302)
         r = self.app.post('/adobe/adobe-1/admin/update',
                           params=dict(tracking_id='U-654321'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root'), status=302)
         r = self.app.get('/adobe/adobe-1/admin/overview',
                          extra_environ=dict(username='root'))
         assert "_add_tracking('nbhd', 'U-123456');" in r, r

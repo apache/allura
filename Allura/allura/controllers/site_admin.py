@@ -65,7 +65,6 @@ class SiteAdminController(object):
 
     def __init__(self):
         self.task_manager = TaskManagerController()
-        c.site_admin_sidebar_menu = self.sidebar_menu()
         self.user = AdminUserDetailsController()
         self.delete_projects = DeleteProjectsController()
         self.site_notifications = SiteNotificationController()
@@ -74,6 +73,8 @@ class SiteAdminController(object):
         with h.push_context(config.get('site_admin_project', 'allura'),
                             neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
             require_access(c.project, 'admin')
+
+        c.site_admin_sidebar_menu = self.sidebar_menu()
 
     @expose()
     def _lookup(self, name, *remainder):
