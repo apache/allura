@@ -594,9 +594,10 @@ def render_genshi_plaintext(template_name, **template_vars):
 
 @tg.expose(content_type='text/plain')
 def json_validation_error(controller, **kwargs):
+    exc = request.validation['exception']
     result = dict(status='Validation Error',
-                  errors=c.validation_exception.unpack_errors(),
-                  value=c.validation_exception.value,
+                  errors={fld: str(err) for fld, err in exc.error_dict.iteritems()},
+                  value=exc.value,
                   params=kwargs)
     response.status = 400
     return json.dumps(result, indent=2)
