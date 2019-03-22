@@ -22,10 +22,7 @@ import json
 from urlparse import urlparse, parse_qs
 from urllib import urlencode
 
-from allura.lib.multifactor import TotpService, RecoveryCodeService
-from allura.tests.decorators import audits, out_audits
 from bson import ObjectId
-
 import re
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
@@ -44,13 +41,16 @@ from nose.tools import (
 )
 from tg import tmpl_context as c, app_globals as g
 from webob import exc
+import oauth2
 
 from allura.tests import TestController
 from allura.tests import decorators as td
+from allura.tests.decorators import audits, out_audits
 from alluratest.controller import setup_trove_categories
 from allura import model as M
 from allura.lib import plugin
 from allura.lib import helpers as h
+from allura.lib.multifactor import TotpService, RecoveryCodeService
 
 
 def unentity(s):
@@ -1639,7 +1639,7 @@ class TestOAuth(TestController):
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
     def test_request_token_invalid(self, Request, Server):
-        Server().verify_request.side_effect = ValueError
+        Server().verify_request.side_effect = oauth2.Error('test_request_token_invalid')
         M.OAuthConsumerToken.consumer = mock.Mock()
         user = M.User.by_username('test-user')
         M.OAuthConsumerToken(
@@ -1810,7 +1810,7 @@ class TestOAuth(TestController):
             validation_pin='good',
         )
         ThreadLocalORMSession.flush_all()
-        Server().verify_request.side_effect = ValueError
+        Server().verify_request.side_effect = oauth2.Error('test_access_token_bad_sig')
         self.app.get('/rest/oauth/access_token', status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
