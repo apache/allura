@@ -120,7 +120,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.app = app
         return app.root, remainder
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ, context):
         """ Called from a WebTest 'app' instance.
 
 
@@ -142,7 +142,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             environ['beaker.session'].save()
             environ['beaker.session'].persist()
             c.user = auth.authenticate_request()
-        return WsgiDispatchController.__call__(self, environ, start_response)
+        return WsgiDispatchController.__call__(self, environ, context)
 
 
 class DispatchTest(object):

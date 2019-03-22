@@ -22,12 +22,16 @@ class TaskController(object):
 
     The purpose of this app is to allow us to replicate the
     normal web request environment as closely as possible
-    when executing celery tasks.
+    when executing taskd tasks.
     '''
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ, context):
+        # see TGController / CoreDispatcher for reference on how this works on a normal controllers
+
         task = environ['task']
         nocapture = environ['nocapture']
         result = task(restore_context=False, nocapture=nocapture)
-        start_response('200 OK', [])
-        return [result]
+        py_response = context.response
+        py_response.headers['Content-Type'] = 'text/plain'  # `None` default is problematic for some middleware
+        py_response.body = result or ''
+        return py_response
