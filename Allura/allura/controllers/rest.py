@@ -116,7 +116,7 @@ class RestController(object):
 
 class OAuthNegotiator(object):
 
-    @LazyProperty
+    @property
     def server(self):
         result = oauth.Server()
         result.add_signature_method(oauth.SignatureMethod_PLAINTEXT())
@@ -165,8 +165,8 @@ class OAuthNegotiator(object):
         consumer = consumer_token.consumer
         try:
             self.server.verify_request(req, consumer, access_token.as_token())
-        except:
-            log.error('Invalid signature')
+        except oauth.Error as e:
+            log.error('Invalid signature %s %s', type(e), e)
             raise exc.HTTPUnauthorized
         return access_token
 
@@ -187,8 +187,8 @@ class OAuthNegotiator(object):
         consumer = consumer_token.consumer
         try:
             self.server.verify_request(req, consumer, None)
-        except:
-            log.error('Invalid signature')
+        except oauth.Error as e:
+            log.error('Invalid signature %s %s', type(e), e)
             raise exc.HTTPUnauthorized
         req_token = M.OAuthRequestToken(
             consumer_token_id=consumer_token._id,
@@ -259,8 +259,8 @@ class OAuthNegotiator(object):
         consumer = consumer_token.consumer
         try:
             self.server.verify_request(req, consumer, rtok)
-        except:
-            log.error('Invalid signature')
+        except oauth.Error as e:
+            log.error('Invalid signature %s %s', type(e), e)
             raise exc.HTTPUnauthorized
         acc_token = M.OAuthAccessToken(
             consumer_token_id=consumer_token._id,
