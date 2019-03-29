@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import config
+from tg import config, app_globals as g
 from mock import Mock
 from nose.tools import assert_equal
 
-from allura.config.app_cfg import ForgeConfig
+from allura.config.app_cfg import ForgeConfig, AlluraJinjaRenderer
 from alluratest.controller import setup_config_test
 
 
@@ -30,9 +30,7 @@ def strip_space(s):
 class TemplateTest(object):
     def setUp(self):
         setup_config_test()
-        forge_config = ForgeConfig()
-        forge_config.setup_jinja_renderer()
-        self.jinja2_env = config['tg.app_globals'].jinja2_env
+        self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 
 
 class TestRelatedArtifacts(TemplateTest):
