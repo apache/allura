@@ -33,13 +33,13 @@ convert them into boolean, for example, you should use the
 import logging
 from functools import partial
 
-import tg
+from tg import app_globals as g
+from tg.renderers.jinja import JinjaRenderer
 import jinja2
 import pylons
 from tg.configuration import AppConfig, config
 from routes import Mapper
 from webhelpers.html import literal
-
 import ew
 
 import allura
@@ -57,12 +57,18 @@ class ForgeConfig(AppConfig):
         self.package = allura
         self.renderers = ['json', 'genshi', 'mako', 'jinja']
         self.default_renderer = 'jinja'
+        self.register_rendering_engine(AlluraJinjaRenderer)
         self.use_sqlalchemy = False
         self.use_toscawidgets = False
         self.use_transaction_manager = False
         self.enable_routes = True
         self.handle_status_codes = [403, 404]
         self.disable_request_extensions = True
+
+        # if left to True (default) would use crank.util.default_path_translator to convert all URL punctuation to "_"
+        # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
+        # and makes many URLs be valid that we might not want like /foo*bar /foo@bar /foo:bar
+        self.dispatch_path_translator = None
 
     def after_init_config(self):
         config['tg.strict_tmpl_context'] = True
@@ -75,7 +81,11 @@ class ForgeConfig(AppConfig):
                     action='routes_placeholder')
         config['routes.map'] = map
 
-    def _setup_bytecode_cache(self):
+
+class AlluraJinjaRenderer(JinjaRenderer):
+
+    @classmethod
+    def _setup_bytecode_cache(cls):
         cache_type = config.get('jinja_bytecode_cache_type')
         bcc = None
         try:
@@ -92,8 +102,12 @@ class ForgeConfig(AppConfig):
                           " %s-backed bytecode cache for Jinja" % cache_type)
         return bcc
 
-    def setup_jinja_renderer(self):
-        bcc = self._setup_bytecode_cache()
+    @classmethod
+    def create(cls, config, app_globals):
+        # this has evolved over the age of allura, and upgrades of TG
+        # the parent JinjaRenderer logic is different, some may be better and hasn't been incorporated into ours yet
+
+        bcc = cls._setup_bytecode_cache()
         jinja2_env = jinja2.Environment(
             loader=PackagePathLoader(),
             auto_reload=config.auto_reload_templates,
@@ -104,13 +118,13 @@ class ForgeConfig(AppConfig):
         jinja2_env.install_gettext_translations(pylons.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
-        jinja2_env.filters['filter'] = lambda s,t=None: filter(t and jinja2_env.tests[t], s)
+        jinja2_env.filters['filter'] = lambda s, t=None: filter(t and jinja2_env.tests[t], s)
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
-        config['tg.app_globals'].jinja2_env = jinja2_env
+        config['tg.app_globals'].jinja2_env = jinja2_env  # TG doesn't need this, but we use g.jinja2_env a lot
         # Jinja's unable to request c's attributes without strict_c
         config['tg.strict_tmpl_context'] = True
-        self.render_functions.jinja = tg.render.render_jinja
+        return {'jinja': cls(jinja2_env)}
 
 
 class JinjaEngine(ew.TemplateEngine):
