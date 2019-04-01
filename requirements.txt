@@ -3,7 +3,7 @@ BeautifulSoup==3.2.0
 beautifulsoup4==4.6.1
 Beaker==1.6.4
 chardet==1.0.1
-colander==0.9.3
+colander==1.7.0
 # dep of pypeline
 Creoleparser==0.7.3
 decorator==3.3.2
@@ -18,7 +18,7 @@ Genshi==0.6
 html5lib==1.0.1
 # dep of oauth2
 httplib2==0.7.4
-iso8601==0.1.4
+iso8601==0.1.12
 Jinja2==2.10
 Markdown==2.2.1
 Ming==0.5.6
@@ -47,7 +47,7 @@ six==1.10.0
 # dep of pypeline
 textile==2.1.5
 # dep of colander
-translationstring==0.4
+translationstring==1.3
 TimerMiddleware==0.4.4
 TurboGears2==2.1.5
 # dep of html5lib
