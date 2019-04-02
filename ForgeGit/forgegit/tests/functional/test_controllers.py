@@ -841,6 +841,16 @@ class TestFork(_TestCase):
         assert_in('commits-loading', r)
         self.app.get('/p/test/src-git/merge-requests/%s/commits_html' % mr_num, status=202)  # 202 used for "busy"
 
+    def test_merge_request_validation_error(self):
+        r = self.app.get('/p/test2/code/request_merge')
+        r = self._follow(r)
+        form = self._find_request_merge_form(r)
+        form['source_branch'].options.append(('bogus', False))
+        form['source_branch'].value = 'bogus'
+        r = form.submit()
+        r = self._follow(r)
+        r.mustcontain('Value must be one of:')
+
 
 class TestDiff(TestController):
     def setUp(self):

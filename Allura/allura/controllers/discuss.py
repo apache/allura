@@ -260,7 +260,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     rate_limit(M.Post, "Comment", redir=request.referrer)
     if thread.ref:
         require_access(thread.ref.artifact, 'post')
-    kw = edit_widget.to_python(kw, None)
+    kw = edit_widget.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
     if not kw['text']:
         flash('Your post was not saved. You must provide content.',
               'error')
@@ -310,7 +310,7 @@ class PostController(BaseController):
         c.post = self.W.post
         if request.method == 'POST':
             require_access(self.post, 'moderate')
-            post_fields = self.W.edit_post.to_python(kw, None)
+            post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
             for k, v in post_fields.iteritems():
@@ -554,7 +554,7 @@ class PostRestController(PostController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def reply(self, **kw):
         require_access(self.thread, 'post')
-        kw = self.W.edit_post.to_python(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
         post = self.thread.post(parent_id=self.post._id, **kw)
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
@@ -573,7 +573,7 @@ class ThreadRestController(ThreadController):
     @validate(pass_validator, error_handler=h.json_validation_error)
     def new(self, **kw):
         require_access(self.thread, 'post')
-        kw = self.W.edit_post.to_python(kw, None)
+        kw = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')
 
