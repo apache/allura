@@ -482,11 +482,10 @@ class AuthController(BaseController):
     @expose()
     @require_post()
     @without_trailing_slash
-    @validate(V.NullValidator(), error_handler=pwd_expired)
+    @validate(F.password_change_form, error_handler=pwd_expired)
     def pwd_expired_change(self, **kw):
         require_authenticated()
         return_to = kw.get('return_to')
-        kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
             expired_username = session.get('expired-username')
@@ -643,9 +642,8 @@ class PreferencesController(BaseController):
 
     @expose()
     @require_post()
-    @validate(V.NullValidator(), error_handler=index)
+    @validate(F.password_change_form, error_handler=index)
     def change_password(self, **kw):
-        kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.set_password(c.user, kw['oldpw'], kw['pw'])

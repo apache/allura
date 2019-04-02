@@ -22,6 +22,7 @@ from datetime import datetime
 from urllib import quote, unquote
 from collections import defaultdict, OrderedDict
 
+
 from ming.utils import LazyProperty
 from paste.deploy.converters import asbool
 from tg import tmpl_context as c, app_globals as g
@@ -31,6 +32,7 @@ import tg
 from tg import redirect, expose, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import session as web_session
+import formencode
 from formencode import validators
 from bson import ObjectId
 from ming.base import Object
@@ -187,10 +189,14 @@ class RepoRootController(BaseController, FeedController):
         }
 
     @memorable_forget()
-    @expose()
+    @expose('jinja:allura:templates/repo/request_merge.html')  # needed when we "return self.request_merge(...)"
     @require_post()
     def do_request_merge(self, **kw):
-        kw = self.mr_widget.to_python(kw)
+        try:
+            kw = self.mr_widget.to_python(kw)
+        except formencode.Invalid:
+            # trigger error_handler directly
+            return self.request_merge(**kw)
         downstream = dict(
             project_id=c.project._id,
             mount_point=c.app.config.options.mount_point,
@@ -459,11 +465,15 @@ class MergeRequestController(object):
         }
 
     @memorable_forget()
-    @expose()
+    @expose('jinja:allura:templates/repo/merge_request_edit.html')   # needed when we "return self.edit(...)"
     @require_post()
     def do_request_merge_edit(self, **kw):
         require_access(self.req, 'write')
-        kw = self.mr_widget_edit.to_python(kw)
+        try:
+            kw = self.mr_widget_edit.to_python(kw)
+        except formencode.Invalid:
+            # trigger error_handler directly
+            return self.edit(**kw)
         changes = OrderedDict()
         if self.req.summary != kw['summary']:
             changes['Summary'] = [self.req.summary, kw['summary']]

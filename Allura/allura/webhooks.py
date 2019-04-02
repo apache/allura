@@ -135,14 +135,21 @@ class WebhookController(BaseController, AdminControllerMixin):
                 'action': 'create',
                 'form': self.create_form()}
 
-    @expose()
+    @expose('jinja:allura:templates/webhooks/create_form.html')  # needed when we "return self.index(...)"
     @require_post()
+    # @validate set dynamically in WebhookControllerMeta
     def create(self, url, secret):
         if self.sender.enforce_limit(self.app):
             webhook = M.Webhook(
                 type=self.sender.type,
                 app_config_id=self.app.config._id)
-            self.update_webhook(webhook, url, secret)
+            try:
+                self.update_webhook(webhook, url, secret)
+            except Invalid as e:
+                # trigger error_handler directly
+                c.form_errors['_the_form'] = e
+                return self.index(url=url, secret=secret)
+
             M.AuditLog.log('add webhook %s %s %s',
                            webhook.type, webhook.hook_url,
                            webhook.app_config.url())
@@ -152,12 +159,18 @@ class WebhookController(BaseController, AdminControllerMixin):
                   'you are allowed to create for this project/app', 'error')
         redirect(self.app.admin_url + 'webhooks')
 
-    @expose()
+    @expose('jinja:allura:templates/webhooks/create_form.html')  # needed when we "return self._default(...)"
     @require_post()
+    # @validate set dynamically in WebhookControllerMeta
     def edit(self, webhook, url, secret):
         old_url = webhook.hook_url
         old_secret = webhook.secret
-        self.update_webhook(webhook, url, secret)
+        try:
+            self.update_webhook(webhook, url, secret)
+        except Invalid as e:
+            # trigger error_handler directly
+            c.form_errors['_the_form'] = e
+            return self._default(webhook=webhook, url=url, secret=secret)
         M.AuditLog.log('edit webhook %s\n%s => %s\n%s',
                        webhook.type, old_url, url,
                        'secret changed' if old_secret != secret else '')
