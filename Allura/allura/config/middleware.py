@@ -27,8 +27,9 @@ from tg import config
 from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
 from routes.middleware import RoutesMiddleware
-from pylons.middleware import StatusCodeRedirect
+from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
+from weberror.errormiddleware import ErrorMiddleware
 
 import activitystream
 import ew
@@ -170,10 +171,13 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') not in ('task', 'basetest_project_root'):
-        # Converts exceptions to HTTP errors, shows traceback in debug mode
-        # don't use TG footer with extra CSS & images that take time to load
-        tg.error.footer_html = '<!-- %s %s -->'
-        app = tg.error.ErrorHandler(app, global_conf, **config['tg.errorware'])
+        if asbool(config['debug']):
+            # Converts exceptions to HTTP errors, shows traceback in debug mode
+            # don't use TG footer with extra CSS & images that take time to load
+            tg.error.footer_html = '<!-- %s %s -->'
+            app = tg.error.ErrorHandler(app, global_conf, **config['tg.errorware'])
+        else:
+            app = ErrorMiddleware(app, config, **config['tg.errorware'])
 
         app = SetRequestHostFromConfig(app, config)
 
