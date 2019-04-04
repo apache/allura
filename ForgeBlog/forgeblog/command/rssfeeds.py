@@ -54,6 +54,8 @@ class RssFeedsCommand(base.BlogCommand):
                       help='poster username')
 
     def command(self):
+        self.basic_setup()
+
         # If this script creates a new BlogPost, it will create an
         # activitystream activity for that post. During the saving of the
         # activity, User.url() will be called. This method defers to an
@@ -63,7 +65,6 @@ class RssFeedsCommand(base.BlogCommand):
         import webob
         tg.request_local.context.request = webob.Request.blank('/')
 
-        self.basic_setup()
         self.process_feed = exceptionless(
             None, log=allura_base.log)(self.process_feed)
         self.process_entry = exceptionless(
