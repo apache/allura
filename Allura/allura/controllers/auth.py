@@ -41,6 +41,7 @@ from allura.lib import plugin
 from allura.lib.decorators import require_post, reconfirm_auth
 from allura.lib.exceptions import InvalidRecoveryCode, MultifactorRateLimitError
 from allura.lib.repository import RepositoryApp
+from allura.lib.security import HIBPClient, HIBPCompromisedCredentials, HIBPClientError
 from allura.lib.widgets import (
     SubscriptionForm,
     OAuthApplicationForm,
@@ -83,6 +84,19 @@ class F(object):
     save_skill_form = forms.AddUserSkillForm()
     remove_skill_form = forms.RemoveSkillForm()
     disable_account_form = DisableAccountForm()
+
+
+def enforce_hibp_password_check(provider, password, failure_redirect_url):
+    if provider.hibp_password_check_enabled():
+        try:
+            HIBPClient.check_breached_password(password)
+
+        except HIBPClientError as ex:
+            log.error("Error invoking HIBP API", exc_info=ex)
+
+        except HIBPCompromisedCredentials:
+            flash('Unsafe Password - Please use a strong, unique password', 'error')
+            redirect(failure_redirect_url)
 
 
 class AuthController(BaseController):
@@ -175,6 +189,8 @@ class AuthController(BaseController):
         if not provider.forgotten_password_process:
             raise wexc.HTTPNotFound()
         user = self._validate_hash(hash)
+        enforce_hibp_password_check(provider, pw, '/auth/forgotten_password/{}'.format(hash))
+
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
@@ -488,6 +504,10 @@ class AuthController(BaseController):
         return_to = kw.get('return_to')
         kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
+        failure_redirect_url = tg.url('/auth/pwd_expired', dict(return_to=return_to))
+
+        enforce_hibp_password_check(ap, kw['pw'], failure_redirect_url)
+
         try:
             expired_username = session.get('expired-username')
             expired_user = M.User.query.get(username=expired_username) if expired_username else None
@@ -497,7 +517,8 @@ class AuthController(BaseController):
 
         except wexc.HTTPUnauthorized:
             flash('Incorrect password', 'error')
-            redirect(tg.url('/auth/pwd_expired', dict(return_to=return_to)))
+            redirect(failure_redirect_url)
+
         flash('Password changed')
         session.pop('pwd-expired', None)
         session['username'] = session.get('expired-username')
@@ -648,6 +669,8 @@ class PreferencesController(BaseController):
         kw = F.password_change_form.to_python(kw, None)
         ap = plugin.AuthenticationProvider.get(request)
         try:
+            enforce_hibp_password_check(ap, kw['pw'], '.')
+
             ap.set_password(c.user, kw['oldpw'], kw['pw'])
             session['_id'] = _session_id()  # new one so even if this session had been intercepted somehow, its invalid
             session.save()

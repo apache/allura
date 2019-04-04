@@ -523,6 +523,40 @@ class TestAuth(TestController):
         assert_equal(tasks[0].kwargs['subject'], 'Password Changed')
         assert_in('The password for your', tasks[0].kwargs['text'])
 
+    @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
+    @td.with_user_project('test-admin')
+    def test_change_password_hibp(self):
+        self.app.get('/').follow()  # establish session
+        # Get and assert user with password reset token.
+        user = self._create_password_reset_hash()
+        old_pass = user.get_pref('password')
+
+        # Attempt change password with weak pwd
+        r = self.app.post('/auth/preferences/change_password',
+                      extra_environ=dict(username='test-admin'),
+                      params={
+                          'oldpw': 'foo',
+                          'pw': 'password',
+                          'pw2': 'password',
+                          '_session_id': self.app.cookies['_session_id'],
+                      })
+
+        assert 'Unsafe' in str(r.headers)
+
+        r = self.app.post('/auth/preferences/change_password',
+                          extra_environ=dict(username='test-admin'),
+                          params={
+                              'oldpw': 'foo',
+                              'pw': '3j84rhoirwnoiwrnoiw',
+                              'pw2': '3j84rhoirwnoiwrnoiw',
+                              '_session_id': self.app.cookies['_session_id'],
+                          })
+        assert 'Unsafe' not in str(r.headers)
+
+        # Confirm password was changed.
+        user = M.User.by_username('test-admin')
+        assert_not_equal(old_pass, user.get_pref('password'))
+
     @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
@@ -1529,6 +1563,52 @@ To reset your password on %s, please visit the following URL:
         self.app.post('/auth/password_recovery_hash',
                       {'email': 'foo', '_session_id': self.app.cookies['_session_id']},
                       status=404)
+
+    @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_hibp_check(self, gen_message_id, sendmail):
+        self.app.get('/').follow()  # establish session
+        user = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        ThreadLocalORMSession.flush_all()
+
+        # request a reset
+        r = self.app.post('/auth/password_recovery_hash', {'email': email.email,
+                                                           '_session_id': self.app.cookies['_session_id'],
+                                                           })
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+
+        # load reset form and fill it out with weak password
+        r = self.app.get('/auth/forgotten_password/%s' % hash)
+        form = r.forms[0]
+        form['pw'] = form['pw2'] = new_password = 'password'
+        r = form.submit()
+        assert 'Unsafe' in str(r.headers)
+
+        # fill it out again, with a stronger password
+        r = r.follow()
+        form = r.forms[0]
+        form['pw'] = form['pw2'] = new_password = 'oj35h9u34280j924hnuiw'  # something unlikely to trip at hibp
+        r = form.submit()
+        assert 'Unsafe' not in str(r.headers)
+
+        # confirm password changed and works
+        user = M.User.query.get(username='test-admin')
+        provider = plugin.LocalAuthenticationProvider(None)
+        assert_true(provider._validate_password(user, new_password))
+
+        # confirm can log in now in same session
+        r = r.follow()
+        assert 'Log Out' not in r, r
+        form = r.forms[0]
+        encoded = self.app.antispam_field_names(r.form)
+        form[encoded['username']] = 'test-admin'
+        form[encoded['password']] = new_password
+        r = form.submit(status=302)
+        r = r.follow().follow()
+        assert 'Log Out' in r, r
 
 
 class TestOAuth(TestController):

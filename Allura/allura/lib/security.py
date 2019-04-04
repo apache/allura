@@ -18,8 +18,12 @@
 """
 This module provides the security predicates used in decorating various models.
 """
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 from collections import defaultdict
+import hashlib
+import requests
 
 from pylons import tmpl_context as c
 from pylons import request
@@ -505,3 +509,71 @@ def simple_revoke(acl, role_id, permission):
             remove.append(i)
     for i in reversed(remove):
         acl.pop(i)
+
+
+class HIBPClientError(Exception):
+    """
+    Represents an unexpected failure consuming the HIBP API
+    """
+    pass
+
+
+class HIBPCompromisedCredentials(Exception):
+    """
+    Raised when a sha1 hash of a password is found to be compromised according to HIBP
+    """
+
+    def __init__(self, count, partial_hash):
+        self.count = count
+        self.partial_hash = partial_hash
+
+
+class HIBPClient(object):
+
+    @classmethod
+    def check_breached_password(cls, password):
+        """
+        Checks the Have I Been Pwned API for a known compromised password.
+        Raises a named HIBPCompromisedCredentials exception if any found
+        :param password: user-supplied password
+        """
+        result = 0
+        try:
+            # sha1 it
+            sha_1 = hashlib.sha1(password).hexdigest()
+
+            # first 5 for HIBP API
+            sha_1_first_5 = sha_1[:5]
+
+            # hit HIBP API
+            headers = {'User-Agent': 'SourceForge-pwnage-checker'}
+            resp = requests.get('https://api.pwnedpasswords.com/range/{}'.format(sha_1_first_5), timeout=1,
+                                headers=headers)
+
+            # check results
+            result = cls.scan_response(resp, sha_1)
+
+        except Exception as ex:
+            raise HIBPClientError(ex)
+
+        if result:
+            raise HIBPCompromisedCredentials(result, sha_1_first_5)
+
+    @classmethod
+    def scan_response(self, resp, sha):
+        """
+        Scans an API result from HIBP matching the supplied SHA
+        :return: The entry count HIBP has of the password; 0 if not present
+        """
+        sha_remainder = sha[5:]
+
+        entries = resp.text.split('\r\n')
+        try:
+            entry = [e for e in entries if e.startswith(sha_remainder.upper())][0]
+            vals = entry.split(':')
+            result = vals[1]
+            result = int(result)
+        except IndexError:
+            result = 0
+
+        return result
