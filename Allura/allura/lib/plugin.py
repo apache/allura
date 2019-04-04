@@ -371,6 +371,9 @@ class AuthenticationProvider(object):
             ('/nf/admin/user/%s' % user.username, 'Details/Edit'),
         ]
 
+    def hibp_password_check_enabled(self):
+        return asbool(tg.config.get('auth.hibp_password_check', False))
+
 
 class LocalAuthenticationProvider(AuthenticationProvider):
 
