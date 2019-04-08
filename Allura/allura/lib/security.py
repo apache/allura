@@ -30,6 +30,7 @@ from pylons import request
 from webob import exc
 from itertools import chain
 from ming.utils import LazyProperty
+import tg
 
 from allura.lib.utils import TruthyCallable
 
@@ -546,7 +547,7 @@ class HIBPClient(object):
             sha_1_first_5 = sha_1[:5]
 
             # hit HIBP API
-            headers = {'User-Agent': 'SourceForge-pwnage-checker'}
+            headers = {'User-Agent': '{}-pwnage-checker'.format(tg.config.get('site_name', 'Allura'))}
             resp = requests.get('https://api.pwnedpasswords.com/range/{}'.format(sha_1_first_5), timeout=1,
                                 headers=headers)
 
