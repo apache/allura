@@ -372,7 +372,7 @@ class AuthenticationProvider(object):
         ]
 
     def hibp_password_check_enabled(self):
-        return asbool(tg.config.get('hibp_password_check', False))
+        return asbool(tg.config.get('auth.hibp_password_check', False))
 
 
 class LocalAuthenticationProvider(AuthenticationProvider):
