@@ -128,7 +128,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @expose()
     @require_post()
     @validate(W.new_topic, error_handler=create_topic)
-    @AntiSpam.validate('Spambot protection engaged')
+    @AntiSpam.validate('Spambot protection engaged', error_url='create_topic')
     def save_new_topic(self, subject=None, text=None, forum=None, subscribe=False, **kw):
         self.rate_limit(model.ForumPost, 'Topic creation', request.referer)
         discussion = model.Forum.query.get(

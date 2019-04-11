@@ -35,8 +35,9 @@ from urlparse import urlparse
 import tg
 import emoji
 import json
-from formencode import Invalid
 from collections import OrderedDict
+
+from tg import redirect
 from tg.decorators import before_validate
 from pylons.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
@@ -386,11 +387,11 @@ class AntiSpam(object):
                 attrs = dict(now=now, obj=vars(obj) if obj else None)
                 log.info('Form validation failure: {}'.format(attrs))
                 log.info('Error is', exc_info=ex)
-                raise ex
+                raise
         return new_params
 
     @classmethod
-    def validate(cls, error_msg):
+    def validate(cls, error_msg, error_url=None):
         '''Controller decorator to raise Invalid errors if bot protection is engaged'''
         def antispam_hook(remainder, params):
             '''Converts various errors in validate_request to a single Invalid message'''
@@ -403,13 +404,13 @@ class AntiSpam(object):
                     tg.request.POST.update(new_params)
             except (ValueError, TypeError, binascii.Error):
                 testing = tg.request.environ.get('paste.testing', False)
-                if testing:
+                if testing and not tg.request.environ.get('regular_antispam_err_handling_even_when_tests'):
                     # re-raise so we can see problems more easily
                     raise
                 else:
                     # regular antispam failure handling
                     tg.flash(error_msg, 'error')
-                    raise Invalid(error_msg, params, None)
+                    redirect(error_url or tg.request.referer or '.')
         return before_validate(antispam_hook)
 
 

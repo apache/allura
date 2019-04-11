@@ -80,10 +80,14 @@ class TestAuth(TestController):
                 antispam=True).follow()
             assert_equal(r.headers['Location'], 'http://localhost/dashboard')
 
-        with assert_raises(ValueError) as ex:
-            r = self.app.post('/auth/do_login', antispam=True, params=dict(
-                username='test-user', password='foo', honey1='robot',
-                _session_id=self.app.cookies['_session_id']))
+        r = self.app.post('/auth/do_login', antispam=True, params=dict(
+            username='test-user', password='foo', honey1='robot',  # bad honeypot value
+            _session_id=self.app.cookies['_session_id']),
+                          extra_environ={'regular_antispam_err_handling_even_when_tests': 'true'},
+                          status=302)
+        wf = json.loads(self.webflash(r))
+        assert_equal(wf['status'], 'error')
+        assert_equal(wf['message'], 'Spambot protection engaged')
 
         with audits('Failed login', user=True):
             r = self.app.post('/auth/do_login', antispam=True, params=dict(
@@ -96,7 +100,8 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
 
-    def login_diff_ips_ok(self):
+    def test_login_diff_ips_ok(self):
+        # exercises AntiSpam.validate methods
         extra = {'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.44'}
         r = self.app.get('/auth/', extra_environ=extra)
 
@@ -107,7 +112,8 @@ class TestAuth(TestController):
         with audits('Successful login', user=True):
             r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99'})
 
-    def login_diff_ips_bad(self):
+    def test_login_diff_ips_bad(self):
+        # exercises AntiSpam.validate methods
         extra = {'username': '*anonymous', 'REMOTE_ADDR': '24.52.32.123'}
         r = self.app.get('/auth/', extra_environ=extra)
 
@@ -115,8 +121,12 @@ class TestAuth(TestController):
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
-        with assert_raises(ValueError) as ex:
-            r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99'})
+        r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99',
+                                    'regular_antispam_err_handling_even_when_tests': 'true'},
+                     status=302)
+        wf = json.loads(self.webflash(r))
+        assert_equal(wf['status'], 'error')
+        assert_equal(wf['message'], 'Spambot protection engaged')
 
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
