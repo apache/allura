@@ -125,3 +125,6 @@ def newrelic():
         newrelic.agent.set_transaction_name(
             newrelic.agent.callable_name(controller))
         return old_controller_call(self, controller, *args, **kwargs)
+
+    import newrelic.api.error_trace
+    newrelic.api.error_trace.wrap_error_trace('tg.wsgiapp', 'TGApp.__call__')
