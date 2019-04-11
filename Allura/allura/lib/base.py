@@ -37,6 +37,6 @@ class WsgiDispatchController(TGController):
         '''Responsible for setting all the values we need to be set on pylons.tmpl_context'''
         raise NotImplementedError, '_setup_request'
 
-    def __call__(self, environ, context):
+    def _perform_call(self, context):
         self._setup_request()
-        return super(WsgiDispatchController, self).__call__(environ, context)
+        return super(WsgiDispatchController, self)._perform_call(context)

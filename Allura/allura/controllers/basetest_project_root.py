@@ -120,13 +120,11 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.app = app
         return app.root, remainder
 
-    def __call__(self, environ, context):
-        """ Called from a WebTest 'app' instance.
-
-
-        :param environ: Extra environment variables.
+    def _perform_call(self, context):
+        """ Called from a WebTest 'app' instance, going through TurboGears dispatcher code
         Example: self.app.get('/auth/', extra_environ={'disable_auth_magic': "True"})
         """
+        environ = context.request.environ
         c.app = None
         c.project = M.Project.query.get(
             shortname='test', neighborhood_id=self.p_nbhd._id)
@@ -142,7 +140,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             environ['beaker.session'].save()
             environ['beaker.session'].persist()
             c.user = auth.authenticate_request()
-        return WsgiDispatchController.__call__(self, environ, context)
+        return super(BasetestProjectRootController, self)._perform_call(context)
 
 
 class DispatchTest(object):

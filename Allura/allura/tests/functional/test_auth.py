@@ -1977,10 +1977,8 @@ class TestPasswordExpire(TestController):
         return f.submit(extra_environ={'username': '*anonymous'})
 
     def assert_redirects(self, where='/'):
-        try:
-            self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
-        except exc.HTTPFound as e:
-            assert_equal(e.location, '/auth/pwd_expired?' + urlencode({'return_to': where}))
+        resp = self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
+        assert_equal(resp.location, 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': where}))
 
     def assert_not_redirects(self, where='/neighborhood'):
         self.app.get(where, extra_environ={'username': 'test-user'}, status=200)
