@@ -31,6 +31,7 @@ from itertools import groupby
 import operator as op
 import collections
 from urlparse import urlparse
+import urllib
 
 import tg
 import emoji
@@ -800,3 +801,47 @@ def is_nofollow_url(url):
     url_domain = urlparse(url).hostname
     ok_domains = re.split(r'\s*,\s*', tg.config.get('nofollow_exempt_domains', '')) + [tg.config['domain']]
     return url_domain and url_domain not in ok_domains
+
+
+def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
+    """
+    Returns a bytestring version of 's', encoded as specified in 'encoding'.
+
+    If strings_only is True, don't convert (some) non-string-like objects.
+
+    This function was borrowed from Django
+    """
+    if strings_only and isinstance(s, (types.NoneType, int)):
+        return s
+    elif not isinstance(s, basestring):
+        try:
+            return str(s)
+        except UnicodeEncodeError:
+            if isinstance(s, Exception):
+                # An Exception subclass containing non-ASCII data that doesn't
+                # know how to print itself properly. We shouldn't raise a
+                # further exception.
+                return ' '.join([smart_str(arg, encoding, strings_only,
+                                           errors) for arg in s])
+            return unicode(s).encode(encoding, errors)
+    elif isinstance(s, unicode):
+        r = s.encode(encoding, errors)
+        return r
+    elif s and encoding != 'utf-8':
+        return s.decode('utf-8', errors).encode(encoding, errors)
+    else:
+        return s
+
+
+def generate_smart_str(params):
+    for (key, value) in params.iteritems():
+        yield smart_str(key), smart_str(value)
+
+
+def urlencode(params):
+    """
+    A version of Python's urllib.urlencode() function that can operate on
+    unicode strings. The parameters are first case to UTF-8 encoded strings and
+    then encoded as per normal.
+    """
+    return urllib.urlencode([i for i in generate_smart_str(params)])
