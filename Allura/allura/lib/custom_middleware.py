@@ -239,8 +239,8 @@ class SSLMiddleware(object):
         try:
             request_uri = req.url
             request_uri.decode('ascii')
-        except UnicodeError:
-            resp = exc.HTTPNotFound()
+        except UnicodeError, UnicodeDecodeError:
+            resp = exc.HTTPBadRequest()
 
         secure = req.url.startswith('https://')
         srv_path = req.url.split('://', 1)[-1]
@@ -275,7 +275,14 @@ class SetRequestHostFromConfig(object):
         # since the app may accept both http and https inbound requests, and many places in code need to check that
         # potentially could set wsgi.url_scheme based on 'HTTP_X_FORWARDED_SSL' == 'on' and/or
         #   'HTTP_X_FORWARDED_PROTO' == 'https'
-        resp = self.app
+        req = Request(environ)
+        try:
+            req.params  # check for malformed unicode, this is the first middleware that might trip over it.
+            resp = self.app
+        except UnicodeError, UnicodeDecodeError:
+            resp = exc.HTTPBadRequest()
+
+
         return resp(environ, start_response)
 
 
