@@ -303,18 +303,6 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
                     limit=limit, page=page, count=count)
 
 
-class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController):
-
-    '''Neighborhood controller with support for use as a root controller, for
-    instance, when using adobe.domain.net (if this is allowed).
-    '''
-
-    auth = AuthController()
-    error = ErrorController()
-    nf = NewForgeController()
-    search = SearchController()
-
-
 class ToolListController(object):
 
     """Renders a list of all tools of a given type in the current project."""
