@@ -38,7 +38,6 @@ from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.utils import LazyProperty
 
-import types
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin

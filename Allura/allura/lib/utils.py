@@ -32,6 +32,7 @@ import operator as op
 import collections
 from urlparse import urlparse
 import urllib
+import types
 
 import tg
 import emoji
