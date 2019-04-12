@@ -124,6 +124,7 @@ def newrelic():
         return old_controller_call(self, controller, *args, **kwargs)
 
     import newrelic.api.error_trace
+    import newrelic.api.function_trace
     # These are based on newrelic/hooks/framework_pylons.py since TG is similar to Pylons
     # capture exceptions:
     newrelic.api.error_trace.wrap_error_trace('tg.wsgiapp', 'TGApp.__call__')
