@@ -110,9 +110,6 @@ def apply():
             return original_tg_jsonify_GenericJSON_encode(self, o)
 
 
-# must be saved outside the newrelic() method so that multiple newrelic()
-# calls (e.g. during tests) don't cause the patching to get applied to itself
-# over and over
 old_controller_call = tg.controllers.DecoratedController._call
 
 
@@ -127,4 +124,8 @@ def newrelic():
         return old_controller_call(self, controller, *args, **kwargs)
 
     import newrelic.api.error_trace
+    # These are based on newrelic/hooks/framework_pylons.py since TG is similar to Pylons
+    # capture exceptions:
     newrelic.api.error_trace.wrap_error_trace('tg.wsgiapp', 'TGApp.__call__')
+    # record as its own component in transaction breakdown; should help distinguish middleware vs controller time
+    newrelic.api.function_trace.wrap_function_trace('tg.controllers.tgcontroller', 'TGController.__call__')
