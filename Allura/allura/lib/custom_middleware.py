@@ -239,7 +239,7 @@ class SSLMiddleware(object):
         try:
             request_uri = req.url
             request_uri.decode('ascii')
-        except UnicodeError, UnicodeDecodeError:
+        except UnicodeError:
             resp = exc.HTTPBadRequest()
 
         secure = req.url.startswith('https://')
@@ -279,7 +279,7 @@ class SetRequestHostFromConfig(object):
         try:
             req.params  # check for malformed unicode, this is the first middleware that might trip over it.
             resp = self.app
-        except UnicodeError, UnicodeDecodeError:
+        except UnicodeError:
             resp = exc.HTTPBadRequest()
 
 
