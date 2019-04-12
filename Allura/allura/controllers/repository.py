@@ -645,9 +645,6 @@ class BranchBrowser(BaseController):
         redirect(ci.url() + 'log/')
 
 
-log_default_limit = int(tg.config.get('scm.view.log.limit', 25))
-
-
 class CommitBrowser(BaseController):
     TreeBrowserClass = None
     revision_widget = SCMRevisionWidget()
@@ -732,8 +729,10 @@ class CommitBrowser(BaseController):
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=log_default_limit, if_invalid=log_default_limit)))
-    def log(self, limit=log_default_limit, path=None, **kw):
+                   limit=validators.Int(if_empty=0, if_invalid=0)))
+    def log(self, limit=0, path=None, **kw):
+        if not limit:
+            limit = int(tg.config.get('scm.view.log.limit', 25))
         is_file = False
         if path:
             is_file = c.app.repo.is_file(path, self._commit._id)
