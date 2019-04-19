@@ -20,6 +20,8 @@ This module provides the security predicates used in decorating various models.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import six
+import sys
 import logging
 from collections import defaultdict
 import hashlib
@@ -541,7 +543,7 @@ class HIBPClient(object):
         result = 0
         try:
             # sha1 it
-            sha_1 = hashlib.sha1(password).hexdigest()
+            sha_1 = hashlib.sha1(password.encode('utf-8')).hexdigest()
 
             # first 5 for HIBP API
             sha_1_first_5 = sha_1[:5]
@@ -550,12 +552,11 @@ class HIBPClient(object):
             headers = {'User-Agent': '{}-pwnage-checker'.format(tg.config.get('site_name', 'Allura'))}
             resp = requests.get('https://api.pwnedpasswords.com/range/{}'.format(sha_1_first_5), timeout=1,
                                 headers=headers)
-
             # check results
             result = cls.scan_response(resp, sha_1)
 
         except Exception as ex:
-            raise HIBPClientError(ex)
+            six.reraise(HIBPClientError, ex, sys.exc_info()[2])
 
         if result:
             raise HIBPCompromisedCredentials(result, sha_1_first_5)
