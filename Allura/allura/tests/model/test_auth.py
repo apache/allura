@@ -20,7 +20,6 @@
 """
 Model tests for auth
 """
-
 from nose.tools import (
     with_setup,
     assert_equal,
@@ -29,7 +28,7 @@ from nose.tools import (
     assert_not_in,
     assert_in,
 )
-from tg import tmpl_context as c, app_globals as g
+from tg import tmpl_context as c, app_globals as g, request
 from webob import Request
 from mock import patch, Mock
 from datetime import datetime, timedelta
@@ -38,6 +37,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from ming.odm import session
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects, setup_functional_test
@@ -405,6 +405,7 @@ def test_user_index():
     # provided bby auth provider
     assert_in('user_registration_date_dt', idx)
 
+
 @with_setup(setUp)
 def test_user_index_none_values():
     c.user.email_addresses = [None]
@@ -414,3 +415,28 @@ def test_user_index_none_values():
     assert_equal(idx['email_addresses_t'], '')
     assert_equal(idx['telnumbers_t'], '')
     assert_equal(idx['webpages_t'], '')
+
+
+@with_setup(setUp)
+def test_user_backfill_login_details():
+    with h.push_config(request, user_agent='TestBrowser/55'):
+        # these shouldn't match
+        h.auditlog_user('something happened')
+        h.auditlog_user('blah blah Password changed')
+    with h.push_config(request, user_agent='TestBrowser/56'):
+        # these should all match, but only one entry created for this ip/ua
+        h.auditlog_user('Account activated')
+        h.auditlog_user('Successful login')
+        h.auditlog_user('Password changed')
+    with h.push_config(request, user_agent='TestBrowser/57'):
+        # this should match too
+        h.auditlog_user('Set up multifactor TOTP')
+    ThreadLocalORMSession.flush_all()
+
+    auth_provider = plugin.AuthenticationProvider.get(None)
+    c.user.backfill_login_details(auth_provider)
+
+    assert_equal(sorted(c.user.previous_login_details), [
+        {'ip': '127.0.0.1', 'ua': 'TestBrowser/56'},
+        {'ip': '127.0.0.1', 'ua': 'TestBrowser/57'},
+    ])

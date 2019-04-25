@@ -599,6 +599,40 @@ class TestLocalAuthenticationProvider(object):
             ThreadLocalORMSession.flush_all()
         assert_equal(user.disabled, True)
 
+    def test_login_details_from_auditlog(self):
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='')),
+                     None)
+
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='IP Address: 1.2.3.4\nFoo')),
+                     dict(ip='1.2.3.4', ua=None))
+
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='Foo\nIP Address: 1.2.3.4\nFoo')),
+                     dict(ip='1.2.3.4', ua=None))
+
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='blah blah IP Address: 1.2.3.4\nFoo')),
+                     None)
+
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='User-Agent: Mozilla/Firefox\nFoo')),
+                     dict(ip=None, ua='Mozilla/Firefox'))
+
+        assert_equal(self.provider.login_details_from_auditlog(M.AuditLog(
+                        message='IP Address: 1.2.3.4\nUser-Agent: Mozilla/Firefox\nFoo')),
+                     dict(ip='1.2.3.4', ua='Mozilla/Firefox'))
+
+    def test_get_login_detail(self):
+        assert_equal(self.provider.get_login_detail(Request.blank('/')),
+                     dict(ip=None, ua=None))
+
+        assert_equal(self.provider.get_login_detail(Request.blank('/',
+                                                                  headers={'User-Agent': 'mybrowser'},
+                                                                  environ={'REMOTE_ADDR': '3.3.3.3'})),
+                     dict(ip='3.3.3.3', ua='mybrowser'))
+
 
 class TestAuthenticationProvider(object):
 

@@ -297,6 +297,11 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session_date=S.DateTime,
         session_ip=str,
         session_ua=str))
+    previous_login_details = FieldProperty([{
+        str: S.Anything
+        # "ip" and "ua" are standard fields
+        # but allow for anything to be stored, like other headers, geo info, frequency of use, etc
+    }])
 
     def index(self):
         provider = plugin.AuthenticationProvider.get(None)  # no need in request here
@@ -359,6 +364,26 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             self.last_access['session_ip'] = user_ip
             self.last_access['session_ua'] = user_agent
             session(self).flush(self)
+
+    def add_login_detail(self, detail):
+        if detail not in self.previous_login_details:
+            self.previous_login_details.append(detail)
+
+    def backfill_login_details(self, auth_provider):
+        if self.previous_login_details:
+            return
+        # ".*" at start of regex and the DOTALL flag is needed only for the test, which uses mim
+        # Fixed in ming f9f69d3c, so once we upgrade to 0.6.1+ we can remove it
+        msg_regex = re.compile(r'.*^({})'.format('|'.join([re.escape(line_prefix)
+                                                           for line_prefix
+                                                           in auth_provider.trusted_auditlog_line_prefixes])),
+                               re.MULTILINE | re.DOTALL)
+        for auditlog in AuditLog.for_user(self, message=msg_regex):
+            if not msg_regex.search(auditlog.message):
+                continue
+            login_detail = auth_provider.login_details_from_auditlog(auditlog)
+            if login_detail:
+                self.add_login_detail(login_detail)
 
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.
@@ -934,8 +959,8 @@ class AuditLog(object):
         return cls(project_id=pid, user_id=user._id, url=url, message=message)
 
     @classmethod
-    def for_user(cls, user):
-        return cls.query.find(dict(project_id=None, user_id=user._id))
+    def for_user(cls, user, **kwargs):
+        return cls.query.find(dict(project_id=None, user_id=user._id, **kwargs))
 
     @classmethod
     def log_user(cls, message, *args, **kwargs):

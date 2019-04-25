@@ -194,6 +194,7 @@ class AuthenticationProvider(object):
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
+        user.backfill_login_details(self)
         self.after_login(user, self.request)
 
         if 'rememberme' in self.request.params:
@@ -203,6 +204,7 @@ class AuthenticationProvider(object):
             self.session['login_expires'] = True
         self.session.save()
         g.statsUpdater.addUserLogin(user)
+        user.add_login_detail(self.get_login_detail(self.request))
         user.track_login(self.request)
         # set a non-secure cookie with same expiration as session,
         # so an http request can know if there is a related session on https
@@ -373,6 +375,46 @@ class AuthenticationProvider(object):
 
     def hibp_password_check_enabled(self):
         return asbool(tg.config.get('auth.hibp_password_check', False))
+
+    @property
+    def trusted_auditlog_line_prefixes(self):
+        return [
+            "Successful login",  # this is the main one
+            # all others are to include login activity before mid-2017 when "Successful login" logs were introduced:
+            "Primary email changed",
+            "New email address:",
+            "Display Name changed",
+            "Email address verified:",
+            "Password changed",
+            "Email address deleted:",
+            "Account activated",
+            "Phone verification succeeded.",
+            "Visited multifactor new TOTP page",
+            "Set up multifactor TOTP",
+            "Viewed multifactor TOTP config page",
+            "Viewed multifactor recovery codes",
+            "Regenerated multifactor recovery codes",
+        ]
+
+    def login_details_from_auditlog(self, auditlog):
+        ip = ua = None
+        matches = re.search(r'^IP Address: (.+)\n', auditlog.message, re.MULTILINE)
+        if matches:
+            ip = matches.group(1)
+        matches = re.search(r'^User-Agent: (.+)\n', auditlog.message, re.MULTILINE)
+        if matches:
+            ua = matches.group(1)
+        if ua or ip:
+            return dict(
+                ip=ip,
+                ua=ua,
+            )
+
+    def get_login_detail(self, request):
+        return dict(
+            ip=utils.ip_address(request),
+            ua=request.headers.get('User-Agent'),
+        )
 
 
 class LocalAuthenticationProvider(AuthenticationProvider):
