@@ -446,6 +446,30 @@ class TestForum(TestController):
         input_field = r.html.fieldset.find('input', {'value': username})
         assert input_field is None
 
+    def test_save_moderation_bulk_user(self):
+        # create posts
+        for i in range(5):
+            r = self.app.get('/discussion/create_topic/')
+            f = r.html.find(
+                'form', {'action': '/p/test/discussion/save_new_topic'})
+            params = dict()
+            inputs = f.findAll('input')
+            for field in inputs:
+                if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+                    params[field['name']] = field.get('value') or ''
+            params[f.find('textarea')['name']] = 'Post text'
+            params[f.find('select')['name']] = 'testforum'
+            params[f.find('input', {'style': 'width: 90%'})['name']] = "this is my post"
+            r = self.app.post('/discussion/save_new_topic', params=params)
+
+        assert_equal(5, FM.ForumPost.query.find({'status': 'ok'}).count())
+
+        r = self.app.post('/discussion/testforum/moderate/save_moderation_bulk_user', params={
+            'username': 'test-admin',
+            'spam': '1'})
+        assert_in(u'5 posts marked as spam', self.webflash(r))
+        assert_equal(5, FM.ForumPost.query.find({'status': 'spam'}).count())
+
     def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})

@@ -36,9 +36,14 @@
         <a href="" class="moderate_post little_link"><span>Undo</span></a>
         {{lib.csrf_token()}}
       </form>
+      {% if value.discussion and value.app_config %}{# avoid errors, when viewing old versions of comments (obscure, but has test coverage) #}
       <br>
-      <span class="spam-text">You can see all pending comments posted by this user&nbsp;</span>
-      <a href="{{value.thread.discussion.url()}}moderate?username={{value.author().username}}&status=pending">here</a>
+      View and moderate
+      <a href="{{value.thread.discussion.url()}}moderate?username={{value.author().username}}&status=-">all "{{ value.discussion.name }}" comments posted by this user</a>
+      <br><br>
+      <a href="#" class="spam-all-block" data-user="{{ value.author().username }}" data-admin-url="{{ c.app.admin_url }}" data-discussion-url="{{value.thread.discussion.url()}}">
+          Mark all as spam, and block user from posting to "{{ value.app_config.options.mount_label }}"</a>
+      {% endif %}
     </div>
     {% endif %}
     <div class="comment-row">

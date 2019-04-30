@@ -55,6 +55,35 @@
             });
         });
 
+        $('.spam-all-block', post).click(function(e) {
+            e.preventDefault();
+            var $this = $(this);
+            var cval = $.cookie('_session_id');
+            $.ajax({
+                type: 'POST',
+                url: $this.attr('data-admin-url') + '/block_user',
+                data: {
+                    username: $this.attr('data-user'),
+                    perm: 'post',
+                    '_session_id': cval
+                },
+                success: function (data, textStatus, jqxhr) {
+                    if (data.error) {
+                        flash(data.error, 'error');
+                    } else if (data.username) {
+                        flash('User blocked', 'success');
+                        // full page form submit
+                        $('<form method="POST" action="' + $this.data('discussion-url')+'moderate/save_moderation_bulk_user?username=' + $this.attr('data-user') + '&spam=1">' +
+                            '<input name="_session_id" type="hidden" value="'+cval+'"></form>')
+                            .appendTo('body')
+                            .submit();
+                    } else {
+                        flash('Error.  Make sure you are logged in still.', 'error');
+                    }
+                }
+            });
+        });
+
         function spam_block_display($post, display_type) {
             var spam_block = $post.find('.info.grid-15.spam-present');
             var row = $post.find('.comment-row').eq(0);

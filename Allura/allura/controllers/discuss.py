@@ -337,7 +337,11 @@ class PostController(BaseController):
                     {'artifact_id': self.post._id, 'version': int(version)}).first()
                 if not ss:
                     raise exc.HTTPNotFound
-                post = Object(
+
+                class VersionedSnapshotTempObject(Object):
+                    pass
+
+                post = VersionedSnapshotTempObject(
                     ss.data,
                     acl=self.post.acl,
                     author=self.post.author,
@@ -518,28 +522,58 @@ class ModerationController(BaseController):
     @expose()
     @require_post()
     def save_moderation(self, post=[], delete=None, spam=None, approve=None, **kw):
+        count = 0
         for p in post:
-            if 'checked' in p:
-                posted = self.PostModel.query.get(
-                    _id=p['_id'],
-                    # make sure nobody hacks the HTML form to moderate other
-                    # posts
-                    discussion_id=self.discussion._id,
-                )
-                if posted:
-                    if delete:
-                        posted.delete()
-                        # If we just deleted the last post in the
-                        # thread, delete the thread.
-                        if posted.thread and posted.thread.num_replies == 0:
-                            posted.thread.delete()
-                    elif spam and posted.status != 'spam':
-                        posted.spam()
-                    elif approve and posted.status != 'ok':
-                        posted.approve()
-                        g.spam_checker.submit_ham(posted.text, artifact=posted, user=posted.author())
-                        posted.thread.post_to_feed(posted)
+            posted = None
+            if isinstance(p, dict):
+                # regular form submit
+                if 'checked' in p:
+                    posted = self.PostModel.query.get(
+                        _id=p['_id'],
+                        # make sure nobody hacks the HTML form to moderate other
+                        # posts
+                        discussion_id=self.discussion._id,
+                    )
+            elif isinstance(p, self.PostModel):
+                # called from save_moderation_bulk_user with models already
+                posted = p
+            else:
+                raise TypeError('post list should be form fields, or Post models')
+
+            if posted:
+                if delete:
+                    posted.delete()
+                    # If we just deleted the last post in the
+                    # thread, delete the thread.
+                    if posted.thread and posted.thread.num_replies == 0:
+                        count += 1
+                        posted.thread.delete()
+                elif spam and posted.status != 'spam':
+                    count += 1
+                    posted.spam()
+                elif approve and posted.status != 'ok':
+                    count += 1
+                    posted.approve()
+                    g.spam_checker.submit_ham(posted.text, artifact=posted, user=posted.author())
+                    posted.thread.post_to_feed(posted)
+        flash(u'{} {}'.format(h.text.plural(count, 'post', 'posts'),
+                              'deleted' if delete else 'marked as spam' if spam else 'approved'))
         redirect(request.referer or '/')
+
+    @expose()
+    @require_post()
+    def save_moderation_bulk_user(self, username, **kw):
+        # this is used by post.js as a quick way to deal with all a user's posts
+        user = User.by_username(username)
+        posts = self.PostModel.query.find({
+            'author_id': user._id,
+            'deleted': False,
+            # this is what the main moderation forms does (e.g. single discussion within a forum app)
+            # 'discussion_id': self.discussion._id
+            # but instead want to do all discussions within this app
+            'app_config_id': c.app.config._id
+        })
+        return self.save_moderation(posts, **kw)
 
 
 class PostRestController(PostController):

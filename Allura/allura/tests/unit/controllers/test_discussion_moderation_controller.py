@@ -63,9 +63,10 @@ class TestWhenModerating(WithDatabase):
         assert_equal(self.get_post(), None)
 
     def moderate_post(self, **kwargs):
-        self.controller.save_moderation(
-            post=[dict(checked=True, _id=self.get_post()._id)],
-            **kwargs)
+        with patch('allura.controllers.discuss.flash'):
+            self.controller.save_moderation(
+                post=[dict(checked=True, _id=self.get_post()._id)],
+                **kwargs)
         ThreadLocalORMSession.flush_all()
 
     def get_post(self):
