@@ -782,6 +782,17 @@ class TestEmojis(unittest.TestCase):
         output = g.markdown.convert(u'More emojis :+1::camel::three_o’clock: wow!')
         assert u'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
+class TestUserMentions(unittest.TestCase):
+
+    def test_markdown_user_mention(self):
+        output = g.markdown.convert('@nouserthere')
+        assert 'class="user-mention notfound"' in output
+        u = M.User.register(dict(username='admin1'), make_project=True)
+        ThreadLocalORMSession.flush_all()
+        output = g.markdown.convert('@admin1')
+        assert 'class="user-mention"' in output
+        assert ('href="%s"' % u.url()) in output
+
 class TestHandlePaging(unittest.TestCase):
 
     def setUp(self):

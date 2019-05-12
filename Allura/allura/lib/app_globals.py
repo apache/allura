@@ -55,7 +55,8 @@ from allura import model as M
 from allura.lib.markdown_extensions import (
     ForgeExtension,
     CommitMessageExtension,
-    EmojiExtension
+    EmojiExtension,
+    UserMentionExtension
 )
 from allura.eventslistener import PostEvent
 
@@ -426,7 +427,7 @@ class Globals(object):
             # 'fenced_code'
             extensions=['fenced_code', 'codehilite',
                         ForgeExtension(
-                            **kwargs), EmojiExtension(), 'tables', 'toc', 'nl2br', 'markdown_checklist.extension'],
+                            **kwargs), EmojiExtension(), UserMentionExtension(), 'tables', 'toc', 'nl2br', 'markdown_checklist.extension'],
             output_format='html4')
 
     @property

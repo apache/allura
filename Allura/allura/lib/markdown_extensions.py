@@ -296,6 +296,36 @@ class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
         emoji_code = m.group(2)
         return emoji.emojize(emoji_code, use_aliases=True)
 
+class UserMentionExtension(markdown.Extension):
+
+    UM_RE = r'(@(?![0-9]+$)(?!-)[a-z0-9-]{2,14}[a-z0-9])'
+
+    def __init__(self, **kwargs):
+        markdown.Extension.__init__(self)
+
+    def extendMarkdown(self, md, md_globals):
+        md.inlinePatterns["user_mentions"] = UserMentionInlinePattern(self.UM_RE)
+
+class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
+
+    def __init__(self, pattern):
+        markdown.inlinepatterns.Pattern.__init__(self, pattern)
+
+    def handleMatch(self, m):
+        user_name = m.group(2).replace("@", "")
+        user = M.User.by_username(user_name)
+        result = markdown.util.etree.Element('a')
+        result.text = "@%s" % user_name
+        classes = 'user-mention'
+
+        if user:
+            result.set('href', user.url())
+        else:
+            result.set('href', '#')
+            classes += ' notfound'
+
+        result.set('class', classes)
+        return result
 
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
