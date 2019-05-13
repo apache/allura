@@ -846,3 +846,7 @@ def urlencode(params):
     then encoded as per normal.
     """
     return urllib.urlencode([i for i in generate_smart_str(params)])
+
+
+def close_ipv4_addrs(ip1, ip2):
+    return ip1.split('.')[0:3] == ip2.split('.')[0:3]

@@ -398,3 +398,9 @@ def test_is_nofollow_url():
         assert not utils.is_nofollow_url('http://foo.com/')
         assert not utils.is_nofollow_url('http://bar.io/')
         assert utils.is_nofollow_url('http://bar.iot/')
+
+
+def test_close_ipv4_addrs():
+    assert utils.close_ipv4_addrs('1.2.3.4', '1.2.3.4')
+    assert utils.close_ipv4_addrs('1.2.3.4', '1.2.3.255')
+    assert not utils.close_ipv4_addrs('1.2.3.4', '1.2.4.4')

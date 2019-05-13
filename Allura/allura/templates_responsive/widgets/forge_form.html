@@ -30,13 +30,13 @@
       {% if target %}target="{{target}}"{% endif %}
       action="{{action}}">
   {% if errors and not errors.iteritems and show_errors %}
-  <div class=""><span {{widget.j2_attrs({'class':error_class})}}>{{errors}}</span></div>
+  <div class=""><span {{widget.j2_attrs({'class':error_class})}}>{{errors|nl2br}}</span></div>
   {% endif %}
   {% for field in widget.fields %}
     {% set ctx=widget.context_for(field) %}
     {% if field.field_type != 'hidden' %}
       {% if ctx.errors and field.show_errors -%}
-      <div class="column small-12 large-6"><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors}}</span></div>
+      <div class="column small-12 large-6"><span {{widget.j2_attrs({'class':error_class})}}>{{ctx.errors|nl2br}}</span></div>
       {%- endif %}
       {% if field.show_label and field.label %}
       <label for="{{ctx.id}}" class="column small-12 large-3">{{field.label}}:</label>
