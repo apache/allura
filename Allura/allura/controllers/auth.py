@@ -211,33 +211,20 @@ class AuthController(BaseController):
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            flash('Enter email in correct format!','error')
+            flash('Enter email in correct format!', 'error')
             redirect('/auth/forgotten_password')
 
         if not allow_non_primary_email_reset:
             message = 'If the given email address is on record, '\
                       'a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
-                                                    confirmed=True)
+                                              confirmed=True)
         else:
             message = 'A password reset email has been sent, if the given email address is on record in our system.'
             email_record = M.EmailAddress.get(email=email, confirmed=True)
 
         if user_record and email_record and email_record.confirmed:
-            hash = h.nonce(42)
-            user_record.set_tool_data('AuthPasswordReset',
-                                      hash=hash,
-                                      hash_expiry=datetime.utcnow() +
-                                      timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
-
-            log.info('Sending password recovery link to %s', email_record.email)
-            subject = '%s Password recovery' % config['site_name']
-            text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
-                user=user_record,
-                config=config,
-                hash=hash,
-            ))
-            send_system_mail_to_user(email_record.email, subject, text)
+            user_record.send_password_reset_email(email_record.email)
         h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
         flash(message)
         redirect('/')
@@ -522,9 +509,10 @@ class AuthController(BaseController):
         session.pop('pwd-expired', None)
         session['username'] = session.get('expired-username')
         session.pop('expired-username', None)
+        expired_reason = session.pop('expired-reason', None)
 
         session.save()
-        h.auditlog_user('Password reset (via expiration process)')
+        h.auditlog_user('Password reset ({})'.format(expired_reason))
         if return_to and return_to != request.url:
             redirect(return_to)
         else:

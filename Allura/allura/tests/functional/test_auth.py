@@ -128,6 +128,63 @@ class TestAuth(TestController):
         assert_equal(wf['status'], 'error')
         assert_equal(wf['message'], 'Spambot protection engaged')
 
+    @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    def test_login_hibp_compromised_password_untrusted_client(self, sendsimplemail):
+        # first & only login by this user, so won't have any trusted previous logins
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+        r = self.app.get('/auth/')
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+
+        with audits('Attempted login from untrusted location with password in HIBP breach database', user=True):
+            r = f.submit(status=200)
+
+        r.mustcontain('reset your password via email.')
+        r.mustcontain('reset your password via email.<br>\nPlease check your email')
+
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(sendsimplemail.post.call_count, 1)
+        assert_equal(kwargs['subject'], u'Update your %s password' % config['site_name'])
+        assert_in('/auth/forgotten_password/', kwargs['text'])
+
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login first, so IP address will be recorded and then trusted
+        r = self.app.get('/auth/')
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Successful login', user=True):
+            f.submit(status=302)
+        self.app.get('/auth/logout')
+
+        # this login will get caught by HIBP check, but trusted due to IP address being same
+        with patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True)):
+            r = self.app.get('/auth/')
+            f = r.forms[0]
+            encoded = self.app.antispam_field_names(f)
+            f[encoded['username']] = 'test-user'
+            f[encoded['password']] = 'foo'
+
+            with audits(r'Successful login with password in HIBP breach database, from trusted source '
+                        r'\(reason: exact ip\)', user=True):
+                r = f.submit(status=302)
+
+            assert r.session.get('pwd-expired')
+            assert_equal(r.session.get('expired-reason'), 'hibp')
+            assert_equal(r.location, 'http://localhost/auth/pwd_expired')
+
+            r = r.follow()
+            r.mustcontain('must be updated to be more secure')
+
+            # changing password covered in TestPasswordExpire
+
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
         nav_pattern = ('nav', {'class': 'nav-main'})
@@ -1488,7 +1545,7 @@ class TestPasswordReset(TestController):
         # confirm email sent
         text = '''Your username is test-admin
 
-To reset your password on %s, please visit the following URL:
+To update your password on %s, please visit the following URL:
 
 %s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
         sendmail.post.assert_called_once_with(
@@ -1578,7 +1635,7 @@ To reset your password on %s, please visit the following URL:
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_hibp_check(self, gen_message_id, sendmail):
+    def test_pwd_reset_hibp_check(self, gen_message_id, sendmail):
         self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
@@ -2532,6 +2589,40 @@ class TestTwoFactor(TestController):
 
         # confirm code used up
         assert_not_in(recovery_code, RecoveryCodeService().get().get_codes(user))
+
+    @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
+    def test_login_totp_with_hibp(self):
+        # this is essentially the same as regular TOTP test, just making sure that HIBP doesn't get in the way
+        # or cause any problems.  It shouldn't even run since a password isn't present when the final login happens
+
+        self._init_totp()
+
+        # so test-admin isn't automatically logged in for all requests
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
+
+        # regular login
+        r = self.app.get('/auth/?return_to=/p/foo')
+        encoded = self.app.antispam_field_names(r.form)
+        r.form[encoded['username']] = 'test-admin'
+        r.form[encoded['password']] = 'foo'
+        with audits('Multifactor login - password ok, code not entered yet', user=True):
+            r = r.form.submit()
+
+        # check results
+        assert r.location.endswith('/auth/multifactor?return_to=%2Fp%2Ffoo'), r
+        r = r.follow()
+        assert not r.session.get('username')
+
+        # use a valid code
+        totp = TotpService().Totp(self.sample_key)
+        code = totp.generate(time_time())
+        r.form['code'] = code
+        with audits('Successful login', user=True):
+            r = r.form.submit()
+
+        # confirm login and final page
+        assert_equal(r.session['username'], 'test-admin')
+        assert r.location.endswith('/p/foo'), r
 
     def test_view_key(self):
         self._init_totp()

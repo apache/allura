@@ -41,7 +41,7 @@ except ImportError:
     ldap = modlist = None
 import pkg_resources
 import tg
-from tg import config, request, redirect, response
+from tg import config, request, redirect, response, flash
 from tg import tmpl_context as c, app_globals as g
 from webob import exc, Request
 from paste.deploy.converters import asbool, asint
@@ -187,10 +187,20 @@ class AuthenticationProvider(object):
         else:
             self.session.pop('multifactor-username', None)
 
+        login_details = self.get_login_detail(self.request)
+
+        expire_reason = None
         if self.is_password_expired(user):
+            h.auditlog_user('Successful login; Password expired', user=user)
+            expire_reason = 'via expiration process'
+        if not expire_reason and 'password' in self.request.params:
+            # password not present with multifactor token; or if login directly after registering is enabled
+            expire_reason = self.login_check_password_change_needed(user, self.request.params['password'],
+                                                                    login_details)
+        if expire_reason:
             self.session['pwd-expired'] = True
             self.session['expired-username'] = user.username
-            h.auditlog_user('Successful login; Password expired', user=user)
+            self.session['expired-reason'] = expire_reason
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
@@ -204,7 +214,7 @@ class AuthenticationProvider(object):
             self.session['login_expires'] = True
         self.session.save()
         g.statsUpdater.addUserLogin(user)
-        user.add_login_detail(self.get_login_detail(self.request))
+        user.add_login_detail(login_details)
         user.track_login(self.request)
         # set a non-secure cookie with same expiration as session,
         # so an http request can know if there is a related session on https
@@ -212,6 +222,36 @@ class AuthenticationProvider(object):
                             expires=None if self.session['login_expires'] is True else self.session['login_expires'],
                             secure=False, httponly=True)
         return user
+
+    def login_check_password_change_needed(self, user, password, login_details):
+        if not self.hibp_password_check_enabled() \
+                or not asbool(tg.config.get('auth.hibp_failure_force_pwd_change', False)):
+            return
+
+        try:
+            security.HIBPClient.check_breached_password(password)
+        except security.HIBPClientError as ex:
+            log.error("Error invoking HIBP API", exc_info=ex)
+        except security.HIBPCompromisedCredentials:
+            trusted = False
+            try:
+                trusted = self.trusted_login_source(user, login_details)
+            except Exception:
+                log.exception('Error checking if login is trusted: %s %s', user.username, login_details)
+
+            if trusted:
+                # current user must change password
+                h.auditlog_user(u'Successful login with password in HIBP breach database, '
+                                u'from trusted source (reason: {})'.format(trusted), user=user)
+                return 'hibp'  # reason
+            else:
+                # current user may not continue, must reset password via email
+                h.auditlog_user('Attempted login from untrusted location with password in HIBP breach database',
+                                user=user)
+                user.send_password_reset_email(subject_tmpl=u'Update your {site_name} password')
+                raise exc.HTTPBadRequest('To ensure account security, you must reset your password via email.'
+                                         '\n'
+                                         'Please check your email to continue.')
 
     def logout(self):
         self.session.invalidate()
@@ -415,6 +455,17 @@ class AuthenticationProvider(object):
             ip=utils.ip_address(request),
             ua=request.headers.get('User-Agent'),
         )
+
+    def trusted_login_source(self, user, login_details):
+        # TODO: could also factor in User-Agent but hard to know what parts of the UA are meaningful to check here
+        for prev_login in user.previous_login_details:
+            if prev_login['ip'] == login_details['ip']:
+                return 'exact ip'
+            if asbool(tg.config.get('auth.trust_ip_3_octets_match', False)) and \
+                    utils.close_ipv4_addrs(prev_login['ip'], login_details['ip']):
+                return 'close ip'
+
+        return False
 
 
 class LocalAuthenticationProvider(AuthenticationProvider):

@@ -20,13 +20,30 @@
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
 
-{% block title %}{{c.user.username}} / Update expired password{% endblock %}
+{% block title %}{{c.user.username}} / Update password{% endblock %}
 
-{% block header %}Update expired password for {{c.user.username}}{% endblock %}
+{% block header %}Update password for {{c.user.username}}{% endblock %}
 
 {% block content %}
-  <div class='grid-23'>
-    <p>Your {{config['site_name']}} password has expired - You must now choose a new password before logging into the site</p>
+  <div class='grid-15'>
+    <p>Your {{config['site_name']}} password
+        {% if session.get('expired-reason') == 'hibp' %}
+            must be updated to be more secure.
+        {% else %}
+            has expired.
+        {% endif %}
+        You must now choose a new password before logging into the site.</p>
+  </div>
+  <div class="grid-23">
     {{ c.form.display(action='/auth/pwd_expired_change', value=dict(return_to=return_to)) }}
   </div>
+  {% if h.asbool(config.get('auth.multifactor.totp')) %}
+  <div class='grid-8' style="position: absolute">
+    <div class="message info show-message">
+        Did you know?  You can also enable multifactor authentication on your account.
+        <br><br>
+        After changing your password, go to your account settings to set it up.
+    </div>
+  </div>
+  {% endif %}
 {% endblock content %}

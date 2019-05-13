@@ -682,7 +682,7 @@ img.nav-logo {
   -o-box-shadow: none;
   box-shadow: none;
   display: block;
-  cursor: default;
+  cursor: auto;
   margin-bottom: 1em;
   padding: 0;
 }
@@ -3109,8 +3109,9 @@ h1.title .viewer:hover {
   font-style: italic;
 }
 
-div.message.scm-learn-basics, div.message.scm-ssh-key, div.message.scm-empty-repo {
-  cursor: default;
+/* .message default styles are hidden and controlled by jquery.notify.js.  These are to be displayed as regular blocks */
+div.message.show-message, div.message.scm-learn-basics, div.message.scm-ssh-key, div.message.scm-empty-repo {
+  cursor: auto;
   display: block;
   width: auto;
   margin: 0 1em 1em;

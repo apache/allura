@@ -385,6 +385,24 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             if login_detail:
                 self.add_login_detail(login_detail)
 
+    def send_password_reset_email(self, email_address=None, subject_tmpl=u'{site_name} Password recovery'):
+        if email_address is None:
+            email_address = self.get_pref('email_address')
+        hash = h.nonce(42)
+        self.set_tool_data('AuthPasswordReset',
+                           hash=hash,
+                           hash_expiry=datetime.utcnow() +
+                                       timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
+
+        log.info('Sending password recovery link to %s', email_address)
+        subject = subject_tmpl.format(site_name=config['site_name'])
+        text = g.jinja2_env.get_template('allura:templates/mail/forgot_password.txt').render(dict(
+            user=self,
+            config=config,
+            hash=hash,
+        ))
+        allura.tasks.mail_tasks.send_system_mail_to_user(email_address, subject, text)
+
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.
 
