@@ -784,14 +784,33 @@ class TestEmojis(unittest.TestCase):
 
 class TestUserMentions(unittest.TestCase):
 
-    def test_markdown_user_mention(self):
-        output = g.markdown.convert('@nouserthere')
-        assert 'class="user-mention notfound"' in output
-        u = M.User.register(dict(username='admin1'), make_project=True)
+    def test_markdown_user_mention_default(self):
+        output = g.markdown.convert('Hello.. @nouser1, how are you?')
+        assert 'Hello.. @nouser1, how are you?' in output
+        u1 = M.User.register(dict(username='admin1'), make_project=True)
         ThreadLocalORMSession.flush_all()
-        output = g.markdown.convert('@admin1')
+        output = g.markdown.convert('Hello.. @admin1, how are you?')
         assert 'class="user-mention"' in output
-        assert ('href="%s"' % u.url()) in output
+        assert ('href="%s"' % u1.url()) in output
+        u2 = M.User.register(dict(username='admin-2'), make_project=True)
+        ThreadLocalORMSession.flush_all()
+        output = g.markdown.convert('Do you know @ab? @admin-2 has solved it!')
+        assert 'Do you know @ab?' in output
+        assert 'class="user-mention"' in output
+        assert ('href="%s"' % u2.url()) in output
+
+    def test_markdown_user_mention_in_code(self):
+        u1 = M.User.register(dict(username='admin-user-4'), make_project=True)
+        ThreadLocalORMSession.flush_all()
+        output = g.markdown.convert('Hello.. `@admin-user-4, how` are you?')
+        assert 'class="user-mention"' not in output
+        assert '<code>' in output
+        assert ('href="%s"' % u1.url()) not in output
+        output = g.markdown.convert('Hello.. This is code \n~~~python\nprint("@admin-user-4")\n~~~')
+        assert 'class="user-mention"' not in output
+        assert '<div class="codehilite">' in output
+        assert ('href="%s"' % u1.url()) not in output
+
 
 class TestHandlePaging(unittest.TestCase):
 

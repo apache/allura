@@ -314,17 +314,15 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m):
         user_name = m.group(2).replace("@", "")
         user = M.User.by_username(user_name)
-        result = markdown.util.etree.Element('a')
-        result.text = "@%s" % user_name
-        classes = 'user-mention'
+        result = None
 
-        if user:
+        if user and not user.pending and not user.disabled:
+            result = markdown.util.etree.Element('a')
+            result.text = "@%s" % user_name
             result.set('href', user.url())
+            result.set('class', 'user-mention')
         else:
-            result.set('href', '#')
-            classes += ' notfound'
-
-        result.set('class', classes)
+            result = "@%s" % user_name
         return result
 
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
