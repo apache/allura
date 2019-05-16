@@ -106,7 +106,7 @@ class TestChainedSpamFilter(object):
         assert_equal(checker.filters[0].config, {'spam.method': 'mock1', 'spam.settingA': 'bcd'})
         assert_equal(checker.filters[1].config, {'spam.method': 'mock2', 'spam.settingA': 'bcd'})
 
-        assert checker.check()  # True because first filter errors out, and 2nd returns True
+        assert checker.check()  # first filter errors out (but ignored by `exceptionless`), and 2nd returns True
 
         checker.submit_spam('some text')
         checker.submit_ham('some text')

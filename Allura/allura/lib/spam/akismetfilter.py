@@ -50,7 +50,6 @@ class AkismetSpamFilter(SpamFilter):
             raise ImportError('akismet not available')
         self.service = akismet.Akismet(
             config.get('spam.key'), config.get('base_url'))
-        self.service.verify_key()
 
     def get_data(self, text, artifact=None, user=None, content_type='comment', request=None, **kw):
         kw['comment_content'] = text
