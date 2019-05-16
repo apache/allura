@@ -88,6 +88,7 @@ class ChainedSpamFilter(SpamFilter):
 
     def check(self, *a, **kw):
         for spam_filter in self.filters:
+            # note: SpamFilter.get() has wrapped all .check() functions with exceptionless
             if spam_filter.check(*a, **kw):
                 return True
         return False
