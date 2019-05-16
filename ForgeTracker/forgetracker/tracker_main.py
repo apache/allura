@@ -937,13 +937,14 @@ class RootController(BaseController, FeedController):
             if not ticket:
                 raise Exception('Ticket number not found.')
             require_access(ticket, 'update')
+            ticket.update_fields_basics(ticket_form)
         else:
             require_access(c.app, 'create')
             self.rate_limit(TM.Ticket, 'Ticket creation', redir='.')
-            ticket = TM.Ticket.new()
+            ticket = TM.Ticket.new(form_fields=ticket_form)
+        ticket.update_fields_finish(ticket_form)
         g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')
-        ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,
                                    related_nodes=[c.project], tags=['ticket'])
