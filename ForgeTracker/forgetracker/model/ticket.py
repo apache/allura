@@ -664,14 +664,16 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return d
 
     @classmethod
-    def new(cls):
-        '''Create a new ticket, safely (ensuring a unique ticket_num'''
+    def new(cls, form_fields=None):
+        '''Create a new ticket, safely (ensuring a unique ticket_num)'''
         while True:
             ticket_num = c.app.globals.next_ticket_num()
             ticket = cls(
                 app_config_id=c.app.config._id,
                 custom_fields=dict(),
                 ticket_num=ticket_num)
+            if form_fields:
+                ticket.update_fields_basics(form_fields)
             try:
                 session(ticket).flush(ticket)
                 h.log_action(log, 'opened').info('')
@@ -953,10 +955,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             return 'nobody'
         return who.get_pref('display_name')
 
-    def update(self, ticket_form):
+    def update_fields_basics(self, ticket_form):
+        # "simple", non-persisting updates.  Must be safe to call within the Ticket.new() while its creating it
+
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
-        subscribe = ticket_form.pop('subscribe', False)
         self.labels = ticket_form.pop('labels', [])
         custom_users = set()
         other_custom_fields = set()
@@ -973,15 +976,15 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if 'custom_fields' not in ticket_form:
                 ticket_form['custom_fields'] = dict()
             ticket_form['custom_fields']['_milestone'] = milestone
-        attachment = None
-        if 'attachment' in ticket_form:
-            attachment = ticket_form.pop('attachment')
         for k, v in ticket_form.iteritems():
             if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
                     if user:
                         self.assigned_to_id = user._id
+            elif k in ('subscribe', 'attachment'):
+                # handled separately in update_fields_finish()
+                pass
             else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
@@ -994,12 +997,22 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 elif k in other_custom_fields:
                     # strings are good enough for any other custom fields
                     self.custom_fields[k] = v
+
+    def update_fields_finish(self, ticket_form):
+        attachment = None
+        if 'attachment' in ticket_form:
+            attachment = ticket_form.pop('attachment')
         if attachment is not None:
             self.add_multiple_attachments(attachment)
             # flush the session to make attachments available in the
             # notification email
             ThreadLocalORMSession.flush_all()
+        subscribe = ticket_form.pop('subscribe', False)
         self.commit(subscribe=subscribe)
+
+    def update(self, ticket_form):
+        self.update_fields_basics(ticket_form)
+        self.update_fields_finish(ticket_form)
 
     def _move_attach(self, attachments, attach_metadata, app_config):
         for attach in attachments:
