@@ -76,7 +76,7 @@ class TestDiscuss(TestDiscussBase):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -101,7 +101,7 @@ class TestDiscuss(TestDiscussBase):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
@@ -115,7 +115,7 @@ class TestDiscuss(TestDiscussBase):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
@@ -375,7 +375,7 @@ class TestDiscuss(TestDiscussBase):
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
@@ -412,7 +412,7 @@ class TestAttachment(TestDiscussBase):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -469,7 +469,7 @@ class TestAttachment(TestDiscussBase):
         inputs = post_form.findAll('input')
 
         for field in inputs:
-            if field.has_key('name') and field['name'] != 'file_info':  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name') and field['name'] != 'file_info':
                 params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'Reply'
         r = self.app.post(self.post_link + 'reply',
