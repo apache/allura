@@ -51,7 +51,10 @@
                     else if (mod == 'Undo'){
                         spam_block_display($(post), 'hide_spam');
                     }
-                }
+                },
+                error: function() {
+                    flash('Oops, something went wrong.', 'error')
+                },
             });
         });
 
@@ -80,7 +83,10 @@
                     } else {
                         flash('Error.  Make sure you are logged in still.', 'error');
                     }
-                }
+                },
+                error: function() {
+                    flash('Oops, something went wrong.', 'error')
+                },
             });
         });
 
