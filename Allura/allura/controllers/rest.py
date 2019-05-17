@@ -140,11 +140,11 @@ class OAuthNegotiator(object):
                         request.environ.get('HTTP_X_FORWARDED_SSL') == 'on',
                         request.environ.get('HTTP_X_FORWARDED_PROTO') == 'https',
                         debug)):
-                request.environ['pylons.status_code_redirect'] = True
+                request.environ['tg.status_code_redirect'] = True
                 raise exc.HTTPUnauthorized('HTTPS is required to use bearer tokens %s' % request.environ)
             access_token = M.OAuthAccessToken.query.get(api_key=access_token)
             if not (access_token and access_token.is_bearer):
-                request.environ['pylons.status_code_redirect'] = True
+                request.environ['tg.status_code_redirect'] = True
                 raise exc.HTTPUnauthorized
             return access_token
         req = oauth.Request.from_request(

@@ -126,7 +126,7 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
     def index(self, *args, **kwargs):
-        orig_request = request.environ.get('pylons.original_request', None)
+        orig_request = request.environ.get('tg.original_request', None)
         if 'return_to' in kwargs:
             return_to = kwargs.pop('return_to')
         elif orig_request:

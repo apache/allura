@@ -33,10 +33,10 @@ convert them into boolean, for example, you should use the
 import logging
 from functools import partial
 
+import tg
 from tg import app_globals as g
 from tg.renderers.jinja import JinjaRenderer
 import jinja2
-import pylons
 from tg.configuration import AppConfig, config
 from routes import Mapper
 from webhelpers.html import literal
@@ -115,7 +115,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
             bytecode_cache=bcc,
             cache_size=config.get('jinja_cache_size', -1),
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
-        jinja2_env.install_gettext_translations(pylons.i18n)
+        jinja2_env.install_gettext_translations(tg.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
         jinja2_env.filters['filter'] = lambda s, t=None: filter(t and jinja2_env.tests[t], s)

@@ -24,7 +24,7 @@ import pkg_resources
 from paste import fileapp
 from paste.deploy.converters import aslist
 from tg import tmpl_context as c
-from pylons.util import call_wsgi_application
+from tg.support.middlewares import _call_wsgi_application as call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
@@ -149,8 +149,7 @@ class LoginRedirectMiddleware(object):
         self.app = app
 
     def __call__(self, environ, start_response):
-        status, headers, app_iter, exc_info = call_wsgi_application(
-            self.app, environ, catch_exc_info=True)
+        status, headers, app_iter, exc_info = call_wsgi_application(self.app, environ)
         is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
         if status[:3] == '401' and not is_api_request:
             login_url = tg.config.get('auth.login_url', '/auth/')
@@ -247,8 +246,8 @@ class SSLMiddleware(object):
         # allura-loggedin is a non-secure cookie as a flag to know that the user has a session over on https
         force_ssl = (self._force_ssl_logged_in and req.cookies.get('allura-loggedin')) \
                     or self._force_ssl_re.match(environ['PATH_INFO'])
-        if req.environ.get('pylons.original_request'):
-            # if an error occurs, then /error/document is fetched (denoted by pylons.original_request)
+        if req.environ.get('tg.original_request'):
+            # if an error occurs, then /error/document is fetched (denoted by tg.original_request)
             # and we don't want to do any redirects within that sub-request
             pass
         elif not secure and force_ssl:

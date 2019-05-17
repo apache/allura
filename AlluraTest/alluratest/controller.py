@@ -73,14 +73,9 @@ def get_config_file(config=None, current_pkg=None):
         return conf_file
 
 
-
 def setup_config_test(config_file=None, force=False):
     '''
-    This may be necessary to use within test setup that needs the app config loaded,
-    especially so that the tests can be run from any directory.
-    When run from the ./Allura/ dir, the setup.cfg file there causes a pylons plugin
-    for nose to run, which runs `loadapp` (among other things).
-    This function lets a test run from any directory.
+    This may be necessary to use within test setup that needs the app config loaded
     '''
     if not config_file:
         config_file = get_config_file()
@@ -102,8 +97,18 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     except AttributeError:
         conf_dir = os.getcwd()
     test_file = os.path.join(conf_dir, get_config_file(config))
+    """
+    # setup our app, from TG quickstart example:
+    from tg.util import Bunch
+    from gearbox.commands.setup_app import SetupAppCommand
+    cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
+    cmd.run(Bunch(config_file='config:{}'.format(test_file), section_name=None))
+    """
+    # setup our app without depending on gearbox (we still depend on Paste anyway)
+    # uses [paste.app_install] entry point which call our setup_app()
     cmd = SetupCommand('setup-app')
     cmd.run([test_file])
+
     ew.TemplateEngine.initialize({})
 
     # remove unnecessary bootstrap tasks, e.g. search indexing
