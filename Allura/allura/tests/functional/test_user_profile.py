@@ -32,9 +32,9 @@ class TestUserProfile(TestController):
         r = self.app.get('/u/test-admin/profile/')
         assert_equal('Test Admin',
                      r.html.find('h1', 'project_title').find('a').text)
-        sections = set([c for s in r.html.findAll(None, 'profile-section') for c in s['class'].split()])
+        sections = set([c for s in r.html.findAll(None, 'profile-section') for c in s['class']])
         assert_in('personal-data', sections)
-        assert_in('Username:test-admin', r.html.find(None, 'personal-data').getText())
+        assert_in('Username:\ntest-admin', r.html.find(None, 'personal-data').getText().replace(' ', ''))
         assert_in('projects', sections)
         assert_in('Test Project', r.html.find(None, 'projects').getText())
         assert_in('Last Updated:', r.html.find(None, 'projects').getText())

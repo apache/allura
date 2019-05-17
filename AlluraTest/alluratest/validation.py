@@ -259,7 +259,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
             if not isinstance(k, basestring):
                 raise TypeError('%s key %s is %s, not str' %
                                 (method, k, type(k)))
-            if not isinstance(v, (basestring, webtest.app.File)):
+            if not isinstance(v, (basestring, webtest.forms.File)):
                 raise TypeError(
                     '%s key %s has value %s of type %s, not str. ' %
                     (method, k, v, type(v)))

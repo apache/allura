@@ -587,7 +587,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
                 text=text,
                 labels=labels.split(','),
                 **kw)
-            return exc.HTTPCreated(headers=dict(Location=h.absurl('/rest' + post.url())))
+            return exc.HTTPCreated(headers=dict(Location=h.absurl('/rest' + post.url()).encode('utf-8')))
 
         else:
             result = RootController().index(limit=limit, page=page)

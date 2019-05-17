@@ -728,6 +728,7 @@ class TestAuth(TestController):
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
         change_primary_params['password'] = 'foo'  # valid password
 
+        self.app.get('/auth/preferences/')  # let previous 'flash' message cookie get used up
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
                           extra_environ=dict(username='test-admin'))
@@ -770,7 +771,7 @@ class TestAuth(TestController):
         # make sure page actually lists all the user's subscriptions
         assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
         for m in subscriptions:
-            assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
+            assert str(m._id) in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
 
         # make sure page lists all tools which user can subscribe
         user = M.User.query.get(username='test-admin')
@@ -779,9 +780,9 @@ class TestAuth(TestController):
                 if not M.Mailbox.subscribed(project_id=p._id, app_config_id=ac._id):
                     if ac.tool_name in ('activity', 'admin', 'search', 'userstats', 'profile'):
                         # these have has_notifications=False
-                        assert ac._id not in r, "Page lists tool %s but it should not" % ac.tool_name
+                        assert str(ac._id) not in r, "Page lists tool %s but it should not" % ac.tool_name
                     else:
-                        assert ac._id in r, "Page doesn't list tool %s" % ac.tool_name
+                        assert str(ac._id) in r, "Page doesn't list tool %s" % ac.tool_name
 
     def _find_subscriptions_form(self, r):
         form = None
@@ -1766,7 +1767,9 @@ class TestOAuth(TestController):
         # then check equality
         assert_equal(Request.from_request.call_args_list, [
             mock.call('POST', 'http://localhost/rest/oauth/request_token',
-                      headers={'Host': 'localhost:80', 'Content-Type': 'application/x-www-form-urlencoded'},
+                      headers={'Host': 'localhost:80',
+                               'Content-Type': 'application/x-www-form-urlencoded',
+                               'Content-Length': '9'},
                       parameters={'key': 'value'},
                       query_string='')
         ])

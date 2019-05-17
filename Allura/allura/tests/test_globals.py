@@ -50,7 +50,9 @@ from forgeblog import model as BM
 
 
 def squish_spaces(text):
-    return re.sub(r'\s+', ' ', text)
+    # \s is whitespace
+    # \xa0 is &nbsp; in unicode form
+    return re.sub(r'[\s\xa0]+', ' ', text)
 
 
 def setUp():

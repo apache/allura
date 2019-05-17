@@ -38,6 +38,7 @@ from allura.lib import helpers as h
 from allura.lib import macro
 from alluratest.controller import TestController, TestRestApiBase
 from allura.tests.decorators import with_tool
+from allura.tests.test_globals import squish_spaces
 from forgegit.tests import with_git
 from forgegit import model as GM
 
@@ -161,7 +162,7 @@ class TestRootController(_TestCase):
         assert '<div class="markdown_content"><p>Change README</div>' in resp
         assert 'tree/README?format=raw">Download</a>' not in resp
         assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
-        assert 'byRick Copeland' in resp.html.findAll('td')[0].text, resp.html.findAll('td')[0].text
+        assert_in('by Rick Copeland', squish_spaces(resp.html.findAll('td')[0].text))
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert 'View' in resp.html.findAll('td')[2].text
         assert 'Change README' in resp
@@ -651,7 +652,7 @@ class TestFork(_TestCase):
             assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
             assert_equal(browse_links[0].get('href'),
                          '/p/test2/code/ci/%s/tree' % c_id)
-            assert_equal(browse_links[0].getText(), 'Tree')
+            assert_equal(browse_links[0].getText().strip(), 'Tree')
 
         r = self.app.get('/p/test/src-git/merge-requests/1/commits_html', status=200)
         assert_commit_details(r)
@@ -845,8 +846,7 @@ class TestFork(_TestCase):
         r = self.app.get('/p/test2/code/request_merge')
         r = self._follow(r)
         form = self._find_request_merge_form(r)
-        form['source_branch'].options.append(('bogus', False))
-        form['source_branch'].value = 'bogus'
+        form['source_branch'].force_value('bogus')
         r = form.submit()
         r = self._follow(r)
         r.mustcontain('Value must be one of:')

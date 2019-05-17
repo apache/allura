@@ -17,7 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from datetime import datetime
-
 import urllib
 import os
 import time
@@ -44,6 +43,7 @@ from tg import tmpl_context as c
 from tg import app_globals as g
 from tg import config
 
+from allura.tests.test_globals import squish_spaces
 from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
 from forgewiki import model as wm
@@ -81,20 +81,11 @@ class TrackerTestController(TestController):
         response = self.app.get(mount_point + 'new/',
                                 extra_environ=extra_environ)
         form = self._find_new_ticket_form(response)
-        # If this is ProjectUserCombo's select populate it
-        # with all the users in the project. This is a workaround for tests,
-        # in real enviroment this is populated via ajax.
-        p = M.Project.query.get(shortname='test')
-        for f in form.fields:
-            field = form[f] if f else None
-            is_usercombo = (field and field.tag == 'select' and
-                            field.attrs.get('class') == 'project-user-combobox')
-            if is_usercombo:
-                field.options = [('', False)] + [(u.username, False)
-                                                 for u in p.users()]
-
         for k, v in kw.iteritems():
-            form['ticket_form.%s' % k] = v
+            if type(v) == bool:
+                form['ticket_form.%s' % k] = v
+            else:
+                form['ticket_form.%s' % k].force_value(v)
         resp = form.submit(extra_environ=extra_environ)
         assert resp.status_int != 200, resp
         return resp
@@ -344,7 +335,7 @@ class TestFunctionalController(TrackerTestController):
                         **{'_milestone': '1.0'})
         self.new_ticket(
             summary='test new with milestone', **{'_milestone': '1.0',
-                                                  'private': '1'})
+                                                  'private': True})
         r = self.app.get('/bugs/milestone_counts')
         counts = {
             'milestone_counts': [
@@ -367,7 +358,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='Ticket 1', **{'_milestone': '1.0'})
         self.new_ticket(summary='Ticket 2', **{'_milestone': '1.0',
                                                'status': 'closed',
-                                               'private': '1'}).follow()
+                                               'private': True}).follow()
         r = self.app.get('/bugs/milestone/1.0/')
         assert '1 / 2' in r
         # Private tickets shouldn't be included in counts if user doesn't
@@ -628,10 +619,10 @@ class TestFunctionalController(TrackerTestController):
 
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
-        assert_true('<label class="simple">Private:</label> No' in ticket_view)
+        assert_in('<label class="simple">Private:</label> No', squish_spaces(ticket_view.body))
         ticket_view = self.new_ticket(summary='Private Ticket',
                                       private=True).follow()
-        assert_true('<label class="simple">Private:</label> Yes' in ticket_view)
+        assert_in('<label class="simple">Private:</label> Yes', squish_spaces(ticket_view.body))
         M.MonQTask.run_ready()
         # Creator sees private ticket on list page...
         index_response = self.app.get('/p/test/bugs/')
@@ -769,7 +760,7 @@ class TestFunctionalController(TrackerTestController):
         # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
         create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
-        assert_equal(create_button['class'], 'icon sidebar-disabled')
+        assert_equal(create_button['class'], ['icon', 'sidebar-disabled'])
 
     def test_render_markdown_syntax(self):
         r = self.app.get('/bugs/markdown_syntax')
@@ -793,7 +784,7 @@ class TestFunctionalController(TrackerTestController):
         # This visit will cause cache to be stored on the artifact.
         # We want to make sure the 'last_updated' field isn't updated by the cache creation
         r = self.app.get('/bugs/1').follow()
-        last_updated = r.html.find("span", {"id": "updated_id"}).text
+        last_updated = r.html.find("span", {"id": "updated_id"}).text.strip()
         assert_equal(last_updated, '2010-01-01')
 
         # Make sure the cache has been saved.
@@ -892,7 +883,7 @@ class TestFunctionalController(TrackerTestController):
             'delete': 'True'
         })
         ticket_page = self.app.get('/bugs/1/')
-        assert file_link not in ticket_page
+        assert '/p/test/bugs/1/attachment/test_root.py' not in ticket_page
         diff = ticket_page.html.findAll('div', attrs={'class': 'codehilite'})
         removed = diff[-1].findAll('span', attrs={'class': 'gd'})[-1]
         assert_in('-test_root.py', removed.getText())
@@ -2016,7 +2007,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_url = r.headers['Location']
         r = self.app.get(ticket_url, extra_environ=dict(username='*anonymous'))
         a = r.html.find('a', {'class': 'icon edit_ticket'})
-        assert_equal(a.text, '&nbsp;Edit')
+        assert_equal(a.text, u'\xa0Edit')
 
     def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
         p = M.Project.query.get(shortname='test')
@@ -2367,7 +2358,7 @@ class TestFunctionalController(TrackerTestController):
         ta = str(attach_tickets)  # ticket's attachments
         ca = str(attach_comments)  # comment's attachments
         assert_in('<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
-        assert_in('<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
+        assert_in('<img alt="Thumbnail" src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
         p = M.Post.query.find().sort('timestamp', 1).first()
         assert_in(
             '<a href="/p/test2/bugs2/_discuss/thread/%s/%s/attachment/test.txt"' %
@@ -2555,7 +2546,7 @@ class TestFunctionalController(TrackerTestController):
             'status': 'closed',
             'assigned_to': '',
             'labels': '',
-            'private': '1',
+            'private': True,
             'comment': 'closing ticket of a user that is gone'
         })
         self.app.get('/p/test/bugs/1/', status=200)
@@ -2711,7 +2702,7 @@ class TestEmailMonitoring(TrackerTestController):
         email = r.html.findAll(attrs=dict(name='TicketMonitoringEmail'))
         mtype = r.html.findAll('option', attrs=dict(value='AllTicketChanges'))
         assert email[0]['value'] == self.test_email
-        assert mtype[0]['selected'] == 'selected'
+        assert mtype[0].has_attr('selected')
 
     @td.with_tool('test', 'Tickets', 'doc-bugs', post_install_hook=post_install_hook)
     @patch('forgetracker.model.ticket.Notification.send_direct')
@@ -2845,37 +2836,29 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': ''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
-        assert ticket_view.html.findAll('label', 'simple',
-                                        text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
+        assert_equal(squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text),
+                     ' Code Review: nobody ')
         # form input is blank
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
         selected = None
         for option in select.findChildren():
-            if option.get('selected'):
+            if option.has_attr('selected'):
                 selected = option
         assert selected is None
-
-    def test_non_project_member(self):
-        """ Test that you can't put a non-project-member user in a custom
-        user field.
-        """
-        kw = {'custom_fields._code_review': 'test-user-0'}
-        assert_raises(ValueError, self.new_ticket,
-                      summary='test custom fields', **kw)
 
     def test_project_member(self):
         kw = {'custom_fields._code_review': 'test-admin'}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
-        # summary header shows 'nobody'
-        assert ticket_view.html.findAll('label', 'simple',
-                                        text='Code Review:')[1].parent.parent.text == 'Code Review:Test Admin'
+        # summary header shows 'Test Admin'
+        assert_equal(squish_spaces(ticket_view.html.findAll('label', 'simple', text='Code Review:')[0].parent.text),
+                     ' Code Review: Test Admin ')
         # form input is blank
         select = ticket_view.html.find('select',
                                        dict(name='ticket_form.custom_fields._code_review'))
         selected = None
         for option in select.findChildren():
-            if option.get('selected'):
+            if option.has_attr('selected'):
                 selected = option
         assert_equal(selected['value'], 'test-admin')
 
@@ -2883,11 +2866,7 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': ''}
         r = self.new_ticket(summary='test custom fields', **kw).follow()
         f = self._find_update_ticket_form(r)
-        # Populate ProjectUserCombo's select with option we want.
-        # This is a workaround for tests,
-        # in real enviroment this is populated via ajax.
-        f['ticket_form.custom_fields._code_review'].options = [('test-admin', False)]
-        f['ticket_form.custom_fields._code_review'] = 'test-admin'
+        f['ticket_form.custom_fields._code_review'].force_value('test-admin')
         r = f.submit().follow()
         assert '<li><strong>Code Review</strong>: Test Admin' in r
 
@@ -2895,8 +2874,8 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         self.new_ticket(summary='test custom fields', **kw)
         r = self.app.get('/bugs/')
-        assert r.html.find('table', 'ticket-list').findAll('th')[7].text[:11] == 'Code Review'
-        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[7].text == 'Test Admin'
+        assert_equal(r.html.find('table', 'ticket-list').findAll('th')[7].text.strip()[:11], 'Code Review')
+        assert_equal(r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[7].text, 'Test Admin')
 
 
 class TestHelpTextOptions(TrackerTestController):

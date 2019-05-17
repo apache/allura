@@ -459,9 +459,9 @@ class TestUserDetails(TestController):
         # list of projects
         projects = r.html.findAll('fieldset')[-1]
         projects = [e.getText() for e in projects.findAll('li')]
-        assert_in('Test 2&ndash;Admin', projects)
-        assert_in('Test Project&ndash;Admin', projects)
-        assert_in('Adobe project 1&ndash;Admin', projects)
+        assert_in(u'Test 2\n\u2013\nAdmin\n', projects)
+        assert_in(u'Test Project\n\u2013\nAdmin\n', projects)
+        assert_in(u'Adobe project 1\n\u2013\nAdmin\n', projects)
 
     @patch('allura.model.auth.request')
     @patch('allura.lib.helpers.request')
@@ -753,9 +753,9 @@ class TestDeleteProjects(TestController):
         assert_equal(len(confirm_data), 4)  # 2 projects == 2 rows (2 columns each)
         assert_equal(confirm_data[0].getText(), 'p/test')
         assert_equal(confirm_data[1].find('a').get('href'), '/p/test/')
-        assert_equal(confirm_data[1].getText(), '/p/test/')
-        assert_equal(confirm_data[2].getText(), 'dne/dne')
-        assert_equal(confirm_data[3].getText(), 'Neighborhood not found')
+        assert_equal(confirm_data[1].getText().strip(), '/p/test/')
+        assert_equal(confirm_data[2].getText().strip(), 'dne/dne')
+        assert_equal(confirm_data[3].getText().strip(), 'Neighborhood not found')
 
     def test_confirm_step_edit_link(self):
         r = self.app.get('/nf/admin/delete_projects/')

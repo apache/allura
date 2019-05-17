@@ -38,8 +38,8 @@ class TestProjectHome(TestController):
         assert re.search(r'<!-- Server: \S+ -->',
                          str(root.html)), 'Missing Server comment'
         nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
-        nav_links = [nl for nl in nav_links if nl['class'] != 'add-tool-toggle']
-        assert len(nav_links) == len(response.json['menu'])
+        nav_links = [nl for nl in nav_links if 'add-tool-toggle' not in nl['class']]
+        assert_equal(len(nav_links), len(response.json['menu']))
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
 
