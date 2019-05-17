@@ -70,10 +70,7 @@ backlash==0.1.4
 crank==0.8.1
 Mako==1.0.7
 MarkupSafe==1.0
-Pylons==1.0.3
 repoze.lru==0.7
-simplejson==3.16.0
-Tempita==0.5.1
 Routes==2.4.1
 WebHelpers==1.3
 

@@ -114,7 +114,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     #     make_base_app = base_config.setup_tg_wsgi_app(load_environment)
     #     app = make_base_app(global_conf, full_stack=True, **app_conf)
 
-    # Configure the Pylons environment
+    # Configure the TG environment
     load_environment(global_conf, app_conf)
 
     app = tg.TGApp()

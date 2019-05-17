@@ -38,7 +38,7 @@ setup(
     long_description=PROJECT_DESCRIPTION,
     author='Allura Team',
     url='https://allura.apache.org/',
-    keywords='allura forge turbogears pylons jinja2 mongodb',
+    keywords='allura forge turbogears jinja2 mongodb',
     license='Apache License, http://www.apache.org/licenses/LICENSE-2.0',
     platforms=[
         'Linux',
@@ -47,17 +47,15 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
-        'Framework :: Pylons',
         'Framework :: TurboGears',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         'License :: OSI Approved :: Apache Software License',
     ],
     install_requires=[
     ],
-    setup_requires=["PasteScript >= 1.7"],
-    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'Ming'],
+    paster_plugins=['PasteScript', 'TurboGears2', 'Ming'],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
@@ -81,7 +79,8 @@ setup(
     [paste.app_factory]
     main = allura.config.middleware:make_app
     [paste.app_install]
-    main = pylons.util:PylonsInstaller
+    # used from SetupCommand, this will call our setup_app()
+    main = paste.script.appinstall:Installer
 
     [allura]
     profile = allura.ext.user_profile:UserProfileApp

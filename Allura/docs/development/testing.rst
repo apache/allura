@@ -54,8 +54,8 @@ provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you c
 find further documentation for the `.get()` and `.post()` methods.
 
 Testing Allura models is also straightforward, though you will often
-need to setup pylons global objects before your test. If the code under test
-uses pylons globals (like `g` and `c`), but your test doesn't require the
+need to setup global objects before your test. If the code under test
+uses globals (like `g` and `c`), but your test doesn't require the
 fully-loaded wsgi app, you can do something like this:
 
 .. code-block:: python
@@ -67,7 +67,7 @@ fully-loaded wsgi app, you can do something like this:
     from allura import model as M
 
     def setUp():
-        # set up pylons globals
+        # set up globals
         setup_unit_test()
 
         # set c.project and c.app

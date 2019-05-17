@@ -20,7 +20,6 @@
 import json
 
 from nose.tools import assert_equal, assert_in, assert_not_equal
-import simplejson
 import tg
 
 from allura.lib import helpers as h
@@ -116,7 +115,6 @@ class TestWikiApi(TestRestApiBase):
         assert_equal(tg.jsonify.encode('<'), '"\u003C"')
         # make sure these are unchanged
         assert_equal(json.dumps('<'), '"<"')
-        assert_equal(simplejson.dumps('<'), '"<"')
 
 
 class TestWikiHasAccess(TestRestApiBase):

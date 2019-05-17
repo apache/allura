@@ -41,7 +41,7 @@ from collections import OrderedDict
 
 from tg import redirect
 from tg.decorators import before_validate
-from pylons.controllers.util import etag_cache
+from tg.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
 from webhelpers.html import literal
 from webob import exc
