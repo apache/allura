@@ -191,7 +191,7 @@ class CSRFMiddleware(object):
         if req.method == 'POST':
             param = req.POST.pop(self._param_name, None)
             if cookie != param:
-                log.warning('CSRF attempt detected, %r != %r', cookie, param)
+                log.warning('CSRF attempt detected: cookie %r != param %r', cookie, param)
                 environ.pop('HTTP_COOKIE', None)  # effectively kill the existing session
                 if req.path.startswith('/auth/'):
                     # for operations where you're not logged in yet (e.g. login form, pwd recovery, etc), then killing

@@ -185,8 +185,8 @@ class TestController(object):
             self.smtp_mock.stop()
 
     def webflash(self, response):
-        "Extract webflash content from response."
-        return urllib.unquote(response.cookies_set.get('webflash', ''))
+        "Extract webflash content from current state of WebTest app"
+        return urllib.unquote(self.app.cookies.get('webflash', ''))
 
     def subscription_options(self, response):
         """
@@ -200,7 +200,7 @@ class TestController(object):
                 break
         assert script is not None, 'subscription options not found'
         _, json_dict = script.getText().split('=')
-        json_dict = json_dict.strip(' ;')
+        json_dict = json_dict.strip(' ;\n')
         return json.loads(json_dict)
 
     def find_form(self, resp, cond):

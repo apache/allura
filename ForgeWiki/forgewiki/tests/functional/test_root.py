@@ -697,34 +697,34 @@ class TestRootController(TestController):
         found_links = 0
         for link in r.html.findAll('a'):
             if link.contents == ['this page']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['another page']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['space page space']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['space page escape']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['[TEST]']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['[Some page which does not exist]']:
-                assert 'notfound' in link.get('class', '')
+                assert 'notfound' in link.get('class', [])
                 found_links += 1
             if link.contents == ['[space page]']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['[space%20page]']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
             if link.contents == ['another attach']:
-                assert 'notfound' in link.get('class', '')
+                assert 'notfound' in link.get('class', [])
                 found_links += 1
             if link.contents == ['attach']:
-                assert 'notfound' not in link.get('class', '')
+                assert 'notfound' not in link.get('class', [])
                 found_links += 1
         assert found_links == 10, 'Wrong number of links found'
 
@@ -900,7 +900,7 @@ class TestRootController(TestController):
     def test_sidebar_admin_menu(self):
         r = self.app.get('/p/test/wiki/Home/')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-        assert_equal(menu.attrMap['class'], 'hidden')  # (not expanded)
+        assert_equal(menu['class'], ['hidden'])  # (not expanded)
         menu = [li.find('span').getText() for li in menu.findAll('li')]
         assert_equal(
             menu,
@@ -909,7 +909,7 @@ class TestRootController(TestController):
     def test_sidebar_admin_menu_is_expanded(self):
         r = self.app.get('/p/test/admin/wiki/permissions')
         menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
-        assert_not_in('hidden', menu.attrMap.get('class', ''))  # expanded
+        assert_not_in('hidden', menu.get('class', []))  # expanded
 
     def test_sidebar_admin_menu_invisible_to_not_admin(self):
         def assert_invisible_for(username):

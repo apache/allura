@@ -64,6 +64,7 @@ class TestActivityController(TestController):
     def test_index_html(self, director):
         from activitystream.storage.base import StoredActivity
         from bson import ObjectId
+        from datadiff.tools import assert_equal
         director.get_timeline.return_value = [StoredActivity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
@@ -103,24 +104,24 @@ class TestActivityController(TestController):
         assert_equal(activity.time['title'], "2013-12-04 21:48:19")
         h1 = """\
         <h1>
-        <img src="/u/test-admin/user_icon" alt="Administrator 1" title="Administrator 1" class="emboss x32 avatar" />
-        <a href="/u/test-admin/">
-         Administrator 1
-        </a>
-        posted
-        <a href="/p/test/tickets/34/?limit=25#ed7c">
-         a comment
-        </a>
-        on
-        <a href="/p/test/tickets/34/">
-         ticket #34
-        </a>
+         <img alt="Administrator 1" class="emboss x32 avatar" src="/u/test-admin/user_icon" title="Administrator 1"/>
+         <a href="/u/test-admin/">
+          Administrator 1
+         </a>
+         posted
+         <a href="/p/test/tickets/34/?limit=25#ed7c">
+          a comment
+         </a>
+         on
+         <a href="/p/test/tickets/34/">
+          ticket #34
+         </a>
         </h1>
         """
         assert_equal(dedent(h1), activity.h1.prettify())
         p = """\
         <p>
-        Just wanted to leave a comment on this...
+         Just wanted to leave a comment on this...
         </p>
         """
         assert_equal(dedent(p), activity.p.prettify())

@@ -173,7 +173,7 @@ class TestWebhookController(TestController):
             error = form.find('input', attrs={'name': field})
             error = error.findNext('div', attrs={'class': 'error'})
         if error:
-            assert_in(h.escape(msg), error.getText())
+            assert_in(msg, error.getText())
         else:
             assert False, 'Validation error not found'
 

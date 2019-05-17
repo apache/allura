@@ -859,8 +859,8 @@ class TestProjectAdmin(TestController):
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         mem_id = mem_holder['data-group']
         # neither group has update permission
-        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
         # add update permission to Member
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
@@ -870,10 +870,9 @@ class TestProjectAdmin(TestController):
         dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         # Member now has update permission
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "yes"
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["yes"]
         # Developer has inherited update permission from Member
-        assert dev_holder.findAll('ul')[1].findAll(
-            'li')[2]['class'] == "inherit"
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["inherit"]
         # remove update permission from Member
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
@@ -883,8 +882,8 @@ class TestProjectAdmin(TestController):
         dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         # neither group has update permission
-        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
 
     def test_permission_inherit(self):
         r = self.app.get('/admin/groups/')
