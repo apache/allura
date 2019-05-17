@@ -896,7 +896,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
@@ -1483,7 +1483,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -1499,7 +1499,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -1518,7 +1518,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -1546,7 +1546,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         self.app.post(f['action'].encode('utf-8'), params=params,
@@ -1560,7 +1560,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = post_form.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
@@ -2162,7 +2162,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
@@ -2412,7 +2412,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
@@ -2764,7 +2764,7 @@ class TestEmailMonitoring(TrackerTestController):
             if (('thread' in f['action']) and ('post' in f['action'])):
                 params = {i['name']: i.get('value', '')
                           for i in f.findAll('input')
-                          if i.has_key('name')}  # nopep8 - beautifulsoup3 actually uses has_key
+                          if i.has_attr('name')}
                 params[f.find('textarea')['name']] = 'foobar'
                 self.app.post(str(f['action']), params)
                 break  # Do it only once if many forms met

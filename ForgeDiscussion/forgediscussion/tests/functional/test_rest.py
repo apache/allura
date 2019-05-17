@@ -55,7 +55,7 @@ class TestDiscussionApiBase(TestRestApiBase):
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
-            if field.has_key('name'):  # nopep8 - beautifulsoup3 actually uses has_key
+            if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         params[f.find('select')['name']] = forum
