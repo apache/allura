@@ -487,7 +487,7 @@ class ForgeTrackerApp(Application):
             GenericClass = utils.JSONForExport
             self.export_attachments(tickets, export_path)
         else:
-            GenericClass = jsonify.GenericJSON
+            GenericClass = jsonify.JSONEncoder
 
         for i, ticket in enumerate(tickets):
             if i > 0:

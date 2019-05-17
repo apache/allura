@@ -108,7 +108,7 @@ class ForgeLinkApp(Application):
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         json.dump(RootRestController(self).link_json(),
-                  f, cls=jsonify.GenericJSON, indent=2)
+                  f, cls=jsonify.JSONEncoder, indent=2)
 
 
 class RootController(BaseController):
