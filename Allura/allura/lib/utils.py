@@ -752,7 +752,7 @@ def is_ajax(request):
     return False
 
 
-class JSONForExport(tg.jsonify.GenericJSON):
+class JSONForExport(tg.jsonify.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, '__json__') and callable(obj.__json__):
             try:

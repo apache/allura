@@ -239,15 +239,15 @@ class ForgeDiscussionApp(Application):
         f.write('{"forums": [')
         forums = list(DM.Forum.query.find(dict(app_config_id=self.config._id)))
         if with_attachments:
-            GenericJSON = JSONForExport
+            JSONEncoder = JSONForExport
             for forum in forums:
                 self.export_attachments(forum.threads, export_path)
         else:
-            GenericJSON = jsonify.GenericJSON
+            JSONEncoder = jsonify.JSONEncoder
         for i, forum in enumerate(forums):
             if i > 0:
                 f.write(',')
-            json.dump(forum, f, cls=GenericJSON, indent=2)
+            json.dump(forum, f, cls=JSONEncoder, indent=2)
         f.write(']}')
 
     def export_attachments(self, threads, export_path):

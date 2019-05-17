@@ -218,14 +218,14 @@ class ForgeBlogApp(Application):
         f.write('{"posts": [')
         posts = list(BM.BlogPost.query.find(dict(app_config_id=self.config._id)))
         if with_attachments:
-            GenericJSON = JSONForExport
+            JSONEncoder = JSONForExport
             self.export_attachments(posts, export_path)
         else:
-            GenericJSON = jsonify.GenericJSON
+            JSONEncoder = jsonify.JSONEncoder
         for i, post in enumerate(posts):
             if i > 0:
                 f.write(',')
-            json.dump(post, f, cls=GenericJSON, indent=2)
+            json.dump(post, f, cls=JSONEncoder, indent=2)
         f.write(']}')
 
     def export_attachments(self, articles, export_path):

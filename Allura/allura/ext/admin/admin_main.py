@@ -186,7 +186,7 @@ class AdminApp(Application):
         pass
 
     def bulk_export(self, f, export_path='', with_attachments=False):
-        json.dump(self.project, f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(self.project, f, cls=jsonify.JSONEncoder, indent=2)
 
 
 class AdminExtensionLookup(object):

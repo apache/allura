@@ -355,7 +355,7 @@ The wiki uses [Markdown](%s) syntax.
             GenericClass = JSONForExport
             self.export_attachments(pages, export_path)
         else:
-            GenericClass = jsonify.GenericJSON
+            GenericClass = jsonify.JSONEncoder
         for i, page in enumerate(pages):
             if i > 0:
                 f.write(',')
