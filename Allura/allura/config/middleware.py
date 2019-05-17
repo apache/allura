@@ -29,7 +29,7 @@ from tg.support.registry import RegistryManager
 from routes.middleware import RoutesMiddleware
 from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
-from weberror.errormiddleware import ErrorMiddleware
+from paste.exceptions.errormiddleware import ErrorMiddleware
 
 import activitystream
 import ew
