@@ -13,7 +13,7 @@
 MySQL-python  # GPL
 
 # for spam checking
-akismet==0.2.0
+akismet==1.0.1
 
 # faster charset detection
 cchardet==2.1.1  # GPL
