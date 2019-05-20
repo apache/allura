@@ -74,18 +74,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         super(BasetestProjectRootController, self).__init__()
 
     def _setup_request(self):
-        # This code fixes a race condition in our tests
-        c.project = M.Project.query.get(
-            shortname='test', neighborhood_id=self.p_nbhd._id)
-        count = 20
-        while c.project is None:
-            import time
-            time.sleep(0.5)
-            log.warning('Project "test" not found, retrying...')
-            c.project = M.Project.query.get(
-                shortname='test', neighborhood_id=self.p_nbhd._id)
-            count -= 1
-            assert count > 0, 'Timeout waiting for test project to appear'
+        pass
 
     @expose()
     def _lookup(self, name, *remainder):
