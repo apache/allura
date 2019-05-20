@@ -48,7 +48,7 @@ textile==2.1.5
 # dep of colander
 translationstring==1.3
 TimerMiddleware==0.4.4
-TurboGears2==2.3.8
+TurboGears2==2.3.12
 # dep of html5lib
 webencodings==0.5.1
 WebOb==1.7.4
