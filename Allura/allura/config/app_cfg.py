@@ -38,7 +38,6 @@ from tg import app_globals as g
 from tg.renderers.jinja import JinjaRenderer
 import jinja2
 from tg.configuration import AppConfig, config
-from routes import Mapper
 from webhelpers.html import literal
 import ew
 
@@ -61,7 +60,6 @@ class ForgeConfig(AppConfig):
         self.use_sqlalchemy = False
         self.use_toscawidgets = False
         self.use_transaction_manager = False
-        self.enable_routes = True
         self.handle_status_codes = [403, 404]
         self.disable_request_extensions = True
 
@@ -69,17 +67,6 @@ class ForgeConfig(AppConfig):
         # which is convenient for /foo-bar to execute a "def foo_bar" method, but is a pretty drastic change for us
         # and makes many URLs be valid that we might not want like /foo*bar /foo@bar /foo:bar
         self.dispatch_path_translator = None
-
-    def after_init_config(self):
-        config['tg.strict_tmpl_context'] = True
-
-    def setup_routes(self):
-        map = Mapper()
-        # Setup a default route for the root of object dispatch
-        # tg.root_controller is set by AppConfig.__init__
-        map.connect('*url', controller=self.get('tg.root_controller', 'root'),
-                    action='routes_placeholder')
-        config['routes.map'] = map
 
 
 class AlluraJinjaRenderer(JinjaRenderer):
@@ -110,7 +97,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
         bcc = cls._setup_bytecode_cache()
         jinja2_env = jinja2.Environment(
             loader=PackagePathLoader(),
-            auto_reload=config.auto_reload_templates,
+            auto_reload=config['auto_reload_templates'],
             autoescape=True,
             bytecode_cache=bcc,
             cache_size=config.get('jinja_cache_size', -1),
@@ -122,8 +109,6 @@ class AlluraJinjaRenderer(JinjaRenderer):
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
         config['tg.app_globals'].jinja2_env = jinja2_env  # TG doesn't need this, but we use g.jinja2_env a lot
-        # Jinja's unable to request c's attributes without strict_c
-        config['tg.strict_tmpl_context'] = True
         return {'jinja': cls(jinja2_env)}
 
 

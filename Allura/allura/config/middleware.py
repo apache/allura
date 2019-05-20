@@ -18,6 +18,7 @@
 #       under the License.
 
 """WSGI middleware initialization for the allura application."""
+import importlib
 import mimetypes
 
 import tg
@@ -26,7 +27,6 @@ import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
-from routes.middleware import RoutesMiddleware
 from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
 from paste.exceptions.errormiddleware import ErrorMiddleware
@@ -65,7 +65,15 @@ __all__ = ['make_app']
 
 
 def make_app(global_conf, full_stack=True, **app_conf):
-    root = app_conf.get('override_root', None)
+    override_root_module_name = app_conf.get('override_root', None)
+    if override_root_module_name:
+        # get an actual instance of it, like BasetestProjectRootController or TaskController
+        className = override_root_module_name.title().replace('_', '') + 'Controller'
+        module = importlib.import_module('allura.controllers.{}'.format(override_root_module_name))
+        rootClass = getattr(module, className)
+        root = rootClass()
+    else:
+        root = None  # will default to RootController in root.py
     return _make_core_app(root, global_conf, full_stack, **app_conf)
 
 
@@ -124,8 +132,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         if getattr(Middleware, 'when', 'inner') == 'inner':
             app = Middleware(app, config)
 
-    # Required for pylons
-    app = RoutesMiddleware(app, config['routes.map'])
     # Required for sessions
     app = SessionMiddleware(app, config)
     # Handle "Remember me" functionality
