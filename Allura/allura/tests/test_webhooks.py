@@ -251,7 +251,18 @@ class TestWebhookController(TestController):
         self.find_error(r, 'url',
                         'You must provide a full domain name (like qwer.com)')
 
-    def test_edit(self):
+    def test_AAAA_WORKAROUND__edit(self):
+        """
+        This must run first in this test class for unknown reasons ever since
+            https://github.com/TurboGears/tg2/commit/02fb49b14e70fdd8ac16973488fb3637e5e59114
+
+        If any test runs the self.app.post from create_webhook before this one, then this test will fail on:
+            with td.audits(msg):
+                r = form.submit()
+        because WebhookValidator's `value` will be "create" instead of an objectid str
+
+        Maybe something to do with WebhookControllerMeta setup of `validate` decorators?
+        """
         data1 = {'url': u'http://httpbin.org/post',
                  'secret': u'secret'}
         data2 = {'url': u'http://example.com/hook',
