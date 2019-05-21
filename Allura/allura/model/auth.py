@@ -303,6 +303,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         # but allow for anything to be stored, like other headers, geo info, frequency of use, etc
     }])
 
+    def __repr__(self):
+        return (u'<User username={s.username!r} display_name={s.display_name!r} _id={s._id!r} '
+                u'disabled={s.disabled!r} pending={s.pending!r}>'.format(s=self))
+
     def index(self):
         provider = plugin.AuthenticationProvider.get(None)  # no need in request here
         localization = '%s/%s' % (
@@ -370,8 +374,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             self.previous_login_details.append(detail)
 
     def backfill_login_details(self, auth_provider):
-        if self.previous_login_details:
-            return
         # ".*" at start of regex and the DOTALL flag is needed only for the test, which uses mim
         # Fixed in ming f9f69d3c, so once we upgrade to 0.6.1+ we can remove it
         msg_regex = re.compile(r'.*^({})'.format('|'.join([re.escape(line_prefix)

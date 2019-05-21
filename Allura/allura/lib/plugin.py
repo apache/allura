@@ -204,7 +204,6 @@ class AuthenticationProvider(object):
         else:
             self.session['username'] = user.username
             h.auditlog_user('Successful login', user=user)
-        user.backfill_login_details(self)
         self.after_login(user, self.request)
 
         if 'rememberme' in self.request.params:
