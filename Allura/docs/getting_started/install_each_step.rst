@@ -154,7 +154,7 @@ We have a custom config ready for use.
 
     (env-allura)~$ cd /tmp
     (env-allura)/tmp$ sudo apt-get install openjdk-8-jre-headless unzip
-    (env-allura)/tmp$ wget -nv http://archive.apache.org/dist/lucene/solr/5.3.1/solr-5.3.1.tgz
+    (env-allura)/tmp$ wget -nv https://archive.apache.org/dist/lucene/solr/5.3.1/solr-5.3.1.tgz
     (env-allura)/tmp$ tar xvf solr-5.3.1.tgz solr-5.3.1/bin/install_solr_service.sh --strip-components=2
     (env-allura)/tmp$ sudo ./install_solr_service.sh solr-5.3.1.tgz
 

@@ -72,8 +72,7 @@ Then exit vim (:kbd:`<esc> :wq`) and run:
 
     sudo service apache2 reload
 
-To test that it's working, run: :command:`git ls-remote http://localhost/git/p/test/git/`
-(if using Vagrant, you may also use :code:`localhost:8088` from your host machine).
+To test that it's working, run: :command:`git ls-remote http://localhost/git/p/test/git/`.
 If there is no output, that is fine (it's an empty repo).
 
 .. warning::
@@ -101,7 +100,7 @@ and subsequent chapters.
 
 .. code-block:: bash
 
-    sudo chown allura:allura /srv/svn  # or other user, as needed (e.g. "vagrant")
+    sudo chown allura:allura /srv/svn  # or other user, as needed
 
     cat > /srv/svn/svnserve.conf <<EOF
     [general]
@@ -138,7 +137,7 @@ that all svn repos can be dynamically served.
 
     sudo apt-get install libapache2-svn
 
-Test accessing http://localhost/ (`localhost:8088` if using Vagrant).
+Test accessing http://localhost/.
 
 Now we'll configure Apache to serve a single project's repositories and make sure
 that works.
@@ -154,7 +153,7 @@ Uncomment and change to :code:`<Location /svn/p/test>`.  Set
 
     sudo service apache2 reload
 
-Test at http://localhost/svn/p/test/code/ (`localhost:8088` if using Vagrant)
+Test at http://localhost/svn/p/test/code/
 
 That configuration works only for the repositories in a single project.  You must either
 create a new configuration for each project within Allura, or compile a patch
@@ -207,14 +206,14 @@ access handler, e.g.:
 
         AddHandler mod_python .py
         # Change this path if needed:
-        PythonAccessHandler /home/vagrant/src/allura/scripts/ApacheAccessHandler.py
+        PythonAccessHandler /home/myuser/src/allura/scripts/ApacheAccessHandler.py
 
         AuthType Basic
         AuthName "SCM Access"
         AuthBasicAuthoritative off
 
         # Change this path if needed:
-        PythonOption ALLURA_VIRTUALENV /home/vagrant/env-allura
+        PythonOption ALLURA_VIRTUALENV /home/myuser/env-allura
         # This routes back to the allura webapp
         # In a production environment, change the IP address and port number as appropriate.
         # And use https if possible, since the username and password are otherwise
@@ -228,8 +227,7 @@ access handler, e.g.:
     sudo service apache2 reload
 
 To test that it's working, run: :command:`git ls-remote
-http://localhost/git/p/test/git/` (if using Vagrant, use :code:`localhost:8088`
-from your host machine). If there is no output, that is fine (it's an empty
+http://localhost/git/p/test/git/`. If there is no output, that is fine (it's an empty
 repo). If it errors, look in :file:`/var/log/apache2/error.log` for the error
 message.
 
