@@ -41,7 +41,6 @@ import cgi
 
 import emoji
 import tg
-import genshi.template
 try:
     import cchardet as chardet
 except ImportError:
@@ -576,20 +575,6 @@ class fixed_attrs_proxy(proxy):
         self._obj = obj
         for k, v in kw.iteritems():
             setattr(self, k, v)
-
-
-def render_genshi_plaintext(template_name, **template_vars):
-    assert os.path.exists(template_name)
-    fd = open(template_name)
-    try:
-        tpl_text = fd.read()
-    finally:
-        fd.close()
-    filepath = os.path.dirname(template_name)
-    tt = genshi.template.NewTextTemplate(tpl_text,
-                                         filepath=filepath, filename=template_name)
-    stream = tt.generate(**template_vars)
-    return stream.render(encoding='utf-8').decode('utf-8')
 
 
 @tg.expose(content_type='text/plain')

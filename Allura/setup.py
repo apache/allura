@@ -69,7 +69,7 @@ setup(
                              ]},
     message_extractors={'allura': [
         ('**.py', 'python', None),
-        ('templates/**.html', 'genshi', None),
+        ('templates/**.html', 'jinja2', None),
         ('public/**', 'ignore', None)]},
 
     # These entry points define what tools and plugins are available for Allura.

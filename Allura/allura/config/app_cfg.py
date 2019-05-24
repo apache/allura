@@ -54,7 +54,7 @@ class ForgeConfig(AppConfig):
     def __init__(self, root_controller=None):
         AppConfig.__init__(self, minimal=True, root_controller=root_controller)
         self.package = allura
-        self.renderers = ['json', 'genshi', 'mako', 'jinja']
+        self.renderers = ['json', 'mako', 'jinja']
         self.default_renderer = 'jinja'
         self.register_rendering_engine(AlluraJinjaRenderer)
         self.use_sqlalchemy = False

@@ -288,7 +288,6 @@ class SetRequestHostFromConfig(object):
 class AlluraTimerMiddleware(TimerMiddleware):
 
     def timers(self):
-        import genshi
         import jinja2
         import markdown
         import ming
@@ -328,7 +327,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
                   '_refresh'),
             # urlopen and socket io may or may not overlap partially
-            Timer('render', genshi.Stream, 'render'),
             Timer('repo.Blob.{method_name}', allura.model.repository.Blob, '*'),
             Timer('repo.Commit.{method_name}', allura.model.repository.Commit, '*'),
             Timer('repo.LastCommit.{method_name}',
@@ -339,8 +337,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
                   'flush', debug_each_call=False),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
-            Timer('template', genshi.template.Template, '_prepare', '_parse',
-                  'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),

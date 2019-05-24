@@ -147,10 +147,8 @@ def get_change_text(name, new_value, old_value):
         new_value = ', '.join(new_value)
     changes[name] = old_value
     changes[name] = new_value
-    tpl_fn = pkg_resources.resource_filename(
-        'forgetracker', 'data/ticket_changed_tmpl')
-    return h.render_genshi_plaintext(
-        tpl_fn,
+    tmpl = g.jinja2_env.get_template('forgetracker:data/ticket_changed.html')
+    return tmpl.render(
         changelist=changes.get_changed(),
         comment=None)
 
@@ -171,14 +169,10 @@ def render_changes(changes, comment=None):
 
     Returns tuple (post_text, notification_text)
     """
-    template = pkg_resources.resource_filename(
-        'forgetracker', 'data/ticket_changed_tmpl')
-    render = partial(
-        h.render_genshi_plaintext,
-        template,
-        changelist=changes.get_changed())
-    post_text = render(comment=None)
-    notification_text = render(comment=comment) if comment else None
+    tmpl = g.jinja2_env.get_template('forgetracker:data/ticket_changed.html')
+    changelist = changes.get_changed()
+    post_text = tmpl.render(h=h, changelist=changelist, comment=None)
+    notification_text = tmpl.render(h=h, changelist=changelist, comment=comment) if comment else None
     return post_text, notification_text
 
 
