@@ -81,7 +81,10 @@ class Ming(fev.FancyValidator):
         return result
 
     def _from_python(self, value, state):
-        return value._id
+        if isinstance(value, ObjectId):
+            return value
+        else:
+            return value._id
 
 
 class UniqueOAuthApplicationName(fev.UnicodeString):

@@ -63,6 +63,8 @@ class LabelEdit(ew.InputField):
     def from_python(self, value, state=None):
         if isinstance(value, basestring):
             return value
+        elif value is None:
+            return ''
         else:
             return ','.join(value)
 
