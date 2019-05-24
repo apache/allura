@@ -403,21 +403,21 @@ class SortableRepeatedMixin(JQueryMixin):
 
 
 class SortableRepeatedField(SortableRepeatedMixin, ew.RepeatedField):
-    template = 'genshi:allura.templates.widgets.sortable_repeated_field'
+    template = 'jinja:allura:templates/widgets/sortable_repeated_field.html'
     defaults = dict(
         ew.RepeatedField.defaults,
         **SortableRepeatedMixin.defaults)
 
 
 class SortableTable(SortableRepeatedMixin, ew.TableField):
-    template = 'genshi:allura.templates.widgets.sortable_table'
+    template = 'jinja:allura:templates/widgets/sortable_table.html'
     defaults = dict(
         ew.TableField.defaults,
         **SortableRepeatedMixin.defaults)
 
 
 class StateField(JQueryMixin, ew.CompoundField):
-    template = 'genshi:allura.templates.widgets.state_field'
+    template = 'jinja:allura:templates/widgets/state_field.html'
     js_widget_name = 'StateField'
     js_plugin_file = ew.JSLink('js/state_field.js')
     js_params = JQueryMixin.js_params + [
@@ -457,7 +457,7 @@ class DateField(JQueryMixin, ew.TextField):
 
 
 class FieldCluster(ew.CompoundField):
-    template = 'genshi:allura.templates.widgets.field_cluster'
+    template = 'jinja:allura:templates/widgets/field_cluster.html'
 
 
 class AdminField(ew.InputField):

@@ -16,28 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 -->
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     class="$container_cls"
-     style="overflow:auto;"
-     py:attrs="{'data-name':name}">
+<div class="{{ container_cls }}" data-name="{{ name }}">
    <!-- We need "overflow:auto" for sortable.js to properly work in Firefox http://stackoverflow.com/a/3393282/4640690 -->
-   <div><py:if test="show_msg"><p
-          class="$msg_cls"
-          data-empty-message="$empty_msg"
-          data-nonempty-message="$nonempty_msg"
-          /></py:if></div>
-  <py:if test="show_button">${widget.button.display()}</py:if>
+   <div>{% if show_msg %}<p
+          class="{{ msg_cls }}"
+          data-empty-message="{{ empty_msg }}"
+          data-nonempty-message="{{ nonempty_msg }}"
+          />{% endif %}</div>
+  {% if show_button %}{{ widget.button.display() }}{% endif %}
   <br style="clear:both"/>
-  <div class="$flist_cls">
-    <py:for each="i in xrange(repetitions)"
-            py:with="ctx=widget.context_for(i)">
-      ${widget.field.display(css_class=field_cls, **ctx)}
-    </py:for>
-    <py:if test="extra_field_on_focus_name"
-           py:with="ctx=widget.context_for(repetitions)">
-      ${widget.field.display(css_class=field_cls, **ctx)}
-    </py:if>
-    ${widget.field.display(name=name+'#', css_class=stub_cls)}
+  <div class="{{ flist_cls }}">
+    {% for i in range(repetitions) %}
+      {% set ctx = widget.context_for(i) %}
+      {{ widget.field.display(css_class=field_cls, **ctx) }}
+    {% endfor %}
+    {% if extra_field_on_focus_name %}
+      {% set ctx = widget.context_for(repetitions) %}
+      {{ widget.field.display(css_class=field_cls, **ctx) }}
+    {% endif %}
+    {{ widget.field.display(name=name+'#', css_class=stub_cls) }}
   </div>
 </div>

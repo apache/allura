@@ -16,27 +16,29 @@
        specific language governing permissions and limitations
        under the License.
 -->
-<div xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:py="http://genshi.edgewall.org/"
-     class="$container_cls"
-     py:attrs="{'data-name':name}">
-  ${button.display()}
+<div class="{{ container_cls }}" data-name="{{ name }}">
+  {{ button.display() }}
   <br/>
   <table>
     <caption
-       class="$msg_cls"
-       data-empty-message="$empty_msg"
-       data-nonempty-message="$nonempty_msg"/>
+       class="{{msg_cls}}"
+       data-empty-message="{{empty_msg}}"
+       data-nonempty-message="{{nonempty_msg}}"/>
     <thead>
-      <tr><th py:for="col in widget.field.fields"><py:if test="col.show_label">$col.label</py:if></th></tr>
+      <tr>
+          {% for col in widget.field.fields %}
+          <th>
+              {% if col.show_label %}{{ col.label }}{% endif %}
+          </th>
+          {% endfor %}
+      </tr>
     </thead>
-    <tbody class="$flist_cls">
-      <py:for each="i in xrange(repetitions)"
-              py:with="ctx=widget.context_for(i)">
-        <?python ctx['css_class'] = field_cls ?>
-        ${widget.field.display(**ctx)}
-      </py:for>
-      ${widget.field.display(name=name+'#', css_class=stub_cls)}
+    <tbody class="{{ flist_cls }}">
+      {% for i in range(repetitions) %}
+        {% set ctx = widget.context_for(i) %}
+        {{ widget.field.display(css_class=field_cls, **ctx) }}
+      {% endfor %}
+      {{ widget.field.display(name=name+'#', css_class=stub_cls) }}
     </tbody>
   </table>
 </div>
