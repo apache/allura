@@ -86,7 +86,10 @@ class _ForumSelector(ew.SingleSelectField):
         return result
 
     def from_python(self, value, state):
-        return value.shortname
+        if isinstance(value, basestring):
+            return value
+        else:
+            return value.shortname
 
 
 class ModerateThread(CsrfForm):
