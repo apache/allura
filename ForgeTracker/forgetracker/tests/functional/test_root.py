@@ -496,6 +496,7 @@ class TestFunctionalController(TrackerTestController):
         })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
+        r.mustcontain('<li><strong>Major</strong>: True --&gt; False</li>')
         assert '<li><strong>Major</strong>: True --&gt; False</li>' in r
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Major</strong>: --&gt; False</li>' in r

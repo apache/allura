@@ -99,13 +99,6 @@ def test_really_unicode():
     assert isinstance(s, unicode)
 
 
-def test_render_genshi_plaintext():
-    here_dir = path.dirname(__file__)
-    tpl = path.join(here_dir, 'data/genshi_hello_tmpl')
-    text = h.render_genshi_plaintext(tpl, object='world')
-    eq_(u'Hello, world!\n', text)
-
-
 def test_find_project():
     proj, rest = h.find_project('/p/test/foo')
     assert_equals(proj.shortname, 'test')
