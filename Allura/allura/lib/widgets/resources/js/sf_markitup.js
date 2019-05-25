@@ -79,6 +79,13 @@ $(window).load(function() {
             // can't use simplemde's shortcuts settings, since those only hook into bindings set up for each button
             editor.codemirror.options.extraKeys.Home = "goLineLeft";
             editor.codemirror.options.extraKeys.End = "goLineRight";
+
+            // user mentions support
+            editor.codemirror.on("keyup", function (cm, event) {
+              if(event.shiftKey && event.keyCode == 50)
+                CodeMirror.showHint(cm, CodeMirror.hint.alluraUserMentions);
+            });
+
             editor.render();
 
             // shared at https://github.com/codemirror/CodeMirror/issues/2143#issuecomment-140100969

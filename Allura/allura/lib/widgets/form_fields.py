@@ -280,8 +280,12 @@ class MarkdownEdit(ew.TextArea):
         yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.CSSLink('css/simplemde.min.css', compress=False)
         yield ew.CSSLink('css/markitup_sf.css')
+        yield ew.CSSLink('css/show-hint.css')
         yield ew.JSLink('js/simplemde.min.js')
         yield ew.JSLink('js/sf_markitup.js')
+        yield ew.JSLink('js/show-hint.js')
+        yield ew.JSLink('js/usermentions-helper.js')
+        yield onready('getProjectUsers(\'%s/users\')' % c.project.url())
 
 class PageList(ew_core.Widget):
     template = 'jinja:allura:templates/widgets/page_list.html'
