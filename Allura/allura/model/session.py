@@ -20,6 +20,7 @@ import pymongo
 from collections import defaultdict
 
 from ming import Session
+from ming.odm.base import ObjectState
 from ming.orm.base import state
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
 from contextlib import contextmanager
@@ -220,6 +221,29 @@ class BatchIndexer(ArtifactSessionExtension):
                 raise
 
 
+class ExplicitFlushOnlySessionExtension(SessionExtension):
+    """
+    Used to avoid auto-flushing objects after merely creating them.
+
+    Only save them when we really want to by calling flush(obj) or setting obj.explicit_flush = True
+    """
+
+    def before_flush(self, obj=None):
+        """Before the session is flushed for ``obj``
+
+        If ``obj`` is ``None`` it means all the objects in
+        the UnitOfWork which can be retrieved by iterating
+        over ``ODMSession.uow``
+        """
+        if obj is not None:
+            # this was an explicit flush() call, so let it go through
+            return
+
+        for o in self.session.uow:
+            if not getattr(o, 'explicit_flush', False):
+                state(o).status = ObjectState.clean
+
+
 @contextmanager
 def substitute_extensions(session, extensions=None):
     """
@@ -251,6 +275,10 @@ main_orm_session = ThreadLocalORMSession(
     doc_session=main_doc_session,
     extensions=[IndexerSessionExtension]
     )
+main_explicitflush_orm_session = ThreadLocalORMSession(
+    doc_session=main_doc_session,
+    extensions=[IndexerSessionExtension, ExplicitFlushOnlySessionExtension]
+)
 project_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
     extensions=[IndexerSessionExtension]

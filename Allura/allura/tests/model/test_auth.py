@@ -436,7 +436,9 @@ def test_user_backfill_login_details():
     auth_provider = plugin.AuthenticationProvider.get(None)
     c.user.backfill_login_details(auth_provider)
 
-    assert_equal(sorted(c.user.previous_login_details), [
-        {'ip': '127.0.0.1', 'ua': 'TestBrowser/56'},
-        {'ip': '127.0.0.1', 'ua': 'TestBrowser/57'},
-    ])
+    details = M.UserLoginDetails.query.find({'user_id': c.user._id}).sort('ua').all()
+    assert_equal(len(details), 2, details)
+    assert_equal(details[0].ip, '127.0.0.1')
+    assert_equal(details[0].ua, 'TestBrowser/56')
+    assert_equal(details[1].ip, '127.0.0.1')
+    assert_equal(details[1].ua, 'TestBrowser/57')
