@@ -16,17 +16,17 @@
 #       under the License.
 
 import logging
-import urllib
 import calendar
 from urlparse import urlparse
 from email import header
 from hashlib import sha256
 from datetime import timedelta, datetime, time
-
 import os
 import re
+
 from pytz import timezone
 import pymongo
+from pymongo.errors import DuplicateKeyError
 from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
@@ -44,7 +44,7 @@ from allura.lib import plugin
 from allura.lib import utils
 from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
-from .session import main_orm_session, main_doc_session
+from .session import main_orm_session, main_doc_session, main_explicitflush_orm_session
 from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
 
@@ -297,11 +297,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session_date=S.DateTime,
         session_ip=str,
         session_ua=str))
-    previous_login_details = FieldProperty([{
-        str: S.Anything
-        # "ip" and "ua" are standard fields
-        # but allow for anything to be stored, like other headers, geo info, frequency of use, etc
-    }])
 
     def __repr__(self):
         return (u'<User username={s.username!r} display_name={s.display_name!r} _id={s._id!r} '
@@ -370,8 +365,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             session(self).flush(self)
 
     def add_login_detail(self, detail):
-        if detail not in self.previous_login_details:
-            self.previous_login_details.append(detail)
+        try:
+            session(detail).flush(detail)
+        except DuplicateKeyError:
+            session(detail).expunge(detail)
 
     def backfill_login_details(self, auth_provider):
         # ".*" at start of regex and the DOTALL flag is needed only for the test, which uses mim
@@ -998,3 +995,28 @@ main_orm_session.mapper(AuditLog, audit_log, properties=dict(
     project=RelationProperty('Project'),
     user_id=AlluraUserProperty(),
     user=RelationProperty('User')))
+
+
+class UserLoginDetails(MappedClass):
+    """
+    Store unique entries for users' previous login details.
+
+    Used to help determine if new logins are suspicious or not
+    """
+
+    class __mongometa__:
+        name = 'user_login_details'
+        session = main_explicitflush_orm_session
+        indexes = ['user_id']
+        unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail
+                          ]
+
+    _id = FieldProperty(S.ObjectId)
+    user_id = AlluraUserProperty(required=True)
+    ip = FieldProperty(str)
+    ua = FieldProperty(str)
+    extra = FieldProperty({
+        str: S.Anything
+    })
+
+    user = RelationProperty('User')

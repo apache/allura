@@ -27,7 +27,7 @@ from .artifact import VotableArtifact
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, EmailAddress, OldProjectRole
-from .auth import AuditLog, audit_log, AlluraUserProperty
+from .auth import AuditLog, audit_log, AlluraUserProperty, UserLoginDetails
 from .filesystem import File
 from .notification import Notification, Mailbox, SiteNotification
 from .repository import Repository, RepositoryImplementation
@@ -39,7 +39,7 @@ from .webhook import Webhook
 from .multifactor import TotpKey
 
 from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL, MarkdownCache
-from .session import main_doc_session, main_orm_session
+from .session import main_doc_session, main_orm_session, main_explicitflush_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session, repository_orm_session
 from .session import task_orm_session
@@ -61,4 +61,4 @@ __all__ = [
     'OAuthRequestToken', 'OAuthAccessToken', 'MonQTask', 'Webhook', 'ACE', 'ACL', 'EVERYONE', 'ALL_PERMISSIONS',
     'DENY_ALL', 'MarkdownCache', 'main_doc_session', 'main_orm_session', 'project_doc_session', 'project_orm_session',
     'artifact_orm_session', 'repository_orm_session', 'task_orm_session', 'ArtifactSessionExtension', 'repository',
-    'repo_refresh', 'SiteNotification', 'TotpKey']
+    'repo_refresh', 'SiteNotification', 'TotpKey', 'UserLoginDetails', 'main_explicitflush_orm_session']

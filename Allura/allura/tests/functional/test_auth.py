@@ -150,6 +150,8 @@ class TestAuth(TestController):
         assert_equal(kwargs['subject'], u'Update your %s password' % config['site_name'])
         assert_in('/auth/forgotten_password/', kwargs['text'])
 
+        assert_equal([], M.UserLoginDetails.query.find().all())  # no records created
+
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
         self.app.extra_environ = {'disable_auth_magic': 'True'}

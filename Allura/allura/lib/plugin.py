@@ -187,7 +187,7 @@ class AuthenticationProvider(object):
         else:
             self.session.pop('multifactor-username', None)
 
-        login_details = self.get_login_detail(self.request)
+        login_details = self.get_login_detail(self.request, user)
 
         expire_reason = None
         if self.is_password_expired(user):
@@ -436,6 +436,7 @@ class AuthenticationProvider(object):
         ]
 
     def login_details_from_auditlog(self, auditlog):
+        from allura import model as M
         ip = ua = None
         matches = re.search(r'^IP Address: (.+)\n', auditlog.message, re.MULTILINE)
         if matches:
@@ -444,20 +445,24 @@ class AuthenticationProvider(object):
         if matches:
             ua = matches.group(1)
         if ua or ip:
-            return dict(
+            return M.UserLoginDetails(
+                user_id=auditlog.user_id,
                 ip=ip,
                 ua=ua,
             )
 
-    def get_login_detail(self, request):
-        return dict(
+    def get_login_detail(self, request, user):
+        from allura import model as M
+        return M.UserLoginDetails(
+            user_id=user._id,
             ip=utils.ip_address(request),
             ua=request.headers.get('User-Agent'),
         )
 
     def trusted_login_source(self, user, login_details):
         # TODO: could also factor in User-Agent but hard to know what parts of the UA are meaningful to check here
-        for prev_login in user.previous_login_details:
+        from allura import model as M
+        for prev_login in M.UserLoginDetails.query.find({'user_id': user._id}):
             if prev_login['ip'] == login_details['ip']:
                 return 'exact ip'
             if asbool(tg.config.get('auth.trust_ip_3_octets_match', False)) and \

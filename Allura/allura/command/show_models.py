@@ -211,7 +211,7 @@ class EnsureIndexCommand(base.Command):
     def command(self):
         from allura import model as M
         main_session_classes = [M.main_orm_session, M.repository_orm_session,
-                                M.task_orm_session]
+                                M.task_orm_session, M.main_explicitflush_orm_session]
         if asbool(self.config.get('activitystream.recording.enabled', False)):
             from activitystream.storage.mingstorage import activity_odm_session
             main_session_classes.append(activity_odm_session)
