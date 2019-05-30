@@ -23,6 +23,7 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email import header
 
+import six
 import tg
 from paste.deploy.converters import asbool, asint, aslist
 from formencode import validators as fev
@@ -155,8 +156,10 @@ def parse_message(data):
     else:
         result['payload'] = msg.get_payload(decode=True)
         charset = msg.get_content_charset()
-        if charset:
+        # payload is sometimes already unicode (due to being saved in mongo?)
+        if isinstance(result['payload'], six.binary_type) and charset:
             result['payload'] = result['payload'].decode(charset)
+
     return result
 
 
