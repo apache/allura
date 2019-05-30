@@ -57,7 +57,10 @@ class StopForumSpamSpamFilter(SpamFilter):
 
     def check(self, text, artifact=None, user=None, content_type='comment', **kw):
         ip = utils.ip_address(request)
-        ip_int = int(ipaddress.ip_address(unicode(ip)))
-        res = ip_int in self.packed_ips
-        self.record_result(res, artifact, user)
+        if ip:
+            ip_int = int(ipaddress.ip_address(unicode(ip)))
+            res = ip_int in self.packed_ips
+            self.record_result(res, artifact, user)
+        else:
+            res = False
         return res
