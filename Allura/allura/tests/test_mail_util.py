@@ -22,7 +22,7 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
 import mock
-from nose.tools import raises, assert_equal, assert_false, assert_true
+from nose.tools import raises, assert_equal, assert_false, assert_true, assert_in
 from ming.orm import ThreadLocalORMSession
 from tg import config as tg_config
 
@@ -96,6 +96,58 @@ class TestReactor(unittest.TestCase):
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
         assert isinstance(msg2['payload'], unicode)
+        assert_in(u'всех', msg2['payload'])
+
+    def test_more_encodings(self):
+        # these are unicode strings to reflect behavior after loading 'route_email' tasks from mongo
+        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+From: <foo@bar.com>
+To: <385@bugs.proj.localhost>
+Subject: bugs
+Content-Type: text/plain; charset=GBK
+Content-Transfer-Encoding: base64
+
+VGhlIFNuYXA3IGFwcGxpY2F0aW9uKGJhc2VkIG9uIHNuYXA3LWZ1bGwtMS40LjIpIGhhcyBiZWVu
+IHJ1biBvdmVyIGEgd2VlayBvbiBRTlg2LjYuMCwKQnV0IHNvbWV0aW1lcyAsc3lzdGVtIHNjcmVl
+biB3aWxsIHByaW50CiJsZGQ6RkFUQUw6Y291bGQgbm90IGxvYWQgbGlicmFyeSBsaWJzb2NrZXQu
+c28uMyIsClRoZSBhcHBsaWNhdGlvbidzIGNvbW11bmljYXRpb24gd29yayB3ZWxsICxidXQgdGhl
+IGZ0cCx0ZWxuZXQscGluZyBjYW4ndCB3b3JrICEKCgpXaHk/
+"""
+        msg = parse_message(s_msg)
+        assert isinstance(msg['payload'], unicode)
+        assert_in(u'The Snap7 application', msg['payload'])
+
+        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+From: <foo@bar.com>
+To: <385@bugs.proj.localhost>
+Subject: bugs
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+> Status: closed
+> Created: Thu May 23, 2019 09:24 PM UTC by admin1
+> Attachments:
+> 
+>   • foo.txt (1.0 kB; text/plain)
+> 
+"""
+        msg = parse_message(s_msg)
+        assert isinstance(msg['payload'], unicode)
+        assert_in(u'• foo', msg['payload'])
+
+        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+From: <foo@bar.com>
+To: <385@bugs.proj.localhost>
+Subject: bugs
+Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+
+programmed or èrogrammed ?
+"""
+        msg = parse_message(s_msg)
+        assert isinstance(msg['payload'], unicode)
+        assert_in(u'èrogrammed', msg['payload'])
 
     def test_unicode_complex_message(self):
         charset = 'utf-8'

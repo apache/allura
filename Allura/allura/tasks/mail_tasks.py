@@ -62,7 +62,7 @@ def route_email(
     '''
     try:
         msg = mail_util.parse_message(data)
-    except:  # pragma no cover
+    except Exception:  # pragma no cover
         log.exception('Parse Error: (%r,%r,%r)', peer, mailfrom, rcpttos)
         return
     if mail_util.is_autoreply(msg):
