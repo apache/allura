@@ -49,3 +49,6 @@ class TestStopForumSpam(object):
 
         request.remote_addr = '1.1.1.1'
         assert_equal(False, self.sfs.check(self.content, artifact=self.artifact))
+
+        request.remote_addr = None  # e.g. from background task processing inbound email
+        assert_equal(False, self.sfs.check(self.content, artifact=self.artifact))
