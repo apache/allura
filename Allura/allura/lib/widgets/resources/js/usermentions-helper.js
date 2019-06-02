@@ -31,7 +31,7 @@ var getProjectUsers = function(users_url) {
 }
 
 CodeMirror.registerHelper('hint', 'alluraUserMentions', function (editor) {
-    var word = /[\w$]+/;
+    var word = /[\w-]+/;
     var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
     var tokenType = editor.getTokenTypeAt(cur);
 
@@ -39,16 +39,20 @@ CodeMirror.registerHelper('hint', 'alluraUserMentions', function (editor) {
         return;
 
     var end = cur.ch, start = end;
+    // Find the starting position of currently typed word and set it to 'start' var
     while (start && word.test(curLine.charAt(start - 1))) --start;
+    // Extract the current word from the current line using 'start' / 'end' value pair
     var curWord = start != end && curLine.slice(start, end);
     var list = [];
     if(curWord) {
+        // If there is current word set, We can filter out users from the main list and display them
         userMentionList.forEach(function(item) {
             if(item.displayText.indexOf(curWord) != -1)
                 list.push(item);
         });
     }
     else {
+        // Otherwise, we display the entire list
         list = userMentionList.slice(); 
     }
 
