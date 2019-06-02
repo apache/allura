@@ -287,3 +287,8 @@ Sortable, which is available under the MIT license (https://github.com/RubaXa/So
 
 Foundation, which is available under the MIT license
     Allura/allura/public/nf/js/foundation.min.js
+
+Show-hint addon for CodeMirror library (https://codemirror.net/addon/hint/) is available under the MIT
+license. For details, see:
+    Allura/allura/lib/widgets/resources/js/show-hint.js
+    Allura/allura/lib/widgets/resources/css/show-hint.css
