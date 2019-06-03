@@ -82,7 +82,7 @@ $(window).load(function() {
 
             // user mentions support
             editor.codemirror.on("keyup", function (cm, event) {
-              if(event.shiftKey && event.keyCode == 50)
+              if(event.key == "@")
                 CodeMirror.showHint(cm, CodeMirror.hint.alluraUserMentions);
             });
 
