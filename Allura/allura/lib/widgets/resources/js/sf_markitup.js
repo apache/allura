@@ -83,7 +83,9 @@ $(window).load(function() {
             // user mentions support
             editor.codemirror.on("keyup", function (cm, event) {
               if(event.key == "@")
-                CodeMirror.showHint(cm, CodeMirror.hint.alluraUserMentions);
+                CodeMirror.showHint(cm, CodeMirror.hint.alluraUserMentions, {
+                  completeSingle: false
+                });
             });
 
             editor.render();
