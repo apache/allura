@@ -47,7 +47,7 @@ CodeMirror.registerHelper('hint', 'alluraUserMentions', function (editor) {
     if(curWord) {
         // If there is current word set, We can filter out users from the main list and display them
         userMentionList.forEach(function(item) {
-            if(item.displayText.indexOf(curWord) != -1)
+            if(item.displayText.toLowerCase().indexOf(curWord.toLowerCase()) != -1)
                 list.push(item);
         });
     }
