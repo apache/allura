@@ -82,10 +82,11 @@ $(window).load(function() {
 
             // user mentions support
             editor.codemirror.on("keyup", function (cm, event) {
-              if(event.key == "@")
+              if(event.key === "@" || (event.shiftKey && event.keyCode === 50 /* "2" key */)) {
                 CodeMirror.showHint(cm, CodeMirror.hint.alluraUserMentions, {
                   completeSingle: false
                 });
+              }
             });
 
             editor.render();
