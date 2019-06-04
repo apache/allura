@@ -599,9 +599,9 @@ class RefsController(object):
 
     @expose()
     def _lookup(self, ref, *remainder):
-        EOR = quote(c.app.END_OF_REF_ESCAPE)
+        EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:
-            i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
+            i = remainder.index(EOR)
             ref = '/'.join((ref,) + remainder[:i])
             remainder = remainder[i + 1:]
         return self.BranchBrowserClass(ref), remainder
@@ -611,9 +611,9 @@ class CommitsController(object):
 
     @expose()
     def _lookup(self, ci, *remainder):
-        EOR = quote(c.app.END_OF_REF_ESCAPE)
+        EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:
-            i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
+            i = remainder.index(EOR)
             ci = '/'.join((ci,) + remainder[:i])
             remainder = remainder[i + 1:]
         return CommitBrowser(ci), remainder
