@@ -954,6 +954,35 @@ class TestGitBranch(TestController):
         assert 'README</a>' in r
         assert_equal(c.app.repo.get_default_branch('master'), 'test')
 
+    def test_branch_with_slashes(self):
+        branches_page = self.app.get('/src-git/ref/master/branches/')
+
+        r = branches_page.click('xyz/123', index=0)  # link in sidebar
+        assert r.request.url.endswith('src-git/ci/xyz/123/~/tree/'), r.request.url
+        r.mustcontain('on a branch')  # commit for this branch
+
+        r = branches_page.click('xyz/123', index=1)  # link in body
+        assert r.request.url.endswith('src-git/ci/xyz/123/~/tree/'), r.request.url
+        r.mustcontain('on a branch')  # commit for this branch
+
+    def test_ref_url_with_slashes(self):
+        r = self.app.get('/src-git/ref/xyz/123/~/')
+        assert r.location.endswith('src-git/ci/xyz/123/~/tree/')
+
+        r = self.app.get('/src-git/ref/xyz/123/~/log/')
+        assert r.location.endswith('src-git/ci/09a2406097f0287c7b1789bb08368758cde3243a/log/')
+
+    def test_tag_with_slashes(self):
+        tags_page = self.app.get('/src-git/ref/master/tags/')
+
+        r = tags_page.click('releases/v1.1.1', index=0)  # link in sidebar
+        assert r.request.url.endswith('src-git/ci/releases/v1.1.1/~/tree/'), r.request.url
+        r.mustcontain('on a branch')  # commit for this tag
+
+        r = tags_page.click('releases/v1.1.1', index=1)  # link in body
+        assert r.request.url.endswith('src-git/ci/releases/v1.1.1/~/tree/'), r.request.url
+        r.mustcontain('on a branch')  # commit for this tag
+
 
 class TestIncludeMacro(_TestCase):
     def setUp(self):
