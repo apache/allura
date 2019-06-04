@@ -29,7 +29,6 @@ from allura.lib.widgets.user_profile import SectionsUtil
 from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects, setup_unit_test
-from forgegit.tests import with_git
 from forgetracker.tests.functional.test_root import TrackerTestController
 
 
@@ -93,10 +92,11 @@ class TestMergeRequestsSection(TestController):
         mr= self.merge_request
         ThreadLocalODMSession.flush_all()
 
-    @with_git
+    # variation on @with_git but with different project to avoid clashes with other tests using git
+    @td.with_tool('test2', 'Git', 'src-git', 'Git')
     def setup_with_tools(self):
         setup_global_objects()
-        h.set_context('test', 'src-git', neighborhood='Projects')
+        h.set_context('test2', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         c.app.repo.fs_path = repo_dir
