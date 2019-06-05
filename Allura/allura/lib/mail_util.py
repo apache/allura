@@ -150,7 +150,8 @@ def parse_message(data):
                 filename=part.get_filename(None),
                 payload=part.get_payload(decode=True))
             charset = part.get_content_charset()
-            if charset:
+            # payload is sometimes already unicode (due to being saved in mongo?)
+            if isinstance(dpart['payload'], six.binary_type) and charset:
                 dpart['payload'] = dpart['payload'].decode(charset)
             result['parts'].append(dpart)
     else:
