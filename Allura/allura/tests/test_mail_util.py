@@ -149,6 +149,38 @@ programmed or èrogrammed ?
         assert isinstance(msg['payload'], unicode)
         assert_in(u'èrogrammed', msg['payload'])
 
+    def test_more_encodings_multipart(self):
+        # these are unicode strings to reflect behavior after loading 'route_email' tasks from mongo
+        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+From: <foo@bar.com>
+To: <385@bugs.proj.localhost>
+Subject: bugs
+Content-Type: multipart/alternative; boundary="===============7387203749754534836=="
+
+--===============7387203749754534836==
+Content-Type: text/plain; charset="utf-8"
+
+> Status: closed
+> Created: Thu May 23, 2019 09:24 PM UTC by admin1
+> Attachments:
+> 
+>   • foo.txt (1.0 kB; text/plain)
+> 
+
+
+--===============7387203749754534836==
+Content-Type: text/html; charset="utf-8"
+
+<html><head>... blah blah 
+...
+&gt; • foo.txt (1.0 kB; text/plain)
+"""
+        msg = parse_message(s_msg)
+        assert isinstance(msg['parts'][1]['payload'], unicode)
+        assert isinstance(msg['parts'][2]['payload'], unicode)
+        assert_in(u'• foo', msg['parts'][1]['payload'])
+        assert_in(u'• foo', msg['parts'][2]['payload'])
+
     def test_unicode_complex_message(self):
         charset = 'utf-8'
         p1 = MIMEText(u'''По оживлённым берегам
