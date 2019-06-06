@@ -280,7 +280,7 @@ publicize-neighborhood.py
 *Cannot currently be run as a background task.*
 
 .. argparse::
-    :file: ../../scripts/publicize-neighborhood.py
+    :filename: ../../scripts/publicize-neighborhood.py
     :func: parser
     :prog: paster script development.ini ../scripts/publicize-neighborhood.py --
 
@@ -291,7 +291,7 @@ scrub-allura-data.py
 *Cannot currently be run as a background task.*
 
 .. argparse::
-    :file: ../../scripts/scrub-allura-data.py
+    :filename: ../../scripts/scrub-allura-data.py
     :func: parser
     :prog: paster script development.ini ../scripts/scrub-allura-data.py --
 
@@ -419,7 +419,7 @@ new_ticket.py
 Illustrates creating a new ticket, using the simple OAuth Bearer token.
 
 .. argparse::
-    :file: ../../scripts/new_ticket.py
+    :filename: ../../scripts/new_ticket.py
     :func: get_parser
     :prog: python scripts/new_ticket.py
 
