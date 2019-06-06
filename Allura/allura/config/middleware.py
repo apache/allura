@@ -48,7 +48,7 @@ except ImportError:
 else:
     patches.newrelic()
 
-from allura.config.app_cfg import base_config
+from allura.config.app_cfg import base_config, AlluraJinjaRenderer
 from allura.config.environment import load_environment
 from allura.config.app_cfg import ForgeConfig
 from allura.lib.custom_middleware import AlluraTimerMiddleware
@@ -164,6 +164,16 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'),
         extra_headers=eval(app_conf.get('ew.extra_headers', 'None')),
         cache_max_age=asint(app_conf.get('ew.cache_header_seconds', 60*60*24*365)),
+
+        # settings to pass through to jinja Environment for EW core widgets
+        # these are for the easywidgets' own [easy_widgets.engines] entry point
+        # (the Allura [easy_widgets.engines] entry point is named "jinja" (not jinja2) but it doesn't need
+        #  any settings since it is a class that uses the same jinja env as the rest of allura)
+        **{
+        'jinja2.auto_reload': config['auto_reload_templates'],
+        'jinja2.bytecode_cache': AlluraJinjaRenderer._setup_bytecode_cache(),
+        'jinja2.cache_size': config.get('jinja_cache_size', -1),
+        }
     )
     # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
