@@ -365,7 +365,7 @@ Our website is [[http://domain.net]].
         result = u'''<p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://domain.net]].</p>
-<p>'[[Escaped Tag]]</p>
+<p>&#8216;[[Escaped Tag]]</p>
 <p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
 <p>[External link](https://github.com/a/b/issues/1)</p>'''
 

@@ -1,29 +1,68 @@
+pip==8.1.2
+akismet==0.2.0
+cchardet==2.1.1
+future==0.15.2
+ForgeHg==0.2.14
+ForgePastebin==0.5.0
+mechanize==0.2.4
+memcacheinspector==0.2.0
+mercurial==3.2.2
+mysqlclient==1.3.13
+nameparser==0.5.1
+newrelic==4.6.0.106
+pexpect==4.6.0
+psycopg2==2.7.6.1
+ptyprocess==0.6.0
+pygeoip==0.3.2
+python-ldap==3.1.0
+pyasn1-modules==0.2.2
+python-memcached==1.57
+python-whois==0.6.1
+SQLAlchemy==1.2.14
+switchboard==1.4.0
+wsgipreload==1.2
+html2text==3.200.3.dev20121112
+PyMollom==0.1
+PyYAML==3.13
+TracWikiImporter==0.4.3
+Unidecode==0.4.14
+sphinx-argparse===0.1.15-brondsem-20150708
+blinker==1.2
+postmarkup==1.2.0.dev20121116
+mediawiki==0.0.1
+unicodecsv==0.14.1
+blessings==1.3
+nose-progressive==1.5
+nose-xunitmp==0.3.2
+pyprof2calltree==1.1.0
+repoze.profile==1.3
+
 ActivityStream==0.2.2
 BeautifulSoup==3.2.0
 beautifulsoup4==4.6.1
 Beaker==1.6.4
-bleach==3.1.0
 chardet==1.0.1
-colander==1.7.0
+colander==0.9.3
 # dep of pypeline
 Creoleparser==0.7.3
 decorator==3.3.2
 # dep of pypeline, sphinx
-EasyWidgets==0.3.2
-docutils==0.14
+docutils==0.12
+EasyWidgets==0.2.dev20150922
 faulthandler==2.1
 feedparser==5.1.3
 FormEncode==1.2.4
 # dep of Creoleparser
-Genshi==0.7.3
+Genshi==0.6
 html5lib==1.0.1
 # dep of oauth2
 httplib2==0.7.4
-iso8601==0.1.12
+iso8601==0.1.4
 Jinja2==2.10
 Markdown==2.2.1
 Ming==0.5.6
 oauth2==1.5.170
+# tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
 Paste==3.0.1
 PasteDeploy==1.5.2
 PasteScript==2.0.2
@@ -31,7 +70,7 @@ Pillow==5.2.0
 poster==0.8.1
 Pygments==2.2.0
 pymongo==2.8.1
-Pypeline==0.5
+Pypeline==0.4
 pysolr==3.6.0
 python-dateutil==1.5
 python-magic==0.4.3
@@ -43,34 +82,37 @@ oauthlib==0.4.2
 requests-oauthlib==0.4.0
 # for taskd proc name switching
 setproctitle==1.1.9
-six==1.12.0
+six==1.10.0
 # dep of pypeline
-textile==3.0.3
+textile==2.1.5
 # dep of colander
-translationstring==1.3
-TimerMiddleware==0.5.0
-TurboGears2==2.3.12
+translationstring==0.4
+TimerMiddleware==0.4.4
+TurboGears2==2.1.5
 # dep of html5lib
 webencodings==0.5.1
-WebOb==1.7.4
+WebOb==1.0.8
 
 # dependencies for cryptography
-cryptography==2.6.1
+cryptography==1.4
 # loose spec for setuptools since it is a very base package; but cryptography needs it past a certain version
-setuptools>=11.3
-cffi==1.12.2
-pycparser==2.19
+setuptools==24.3.1
+cffi==1.7.0
+pycparser==2.14
 enum34==1.1.6
-ipaddress==1.0.22
-asn1crypto==0.24.0
+ipaddress==1.0.16
+idna==2.1
+pyasn1==0.4.4
 
 # tg2 deps (not used directly)
 Babel==1.3
-backlash==0.1.4
-crank==0.8.1
-Mako==1.0.7
+Mako==0.9.1
 MarkupSafe==1.0
-repoze.lru==0.7
+Pylons==1.0
+simplejson==2.2.1
+Tempita==0.5.1
+Routes==1.12.3
+WebFlash==0.1a9
 WebHelpers==1.3
 
 # git deps
@@ -84,13 +126,14 @@ ipython==1.2.1
 mock==1.0.1
 nose==1.3.4
 pyflakes==0.8.1
-WebTest==2.0.33
+WebTest==1.4.0
 testfixtures==3.0.0
 pylint==1.4.4
 astroid==1.3.8
 logilab-common==1.0.2
 q==2.3
--e git://github.com/brondsem/sphinx-argparse.git#egg=sphinx-argparse   # pending merge requests
+WebError==0.10.3.post20130423
+
 sphinx-rtd-theme==0.1.6
 sphinxcontrib-programoutput==0.8
 
