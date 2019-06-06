@@ -94,7 +94,7 @@ BINARY_EXTENSIONS = frozenset([
     ".xz", ".z", ".zip", ".zipx"
 ])
 
-PYPELINE_EXTENSIONS = frozenset(utils.MARKDOWN_EXTENSIONS + ['.rst'])
+PYPELINE_EXTENSIONS = frozenset(utils.MARKDOWN_EXTENSIONS + ['.rst', '.textile', '.creole'])
 
 DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
 
