@@ -20,7 +20,7 @@ import logging
 
 import argparse
 
-from ming.orm import session
+from allura.model import main_orm_session, main_explicitflush_orm_session
 
 from allura.scripts import ScriptTask
 from allura import model as M
@@ -40,14 +40,17 @@ class BackfillPreviousLoginDetails(ScriptTask):
     @classmethod
     def execute(cls, options):
         auth_provider = AuthenticationProvider.get(None)
-        for i, chunk in enumerate(chunked_find(M.User, {})):
+        for i, chunk in enumerate(chunked_find(M.User, {}, pagesize=2)):
             log.info('Backfilling login details for chunk #%s', i)
             for u in chunk:
                 try:
                     u.backfill_login_details(auth_provider)
-                    session(u).flush(u)
                 except Exception:
                     log.exception('Error backfilling on user %s', u)
+
+            main_orm_session.clear()  # AuditLog and User objs
+            main_explicitflush_orm_session.clear()  # UserLoginDetails objs, already flushed individually
+
         log.info('Finished backfilling previous login details')
 
 
