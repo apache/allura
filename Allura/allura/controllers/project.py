@@ -338,6 +338,7 @@ class ProjectController(FeedController):
     @expose()
     def _lookup(self, name, *remainder):
         name = unquote(name)
+        name = name.decode('utf-8')  # we don't support unicode names, but in case a url comes in with one
         if name == '_nav.json':
             return self, ['_nav']
 

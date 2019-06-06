@@ -89,6 +89,14 @@ class TestRootController(TestController):
             # now
             self.app.get('/', headers=dict(Accept=hdr), validate_skip=True)
 
+    def test_encoded_urls(self):
+        # not valid unicode
+        self.app.get(b'/foo\xFF', status=400)
+        self.app.get('/foo%FF', status=400)
+        # encoded
+        self.app.get('/foo%C3%A9', status=404)
+        self.app.get('/u/foo%C3%A9/profile', status=404)
+
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(
             dict(label='Communications')).first()

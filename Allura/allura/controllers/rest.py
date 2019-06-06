@@ -306,6 +306,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
 
     prefix = nbhd.shortname_prefix
     pname = unquote(name)
+    pname = pname.decode('utf-8')  # we don't support unicode names, but in case a url comes in with one
     provider = plugin.ProjectRegistrationProvider.get()
     try:
         provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=nbhd)
@@ -331,7 +332,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
     if project is None:
         # look for neighborhood tools matching the URL
         project = nbhd.neighborhood_project
-        return project, (pname,) + remainder  # include pname in new remainder, it is actually the nbhd tool path
+        return project, (pname.encode('utf-8'),) + remainder  # include pname in new remainder, it is actually the nbhd tool path
     if project and prefix == 'u/':
         # make sure user-projects are associated with an enabled user
         user = project.user_project_of
