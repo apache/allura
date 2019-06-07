@@ -160,6 +160,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     app = ew.WidgetMiddleware(
         app,
         compress=True,
+        use_cache=not asbool(global_conf['debug']),
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'),
         extra_headers=eval(app_conf.get('ew.extra_headers', 'None')),
