@@ -262,3 +262,63 @@ $(function(){
         });
     });
 });
+
+// User card for mentions
+
+var umProfileStore = {}; // caching profile data
+
+var displayUserCard = function(instance, data) {
+    var toolBody = '';
+    var locationBody = '';
+
+    if(data.localization.city || data.localization.country) {
+        locationBody += '<span class="location"><i class="fa fa-map-marker"></i> ';
+        if(data.localization.city && data.localization.country) 
+            locationBody += data.localization.city + ', ' + data.localization.country;
+        else if(data.localization.city)
+            locationBody += data.localization.city;
+        else
+            locationBody += data.localization.country;
+        locationBody += '</span>';
+    }
+
+    toolBody = '<div class="user-card">' +
+                    '<div class="card-left">'+
+                        '<img src="' + data.img + '">' +
+                    '</div>' +
+                    '<div class="card-right">' +
+                        '<span class="name">' + data.name + '</span><br/>' +
+                        locationBody +
+                    '</div>' + 
+                '</div>';
+    $(instance).tooltipster('content', toolBody);
+}
+
+$(function(){
+    $(".user-mention").tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        trigger: 'hover',
+        position: 'top',
+        iconCloning: false,
+        maxWidth: 400,
+        contentAsHTML: true,
+        interactive: true,
+        content: 'test',
+        functionReady: function (instance, helper) {
+            var userUrl = $(this).attr('href');
+            
+            if(umProfileStore.hasOwnProperty(userUrl)){
+                displayUserCard(instance, umProfileStore[userUrl]);
+                // load from cache
+            }
+            else {
+                $.get(userUrl + 'profile/user_card', function(data) {
+                    displayUserCard(instance, data);
+                    umProfileStore[userUrl] = data;
+                });
+            }
+        }
+    });
+});

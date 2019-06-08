@@ -25,6 +25,8 @@ from tg import request
 from tg import tmpl_context as c, app_globals as g
 from pytz import timezone
 from tg import expose, redirect, validate, flash
+from tg.decorators import without_trailing_slash
+from decorator import decorator
 from webob import exc
 
 from allura import version
@@ -199,6 +201,16 @@ class UserProfileController(BaseController, FeedController):
                 g.user_message_max_messages,
                 g.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
+        
+    @without_trailing_slash
+    @expose('json:')
+    def user_card(self):
+        u = c.project.user_project_of
+        return dict(
+            username=u.username,
+            img=g.gravatar(u.get_pref('email_address'), size=64),
+            name=u.display_name,
+            localization=u.get_pref('localization')._deinstrument())
 
 
 class UserProfileRestController(AppRestControllerMixin):

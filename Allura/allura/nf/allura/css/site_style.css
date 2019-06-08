@@ -4056,3 +4056,33 @@ Nav bar styles moved out of navbar.css since they are more stylistic than layout
 .unlocked-container{
     margin-top: 10px;
 }
+
+.user-card {
+  width: 280px;
+}
+
+.user-card .card-left {
+  float: left;
+  width: 70px;
+}
+
+.user-card .card-right {
+  float: right;
+  width: 210px;
+  padding-left: 4px;
+  box-sizing: border-box;
+}
+
+.user-card .card-left img{
+  width: 64px;
+  height: 64px;
+}
+
+.user-card .card-right .name{
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.user-card .card-right .location{
+  font-size: 12px;
+}

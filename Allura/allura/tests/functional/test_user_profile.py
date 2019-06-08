@@ -43,6 +43,21 @@ class TestUserProfile(TestController):
         assert_in('skills', sections)
         assert_in('No skills entered', r.html.find(None, 'skills').getText())
 
+    @td.with_user_project('test-admin')
+    def test_profile_user_card(self):
+        user = User.by_username('test-admin')
+        locals =  {
+            'city': 'test-city',
+            'country': 'US'
+        }
+        user.set_pref('localization', locals)
+        r = self.app.get('/u/test-admin/profile/user_card')
+        assert 'img' in r.json
+        assert user.display_name == r.json['name']
+        assert user.username == r.json['username']
+        assert user.get_pref('localization')['city'] == r.json['localization']['city']
+        assert user.get_pref('localization')['country'] == r.json['localization']['country']
+
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)
 
