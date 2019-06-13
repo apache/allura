@@ -1,3 +1,82 @@
+Version 1.11.0  (June 2019)
+
+New Features
+ * [#5461] Option to subscribe to forums and other types of threads, when posting
+ * [#8253] Adding reaction support for comments
+ * [#8263] Indicate current reaction of comment
+ * [#8274] Add optional HaveIBeenPwned checks for password changes
+ * [#8281] Enable user mentions in markdown editor
+ * [#8282] Implement autocomplete list to selected users for mentioning
+
+Upgrade Instructions
+
+  Run: `pip install -r requirements.txt` to install updated dependencies
+  Run: `python setup.py develop` in the `Allura` subdirectory
+  Recommended: `pip uninstall -y WebFlash WebError Pylons Tempita simplejson Routes` to remove old dependencies
+  Recommended, after upgrade is complete: in mongo, run `db.repo_commitrun.drop()` to free up storage space
+  To enable haveibeenpwned.com password checks:
+    Add to your .ini file the `auth.hibp_password_check` and following settings from `development.ini` and set to true.
+    Run: `paste script your-ini-file.ini allura/scripts/backfill_previous_login_details.py`
+
+Code Repositories
+ * [#6440] incorrect diff encoding (original in ru_RU.UTF-8)
+ * [#8264] AssertionError from git branch lock file
+ * Clear localStorage of merge request descriptions after successful create or edit
+
+Discussion Forums
+ * [#8237] Moving discussion thread breaks attachments
+
+General
+ * [#8261] Embed youtube videos without cookies
+ * [#8269] External link redirects should be 302 instead of 301
+ * [#8270] External link tool: rel=nofollow, omit from sitemap
+ * Track menu mount_point explicitly, fixes [#8270] regression of unconfigurable external links
+ * [#8289] Parse error in allura.tasks.mail_tasks.route_email
+ * Fix project-wide search with unicode terms
+ * Use correct vars in flash error message, when trying to send too many messages
+ * For fields like username/email/password fields, set some autocomplete/capitalize hints
+
+Admin
+ * [#8302] Screenshot caption inputs not clickable in chrome
+ * [#8256] Drag-to-reorder on touch screens
+ * [#8280] Faster spam controls in discussions
+
+Performance
+ * [#8271] Remove CommitRun usage
+ * [#8272] Really big artifact_feed queries
+ * [#8298] Use jinja caching settings for EW core widgets
+ * Lazy load /tree controller (self._commit.tree can run compute_tree_new and svn info2 for example), and run .ls() only once
+
+For Developers
+ * [#8081] Subscriptions page should have the issues' Title column - migration script bugfixes
+ * [#8093] Developing Mobile Web View
+ * [#8222] TestForumMessageHandling fails occasionally
+ * [#8259] Update docker & docs for newer Ubuntu LTS
+ * [#8265] Update spam filter plugins
+ * [#8268] Make TroveCategory shortname unique per trove type
+ * [#8273] Upgrade TurboGears and WebOb partially
+ * [#8276] Turbogears 2.3.2 upgrade followup fixes
+ * [#8277] UnicodeDecodeErrors with weird url params
+ * [#8278] Track previous login details
+ * [#8279] Additional login security checks
+ * [#8286] Upgrade TG/etc more, remove pylons etc
+ * [#8287] Backfill all previous_login_details - NEEDS SCRIPT
+ * [#8288] Remove genshi templates, update EasyWidgets to py3-compatible
+ * [#8290] Move previous_login_details to a separate collection
+ * [#8291] Upgrade timermiddlware
+ * [#8295] error with latest EasyWidgets and debug=false
+ * [#8296] Regression on branches with "/" in name
+ * [#8301] Fix some issues with encoding in urls
+ * Release script: sort tags better (like 1.10 after 1.9)
+ * Avoid git directory clashes in tests
+ * Remove vagrant config
+ * Fix linter test when certain number of files are being linted, and files list is empty
+ * Upgrade colander and its dependencies
+ * Remove unused menus() function
+ * Update Node.js 4.x to 10.x
+ * Update our git repo URL
+
+
 Version 1.10.0  (October 2018)
 
 New Features
