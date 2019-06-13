@@ -166,6 +166,10 @@ function get_cm($elem) {
     return $('.CodeMirror', $elem)[0].CodeMirror;
 }
 
+function escape_html(str) {
+    return $('<i></i>').text(str).html();
+}
+
 $(function(){
     $('html').removeClass('no-js').addClass('js');
 
