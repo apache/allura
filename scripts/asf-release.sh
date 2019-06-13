@@ -34,7 +34,7 @@ function prompt() {
 
 RELEASE_DIR_BASE=/tmp
 
-PREV_VERSION=`git tag -l rel/* | sort -rn | head -1 | sed -e 's/^rel\///'`
+PREV_VERSION=`git tag -l rel/* | sort -rV | head -1 | sed -e 's/^rel\///'`
 VERSION=`echo $PREV_VERSION | perl -pe '@_ = split /\./; $_[-1]++; $_ = join ".", @_'`
 prompt VERSION "Version" "$VERSION"
 
