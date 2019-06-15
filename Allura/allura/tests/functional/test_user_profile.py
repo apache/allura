@@ -50,13 +50,16 @@ class TestUserProfile(TestController):
             'city': 'test-city',
             'country': 'US'
         }
+        webpages = ['http://allura.apache.org/']
         user.set_pref('localization', locals)
+        user.set_pref('webpages', webpages)
         r = self.app.get('/u/test-admin/profile/user_card')
-        assert 'img' in r.json
-        assert user.display_name == r.json['name']
-        assert user.username == r.json['username']
-        assert user.get_pref('localization')['city'] == r.json['localization']['city']
-        assert user.get_pref('localization')['country'] == r.json['localization']['country']
+
+        assert user.icon_url() == r.html.find('img').attrs['src']
+        assert user.display_name == r.html.find('div', attrs={'class': 'name'}).getText()
+        assert user.get_pref('localization')['city'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
+        assert user.get_pref('localization')['country'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
+        assert user.get_pref('webpages')[0] in str(r.html.find('span', attrs={'class': 'subitem-web'}))
 
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)

@@ -268,30 +268,7 @@ $(function(){
 var umProfileStore = {}; // caching profile data
 
 var displayUserCard = function(instance, data) {
-    var toolBody = '';
-    var locationBody = '';
-
-    if(data.localization.city || data.localization.country) {
-        locationBody += '<span class="location"><i class="fa fa-map-marker"></i> ';
-        if(data.localization.city && data.localization.country) 
-            locationBody += data.localization.city + ', ' + data.localization.country;
-        else if(data.localization.city)
-            locationBody += data.localization.city;
-        else
-            locationBody += data.localization.country;
-        locationBody += '</span>';
-    }
-
-    toolBody = '<div class="user-card">' +
-                    '<div class="card-left">'+
-                        '<img src="' + data.img + '">' +
-                    '</div>' +
-                    '<div class="card-right">' +
-                        '<span class="name">' + data.name + '</span><br/>' +
-                        locationBody +
-                    '</div>' + 
-                '</div>';
-    $(instance).tooltipster('content', toolBody);
+    $(instance).tooltipster('content', data);
 }
 
 $(function(){
@@ -305,7 +282,7 @@ $(function(){
         maxWidth: 400,
         contentAsHTML: true,
         interactive: true,
-        content: 'test',
+        content: 'Loading...',
         functionReady: function (instance, helper) {
             var userUrl = $(this).attr('href');
             

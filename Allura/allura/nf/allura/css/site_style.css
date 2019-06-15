@@ -4081,8 +4081,13 @@ Nav bar styles moved out of navbar.css since they are more stylistic than layout
 .user-card .card-right .name{
   font-size: 14px;
   font-weight: bold;
+  padding-bottom: 8px;
 }
 
-.user-card .card-right .location{
+.user-card .card-right .subitem{
   font-size: 12px;
+}
+
+.user-card .card-right .subitem a{
+  color: #00b3ff;
 }

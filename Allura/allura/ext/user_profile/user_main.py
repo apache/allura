@@ -203,14 +203,29 @@ class UserProfileController(BaseController, FeedController):
         return redirect(c.project.user_project_of.url())
         
     @without_trailing_slash
-    @expose('json:')
+    @expose('jinja:allura.ext.user_profile:templates/user_card.html')
     def user_card(self):
         u = c.project.user_project_of
+        locationData = u.get_pref('localization')
+        webpages = u.get_pref('webpages')
+        location = ''
+        website = ''
+        if locationData.city and locationData.country:
+            location = locationData.city + ', ' + locationData.country
+        elif locationData.country and not locationData.city:
+            location = locationData.country
+        elif locationData.city and not locationData.country:
+            location = locationData.city
+
+        if len(webpages) > 0:
+            website = webpages[0]
+
         return dict(
             username=u.username,
-            img=g.gravatar(u.get_pref('email_address'), size=64),
+            img=u.icon_url(),
             name=u.display_name,
-            localization=u.get_pref('localization')._deinstrument())
+            location=location,
+            website=website)
 
 
 class UserProfileRestController(AppRestControllerMixin):
