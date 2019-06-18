@@ -18,6 +18,9 @@ Upgrade Instructions
     Add to your .ini file the `auth.hibp_password_check` and following settings from `development.ini` and set to true.
     Run: `paste script your-ini-file.ini allura/scripts/backfill_previous_login_details.py`
 
+Security
+ * [#8303] CVE-2019-10085 Apache Allura XSS vulnerability in ticket user dropdown selector
+
 Code Repositories
  * [#6440] incorrect diff encoding (original in ru_RU.UTF-8)
  * [#8264] AssertionError from git branch lock file
