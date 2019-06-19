@@ -55,7 +55,7 @@ class TestUserProfile(TestController):
         user.set_pref('webpages', webpages)
         r = self.app.get('/u/test-admin/profile/user_card')
 
-        assert user.icon_url() == r.html.find('img').attrs['src']
+        assert user.icon_url() in r.html.find('img').attrs['src']
         assert user.display_name == r.html.find('div', attrs={'class': 'name'}).getText()
         assert user.get_pref('localization')['city'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()
         assert user.get_pref('localization')['country'] in r.html.find('span', attrs={'class': 'subitem-loc'}).getText()

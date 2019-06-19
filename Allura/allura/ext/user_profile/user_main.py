@@ -221,9 +221,7 @@ class UserProfileController(BaseController, FeedController):
             website = webpages[0]
 
         return dict(
-            username=u.username,
-            img=u.icon_url(),
-            name=u.display_name,
+            user=u,
             location=location,
             website=website)
 
