@@ -45,7 +45,7 @@ requests-oauthlib==0.4.0
 setproctitle==1.1.9
 six==1.12.0
 # dep of pypeline
-textile==3.0.3
+textile==3.0.4
 # dep of colander
 translationstring==1.3
 TimerMiddleware==0.5.0
