@@ -5,21 +5,12 @@ Beaker==1.6.4
 bleach==3.1.0
 chardet==1.0.1
 colander==1.7.0
-# dep of pypeline
-Creoleparser==0.7.5
 decorator==3.3.2
-# dep of pypeline, sphinx
 EasyWidgets==0.3.2
-docutils==0.14
 faulthandler==2.1
 feedparser==5.1.3
 FormEncode==1.2.4
-# dep of Creoleparser
-Genshi==0.7.3
 html5lib==1.0.1
-# dep of oauth2
-httplib2==0.7.4
-iso8601==0.1.12
 Jinja2==2.10
 Markdown==2.2.1
 Ming==0.5.6
@@ -31,7 +22,7 @@ Pillow==5.2.0
 poster==0.8.1
 Pygments==2.2.0
 pymongo==2.8.1
-Pypeline==0.5
+Pypeline[creole,markdown,textile,rst]==0.5
 pysolr==3.6.0
 python-dateutil==1.5
 python-magic==0.4.3
@@ -39,44 +30,21 @@ python-oembed==0.2.1
 pytz==2014.10
 qrcode==5.3
 requests==2.11.1
-oauthlib==0.4.2
 requests-oauthlib==0.4.0
 # for taskd proc name switching
 setproctitle==1.1.9
 six==1.12.0
-# dep of pypeline
-textile==3.0.4
-# dep of colander
-translationstring==1.3
 TimerMiddleware==0.5.0
 TurboGears2==2.3.12
-# dep of html5lib
-webencodings==0.5.1
 WebOb==1.7.4
 
-# dependencies for cryptography
 cryptography==2.6.1
-# loose spec for setuptools since it is a very base package; but cryptography needs it past a certain version
-setuptools>=11.3
-cffi==1.12.2
-pycparser==2.19
-enum34==1.1.6
-ipaddress==1.0.22
-asn1crypto==0.24.0
 
-# tg2 deps (not used directly)
-Babel==1.3
 backlash==0.1.4
-crank==0.8.1
-Mako==1.0.7
 MarkupSafe==1.0
-repoze.lru==0.7
 WebHelpers==1.3
 
-# git deps
 GitPython==2.1.11
-gitdb2==2.0.4
-smmap2==2.0.4
 
 # testing & development
 datadiff==1.1.5
@@ -87,10 +55,6 @@ pyflakes==0.8.1
 WebTest==2.0.33
 testfixtures==3.0.0
 pylint==1.4.4
-# setup dep of Textile
-pytest-runner==5.1
-astroid==1.3.8
-logilab-common==1.0.2
 q==2.3
 sphinx-argparse==0.2.5
 sphinx-rtd-theme==0.1.6
