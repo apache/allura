@@ -800,8 +800,8 @@ class TestUserMentions(unittest.TestCase):
         assert 'Do you know @ab?' in output
         assert 'class="user-mention"' in output
         assert ('href="%s"' % u2.url()) in output
-        output = g.markdown.convert('test@nouser1.com Hey!')
-        assert 'test@nouser1.com Hey!' in output
+        output = g.markdown.convert('test@admin1.com Hey!')
+        assert 'test@admin1.com Hey!' in output
 
     def test_markdown_user_mention_in_code(self):
         u1 = M.User.register(dict(username='admin-user-4'), make_project=True)
