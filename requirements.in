@@ -2,24 +2,28 @@ ActivityStream==0.2.2
 BeautifulSoup==3.2.0
 beautifulsoup4==4.6.1
 Beaker==1.6.4
-bleach==3.1.0
+backlash==0.1.4
 chardet==1.0.1
 colander==1.7.0
+cryptography==2.6.1
 decorator==3.3.2
 EasyWidgets==0.3.2
+emoji==0.5.1
 faulthandler==2.1
 feedparser==5.1.3
 FormEncode==1.2.4
+GitPython==2.1.11
 html5lib==1.0.1
 Jinja2==2.10
 Markdown==2.2.1
+markdown-checklist==0.4.1
+MarkupSafe==1.0
 Ming==0.5.6
 oauth2==1.5.170
 Paste==3.0.1
 PasteDeploy==1.5.2
 PasteScript==2.0.2
 Pillow==5.2.0
-poster==0.8.1
 Pygments==2.2.0
 pymongo==2.8.1
 Pypeline[creole,markdown,textile,rst]==0.5
@@ -27,7 +31,7 @@ pysolr==3.6.0
 python-dateutil==1.5
 python-magic==0.4.3
 python-oembed==0.2.1
-pytz==2014.10
+pytz==2019.1
 qrcode==5.3
 requests==2.11.1
 requests-oauthlib==0.4.0
@@ -36,35 +40,19 @@ setproctitle==1.1.9
 six==1.12.0
 TimerMiddleware==0.5.0
 TurboGears2==2.3.12
+WebHelpers==1.3
 WebOb==1.7.4
 
-cryptography==2.6.1
-
-backlash==0.1.4
-MarkupSafe==1.0
-WebHelpers==1.3
-
-GitPython==2.1.11
-
-# testing & development
+# testing
 datadiff==1.1.5
 ipython==1.2.1
 mock==1.0.1
 nose==1.3.4
+poster==0.8.1
 pyflakes==0.8.1
-WebTest==2.0.33
-testfixtures==3.0.0
 pylint==1.4.4
-q==2.3
-sphinx-argparse==0.2.5
-sphinx-rtd-theme==0.1.6
-sphinxcontrib-programoutput==0.8
+testfixtures==3.0.0
+WebTest==2.0.33
 
 # deployment
 gunicorn==19.4.5
-
-# markdown extensions
-markdown-checklist==0.4.1
-
-# emoji library
-emoji==0.5.1
