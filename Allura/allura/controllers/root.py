@@ -19,10 +19,10 @@
 
 """Main Controller"""
 import logging
+from string import Template
 
-from tg import expose, request, config, session, redirect
+from tg import expose, request, config, session, redirect, flash
 from tg.decorators import with_trailing_slash
-from tg.flash import TGFlash
 from tg import tmpl_context as c
 from tg import response
 from paste.deploy.converters import asbool
@@ -47,7 +47,7 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-TGFlash.static_template = '''$('#messages').notify('%(message)s', {status: '%(status)s'});'''
+flash.static_template = Template("$$('#messages').notify('$message', {status: '$status'});")
 
 
 class W:
