@@ -31,7 +31,7 @@ var getProjectUsers = function(users_url) {
 }
 
 CodeMirror.registerHelper('hint', 'alluraUserMentions', function (editor) {
-    var word = /[\w-]+/;
+    var word = /[^@]+/;
     var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
     var tokenType = editor.getTokenTypeAt(cur);
 
