@@ -62,13 +62,29 @@ class TestGlobalsModel(TrackerTestWithModel):
         gbl.invalidate_bin_counts = mock.Mock()
 
         # not expired, finds bin
+        gbl.invalidate_bin_counts.reset_mock()
         gbl._bin_counts_expire = now + timedelta(minutes=5)
         bin = gbl.bin_count('bar')
         assert_equal(bin['hits'], 2)
         assert not gbl.invalidate_bin_counts.called
 
         # expired, returns value for missing bin
+        gbl.invalidate_bin_counts.reset_mock()
         gbl._bin_counts_expire = now - timedelta(minutes=5)
+        bin = gbl.bin_count('qux')
+        assert_equal(bin['hits'], 0)
+        assert gbl.invalidate_bin_counts.called
+
+        # config set to no expiration
+        gbl.invalidate_bin_counts.reset_mock()
+        with mock.patch.dict('forgetracker.model.ticket.tg_config', **{'forgetracker.bin_cache_expire': 0}):
+            gbl._bin_counts_expire = now - timedelta(minutes=5)
+            bin = gbl.bin_count('qux')
+            assert not gbl.invalidate_bin_counts.called
+
+        # no expire value (e.g. from previously having config set to no expirations)
+        gbl.invalidate_bin_counts.reset_mock()
+        gbl._bin_counts_expire = None
         bin = gbl.bin_count('qux')
         assert_equal(bin['hits'], 0)
         assert gbl.invalidate_bin_counts.called
