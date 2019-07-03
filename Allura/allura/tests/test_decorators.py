@@ -14,12 +14,15 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import inspect
 from unittest import TestCase
-
 from mock import patch
+import random
+import gc
 
-from allura.lib.decorators import task
+from nose.tools import assert_equal, assert_not_equal
+
+from allura.lib.decorators import task, memoize
 
 
 class TestTask(TestCase):
@@ -54,3 +57,85 @@ class TestTask(TestCase):
         c.project.notifications_disabled = False
         MonQTask.post.side_effect = mock_post
         func.post('test', foo=2, delay=1)
+
+
+class TestMemoize(object):
+
+    def test_function(self):
+        @memoize
+        def remember_randomy(do_random, foo=None):
+            if do_random:
+                return random.random()
+            else:
+                return "constant"
+
+        rand1 = remember_randomy(True)
+        rand2 = remember_randomy(True)
+        const1 = remember_randomy(False)
+        rand_kwargs1 = remember_randomy(True, foo='asdf')
+        rand_kwargs2 = remember_randomy(True, foo='xyzzy')
+        assert_equal(rand1, rand2)
+        assert_equal(const1, "constant")
+        assert_not_equal(rand1, rand_kwargs1)
+        assert_not_equal(rand_kwargs1, rand_kwargs2)
+
+    def test_methods(self):
+
+        class Randomy(object):
+            @memoize
+            def randomy(self, do_random):
+                if do_random:
+                    return random.random()
+                else:
+                    return "constant"
+
+            @memoize
+            def other(self, do_random):
+                if do_random:
+                    return random.random()
+                else:
+                    return "constant"
+
+        r = Randomy()
+        rand1 = r.randomy(True)
+        rand2 = r.randomy(True)
+        const1 = r.randomy(False)
+        other1 = r.other(True)
+        other2 = r.other(True)
+
+        assert_equal(rand1, rand2)
+        assert_equal(const1, "constant")
+        assert_not_equal(rand1, other1)
+        assert_equal(other1, other2)
+
+        r2 = Randomy()
+        r2rand1 = r2.randomy(True)
+        r2rand2 = r2.randomy(True)
+        r2const1 = r2.randomy(False)
+        r2other1 = r2.other(True)
+        r2other2 = r2.other(True)
+
+        assert_not_equal(r2rand1, rand1)
+        assert_equal(r2rand1, r2rand2)
+        assert_not_equal(r2other1, other1)
+        assert_equal(r2other1, r2other2)
+
+    def test_methods_garbage_collection(self):
+
+        class Randomy(object):
+            @memoize
+            def randomy(self, do_random):
+                if do_random:
+                    return random.random()
+                else:
+                    return "constant"
+
+        r = Randomy()
+        rand1 = r.randomy(True)
+
+        for gc_ref in gc.get_referrers(r):
+            if inspect.isframe(gc_ref):
+                continue
+            else:
+                raise AssertionError('Unexpected reference to `r` instance: {!r}\n'
+                                     '@memoize probably made a reference to it and has created a circular reference loop'.format(gc_ref))
