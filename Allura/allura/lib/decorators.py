@@ -22,11 +22,11 @@ import logging
 from Cookie import Cookie
 from collections import defaultdict
 from urllib import unquote
-
 from datetime import datetime
-
 from datetime import timedelta
+
 from decorator import decorator
+import wrapt
 from paste.deploy.converters import asint
 from tg.decorators import before_validate
 from tg import request, redirect, session, config
@@ -236,19 +236,34 @@ def getattr_(obj, name, default_thunk):
         return default
 
 
-@decorator
-def memoize(func, *args):
+@wrapt.decorator
+def memoize(func, instance, args, kwargs):
     """
     Cache the method's result, for the given args
     """
-    dic = getattr_(func, "memoize_dic", dict)
-    # memoize_dic is created at the first call
-    if args in dic:
-        return dic[args]
+    if instance is None:
+        # decorating a simple function
+        dic = getattr_(func, "_memoize_dic", dict)
     else:
-        result = func(*args)
-        dic[args] = result
+        # decorating a method
+        dic = getattr_(instance, "_memoize_dic__{}".format(func.__name__), dict)
+
+    cache_key = (args, frozenset(kwargs.items()))
+    if cache_key in dic:
+        return dic[cache_key]
+    else:
+        result = func(*args, **kwargs)
+        dic[cache_key] = result
         return result
+
+
+def memoize_cleanup(obj):
+    """
+    Remove any _memoize_dic_* keys (if obj is a dict/obj hybrid) that were created by @memoize on methods
+    """
+    for k in obj.keys():
+        if k.startswith('_memoize_dic'):
+            del obj[k]
 
 
 def memorable_forget():
