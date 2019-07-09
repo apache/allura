@@ -271,6 +271,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     if thread.artifact:
         thread.artifact.mod_date = datetime.utcnow()
     flash('Message posted')
+    g.send_usermentions_notification(kw['text'], p)
     redirect(request.referer or '/')
 
 
