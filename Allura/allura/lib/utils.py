@@ -39,7 +39,8 @@ import emoji
 import json
 from collections import OrderedDict
 
-from tg import redirect
+from bs4 import BeautifulSoup
+from tg import redirect, app_globals as g
 from tg.decorators import before_validate
 from tg.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
@@ -789,6 +790,13 @@ def get_reactions_json():
         j[em] =  emoji.emojize(em, use_aliases=True)
     return json.dumps(j)
 
+def get_usernames_from_md(text):
+    usernames = []
+    html_text = g.markdown.convert(text)
+    soup = BeautifulSoup(html_text, 'html.parser')
+    for mention in soup.select('a.user-mention'):
+        usernames.append(mention.get_text().replace('@', ''))
+    return usernames
 
 def get_key_from_value(d, val):
     """ Get key from given value. return empty str if not exists """
