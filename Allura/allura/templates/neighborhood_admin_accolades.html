@@ -115,14 +115,22 @@
                   {% for grant in grants %}
                     <tr>
                       <td><a href="{{grant.award.longurl()}}">{{grant.award.short}}</a></td>
-                      <td><a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a></td>
+                      <td>
+                          {% if grant.granted_to_project %}
+                            <a href="{{grant.granted_to_project.url()}}">{{grant.granted_to_project.shortname}}</a>
+                          {% else %}
+                            Project not found
+                          {% endif %}
+                      </td>
                       <td><a href="{{grant.award_url}}">{{grant.award_url}}</a></td>
                       <td>{{grant.comment}}</td>
                       <td>
+                        {% if grant.granted_to_project %}
                         <form action="{{grant.longurl()}}/revoke" method="post" onsubmit="return confirm('Continue to revoke this award?');">
                           <input type="submit" value="Revoke"/>
                           {{lib.csrf_token()}}
                         </form>
+                        {% endif %}
                     </tr>
                   {% endfor %}
                 </tbody>
