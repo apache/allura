@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     apache2 \
     libapache2-mod-python \
     git \
-    curl
+    curl \
+    sudo
 
 
 ENV APACHE_RUN_USER www-data
@@ -46,7 +47,8 @@ ADD ./git-http.conf /etc/apache2/sites-available/
 RUN a2dissite 000-default.conf
 RUN a2ensite git-http.conf
 
-# so that git operations run as root, and can modify the scm repo files
-RUN chmod u+s /usr/lib/git-core/git-http-backend
+ADD git-http-backend-wrapper.sh /usr/lib/git-core
+RUN adduser www-data sudo
+RUN echo '%sudo  ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo_group_passwordless
 
 CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
