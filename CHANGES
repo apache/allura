@@ -1,3 +1,26 @@
+Version 1.11.1  (July 2019)
+
+Upgrade Instructions
+
+  Run: `pip install -r requirements.txt` to install updated dependencies
+  If using docker, run: `docker-compose up -d --no-deps --build http`
+
+New Features
+ * [#8283] Add infotip for user mentions
+
+Bug Fixes:
+ * [#8312] Flash message regression due to TG upgrade
+ * [#8317] Docker image for git/http not working for pushes
+ * [#8316] Award/accolades error if project is removed
+ * [#8299] More precise markdown @username regex
+
+For Developers
+ * Improve .ini notes about static caching in production
+ * [#8300] Update to py3-compatible Pypeline pkg
+ * [#8311] Split up and organize requirements.txt
+ * Publicize security fix in 1.11.0 changes
+
+
 Version 1.11.0  (June 2019)
 
 New Features
