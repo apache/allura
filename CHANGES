@@ -9,6 +9,7 @@ New Features
  * [#8283] Add infotip for user mentions
 
 Bug Fixes:
+ * [#8315] XSS vulnerability when adding another user to a project
  * [#8312] Flash message regression due to TG upgrade
  * [#8317] Docker image for git/http not working for pushes
  * [#8316] Award/accolades error if project is removed
