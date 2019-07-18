@@ -38,6 +38,8 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import has_access, require_access
 
+from allura.tasks import notification_tasks
+
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
 
@@ -271,7 +273,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     if thread.artifact:
         thread.artifact.mod_date = datetime.utcnow()
     flash('Message posted')
-    g.send_usermentions_notification(kw['text'], p)
+    notification_tasks.send_usermentions_notification(p, kw['text'])
     redirect(request.referer or '/')
 
 
@@ -310,6 +312,7 @@ class PostController(BaseController):
     def index(self, version=None, **kw):
         c.post = self.W.post
         if request.method == 'POST':
+            old_text = self.post.text
             require_access(self.post, 'moderate')
             post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
             file_info = post_fields.pop('file_info', None)
@@ -324,6 +327,7 @@ class PostController(BaseController):
             self.post.last_edit_by_id = c.user._id
             self.thread.is_spam(self.post)  # run spam checker, nothing to do with result yet
             self.post.commit()
+            notification_tasks.send_usermentions_notification(self.post, kw['text'], old_text)
             g.director.create_activity(c.user, 'modified', self.post,
                                        target=self.post.thread.artifact or self.post.thread,
                                        related_nodes=[self.post.app_config.project],
