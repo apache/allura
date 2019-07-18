@@ -737,6 +737,15 @@ class AdminUserDetailsController(object):
             pass  # catch redirect to '/'
         redirect(request.referer or '/')
 
+    @expose()
+    @require_post()
+    def make_password_reset_url(self, username):
+        user = M.User.by_username(username)
+        if not user or user.is_anonymous():
+            raise HTTPNotFound()
+        h.auditlog_user('Generated new password reset URL and shown to admin user', user=user)
+        return user.make_password_reset_url()
+
     @h.vardec
     @expose()
     @require_post()
