@@ -16,10 +16,23 @@
 #       under the License.
 
 from allura.lib.decorators import task
-
+from allura.lib import utils
+from tg import tmpl_context as c
 
 @task
 def notify(n_id, ref_ids, topic):
     from allura import model as M
     M.Mailbox.deliver(n_id, ref_ids, topic)
     M.Mailbox.fire_ready()
+
+@task
+def send_usermentions_notification(artifact, text, old_text=None):
+    from allura import model as M
+    usernames = utils.get_usernames_from_md(text)
+    if old_text:
+        old_usernames = utils.get_usernames_from_md(old_text)
+        usernames -= old_usernames
+
+    for username in list(usernames):
+        u = M.User.by_username(username)
+        u.send_user_mention_notification(c.user, artifact)

@@ -16,10 +16,10 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-Your name was mentioned at [{{project_name}}:{{mount_point}}] by {{mentioned_by.display_name}}
-It can be viewed using the link below:
+Your name was mentioned at [{{project_name}}:{{mount_point}}]({{artifact_link}}) by {{mentioned_by.display_name}}
 
-<{{base_url}}{{artifact.url()}}>
+It can be viewed using the link below:
+{{artifact_link}}
 
 ---
 

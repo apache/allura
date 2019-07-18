@@ -455,22 +455,22 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         """Send user mention notification to {self} user.
 
         """
-        tmpl = g.jinja2_env.get_template('allura:templates/mail/usermentions_email.txt')
+        tmpl = g.jinja2_env.get_template('allura:templates/mail/usermentions_email.md')
         subject = '[%s:%s] Your name was mentioned' % (
             c.project.shortname, c.app.config.options.mount_point)
         tmpl_context = {
             'site_domain': config['domain'],
             'base_url': config['base_url'],
             'user': c.user,
-            'artifact': artifact,
+            'artifact_link': h.absurl(artifact.url()),
             'mentioned_by': mentioned_by,
             'project_name': c.project.shortname,
             'mount_point': c.app.config.options.mount_point
         }
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=self.get_pref('email_address'),
-            fromaddr=mentioned_by.get_pref('email_address'),
-            reply_to=mentioned_by.get_pref('email_address'),
+            fromaddr=g.noreply,
+            reply_to=g.noreply,
             message_id=h.gen_message_id(),
             subject=subject,
             text=tmpl.render(tmpl_context))
