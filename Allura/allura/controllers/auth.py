@@ -35,7 +35,7 @@ from beaker.session import _session_id
 import allura.tasks.repo_tasks
 from allura import model as M
 from allura.lib import validators as V
-from allura.lib.security import require_authenticated, has_access
+from allura.lib.security import require_authenticated, has_access, is_site_admin
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post, reconfirm_auth
@@ -225,7 +225,11 @@ class AuthController(BaseController):
 
         if user_record and email_record and email_record.confirmed:
             user_record.send_password_reset_email(email_record.email)
-        h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
+            h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
+        elif is_site_admin(c.user):
+            # this can be accessed via a site admin page, and sometimes email records are inconsistent
+            # only site admins may be told if accounts exist or not
+            message = 'Could NOT find email address for user'
         flash(message)
         redirect('/')
 

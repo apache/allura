@@ -497,6 +497,22 @@ def require_authenticated():
         raise exc.HTTPUnauthorized()
 
 
+def is_site_admin(user):
+    from allura.lib import helpers as h
+
+    with h.push_context(tg.config.get('site_admin_project', 'allura'),
+                        neighborhood=tg.config.get('site_admin_project_nbhd', 'Projects')):
+        return has_access(c.project, 'admin', user=user)
+
+
+def require_site_admin(user):
+    from allura.lib import helpers as h
+
+    with h.push_context(tg.config.get('site_admin_project', 'allura'),
+                        neighborhood=tg.config.get('site_admin_project_nbhd', 'Projects')):
+        return require_access(c.project, 'admin', user=user)
+
+
 def simple_grant(acl, role_id, permission):
     from allura.model.types import ACE
     for ace in acl:

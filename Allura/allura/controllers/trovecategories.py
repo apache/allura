@@ -19,7 +19,6 @@ from collections import OrderedDict
 
 from tg import expose, flash, redirect, validate, config
 from tg import tmpl_context as c
-from string import digits, lowercase
 from tg.decorators import without_trailing_slash
 from webob.exc import HTTPForbidden, HTTPNotFound
 from tg import app_globals as g
@@ -28,7 +27,7 @@ from allura import model as M
 from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
-from allura.lib.security import require_authenticated, require_access
+from allura.lib.security import require_authenticated, require_site_admin
 from allura.lib.widgets import forms
 from allura.lib.plugin import SiteAdminExtension
 from allura.app import SitemapEntry
@@ -52,9 +51,7 @@ class TroveCategoryController(BaseController):
 
         enable_editing = config.get('trovecategories.enableediting', 'false')
         if enable_editing == 'admin':
-            with h.push_context(config.get('site_admin_project', 'allura'),
-                                neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
-                require_access(c.project, 'admin')
+            require_site_admin(c.user)
         elif enable_editing != 'true':
             raise HTTPForbidden()
 
