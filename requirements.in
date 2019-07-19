@@ -6,7 +6,7 @@ backlash==0.1.4
 chardet
 colander==1.7.0
 cryptography==2.6.1
-decorator==3.3.2
+decorator
 EasyWidgets==0.3.2
 emoji==0.5.1
 faulthandler==2.1

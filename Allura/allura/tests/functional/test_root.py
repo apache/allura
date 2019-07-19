@@ -177,8 +177,8 @@ class TestRootController(TestController):
             callable_name.return_value = 'foo'
             self.app.get('/p/')
             arg = callable_name.call_args[0][0]
-            assert_equal(arg.undecorated,
-                         NeighborhoodController.index.undecorated)
+            assert_equal(arg.__wrapped__,
+                         NeighborhoodController.index.__wrapped__)
             set_transaction_name.assert_called_with('foo')
 
 
