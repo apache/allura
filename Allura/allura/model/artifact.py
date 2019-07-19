@@ -528,7 +528,7 @@ class Snapshot(Artifact):
         return result
 
     def original(self):
-        raise NotImplemented('original')  # pragma no cover
+        raise NotImplementedError('original')  # pragma no cover
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)

@@ -65,7 +65,7 @@ pillow==5.2.0
 pip-tools==3.8.0
 poster==0.8.1
 pycparser==2.19           # via cffi
-pyflakes==0.8.1
+pyflakes==2.1.1
 pygments==2.2.0
 pylint==1.9.5
 pymongo==2.8.1

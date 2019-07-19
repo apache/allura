@@ -501,9 +501,9 @@ class TestSiteNotification(unittest.TestCase):
 
     def test_json_values_if_missing(self):
         note_json = self.note.__json__()
-        assert note_json['page_regex'] is ''
-        assert note_json['page_tool_type'] is ''
-        assert note_json['user_role'] is ''
+        assert note_json['page_regex'] == ''
+        assert note_json['page_tool_type'] == ''
+        assert note_json['user_role'] == ''
 
 
 def _clear_subscriptions():
