@@ -22,7 +22,7 @@ crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
 cryptography==2.6.1
 datadiff==1.1.5
-decorator==3.3.2
+decorator==4.4.0
 docutils==0.14            # via pypeline, sphinx
 easywidgets==0.3.2
 emoji==0.5.1
