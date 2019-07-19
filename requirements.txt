@@ -13,7 +13,7 @@ beautifulsoup4==4.6.1
 beautifulsoup==3.2.0
 bleach==3.1.0             # via pypeline
 cffi==1.12.2              # via cryptography
-chardet==1.0.1
+chardet==3.0.4
 colander==1.7.0
 crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
