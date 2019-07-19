@@ -512,7 +512,7 @@ class TestThemeProvider(object):
         get_note = ThemeProvider()._get_site_notification()
 
         assert isinstance(get_note, tuple)
-        assert len(get_note) is 2
+        assert len(get_note) == 2
         assert get_note[0] is note
         assert get_note[1] == 'test_id-1-False'
 
