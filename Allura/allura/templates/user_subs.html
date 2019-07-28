@@ -35,4 +35,16 @@
     <p>No subscriptions.</p>
   {% endif %}
 
+  <h2>User notifications</h2>
+  <form method="POST" action="update_user_notifications">
+  <div class="grid-10">
+      <input type="checkbox" id="allow_umnotif" name="allow_umnotif" {% if c.user.get_pref('mention_notifications') %} checked {% endif %}>
+      <label for="allow_umnotif">Send a notification via e-mail if my username is mentioned in somewhere</label>
+  </div>
+  <div class="grid-2">
+      <input class="submit" type="submit" value="Save">
+  </div>
+  {{ lib.csrf_token() }}
+  </form>
+  
 {% endblock %}

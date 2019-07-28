@@ -1219,6 +1219,12 @@ class SubscriptionsController(BaseController):
 
         redirect(request.referer or '/')
 
+    @expose()
+    @require_post()
+    def update_user_notifications(self, allow_umnotif=False):
+        c.user.set_pref('mention_notifications', allow_umnotif and True or False)
+        redirect(request.referer or '/')
+
 
 class OAuthController(BaseController):
 
