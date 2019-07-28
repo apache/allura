@@ -786,6 +786,22 @@ class TestAuth(TestController):
                     else:
                         assert str(ac._id) in r, "Page doesn't list tool %s" % ac.tool_name
 
+
+    @td.with_user_project('test-admin')
+    def test_update_user_notifications(self):
+        self.app.get('/').follow()  # establish session
+        assert not M.User.query.get(username='test-admin').get_pref('mention_notifications')
+        self.app.post('/auth/subscriptions/update_user_notifications',
+                      params={'_session_id': self.app.cookies['_session_id'],
+                              })
+        assert not M.User.query.get(username='test-admin').get_pref('mention_notifications')
+        self.app.post('/auth/subscriptions/update_user_notifications',
+                      params={'allow_umnotif': 'on',
+                              '_session_id': self.app.cookies['_session_id'],
+                              })
+        assert M.User.query.get(username='test-admin').get_pref('mention_notifications')
+
+
     def _find_subscriptions_form(self, r):
         form = None
         for f in r.forms.itervalues():
