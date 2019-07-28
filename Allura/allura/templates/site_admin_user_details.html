@@ -62,6 +62,20 @@
           <input type='hidden' name='username' value='{{ user.username }}'>
           {{lib.csrf_token()}}
         </form>
+
+        <form action='/nf/admin/user/make_password_reset_url' method="POST" id="get-reset">
+          <input type="submit" value="Get password reset link">
+          <input type='hidden' name='username' value='{{ user.username }}'>
+          {{lib.csrf_token()}}
+        </form>
+        <div id="password_reset_url_modal" class="modal">
+            <h1>Password Reset URL</h1>
+            <p>Be very careful to share this only with the intended user.</p>
+            <input type="url" readonly id="password_reset_url">
+            <a href="#" id="password_reset_url_copy">copy</a>
+            <p>Whenever you regenerate a new password reset URL, previous URLs are invalidated.</p>
+        </div>
+
         </div>
       </fieldset>
     </div>
@@ -155,6 +169,13 @@
 li .spacer {
    margin: 0 0.5em;
 }
+#password_reset_url_modal {
+    display: none;
+}
+#password_reset_url {
+    width: 30em;
+    margin-right: 1em;
+}
 </style>
 {% endblock %}
 
@@ -166,6 +187,25 @@ $(document).ready(function() {
   $('input[name="status"]').change(function(e) {
     $(this).parents('form').submit();
   });
+  // handling for get password reset URL
+  $('#get-reset').submit(function(e) {
+      e.preventDefault();
+      var $form = $(this);
+      $.post($form.attr('action'), $form.serialize())
+          .done(function(data) {
+              var reset_url = data;
+              $('#password_reset_url_modal').lightbox_me();
+              $('#password_reset_url').val(reset_url);
+          })
+          .fail(function() {
+              $('#messages').notify({message: 'Error getting reset link', status: 'error'});
+          });
+  });
+  $('#password_reset_url_copy').click(function(){
+      $('#password_reset_url').select();
+      document.execCommand("copy");
+      $(this).text('copied!');
+  })
 });
 </script>
 {% endblock %}

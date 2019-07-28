@@ -490,7 +490,7 @@ class TestUserDetails(TestController):
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
         assert_not_in(u'Comment by test-admin: I was hêre!', r)
-        form = r.forms[4]
+        form = [f for f in r.forms.itervalues() if f.action.endswith('add_audit_trail_entry')][0]
         assert_equal(form['username'].value, 'test-user')
         form['comment'] = u'I was hêre!'
         r = form.submit()
@@ -716,6 +716,13 @@ To update your password on %s, please visit the following URL:
             subject='Allura Password recovery',
             message_id=gen_message_id(),
             text=text)
+
+    def test_make_password_reset_url(self):
+        with td.audits('Generated new password reset URL and shown to admin user', user=True):
+            r = self.app.post('/nf/admin/user/make_password_reset_url', params={'username': 'test-user'})
+        user = M.User.by_username('test-user')
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert_in(hash, r.text)
 
 
 class TestDeleteProjects(TestController):

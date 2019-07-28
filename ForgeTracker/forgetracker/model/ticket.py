@@ -199,14 +199,16 @@ class Globals(MappedClass):
             r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False, fq=['-deleted_b:true'])
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
-        self._bin_counts_expire = \
-            datetime.utcnow() + timedelta(minutes=60)
+        cache_expire_config = int(tg_config.get('forgetracker.bin_cache_expire', 60))
+        if cache_expire_config:
+            self._bin_counts_expire = datetime.utcnow() + timedelta(minutes=cache_expire_config)
         self._bin_counts_invalidated = None
 
     def bin_count(self, name):
-        # not sure why we expire bin counts after an hour even if unchanged
+        # not sure why we expire bin counts even if unchanged
         # I guess a catch-all in case invalidate_bin_counts is missed
-        if self._bin_counts_expire < datetime.utcnow():
+        cache_expire_config = int(tg_config.get('forgetracker.bin_cache_expire', 60))
+        if cache_expire_config and (not self._bin_counts_expire or self._bin_counts_expire < datetime.utcnow()):
             self.invalidate_bin_counts()
         for d in self._bin_counts_data:
             if d['summary'] == name:

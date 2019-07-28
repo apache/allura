@@ -69,7 +69,7 @@ $(function() {
       else{
         holder.attr('data-user', data.username).addClass('deleter');
         holder.html(perm_delete_ico);
-        holder.find('.fa').after('&nbsp;' + data.displayname + ' (' + data.username + ')');
+        holder.find('.fa').after('&nbsp;' + escape_html(data.displayname) + ' (' + escape_html(data.username) + ')');
         holder.children('a.deleter').click(delete_user);
       }
     });

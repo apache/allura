@@ -38,7 +38,7 @@ from allura.lib import validators as v
 from allura.lib.decorators import require_post
 from allura.lib.plugin import SiteAdminExtension, ProjectRegistrationProvider, AuthenticationProvider
 from allura.lib import search
-from allura.lib.security import require_access, Credentials
+from allura.lib.security import require_site_admin, Credentials
 from allura.lib.widgets import form_fields as ffw
 from allura.ext.admin.widgets import AuditLog
 from allura.lib.widgets import forms
@@ -70,9 +70,7 @@ class SiteAdminController(object):
         self.site_notifications = SiteNotificationController()
 
     def _check_security(self):
-        with h.push_context(config.get('site_admin_project', 'allura'),
-                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
-            require_access(c.project, 'admin')
+        require_site_admin(c.user)
 
         c.site_admin_sidebar_menu = self.sidebar_menu()
 
@@ -516,9 +514,7 @@ class SiteNotificationController(object):
 class TaskManagerController(object):
 
     def _check_security(self):
-        with h.push_context(config.get('site_admin_project', 'allura'),
-                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
-            require_access(c.project, 'admin')
+        require_site_admin(c.user)
 
     @expose('jinja:allura:templates/site_admin_task_list.html')
     @without_trailing_slash
@@ -740,6 +736,15 @@ class AdminUserDetailsController(object):
         except HTTPFound:
             pass  # catch redirect to '/'
         redirect(request.referer or '/')
+
+    @expose()
+    @require_post()
+    def make_password_reset_url(self, username):
+        user = M.User.by_username(username)
+        if not user or user.is_anonymous():
+            raise HTTPNotFound()
+        h.auditlog_user('Generated new password reset URL and shown to admin user', user=user)
+        return user.make_password_reset_url()
 
     @h.vardec
     @expose()
