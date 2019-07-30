@@ -430,7 +430,7 @@ def ago_ts(timestamp):
 def ago_string(s):
     try:
         return ago(parse(s, ignoretz=True))
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, TypeError):
         return 'unknown'
 
 
@@ -439,7 +439,7 @@ class DateTimeConverter(FancyValidator):
     def _to_python(self, value, state):
         try:
             return parse(value)
-        except ValueError:
+        except (ValueError, TypeError):
             if self.if_invalid != formencode.api.NoDefault:
                 return self.if_invalid
             else:

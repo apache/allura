@@ -72,7 +72,7 @@ pymongo==2.8.1
 pyparsing==2.4.0          # via packaging
 pypeline[creole,markdown,rst,textile]==0.5
 pysolr==3.6.0
-python-dateutil==1.5
+python-dateutil==2.8.0
 python-magic==0.4.3
 python-oembed==0.2.1
 pytz==2019.1

@@ -28,7 +28,7 @@ Pygments==2.2.0
 pymongo==2.8.1
 Pypeline[creole,markdown,textile,rst]==0.5
 pysolr==3.6.0
-python-dateutil==1.5
+python-dateutil
 python-magic==0.4.3
 python-oembed==0.2.1
 pytz==2019.1
