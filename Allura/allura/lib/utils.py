@@ -382,7 +382,10 @@ class AntiSpam(object):
                     except:
                         pass
                 for fldno in range(obj.num_honey):
-                    value = new_params.pop('honey%s' % fldno)
+                    try:
+                        value = new_params.pop('honey%s' % fldno)
+                    except KeyError:
+                        raise ValueError('Missing honeypot field: honey%s' % fldno)
                     if value:
                         raise ValueError('Value in honeypot field: %s' % value)
             except Exception as ex:

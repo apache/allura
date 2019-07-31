@@ -153,6 +153,13 @@ class TestAntispam(unittest.TestCase):
         r = Request.blank('/', POST=eform)
         self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
 
+    def test_missing_honey(self):
+        form = dict(a='1', b='2')
+        eform = self._encrypt_form(**form)
+        del eform[self.a.enc('honey0')]
+        r = Request.blank('/', POST=eform)
+        self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
+
     def _encrypt_form(self, **kwargs):
         encrypted_form = dict(
             (self.a.enc(k), v) for k, v in kwargs.items())
