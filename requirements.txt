@@ -21,7 +21,7 @@ configparser==3.7.4       # via pylint
 crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
 cryptography==2.6.1
-datadiff==1.1.5
+datadiff==2.0.0
 decorator==4.4.0
 docutils==0.14            # via pypeline
 easywidgets==0.3.2
