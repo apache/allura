@@ -551,14 +551,15 @@ class TestLocalAuthenticationProvider(object):
         user = Mock()
         user.__ming__ = Mock()
         self.provider.validate_password = lambda u, p: False
+        self.provider._encode_password = Mock()
         assert_raises(
             exc.HTTPUnauthorized,
             self.provider.set_password, user, 'old', 'new')
-        assert_equal(user._encode_password.call_count, 0)
+        assert_equal(self.provider._encode_password.call_count, 0)
 
         self.provider.validate_password = lambda u, p: True
         self.provider.set_password(user, 'old', 'new')
-        user._encode_password.assert_callued_once_with('new')
+        self.provider._encode_password.assert_called_once_with('new')
 
     @patch('allura.lib.plugin.datetime', autospec=True)
     def test_set_password_sets_last_updated(self, dt_mock):

@@ -103,7 +103,7 @@ class TestLastCommit(unittest.TestCase):
             name='repo',
             _commits=OrderedDict(),
             _last_commit=None,
-            spec=M.Repository)
+        )
         self.repo.paged_diffs.return_value = {
             'added': [],
             'removed': [],

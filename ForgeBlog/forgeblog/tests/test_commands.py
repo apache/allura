@@ -28,7 +28,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from forgeblog import model as BM
-
+from forgeblog.command import rssfeeds  # note that importing this sets html2text.BODY_WIDTH to a new value
 
 test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
@@ -114,7 +114,6 @@ def test_pull_rss_feeds(parsefeed):
     BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
     ThreadLocalORMSession.flush_all()
 
-    from forgeblog.command import rssfeeds
     cmd = rssfeeds.RssFeedsCommand('pull-rss-feeds')
     cmd.run([test_config, '-a', tmp_app._id])
     cmd.command()

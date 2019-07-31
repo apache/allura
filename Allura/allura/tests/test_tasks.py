@@ -65,7 +65,7 @@ class TestRepoTasks(unittest.TestCase):
         # ignore args[3] which is a traceback string
 
     @mock.patch('allura.tasks.repo_tasks.session', autospec=True)
-    @mock.patch.object(M, 'MergeRequest', autospec=True)
+    @mock.patch.object(M, 'MergeRequest')
     def test_merge(self, MR, session):
         mr = mock.Mock(_id='_id',
                        activity_name='merge req', activity_url='/fake/url', activity_extras={}, node_id=None)
@@ -76,7 +76,7 @@ class TestRepoTasks(unittest.TestCase):
         session.assert_called_once_with(mr)
         session.return_value.flush.assert_called_once_with(mr)
 
-    @mock.patch.object(M, 'MergeRequest', autospec=True)
+    @mock.patch.object(M, 'MergeRequest')
     def test_can_merge(self, MR):
         mr = M.MergeRequest(_id='_id')
         MR.query.get.return_value = mr
