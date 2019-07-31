@@ -1,5 +1,3 @@
--r requirements.in
-
 # development-only dependencies
 # nothing needed at runtime or for tests
 
