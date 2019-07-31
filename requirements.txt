@@ -68,7 +68,7 @@ pymongo==2.8.1
 pypeline[creole,markdown,rst,textile]==0.5
 pysolr==3.6.0
 python-dateutil==2.8.0
-python-magic==0.4.3
+python-magic==0.4.15
 python-oembed==0.2.4
 pytz==2019.1
 qrcode==5.3
