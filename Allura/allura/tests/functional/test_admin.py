@@ -165,10 +165,17 @@ class TestProjectAdmin(TestController):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
         with audits(u"change project features to \[u'One', u'Two'\]"):
-            self.app.post('/admin/update', params={
+            resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
                 'features-1.feature': '  ',
                 'features-2.feature': ' Two '})
+            if resp.status_int == 200:
+                errors = resp.html.findAll('', attrs={'class': 'fielderror'})
+                assert_equals([], errors)
+                errors = resp.html.findAll('', attrs={'class': 'error'})
+                assert_equals([], errors)
+                raise AssertionError('Should be a 301 not 200 response')
+
         r = self.app.get('/admin/overview')
         features = r.html.find('div', {'id': 'features'})
         features = features.findAll('input', {'type': 'text'})

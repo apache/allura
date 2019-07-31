@@ -7,11 +7,12 @@ chardet
 colander==1.7.0
 cryptography==2.6.1
 decorator
-EasyWidgets==0.3.2
+EasyWidgets>=0.3.3
 emoji==0.5.1
 faulthandler
 feedparser==5.1.3
-FormEncode==1.2.4
+# FormEncode may need v2.0 to work past py3.3 or so?  https://github.com/formencode/formencode/issues/140
+FormEncode
 GitPython==2.1.11
 html5lib==1.0.1
 Jinja2==2.10
