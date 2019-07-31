@@ -38,7 +38,7 @@ gitdb2==2.0.4             # via gitpython
 gitpython==2.1.11
 gunicorn==19.4.5
 html5lib==1.0.1
-httplib2==0.7.4           # via oauth2
+httplib2==0.13.1          # via oauth2
 idna==2.8                 # via requests
 ipaddress==1.0.22         # via cryptography
 ipython==1.2.1
@@ -53,7 +53,7 @@ mccabe==0.6.1             # via pylint
 ming==0.5.6
 mock==1.0.1
 nose==1.3.4
-oauth2==1.5.170
+oauth2==1.9.0.post1
 oauthlib==3.0.2           # via requests-oauthlib
 paste==3.0.1
 pastedeploy==1.5.2
