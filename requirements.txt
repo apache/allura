@@ -27,7 +27,7 @@ docutils==0.14            # via pypeline
 easywidgets==0.3.2
 emoji==0.5.1
 enum34==1.1.6             # via astroid, colander, cryptography
-faulthandler==2.1
+faulthandler==3.1
 feedparser==5.1.3
 formencode==1.2.4
 funcsigs==1.0.2           # via beaker, mock
