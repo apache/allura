@@ -34,7 +34,7 @@ python-oembed==0.2.1
 pytz==2019.1
 qrcode==5.3
 requests==2.11.1
-requests-oauthlib==0.4.0
+requests-oauthlib
 # for taskd proc name switching
 setproctitle==1.1.9
 six==1.12.0
