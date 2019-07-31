@@ -9,7 +9,7 @@ cryptography==2.6.1
 decorator
 EasyWidgets==0.3.2
 emoji==0.5.1
-faulthandler==2.1
+faulthandler
 feedparser==5.1.3
 FormEncode==1.2.4
 GitPython==2.1.11
