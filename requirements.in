@@ -30,7 +30,7 @@ Pypeline[creole,markdown,textile,rst]==0.5
 pysolr==3.6.0
 python-dateutil
 python-magic==0.4.3
-python-oembed==0.2.1
+python-oembed
 pytz==2019.1
 qrcode==5.3
 requests
