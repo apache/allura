@@ -1222,7 +1222,12 @@ class SubscriptionsController(BaseController):
     @expose()
     @require_post()
     def update_user_notifications(self, allow_umnotif=False):
-        c.user.set_pref('mention_notifications', allow_umnotif and True or False)
+        allow_notif = bool(allow_umnotif)
+        c.user.set_pref('mention_notifications', allow_notif)
+        if allow_notif:
+            h.auditlog_user('User mention notifications are enabled')
+        else:
+            h.auditlog_user('User mention notifications are disabled')
         redirect(request.referer or '/')
 
 
