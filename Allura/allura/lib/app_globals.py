@@ -615,13 +615,6 @@ class Globals(object):
             "image_height": logo['image_height']
         }
 
-    def send_usermentions_notification(self, text, artifact):
-        usernames = utils.get_usernames_from_md(text)
-        for username in usernames:
-            u = M.User.by_username(username)
-            u.send_user_mention_notification(c.user, artifact)
-
-
 class Icon(object):
 
     def __init__(self, css, title=None):

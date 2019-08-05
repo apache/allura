@@ -791,11 +791,12 @@ def get_reactions_json():
     return json.dumps(j)
 
 def get_usernames_from_md(text):
-    usernames = []
+    """ Returns a unique usernames set from a text """
+    usernames = set()
     html_text = g.markdown.convert(text)
     soup = BeautifulSoup(html_text, 'html.parser')
     for mention in soup.select('a.user-mention'):
-        usernames.append(mention.get_text().replace('@', ''))
+        usernames.add(mention.get_text().replace('@', ''))
     return usernames
 
 def get_key_from_value(d, val):
