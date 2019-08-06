@@ -35,4 +35,5 @@ def send_usermentions_notification(artifact, text, old_text=None):
 
     for username in list(usernames):
         u = M.User.by_username(username)
-        u.send_user_mention_notification(c.user, artifact)
+        if u.get_pref('mention_notifications'):
+            u.send_user_mention_notification(c.user, artifact)

@@ -690,6 +690,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
         auth_provider = plugin.AuthenticationProvider.get(request)
         user = auth_provider.register_user(doc)
+        user.set_pref('mention_notifications', True)
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
         if user:
