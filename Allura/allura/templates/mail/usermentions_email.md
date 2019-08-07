@@ -25,4 +25,4 @@ It can be viewed using the link below:
 
 Sent from {{site_domain}} because your user mention notifications are active,
 
-To unsubscribe from further messages, please visit <{{base_url}}/auth/subscriptions>
+To unsubscribe from further messages, please visit <{{base_url}}/auth/subscriptions#notifications>
