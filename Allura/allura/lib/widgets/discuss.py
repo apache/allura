@@ -32,6 +32,7 @@ from allura import model as M
 
 class NullValidator(fev.FancyValidator):
     perform_validation = True
+    accept_iterator = True
 
     def _to_python(self, value, state):
         return value

@@ -26,7 +26,7 @@ cryptography==2.6.1
 datadiff==2.0.0
 decorator==4.4.0
 docutils==0.14            # via pypeline
-easywidgets==0.3.4
+easywidgets==0.3.5
 emoji==0.5.1
 enum34==1.1.6             # via astroid, colander, cryptography, traitlets
 faulthandler==3.1

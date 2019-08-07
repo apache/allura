@@ -474,7 +474,8 @@ class TestAttachment(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'Reply'
         r = self.app.post(self.post_link + 'reply',
                           params=params,
-                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+                          upload_files=[('file_info', 'test.txt', 'HiThere!'),
+                                        ('file_info', 'test2.txt', 'HiAgain!')])
         r = self.app.get(self.thread_link)
         assert "test.txt" in r
 
