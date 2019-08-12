@@ -39,6 +39,7 @@ from allura.lib.search import search_app
 from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import require_access, has_access
 from allura.lib.utils import is_ajax, JSONForExport
+from allura.tasks import notification_tasks
 from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
@@ -745,6 +746,7 @@ class PageController(BaseController, FeedController):
                         app_config_id=c.app.config._id).root = title
                 self.page.title = title
                 activity_verb = 'renamed'
+        old_text = self.page.text
         self.page.text = text
         if labels:
             self.page.labels = labels.split(',')
@@ -753,6 +755,10 @@ class PageController(BaseController, FeedController):
         self.page.commit(subscribe=subscribe)
         g.spam_checker.check(title + u'\n' + text, artifact=self.page,
                              user=c.user, content_type='wiki')
+        if activity_verb == 'created':
+            notification_tasks.send_usermentions_notification(self.page, text)
+        elif activity_verb == 'modified':
+            notification_tasks.send_usermentions_notification(self.page, text, old_text)
         g.director.create_activity(c.user, activity_verb, self.page,
                                    related_nodes=[c.project], tags=['wiki'])
         if new_viewable_by:
