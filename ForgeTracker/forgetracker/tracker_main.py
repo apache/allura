@@ -46,6 +46,7 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.tasks import notification_tasks
 from allura.app import (
     Application,
     SitemapEntry,
@@ -940,6 +941,7 @@ class RootController(BaseController, FeedController):
         g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')
         c.app.globals.invalidate_bin_counts()
+        notification_tasks.send_usermentions_notification(ticket, ticket_form.get('description', ''))
         g.director.create_activity(c.user, 'created', ticket,
                                    related_nodes=[c.project], tags=['ticket'])
         redirect(str(ticket.ticket_num) + '/')
@@ -1464,6 +1466,8 @@ class TicketController(BaseController, FeedController):
     @require_post()
     def _update_ticket(self, post_data):
         require_access(self.ticket, 'update')
+        old_text = self.ticket.description
+        new_text = post_data.get('description', '')
         g.spam_checker.check(post_data.get('summary', '') + u'\n' + post_data.get('description', ''),
                              artifact=self.ticket, user=c.user, content_type='ticket')
         changes = changelog()
@@ -1544,6 +1548,7 @@ class TicketController(BaseController, FeedController):
         self.ticket.commit()
         if comment:
             thread.post(text=comment, notify=False)
+        notification_tasks.send_usermentions_notification(self.ticket, new_text, old_text)
         g.director.create_activity(c.user, 'modified', self.ticket,
                                    related_nodes=[c.project], tags=['ticket'])
         c.app.globals.invalidate_bin_counts()
