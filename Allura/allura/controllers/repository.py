@@ -220,6 +220,7 @@ class RepoRootController(BaseController, FeedController):
                 ref_id=mr.index_id(),
             )
             session(t).flush()
+            allura.tasks.notification_tasks.send_usermentions_notification(mr, kw['description'])
             g.director.create_activity(c.user, 'created', mr,
                                        related_nodes=[c.project], tags=['merge-request'])
             redirect(mr.url())
@@ -475,6 +476,7 @@ class MergeRequestController(object):
             # trigger error_handler directly
             return self.edit(**kw)
         changes = OrderedDict()
+        old_text = self.req.description
         if self.req.summary != kw['summary']:
             changes['Summary'] = [self.req.summary, kw['summary']]
             self.req.summary = kw['summary']
@@ -493,6 +495,7 @@ class MergeRequestController(object):
 
         if changes:
             self.req.add_meta_post(changes=changes)
+            allura.tasks.notification_tasks.send_usermentions_notification(self.req, kw['description'], old_text)
             g.director.create_activity(c.user, 'updated', self.req,
                                        related_nodes=[c.project], tags=['merge-request'])
         self.refresh()
