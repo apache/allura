@@ -39,6 +39,7 @@ from allura.app import Application, SitemapEntry, ConfigOption
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.utils import JSONForExport
+from allura.tasks import notification_tasks
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import has_access, require_access
@@ -315,6 +316,7 @@ class RootController(BaseController, FeedController):
                              user=c.user, content_type='blog-post')
         if attachment is not None:
             post.add_multiple_attachments(attachment)
+        notification_tasks.send_usermentions_notification(post, kw['text'])
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
     @with_trailing_slash
@@ -427,11 +429,13 @@ class PostController(BaseController, FeedController):
             g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=self.post,
                                  user=c.user, content_type='blog-post')
         attachment = kw.pop('attachment', None)
+        old_text = self.post.text
         if attachment is not None:
             self.post.add_multiple_attachments(attachment)
         for k, v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()
+        notification_tasks.send_usermentions_notification(self.post, kw['text'], old_text)
         redirect('.')
 
     @without_trailing_slash
