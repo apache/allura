@@ -273,7 +273,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     if thread.artifact:
         thread.artifact.mod_date = datetime.utcnow()
     flash('Message posted')
-    notification_tasks.send_usermentions_notification(p, kw['text'])
+    notification_tasks.send_usermentions_notification.post(p.index_id(), kw['text'])
     redirect(request.referer or '/')
 
 
@@ -327,7 +327,7 @@ class PostController(BaseController):
             self.post.last_edit_by_id = c.user._id
             self.thread.is_spam(self.post)  # run spam checker, nothing to do with result yet
             self.post.commit()
-            notification_tasks.send_usermentions_notification(self.post, kw['text'], old_text)
+            notification_tasks.send_usermentions_notification.post(self.post.index_id(), kw['text'], old_text)
             g.director.create_activity(c.user, 'modified', self.post,
                                        target=self.post.thread.artifact or self.post.thread,
                                        related_nodes=[self.post.app_config.project],

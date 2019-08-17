@@ -316,7 +316,7 @@ class RootController(BaseController, FeedController):
                              user=c.user, content_type='blog-post')
         if attachment is not None:
             post.add_multiple_attachments(attachment)
-        notification_tasks.send_usermentions_notification(post, kw['text'])
+        notification_tasks.send_usermentions_notification.post(post.index_id(), kw['text'])
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
     @with_trailing_slash
@@ -435,7 +435,7 @@ class PostController(BaseController, FeedController):
         for k, v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()
-        notification_tasks.send_usermentions_notification(self.post, kw['text'], old_text)
+        notification_tasks.send_usermentions_notification.post(self.post.index_id(), kw['text'], old_text)
         redirect('.')
 
     @without_trailing_slash
