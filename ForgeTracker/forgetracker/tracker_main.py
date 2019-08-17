@@ -941,7 +941,7 @@ class RootController(BaseController, FeedController):
         g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')
         c.app.globals.invalidate_bin_counts()
-        notification_tasks.send_usermentions_notification(ticket, ticket_form.get('description', ''))
+        notification_tasks.send_usermentions_notification.post(ticket.index_id(), ticket_form.get('description', ''))
         g.director.create_activity(c.user, 'created', ticket,
                                    related_nodes=[c.project], tags=['ticket'])
         redirect(str(ticket.ticket_num) + '/')
@@ -1548,7 +1548,7 @@ class TicketController(BaseController, FeedController):
         self.ticket.commit()
         if comment:
             thread.post(text=comment, notify=False)
-        notification_tasks.send_usermentions_notification(self.ticket, new_text, old_text)
+        notification_tasks.send_usermentions_notification.post(self.ticket.index_id(), new_text, old_text)
         g.director.create_activity(c.user, 'modified', self.ticket,
                                    related_nodes=[c.project], tags=['ticket'])
         c.app.globals.invalidate_bin_counts()

@@ -756,9 +756,9 @@ class PageController(BaseController, FeedController):
         g.spam_checker.check(title + u'\n' + text, artifact=self.page,
                              user=c.user, content_type='wiki')
         if activity_verb == 'created':
-            notification_tasks.send_usermentions_notification(self.page, text)
+            notification_tasks.send_usermentions_notification.post(self.page.index_id(), text)
         elif activity_verb == 'modified':
-            notification_tasks.send_usermentions_notification(self.page, text, old_text)
+            notification_tasks.send_usermentions_notification.post(self.page.index_id(), text, old_text)
         g.director.create_activity(c.user, activity_verb, self.page,
                                    related_nodes=[c.project], tags=['wiki'])
         if new_viewable_by:

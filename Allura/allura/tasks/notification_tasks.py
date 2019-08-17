@@ -26,8 +26,9 @@ def notify(n_id, ref_ids, topic):
     M.Mailbox.fire_ready()
 
 @task
-def send_usermentions_notification(artifact, text, old_text=None):
+def send_usermentions_notification(artifact_id, text, old_text=None):
     from allura import model as M
+    artifact = M.ArtifactReference.query.get(_id=artifact_id).artifact
     usernames = utils.get_usernames_from_md(text)
     if old_text:
         old_usernames = utils.get_usernames_from_md(old_text)

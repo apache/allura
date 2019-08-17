@@ -220,7 +220,7 @@ class RepoRootController(BaseController, FeedController):
                 ref_id=mr.index_id(),
             )
             session(t).flush()
-            allura.tasks.notification_tasks.send_usermentions_notification(mr, kw['description'])
+            allura.tasks.notification_tasks.send_usermentions_notification.post(mr.index_id(), kw['description'])
             g.director.create_activity(c.user, 'created', mr,
                                        related_nodes=[c.project], tags=['merge-request'])
             redirect(mr.url())
@@ -495,7 +495,7 @@ class MergeRequestController(object):
 
         if changes:
             self.req.add_meta_post(changes=changes)
-            allura.tasks.notification_tasks.send_usermentions_notification(self.req, kw['description'], old_text)
+            allura.tasks.notification_tasks.send_usermentions_notification.post(self.req.index_id(), kw['description'], old_text)
             g.director.create_activity(c.user, 'updated', self.req,
                                        related_nodes=[c.project], tags=['merge-request'])
         self.refresh()
