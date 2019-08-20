@@ -26,7 +26,7 @@ import allura
 import mock
 
 import PIL
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from mock import patch
 from nose.tools import (
     assert_true,

@@ -365,7 +365,7 @@ Our website is [[http://domain.net]].
         result = u'''<p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://domain.net]].</p>
-<p>&#8216;[[Escaped Tag]]</p>
+<p>\u2018[[Escaped Tag]]</p>
 <p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
 <p>[External link](https://github.com/a/b/issues/1)</p>'''
 
@@ -386,11 +386,15 @@ Our website is [[http://domain.net]].
         assert_equal(
             f(u'<a href="https://github/a/b/issues/1" class="1"></a>',
               prefix, new),
-            u'<a href="https://github/a/b/issues/1" class="1"></a>')
+            u'<a class="1" href="https://github/a/b/issues/1"></a>')
         assert_equal(
             f(u'<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>',
               prefix, new),
             u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/wiki/Test Page">Test blah blah</a>',
+              prefix, new),
+            u'<a href="/p/test/wiki/Test Page">Test blah blah</a>')
         assert_equal(
             f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>',
               prefix, new),
@@ -497,7 +501,7 @@ some text and *[[Tips n' Tricks]]*
 '''
         result = u'''**[this checklist](Troubleshooting)**
 
-some text and **[Tips n' Tricks]**
+some text and **[Tips n\u2019 Tricks]**
 
 **[link](http://otherlink.com)**
 '''

@@ -1,6 +1,5 @@
 ActivityStream==0.2.2
-BeautifulSoup==3.2.0
-beautifulsoup4==4.6.1
+beautifulsoup4
 Beaker
 backlash==0.1.4
 chardet

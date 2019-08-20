@@ -17,7 +17,7 @@
 
 #-*- python -*-
 import re
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 _inline_img = re.compile(r'\[\[(File|Image):([^\]|]+)[^]]*\]\]', re.UNICODE)
 _inline_img_markdown = r'[[img src=\2]]'
@@ -50,7 +50,7 @@ def _internal_link_markdown(match):
 
 def _convert_toc(wiki_html):
     """Convert Table of Contents from mediawiki to markdown"""
-    soup = BeautifulSoup(wiki_html)
+    soup = BeautifulSoup(wiki_html, 'html.parser')
     for toc_div in soup.findAll('div', id='toc'):
         toc_div.replaceWith('[TOC]')
     return unicode(soup)
