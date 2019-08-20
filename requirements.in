@@ -50,7 +50,7 @@ wrapt==1.11.2
 datadiff
 ipython<6  # Ipython 7 starts to require py3
 mock
-nose==1.3.4
+nose
 poster==0.8.1
 pyflakes
 pylint
