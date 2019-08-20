@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import mock
 
 from tg import config
@@ -121,8 +121,8 @@ class TestTroveCategoryController(TestController):
                 <li>CategoryB</li>
             </ul>
         </ul>
-        """.strip())
-        assert str(expected) == str(rendered_tree)
+        """.strip(), 'html.parser')
+        assert_equals(str(expected), str(rendered_tree))
 
     @td.with_tool('test2', 'admin_main', 'admin')
     def test_trove_empty_hierarchy(self):
@@ -131,5 +131,5 @@ class TestTroveCategoryController(TestController):
         expected = BeautifulSoup("""
         <ul>
         </ul>
-        """.strip())
-        assert str(expected) == str(rendered_tree)
+        """.strip(), 'html.parser')
+        assert_equals(str(expected), str(rendered_tree))

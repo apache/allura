@@ -21,9 +21,10 @@ from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
+import six
 from paste.deploy.converters import aslist
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import git
 from tg import app_globals as g
 from tg import tmpl_context as c
@@ -327,7 +328,7 @@ class GitHubWikiImporter(ToolImporter):
         elif ext and ext in self.textile_exts:
             text = self._prepare_textile_text(text)
 
-            text = h.render_any_markup(filename, text)
+            text = six.text_type(h.render_any_markup(filename, text))
             text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             if html2text:
                 text = html2text.html2text(text)
@@ -417,16 +418,16 @@ class GitHubWikiImporter(ToolImporter):
             prefix += '/'
         if not new_prefix.endswith('/'):
             new_prefix += '/'
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, 'html.parser')
         for a in soup.findAll('a'):
             if a.get('href').startswith(prefix):
                 page = a['href'].replace(prefix, '')
                 new_page = self._convert_page_name(page)
                 a['href'] = new_prefix + new_page
-                if a.text == page:
-                    a.setString(new_page)
-                elif a.text == prefix + page:
-                    a.setString(new_prefix + new_page)
+                if a.string == page:
+                    a.string = new_page
+                elif a.string == prefix + page:
+                    a.string = new_prefix + new_page
         return unicode(soup)
 
     def _prepare_textile_text(self, text):

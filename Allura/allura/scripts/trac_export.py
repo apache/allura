@@ -28,7 +28,7 @@ import re
 from optparse import OptionParser
 from itertools import islice
 
-from BeautifulSoup import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
 

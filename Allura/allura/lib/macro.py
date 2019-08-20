@@ -29,7 +29,7 @@ import pymongo
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from paste.deploy.converters import asint
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 from . import helpers as h
 from . import security
@@ -463,7 +463,7 @@ def embed(url=None):
 
         # convert iframe src from http to https, to avoid mixed security blocking when used on an https page
         # and convert to youtube-nocookie.com
-        html = BeautifulSoup(html)
+        html = BeautifulSoup(html, 'html.parser')
         embed_url = html.find('iframe').get('src')
         if embed_url:
             embed_url = urlparse(embed_url)

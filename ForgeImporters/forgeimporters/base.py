@@ -29,7 +29,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from tg import app_globals as g
