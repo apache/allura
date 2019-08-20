@@ -51,7 +51,7 @@ jinja2==2.10
 lazy-object-proxy==1.4.1  # via astroid
 markdown-checklist==0.4.1
 markdown==2.2.1
-markupsafe==1.0
+markupsafe==1.1.1
 mccabe==0.6.1             # via pylint
 ming==0.5.6
 mock==3.0.5
