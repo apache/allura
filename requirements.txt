@@ -79,7 +79,7 @@ python-dateutil==2.8.0
 python-magic==0.4.15
 python-oembed==0.2.4
 pytz==2019.1
-qrcode==5.3
+qrcode==6.1
 repoze.lru==0.7           # via turbogears2
 requests-oauthlib==1.2.0
 requests==2.22.0
@@ -105,4 +105,4 @@ webtest==2.0.33
 wrapt==1.11.2
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.0.1        # via ipython
+# setuptools==41.1.0        # via ipython

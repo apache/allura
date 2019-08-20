@@ -34,7 +34,7 @@ python-dateutil
 python-magic
 python-oembed
 pytz==2019.1
-qrcode==5.3
+qrcode
 requests
 requests-oauthlib
 # for taskd proc name switching
