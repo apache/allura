@@ -8,7 +8,7 @@ colander==1.7.0
 cryptography==2.6.1
 decorator
 EasyWidgets>=0.3.3
-emoji==0.5.1
+emoji
 faulthandler
 feedparser
 # FormEncode may need v2.0 to work past py3.3 or so?  https://github.com/formencode/formencode/issues/140
