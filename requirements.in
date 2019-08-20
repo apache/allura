@@ -25,7 +25,7 @@ oauth2
 Paste==3.0.1
 PasteDeploy==1.5.2
 PasteScript==2.0.2
-Pillow==5.2.0
+Pillow
 Pygments
 pymongo==2.8.1
 Pypeline[creole,markdown,textile,rst]
