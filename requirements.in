@@ -18,7 +18,7 @@ html5lib==1.0.1
 Jinja2==2.10
 Markdown==2.2.1
 markdown-checklist==0.4.1
-MarkupSafe==1.0
+MarkupSafe
 Ming==0.5.6
 # oauth2 doesn't have py3.6 support.  There's a fork with fixes but no pypi releases I can find.  https://github.com/joestump/python-oauth2/issues/223
 oauth2
