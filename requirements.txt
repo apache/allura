@@ -73,7 +73,7 @@ pyflakes==2.1.1
 pygments==2.2.0
 pylint==1.9.5
 pymongo==2.8.1
-pypeline[creole,markdown,rst,textile]==0.5
+pypeline[creole,markdown,rst,textile]==0.5.1
 pysolr==3.6.0
 python-dateutil==2.8.0
 python-magic==0.4.15

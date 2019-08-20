@@ -28,7 +28,7 @@ PasteScript==2.0.2
 Pillow==5.2.0
 Pygments==2.2.0
 pymongo==2.8.1
-Pypeline[creole,markdown,textile,rst]==0.5
+Pypeline[creole,markdown,textile,rst]
 pysolr==3.6.0
 python-dateutil
 python-magic
