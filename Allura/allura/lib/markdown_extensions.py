@@ -36,10 +36,6 @@ from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
 
 log = logging.getLogger(__name__)
 
-PLAINTEXT_BLOCK_RE = re.compile(
-    r'(?P<bplain>\[plain\])(?P<code>.*?)(?P<eplain>\[\/plain\])',
-    re.MULTILINE | re.DOTALL
-)
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
 
@@ -251,7 +247,6 @@ class ForgeExtension(markdown.Extension):
         # allow markdown within e.g. <div markdown>...</div>  More info at:
         # https://github.com/waylan/Python-Markdown/issues/52
         md.preprocessors['html_block'].markdown_in_raw = True
-        md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
@@ -395,37 +390,6 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
                         attach_status = ''
                 classes += attach_status
         return href, classes
-
-
-class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
-
-    '''
-    This was used earlier for [plain] tags that the Blog tool's rss importer
-    created, before html2text did good escaping of all special markdown chars.
-    Can be deprecated.
-    '''
-
-    def run(self, lines):
-        text = "\n".join(lines)
-        while 1:
-            res = PLAINTEXT_BLOCK_RE.finditer(text)
-            for m in res:
-                code = self._escape(m.group('code'))
-                placeholder = self.markdown.htmlStash.store(code, safe=True)
-                text = '%s%s%s' % (
-                    text[:m.start()], placeholder, text[m.end():])
-                break
-            else:
-                break
-        return text.split("\n")
-
-    def _escape(self, txt):
-        """ basic html escaping """
-        txt = txt.replace('&', '&amp;')
-        txt = txt.replace('<', '&lt;')
-        txt = txt.replace('>', '&gt;')
-        txt = txt.replace('"', '&quot;')
-        return txt
 
 
 class ForgeMacroPattern(markdown.inlinepatterns.Pattern):

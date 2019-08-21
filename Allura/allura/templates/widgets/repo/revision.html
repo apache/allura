@@ -20,7 +20,7 @@
 <div class="commit-details">
     <div class="commit-message">
         <div class="first-line">{{ h.hide_private_info(g.markdown_commit.convert(h.really_unicode(value.message.split('\n')[0]))) }}</div>
-        {{ h.hide_private_info(g.markdown_commit.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])))) }}
+        {{ h.hide_private_info(g.markdown_commit.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])).strip())) }}
     </div>
     <div class="commit-details">
 

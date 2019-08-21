@@ -159,7 +159,7 @@ class TestRootController(_TestCase):
     def test_log(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert 'Initial commit' in resp
-        assert '<div class="markdown_content"><p>Change README</div>' in resp
+        assert '<div class="markdown_content"><p>Change README</div>' in resp, resp
         assert 'tree/README?format=raw">Download</a>' not in resp
         assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
         assert_in('by Rick Copeland', squish_spaces(resp.html.findAll('td')[0].text))
