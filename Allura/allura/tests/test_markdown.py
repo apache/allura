@@ -143,6 +143,6 @@ Not *strong* or _underlined_."""
 <p>Not *strong* or _underlined_.</div>"""
 
         md = ForgeMarkdown(
-            extensions=[mde.CommitMessageExtension(app), 'nl2br'],
+            extensions=[mde.CommitMessageExtension(app), 'markdown.extensions.nl2br'],
             output_format='html4')
         self.assertEqual(md.convert(text), expected_html)

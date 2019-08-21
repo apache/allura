@@ -424,9 +424,11 @@ class Globals(object):
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
-            extensions=['fenced_code', 'codehilite', 'extra',  # to allow markdown inside HTML tags
-                        ForgeExtension(
-                            **kwargs), EmojiExtension(), UserMentionExtension(), 'tables', 'toc', 'nl2br', 'markdown_checklist.extension'],
+            extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',
+                        'markdown.extensions.extra',  # to allow markdown inside HTML tags
+                        ForgeExtension(**kwargs), EmojiExtension(), UserMentionExtension(),
+                        'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
+                        'markdown_checklist.extension'],
             output_format='html4')
 
     @property
@@ -448,7 +450,7 @@ class Globals(object):
 
         """
         app = getattr(c, 'app', None)
-        return ForgeMarkdown(extensions=[CommitMessageExtension(app), EmojiExtension(), 'nl2br'],
+        return ForgeMarkdown(extensions=[CommitMessageExtension(app), EmojiExtension(), 'markdown.extensions.nl2br'],
                              output_format='html4')
 
     @property
