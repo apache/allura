@@ -537,8 +537,7 @@ class SVNImplementation(M.RepositoryImplementation):
         size = None
         if path:
             try:
-                size = int(
-                    self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
+                size = self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size
             except pysvn.ClientError:
                 pass
         rename_details = {}
