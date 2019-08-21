@@ -515,7 +515,7 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
         result.text = old_link
         # since this is run before the builtin 'escape' processor, we have to
         # do our own unescaping
-        for char in markdown.Markdown.ESCAPED_CHARS:
+        for char in self.markdown.ESCAPED_CHARS:
             old_link = old_link.replace('\\' + char, char)
         result.set('href', old_link)
         return result
