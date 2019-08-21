@@ -244,9 +244,6 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
-        # allow markdown within e.g. <div markdown>...</div>  More info at:
-        # https://github.com/waylan/Python-Markdown/issues/52
-        md.preprocessors['html_block'].markdown_in_raw = True
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
