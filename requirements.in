@@ -21,9 +21,9 @@ MarkupSafe
 Ming==0.5.6
 # oauth2 doesn't have py3.6 support.  There's a fork with fixes but no pypi releases I can find.  https://github.com/joestump/python-oauth2/issues/223
 oauth2
-Paste==3.0.1
-PasteDeploy==1.5.2
-PasteScript==2.0.2
+Paste
+PasteDeploy
+PasteScript
 Pillow
 Pygments
 pymongo==2.8.1

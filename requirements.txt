@@ -57,9 +57,9 @@ mock==3.0.5
 nose==1.3.7
 oauth2==1.9.0.post1
 oauthlib==3.0.2           # via requests-oauthlib
-paste==3.0.1
-pastedeploy==1.5.2
-pastescript==2.0.2
+paste==3.1.0
+pastedeploy==2.0.1
+pastescript==3.1.0
 pathlib2==2.3.4           # via ipython, pickleshare
 pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
