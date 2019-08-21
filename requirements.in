@@ -15,7 +15,7 @@ FormEncode
 GitPython==2.1.11
 html5lib==1.0.1
 Jinja2==2.10
-Markdown<2.4
+Markdown<2.5
 markdown-checklist==0.4.1
 MarkupSafe
 Ming==0.5.6

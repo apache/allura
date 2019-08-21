@@ -424,8 +424,7 @@ class Globals(object):
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
-            # 'fenced_code'
-            extensions=['fenced_code', 'codehilite',
+            extensions=['fenced_code', 'codehilite', 'extra',  # to allow markdown inside HTML tags
                         ForgeExtension(
                             **kwargs), EmojiExtension(), UserMentionExtension(), 'tables', 'toc', 'nl2br', 'markdown_checklist.extension'],
             output_format='html4')
