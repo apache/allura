@@ -1,7 +1,7 @@
 # development-only dependencies
 # nothing needed at runtime or for tests
 
-pip-tools==3.8.0
+pip-tools
 q==2.3
 sphinx-argparse==0.2.5
 sphinx-rtd-theme==0.1.6
