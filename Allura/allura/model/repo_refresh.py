@@ -217,7 +217,7 @@ def send_notifications(repo, commit_ids):
                 link=href,
                 unique_id=href)
 
-            summary = g.markdown_commit.convert(ci.message) if ci.message else ""
+            summary = g.markdown_commit.convert(ci.message.strip()) if ci.message else ""
             current_branch = repo.symbolics_for_commit(ci)[0]  # only the head of a branch will have this
             commit_msgs.append(dict(
                 author=ci.authored.name,
