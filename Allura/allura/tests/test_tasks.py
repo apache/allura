@@ -33,7 +33,7 @@ from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test, setup_global_objects, TestController
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -494,6 +494,35 @@ I'm not here'''
                 message)
             assert_equal(hm.call_count, 0)
 
+class TestUserNotificationTasks(TestController):
+    def setUp(self):
+        super(TestUserNotificationTasks, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    def setup_with_tools(self):
+        pass
+
+    def test_send_usermentions_notification(self):
+        c.user = M.User.by_username('test-admin')
+        test_user = M.User.by_username('test-user-1')
+        test_user.set_pref('mention_notifications', True)
+        M.MonQTask.query.remove()
+        d = dict(title='foo', text='Hey @test-user-1!')
+        self.app.post('/wiki/foo/update', params=d)
+        M.MonQTask.run_ready()
+        # check email notification
+        tasks = M.MonQTask.query.find(
+            dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert_equal(len(tasks), 1)
+        assert_equal(tasks[0].kwargs['subject'],
+                     '[test:wiki] Your name was mentioned')
+        assert_equal(tasks[0].kwargs['toaddr'], 'test-user-1@allura.local')
+        assert_equal(tasks[0].kwargs['reply_to'], g.noreply)
+        text = tasks[0].kwargs['text']
+        assert_in('Your name was mentioned at [foo]', text)
+        assert_in('by Test Admin', text)
+        assert_in('auth/subscriptions#notifications', text)
 
 class TestNotificationTasks(unittest.TestCase):
 
