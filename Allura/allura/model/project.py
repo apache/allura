@@ -184,6 +184,20 @@ class TroveCategory(MappedClass):
         )
 
 
+class ProjectNameFieldProperty(FieldProperty):
+    """
+    Make project names be the username instead of u/whatever, when a user-project.
+    Particularly nice if the username and user-project name don't match exactly.
+    (This is a python "descriptor")
+    """
+    def __get__(self, instance, cls=None):
+        if instance:
+            owning_user = instance.user_project_of
+            if owning_user:
+                return owning_user.username
+        return super(ProjectNameFieldProperty, self).__get__(instance, cls)
+
+
 class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     '''
     Projects contain tools, subprojects, and their own metadata.  They live
@@ -213,7 +227,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
     neighborhood_id = ForeignIdProperty(Neighborhood)
     shortname = FieldProperty(str)
-    name = FieldProperty(str)
+    name = ProjectNameFieldProperty(str)
     show_download_button = FieldProperty(S.Deprecated)
     short_description = FieldProperty(str, if_missing='')
     summary = FieldProperty(str, if_missing='')
