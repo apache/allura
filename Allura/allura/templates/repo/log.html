@@ -18,15 +18,9 @@
 -#}
 {% extends 'allura:templates/repo/repo_master.html' %}
 
-{% block title %}
-  {% if c.app.repo %}
-    Repository: {{c.app.repo.name}}
-  {% else %}
-    Repository
-  {% endif %}
-{% endblock %}
+{% block title %}{{c.project.name}} / {{ (path and path.lstrip('/')) or c.app.config.options.mount_label }} Commit Log{% endblock %}
 
-{% block header %}{{c.app.config.options.mount_label}} Log{% endblock %}
+{% block header %}{{path or c.app.config.options.mount_label}} Commit Log{% endblock %}
 
 {% block content %}
   <br style="clear:both"/>

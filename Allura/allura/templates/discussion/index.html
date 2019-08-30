@@ -18,7 +18,7 @@
 -#}
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Discussion{% endblock %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{h.really_unicode(discussion.name)}}{% endblock %}
 
 {% block header %}{{h.really_unicode(discussion.name)}}{% endblock %}
 
