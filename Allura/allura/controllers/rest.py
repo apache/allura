@@ -319,16 +319,6 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
         user = M.User.query.get(username=pname, disabled=False, pending=False)
         if user:
             project = user.private_project()
-            if project.shortname != prefix + pname:
-                # might be different URL than the URL requested
-                # e.g. if username isn't valid project name and user_project_shortname() converts the name
-                new_url = project.url()
-                if api:
-                    new_url = '/rest' + new_url
-                new_url += '/'.join(remainder)
-                if request.query_string:
-                    new_url += '?' + request.query_string
-                redirect(new_url)
     if project is None:
         # look for neighborhood tools matching the URL
         project = nbhd.neighborhood_project
@@ -338,6 +328,14 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
         user = project.user_project_of
         if not user or user.disabled or user.pending:
             raise exc.HTTPNotFound
+        if not api and user.url() != '/{}{}/'.format(prefix, pname):
+            # might be different URL than the URL requested
+            # e.g. if username isn't valid project name and user_project_shortname() converts the name
+            new_url = user.url()
+            new_url += '/'.join(remainder)
+            if request.query_string:
+                new_url += '?' + request.query_string
+            redirect(new_url)
     if project.database_configured is False:
         if remainder == ('user_icon',):
             redirect(g.forge_static('images/user.png'))

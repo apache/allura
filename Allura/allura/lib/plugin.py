@@ -350,6 +350,14 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError('user_project_shortname')
 
+    def user_project_url(self, user):
+        '''
+        :param user: a :class:`User <allura.model.auth.User>`
+        :rtype: str
+        '''
+        # default implementation for any providers that haven't implemented this newer method yet
+        return '/{}/'.format(self.user_project_shortname(user))
+
     def user_by_project_shortname(self, shortname):
         '''
         :param str: shortname
@@ -557,11 +565,24 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return 'sha256' + salt + b64encode(hashpass)
 
     def user_project_shortname(self, user):
+        # "_" isn't valid for subdomains (which project names are used with)
+        # so if a username has a "_" we change it to "-"
+        # may need to handle other characters at some point
         return 'u/' + user.username.replace('_', '-')
+
+    def user_project_url(self, user):
+        # in contrast with above user_project_shortname()
+        # we allow the URL of a user-project to match the username exactly, even if user-project's name is different
+        # (nbhd_lookup_first_path will figure it out)
+        return '/u/{}/'.format(user.username)
 
     def user_by_project_shortname(self, shortname):
         from allura import model as M
-        return M.User.query.get(username=shortname, disabled=False, pending=False)
+        user = M.User.query.get(username=shortname, disabled=False, pending=False)
+        if not user and '-' in shortname:
+            # try alternate version in case username & user-project shortname differ - see user_project_shortname()
+            user = M.User.query.get(username=shortname.replace('-', '_'), disabled=False, pending=False)
+        return user
 
     def update_notifications(self, user):
         return ''

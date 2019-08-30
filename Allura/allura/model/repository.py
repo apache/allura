@@ -380,11 +380,15 @@ class Repository(Artifact, ActivityObject):
     @classmethod
     def default_fs_path(cls, project, tool):
         repos_root = tg.config.get('scm.repos.root', '/')
-        return os.path.join(repos_root, tool, project.url()[1:])
+        # if a user-project, the repository path on disk needs to use the actual shortname
+        # the nice url might have invalid chars
+        return os.path.join(repos_root, tool, project.url(use_userproject_shortname=True)[1:])
 
     @classmethod
     def default_url_path(cls, project, tool):
-        return project.url()
+        # if a user-project, the repository checkout path needs to use the actual shortname used on disk
+        # not a nicer username (e.g. with underscores) used on web browsing urls
+        return project.url(use_userproject_shortname=True)
 
     @property
     def tarball_path(self):
@@ -612,7 +616,12 @@ class Repository(Artifact, ActivityObject):
         return os.path.join(self.fs_path, self.name)
 
     def suggested_clone_dest_path(self):
-        return '%s-%s' % (c.project.shortname.replace('/', '-'), self.name)
+        owning_user = c.project.user_project_of
+        if owning_user:
+            projname = owning_user.username
+        else:
+            projname = c.project.shortname.replace('/', '-')
+        return '%s-%s' % (projname, self.name)
 
     def clone_url(self, category, username=''):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,

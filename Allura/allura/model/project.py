@@ -338,10 +338,14 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         else:
             return url
 
-    def url(self):
+    def url(self, use_userproject_shortname=False):
         if self.is_nbhd_project:
             return self.neighborhood.url()
         shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
+        if self.neighborhood.url_prefix == '/u/' and not use_userproject_shortname:
+            user = self.user_project_of
+            if user:
+                return user.url()
         url = self.neighborhood.url_prefix + shortname + '/'
         if url.startswith('//'):
             try:
@@ -452,7 +456,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def is_user_project(self):
         return self.is_root and self.shortname.startswith('u/')
 
-    @LazyProperty
+    @property
     def user_project_of(self):
         '''
         If this is a user-project, return the User, else None

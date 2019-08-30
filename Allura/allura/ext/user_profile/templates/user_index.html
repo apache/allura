@@ -37,7 +37,7 @@
     {{ g.icons['mail'].render(
         title='Send Message',
         show_title=True,
-        href='send_message',
+        href=c.app.url + 'send_message',
         extra_css='btn',
         id='user-message') }}
     {% endif %}

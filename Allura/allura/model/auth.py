@@ -601,7 +601,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         This includes any special handling via the :class:`~allura.lib.plugin.AuthenticationProvider` to determine
         the proper user-project name
         '''
-        return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
+        return plugin.AuthenticationProvider.get(request).user_project_url(self)
 
     @memoize
     def icon_url(self, gravatar_default_url=None, return_more=False):
