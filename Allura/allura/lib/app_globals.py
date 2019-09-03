@@ -402,23 +402,23 @@ class Globals(object):
             return h.html.literal('<em>Empty file</em>')
         # Don't use line numbers for diff highlight's, as per [#1484]
         if lexer == 'diff':
-            formatter = pygments.formatters.HtmlFormatter(
-                cssclass='codehilite', linenos=False)
+            formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite', linenos=False)
         else:
             formatter = self.pygments_formatter
         text = h.really_unicode(text)
         if lexer is None:
-            try:
-                lexer = pygments.lexers.get_lexer_for_filename(
-                    filename, encoding='chardet')
-            except pygments.util.ClassNotFound:
+            if len(text) < asint(config.get('scm.view.max_syntax_highlight_bytes', 500000)):
+                try:
+                    lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
+                except pygments.util.ClassNotFound:
+                    pass
+            if lexer is None:
                 # no highlighting, but we should escape, encode, and wrap it in
                 # a <pre>
                 text = cgi.escape(text)
                 return h.html.literal(u'<pre>' + text + u'</pre>')
         else:
-            lexer = pygments.lexers.get_lexer_by_name(
-                lexer, encoding='chardet')
+            lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
         return h.html.literal(pygments.highlight(text, lexer, formatter))
 
     def forge_markdown(self, **kwargs):
