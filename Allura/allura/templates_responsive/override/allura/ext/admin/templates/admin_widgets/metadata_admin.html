@@ -165,31 +165,6 @@
         </div>
     </div>
     {% endif%}
-
-    {% if show_export_control %}
-    <div id="export_control" class="new-visual-group">
-      <label for="export_controlled">Export Control: <small><a href="#" id="why_export">Why?</a></small></label>
-      <br>
-      <input id="export_controlled" name="export_controlled" type="checkbox" value="True"
-             {% if value.export_controlled == True %} checked{% endif %}> This project incorporates, accesses, calls upon or otherwise uses encryption software with a symmetric key length greater than 64 bits ("encryption"). This review does not include products that use encryption for authentication only.<br>
-      <div id="export_details" style="margin-left: 1em;{% if value.export_controlled == False %} display:none;{% endif %}">
-        <label>
-          <input name="export_control_type" type="radio" value="less_than_10"
-               {% if value.export_control_type == "less_than_10" %} checked{% endif %}> This Project has less than 10% U.S.-origin parts or components.<br>
-        </label>
-        <label>
-          <input name="export_control_type" type="radio" value="less_than_25"
-               {% if value.export_control_type == "less_than_25" %} checked{% endif %}> This Project has more than 10% but less than 25% U.S.-origin parts or components.<br>
-        </label>
-        <label>
-          <input id="export_restricted" name="export_control_type" type="radio" value="more_than_25"
-               {% if value.export_control_type == "more_than_25" %} checked{% endif %}> This Project has more than 25% U.S-origin parts or components.<br>
-        </label>
-      </div>
-      <div id="export_warning" class="notice"{% if value.export_controlled == False or value.export_control_type == "less_than_10" or value.export_control_type == "less_than_25" %} style="display:none"{% endif %}>You must notify BIS and the ENC Encryption Request Coordinator via e-mail of the Internet location (e.g., URL or Internet address) of the publicly available encryption source code or provide each of them a copy of the publicly available encryption source code. If you update or modify the source code, you must also provide additional copies to each of them each time the cryptographic functionality of the source code is updated or modified. In addition, if you posted the source code on the Internet, you must notify BIS and the ENC Encryption Request Coordinator each time the Internet location is changed, but you are not required to notify them of updates or modifications made to the encryption source code at the previously notified location. In all instances, submit the notification or copy to <a href="mailto:crypt@bis.doc.gov">crypt@bis.doc.gov</a> and to <a href="mailto:enc@nsa.gov">enc@nsa.gov</a>.</div>
-    </div>
-    {% endif %}
-
   </div>
   <hr class="column small-12" style="margin-top: 1em; margin-bottom: 1em;">
   <div class="column small-12">

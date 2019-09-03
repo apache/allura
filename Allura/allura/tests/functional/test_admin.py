@@ -186,22 +186,6 @@ class TestProjectAdmin(TestController):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [u'One', u'Two'])
 
-    def test_admin_export_control(self):
-        self.app.get('/admin/')
-        with audits('change project export controlled status to True'):
-            self.app.post('/admin/update', params=dict(
-                shortname='test',
-                export_controlled='True'))
-        with out_audits('change project export controlled status to True'):
-            self.app.post('/admin/update', params=dict(
-                shortname='test',
-                summary='TL;DR',
-                export_controlled='True'))
-        with audits('change project export controlled status to False'):
-            self.app.post('/admin/update', params=dict(
-                shortname='test',
-                export_controlled='False'))
-
     @td.with_wiki
     def test_block_user_empty_data(self):
         r = self.app.post('/admin/wiki/block_user',

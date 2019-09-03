@@ -179,7 +179,6 @@ class MetadataAdmin(ff.AdminForm):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/metadata_admin.html'
     defaults = dict(
         ff.AdminForm.defaults,
-        show_export_control=False,
         enctype='multipart/form-data')
 
     class fields(ew_core.NameList):
@@ -232,10 +231,6 @@ class MetadataAdmin(ff.AdminForm):
         moved_to_url = ew.InputField(
             field_type="text", label='Moved Project to URL',
             validator=fev.URL(add_http=True, if_empty=''))
-        export_controlled = ew.InputField(
-            field_type="text", label='Export Control')
-        export_control_type = ew.InputField(
-            field_type="text", label='Export Control Type')
         delete = ew.InputField(field_type="hidden", label='Delete')
         delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
         undelete = ew.InputField(field_type="hidden", label='Undelete')
