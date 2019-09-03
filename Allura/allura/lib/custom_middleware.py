@@ -295,6 +295,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import socket
         import urllib2
         import activitystream
+        import pygments
 
         timers = self.entry_point_timers() + [
             Timer(
@@ -340,6 +341,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('urlopen', urllib2, 'urlopen'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
+            Timer('pygments', pygments, 'highlight'),  # often called from within a template so will overlap w/ jinja
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
         try:
