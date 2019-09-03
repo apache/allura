@@ -59,8 +59,6 @@ log = logging.getLogger(__name__)
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    explain_export_modal = ffw.Lightbox(
-        name='explain_export', trigger='#why_export')
     group_card = aw.GroupCard()
     permission_card = aw.PermissionCard()
     group_settings = aw.GroupSettings()
@@ -229,22 +227,10 @@ class ProjectAdminController(BaseController):
         metadata_admin_value = h.fixed_attrs_proxy(
             c.project,
             features=[{'feature': f} for f in c.project.features])
-        c.explain_export_modal = W.explain_export_modal
-        show_export_control = asbool(config.get('show_export_control', False))
         allow_project_delete = asbool(config.get('allow_project_delete', True))
-        explain_export_text = '''The purpose of this section is to determine whether your project is subject to the
-         provisions of the US Export Administration Regulations. You should consult section 734.4 and Supplement 2
-          to Part 734 for information on such items and the calculation of U.S. controlled content.
-          <a href="https://www.bis.doc.gov/policy-guidance/encryption" target="_blank">
-          https://www.bis.doc.gov/policy-guidance/encryption</a>'''
-        if 'us_export_contact' in config:
-            explain_export_text += \
-                'If you have additional questions, ' \
-                'please contact <a href="mailto:{contact}">{contact}</a>.'.format(contact=config['us_export_contact'])
-        return dict(show_export_control=show_export_control,
-                    allow_project_delete=allow_project_delete,
+        return dict(allow_project_delete=allow_project_delete,
                     metadata_admin_value=metadata_admin_value,
-                    explain_export_text=explain_export_text)
+                    )
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
@@ -338,8 +324,6 @@ class ProjectAdminController(BaseController):
                facebook_page='',
                removal='',
                moved_to_url='',
-               export_controlled=False,
-               export_control_type=None,
                tracking_id='',
                features=None,
                **kw):
@@ -424,20 +408,6 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project moved to url').info('')
             M.AuditLog.log('change project moved to url to %s', moved_to_url)
             c.project.moved_to_url = moved_to_url
-        export_controlled = asbool(export_controlled)
-        if export_controlled != c.project.export_controlled:
-            h.log_action(
-                log, 'change project export controlled status').info('')
-            M.AuditLog.log(
-                'change project export controlled status to %s', export_controlled)
-            c.project.export_controlled = export_controlled
-            if not export_controlled:
-                export_control_type = None
-        if export_control_type != c.project.export_control_type:
-            h.log_action(log, 'change project export control type').info('')
-            M.AuditLog.log('change project export control type to %s',
-                           export_control_type)
-            c.project.export_control_type = export_control_type
         if tracking_id != c.project.tracking_id:
             h.log_action(log, 'change project tracking ID').info('')
             M.AuditLog.log('change project tracking ID to %s', tracking_id)

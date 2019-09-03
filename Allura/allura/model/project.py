@@ -242,8 +242,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     removal = FieldProperty(str, if_missing='')
     moved_to_url = FieldProperty(str, if_missing='')
     removal_changed_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    export_controlled = FieldProperty(bool, if_missing=False)
-    export_control_type = FieldProperty(str, if_missing=None)
     database = FieldProperty(S.Deprecated)
     database_uri = FieldProperty(S.Deprecated)
     is_root = FieldProperty(bool)
