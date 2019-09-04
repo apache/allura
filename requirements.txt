@@ -5,7 +5,6 @@
 #    pip-compile
 #
 activitystream==0.2.2
-appnope==0.1.0            # via ipython
 asn1crypto==0.24.0        # via cryptography
 astroid==1.6.6            # via pylint
 backlash==0.1.4
