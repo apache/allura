@@ -142,7 +142,9 @@ class TestRootController(_TestCase):
         assert 'git clone /srv/git' in resp
 
     def test_index_empty(self):
-        self.app.get('/git/')
+        resp = self.app.get('/git/')
+        resp = resp.follow()  # /git/ref/master/
+        resp.mustcontain('First time using Git')
 
     def test_commit_browser(self):
         self.app.get('/src-git/commit_browser')
