@@ -362,11 +362,13 @@ class AlluraTimerMiddleware(TimerMiddleware):
             stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
 
-    def entry_point_timers(self):
+    @classmethod
+    def entry_point_timers(cls, module_prefix=None):
         timers = []
         for ep in h.iter_entry_points('allura.timers'):
-            func = ep.load()
-            timers += aslist(func())
+            if not module_prefix or ep.module_name.startswith(module_prefix):
+                func = ep.load()
+                timers += aslist(func())
         return timers
 
 

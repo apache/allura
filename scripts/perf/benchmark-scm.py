@@ -26,6 +26,7 @@ from datetime import datetime
 import git
 import pysvn
 from mercurial import ui, hg, cmdutil
+import six
 
 
 def main(opts):
@@ -39,7 +40,7 @@ def main(opts):
         names = [n.name for n in tree]
         impl = impl_git_tree if opts.full_tree else impl_git_node
     elif opts.type == 'hg':
-        repo = hg.repository(HgUI(), opts.repo_path)
+        repo = hg.repository(HgUI(), six.ensure_str(opts.repo_path))
         cid = None if opts.cid == 'HEAD' else ['%s:0' % opts.cid]
         path = opts.path.strip('/')
         filenames = repo[

@@ -90,7 +90,8 @@ class TestRootController(SVNTestController):
         assert '[r5]' in resp, resp.showbrowser()
 
     def test_index_empty(self):
-        self.app.get('/svn/')
+        resp = self.app.get('/svn/')
+        resp.mustcontain('Create default directories')
 
     def test_commit_browser(self):
         self.app.get('/src/commit_browser')
