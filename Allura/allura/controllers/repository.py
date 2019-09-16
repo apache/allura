@@ -161,11 +161,9 @@ class RepoRootController(BaseController, FeedController):
     def mr_widget(self):
         source_branches = [
             b.name
-            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+            for b in c.app.repo.get_branches() + c.app.repo.get_tags(for_merge_request=True)]
         with c.app.repo.push_upstream_context():
-            target_branches = [
-                b.name
-                for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+            target_branches = [b.name for b in c.app.repo.get_branches()]
             subscribed_to_upstream = M.Mailbox.subscribed()
         return SCMMergeRequestWidget(
             source_branches=source_branches,
@@ -438,11 +436,9 @@ class MergeRequestController(object):
     def mr_widget_edit(self):
         target_branches = [
             b.name
-            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+            for b in c.app.repo.get_branches() + c.app.repo.get_tags(for_merge_request=True)]
         with self.req.push_downstream_context():
-            source_branches = [
-                b.name
-                for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+            source_branches = [b.name for b in c.app.repo.get_branches()]
         return SCMMergeRequestWidget(
             source_branches=source_branches,
             target_branches=target_branches)
