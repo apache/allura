@@ -508,7 +508,7 @@ class Repository(Artifact, ActivityObject):
         """
         return self._impl.branches
 
-    def get_tags(self):
+    def get_tags(self, for_merge_request=False):
         """
         Return list of tags for the repo.
 
