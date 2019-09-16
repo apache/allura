@@ -574,8 +574,8 @@ class Repository(Artifact, ActivityObject):
             branch = self.app.default_branch_name
         try:
             return self.commit(branch)
-        except:  # pragma no cover
-            log.exception('Cannot get latest commit for a branch', branch)
+        except Exception:
+            log.exception('Cannot get latest commit for a branch: %s', branch)
             return None
 
     def url(self):
