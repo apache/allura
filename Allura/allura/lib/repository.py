@@ -191,7 +191,7 @@ class RepositoryApp(Application):
             for branch in branches[:max_branches]:
                 links.append(SitemapEntry(
                     branch.name,
-                    quote(self.repo.url_for_commit(branch.name) + 'tree/')))
+                    h.urlquote(self.repo.url_for_commit(branch.name) + 'tree/')))
             if len(branches) > max_branches:
                 links.append(
                     SitemapEntry(
@@ -211,7 +211,7 @@ class RepositoryApp(Application):
             for b in tags[:max_tags]:
                 links.append(SitemapEntry(
                     b.name,
-                    quote(self.repo.url_for_commit(b.name) + 'tree/')))
+                    h.urlquote(self.repo.url_for_commit(b.name) + 'tree/')))
             if len(tags) > max_tags:
                 links.append(
                     SitemapEntry(

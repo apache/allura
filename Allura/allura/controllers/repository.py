@@ -611,6 +611,7 @@ class CommitsController(object):
 
     @expose()
     def _lookup(self, ci, *remainder):
+        ci = unquote(ci)
         EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:
             i = remainder.index(EOR)
