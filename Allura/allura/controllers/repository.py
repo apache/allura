@@ -717,7 +717,7 @@ class CommitBrowser(BaseController):
         status = c.app.repo.get_tarball_status(rev, path)
         if not status and request.method == 'POST':
             allura.tasks.repo_tasks.tarball.post(rev, path)
-            redirect('tarball' + '?path={0}'.format(path) if path else '')
+            redirect(('tarball' + u'?path={0}'.format(path) if path else '').encode('utf-8'))
         return dict(commit=self._commit, revision=rev, status=status)
 
     @expose('json:')
@@ -777,10 +777,10 @@ class TreeBrowser(BaseController, DispatchIndex):
         tool_subscribed = M.Mailbox.subscribed()
         tarball_url = None
         if asbool(tg.config.get('scm.repos.tarball.enable', False)):
-            cutout = len('tree' + self._path)
+            cutout = len('tree' + self._path.encode('utf8'))
             if request.path.endswith('/') and not self._path.endswith('/'):
                 cutout += 1
-            tarball_url = quote('%starball' % unquote(request.path)[:-cutout])
+            tarball_url = h.urlquote('%starball' % unquote(request.path)[:-cutout])
         return dict(
             repo=c.app.repo,
             commit=self._commit,
