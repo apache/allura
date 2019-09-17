@@ -1549,7 +1549,7 @@ class EmptyBlob(Blob):
 class LastCommit(RepoObject):
 
     def __repr__(self):
-        return '<LastCommit /%s %s>' % (self.path, self.commit_id)
+        return '<LastCommit /%r %s>' % (self.path, self.commit_id)
 
     @classmethod
     def _last_commit_id(cls, commit, path):
