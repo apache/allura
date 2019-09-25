@@ -251,6 +251,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project = FieldProperty(bool, if_missing=False)
     features = FieldProperty([str])
+    rating = FieldProperty(float, if_missing=0)
 
     # transient properties
     notifications_disabled = False

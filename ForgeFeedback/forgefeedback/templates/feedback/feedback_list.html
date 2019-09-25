@@ -1,0 +1,100 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+
+{% import 'forgeactivity:templates/macros.html' as am with context %}
+{#- to add the time -#}
+{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
+{% do g.register_app_css('css/feedback.css') %}
+{% block content %}
+
+{% for timeline in review_list %}
+<li>
+ <time>
+  {{abbr_date(timeline.created_date)}}
+ </time>
+<br/>
+ <h1>
+  {{ am.icon (timeline.reported_by, 32, 'avatar') }}
+  {{am.activity_obj(timeline.reported_by)}} 
+ </h1><br/>
+ <fieldset class="rating" style="float:left">
+   
+    {% if timeline.rating =='1' %}
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star-o "></span>
+      <span class="fa fa-star-o "></span>
+      <span class="fa fa-star-o "></span>
+      <span class="fa fa-star-o"></span> 
+  
+    {% endif %}
+  
+    {% if timeline.rating =='2' %}
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star-o"></span>
+      <span class="fa fa-star-o"></span>
+      <span class="fa fa-star-o"></span>
+  
+    {% endif %}
+  
+    {% if timeline.rating =='3' %}
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star-o"></span>
+      <span class="fa fa-star-o"></span>
+    {% endif %} 
+  
+    {% if timeline.rating =='4' %}
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span> 
+      <span class="fa fa-star-o"></span>
+  
+    {% endif %}
+  
+    {% if timeline.rating =='5' %}
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+      <span class="fa fa-star checked"></span>
+    {% endif %}
+ </fieldset>
+<br/>
+
+  {{timeline.description}}  
+
+</li>
+{% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.rating {
+position:relative;
+}
+p {
+position:absolute;
+}
+</style>
+{% endblock %}
+
+

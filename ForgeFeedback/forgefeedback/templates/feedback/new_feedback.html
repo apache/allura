@@ -1,0 +1,79 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+This is used when user is trying to imput a new review 
+
+-#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{% import 'forgefeedback:templates/feedback/common_feedback.html' as common_feed %}
+
+{% extends g.theme.master %}
+{% set hide_left_bar = True %} 
+{% do g.register_app_css('css/feedback.css') %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / New feedback{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+<style>
+p {
+    position:inherit;
+}
+</style>
+
+<div class="feed">
+    <form action="{{ c.app.url }}create_feedback" method="post">
+
+    <div class="row">
+        <div class="col-25">
+
+    <p> <h2>Provide your feedback for <b> {{c.project.name}}</b></h2> </p>
+    {{ common_feed.alert_message() }}
+    
+	</div>
+        <div class="col-75">
+          <fieldset class="rating" id="sar">
+              <input type="radio" id="star5" name="rating" value="5" onclick="manage()" /><label for="star5" title="Excellent">5 stars</label>
+              <input type="radio" id="star4" name="rating" value="4" onclick="manage()" /><label for="star4" title="Great">4 stars</label>
+              <input type="radio" id="star3" name="rating" value="3" onclick="manage()" /><label for="star3" title="Good">3 stars</label>
+              <input type="radio" id="star2" name="rating" value="2" onclick="manage()" /><label for="star2" title="Average">2 stars</label>
+              <input type="radio" id="star1" name="rating" value="1" onclick="manage()" /><label for="star1" title="Poor">1 star</label>
+          </fieldset>
+        </div>
+    </div>
+
+    <!-- feedback textarea's macro -->
+    {{ common_feed.feed_textarea(placeholder='Enter your feedback here',description=description ) }}
+    <div class="grid-19">
+       <input type="submit" value="Submit" id="button" disabled />
+       {{ common_feed.feed_cancel(url=c.app.url) }}
+    </div> 
+    {{ lib.csrf_token() }}
+    </form>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- profanity script's macro -->
+    {{ common_feed.profanity_scripts(url=c.app.url) }}
+{% endblock %}
+
+
+
+
