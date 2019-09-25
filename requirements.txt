@@ -40,6 +40,7 @@ gunicorn==19.4.5
 html5lib==1.0.1
 httplib2==0.13.1          # via oauth2
 idna==2.8                 # via requests
+inflection==0.3.1         # via profanityfilter
 ipaddress==1.0.22         # via cryptography
 ipython-genutils==0.2.0   # via traitlets
 ipython==5.8.0
@@ -64,6 +65,7 @@ pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
 pillow==6.1.0
 poster==0.8.1
+profanityfilter==2.0.6
 prompt-toolkit==1.0.16    # via ipython
 ptyprocess==0.6.0         # via pexpect
 pycparser==2.19           # via cffi

@@ -25,6 +25,8 @@ Paste
 PasteDeploy
 PasteScript
 Pillow
+# profanity filter for feedback
+profanityfilter==2.0.6
 Pygments
 pymongo==2.8.1
 Pypeline[creole,markdown,textile,rst]

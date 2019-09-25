@@ -1,0 +1,87 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+This is used when user is trying to imput a new review 
+
+-#}
+
+
+<!-- macro for feedback textarea -->
+{% macro feed_textarea(name='description',id='description',placeholder='',description='') %}
+<textarea class="textbox" name="{{name}}" id="{{id}}" maxlength=100 onkeyup="manage()" placeholder="{{placeholder}}">{{description}}</textarea>
+{% endmacro %}
+
+<!-- macro for feedback alert message -->
+{% macro alert_message() %}
+	<div id="check">
+		<p id="status_msg" style="color:#f33;"> <i class="fa fa-exclamation-triangle"></i> Profanity alert! Please update your feedback.</p>
+	</div>
+{% endmacro %}
+
+<!-- macro for feedback cancel button -->
+{% macro feed_cancel(url='') %}
+    <a href="{{url}}" class="btn link cancel_feed" >Cancel</a>
+{% endmacro %}
+
+<!-- macro for profanity scripts -->
+{% macro profanity_scripts(url='') %}
+<script type="text/javascript">
+function manage()
+{
+    var description = document.getElementById('description');
+    var star5 = $('#star5').is(':checked');
+    var star4 = $('#star4').is(':checked');
+    var star3 = $('#star3').is(':checked');
+    var star2 = $('#star2').is(':checked');
+    var star1 = $('#star1').is(':checked');
+    var bt = document.getElementById('button');
+    if (description.value.trim().length != 0 && (star5 || star4 || star3 || star2 || star1 )) {
+        bt.disabled = false;
+    }
+    else {
+        bt.disabled = true;
+    }
+}
+
+</script>
+
+<script type="text/javascript">
+$('#status_msg').hide();
+
+$("#description").keyup(function(){
+	var description = $("#description").val();
+	$.ajax({
+		url:'{{url}}feedback_check',
+		type:'GET',
+		data: {'description':description},
+		success: function(status){
+			if (status == 'true'){
+				$('#button').attr('disabled', true);
+				$('#status_msg').show();
+			}
+			else{
+				$('#status_msg').hide();
+			}
+		}
+	});
+});
+</script>
+{% endmacro %}
+
+
+
+
