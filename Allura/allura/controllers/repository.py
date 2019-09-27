@@ -716,7 +716,7 @@ class CommitBrowser(BaseController):
         status = c.app.repo.get_tarball_status(rev, path)
         if not status and request.method == 'POST':
             allura.tasks.repo_tasks.tarball.post(rev, path)
-            redirect('tarball' + u'?path={0}'.format(path) if path else '')
+            redirect(('tarball' + u'?path={0}'.format(path) if path else '').encode('utf-8'))
         return dict(commit=self._commit, revision=rev, status=status)
 
     @expose('json:')
