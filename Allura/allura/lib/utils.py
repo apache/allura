@@ -33,6 +33,7 @@ import collections
 from urlparse import urlparse
 import urllib
 import types
+import socket
 
 import tg
 import emoji
@@ -862,3 +863,13 @@ def urlencode(params):
 
 def close_ipv4_addrs(ip1, ip2):
     return ip1.split('.')[0:3] == ip2.split('.')[0:3]
+
+
+@contextmanager
+def socket_default_timeout(timeout):
+    orig_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(timeout)
+    try:
+        yield
+    finally:
+        socket.setdefaulttimeout(orig_timeout)

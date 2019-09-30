@@ -31,6 +31,7 @@ from tg import request
 from paste.deploy.converters import asint
 from bs4 import BeautifulSoup
 
+from allura.lib.utils import socket_default_timeout
 from . import helpers as h
 from . import security
 
@@ -452,10 +453,14 @@ def embed(url=None):
                                       'http://*.youtube-nocookie.com/*', 'https://*.youtube-nocookie.com/*',
                                       ])
     consumer.addEndpoint(endpoint)
-    try:
-        html = consumer.embed(url)['html']
-    except oembed.OEmbedNoEndpoint:
-        html = None
+
+    # workaround for https://github.com/abarmat/python-oembed/pull/9 not being implemented yet
+    with socket_default_timeout(5):
+
+        try:
+            html = consumer.embed(url)['html']
+        except oembed.OEmbedNoEndpoint:
+            html = None
 
     if html:
         # youtube has a trailing ")" at the moment
