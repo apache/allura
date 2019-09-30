@@ -20,13 +20,14 @@ import urllib
 import json
 import difflib
 from datetime import datetime, timedelta
-from bson import ObjectId
 import os
+
+from bson import ObjectId
+import six
 
 import pymongo
 from pymongo.errors import OperationFailure
 from tg import tmpl_context as c, app_globals as g
-from pprint import pformat
 from paste.deploy.converters import aslist, asbool
 import jinja2
 
@@ -573,7 +574,11 @@ class TicketHistory(Snapshot):
             text=self.data.summary)
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to match on it too.
-        result['text'] += pformat(result.values())
+        result['text'] += '\n'.join([six.text_type(v)
+                                     for k, v
+                                     in result.iteritems()
+                                     if k not in ('id', 'project_id_s')
+                                     ])
         return result
 
 
@@ -726,7 +731,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to
         # match on it too.
-        result['text'] += pformat(result.values())
+        result['text'] += '\n'.join([six.text_type(v)
+                                     for k, v
+                                     in result.iteritems()
+                                     if k not in ('id', 'project_id_s')
+                                     ])
         return result
 
     @classmethod
