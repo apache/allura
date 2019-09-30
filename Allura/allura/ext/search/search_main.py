@@ -74,11 +74,8 @@ class SearchController(BaseController):
     def index(self, q=None, history=None, **kw):
         c.search_results = SearchResults()
         c.help_modal = SearchHelp(comments=False)
-        pids = [c.project._id] + [
-            p._id for p in c.project.subprojects]
-        project_match = ' OR '.join(
-            'project_id_s:%s' % pid
-            for pid in pids)
+        pids = [c.project._id] + [p._id for p in c.project.subprojects]
+        project_match = ' OR '.join(map(str, pids))
         search_params = kw
         search_params.update({
             'q': q,

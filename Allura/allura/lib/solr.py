@@ -165,6 +165,8 @@ class MockSOLR(object):
                 continue
             if ':' in part:
                 field, value = part.split(':', 1)
+                if value.startswith('(') and value.endswith(')'):
+                    value = value[1:-1]
                 preds.append((field, value))
             else:
                 preds.append(('text', part))
@@ -172,17 +174,23 @@ class MockSOLR(object):
         for obj in self.db.values():
             for field, value in preds:
                 neg = False
-                if field[0] == '!':
+                if field[0] in ('!', '-'):
                     neg = True
                     field = field[1:]
                 if field == 'text' or field.endswith('_t'):
                     if (value not in str(obj.get(field, ''))) ^ neg:
+                        break
+                elif field.endswith('_b'):
+                    if (asbool(value) != obj.get(field, False)) ^ neg:
                         break
                 else:
                     if (value != str(obj.get(field, ''))) ^ neg:
                         break
             else:
                 result.append(obj)
+
+        if asbool(kw.get('hl')):
+            result.highlighting = {}
         return result
 
     def delete(self, *args, **kwargs):
