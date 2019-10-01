@@ -45,6 +45,10 @@ RELEASE_FILE_EXTRACTED=$RELEASE_DIR/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_FILENAME
 RELEASE_TAG=rel/$VERSION
 CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`
+YEAR=`date +%Y`
+
+sed -i -e "s/2012-[0-9]\{4\} /2012-$YEAR /" NOTICE */NOTICE */docs/conf.py
+git commit -m "Update copyright year" NOTICE */NOTICE */docs/conf.py
 
 scripts/changelog.py rel/$PREV_VERSION HEAD $VERSION > .changelog.tmp
 echo >> .changelog.tmp
@@ -122,8 +126,7 @@ Changes for this version are listed at:
 The RAT license report is available at:
   $RAT_LOG_PASTEBIN_URL
 
-Vote will be open for at least 72 hours ($CLOSE_DATE).  Votes from Allura PMC members are binding,
-but we welcome all community members to vote as well.
+Vote will be open for at least 72 hours ($CLOSE_DATE).  Votes from Allura PMC members are binding, but we welcome all community members to vote as well.
 
 [ ] +1 approve
 [ ] +0 no opinion
