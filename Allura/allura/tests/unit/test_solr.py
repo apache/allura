@@ -18,7 +18,7 @@
 import unittest
 
 import mock
-from nose.tools import assert_equal
+from datadiff.tools import assert_equal
 from markupsafe import Markup
 
 from allura.lib import helpers as h
@@ -191,6 +191,7 @@ class TestSearch_app(unittest.TestCase):
         },
         )
         results.__iter__ = lambda self: iter(results.docs)
+        results.__len__ = lambda self: len(results.docs)
         solr_search.return_value = results
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             resp = search_app(q='foo bar')
@@ -214,12 +215,14 @@ class TestSearch_app(unittest.TestCase):
                 'title_match': Markup('some <strong>Foo</strong> stuff'),
                 # HTML in the solr plaintext results get escaped
                 'text_match': Markup('scary &lt;script&gt;alert(1)&lt;/script&gt; bar'),
+                '_artifact': None,
             }, {
                 'id': 321,
                 'type_s': 'Post',
                 'title_match': Markup('blah blah'),
                 # highlighting in text
                 'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
+                '_artifact': None,
             }]
         ))
 

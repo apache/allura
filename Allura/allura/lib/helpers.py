@@ -290,6 +290,18 @@ def sharded_path(name, num_parts=2):
 
 
 def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, neighborhood=None):
+    """
+    Set ``c.project`` and ``c.app`` globals
+
+    :param project_id: _id or shortname of a project
+    :type project_id: ObjectId|str
+    :param mount_point: mount point to set c.app by
+    :type mount_point: str
+    :param app_config_id: alternative to mount_point parameter
+    :type app_config_id: ObjectId|str
+    :param neighborhood: neighborhood full name, required if project is specified by shortname
+    :type neighborhood: str
+    """
     from allura import model
     try:
         p = model.Project.query.get(_id=ObjectId(str(project_shortname_or_id)))
@@ -331,6 +343,19 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
 
 @contextmanager
 def push_context(project_id, mount_point=None, app_config_id=None, neighborhood=None):
+    """
+    A context manager to set ``c.project`` and ``c.app`` globals temporarily.
+    To set ``c.user`` or others, use ``push_config(c, user=...)``
+
+    :param project_id: _id or shortname of a project
+    :type project_id: ObjectId|str
+    :param mount_point: mount point to set c.app by
+    :type mount_point: str
+    :param app_config_id: alternative to mount_point parameter
+    :type app_config_id: ObjectId|str
+    :param neighborhood: neighborhood full name, required if project is specified by shortname
+    :type neighborhood: str
+    """
     project = getattr(c, 'project', ())
     app = getattr(c, 'app', ())
     set_context(project_id, mount_point, app_config_id, neighborhood)
