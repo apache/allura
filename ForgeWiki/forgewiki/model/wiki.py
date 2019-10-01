@@ -245,15 +245,6 @@ class Page(VersionedArtifact, ActivityObject):
     def attachment_class(cls):
         return WikiAttachment
 
-    def reply(self, text):
-        Feed.post(self, text)
-        # Get thread
-        thread = Thread.query.get(artifact_id=self._id)
-        return Post(
-            discussion_id=thread.discussion_id,
-            thread_id=thread._id,
-            text=text)
-
     @property
     def html_text(self):
         """A markdown processed version of the page text"""

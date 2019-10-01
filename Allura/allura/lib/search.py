@@ -214,6 +214,9 @@ def search_app(q='', fq=None, app=True, **kw):
 
     Uses dismax query parser. Matches on `title` and `text`. Handles paging, sorting, etc
     """
+    from allura.model import ArtifactReference
+    from allura.lib.security import has_access
+
     history = kw.pop('history', None)
     if app and kw.pop('project', False):
         # Used from app's search controller. If `project` is True, redirect to
@@ -299,13 +302,25 @@ def search_app(q='', fq=None, app=True, **kw):
                 return doc
 
             def paginate_comment_urls(doc):
-                from allura.model import ArtifactReference
-
                 if doc.get('type_s', '') == 'Post':
-                    aref = ArtifactReference.query.get(_id=doc.get('id'))
-                    if aref and aref.artifact:
-                        doc['url_paginated'] = aref.artifact.url_paginated()
+                    artifact = doc['_artifact']
+                    if artifact:
+                        doc['url_paginated'] = artifact.url_paginated()
                 return doc
+
+            def filter_unauthorized(doc):
+                aref = ArtifactReference.query.get(_id=doc.get('id'))
+                # cache for paginate_comment_urls to re-use
+                doc['_artifact'] = aref and aref.artifact
+                # .primary() necessary so that a ticket's comment for example is checked with the ticket's perms
+                if doc['_artifact'] and not has_access(doc['_artifact'].primary(), 'read', c.user):
+                    return None
+                else:
+                    return doc
+
+            filtered_results = filter(None, imap(filter_unauthorized, results))
+            count -= len(results) - len(filtered_results)
+            results = filtered_results
             results = imap(historize_urls, results)
             results = imap(add_matches, results)
             results = imap(paginate_comment_urls, results)
