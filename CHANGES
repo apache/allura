@@ -1,3 +1,37 @@
+Version 1.12.0  (October 2019)
+
+Upgrade Instructions
+
+  Run: `pip install -r requirements.txt` to install updated dependencies
+
+  If you wish to opt-in existing users to username notification emails, run:
+  `paste script your-ini-file.ini allura/scripts/set_default_user_notifications.py`
+
+Username mentions and profile page changes:
+ * [#8284] Implement the notification email sender
+ * [#8285] Add a preference area for user mentions notifications
+ * [#8323] Trigger notification task per each artifact creation/modification and add tests
+ * [#8324] documentation for user mentions feature
+ * [#8330] Nicer user-project urls (for underscores) and titles
+
+Performance
+ * [#8332] Fix slowness on some large files in code repos
+ * [#8334] Python-ombed has no timeout by default
+ * [#8313] Make saved search cache expiry configurable, disable-able
+
+Admin
+ * [#8318] Admin option to generate password reset link
+ * [#8331] Remove export controls settings
+
+For Developers
+ * [#8314] @memoize on methods should still allow garbage collection
+ * [#8321] Unhandled error in Antispam class
+ * [#8320] Upgrade various packages
+ * [#8325] Upgrade more packages
+ * Update docs to match git/httpd config from [12f1d6]
+ * Publicize XSS vulnerability in 1.11.1 changes
+
+
 Version 1.11.1  (July 2019)
 
 Upgrade Instructions
