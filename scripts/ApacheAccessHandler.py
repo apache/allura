@@ -22,29 +22,7 @@ An Apache authorization handler for Allura
 * Check fuse/accessfs.py for more details on the path mangling
   magic
 
-Here is a quick example for your apache settings (assuming ProxyPass)
-
-    SetEnv GIT_PROJECT_ROOT /opt/allura/scm/git
-    SetEnv GIT_HTTP_EXPORT_ALL
-    ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
-
-    <Location "/git/">
-        # new for httpd 2.4
-        Require all granted
-
-        AddHandler mod_python .py
-        PythonAccessHandler /path/to/ApacheAccessHandler.py
-        PythonDebug On
-
-        AuthType Basic
-        AuthName "Git Access"
-        AuthBasicAuthoritative off
-        PythonOption ALLURA_PERM_URL https://127.0.0.1/auth/repo_permissions
-        PythonOption ALLURA_AUTH_URL https://127.0.0.1/auth/do_login
-        # for 'requests' lib only, doesn't have to be full allura venv
-        PythonOption ALLURA_VIRTUALENV /var/local/env-allura
-    </Location>
-
+See scm_host.rst for documentation on how to configure Apache with this handler file.
 
 This could also use the Allura code and authorize directly, but it's useful to be able to run
 this authorization code without Allura set up and configured on the git host.

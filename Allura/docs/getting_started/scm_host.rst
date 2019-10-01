@@ -49,6 +49,10 @@ and subsequent chapters.
     sudo chmod 775 /srv/*  # make sure apache can read the repo dirs
     sudo apt-get install apache2
     sudo a2enmod cgi
+    # allow the apache user to sudo (used by git-http-backend-wrapper.sh see notes in that file)
+    sudo adduser www-data sudo
+    sudo echo '%sudo  ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo_group_passwordless
+
     sudo vi /etc/apache2/sites-available/default
 
 And add the following text within the :code:`<VirtualHost>` block:
@@ -57,7 +61,7 @@ And add the following text within the :code:`<VirtualHost>` block:
 
     SetEnv GIT_PROJECT_ROOT /srv/git
     SetEnv GIT_HTTP_EXPORT_ALL
-    ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
+    ScriptAlias /git/ /usr/lib/git-core/git-http-backend-wrapper.sh/
 
     # no authentication required at all - for testing purposes
     SetEnv REMOTE_USER=git-allura
@@ -198,6 +202,8 @@ access handler, e.g.:
 
     sudo vi /etc/apache2/sites-available/default
 
+Remove the `<Location>` block and `SetEnv REMOTE_USER=git-allura` from earlier.
+
 .. code-block:: apache
 
     <LocationMatch "^/(git|svn|hg)/">
@@ -229,7 +235,8 @@ access handler, e.g.:
 To test that it's working, run: :command:`git ls-remote
 http://localhost/git/p/test/git/`. If there is no output, that is fine (it's an empty
 repo). If it errors, look in :file:`/var/log/apache2/error.log` for the error
-message.
+message.  Increase logging with the `LogLevel <https://httpd.apache.org/docs/2.4/mod/core.html#loglevel>`_ directive
+if needed for further debugging.
 
 .. warning::
 
