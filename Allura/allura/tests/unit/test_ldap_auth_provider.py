@@ -18,10 +18,13 @@
 #       under the License.
 
 import calendar
+import platform
 from datetime import datetime, timedelta
+
 from bson import ObjectId
 from mock import patch, Mock
 from nose.tools import assert_equal, assert_not_equal, assert_true
+from nose import SkipTest
 from webob import Request
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import config
@@ -42,6 +45,8 @@ class TestLdapAuthenticationProvider(object):
         # Verify salt
         ep = self.provider._encode_password
         # Note: OSX uses a crypt library with a known issue relating the hashing algorithms.
+        if '$6$rounds=' not in ep('pwd') and platform.system() == 'Darwin':
+            raise SkipTest
         assert_not_equal(ep('test_pass'), ep('test_pass'))
         assert_equal(ep('test_pass', '0000'), ep('test_pass', '0000'))
         # Test password format
