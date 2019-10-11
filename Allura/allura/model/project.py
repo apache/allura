@@ -152,24 +152,6 @@ class TroveCategory(MappedClass):
             trove = trove.parent_category
         return trove.shortname
 
-    @LazyProperty
-    def ancestors(self):
-        ancestors = []
-        trove = self
-        while trove:
-            ancestors.append(trove)
-            trove = trove.parent_category
-        return ancestors
-
-    @LazyProperty
-    def breadcrumbs(self):
-        url = '/directory/'
-        crumbs = []
-        for trove in reversed(self.ancestors[:-1]):
-            url += trove.shortname + '/'
-            crumbs.append((trove.fullname, url))
-        return crumbs
-
     @property
     def fullpath_within_type(self):
         'remove first section of full path, and use nicer separator'
@@ -485,31 +467,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             return self
         return self.parent_project.root_project
 
-    @LazyProperty
-    def project_hierarchy(self):
-        if not self.is_root:
-            return self.root_project.project_hierarchy
-        projects = set([self])
-        while True:
-            new_projects = set(
-                self.query.find(dict(parent_id={'$in': [p._id for p in projects]})))
-            new_projects.update(projects)
-            if new_projects == projects:
-                break
-            projects = new_projects
-        return projects
-
     @property
     def category(self):
         return ProjectCategory.query.find(dict(_id=self.category_id)).first()
-
-    def roleids_with_permission(self, name):
-        roles = set()
-        for p in self.parent_iter():
-            for ace in p.acl:
-                if ace.permission == name and ace.access == ACE.allow:
-                    roles.add(ace.role_id)
-        return list(roles)
 
     @classmethod
     def icon_urls(cls, projects):
