@@ -52,13 +52,6 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         # the repo is empty, no need to continue
         return
     new_commit_ids = unknown_commit_ids(commit_ids)
-    stats_log = h.log_action(log, 'commit')
-    for ci in new_commit_ids:
-        stats_log.info(
-            '',
-            meta=dict(
-                module='scm-%s' % repo.repo_id,
-                read='0'))
     if not all_commits:
         # Skip commits that are already in the DB
         commit_ids = new_commit_ids

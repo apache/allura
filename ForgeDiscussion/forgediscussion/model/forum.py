@@ -193,7 +193,6 @@ class ForumThread(M.Thread):
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
-        h.log_action(log, 'posted').info('')
         return post
 
     def set_forum(self, new_forum):

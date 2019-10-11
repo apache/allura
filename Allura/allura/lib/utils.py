@@ -114,60 +114,8 @@ class lazy_logger(object):
             raise AttributeError(name)
         return getattr(self._logger, name)
 
+
 log = lazy_logger(__name__)
-
-class TimedRotatingHandler(logging.handlers.BaseRotatingHandler):
-
-    def __init__(self, strftime_pattern):
-        self.pattern = strftime_pattern
-        self.last_filename = self.current_filename()
-        logging.handlers.BaseRotatingHandler.__init__(
-            self, self.last_filename, 'a')
-
-    def current_filename(self):
-        return os.path.abspath(datetime.datetime.utcnow().strftime(self.pattern))
-
-    def shouldRollover(self, record):
-        'Inherited from BaseRotatingFileHandler'
-        return self.current_filename() != self.last_filename
-
-    def doRollover(self):
-        self.stream.close()
-        self.baseFilename = self.current_filename()
-        if self.encoding:
-            self.stream = codecs.open(self.baseFilename, 'w', self.encoding)
-        else:
-            self.stream = open(self.baseFilename, 'w')
-
-
-class StatsHandler(TimedRotatingHandler):
-    fields = (
-        'action', 'action_type', 'tool_type', 'tool_mount', 'project', 'neighborhood',
-        'username', 'url', 'ip_address')
-
-    def __init__(self,
-                 strftime_pattern,
-                 module='allura',
-                 page=1,
-                 **kwargs):
-        self.page = page
-        self.module = module
-        TimedRotatingHandler.__init__(self, strftime_pattern)
-
-    def emit(self, record):
-        if not hasattr(record, 'action'):
-            return
-        kwpairs = dict(
-            module=self.module,
-            page=self.page)
-        for name in self.fields:
-            kwpairs[name] = getattr(record, name, None)
-        kwpairs.update(getattr(record, 'kwpairs', {}))
-        record.kwpairs = ','.join(
-            '%s=%s' % (k, v) for k, v in sorted(kwpairs.iteritems())
-            if v is not None)
-        record.exc_info = None  # Never put tracebacks in the rtstats log
-        TimedRotatingHandler.emit(self, record)
 
 
 class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):

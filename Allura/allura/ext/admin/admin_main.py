@@ -331,14 +331,12 @@ class ProjectAdminController(BaseController):
 
         if removal != c.project.removal:
             M.AuditLog.log('change project removal status to %s', removal)
-            h.log_action(log, 'change project removal status').info('')
             c.project.removal = removal
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             c.project.set_tool_data('allura', icon_original_size=None)
             M.AuditLog.log('remove project icon')
-            h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
             redirect('overview')
         elif 'delete' in kw:
@@ -346,76 +344,61 @@ class ProjectAdminController(BaseController):
                 config.get('allow_project_delete', True))
             if allow_project_delete or not c.project.is_root:
                 M.AuditLog.log('delete project')
-                h.log_action(log, 'delete project').info('')
                 plugin.ProjectRegistrationProvider.get().delete_project(
                     c.project, c.user)
             redirect('overview')
         elif 'undelete' in kw:
-            h.log_action(log, 'undelete project').info('')
             M.AuditLog.log('undelete project')
             plugin.ProjectRegistrationProvider.get().undelete_project(
                 c.project, c.user)
             redirect('overview')
         if name and name != c.project.name:
-            h.log_action(log, 'change project name').info('')
             M.AuditLog.log('change project name to %s', name)
             c.project.name = name
         if short_description != c.project.short_description:
-            h.log_action(log, 'change project short description').info('')
             M.AuditLog.log('change short description to %s', short_description)
             c.project.short_description = short_description
         if summary != c.project.summary:
-            h.log_action(log, 'change project summary').info('')
             M.AuditLog.log('change summary to %s', summary)
             c.project.summary = summary
         category = category and ObjectId(category) or None
         if category != c.project.category_id:
-            h.log_action(log, 'change project category').info('')
             M.AuditLog.log('change category to %s', category)
             c.project.category_id = category
         if external_homepage != c.project.external_homepage:
-            h.log_action(log, 'change external home page').info('')
             M.AuditLog.log('change external home page to %s',
                            external_homepage)
             c.project.external_homepage = external_homepage
         if video_url != c.project.video_url:
-            h.log_action(log, 'change video url').info('')
             M.AuditLog.log('change video url to %s', video_url)
             c.project.video_url = video_url
         if support_page != c.project.support_page:
-            h.log_action(log, 'change project support page').info('')
             M.AuditLog.log('change project support page to %s', support_page)
             c.project.support_page = support_page
         old_twitter = c.project.social_account('Twitter')
         if not old_twitter or twitter_handle != old_twitter.accounturl:
-            h.log_action(log, 'change project twitter handle').info('')
             M.AuditLog.log('change project twitter handle to %s',
                            twitter_handle)
             c.project.set_social_account('Twitter', twitter_handle)
         old_facebook = c.project.social_account('Facebook')
         if not old_facebook or facebook_page != old_facebook.accounturl:
             if not facebook_page or 'facebook.com' in urlparse(facebook_page).netloc:
-                h.log_action(log, 'change project facebook page').info('')
                 M.AuditLog.log(
                     'change project facebook page to %s', facebook_page)
                 c.project.set_social_account('Facebook', facebook_page)
         if support_page_url != c.project.support_page_url:
-            h.log_action(log, 'change project support page url').info('')
             M.AuditLog.log('change project support page url to %s',
                            support_page_url)
             c.project.support_page_url = support_page_url
         if moved_to_url != c.project.moved_to_url:
-            h.log_action(log, 'change project moved to url').info('')
             M.AuditLog.log('change project moved to url to %s', moved_to_url)
             c.project.moved_to_url = moved_to_url
         if tracking_id != c.project.tracking_id:
-            h.log_action(log, 'change project tracking ID').info('')
             M.AuditLog.log('change project tracking ID to %s', tracking_id)
             c.project.tracking_id = tracking_id
         features = [f['feature'].strip() for f in features or []
                     if f.get('feature', '').strip()]
         if features != c.project.features:
-            h.log_action(log, 'change project features').info('')
             M.AuditLog.log('change project features to %s', features)
             c.project.features = features
 
@@ -588,9 +571,6 @@ class ProjectAdminController(BaseController):
             if sp.get('delete'):
                 require_access(c.project, 'admin')
                 M.AuditLog.log('delete subproject %s', sp['shortname'])
-                h.log_action(log, 'delete subproject').info(
-                    'delete subproject %s', sp['shortname'],
-                    meta=dict(name=sp['shortname']))
                 p.removal = 'deleted'
                 plugin.ProjectRegistrationProvider.get().delete_project(
                     p, c.user)
@@ -602,9 +582,6 @@ class ProjectAdminController(BaseController):
             if p.get('delete'):
                 require_access(c.project, 'admin')
                 M.AuditLog.log('uninstall tool %s', p['mount_point'])
-                h.log_action(log, 'uninstall tool').info(
-                    'uninstall tool %s', p['mount_point'],
-                    meta=dict(mount_point=p['mount_point']))
                 c.project.uninstall_app(p['mount_point'])
             elif not new:
                 M.AuditLog.log('update tool %s', p['mount_point'])
@@ -617,9 +594,6 @@ class ProjectAdminController(BaseController):
                 require_access(c.project, 'create')
                 mount_point = new['mount_point'].lower() or h.nonce()
                 M.AuditLog.log('create subproject %s', mount_point)
-                h.log_action(log, 'create subproject').info(
-                    'create subproject %s', mount_point,
-                    meta=dict(mount_point=mount_point, name=new['mount_label']))
                 sp = c.project.new_subproject(mount_point)
                 sp.name = new['mount_label']
                 if 'ordinal' in new:
@@ -635,9 +609,6 @@ class ProjectAdminController(BaseController):
                     return
                 mount_point = new['mount_point'] or ep_name
                 M.AuditLog.log('install tool %s', mount_point)
-                h.log_action(log, 'install tool').info(
-                    'install tool %s', mount_point,
-                    meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
                 App = g.entry_points['tool'][ep_name]
                 # pass only options which app expects
                 config_on_install = {

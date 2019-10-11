@@ -683,7 +683,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ticket.update_fields_basics(form_fields)
             try:
                 session(ticket).flush(ticket)
-                h.log_action(log, 'opened').info('')
                 return ticket
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
@@ -894,7 +893,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status)]
             if old.status != self.status and self.status in c.app.globals.set_of_closed_status_names:
-                h.log_action(log, 'closed').info('')
                 g.statsUpdater.ticketEvent(
                     "closed", self, self.project, self.assigned_to)
             for key in self.custom_fields:
@@ -1096,8 +1094,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             new_url = app_config.url() + str(self.ticket_num) + '/'
             try:
                 session(self).flush(self)
-                h.log_action(log, 'moved').info('Ticket %s moved to %s' %
-                                                (prior_url, new_url))
                 break
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
