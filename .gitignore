@@ -19,6 +19,7 @@ download/*
 install/*
 */.test-data/*
 */.coverage
+coverage.xml
 solr_config/core0/data/
 solr_config/core1/data/
 var/

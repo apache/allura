@@ -112,14 +112,11 @@ def check_packages(packages):
 
 
 def run_tests_in_parallel(options, nosetests_args):
-    # coverage and multiproc plugins not compatible
-    use_multiproc = '--with-coverage' not in nosetests_args
-
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
 
     def get_multiproc_args(pkg):
-        if not use_multiproc or options.concurrent_tests == 1:
+        if options.concurrent_tests == 1:
             return ''
         return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
             procs_per_suite=options.concurrent_tests,
@@ -127,7 +124,7 @@ def run_tests_in_parallel(options, nosetests_args):
             if pkg not in NOT_MULTIPROC_SAFE else '')
 
     def get_concurrent_suites():
-        if use_multiproc or '-n' in sys.argv:
+        if '-n' in sys.argv:
             return options.concurrent_suites
         return CPUS
 
@@ -135,34 +132,61 @@ def run_tests_in_parallel(options, nosetests_args):
     env = dict(os.environ,
                NOSE_IGNORE_CONFIG_FILES='1')
     for package in check_packages(options.packages):
-        cover_package = package.lower()
-        our_nosetests_args = copy(nosetests_args)
-        our_nosetests_args.append('--cover-package={}'.format(cover_package))
-        cmd = "nosetests {pkg_path} {nosetests_args} {multiproc_args}".format(
+        runner = 'nosetests'
+        if options.coverage:
+            # This is the recommended way to run coverage + nose  https://coverage.readthedocs.io/en/latest/faq.html
+            runner = 'coverage run $(which nosetests)'
+            """
+            And using config settings in setup.cfg seems to work well with parallel processes
+            Otherwise need to run with a complex setup like:
+                PYTHONPATH=/tmp/cov coverage run --rcfile /tmp/cov/.covrc
+            And /tmp/cov/sitecustomize.py containing:
+                import os
+                os.environ['COVERAGE_PROCESS_START'] = '/tmp/cov/.covrc'
+                import coverage
+                coverage.process_startup()
+            """
+
+        multiproc_args = get_multiproc_args(package)
+        cmd = "{runner} {pkg_path} {nosetests_args} {multiproc_args}".format(
+            runner=runner,
             pkg_path=get_pkg_path(package),
-            nosetests_args=' '.join(our_nosetests_args),
-            multiproc_args=get_multiproc_args(package),
+            nosetests_args=' '.join(nosetests_args),
+            multiproc_args=multiproc_args,
         )
+        if options.coverage:
+            cmd += ' && coverage combine'  # merge separate files present from multiprocessing config being on
+            cmd += ' && coverage report --include=./* --omit="*/tests/*"'
         cmds.append((cmd, dict(cwd=package, env=env)))
 
     # TODO: add a way to include this or not; and add xml output for Jenkins
     cmds.append(('npm run lint-es6', {}))
-    return run_many(cmds, processes=get_concurrent_suites())
+
+    ret_codes = run_many(cmds, processes=get_concurrent_suites())
+
+    if options.coverage and not any(ret_codes) and len(options.packages) > 1:
+        subprocess.call('rm .coverage', shell=True)
+        subprocess.check_call('cp --backup=numbered */.coverage .', shell=True)
+        subprocess.check_call('coverage combine --append', shell=True)
+        report_cmd = "coverage report --omit='*/tests/*'"
+        subprocess.check_call(report_cmd, shell=True)
+        print('\nFor HTML coverage report run: {}'.format(report_cmd.replace(' report', ' html')))
+
+    return ret_codes
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=textwrap.dedent('''
-                                        All additional arguments are passed along to nosetests
-                                          (e.g. -v --with-coverage)
-                                        Note: --cover-package will be set automatically to the appropriate value'''))
+        epilog='''All additional arguments are passed along to nosetests (e.g. -v)''')
     parser.add_argument('-n', help='Number of test suites to run concurrently in separate '
                                    'processes. Default: # CPUs / 4',
                         dest='concurrent_suites', type=int, default=CONCURRENT_SUITES)
     parser.add_argument('-m', help='Number of tests to run concurrently in separate '
                                    'processes, per suite. Default: # CPUs / # concurrent suites',
                         dest='concurrent_tests', type=int, default=CONCURRENT_TESTS)
+    parser.add_argument('--coverage', action='store_true',
+                        help='Collect code coverage details, and report')
     parser.add_argument(
         '-p', help='List of packages to run tests on. Default: all',
         dest='packages', choices=get_packages(), default=get_packages(),

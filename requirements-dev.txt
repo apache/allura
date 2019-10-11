@@ -9,6 +9,7 @@ babel==2.7.0              # via sphinx
 certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via pip-tools
+coverage==4.5.4
 docutils==0.15.2          # via sphinx
 idna==2.8                 # via requests
 imagesize==1.1.0          # via sphinx
@@ -32,4 +33,4 @@ typing==3.7.4             # via sphinx
 urllib3==1.25.3           # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.2.0        # via sphinx
+# setuptools==41.4.0        # via sphinx
