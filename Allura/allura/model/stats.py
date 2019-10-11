@@ -87,44 +87,6 @@ class Stats(MappedClass):
         min_date = config.get('userstats.start_date', '0001-1-1')
         return max(datetime.strptime(min_date, '%Y-%m-%d'), self.registration_date)
 
-    def getCodeContribution(self):
-        days = (datetime.today() - self.start_date).days
-        if not days:
-            days = 1
-        for val in self['general']:
-            if val['category'] is None:
-                for commits in val['commits']:
-                    if commits['language'] is None:
-                        if days > 30:
-                            return round(float(commits.lines) / days * 30, 2)
-                        else:
-                            return float(commits.lines)
-        return 0
-
-    def getDiscussionContribution(self):
-        days = (datetime.today() - self.start_date).days
-        if not days:
-            days = 1
-        for val in self['general']:
-            if val['category'] is None:
-                for artifact in val['messages']:
-                    if artifact['messagetype'] is None:
-                        tot = artifact.created + artifact.modified
-                        if days > 30:
-                            return round(float(tot) / days * 30, 2)
-                        else:
-                            return float(tot)
-        return 0
-
-    def getTicketsContribution(self):
-        for val in self['general']:
-            if val['category'] is None:
-                tickets = val['tickets']
-                if tickets.assigned == 0:
-                    return 0
-                return round(float(tickets.solved) / tickets.assigned, 2)
-        return 0
-
     def getCommits(self, category=None):
         i = getElementIndex(self.general, category=category)
         if i is None:
@@ -182,17 +144,6 @@ class Stats(MappedClass):
                 cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
-
-    # For the moment, commit stats by language are not used, since each project
-    # can be linked to more than one programming language and we don't know how
-    # to which programming language should be credited a line of code modified
-    # within a project including two or more languages.
-    def getCommitsByLanguage(self):
-        i = getElementIndex(self.general, category=None)
-        if i is None:
-            return dict(number=0, lines=0)
-        return dict([(el.language, dict(lines=el.lines, number=el.number))
-                     for el in self.general[i].commits])
 
     def getArtifactsByCategory(self, detailed=False):
         from allura.model.project import TroveCategory
@@ -268,25 +219,6 @@ class Stats(MappedClass):
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
 
-    def getLastMonthCommitsByLanguage(self):
-        from allura.model.project import TroveCategory
-
-        self.checkOldArtifacts()
-        seen = set()
-        langlist = [el.language for el in self.general
-                    if el.language not in seen and not seen.add(el.language)]
-
-        by_lang = {}
-        for lang in langlist:
-            lineslist = [el.lines for el in self.lastmonth.commits
-                         if lang in el.programming_languages + [None]]
-            n = len(lineslist)
-            lines = sum(lineslist)
-            if lang != None:
-                lang = TroveCategory.query.get(_id=lang)
-            by_lang[lang] = dict(number=n, lines=lines)
-        return by_lang
-
     def getLastMonthArtifacts(self, category=None, art_type=None):
         self.checkOldArtifacts()
         cre, mod = reduce(
@@ -315,26 +247,6 @@ class Stats(MappedClass):
                 (0, 0))
             by_type[t] = dict(created=cre, modified=mod)
         return by_type
-
-    def getLastMonthArtifactsByCategory(self):
-        from allura.model.project import TroveCategory
-
-        self.checkOldArtifacts()
-        seen = set()
-        catlist = [el.category for el in self.general
-                   if el.category not in seen and not seen.add(el.category)]
-
-        by_cat = {}
-        for cat in catlist:
-            cre, mod = reduce(
-                addtuple,
-                [(int(el.created), 1 - int(el.created))
-                 for el in self.lastmonth.messages
-                 if cat in el.categories + [None]], (0, 0))
-            if cat != None:
-                cat = TroveCategory.query.get(_id=cat)
-            by_cat[cat] = dict(created=cre, modified=mod)
-        return by_cat
 
     def getLastMonthTickets(self, category=None):
         from allura.model.project import TroveCategory
