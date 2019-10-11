@@ -231,7 +231,6 @@ class GitHubWikiImporter(ToolImporter):
         mod_date = datetime.utcfromtimestamp(commit.committed_date)
         wiki_page = WM.Page.upsert(self._convert_page_name(orig_name))
         wiki_page.timestamp = wiki_page.mod_date = mod_date
-        wiki_page.viewable_by = ['all']
         if renamed_orig_name and renamed_to in commit.tree:
             wiki_page.title = self._convert_page_name(renamed_orig_name)
             wiki_page.text = self.convert_markup(

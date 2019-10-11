@@ -977,7 +977,7 @@ class TestFunctionalController(TrackerTestController):
             'title': 'aaa',
             'text': '',
             'labels': '',
-            'viewable_by-0.id': 'all'})
+        })
         self.new_ticket(summary='bbb')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()

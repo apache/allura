@@ -459,7 +459,6 @@ def import_wiki(project, pid, nbhd):
                         globals = WM.Globals(
                             app_config_id=wiki_app.config._id, root=page_data.title)
                 p = WM.Page.upsert(page_data.title)
-                p.viewable_by = ['all']
                 p.text = wiki2markdown(content)
                 # upload attachments
                 upload_attachments(p, pid, beginning)

@@ -111,7 +111,7 @@ class Page(VersionedArtifact, ActivityObject):
     title = FieldProperty(str)
     text = FieldProperty(schema.String, if_missing='')
     text_cache = FieldProperty(MarkdownCache)
-    viewable_by = FieldProperty([str])
+    viewable_by = FieldProperty(schema.Deprecated)
     type_s = 'Wiki'
 
     @property

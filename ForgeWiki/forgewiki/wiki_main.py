@@ -325,7 +325,6 @@ The wiki uses [Markdown](%s) syntax.
         if p is None:
             with h.push_config(c, app=self), h.notifications_disabled(c.project, disabled=not notify):
                 p = WM.Page.upsert(new_root)
-                p.viewable_by = ['all']
                 p.text = self.default_root_page_text()
                 p.commit()
 
@@ -577,8 +576,6 @@ class PageController(BaseController, FeedController):
                 redirect('.?version=%d' % (version - 1))
             else:
                 redirect('.')
-        elif 'all' not in page.viewable_by and c.user.username not in page.viewable_by:
-            raise exc.HTTPForbidden(detail="You may not view this page.")
         cur = page.version
         if cur > 1:
             prev = cur - 1
@@ -706,8 +703,6 @@ class PageController(BaseController, FeedController):
     @require_post()
     def update(self, title=None, text=None,
                labels=None,
-               viewable_by=None,
-               new_viewable_by=None,
                subscribe=False,
                **kw):
         activity_verb = 'created'
@@ -719,7 +714,6 @@ class PageController(BaseController, FeedController):
         if not self.page:
             # the page doesn't exist yet, so create it
             self.page = WM.Page.upsert(self.title)
-            self.page.viewable_by = ['all']
         else:
             require_access(self.page, 'edit')
             activity_verb = 'modified'
@@ -750,22 +744,6 @@ class PageController(BaseController, FeedController):
             notification_tasks.send_usermentions_notification.post(self.page.index_id(), text, old_text)
         g.director.create_activity(c.user, activity_verb, self.page,
                                    related_nodes=[c.project], tags=['wiki'])
-        if new_viewable_by:
-            if new_viewable_by == 'all':
-                self.page.viewable_by.append('all')
-            else:
-                user = c.project.user_in_project(str(new_viewable_by))
-                if user:
-                    self.page.viewable_by.append(user.username)
-        if viewable_by:
-            for u in viewable_by:
-                if u.get('delete'):
-                    if u['id'] == 'all':
-                        self.page.viewable_by.remove('all')
-                    else:
-                        user = M.User.by_username(str(u['id']))
-                        if user:
-                            self.page.viewable_by.remove(user.username)
         redirect('../' + h.really_unicode(self.page.title)
                  .encode('utf-8') + ('/' if not name_conflict else '/edit'))
 

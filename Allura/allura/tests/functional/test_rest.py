@@ -314,7 +314,7 @@ class TestRestHome(TestRestApiBase):
                 'title': 'tést',
                 'text': 'sometext',
                 'labels': '',
-                'viewable_by-0.id': 'all'})
+                })
         r = self.api_get('/rest/p/test/wiki/tést/')
         assert r.status_int == 200
         assert r.json['title'].encode('utf-8') == 'tést', r.json

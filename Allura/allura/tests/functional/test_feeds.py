@@ -70,7 +70,7 @@ class TestFeeds(TestController):
             'title': 'Root',
             'text': '',
             'labels': '',
-            'viewable_by-0.id': 'all'})
+            })
         self.app.get('/wiki/Root/feed.rss')
         self.app.get('/wiki/Root/feed.atom')
 
