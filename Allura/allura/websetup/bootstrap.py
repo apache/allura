@@ -46,24 +46,6 @@ from forgewiki import model as WM
 log = logging.getLogger(__name__)
 
 
-def cache_test_data():
-    log.info('Saving data to cache in .test-data')
-    if os.path.exists('.test-data'):
-        shutil.rmtree('.test-data')
-    os.system(
-        'mongodump -h 127.0.0.1:27018 -o .test-data > mongodump.log 2>&1')
-
-
-def restore_test_data():
-    if os.path.exists('.test-data'):
-        log.info('Restoring data from cache in .test-data')
-        rc = os.system(
-            'mongorestore -h 127.0.0.1:27018 --dir .test-data > mongorestore.log 2>&1')
-        return rc == 0
-    else:
-        return False
-
-
 def bootstrap(command, conf, vars):
     """Place any commands to setup allura here"""
     # are we being called by the test suite?
@@ -101,12 +83,6 @@ def bootstrap(command, conf, vars):
     # set up mongo indexes
     index = EnsureIndexCommand('ensure_index')
     index.run([''])
-
-    if create_test_data and asbool(conf.get('cache_test_data')):
-        if restore_test_data():
-            h.set_context('test', neighborhood='Projects')
-            return
-    log.info('Initializing search')
 
     log.info('Registering root user & default neighborhoods')
     M.User(
@@ -265,10 +241,7 @@ def bootstrap(command, conf, vars):
 
     ThreadLocalORMSession.flush_all()
 
-    if asbool(conf.get('load_test_data')):
-        if asbool(conf.get('cache_test_data')):
-            cache_test_data()
-    else:  # pragma no cover
+    if not asbool(conf.get('load_test_data')):
         # regular first-time setup
 
         create_trove_categories = CreateTroveCategoriesCommand('create_trove_categories')
@@ -363,27 +336,3 @@ class DBSession(Session):
 
     def _impl(self, cls):
         return self.db[cls.__mongometa__.name]
-
-
-def pm(etype, value, tb):  # pragma no cover
-    import pdb
-    import traceback
-    try:
-        from IPython.ipapi import make_session
-        make_session()
-        from IPython.Debugger import Pdb
-        sys.stderr.write('Entering post-mortem IPDB shell\n')
-        p = Pdb(color_scheme='Linux')
-        p.reset()
-        p.setup(None, tb)
-        p.print_stack_trace()
-        sys.stderr.write('%s: %s\n' % (etype, value))
-        p.cmdloop()
-        p.forget()
-        # p.interaction(None, tb)
-    except ImportError:
-        sys.stderr.write('Entering post-mortem PDB shell\n')
-        traceback.print_exception(etype, value, tb)
-        pdb.post_mortem(tb)
-
-sys.excepthook = pm

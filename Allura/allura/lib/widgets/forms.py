@@ -119,18 +119,6 @@ class ForgeForm(ew.SimpleForm):
                                                          ctx['errors'])
         return h.html.literal(display)
 
-    def display_field_by_idx(self, idx, ignore_errors=False):
-        warnings.warn(
-            'ForgeForm.display_field_by_idx is deprecated; use '
-            'ForgeForm.display_field() instead', DeprecationWarning)
-        field = self.fields[idx]
-        ctx = self.context_for(field)
-        display = field.display(**ctx)
-        if ctx['errors'] and field.show_errors and not ignore_errors:
-            display = "%s<div class='error'>%s</div>" % (display,
-                                                         ctx['errors'])
-        return display
-
 
 class ForgeFormResponsive(ForgeForm):
     def __init__(self):
