@@ -21,6 +21,7 @@ from ew.core import validator
 
 from tg import request, tmpl_context as c
 from formencode import Invalid
+from formencode import validators as fev
 from webob import exc
 
 from .forms import ForgeForm
@@ -69,8 +70,15 @@ class LoginForm(ForgeForm):
 
     @validator
     def validate(self, value, state=None):
+        super(LoginForm, self).validate(value, state=state)
+        auth_provider = plugin.AuthenticationProvider.get(request)
+
+        # can't use a validator attr on the username TextField, since the antispam encoded name changes and doesn't
+        # match the name used in the form submission
+        auth_provider.username_validator(long_message=False).to_python(value['username'])
+
         try:
-            plugin.AuthenticationProvider.get(request).login()
+            auth_provider.login()
         except exc.HTTPUnauthorized:
             msg = 'Invalid login'
             raise Invalid(

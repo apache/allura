@@ -100,6 +100,16 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    def test_login_invalid_username(self):
+        extra = {'username': '*anonymous'}
+        r = self.app.get('/auth/', extra_environ=extra)
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test@user.com'
+        f[encoded['password']] = 'foo'
+        r = f.submit(extra_environ={'username': '*anonymous'})
+        r.mustcontain('Usernames only include small letters, ')
+
     def test_login_diff_ips_ok(self):
         # exercises AntiSpam.validate methods
         extra = {'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.44'}

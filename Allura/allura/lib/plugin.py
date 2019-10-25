@@ -45,6 +45,7 @@ from tg import config, request, redirect, response, flash
 from tg import tmpl_context as c, app_globals as g
 from webob import exc, Request
 from paste.deploy.converters import asbool, asint
+from formencode import validators as fev
 
 from ming.utils import LazyProperty
 from ming.orm import state
@@ -478,6 +479,17 @@ class AuthenticationProvider(object):
                 return 'close ip'
 
         return False
+
+    def username_validator(self, long_message=True):
+        validator = fev.Regex(h.re_project_name)
+        if long_message:
+            validator._messages['invalid'] = (
+                'Usernames must include only small letters, numbers, and dashes.'
+                ' They must also start with a letter and be at least 3 characters'
+                ' long.')
+        else:
+            validator._messages['invalid'] = 'Usernames only include small letters, numbers, and dashes'
+        return validator
 
 
 class LocalAuthenticationProvider(AuthenticationProvider):

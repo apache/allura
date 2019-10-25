@@ -778,12 +778,8 @@ class RegistrationForm(ForgeForm):
         username = ew.TextField(
             name='username',
             label='Desired Username',
-            validator=fev.Regex(
-                h.re_project_name))
-        username.validator._messages['invalid'] = (
-            'Usernames must include only small letters, numbers, and dashes.'
-            ' They must also start with a letter and be at least 3 characters'
-            ' long.')
+            validator=plugin.AuthenticationProvider.get(None).username_validator(),
+        )
         fields = [
             ew.TextField(
                 name='display_name',
