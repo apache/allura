@@ -23,6 +23,10 @@
 {% block content %}
   <div class="grid-23"><a href="/nf/admin">Back to Site Admin Home</a></div>
   <div class="grid-23"><a href="new">Create a new notification</a></div>
+  <div class="grid-23">
+    If there are multiple active notifications whose criteria match for a visitor, the most recent one will be used.  After that notification has been closed explicitly or automatically reached its limit, the next one can appear.
+    <br><br>
+  </div>
   {{c.page_size.display(limit=limit, page=page_url, count=count)}}
   <table id="site_notifications">
     <thead>

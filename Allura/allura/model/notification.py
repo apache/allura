@@ -735,6 +735,5 @@ class SiteNotification(MappedClass):
         )
 
     @classmethod
-    def current(cls):
-        note = cls.query.find({'active': True}).sort('_id', -1).limit(1).first()
-        return note
+    def actives(cls):
+        return cls.query.find({'active': True}).sort('_id', -1)

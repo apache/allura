@@ -208,13 +208,15 @@ $(function(){
         }
     });
 
-    var SN_ID=0, SN_VIEWS=1, SN_CLOSED=2;
     $('#site-notification .btn-close').click(function(e) {
         var $note = $(this).parent();
         $note.hide();
-        var status = $.cookie('site-notification').split('-');
-        status[SN_CLOSED] = 'true';
-        $.cookie('site-notification', status.join('-'), {
+        var note_id = $note.attr('data-notification-id');
+        var cookie = $.cookie('site-notification');
+        // change e.g. "5dc2f69f07ae3175c7c21972-5-False" to "5dc2f69f07ae3175c7c21972-5-True" to mark as closed
+        // cookie may have multiple id-num-bool sets in it
+        cookie = cookie.replace(new RegExp(note_id + '-([0-9]+)-False'), note_id + '-$1-True');
+        $.cookie('site-notification', cookie, {
             expires: 365,
             path: '/'
         });

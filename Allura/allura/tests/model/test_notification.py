@@ -507,8 +507,8 @@ class TestSiteNotification(unittest.TestCase):
 
 
 def _clear_subscriptions():
-        M.Mailbox.query.remove({})
+    M.Mailbox.query.remove({})
 
 
 def _clear_notifications():
-        M.Notification.query.remove({})
+    M.Notification.query.remove({})

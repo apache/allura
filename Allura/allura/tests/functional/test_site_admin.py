@@ -170,6 +170,9 @@ class TestSiteAdmin(TestController):
             task_name='allura.tests.functional.test_site_admin.test_task'))
         assert json.loads(r.body)['doc'] == 'test_task doc string'
 
+
+class TestSiteAdminNotifications(TestController):
+
     def test_site_notifications_access(self):
         self.app.get('/nf/admin/site_notifications', extra_environ=dict(
             username='test_user'), status=403)

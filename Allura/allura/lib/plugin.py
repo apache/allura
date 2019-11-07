@@ -1480,33 +1480,55 @@ class ThemeProvider(object):
 
     def _get_site_notification(self, url='', user=None, tool_name='', site_notification_cookie_value=''):
         from allura.model.notification import SiteNotification
-        note = SiteNotification.current()
-        if note is None:
-            return None
-        if note.user_role and (not user or user.is_anonymous()):
-            return None
-        if note.user_role:
-            projects = user.my_projects_by_role_name(note.user_role)
-            if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
-                return None
+        existing_cookie_info = {}
+        try:
+            for existing_cookie_chunk in site_notification_cookie_value.split('_'):
+                note_id, views, closed = existing_cookie_chunk.split('-')
+                views = asint(views)
+                closed = asbool(closed)
+                existing_cookie_info[note_id] = (views, closed)
+        except ValueError:
+            # ignore any weird cookie data
+            pass
 
-        if note.page_regex and re.search(note.page_regex, url) is None:
-            return None
-        if note.page_tool_type and tool_name.lower() != note.page_tool_type.lower():
-            return None
+        set_cookie_chunks = []
+        notes = SiteNotification.actives()
+        note_to_show = None
+        for note in notes:
+            if note.user_role and (not user or user.is_anonymous()):
+                continue
+            if note.user_role:
+                projects = user.my_projects_by_role_name(note.user_role)
+                if len(projects) == 0 or len(projects) == 1 and projects[0].is_user_project:
+                    continue
 
-        cookie = site_notification_cookie_value.split('-')
-        if len(cookie) == 3 and cookie[0] == str(note._id):
-            views = asint(cookie[1]) + 1
-            closed = asbool(cookie[2])
-        else:
-            views = 1
-            closed = False
-        if closed or note.impressions > 0 and views > note.impressions:
-            return None
+            if note.page_regex and re.search(note.page_regex, url) is None:
+                continue
+            if note.page_tool_type and tool_name.lower() != note.page_tool_type.lower():
+                continue
 
-        set_cookie = '-'.join(map(str, [note._id, views, closed]))
-        return note, set_cookie
+            views_closed = existing_cookie_info.get(str(note._id))
+            if views_closed:
+                views, closed = views_closed
+            else:
+                views = 0
+                closed = False
+
+            if closed or note.impressions > 0 and views > note.impressions:
+                # preserve info about this in the cookie (so it won't be forgotten, and thus be displayed again)
+                set_cookie_chunks.append('-'.join(map(str, [note._id, views, closed])))
+                # but stop this loop iteration since the notification shouldn't be shown again
+                continue
+
+            # this notification is ok to show, so if there's not one picked already, this is the one.
+            if not note_to_show:
+                views += 1
+                note_to_show = note
+
+            set_cookie_chunks.append('-'.join(map(str, [note._id, views, closed])))
+
+        if note_to_show:
+            return note_to_show, '_'.join(set_cookie_chunks)
 
     def get_site_notification(self):
         from tg import request, response
