@@ -57,7 +57,6 @@ def test_no_prints():
         'Allura/allura/command/',
         'Allura/ldap-setup.py',
         'Allura/ldap-userconfig.py',
-        'Allura/ez_setup/',
         'Allura/allura/lib/AsciiDammit.py',
         '/scripts/',
         'ForgeSVN/setup.py',
