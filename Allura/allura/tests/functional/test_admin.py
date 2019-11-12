@@ -662,9 +662,6 @@ class TestProjectAdmin(TestController):
         users = dev_holder.find('ul', {'class': 'users'}).findAll(
             'li', {'class': 'deleter'})
         assert 'test-user' in users[0]['data-user']
-        # Make sure we can open role page for builtin role
-        r = self.app.get('/admin/groups/' + developer_id +
-                         '/', validate_chunk=True)
 
     def test_new_admin_subscriptions(self):
         """Newly added admin must be subscribed to all the tools in the project"""
@@ -810,33 +807,21 @@ class TestProjectAdmin(TestController):
         role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
         assert 'RoleNew1' in str(role_holder)
         role_id = role_holder['data-group']
-        r = self.app.get('/admin/groups/' + role_id + '/', validate_chunk=True)
-        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
-        assert 'error' in self.webflash(r)
-        assert 'already exists' in self.webflash(r)
-
-        with audits('update group name RoleNew1=>rleNew2'):
-            r = self.app.post('/admin/groups/' + str(role_id) + '/update',
-                              params={'_id': role_id, 'name': 'rleNew2'}).follow()
-        assert 'RoleNew1' not in r
-        assert 'rleNew2' in r
 
         # add test-user to role
         role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
-        rleNew2_id = role_holder['data-group']
-        with audits('add user test-user to rleNew2'):
+        with audits('add user test-user to RoleNew1'):
             r = self.app.post('/admin/groups/add_user', params={
-                'role_id': rleNew2_id,
+                'role_id': role_id,
                 'username': 'test-user'})
 
-        with audits('delete group rleNew2'):
+        with audits('delete group RoleNew1'):
             r = self.app.post('/admin/groups/delete_group', params={
-                'group_name': 'rleNew2'})
+                'group_name': 'RoleNew1'})
         assert 'deleted' in self.webflash(r)
         r = self.app.get('/admin/groups/', status=200)
         roles = [str(t) for t in r.html.findAll('td', {'class': 'group'})]
         assert 'RoleNew1' not in roles
-        assert 'rleNew2' not in roles
 
         # make sure can still access homepage after one of user's roles were
         # deleted

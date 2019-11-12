@@ -114,23 +114,6 @@ class PermissionCard(CardField):
         return role._id
 
 
-class GroupSettings(ff.CsrfForm):
-    submit_text = None
-
-    @property
-    def hidden_fields(self):
-        f = super(GroupSettings, self).hidden_fields
-        f.append(ew.HiddenField(name='_id', validator=V.Ming(M.ProjectRole)))
-        return f
-
-    class fields(ew_core.NameList):
-        name = ew.InputField(label='Name')
-
-    class buttons(ew_core.NameList):
-        save = ew.SubmitButton(label='Save')
-        delete = ew.SubmitButton(label='Delete Group')
-
-
 class NewGroupSettings(ff.AdminFormResponsive):
     submit_text = 'Save'
 
