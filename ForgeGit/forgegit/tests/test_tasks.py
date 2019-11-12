@@ -14,18 +14,22 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import logging
 import unittest
 import mock
+from testfixtures import LogCapture
 
 from ming.orm import ThreadLocalORMSession
 from tg import tmpl_context as c
 
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.scripts.refreshrepo import RefreshRepo
+from allura.scripts.refresh_last_commits import RefreshLastCommits
 from allura.lib import helpers as h
 from allura.tasks import repo_tasks
 from allura import model as M
 from forgegit.tests import with_git
+from forgegit.tests.functional.test_controllers import _TestCase as GitRealDataBaseTestCase
 
 
 class TestGitTasks(unittest.TestCase):
@@ -58,3 +62,51 @@ class TestGitTasks(unittest.TestCase):
             M.main_orm_session.flush()
             f.assert_called_with('test_path', None, 'test_url')
             assert ns + 1 == M.Notification.query.find().count()
+
+
+class TestCoreAlluraTasks(GitRealDataBaseTestCase):
+    """
+    Not git-specific things we are testing, but the git tool is a useful standard repo type to use for it
+    """
+
+    def setUp(self):
+        super(TestCoreAlluraTasks, self).setUp()
+        self.setup_with_tools()
+
+    def _assert_logmsg_and_no_warnings_or_errors(self, logs, msg):
+        found_msg = False
+        for r in logs.records:
+            if msg in r.getMessage():
+                found_msg = True
+            if r.levelno > logging.INFO:
+                raise AssertionError('unexpected log {} {}'.format(r.levelname, r.getMessage()))
+        assert found_msg, 'Did not find {} in logs: {}'.format(msg, '\n'.join([str(r) for r in logs.records]))
+
+    def test_refreshrepo(self):
+        opts = RefreshRepo.parser().parse_args(
+            ['--nbhd', '/p/', '--project', 'test', '--clean', '--all', '--repo-types', 'git'])
+        with LogCapture() as logs:
+            RefreshRepo.execute(opts)
+        self._assert_logmsg_and_no_warnings_or_errors(logs, 'Refreshing ALL commits in ')
+
+        # run again with some different params
+        opts = RefreshRepo.parser().parse_args(
+            ['--nbhd', '/p/', '--project', 'test', '--clean-after', '2010-01-01T00:00:00'])
+        with LogCapture() as logs:
+            RefreshRepo.execute(opts)
+        self._assert_logmsg_and_no_warnings_or_errors(logs, 'Refreshing NEW commits in ')
+
+    def test_refresh_last_commits(self):
+        repo = c.app.repo
+        repo.refresh()
+
+        opts = RefreshLastCommits.parser().parse_args(
+            ['--nbhd', '/p/', '--project', 'test', '--clean', '--repo-types', 'git'])
+        with LogCapture() as logs:
+            RefreshLastCommits.execute(opts)
+
+        self._assert_logmsg_and_no_warnings_or_errors(logs, 'Refreshing all last commits ')
+
+        # mostly just making sure nothing errored, but here's at least one thing we can assert:
+        assert repo.status == 'ready'
+

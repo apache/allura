@@ -46,7 +46,7 @@ class RefreshLastCommits(ScriptTask):
                 repo_types.append(repo_type)
             return repo_types
         parser = argparse.ArgumentParser(description='Using existing commit data, '
-                                         'refresh the last commit metadata in MongoDB. Run for all repos (no args), '
+                                         'refresh the "last commit" metadata in MongoDB. Run for all repos (no args), '
                                          'or restrict by neighborhood, project, or code tool mount point.')
         parser.add_argument('--nbhd', action='store', default='', dest='nbhd',
                             help='Restrict update to a particular neighborhood, e.g. /p/.')
