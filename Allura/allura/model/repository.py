@@ -528,15 +528,6 @@ class Repository(Artifact, ActivityObject):
     def paged_diffs(self, commit_id, start=0, end=None,  onlyChangedFiles=False):
         return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)
 
-    def _log(self, rev, skip, limit):
-        head = self.commit(rev)
-        if head is None:
-            return
-        for _id in self.commitlog([head._id], skip, limit):
-            ci = head.query.get(_id=_id)
-            ci.set_context(self)
-            yield ci
-
     def init_as_clone(self, source_path, source_name, source_url):
         self.upstream_repo.name = source_name
         self.upstream_repo.url = source_url
@@ -1158,33 +1149,6 @@ class Commit(RepoObject, ActivityObject):
     def symbolic_ids(self):
         return self.repo.symbolics_for_commit(self)
 
-    def get_parent(self, index=0):
-        '''Get the parent of this commit.
-
-        If there is no parent commit, or if an invalid index is given,
-        returns None.
-        '''
-        try:
-            cache = getattr(c, 'model_cache', '') or ModelCache()
-            ci = cache.get(Commit, dict(_id=self.parent_ids[index]))
-            if not ci:
-                return None
-            ci.set_context(self.repo)
-            return ci
-        except IndexError:
-            return None
-
-    def climb_commit_tree(self, predicate=None):
-        '''
-        Returns a generator that walks up the commit tree along
-        the first-parent ancestory, starting with this commit,
-        optionally filtering by a predicate.'''
-        ancestor = self
-        while ancestor:
-            if predicate is None or predicate(ancestor):
-                yield ancestor
-            ancestor = ancestor.get_parent()
-
     def url(self):
         if self.repo is None:
             self.repo = self.guess_repo()
@@ -1252,13 +1216,6 @@ class Commit(RepoObject, ActivityObject):
                 if part != '':
                     cur = cur[part]
         return cur
-
-    def has_path(self, path):
-        try:
-            self.get_path(path)
-            return True
-        except KeyError:
-            return False
 
     @LazyProperty
     def changed_paths(self):
@@ -1351,19 +1308,6 @@ class Tree(RepoObject):
     commit = None
     parent = None
     name = None
-
-    def compute_hash(self):
-        '''Compute a hash based on the contents of the tree.  Note that this
-        hash does not necessarily correspond to any actual DVCS hash.
-        '''
-        lines = (
-            ['tree' + x.name + x.id for x in self.tree_ids]
-            + ['blob' + x.name + x.id for x in self.blob_ids]
-            + [x.type + x.name + x.id for x in self.other_ids])
-        sha_obj = sha1()
-        for line in sorted(lines):
-            sha_obj.update(line)
-        return sha_obj.hexdigest()
 
     def __getitem__(self, name):
         cache = getattr(c, 'model_cache', '') or ModelCache()
@@ -1578,11 +1522,6 @@ class Blob(object):
     def text(self):
         return self.open().read()
 
-    @classmethod
-    def diff(cls, v0, v1):
-        differ = SequenceMatcher(v0, v1)
-        return differ.get_opcodes()
-
 
 class LastCommit(RepoObject):
 
@@ -1720,8 +1659,6 @@ class ModelCache(object):
         # keyed by query, holds _id
         self._query_cache = defaultdict(OrderedDict)
         self._instance_cache = defaultdict(OrderedDict)  # keyed by _id
-        self._synthetic_ids = defaultdict(set)
-        self._synthetic_id_queries = defaultdict(set)
 
     def _normalize_query(self, query):
         _query = query
@@ -1763,9 +1700,6 @@ class ModelCache(object):
                                                              None)))
             if _id is None:
                 _id = val._model_cache_id = bson.ObjectId()
-                self._synthetic_ids[cls].add(_id)
-            if _id in self._synthetic_ids:
-                self._synthetic_id_queries[cls].add(_query)
             self._query_cache[cls][_query] = _id
             self._instance_cache[cls][_id] = val
         else:
@@ -1814,25 +1748,6 @@ class ModelCache(object):
         # last-used (most-recently-used) is last in cache, so take first
         key, val = cache.popitem(last=False)
         return val
-
-    def expire_new_instances(self, cls):
-        '''
-        Expire any instances that were "new" or had no _id value.
-
-        If a lot of new instances of a class are being created, it's possible
-        for a query to pull a copy from mongo when a copy keyed by the synthetic
-        ID is still in the cache, potentially causing de-sync between the copies
-        leading to one with missing data overwriting the other.  Clear new
-        instances out of the cache relatively frequently (depending on the query
-        and instance cache sizes) to avoid this.
-        '''
-        for _query in self._synthetic_id_queries[cls]:
-            self._query_cache[cls].pop(_query)
-        self._synthetic_id_queries[cls] = set()
-        for _id in self._synthetic_ids[cls]:
-            instance = self._instance_cache[cls].pop(_id)
-            self._try_flush(instance, expunge=True)
-        self._synthetic_ids[cls] = set()
 
     def num_queries(self, cls=None):
         if cls is None:
