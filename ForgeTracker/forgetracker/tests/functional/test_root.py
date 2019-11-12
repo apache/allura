@@ -354,6 +354,27 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/milestone_counts')
         assert_equal(r.body, json.dumps(counts))
 
+    def test_bin_counts(self):
+        self.new_ticket(summary='test new')
+        self.new_ticket(summary='test new private', private=True)
+        M.MonQTask.run_ready()
+
+        r = self.app.get('/bugs/bin_counts')
+        assert_equal(r.json, {"bin_counts": [{"count": 2, "label": "Changes"},
+                                             {"count": 0, "label": "Closed Tickets"},
+                                             {"count": 2, "label": "Open Tickets"}]})
+
+        """
+        forgetracker.model.ticket.Globals.bin_count doesn't do a permission check like corresponding milestone_count
+        
+        # Private tickets shouldn't be included in counts if user doesn't
+        # have read access to private tickets.
+        r = self.app.get('/bugs/bin_counts', extra_environ=dict(username='*anonymous'))
+        assert_equal(r.json, {"bin_counts": [{"count": 1, "label": "Changes"},
+                                             {"count": 0, "label": "Closed Tickets"},
+                                             {"count": 1, "label": "Open Tickets"}]})
+        """
+
     def test_milestone_progress(self):
         self.new_ticket(summary='Ticket 1', **{'_milestone': '1.0'})
         self.new_ticket(summary='Ticket 2', **{'_milestone': '1.0',

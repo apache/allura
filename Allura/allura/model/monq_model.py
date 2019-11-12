@@ -98,6 +98,11 @@ class MonQTask(MappedClass):
     kwargs = FieldProperty({None: None})
     result = FieldProperty(None, if_missing=None)
 
+    sort = [
+        ('priority', ming.DESCENDING),
+        ('time_queue', ming.ASCENDING),
+    ]
+
     def __repr__(self):
         from allura import model as M
         project = M.Project.query.get(_id=self.context.project_id)
@@ -179,9 +184,6 @@ class MonQTask(MappedClass):
         and no tasks are available, return None.  If waitfunc raises a
         StopIteration, stop waiting for a task
         '''
-        sort = [
-            ('priority', ming.DESCENDING),
-            ('time_queue', ming.ASCENDING)]
         while True:
             try:
                 query = dict(state=state)
@@ -196,7 +198,7 @@ class MonQTask(MappedClass):
                             process=process)
                     },
                     new=True,
-                    sort=sort)
+                    sort=cls.sort)
                 if obj is not None:
                     return obj
             except pymongo.errors.OperationFailure, exc:
@@ -227,7 +229,7 @@ class MonQTask(MappedClass):
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
         i = 0
-        for i, task in enumerate(cls.query.find(dict(state='ready')).all()):
+        for i, task in enumerate(cls.query.find(dict(state='ready')).sort(cls.sort).all()):
             task.process = worker
             task()
         return i

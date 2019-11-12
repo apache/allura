@@ -24,12 +24,65 @@ from nose.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 from cgi import FieldStorage
 from cStringIO import StringIO
+
+from alluratest.controller import setup_basic_test
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tests import decorators as td
 from forgetracker import model as TM
+from forgetracker.site_stats import tickets_stats_24hr
 from forgetracker.tests.functional.test_root import TrackerTestController
+
+
+class TestApp(object):
+
+    def setUp(self):
+        setup_basic_test()
+
+    @td.with_tracker
+    def test_inbound_email(self):
+        ticket = TM.Ticket.new()
+        ticket.summary = 'test ticket'
+        ticket.description = 'test description'
+
+        # send a message with no ticket matching it
+        message_id = '123@localhost'
+        message = 'test message'
+        msg = dict(payload=message, message_id=message_id, headers={'Subject': 'test'})
+        c.app.handle_message('1', msg)
+        # message gets added as a post on the ticket
+        post = M.Post.query.get(_id=message_id)
+        assert_equal(post["text"], message)
+
+    @td.with_tracker
+    def test_inbound_email_no_match(self):
+        # send a message with no ticket matching it
+        message_id = '123@localhost'
+        message = 'test message'
+        msg = dict(payload=message, message_id=message_id, headers={'Subject': 'test'})
+        # no ticket matching it
+        c.app.handle_message('6789', msg)
+        # no new message
+        post = M.Post.query.get(_id=message_id)
+        assert_equal(post, None)
+
+    @td.with_tracker
+    def test_uninstall(self):
+        t = TM.Ticket.new()
+        t.summary = 'new ticket'
+        ThreadLocalORMSession.flush_all()
+        assert TM.Ticket.query.get(summary='new ticket')
+        # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
+        c.project.uninstall_app('bugs')
+        assert not TM.Ticket.query.get(summary='new ticket')
+
+    @td.with_tracker
+    def test_tickets_stats_24hr(self):
+        # invoked normally via entry point
+        TM.Ticket.new()
+        TM.Ticket.new()
+        assert_equal(2, tickets_stats_24hr())
 
 
 class TestBulkExport(TrackerTestController):
