@@ -282,7 +282,9 @@ class ForgeTrackerApp(Application):
         except:
             log.exception('Error getting ticket %s', topic)
             return
-        if ticket.discussion_disabled:
+        if not ticket:
+            log.info('No such ticket num: %s', topic)
+        elif ticket.discussion_disabled:
             log.info('Discussion disabled for ticket %s', ticket.ticket_num)
         else:
             self.handle_artifact_message(ticket, message)
@@ -646,7 +648,6 @@ class RootController(BaseController, FeedController):
 
     def _check_security(self):
         require_access(c.app, 'read')
-
 
     @expose('json:')
     def bin_counts(self, *args, **kw):
@@ -1150,22 +1151,10 @@ class BinController(BaseController, AdminControllerMixin):
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
-    @expose('jinja:forgetracker:templates/tracker/bin.html')
-    def bins(self):
-        count = len(self.app.bins)
-        return dict(bins=self.app.bins, count=count, app=self.app)
-
-    @with_trailing_slash
-    @expose('jinja:forgetracker:templates/tracker/new_bin.html')
-    def newbin(self, q=None, **kw):
-        c.bin_form = W.bin_form
-        return dict(q=q or '', bin=bin or '', modelname='Bin', page='New Bin', globals=self.app.globals)
-
-    @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     @require_post()
-    @validate(W.bin_form, error_handler=newbin)
+    @validate(W.bin_form, error_handler=index)
     def save_bin(self, **bin_form):
         """Update existing search bin or create a new one.
 
@@ -1203,15 +1192,6 @@ class BinController(BaseController, AdminControllerMixin):
                         app=self.app, new_bin=new_bin, errors=True)
         self.app.globals.invalidate_bin_counts()
         redirect('.')
-
-    @with_trailing_slash
-    @expose()
-    @require_post()
-    @validate(validators=dict(bin=V.Ming(TM.Bin)))
-    def delbin(self, bin=None):
-        require(lambda: bin.app_config_id == self.app.config._id)
-        bin.delete()
-        redirect(request.referer or '/')
 
     @without_trailing_slash
     @h.vardec
