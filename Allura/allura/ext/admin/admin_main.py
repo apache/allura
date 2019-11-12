@@ -61,7 +61,6 @@ class W:
     label_edit = ffw.LabelEdit()
     group_card = aw.GroupCard()
     permission_card = aw.PermissionCard()
-    group_settings = aw.GroupSettings()
     new_group_settings = aw.NewGroupSettings()
     screenshot_admin = aw.ScreenshotAdmin()
     screenshot_list = ProjectScreenshots(draggable=True)
@@ -1162,57 +1161,11 @@ class GroupsController(BaseController):
         return dict()
 
     @without_trailing_slash
-    @expose()
-    @require_post()
-    @h.vardec
-    def update(self, card=None, **kw):
-        for pr in card:
-            group = M.ProjectRole.query.get(_id=ObjectId(pr['id']))
-            assert group.project == c.project, 'Security violation'
-            user_ids = pr.get('value', [])
-            new_users = pr.get('new', [])
-            if isinstance(user_ids, basestring):
-                user_ids = [user_ids]
-            if isinstance(new_users, basestring):
-                new_users = [new_users]
-            # Handle new users in groups
-            user_added = False
-            for username in new_users:
-                user = M.User.by_username(username.strip())
-                if not user:
-                    flash('User %s not found' % username, 'error')
-                    redirect('.')
-                if not user._id:
-                    continue  # never add anon users to groups
-                M.AuditLog.log('add user %s to %s', username, group.name)
-                M.ProjectRole.by_user(
-                    user, upsert=True).roles.append(group._id)
-                user_added = True
-            # Make sure we aren't removing all users from the Admin group
-            if group.name == u'Admin' and not (user_ids or user_added):
-                flash('You must have at least one user with the Admin role.',
-                      'warning')
-                redirect('.')
-            # Handle users removed from groups
-            user_ids = set(
-                uid and ObjectId(uid)
-                for uid in user_ids)
-            for role in M.ProjectRole.query.find(dict(user_id={'$ne': None}, roles=group._id)):
-                if role.user_id and role.user_id not in user_ids:
-                    role.roles = [
-                        rid for rid in role.roles if rid != group._id]
-                    M.AuditLog.log('remove user %s from %s',
-                                   role.user.username, group.name)
-        g.post_event('project_updated')
-        redirect('.')
-
-    @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_group.html')
     def new(self):
         c.form = W.new_group_settings
         return dict(
             group=None,
-            show_settings=True,
             action="create")
 
     @expose()
@@ -1227,49 +1180,6 @@ class GroupsController(BaseController):
         M.AuditLog.log('create group %s', name)
         g.post_event('project_updated')
         redirect('.')
-
-    @expose()
-    def _lookup(self, name, *remainder):
-        return GroupController(name), remainder
-
-
-class GroupController(BaseController):
-    def __init__(self, name):
-        self._group = M.ProjectRole.query.get(_id=ObjectId(name))
-
-    @with_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_group.html')
-    def index(self, **kw):
-        if self._group.name in ('Admin', 'Developer', 'Member'):
-            show_settings = False
-            action = None
-        else:
-            show_settings = True
-            action = self._group.settings_href + 'update'
-        c.form = W.group_settings
-        return dict(
-            group=self._group,
-            show_settings=show_settings,
-            action=action)
-
-    @expose()
-    @h.vardec
-    @require_post()
-    @validate(W.group_settings)
-    def update(self, _id=None, delete=None, name=None, **kw):
-        pr = M.ProjectRole.by_name(name)
-        if pr and pr._id != _id._id:
-            flash('%s already exists' % name, 'error')
-            redirect('..')
-        if delete:
-            _id.delete()
-            M.AuditLog.log('delete group %s', _id.name)
-            flash('%s deleted' % name)
-            redirect('..')
-        M.AuditLog.log('update group name %s=>%s', _id.name, name)
-        _id.name = name
-        flash('%s updated' % name)
-        redirect('..')
 
 
 class AuditController(BaseController):

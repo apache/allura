@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 import mock
 
 from tg import config
-from nose.tools import assert_equals, assert_true
+from nose.tools import assert_equals, assert_true, assert_in
 from ming.orm import session
 
 from allura import model as M
@@ -133,3 +133,20 @@ class TestTroveCategoryController(TestController):
         </ul>
         """.strip(), 'html.parser')
         assert_equals(str(expected), str(rendered_tree))
+
+    def test_delete(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        assert_equals(5, M.TroveCategory.query.find().count())
+
+        r = self.app.get('/categories/1')
+        form = r.forms[0]
+        r = form.submit()
+        assert_in("This category contains at least one sub-category, therefore it can't be removed",
+                  self.webflash(r))
+
+        r = self.app.get('/categories/2')
+        form = r.forms[0]
+        r = form.submit()
+        assert_in("Category removed", self.webflash(r))
+        assert_equals(4, M.TroveCategory.query.find().count())

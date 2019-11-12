@@ -197,6 +197,37 @@ class TestAuth(TestController):
 
             # changing password covered in TestPasswordExpire
 
+    def test_login_disabled(self):
+        u = M.User.query.get(username='test-user')
+        u.disabled = True
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Failed login', user=True):
+            r = f.submit(extra_environ={'username': '*anonymous'})
+
+    def test_login_pending(self):
+        u = M.User.query.get(username='test-user')
+        u.pending = True
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Failed login', user=True):
+            r = f.submit(extra_environ={'username': '*anonymous'})
+
+    def test_login_overlay(self):
+        r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
+        f = r.forms[0]
+        encoded = self.app.antispam_field_names(f)
+        f[encoded['username']] = 'test-user'
+        f[encoded['password']] = 'foo'
+        with audits('Successful login', user=True):
+            r = f.submit(extra_environ={'username': '*anonymous'})
+
     def test_logout(self):
         self.app.extra_environ = {'disable_auth_magic': 'True'}
         nav_pattern = ('nav', {'class': 'nav-main'})
@@ -1645,6 +1676,10 @@ To update your password on %s, please visit the following URL:
                                                  })
         assert_in('Unable to process reset, please try again', r.follow().body)
 
+    def test_hash_invalid(self):
+        r = self.app.get('/auth/forgotten_password/123412341234', status=302)
+        assert_in('Unable to process reset, please try again', r.follow().body)
+
     @patch('allura.lib.plugin.AuthenticationProvider')
     def test_provider_disabled(self, AP):
         user = M.User.query.get(username='test-admin')
@@ -1729,9 +1764,15 @@ class TestOAuth(TestController):
         r = self.app.post('/auth/oauth/register',
                           params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez',
                                   '_session_id': self.app.cookies['_session_id'],
-                                  }).follow()
+                                  }, status=302)
+        r = self.app.get('/auth/oauth/')
         assert_equal(r.forms[1].action, 'generate_access_token')
-        r.forms[1].submit()
+        r = r.forms[1].submit(extra_environ={'username': 'test-user'})  # not the right user
+        assert_in("Invalid app ID", self.webflash(r))                   # gets an error
+        r = self.app.get('/auth/oauth/')                                # do it again
+        r = r.forms[1].submit()                                         # as correct user
+        assert_equal('', self.webflash(r))
+
         r = self.app.get('/auth/oauth/')
         assert 'Bearer Token:' in r
         assert_not_equal(
@@ -1744,37 +1785,55 @@ class TestOAuth(TestController):
         assert_equal(
             M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
 
-    @mock.patch('allura.controllers.rest.oauth.Server')
-    @mock.patch('allura.controllers.rest.oauth.Request')
-    def test_interactive(self, Request, Server):
-        M.OAuthConsumerToken.consumer = mock.Mock()
-        user = M.User.by_username('test-admin')
-        M.OAuthConsumerToken(
-            api_key='api_key',
-            user_id=user._id,
-            description='ctok_desc',
-        )
-        ThreadLocalORMSession.flush_all()
-        Request.from_request.return_value = {
-            'oauth_consumer_key': 'api_key',
-            'oauth_callback': 'http://my.domain.com/callback',
-        }
-        r = self.app.post('/rest/oauth/request_token', params={})
-        rtok = parse_qs(r.body)['oauth_token'][0]
-        r = self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': rtok})
-        r = r.forms[0].submit('yes')
-        assert r.location.startswith('http://my.domain.com/callback')
-        pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
-        Request.from_request.return_value = {
-            'oauth_consumer_key': 'api_key',
-            'oauth_token': rtok,
-            'oauth_verifier': pin,
-        }
-        r = self.app.get('/rest/oauth/access_token')
-        atok = parse_qs(r.body)
-        assert_equal(len(atok['oauth_token']), 1)
-        assert_equal(len(atok['oauth_token_secret']), 1)
+    def test_interactive(self):
+        with mock.patch('allura.controllers.rest.oauth.Server') as Server, \
+                mock.patch('allura.controllers.rest.oauth.Request') as Request:   # these are the oauth2 libs
+            #M.OAuthConsumerToken.consumer = mock.Mock()
+            user = M.User.by_username('test-admin')
+            M.OAuthConsumerToken(
+                api_key='api_key',
+                user_id=user._id,
+                description='ctok_desc',
+            )
+            ThreadLocalORMSession.flush_all()
+            Request.from_request.return_value = {
+                'oauth_consumer_key': 'api_key',
+                'oauth_callback': 'http://my.domain.com/callback',
+            }
+            r = self.app.post('/rest/oauth/request_token', params={})
+            rtok = parse_qs(r.body)['oauth_token'][0]
+            r = self.app.post('/rest/oauth/authorize',
+                              params={'oauth_token': rtok})
+            r = r.forms[0].submit('yes')
+            assert r.location.startswith('http://my.domain.com/callback')
+            pin = parse_qs(urlparse(r.location).query)['oauth_verifier'][0]
+            Request.from_request.return_value = {
+                'oauth_consumer_key': 'api_key',
+                'oauth_token': rtok,
+                'oauth_verifier': pin,
+            }
+            r = self.app.get('/rest/oauth/access_token')
+            atok = parse_qs(r.body)
+            assert_equal(len(atok['oauth_token']), 1)
+            assert_equal(len(atok['oauth_token_secret']), 1)
+
+        # now use the tokens & secrets to make a full OAuth request:
+        oauth_secret = atok['oauth_token_secret'][0]
+        oauth_token = atok['oauth_token'][0]
+        consumer = oauth2.Consumer('api_key', oauth_secret)
+        M.OAuthConsumerToken.consumer = consumer
+        access_token = oauth2.Token(oauth_token, oauth_secret)
+        oauth_client = oauth2.Client(consumer, access_token)
+        # use the oauth2 lib, but intercept the request and then send it to self.app.get
+        with mock.patch('oauth2.httplib2.Http.request', name='hl2req') as oa2_req:
+            oauth_client.request('http://localhost/rest/p/test/', 'GET')
+            oa2url = oa2_req.call_args[0][1]
+            oa2url = oa2url.replace('http://localhost', '')
+            print(oa2url)
+            oa2kwargs = oa2_req.call_args[1]
+        self.app.get(oa2url, headers=oa2kwargs['headers'], status=200)
+        self.app.get(oa2url.replace('oauth_signature=', 'removed='), headers=oa2kwargs['headers'], status=401)
+
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')

@@ -137,6 +137,15 @@ class TestSiteAdmin(TestController):
             url, extra_environ=dict(username='*anonymous'), status=302)
         r = self.app.get(url)
         assert 'math.ceil' in r, r
+        assert 'ready' in r, r
+
+        # test resubmit too
+        M.MonQTask.run_ready()
+        r = self.app.get(url)
+        assert 'complete' in r, r
+        r = r.forms['resubmit-task-form'].submit()
+        r = r.follow()
+        assert 'ready' in r, r
 
     def test_task_new(self):
         r = self.app.get('/nf/admin/task_manager/new')
