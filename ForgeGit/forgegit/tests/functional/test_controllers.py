@@ -156,6 +156,11 @@ class TestRootController(_TestCase):
              u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              u'message': u'Add README', u'row': 2})
 
+    def test_commit_browser_basic_view(self):
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/basic')
+        resp.mustcontain('Rick')
+        resp.mustcontain('Change README')
+
     def test_log(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert 'Initial commit' in resp
@@ -457,6 +462,15 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/src-git/markdown_syntax_dialog')
         assert_in('<h1>Markdown Syntax Guide</h1>', r)
 
+    def test_refresh(self):
+        r = self.app.get('/p/test/src-git/refresh')
+        assert_in('refresh queued', r)
+        assert_equal(1, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
+
+        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': '/p/test/src-git/'}, status=302)
+        assert_in('is being refreshed', self.webflash(r))
+        assert_equal(2, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
+
 
 class TestRestController(_TestCase):
     def test_index(self):
@@ -660,6 +674,13 @@ class TestFork(_TestCase):
         r = self.app.get('/p/test/src-git/merge-requests/1/', status=200)
         assert_commit_details(r)
 
+        r = self.app.get('/p/test/src-git/merge-requests/1/can_merge_task_status')
+        assert_equal(r.json, {'status': 'ready'})
+        r = self.app.get('/p/test/src-git/merge-requests/1/can_merge_result')
+        assert_equal(r.json, {'can_merge': None})
+        r = self.app.get('/p/test/src-git/merge-requests/1/merge_task_status')
+        assert_equal(r.json, {'status': None})
+
     def test_merge_request_detail_noslash(self):
         self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/1', status=301)
@@ -685,6 +706,12 @@ class TestFork(_TestCase):
         assert 'href="%s/"' % mr_num in r, r
         assert_regexp_matches(r.html.findAll('span')[-2].getText(), r'[0-9]+ seconds? ago')
         assert_regexp_matches(r.html.findAll('span')[-1].getText(), r'[0-9]+ seconds? ago')
+
+        r = self.app.get('/p/test/src-git/merge-requests/?status=rejected')
+        assert 'href="%s/"' % mr_num not in r, r
+
+        r = self.app.get('/p/test/src-git/merge-requests/?status=all')
+        assert 'href="%s/"' % mr_num in r, r
 
     def test_merge_request_update_status(self):
         r, mr_num = self._request_merge()

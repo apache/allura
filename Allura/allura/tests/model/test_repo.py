@@ -94,6 +94,33 @@ class RepoTestBase(unittest.TestCase):
             with mock.patch.dict(config, values, clear=True):
                 self.assertEqual(result, repo.refresh_url())
 
+    def test_clone_command_categories(self):
+        c.app = mock.Mock(**{'config._id': 'deadbeef'})
+        repo = M.repository.Repository(tool='git')
+        cmd_cats = repo.clone_command_categories(anon=False)
+        assert_equal(cmd_cats, [
+            {'key': 'file', 'name': 'File', 'title': u'Filesystem'}
+        ])
+
+        cmd_cats = repo.clone_command_categories(anon=True)
+        assert_equal(cmd_cats, [
+            {'key': 'file', 'name': 'File', 'title': u'Filesystem'}
+        ])
+
+        repo = M.repository.Repository(tool='something-else')  # no "something-else" in config so will use defaults
+        cmd_cats = repo.clone_command_categories(anon=False)
+        assert_equal(cmd_cats, [
+            {'key': 'rw', 'name': 'RW', 'title': 'Read/Write'},
+            {'key': 'ro', 'name': 'RO', 'title': 'Read Only'},
+            {'key': 'https', 'name': 'HTTPS', 'title': 'HTTPS'}
+        ])
+
+        cmd_cats = repo.clone_command_categories(anon=True)
+        assert_equal(cmd_cats, [
+            {'key': 'ro', 'name': 'RO', 'title': 'Read Only'},
+            {'key': 'https_anon', 'name': 'HTTPS', 'title': 'HTTPS'}
+        ])
+
 
 class TestLastCommit(unittest.TestCase):
     def setUp(self):
