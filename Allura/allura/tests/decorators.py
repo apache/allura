@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+import logging
 import sys
 import re
 from functools import wraps
@@ -198,3 +198,18 @@ def out_audits(*messages, **kwargs):
     for message in messages:
         assert not M.AuditLog.query.find(dict(
             message=re.compile(preamble + message))).count(), 'Found unexpected: "%s"' % message
+
+
+# not a decorator but use it with LogCapture() decorator
+def assert_logmsg_and_no_warnings_or_errors(logs, msg):
+    """
+    :param testfixtures.logcapture.LogCapture logs: LogCapture() instance
+    :param str msg: Message to look for
+    """
+    found_msg = False
+    for r in logs.records:
+        if msg in r.getMessage():
+            found_msg = True
+        if r.levelno > logging.INFO:
+            raise AssertionError('unexpected log {} {}'.format(r.levelname, r.getMessage()))
+    assert found_msg, 'Did not find {} in logs: {}'.format(msg, '\n'.join([r.getMessage() for r in logs.records]))

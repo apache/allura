@@ -16,6 +16,8 @@
 #       under the License.
 
 from nose.tools import assert_raises, assert_in
+from testfixtures import OutputCapture
+
 from datadiff.tools import assert_equal
 
 from ming.base import Object
@@ -26,7 +28,7 @@ import pkg_resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import base, script, set_neighborhood_features, \
-    create_neighborhood, show_models, taskd_cleanup
+    create_neighborhood, show_models, taskd_cleanup, taskd
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
@@ -262,6 +264,18 @@ class TestEnsureIndexCommand(object):
         ])
 
 
+class TestTaskCommand(object):
+
+    def test_commit(self):
+        exit_code = taskd.TaskCommand('task').run([test_config, 'commit'])
+        assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.commit'}).count(), 1)
+        assert_equal(exit_code, 0)
+
+    def test_list(self):
+        exit_code = taskd.TaskCommand('task').run([test_config, 'list'])
+        assert_equal(exit_code, 0)
+
+
 class TestTaskdCleanupCommand(object):
 
     def setUp(self):
@@ -376,7 +390,19 @@ def test_status_log_retries():
     assert cmd._taskd_status.mock_calls == expected_calls
 
 
-class TestBackgroundCommand(object):
+class TestShowModels(object):
+
+    def test_show_models(self):
+        cmd = show_models.ShowModelsCommand('models')
+        with OutputCapture() as output:
+            cmd.run([test_config])
+        assert_in('''allura.model.notification.SiteNotification
+         - <FieldProperty content>
+         - <FieldProperty page_regex>
+        ''', output.captured)
+
+
+class TestReindexAsTask(object):
 
     cmd = 'allura.command.show_models.ReindexCommand'
     task_name = 'allura.command.base.run_command'
@@ -401,9 +427,13 @@ class TestBackgroundCommand(object):
     def test_invalid_args(self):
         M.MonQTask.query.remove()
         show_models.ReindexCommand.post('--invalid-option')
-        with td.raises(Exception) as e:
-            M.MonQTask.run_ready()
-        assert_in('Error parsing args', str(e.exc))
+        try:
+            with td.raises(Exception) as e:
+                M.MonQTask.run_ready()
+            assert_in('Error parsing args', str(e.exc))
+        finally:
+            # cleanup - remove bad MonQTask
+            M.MonQTask.query.remove()
 
 
 class TestReindexCommand(object):
@@ -418,6 +448,7 @@ class TestReindexCommand(object):
         assert not g.solr.delete.called, 'solr.delete() must not be called'
 
     @patch('pysolr.Solr')
+    @td.with_wiki  # so there's some artifacts to reindex
     def test_solr_hosts_1(self, Solr):
         cmd = show_models.ReindexCommand('reindex')
         cmd.options, args = cmd.parser.parse_args([
@@ -494,3 +525,8 @@ class TestReindexCommand(object):
         cmd.options = Mock(ming_config=None)
         with td.raises(pymongo.errors.InvalidDocument):
             cmd._post_add_artifacts(range(5))
+
+    @td.with_wiki  # so there's some artifacts to reindex
+    def test_ming_config(self):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.run([test_config, '-p', 'test', '--tasks', '--ming-config', 'test.ini'])
