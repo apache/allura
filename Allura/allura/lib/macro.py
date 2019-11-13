@@ -20,6 +20,8 @@ import random
 import shlex
 import logging
 import traceback
+import urllib2
+
 import oembed
 import jinja2
 from operator import attrgetter
@@ -461,6 +463,11 @@ def embed(url=None):
             html = consumer.embed(url)['html']
         except oembed.OEmbedNoEndpoint:
             html = None
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                return 'Video not available'
+            else:
+                raise
 
     if html:
         # youtube has a trailing ")" at the moment

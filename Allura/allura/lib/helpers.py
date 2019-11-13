@@ -58,7 +58,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
-from jinja2.filters import contextfilter, escape
+from jinja2.filters import contextfilter, escape, do_filesizeformat
 from paste.deploy.converters import asbool, aslist, asint
 
 from webhelpers import date, feedgenerator, html, number, misc, text
@@ -233,14 +233,6 @@ def make_neighborhoods(ids):
     return _make_xs('Neighborhood', ids)
 
 
-def make_projects(ids):
-    return _make_xs('Project', ids)
-
-
-def make_users(ids):
-    return _make_xs('User', ids)
-
-
 def make_roles(ids):
     return _make_xs('ProjectRole', ids)
 
@@ -265,6 +257,8 @@ def make_app_admin_only(app):
 
 @contextmanager
 def push_config(obj, **kw):
+    # if you need similar for a dict, use mock.patch.dict
+
     saved_attrs = {}
     new_attrs = []
     for k, v in kw.iteritems():
@@ -745,40 +739,6 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
                 txt = '<pre>%s</pre>' % txt
     return Markup(txt)
 
-# copied from jinja2 dev
-# latest release, 2.6, implements this incorrectly
-# can remove and use jinja2 implementation after upgrading to 2.7
-
-
-def do_filesizeformat(value, binary=False):
-    """Format the value like a 'human-readable' file size (i.e. 13 kB,
-4.1 MB, 102 Bytes, etc). Per default decimal prefixes are used (Mega,
-Giga, etc.), if the second parameter is set to `True` the binary
-prefixes are used (Mebi, Gibi).
-"""
-    bytes = float(value)
-    base = binary and 1024 or 1000
-    prefixes = [
-        (binary and 'KiB' or 'kB'),
-        (binary and 'MiB' or 'MB'),
-        (binary and 'GiB' or 'GB'),
-        (binary and 'TiB' or 'TB'),
-        (binary and 'PiB' or 'PB'),
-        (binary and 'EiB' or 'EB'),
-        (binary and 'ZiB' or 'ZB'),
-        (binary and 'YiB' or 'YB')
-    ]
-    if bytes == 1:
-        return '1 Byte'
-    elif bytes < base:
-        return '%d Bytes' % bytes
-    else:
-        for i, prefix in enumerate(prefixes):
-            unit = base ** (i + 2)
-            if bytes < unit:
-                return '%.1f %s' % ((base * bytes / unit), prefix)
-        return '%.1f %s' % ((base * bytes / unit), prefix)
-
 
 def nl2br_jinja_filter(value):
     result = '<br>\n'.join(escape(line) for line in value.split('\n'))
@@ -1163,20 +1123,6 @@ def login_overlay(exceptions=None):
                 if request.path.rstrip('/').endswith('/%s' % exception):
                     raise
         c.show_login_overlay = True
-
-
-def get_filter(ctx, filter_name):
-    """
-    Gets a named Jinja2 filter, passing through
-    any context requested by the filter.
-    """
-    filter_ = ctx.environment.filters[filter_name]
-    if getattr(filter_, 'contextfilter', False):
-        return partial(filter_, ctx)
-    elif getattr(filter_, 'evalcontextfilter', False):
-        return partial(filter_, ctx.eval_ctx)
-    elif getattr(filter_, 'environmentfilter', False):
-        return partial(filter_, ctx.environment)
 
 
 def unidiff(old, new):

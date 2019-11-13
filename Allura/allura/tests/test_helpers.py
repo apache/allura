@@ -107,11 +107,6 @@ def test_find_project():
     assert proj is None
 
 
-def test_make_users():
-    r = h.make_users([None]).next()
-    assert r.username == '*anonymous', r
-
-
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
     pr = M.ProjectRole.anonymous()
@@ -594,8 +589,11 @@ def test_base64uri_img():
 
 
 def test_base64uri_text():
-    b64txt = h.base64uri('blah blah blah 123 456 foo bar baz', mimetype='text/plain')
-    assert b64txt.startswith('data:text/plain;base64,'), b64txt
+    b64txt = h.base64uri('blah blah blah\n123 456\nfoo bar baz', mimetype='text/plain')
+    assert_equals(b64txt, 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgKMTIzIDQ1Ngpmb28gYmFyIGJheg==')
+
+    b64txt = h.base64uri('blah blah blah\n123 456\nfoo bar baz', mimetype='text/plain', windows_line_endings=True)
+    assert_equals(b64txt, 'data:text/plain;base64,YmxhaCBibGFoIGJsYWgNCjEyMyA0NTYNCmZvbyBiYXIgYmF6')
 
 
 def test_slugify():
@@ -649,3 +647,7 @@ def test_hide_private_info():
 
     with h.push_config(h.tg.config, hide_private_info=False):
         assert_equals(h.hide_private_info('foo bar baz@bing.com'), 'foo bar baz@bing.com')
+
+
+def test_emojize():
+    assert_equals(h.emojize(':smile:'), u'😄')

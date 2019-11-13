@@ -103,7 +103,6 @@ class AlluraJinjaRenderer(JinjaRenderer):
             cache_size=config.get('jinja_cache_size', -1),
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(tg.i18n)
-        jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
         jinja2_env.filters['filter'] = lambda s, t=None: filter(t and jinja2_env.tests[t], s)
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
