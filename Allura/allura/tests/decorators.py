@@ -200,7 +200,7 @@ def out_audits(*messages, **kwargs):
             message=re.compile(preamble + message))).count(), 'Found unexpected: "%s"' % message
 
 
-# not a decorator but use it with LogCapture() decorator
+# not a decorator but use it with LogCapture() context manager
 def assert_logmsg_and_no_warnings_or_errors(logs, msg):
     """
     :param testfixtures.logcapture.LogCapture logs: LogCapture() instance

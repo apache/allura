@@ -562,11 +562,6 @@ class Globals(object):
         'h.set_context() is preferred over this method'
         c.app = c.project.app_instance(name)
 
-    def postload_contents(self):
-        text = '''
-'''
-        return json.dumps(dict(text=text))
-
     def year(self):
         return datetime.datetime.utcnow().year
 

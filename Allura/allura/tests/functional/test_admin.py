@@ -951,6 +951,10 @@ class TestProjectAdmin(TestController):
             assert url.endswith('/admin/ext/foo'), url
             assert_equals('here the foo settings go', foo_page.body)
 
+    def test_nbhd_invitations(self):
+        r = self.app.get('/admin/invitations')
+        r.mustcontain('Neighborhood Invitation(s) for test')
+
 
 class TestExport(TestController):
 

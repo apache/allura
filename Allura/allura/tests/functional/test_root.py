@@ -28,8 +28,11 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
+import os
+from urllib import quote
+
 from tg import tmpl_context as c
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from ming.orm.ormsession import ThreadLocalORMSession
 import mock
 from IPython.testing.decorators import module_not_available, skipif
@@ -37,7 +40,7 @@ from IPython.testing.decorators import module_not_available, skipif
 from allura.tests import decorators as td
 from allura.tests import TestController
 from allura import model as M
-from allura.lib.helpers import push_config
+from allura.lib import helpers as h
 from alluratest.controller import setup_trove_categories
 
 
@@ -68,6 +71,14 @@ class TestRootController(TestController):
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
+
+    def test_validation(self):
+        # this is not configured ON currently, so adding an individual test to get coverage of the validator itself
+        with mock.patch.dict(os.environ, ALLURA_VALIDATION='all'):
+            self.app.get('/neighborhood')
+            self.app.get('/nf/markdown_to_html?markdown=aaa&project=test&app=bugs&neighborhood=%s'
+                         % M.Neighborhood.query.get(name='Projects')._id,
+                         validate_chunk=True)
 
     def test_sidebar_escaping(self):
         # use this as a convenient way to get something in the sidebar
@@ -123,7 +134,7 @@ class TestRootController(TestController):
         # Install home app
         nb = M.Neighborhood.query.get(name='Adobe')
         p = nb.neighborhood_project
-        with push_config(c, user=M.User.query.get(username='test-admin')):
+        with h.push_config(c, user=M.User.query.get(username='test-admin')):
             p.install_app('home', 'home', 'Home', ordinal=0)
 
         response = self.app.get('/adobe/')
@@ -164,6 +175,13 @@ class TestRootController(TestController):
         r = self.app.get(
             '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
+
+        # this happens to trigger an error
+        bad_markdown = '<foo {bar}>'
+        r = self.app.get('/nf/markdown_to_html?markdown=%s&project=test&app=bugs&neighborhood=%s' %
+                         (quote(bad_markdown), n._id))
+        r.mustcontain('The markdown supplied could not be parsed correctly.')
+        r.mustcontain('<pre>&lt;foo {bar}&gt;</pre>')
 
     def test_slash_redirect(self):
         self.app.get('/p', status=301)
