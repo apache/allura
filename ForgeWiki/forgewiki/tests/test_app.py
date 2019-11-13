@@ -124,7 +124,7 @@ class TestBulkExport(object):
         assert not os.path.exists(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file'))
 
 
-class TestEmail(object):
+class TestApp(object):
 
     def setUp(self):
         setup_basic_test()
@@ -160,3 +160,9 @@ class TestEmail(object):
         self.wiki.handle_message('A_New_Hope', msg)
         post = M.Post.query.get(_id=message_id)
         assert_equal(post["text"], message)
+
+    def test_uninstall(self):
+        assert WM.Page.query.get(title='A New Hope')
+        # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
+        c.project.uninstall_app('wiki')
+        assert not WM.Page.query.get(title='A New Hope')

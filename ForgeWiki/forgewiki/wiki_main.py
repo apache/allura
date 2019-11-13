@@ -150,6 +150,17 @@ class ForgeWikiApp(Application):
             page_name = self.default_root_page_name
         return page_name
 
+    @root_page_name.setter
+    def root_page_name(self, new_root_page_name):
+        globals = WM.Globals.query.get(app_config_id=self.config._id)
+        if globals is not None:
+            globals.root = new_root_page_name
+        elif new_root_page_name != self.default_root_page_name:
+            globals = WM.Globals(
+                app_config_id=self.config._id, root=new_root_page_name)
+        if globals is not None:
+            session(globals).flush(globals)
+
     def default_root_page_text(self):
         return """Welcome to your wiki!
 
