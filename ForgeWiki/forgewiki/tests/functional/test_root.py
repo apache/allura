@@ -258,6 +258,11 @@ class TestRootController(TestController):
         assert not response.html.find('a', {'data-dialog-id': '1'})
         assert not response.html.find('a', {'data-dialog-id': '2'})
 
+        # view an older version
+        response = self.app.get('/wiki/tést/?version=1')
+        response.mustcontain('text1')
+        response.mustcontain(no='text2')
+
     def test_page_diff(self):
         self.app.post(
             '/wiki/tést/update',
@@ -652,6 +657,19 @@ class TestRootController(TestController):
         wiki_page2 = self.app.get('/wiki/tést/')
         assert not wiki_page2.html.find('div', {'class': 'editbox'})
 
+    def test_change_home_page(self):
+        self.app.post('/wiki/tést/update', params={
+            'title': 'our_néw_home',
+            'text': 'sometext',
+            'labels': '',
+            })
+        homepage_admin = self.app.get('/admin/wiki/home', validate_chunk=True)
+        assert_equal(homepage_admin.form['new_home'].value, 'Home')
+        homepage_admin.form['new_home'].value = 'our_néw_home'
+        homepage_admin.form.submit()
+        root_path = self.app.get('/wiki/', status=302)
+        assert root_path.location.endswith('/wiki/our_néw_home/'), root_path.location
+
     def test_edit_mount_label(self):
         r = self.app.get('/admin/wiki/edit_label', validate_chunk=True)
         assert r.form['mount_label'].value == 'Wiki'
@@ -772,6 +790,18 @@ class TestRootController(TestController):
         assert '?deleted=True">bbb' in response
         n = M.Notification.query.get(subject="[test:wiki] test-admin removed page bbb")
         assert '222' in n.text
+
+        # view deleted page
+        response = response.click('bbb')
+        assert '(deleted)' in response
+        deletedpath = response.request.path_info
+
+        # undelete it
+        undelete_url = deletedpath + 'undelete'
+        response = self.app.post(undelete_url)
+        assert_equal(response.json, {'location': './edit'})
+        response = self.app.get(deletedpath + 'edit')
+        assert 'Edit bbb' in response
 
     def test_mailto_links(self):
         self.app.get('/wiki/test_mailto/')

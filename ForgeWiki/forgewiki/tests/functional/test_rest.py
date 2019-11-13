@@ -39,6 +39,10 @@ class TestWikiApi(TestRestApiBase):
     def setup_with_tools(self):
         h.set_context('test', 'wiki', neighborhood='Projects')
 
+    def test_get_root(self):
+        r = self.app.get('/rest/p/test/wiki/')
+        assert_equal(r.json, {'pages': ['Home']})
+
     def test_get_page(self):
         r = self.app.get('/p/test/wiki/Home/')
         discussion_url = r.html.find('form', id='edit_post')['action'][:-4]
