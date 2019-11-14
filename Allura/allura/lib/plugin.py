@@ -1480,21 +1480,20 @@ class ThemeProvider(object):
 
     def _get_site_notification(self, url='', user=None, tool_name='', site_notification_cookie_value=''):
         from allura.model.notification import SiteNotification
-        existing_cookie_info = {}
+        cookie_info = {}
         try:
             for existing_cookie_chunk in site_notification_cookie_value.split('_'):
                 note_id, views, closed = existing_cookie_chunk.split('-')
                 views = asint(views)
                 closed = asbool(closed)
-                existing_cookie_info[note_id] = (views, closed)
+                cookie_info[note_id] = (views, closed)
         except ValueError:
             # ignore any weird cookie data
             pass
 
-        set_cookie_chunks = []
-        notes = SiteNotification.actives()
+        active_notes = SiteNotification.actives()
         note_to_show = None
-        for note in notes:
+        for note in active_notes:
             if note.user_role and (not user or user.is_anonymous()):
                 continue
             if note.user_role:
@@ -1507,7 +1506,7 @@ class ThemeProvider(object):
             if note.page_tool_type and tool_name.lower() != note.page_tool_type.lower():
                 continue
 
-            views_closed = existing_cookie_info.get(str(note._id))
+            views_closed = cookie_info.get(str(note._id))
             if views_closed:
                 views, closed = views_closed
             else:
@@ -1515,20 +1514,25 @@ class ThemeProvider(object):
                 closed = False
 
             if closed or note.impressions > 0 and views > note.impressions:
-                # preserve info about this in the cookie (so it won't be forgotten, and thus be displayed again)
-                set_cookie_chunks.append('-'.join(map(str, [note._id, views, closed])))
-                # but stop this loop iteration since the notification shouldn't be shown again
                 continue
 
-            # this notification is ok to show, so if there's not one picked already, this is the one.
-            if not note_to_show:
-                views += 1
-                note_to_show = note
+            # this notification is ok to show, so this is the one.
+            views += 1
+            note_to_show = note
+            cookie_info[str(note._id)] = (views, closed)
+            break
 
-            set_cookie_chunks.append('-'.join(map(str, [note._id, views, closed])))
+        # remove any extraneous cookie chunks so it doesn't accumulate over time into a too-large cookie
+        for note_id in list(cookie_info.keys()):
+            if note_id not in [str(n._id) for n in active_notes]:
+                del cookie_info[note_id]
 
         if note_to_show:
-            return note_to_show, '_'.join(set_cookie_chunks)
+            cookie_chunks = []
+            for note_id, views_closed in cookie_info.iteritems():
+                cookie_chunks.append('{}-{}-{}'.format(note_id, views_closed[0], views_closed[1]))
+            set_cookie_value = '_'.join(sorted(cookie_chunks))
+            return note_to_show, set_cookie_value
 
     def get_site_notification(self):
         from tg import request, response

@@ -534,17 +534,17 @@ class TestThemeProvider_notifications(object):
 
     @patch('allura.model.notification.SiteNotification')
     def test_get__site_notification_multiple(self, SiteNotification):
-        note1 = MagicMock()
+        note1 = MagicMock(name='note1')
         note1._id = 'test1'
         note1.user_role = None
         note1.page_regex = 'this-will-not-match'
         note1.page_tool_type = None
-        note2 = MagicMock()
+        note2 = MagicMock(name='note2')
         note2._id = 'test2'
         note2.user_role = None
         note2.page_regex = None
         note2.page_tool_type = None
-        note3 = MagicMock()
+        note3 = MagicMock(name='note3')
         note3._id = 'test3'
         note3.user_role = None
         note3.page_regex = None
@@ -554,8 +554,8 @@ class TestThemeProvider_notifications(object):
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
-        assert get_note[0] is note2
-        assert_equal(get_note[1], 'test2-1-False_test3-0-False')
+        assert_equal(get_note[0], note2)
+        assert_equal(get_note[1], 'test2-1-False')
 
         # and with a cookie set
         get_note = ThemeProvider()._get_site_notification(
@@ -564,7 +564,7 @@ class TestThemeProvider_notifications(object):
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
-        assert get_note[0] is note3
+        assert_equal(get_note[0], note3)
         assert_equal(get_note[1], 'test2-3-True_test3-1-False')
 
     @patch('allura.model.notification.SiteNotification')

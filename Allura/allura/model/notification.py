@@ -736,4 +736,4 @@ class SiteNotification(MappedClass):
 
     @classmethod
     def actives(cls):
-        return cls.query.find({'active': True}).sort('_id', -1)
+        return cls.query.find({'active': True}).sort('_id', -1).all()
