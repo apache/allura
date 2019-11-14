@@ -644,6 +644,29 @@ def test_hideawards_macro():
         assert_not_in('Award short', r)
 
 
+@td.with_tool('test', 'Blog', 'blog')
+def test_project_blog_posts_macro():
+    from forgeblog import model as BM
+    with h.push_context('test', 'blog', neighborhood='Projects'):
+        BM.BlogPost.new(
+            title='Test title',
+            text='test post',
+            state='published',
+        )
+        BM.BlogPost.new(
+            title='Test title2',
+            text='test post2',
+            state='published',
+        )
+
+        r = g.markdown_wiki.convert('[[project_blog_posts]]')
+        assert_in('Test title</a></h3>', r)
+        assert_in('Test title2</a></h3>', r)
+        assert_in('<div class="markdown_content"><p>test post</p></div>', r)
+        assert_in('<div class="markdown_content"><p>test post2</p></div>', r)
+        assert_in('by <em>Test Admin</em>', r)
+
+
 def get_project_names(r):
     """
     Extracts a list of project names from a wiki page HTML.
