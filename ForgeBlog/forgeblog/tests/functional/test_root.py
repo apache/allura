@@ -21,7 +21,7 @@ import datetime
 import json
 
 import tg
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from mock import patch
 
 from allura.lib import helpers as h
@@ -268,3 +268,23 @@ class Test(TestController):
             wf = json.loads(self.webflash(r))
             assert_equal(wf['status'], 'error')
             assert_equal(wf['message'], 'Create/edit rate limit exceeded. Please try again later.')
+
+    def test_admin_external_feed_invalid(self):
+        r = self.app.get('/blog/')
+        r = self.app.get('/admin/blog/exfeed')
+        form = r.forms[0]
+        form['new_exfeed'].value = 'asdfasdf'
+        r = form.submit()
+        assert_in('Invalid', self.webflash(r))
+
+    def test_admin_external_feed_ok(self):
+        # sidebar menu doesn't expose link to this, unless "forgeblog.exfeed" config is true, but can use form anyway
+        r = self.app.get('/blog/')
+        r = self.app.get('/admin/blog/exfeed')
+        form = r.forms[0]
+        form['new_exfeed'].value = 'https://example.com/feed.rss'
+        r = form.submit()
+        assert_in('External feeds updated', self.webflash(r))
+
+        r = self.app.get('/admin/blog/exfeed')
+        r.mustcontain('https://example.com/feed.rss')

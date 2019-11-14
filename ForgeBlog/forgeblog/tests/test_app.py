@@ -20,6 +20,7 @@
 import tempfile
 import json
 import os
+from cgi import FieldStorage
 
 from nose.tools import assert_equal
 from tg import tmpl_context as c
@@ -31,7 +32,24 @@ from allura.lib import helpers as h
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from forgeblog import model as BM
-from cgi import FieldStorage
+
+
+class TestApp(object):
+
+    def setUp(self):
+        setup_basic_test()
+
+    @td.with_tool('test', 'Blog', 'blog')
+    def test_uninstall(self):
+        BM.BlogPost.new(
+            title='Test title',
+            text='test post',
+        )
+        ThreadLocalORMSession.flush_all()
+        assert BM.BlogPost.query.get(title='Test title')
+        # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
+        c.project.uninstall_app('blog')
+        assert not BM.BlogPost.query.get(title='Test title')
 
 
 class TestBulkExport(object):
