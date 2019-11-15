@@ -27,6 +27,7 @@ from ming.orm import ThreadLocalORMSession
 from tg import config as tg_config
 
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.command.smtp_server import MailServer
 from allura.lib.utils import ConfigProxy
 from allura.app import Application
 from allura.lib.mail_util import (
@@ -323,3 +324,18 @@ def test_parse_message_id():
         'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net',
         'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net',
     ])
+
+
+class TestMailServer(object):
+
+    def setUp(self):
+        setup_basic_test()
+
+    @mock.patch('allura.command.base.log', autospec=True)
+    def test(self, log):
+        listen_port = ('0.0.0.0', 8825)
+        mailserver = MailServer(listen_port, None)
+        mailserver.process_message('127.0.0.1', 'foo@bar.com', ['1234@tickets.test.p.localhost'],
+                                   u'this is the email body with headers and everything ÎÅ¸'.encode('utf-8'))
+        assert_equal([], log.exception.call_args_list)
+        log.info.assert_called_with('Msg passed along')

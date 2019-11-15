@@ -667,6 +667,17 @@ def test_project_blog_posts_macro():
         assert_in('by <em>Test Admin</em>', r)
 
 
+def test_project_screenshots_macro():
+    with h.push_context('test', neighborhood='Projects'):
+        M.ProjectFile(project_id=c.project._id, category='screenshot', caption='caption', filename='test_file.jpg')
+        ThreadLocalORMSession.flush_all()
+
+        r = g.markdown_wiki.convert('[[project_screenshots]]')
+
+        assert_in('href="/p/test/screenshot/test_file.jpg"', r)
+        assert_in('src="/p/test/screenshot/test_file.jpg/thumb"', r)
+
+
 def get_project_names(r):
     """
     Extracts a list of project names from a wiki page HTML.
