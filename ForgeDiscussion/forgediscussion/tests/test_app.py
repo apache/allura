@@ -23,16 +23,34 @@ import tempfile
 import json
 import os
 from operator import attrgetter
+from cgi import FieldStorage
 
 from nose.tools import assert_equal
 from tg import tmpl_context as c
 from cStringIO import StringIO
+
+from forgediscussion.site_stats import posts_24hr
 from ming.orm import ThreadLocalORMSession
-from cgi import FieldStorage
 
 from allura import model as M
+from allura.tests import decorators as td
 from forgediscussion.tests.functional.test_rest import TestDiscussionApiBase
-from forgediscussion.model.forum import Forum
+from forgediscussion.model.forum import Forum, ForumPost
+
+
+class TestApp(TestDiscussionApiBase):  # creates some sample data
+
+    @td.with_discussion
+    def test_uninstall(self):
+        assert ForumPost.query.get(text='Hi boys and girls')
+        # c.app.uninstall(c.project) errors out, but works ok in test_uninstall for repo tools.  So instead:
+        c.project.uninstall_app('discussion')
+        assert not ForumPost.query.get(text='Hi boys and girls')
+
+    @td.with_discussion
+    def test_tickets_stats_24hr(self):
+        # invoked normally via entry point
+        assert_equal(2, posts_24hr())
 
 
 class TestBulkExport(TestDiscussionApiBase):
