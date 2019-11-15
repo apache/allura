@@ -312,7 +312,7 @@ def project_screenshots():
     from allura.lib.widgets.project_list import ProjectScreenshots
     ps = ProjectScreenshots()
     g.resource_manager.register(ps)
-    response = ps.display(project=c.project)
+    response = ps.display(project=c.project, h=h)
     return response
 
 

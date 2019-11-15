@@ -199,6 +199,11 @@ class TestRootController(TestController):
                          NeighborhoodController.index.__wrapped__)
             set_transaction_name.assert_called_with('foo')
 
+    def test_error_page(self):
+        # hard to force a real error (esp. with middleware debugging being different for tests) but we can hit direct:
+        r = self.app.get('/error/document')
+        r.mustcontain("We're sorry but we weren't able to process")
+
 
 class TestRootWithSSLPattern(TestController):
     def setUp(self):
