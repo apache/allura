@@ -24,7 +24,7 @@ from collections import defaultdict, OrderedDict
 
 
 from ming.utils import LazyProperty
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 from webob import exc
@@ -913,8 +913,13 @@ class FileBrowser(BaseController):
             web_session['diformat'] = fmt
             web_session.save()
         if fmt == 'sidebyside':
-            hd = HtmlSideBySideDiff()
-            diff = hd.make_table(la, lb, adesc, bdesc)
+            if max(a.size, b.size) > asint(tg.config.get('scm.view.max_syntax_highlight_bytes', 500000)):
+                # have to check the original file size, not diff size, because difflib._mdiff inside HtmlSideBySideDiff
+                # can take an extremely long time on large files (and its even a generator)
+                diff = u'<em>File too large for side-by-side view</em>'
+            else:
+                hd = HtmlSideBySideDiff()
+                diff = hd.make_table(la, lb, adesc, bdesc)
         else:
             diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
         return dict(a=a, b=b, diff=diff)
