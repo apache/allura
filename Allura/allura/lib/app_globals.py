@@ -412,14 +412,16 @@ class Globals(object):
                     lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
                 except pygments.util.ClassNotFound:
                     pass
-            if lexer is None:
-                # no highlighting, but we should escape, encode, and wrap it in
-                # a <pre>
-                text = cgi.escape(text)
-                return h.html.literal(u'<pre>' + text + u'</pre>')
         else:
             lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
-        return h.html.literal(pygments.highlight(text, lexer, formatter))
+
+        if lexer is None or len(text) >= asint(config.get('scm.view.max_syntax_highlight_bytes', 500000)):
+            # no highlighting, but we should escape, encode, and wrap it in
+            # a <pre>
+            text = cgi.escape(text)
+            return h.html.literal(u'<pre>' + text + u'</pre>')
+        else:
+            return h.html.literal(pygments.highlight(text, lexer, formatter))
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
