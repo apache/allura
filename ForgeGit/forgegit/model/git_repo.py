@@ -351,9 +351,7 @@ class GitImplementation(M.RepositoryImplementation):
         path = path.strip('/').encode("utf-8") if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
-        args = ['--name-status', revs, '--', path]
-        if path:
-            args = ['--follow'] + args
+        args = ['--follow', '--name-status', revs, '--', path or '.']
         kwargs = {}
         if limit:
             kwargs['n'] = limit
