@@ -1523,6 +1523,24 @@ class Blob(object):
         return self.open().read()
 
 
+class EmptyBlob(Blob):
+    def __init__(self):
+        pass
+
+    def open(self):
+        return ''
+
+    @property
+    def size(self):
+        return 0
+
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
+        return False
+
+
 class LastCommit(RepoObject):
 
     def __repr__(self):

@@ -307,6 +307,16 @@ class TestRootController(_TestCase):
         assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
         assert '<table class="side-by-side-diff">' in r
 
+    def test_diff_view_mode_first_commit_of_file(self):
+        ci = self._get_ci()
+        fn = 'tree/README?diff=9a7df788cf800241e3bb5a849c8870f2f8259d98'
+        r = self.app.get(ci + fn + '&diformat=regular')
+        assert fn + '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
+
+        r = self.app.get(ci + fn + '&diformat=sidebyside')
+        assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
+        assert '<table class="side-by-side-diff">' in r
+
     def test_file_force_display(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')

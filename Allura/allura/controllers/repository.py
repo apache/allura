@@ -892,9 +892,9 @@ class FileBrowser(BaseController):
             a_ci = c.app.repo.commit(prev_commit)
             a = a_ci.get_path(prev_file or self._blob.path())
             apath = a.path()
-        except:
+        except Exception:
             # prev commit doesn't have the file
-            a = []
+            a = M.repository.EmptyBlob()
             apath = ''
         b = self._blob
 
