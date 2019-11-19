@@ -1548,6 +1548,9 @@ class LastCommit(RepoObject):
 
     @classmethod
     def _last_commit_id(cls, commit, path):
+        if path == '':
+            # on the top-level dir, the relevant commit should always be the current commit
+            return commit._id
         try:
             rev = commit.repo.log(commit._id, path, id_only=True, limit=1).next()
             return commit.repo.rev_to_commit_id(rev)
