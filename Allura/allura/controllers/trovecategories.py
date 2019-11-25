@@ -38,6 +38,15 @@ class F(object):
     add_category_form = forms.AddTroveCategoryForm()
 
 
+class TroveAdminException(Exception):
+    def __init__(self, flash_args, redir_params='', upper=None):
+        super(TroveAdminException, self).__init__()
+
+        self.flash_args = flash_args
+        self.redir_params = redir_params
+        self.upper = upper
+
+
 class TroveCategoryController(BaseController):
     @expose()
     def _lookup(self, trove_cat_id, *remainder):
@@ -102,29 +111,22 @@ class TroveCategoryController(BaseController):
         }
         return dict(tree=OrderedDict(sorted(tree.iteritems())))
 
-    @expose()
-    @require_post()
-    @validate(F.add_category_form, error_handler=index)
-    def create(self, **kw):
-        name = kw.get('categoryname')
-        upper_id = int(kw.get('uppercategory_id', 0))
-        shortname = kw.get('shortname', None)
+    @classmethod
+    def _create(cls, name, upper_id, shortname):
 
         upper = M.TroveCategory.query.get(trove_cat_id=upper_id)
         if upper_id == 0:
             path = name
             show_as_skill = True
         elif upper is None:
-            flash('Invalid upper category.', "error")
-            redirect('/categories')
-            return
+            raise TroveAdminException(('Invalid upper category.', "error"))
         else:
             path = upper.fullpath + " :: " + name
             show_as_skill = upper.show_as_skill
 
         newid = max(
             [el.trove_cat_id for el in M.TroveCategory.query.find()]) + 1
-        shortname = h.slugify(shortname or name)[1]
+        shortname = h.slugify(shortname or name, True)[1]
 
         if upper:
             trove_type = upper.fullpath.split(' :: ')[0]
@@ -133,10 +135,13 @@ class TroveCategoryController(BaseController):
             # no parent, so making a top-level.  Don't limit fullpath_re, so enforcing global uniqueness
             fullpath_re = re.compile(r'')
         oldcat = M.TroveCategory.query.get(shortname=shortname, fullpath=fullpath_re)
+
         if oldcat:
-            flash('A category with shortname "%s" already exists (%s).  Try a different, unique shortname'
-                  % (shortname, oldcat.fullpath), "error")
-            redir_params = u'?categoryname={}&shortname={}'.format(name, shortname)
+            raise TroveAdminException(
+                ('A category with shortname "%s" already exists (%s).  Try a different, unique shortname' % (shortname, oldcat.fullpath), "error"),
+                u'?categoryname={}&shortname={}'.format(name, shortname),
+                upper
+            )
         else:
             M.TroveCategory(
                 trove_cat_id=newid,
@@ -145,8 +150,25 @@ class TroveCategoryController(BaseController):
                 shortname=shortname,
                 fullpath=path,
                 show_as_skill=show_as_skill)
-            flash('Category "%s" successfully created.' % name)
-            redir_params = ''
+            return upper, ('Category "%s" successfully created.' % name,), ''
+
+    @expose()
+    @require_post()
+    @validate(F.add_category_form, error_handler=index)
+    def create(self, **kw):
+        name = kw.get('categoryname')
+        upper_id = int(kw.get('uppercategory_id', 0))
+        shortname = kw.get('shortname', None)
+
+        try:
+            upper, flash_args, redir_params = self._create(name, upper_id, shortname)
+        except TroveAdminException as ex:
+            upper = ex.upper
+            flash_args = ex.flash_args
+            redir_params = ex.redir_params
+
+        flash(*flash_args)
+
         if upper:
             redirect(u'/categories/{}/{}'.format(upper.trove_cat_id, redir_params))
         else:
