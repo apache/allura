@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 import mock
 
 from tg import config
-from nose.tools import assert_equals, assert_true, assert_in
+from nose.tools import assert_equals, assert_true, assert_in, assert_equal
 from ming.orm import session
 
 from allura import model as M
@@ -150,3 +150,32 @@ class TestTroveCategoryController(TestController):
         r = form.submit()
         assert_in("Category removed", self.webflash(r))
         assert_equals(4, M.TroveCategory.query.find().count())
+
+    def test_create_parent(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        r = self.app.get('/categories/')
+
+        form = r.forms[1]
+        form['categoryname'].value = "New Category"
+        form.submit()
+
+        possible = M.TroveCategory.query.find(dict(fullname='New Category')).all()
+        assert_equal(len(possible), 1)
+        assert_equal(possible[0].fullname, 'New Category')
+        assert_equal(possible[0].shortname, 'new-category')
+
+    def test_create_child(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        r = self.app.get('/categories/2')
+
+        form = r.forms[2]
+        form['categoryname'].value = "New Child"
+        form.submit()
+
+        possible =M.TroveCategory.query.find(dict(fullname='New Child')).all()
+        assert_equal(len(possible), 1)
+        assert_equal(possible[0].fullname, 'New Child')
+        assert_equal(possible[0].shortname, 'new-child')
+        assert_equal(possible[0].trove_parent_id, 2)
