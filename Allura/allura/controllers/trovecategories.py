@@ -111,8 +111,8 @@ class TroveCategoryController(BaseController):
         }
         return dict(tree=OrderedDict(sorted(tree.iteritems())))
 
-
-    def _create(self, name, upper_id, shortname):
+    @classmethod
+    def _create(cls, name, upper_id, shortname):
 
         upper = M.TroveCategory.query.get(trove_cat_id=upper_id)
         if upper_id == 0:
