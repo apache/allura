@@ -39,7 +39,7 @@ class F(object):
 
 
 class TroveAdminException(Exception):
-    def __init__(self, flash_args, redir_params, upper):
+    def __init__(self, flash_args, redir_params='', upper=None):
         super(TroveAdminException, self).__init__()
 
         self.flash_args = flash_args
@@ -126,7 +126,7 @@ class TroveCategoryController(BaseController):
 
         newid = max(
             [el.trove_cat_id for el in M.TroveCategory.query.find()]) + 1
-        shortname = h.slugify(shortname or name)[1]
+        shortname = h.slugify(shortname or name, True)[1]
 
         if upper:
             trove_type = upper.fullpath.split(' :: ')[0]

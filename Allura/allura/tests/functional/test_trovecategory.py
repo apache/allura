@@ -179,3 +179,23 @@ class TestTroveCategoryController(TestController):
         assert_equal(possible[0].fullname, 'New Child')
         assert_equal(possible[0].shortname, 'new-child')
         assert_equal(possible[0].trove_parent_id, 2)
+
+        # test slugify with periods. the relevant form becomes the third, after a child has been created above.
+        r = self.app.get('/categories/2')
+        form = r.forms[3]
+        form['categoryname'].value = "New Child.io"
+        form.submit()
+        possible = M.TroveCategory.query.find(dict(fullname='New Child.io')).all()
+        assert_equal(possible[0].shortname, 'new-child.io')
+
+    def test_create_child_bad_upper(self):
+        self.create_some_cats()
+        session(M.TroveCategory).flush()
+        r = self.app.get('/categories/2')
+
+        form = r.forms[2]
+        form['categoryname'].value = "New Child"
+        form['uppercategory_id'].value = "541561615"
+        r = form.submit().follow()
+
+        assert 'Invalid upper category' in r.text
