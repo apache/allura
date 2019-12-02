@@ -891,7 +891,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     pass
             elif ace.access == model.ACE.DENY:
                 role = model.ProjectRole.query.get(_id=ace.role_id)
-                if role.name is None and role.user:
+                if role and role.name is None and role.user:
                     block_list[ace.permission].append((role.user, ace.reason))
         return dict(
             app=self.app,
