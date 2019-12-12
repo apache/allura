@@ -156,11 +156,10 @@ class File(MappedClass):
         if format == 'BMP': # use jpg format if bmp is provided
             format = 'PNG'
         with thumbnail.wfile() as fp_w:
+            save_kwargs = {}
             if 'transparency' in image.info:
-                image.save(fp_w,
-                           format, transparency=image.info['transparency'])
-            else:
-                image.save(fp_w, format)
+                save_kwargs['transparency'] = image.info['transparency']
+            image.save(fp_w, format, optimize=True, **save_kwargs)
 
         return thumbnail
 
@@ -203,11 +202,10 @@ class File(MappedClass):
                 filename=filename, content_type=content_type, **original_meta)
             with original.wfile() as fp_w:
                 try:
+                    save_kwargs = {}
                     if 'transparency' in image.info:
-                        image.save(fp_w,
-                                   format, transparency=image.info['transparency'], save_all=save_anim)
-                    else:
-                        image.save(fp_w, format, save_all=save_anim)
+                        save_kwargs['transparency'] = image.info['transparency']
+                    image.save(fp_w, format, save_all=save_anim, optimize=True, **save_kwargs)
                 except Exception as e:
                     session(original).expunge(original)
                     log.error('Error saving image %s %s', filename, e)
