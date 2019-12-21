@@ -45,6 +45,7 @@ setup(name='ForgeImporters',
       github-repo = forgeimporters.github.code:GitHubRepoImporter
       trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
       forge-tracker = forgeimporters.forge.tracker:ForgeTrackerImporter
+      forge-discussion = forgeimporters.forge.discussion:ForgeDiscussionImporter
 
       [allura.admin]
       importers = forgeimporters.base:ImportAdminExtension

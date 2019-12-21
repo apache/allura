@@ -1,0 +1,11 @@
+{% extends 'forgeimporters:templates/importer_base.html' %}
+
+{% block importer_fields %}
+    <div>
+        <label for="discussions_json">Discussions JSON
+            <br><small>JSON file exported from Allura</small>
+        </label>
+        <input name="discussions_json" type="file" />
+        {{ error('tickets_json') }}
+    </div>
+{% endblock %}
