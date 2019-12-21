@@ -50,6 +50,7 @@ class ForgeDiscussionImportController(ToolImportController):
     @require_post()
     def create(self, discussions_json, mount_point, mount_label, **kw):
         # TODO: delete debug output
+        self.importer.clear_pending(c.project) # TODO: Delete this line
         if self.importer.enforce_limit(c.project):
             print("import 1")
             save_importer_upload(c.project, 'discussion.json', json.dumps(discussions_json))
@@ -108,7 +109,7 @@ class ForgeDiscussionImporter(ToolImporter):
 
                 new_forum = dict(
                     shortname=forum_json['shortname'],
-                    _id=forum_json['_id'],
+                    _id=forum_json.get('_id', ''),
                     description=forum_json['description'],
                     name=forum_json['name'],
                     create='on',
@@ -123,16 +124,10 @@ class ForgeDiscussionImporter(ToolImporter):
                 forum = utils.create_forum(app, new_forum=new_forum)
 
                 for thread_json in forum_json["threads"]:
-                    #thread = DM.ForumThread(
-                    #    _id=thread_json['_id'],
-                    #    discussion_id=thread_json['discussion_id'],
-                    #    subject=thread_json['subject']
-                    #)
                     thread = forum.get_discussion_thread(dict(
                                 headers=dict(Subject=thread_json['subject'])))[0]
 
-                    self.add_posts(
-                        thread, thread_json['posts'])
+                    self.add_posts(thread, thread_json['posts'])
 
                 session(forum).flush(forum)
                 session(forum).expunge(forum)
@@ -157,7 +152,9 @@ class ForgeDiscussionImporter(ToolImporter):
         return user
 
     def annotate(self, text, user, username, label=''):
-        pass
+        if username and user.is_anonymous() and username != 'nobody':
+            return '*Originally%s by:* %s\n\n%s' % (label, username, text)
+        return text
 
     def add_posts(self, thread, posts):
         for post_json in posts:
