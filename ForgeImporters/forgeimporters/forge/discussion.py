@@ -85,29 +85,38 @@ class ForgeDiscussionImporter(ToolImporter):
 
     def import_tool(self, project, user, mount_point=None,
                      mount_label=None, **kw):
-        print("import_tool")
-        #import_id_converter = ImportIdConverter.get()
-        discussion_json = self._load_json(project)
         
-        mount_point = mount_point or 'discussion'
+		print("import_tool")
+		import_id_converter = ImportIdConverter.get()
+		discussion_json = self._load_json(project)
+		discussion_json['discussion_config']['options'].pop('ordinal', None)
+		discussion_json['discussion_config']['options'].pop('mount_point', None)
+		discussion_json['discussion_config']['options'].pop('mount_label', None)
+		discussion_json['discussion_config']['options'].pop('import_id', None)
+
+		mount_point = mount_point or 'discussion'
 
 
-        #_id = forum_json['_id']
-        _id = 'undefined'
+		_id = discussions_json.get('_id', 'undefined')
+		_open_status_names = discussions_json.get('open_status_names', 'undefined')
+		_closed_status_names = discussions_json.get('closed_status_names', 'undefined')
 
-        app = project.install_app('discussion', mount_point, mount_label,
-                    import_id={'source': self.source, 'app_config_id': _id }
-        )
-        ThreadLocalORMSession.flush_all()
+		app = project.install_app('discussion', mount_point, mount_label,
+                    import_id={'source': self.source, 'app_config_id': _id },
+					open_status_names=_open_status_names,
+					closed_status_names=_closed_status_names,
+					**discussion_json['discussion_config']['options']
+		)
+		ThreadLocalORMSession.flush_all()
        
-        try:
-            M.session.artifact_orm_session._get().skip_mod_date = True
+		try:
+			M.session.artifact_orm_session._get().skip_mod_date = True
 
-            for forum_json in discussion_json['forums']:
+			for forum_json in discussion_json['forums']:
 
-                print("forum_json: ", forum_json)
+				print("forum_json: ", forum_json)
 
-                new_forum = dict(
+				new_forum = dict(
                     shortname=forum_json['shortname'],
                     _id=forum_json.get('_id', ''),
                     description=forum_json['description'],
@@ -117,29 +126,31 @@ class ForgeDiscussionImporter(ToolImporter):
                     members_only=False,
                     anon_posts=False,
                     monitoring_email=None
-               ) 
+				) 
 
-                print(new_forum)
+				print(new_forum)
 
-                forum = utils.create_forum(app, new_forum=new_forum)
+				forum = utils.create_forum(app, new_forum=new_forum)
 
-                for thread_json in forum_json["threads"]:
-                    thread = forum.get_discussion_thread(dict(
+				for thread_json in forum_json["threads"]:
+					thread = forum.get_discussion_thread(dict(
                                 headers=dict(Subject=thread_json['subject'])))[0]
 
-                    self.add_posts(thread, thread_json['posts'])
+					self.add_posts(thread, thread_json['posts'])
 
-                session(forum).flush(forum)
-                session(forum).expunge(forum)
+				session(forum).flush(forum)
+				session(forum).expunge(forum)
 
                 #perform_import(discussion_json, user)
 
-                print("Forum %s created" % (new_forum["shortname"]))
+				print("Forum %s created" % (new_forum["shortname"]))
 
-            return app
-        except Exception:
-            h.make_app_admin_only(app)
-            raise
+			g.post_event('project_updated')
+			app.globals.invalidate_bin_counts()
+			return app
+		except Exception:
+			h.make_app_admin_only(app)
+			raise
                                      
 
     def get_user(self, username):
