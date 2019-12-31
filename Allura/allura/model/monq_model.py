@@ -140,7 +140,9 @@ class MonQTask(MappedClass):
              kwargs=None,
              result_type='forget',
              priority=10,
-             delay=0):
+             delay=0,
+             flush_immediately=True,
+             ):
         '''Create a new task object based on the current context.'''
         if args is None:
             args = ()
@@ -173,7 +175,8 @@ class MonQTask(MappedClass):
             result=None,
             context=context,
             time_queue=datetime.utcnow() + timedelta(seconds=delay))
-        session(obj).flush(obj)
+        if flush_immediately:
+            session(obj).flush(obj)
         return obj
 
     @classmethod

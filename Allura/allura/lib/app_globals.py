@@ -346,6 +346,20 @@ class Globals(object):
             return NullActivityStreamDirector()
 
     def post_event(self, topic, *args, **kwargs):
+        if 'flush_immediately' not in kwargs:
+            try:
+                env = request.environ
+            except AttributeError:
+                script_without_ming_middleware = True
+            else:
+                script_without_ming_middleware = env['PATH_INFO'] == '--script--'
+            if script_without_ming_middleware:
+                kwargs['flush_immediately'] = True
+            else:
+                # within tasks and web requests, ming middleware will flush everything to mongo
+                # so best to *not* flush immediately and let all db writes happen in order
+                # so there's no chance of an event being created and started while the initiating code is still running
+                kwargs['flush_immediately'] = False
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
 
     @LazyProperty

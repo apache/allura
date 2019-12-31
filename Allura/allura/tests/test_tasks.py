@@ -23,10 +23,12 @@ import sys
 import unittest
 from base64 import b64encode
 import logging
+import pkg_resources
 
 import tg
 import mock
 from tg import tmpl_context as c, app_globals as g
+
 from datadiff.tools import assert_equal
 from nose.tools import assert_in, assert_less
 from ming.orm import FieldProperty, Mapper
@@ -36,6 +38,7 @@ from testfixtures import LogCapture
 from alluratest.controller import setup_basic_test, setup_global_objects, TestController
 
 from allura import model as M
+from allura.command.taskd import TaskdCommand
 from allura.lib import helpers as h
 from allura.lib import search
 from allura.lib.exceptions import CompoundError
@@ -86,21 +89,60 @@ class TestRepoTasks(unittest.TestCase):
         mr.set_can_merge_cache.assert_called_once_with(val)
 
 
+# used in test_post_event_from_within_task below
+@task
+def _task_that_creates_event(event_name,):
+    g.post_event(event_name)
+    # event does not get flushed to db right away (at end of task, ming middleware will flush it)
+    assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=[event_name])
+
+
 class TestEventTasks(unittest.TestCase):
 
     def setUp(self):
+        setup_basic_test()
+        setup_global_objects()
         self.called_with = []
 
     def test_fire_event(self):
         event_tasks.event('my_event', self, 1, 2, a=5)
         assert self.called_with == [((1, 2), {'a': 5})], self.called_with
 
+    def test_post_event_explicit_flush(self):
+        g.post_event('my_event1', flush_immediately=True)
+        assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event1'])
+
+        g.post_event('my_event2', flush_immediately=False)
+        assert not M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
+        ThreadLocalORMSession.flush_all()
+        assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event2'])
+
+    def test_post_event_from_script(self):
+        # simulate post_event being called from a paster script command:
+        with mock.patch.dict(tg.request.environ, PATH_INFO='--script--'):
+            g.post_event('my_event3')
+            # event task is flushed to db right away:
+            assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event3'])
+
+    def test_post_event_from_within_task(self):
+        # instead of M.MonQTask.run_ready() run real 'taskd' so we get all the setup we need
+        taskd = TaskdCommand('taskd')
+        taskd.parse_args([pkg_resources.resource_filename('allura', '../test.ini')])
+        taskd.keep_running = True
+        taskd.restart_when_done = False
+        _task_that_creates_event.post('my_event4')
+        with mock.patch('allura.command.taskd.setproctitle') as setproctitle:
+            def stop_taskd_after_this_task(*args):
+                taskd.keep_running = False
+            setproctitle.side_effect = stop_taskd_after_this_task  # avoid proc title change; useful hook to stop taskd
+            taskd.worker()
+        # after the initial task is done, the event task has been persisted:
+        assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event4'])
+
     def test_compound_error(self):
         '''test_compound_exception -- make sure our multi-exception return works
         OK
         '''
-        setup_basic_test()
-        setup_global_objects()
         t = raise_exc.post()
         with LogCapture(level=logging.ERROR) as l, \
                 mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
