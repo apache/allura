@@ -41,6 +41,9 @@ class Feedback(VersionedArtifact, ActivityObject):
 
     class __mongometa__:
         name = 'feedback'
+        indexes = [
+            ('project_id', 'reported_by_id'),
+        ]
 
     type_s = 'Feedback'
     _id = FieldProperty(schema.ObjectId)
@@ -55,6 +58,7 @@ class Feedback(VersionedArtifact, ActivityObject):
         result = VersionedArtifact.index(self)
         result.update(
             created_date_dt=self.created_date,
+            reported_by_username_t=self.reported_by.username,
             text=self.description,
         )
         return result

@@ -20,7 +20,7 @@ import pymongo
 
 # Non-stdlib imports
 
-from tg import expose, flash, url, config, request
+from tg import expose, flash, url, config, request, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import tmpl_context as c, app_globals as g
 from ming.odm import session
@@ -121,7 +121,7 @@ class RootController(BaseController, FeedController):
         rating_by_user = Feedback.query.find({
             'reported_by_id': c.user._id, 'project_id': c.project._id}
         ).count()
-        if (rating_by_user > 0):
+        if rating_by_user > 0:
             user_has_already_reviewed = True
         return dict(review_list=self.get_review_list(),
                     user_has_already_reviewed=user_has_already_reviewed,
@@ -150,8 +150,8 @@ class RootController(BaseController, FeedController):
         M.main_orm_session.flush()
         g.director.create_activity(c.user, 'posted', p, related_nodes=[
                                    c.project], tags=['description'])
-        return dict(review_list=self.get_review_list(),
-                    rating=self.getRating())
+        self.getRating()  # force recalculation
+        redirect(c.app.url)
 
     # called on click of the Feedback link
     @with_trailing_slash
@@ -183,8 +183,8 @@ class RootController(BaseController, FeedController):
         g.director.create_activity(
             c.user, 'modified', self.rating,
             related_nodes=[c.project], tags=['description'])
-        return dict(
-            review_list=self.get_review_list(), rating=self.getRating())
+        self.getRating()  # force recalculation
+        redirect(c.app.url)
 
     # called when user clicks on delete link in feedback page
     @without_trailing_slash
@@ -198,7 +198,7 @@ class RootController(BaseController, FeedController):
             Feedback.query.remove(dict(
                 {'reported_by_id': c.user._id, 'project_id': c.project._id}))
             M.main_orm_session.flush()
-            self.getRating()
+            self.getRating()  # force recalculation
             flash('Feedback successfully deleted')
             return 'Success'
         else:
@@ -231,7 +231,7 @@ class RootController(BaseController, FeedController):
         sum_of_ratings = float(
             fivestarcount + fourstarcount + threestarcount + twostarcount +
             onestarcount)
-        if (sum_of_ratings != 0):
+        if sum_of_ratings != 0:
             average_user_ratings = float(
                 (5*fivestarcount) + (4*fourstarcount) +
                 (3*threestarcount) + (2*twostarcount) +
@@ -239,12 +239,12 @@ class RootController(BaseController, FeedController):
             float_rating = float(average_user_ratings)
             int_rating = int(float_rating)
             float_point_value = float_rating - int_rating
-            if(float_point_value < 0.25):
+            if float_point_value < 0.25:
                 c.project.rating = int_rating
-            elif(float_point_value >= 0.25 < 0.75):
+            elif float_point_value >= 0.25 < 0.75:
                 c.project.rating = 0.5 + int_rating
-            elif(float_point_value >= 0.75):
+            elif float_point_value >= 0.75:
                 c.project.rating = float(int_rating)+1
             return average_user_ratings
-        if (sum_of_ratings == 0):
+        if sum_of_ratings == 0:
             c.project.rating = 0.0
