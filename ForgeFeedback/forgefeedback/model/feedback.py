@@ -1,4 +1,4 @@
-#	Licensed to the Apache Software Foundation (ASF) under one
+#       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
 #       regarding copyright ownership.  The ASF licenses this file
@@ -30,7 +30,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 
 from allura.model.artifact import VersionedArtifact
 from allura.model.auth import AlluraUserProperty, User
-from allura.model.project import ProjectRole 
+from allura.model.project import ProjectRole
 from allura.model.timeline import ActivityObject
 from allura.lib import helpers as h
 
@@ -38,10 +38,10 @@ log = logging.getLogger(__name__)
 
 
 class Feedback(VersionedArtifact, ActivityObject):
-   
+
     class __mongometa__:
-	name = 'feedback'
-   	
+        name = 'feedback'
+
     type_s = 'Feedback'
     _id = FieldProperty(schema.ObjectId)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -57,7 +57,7 @@ class Feedback(VersionedArtifact, ActivityObject):
             created_date_dt=self.created_date,
             text=self.description,
         )
-        return result 
+        return result
 
     @property
     def activity_name(self):
@@ -66,17 +66,11 @@ class Feedback(VersionedArtifact, ActivityObject):
     @property
     def activity_extras(self):
         d = ActivityObject.activity_extras.fget(self)
-        d.update(summary=self.description) 
+        d.update(summary=self.description)
         return d
+
     def url(self):
-      return self.app_config.url()
+        return self.app_config.url()
+
 
 Mapper.compile_all()
-
-
-
-
-
-
-
-

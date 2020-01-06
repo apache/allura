@@ -15,7 +15,7 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-This is used when user is trying to imput a new review 
+       This is used when user is trying to imput a new review 
 
 -#}
 
@@ -39,7 +39,7 @@ p {
 </style>
 
 <div class="feed">
-<form action="{{ c.app.url }}edit_user_review" method="post">
+<form action="{{ c.app.url }}edit_user_review" method="post" id="feedback_form">
 
 <div class="row">
 <div class="col-25">
@@ -50,31 +50,12 @@ p {
 	</div>
         <div class="col-75">
 <fieldset class="rating">
-    {% if rating == '5' %}
-      <input type="radio" id="star5" name="rating" value="5" checked="checked" onclick="manage()" /><label for="star5" title="Excellent!"></label>
-    {% else %}
-      <input type="radio" id="star5" name="rating" value="5" onclick="manage()" /><label for="star5" title="Excellent!"></label>
-    {% endif %}
-    {% if rating == '4' %}
-      <input type="radio" id="star4" name="rating" value="4" checked="checked" onclick="manage()" /><label for="star4" title="Great!"></label>
-    {% else %}
-      <input type="radio" id="star4" name="rating" value="4" onclick="manage()" /><label for="star4" title="Great!"></label>
-    {% endif %}
-    {% if rating == '3' %}
-      <input type="radio" id="star3" name="rating" value="3" checked="checked" onclick="manage()" /><label for="star3" title="Good!"></label>
-    {% else %}
-      <input type="radio" id="star3" name="rating" value="3" onclick="manage()" /><label for="star3" title="Good!"></label>
-    {% endif %}
-    {% if rating == '2' %}
-      <input type="radio" id="star2" name="rating" value="2" checked="checked" onclick="manage()" /><label for="star2" title="Average"></label>
-    {% else %}
-      <input type="radio" id="star5" name="rating" value="5" onclick="manage()" /><label for="star5" title="Excellent!"></label>
-    {% endif %} 
-    {% if rating == '1' %}
-      <input type="radio" id="star1" name="rating" value="1" checked="checked" onclick="manage()" /><label for="star1" title="Poor"></label>
-    {% else %}
-      <input type="radio" id="star5" name="rating" value="5" onclick="manage()" /><label for="star5" title="Excellent!"></label>
-    {% endif %} 
+    
+    <input type="radio" id="star5" name="rating" value="5" {% if rating == '5' %} checked="checked" {% endif %} onclick="manage()" /><label for="star5" title="Excellent"></label>
+    <input type="radio" id="star4" name="rating" value="4" {% if rating == '4' %} checked="checked" {% endif %} onclick="manage()" /><label for="star4" title="Great"></label>
+    <input type="radio" id="star3" name="rating" value="3" {% if rating == '3' %} checked="checked" {% endif %} onclick="manage()" /><label for="star3" title="Good"></label>
+    <input type="radio" id="star2" name="rating" value="2" {% if rating == '2' %} checked="checked" {% endif %} onclick="manage()" /><label for="star2" title="Average"></label>
+    <input type="radio" id="star1" name="rating" value="1" {% if rating == '1' %} checked="checked" {% endif %} onclick="manage()" /><label for="star1" title="Poor"></label>
     
 </fieldset>
 </div>

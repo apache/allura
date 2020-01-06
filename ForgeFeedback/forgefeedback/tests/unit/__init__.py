@@ -48,4 +48,3 @@ class FeedbackTestWithModel(object):
 
     def tearDown(self):
         ThreadLocalORMSession.close_all()
-

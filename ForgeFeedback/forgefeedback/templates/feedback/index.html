@@ -9,7 +9,7 @@
 
          http://www.apache.org/licenses/LICENSE-2.0
 
- e     Unless required by applicable law or agreed to in writing,
+       Unless required by applicable law or agreed to in writing,
        software distributed under the License is distributed on an
        "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
        KIND, either express or implied.  See the License for the
@@ -38,7 +38,7 @@
 	{% if user_has_already_reviewed == False %}   
 	<p><h2> Provide your <a href="{{c.app.url}}new_feedback">Feedback</a> for {{c.project.name}} </h2></p>
 	{% else %} 
-	<p><h2><a href="{{c.app.url}}edit_feedback"> Edit </a> or <a href="{{c.app.url}}delete_feedback"> Delete </a> your feedback for {{c.project.name}} </h2> </p>
+	<p><h2><a href="{{c.app.url}}edit_feedback"> Edit </a> or <a class="post-link" href="#"> Delete </a> your feedback for {{c.project.name}} </h2> </p>
 	{% endif %}  
 </div>
 {% else %}
@@ -50,7 +50,20 @@
         {% include 'forgefeedback:templates/feedback/feedback_list.html' %}
     </ul>  
 </div>
+
 {% endblock %}
 
-
+{% block extra_js %}
+<script>
+    $('.post-link').click(function() {
+    var cval = $.cookie('_session_id');
+    $.post( '{{c.app.url}}delete_feedback', {'_session_id':cval},
+        function(){ 
+            window.location.href = '{{c.app.url}}';
+            }
+    );
+    
+    });
+</script>
+{% endblock %}
 

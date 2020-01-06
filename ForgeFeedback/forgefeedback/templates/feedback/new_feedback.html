@@ -15,7 +15,7 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-This is used when user is trying to imput a new review 
+       This is used when user is trying to imput a new review 
 
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
@@ -37,7 +37,7 @@ p {
 </style>
 
 <div class="feed">
-    <form action="{{ c.app.url }}create_feedback" method="post">
+    <form action="{{ c.app.url }}create_feedback" method="post" id="feedback_form">
 
     <div class="row">
         <div class="col-25">

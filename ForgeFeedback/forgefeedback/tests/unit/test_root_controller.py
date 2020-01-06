@@ -30,6 +30,7 @@ from forgefeedback.tests.unit import FeedbackTestWithModel
 from forgefeedback.model import Feedback
 from forgefeedback import feedback_main
 
+
 class TestFeedbackApp(FeedbackTestWithModel):
 
     def setUp(self):
@@ -39,28 +40,28 @@ class TestFeedbackApp(FeedbackTestWithModel):
 
     def test_index(self):
         reviews = feedback_main.RootController().index()
-        assert reviews['user_has_already_reviewed']==False
+        assert True if not reviews['user_has_already_reviewed'] else False
         create_feedbacks()
         reviews = feedback_main.RootController().index()
-        assert reviews['user_has_already_reviewed']==True
-        
+        assert True if reviews['user_has_already_reviewed'] else False
+
     def test_feedback(self):
         create_feedbacks()
         reviews = feedback_main.RootController().get_review_list()
-        assert reviews[0].description =='Very good tool'
-        assert reviews[1].description =='Not Useful'
-        assert reviews[0].rating =='5'
-        assert reviews[1].rating =='2'
+        assert reviews[0].description == 'Very good tool'
+        assert reviews[1].description == 'Not Useful'
+        assert reviews[0].rating == '5'
+        assert reviews[1].rating == '2'
 
     def test_getRating(self):
         create_feedbacks()
-        rating=feedback_main.RootController().getRating()
-        assert_equal(rating,3.5)
+        rating = feedback_main.RootController().getRating()
+        assert_equal(rating, 3.5)
 
     def test_edit_feedback(self):
         create_feedbacks()
-        old_feedback= feedback_main.RootController().edit_feedback()
-        assert old_feedback['description'] =='Very good tool'
+        old_feedback = feedback_main.RootController().edit_feedback()
+        assert old_feedback['description'] == 'Very good tool'
 
     def test_check_feedback(self):
         feed_check = feedback_main.RootController().feedback_check('good')
@@ -68,13 +69,15 @@ class TestFeedbackApp(FeedbackTestWithModel):
         feed_check = feedback_main.RootController().feedback_check('shit')
         assert feed_check == 'true'
 
+
 def create_feedbacks():
-		feedback_1= create_feedback('2', 'Not Useful')
-                c.user = User(username='test-admin')
-                h.set_context('test', 'feedback', neighborhood='Projects')
-                feedback_2 = create_feedback('5', 'Very good tool')
+    feedback_1 = create_feedback('2', 'Not Useful')
+    c.user = User(username='test-admin')
+    h.set_context('test', 'feedback', neighborhood='Projects')
+    feedback_2 = create_feedback('5', 'Very good tool')
+
 
 def create_feedback(rating, description):
-                feedback = Feedback(rating=rating, description=description)
-                session(feedback).flush()
-                return feedback	
+    feedback = Feedback(rating=rating, description=description)
+    session(feedback).flush()
+    return feedback

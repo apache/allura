@@ -16,6 +16,3 @@
 #       under the License.
 
 from feedback import Feedback
-
-
-

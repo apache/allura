@@ -15,7 +15,7 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-This is used when user is trying to imput a new review 
+       This is used when user is trying to imput a new review 
 
 -#}
 
@@ -28,7 +28,7 @@ This is used when user is trying to imput a new review
 <!-- macro for feedback alert message -->
 {% macro alert_message() %}
 	<div id="check">
-		<p id="status_msg" style="color:#f33;"> <i class="fa fa-exclamation-triangle"></i> Profanity alert! Please update your feedback.</p>
+		<p id="status_msg" style="color:#f33;display:none;"> <i class="fa fa-exclamation-triangle"></i> Profanity alert! Please update your feedback.</p>
 	</div>
 {% endmacro %}
 
@@ -59,27 +59,32 @@ function manage()
 
 </script>
 
-<script type="text/javascript">
-$('#status_msg').hide();
-
-$("#description").keyup(function(){
-	var description = $("#description").val();
-	$.ajax({
-		url:'{{url}}feedback_check',
-		type:'GET',
-		data: {'description':description},
-		success: function(status){
-			if (status == 'true'){
-				$('#button').attr('disabled', true);
-				$('#status_msg').show();
-			}
-			else{
-				$('#status_msg').hide();
-			}
-		}
-	});
+<script>
+    $('#feedback_form').submit(function(event){
+    event.preventDefault();
+    var description = $("#description").val();
+    
+    $.ajax({
+        context: this,
+        url:'{{url}}feedback_check',
+        type:'GET',
+        data: {'description':description},
+        success: function(status){
+            if (status == 'true'){
+                $('#button').attr('disabled', true);
+                $('#status_msg').show();
+            }
+            else{
+                $('#status_msg').hide();
+                $('#button').attr('disabled', false);
+                this.submit();
+            }
+        }
+        
+    });
 });
 </script>
+
 {% endmacro %}
 
 

@@ -25,12 +25,13 @@ from allura.lib import security
 from allura.tests import decorators as td
 from allura.lib import helpers as h
 
+
 def setUp():
     setup_basic_test()
     setup_with_tools()
 
 
-@td.with_tool('u/test-user-1','feedback')
+@td.with_tool('u/test-user-1', 'feedback')
 @td.with_user_project('test-user-1')
 def setup_with_tools():
     setup_global_objects()
@@ -51,4 +52,3 @@ def test_role_assignments():
     assert_equal(check_access('create'), (True, True, False))
     assert_equal(check_access('update'), (True, False, False))
     assert_equal(check_access('delete'), (True, False, False))
-
