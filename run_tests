@@ -57,6 +57,8 @@ def run_one(cmd, **popen_kwargs):
     while proc.poll() is None:
         line = proc.stdout.readline()
         sys.stdout.write(line)
+        if 'No data to combine' in line:
+            sys.stdout.write('^^ error from "coverage combine" command.  Make sure your package has a setup.cfg with coverage settings like other packages\n')
         sys.stdout.flush()
     # wait for completion and get remainder of output
     out_remainder, _ = proc.communicate()
