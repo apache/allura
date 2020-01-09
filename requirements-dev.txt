@@ -16,7 +16,7 @@ imagesize==1.1.0          # via sphinx
 jinja2==2.10              # via sphinx
 markupsafe==1.1.1         # via jinja2
 packaging==19.0           # via sphinx
-pip-tools==4.0.0
+pip-tools==4.3.0
 pygments==2.4.2           # via sphinx
 pyparsing==2.4.0          # via packaging
 pytz==2019.1              # via babel
@@ -33,4 +33,4 @@ typing==3.7.4             # via sphinx
 urllib3==1.25.3           # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.4.0        # via sphinx
+# setuptools==44.0.0        # via sphinx

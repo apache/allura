@@ -8,7 +8,7 @@ cryptography==2.6.1
 decorator
 EasyWidgets>=0.3.3
 emoji
-faulthandler
+faulthandler ; python_version < "3.3"
 feedparser
 # FormEncode may need v2.0 to work past py3.3 or so?  https://github.com/formencode/formencode/issues/140
 FormEncode
