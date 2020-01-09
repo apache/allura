@@ -52,7 +52,6 @@ datadiff
 ipython<6  # Ipython 7 starts to require py3
 mock
 nose
-poster==0.8.1
 pyflakes
 #pylint -- disabled due to [#8346]  (also requires diff versions on py2 vs 3, including transitive deps which gets tricky with pip-compile)
 testfixtures

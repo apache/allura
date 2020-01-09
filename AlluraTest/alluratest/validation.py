@@ -34,9 +34,8 @@ import pkg_resources
 import webtest
 from webtest import TestApp
 from nose.tools import ok_
-from poster.encode import multipart_encode
-from poster.streaminghttp import register_openers
 from ming.utils import LazyProperty
+import requests
 
 from allura.lib import utils
 
@@ -127,23 +126,25 @@ def validate_html5(html_or_response):
         html = html_or_response.body
     else:
         html = html_or_response
-    register_openers()
-    params = [("out", "text"), ("content", html)]
-    datagen, headers = multipart_encode(params)
-    request = urllib2.Request("http://html5.validator.nu/", datagen, headers)
     count = 3
     while True:
         try:
-            resp = urllib2.urlopen(request, timeout=3).read()
+            # TODO switch to http://validator.w3.org/nu/?out=text but it has more validation errors for us to fix
+            # Docs: https://github.com/validator/validator/wiki/Service-%C2%BB-Input-%C2%BB-POST-body   and other pages
+            resp = requests.post('http://html5.validator.nu/nu/?out=text',  # could do out=json
+                                 data=html,
+                                 headers={'Content-Type': str('text/html; charset=utf-8')},
+                                 timeout=3)
+            resp = resp.text
             break
-        except:
+        except Exception:
             resp = "Couldn't connect to validation service to check the HTML"
             count -= 1
             if count == 0:
                 sys.stderr.write('WARNING: ' + resp + '\n')
                 break
 
-    resp = resp.replace('“', '"').replace('”', '"').replace('–', '-')
+    resp = resp.replace(u'“', u'"').replace(u'”', u'"').replace(u'–', u'-')
 
     ignored_errors = [
         'Required attributes missing on element "object"',
