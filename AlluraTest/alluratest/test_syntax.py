@@ -19,6 +19,7 @@ import os.path
 from subprocess import Popen, PIPE
 import sys
 from itertools import izip_longest
+from unittest import SkipTest
 
 toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
@@ -71,6 +72,7 @@ def test_no_tabs():
 
 
 def run_linter(files):
+    raise SkipTest('pylint see [#8346]')
     if run('pylint -E --disable=all --enable=exposed-api-needs-kwargs --load-plugins alluratest.pylint_checkers {}'.format(' '.join(files))) != 0:
         raise Exception('Custom Allura pylint errors found.')
 
