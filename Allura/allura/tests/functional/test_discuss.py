@@ -81,8 +81,8 @@ class TestDiscuss(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'].encode('utf-8'), params=params,
-                          headers={'Referer': thread_link.encode("utf-8")},
-                          extra_environ=dict(username='root'))
+                          headers={str('Referer'): str(thread_link.encode("utf-8"))},
+                          extra_environ=dict(username=str('root')))
         r = r.follow()
         return r
 
@@ -107,7 +107,7 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
                           params=params,
-                          headers={'Referer': thread_link.encode("utf-8")})
+                          headers={str('Referer'): str(thread_link.encode("utf-8"))})
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
@@ -121,7 +121,7 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
-                          headers={'Referer': post_link.encode("utf-8")})
+                          headers={str('Referer'): str(post_link.encode("utf-8"))})
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
         permalinks = [post.find('form')['action'].encode('utf-8')
@@ -149,7 +149,7 @@ class TestDiscuss(TestDiscussBase):
         # ok initially
         non_admin = 'test-user'
         self.app.get(thread_url, status=200,
-                     extra_environ=dict(username=non_admin))
+                     extra_environ=dict(username=str(non_admin)))
 
         # set wiki page private
         from forgewiki.model import Page
@@ -163,14 +163,14 @@ class TestDiscuss(TestDiscussBase):
         ]
 
         self.app.get(thread_url, status=200,  # ok
-                     extra_environ=dict(username='test-admin'))
+                     extra_environ=dict(username=str('test-admin')))
         self.app.get(thread_url, status=403,  # forbidden
-                     extra_environ=dict(username=non_admin))
+                     extra_environ=dict(username=str(non_admin)))
 
     def test_spam_link(self):
         r = self._make_post('Test post')
         assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' in r
-        r = self.app.get('/wiki/Home/', extra_environ={'username': 'test-user-1'})
+        r = self.app.get('/wiki/Home/', extra_environ={'username': str('test-user-1')})
         assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' not in r, 'User without moderate perm must not see Spam link'
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
@@ -214,7 +214,7 @@ class TestDiscuss(TestDiscussBase):
             update_link,
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['status'] == 'no_permission'
 
     def test_comment_post_reaction_new(self):
@@ -239,14 +239,14 @@ class TestDiscuss(TestDiscussBase):
             react_link,
             params={
                 'r': ':+1:'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['error'] == 'no_permission'
         # even anon can't send invalid reactions
         response = self.app.post(
             react_link,
             params={
                 'r': 'invalid'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['error'] == 'no_permission'
 
     def test_comment_post_reaction_change(self):
@@ -417,7 +417,7 @@ class TestAttachment(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'].encode('utf-8'), params=params,
-                          headers={'Referer': self.thread_link.encode('utf-8')})
+                          headers={str('Referer'): str(self.thread_link.encode('utf-8'))})
         r = r.follow()
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
@@ -500,8 +500,8 @@ class TestAttachment(TestDiscussBase):
         self.app.get(thumblink, status=404)
 
     def test_unmoderated_post_attachments(self):
-        ordinary_user = {'username': 'test-user'}
-        moderator = {'username': 'test-admin'}
+        ordinary_user = {'username': str('test-user')}
+        moderator = {'username': str('test-admin')}
         # set up attachment
         f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
         with open(f) as f:

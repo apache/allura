@@ -827,7 +827,7 @@ class TestProjectAdmin(TestController):
         # make sure can still access homepage after one of user's roles were
         # deleted
         r = self.app.get('/p/test/wiki/',
-                         extra_environ=dict(username='test-user')).follow()
+                         extra_environ=dict(username=str('test-user'))).follow()
         assert r.status == '200 OK'
 
     def test_change_perms(self):
@@ -977,17 +977,17 @@ class TestExport(TestController):
 
     def test_access(self):
         r = self.app.get('/admin/export',
-                         extra_environ={'username': '*anonymous'}).follow()
+                         extra_environ={'username': str('*anonymous')}).follow()
         assert_equals(r.request.url,
                       'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
         self.app.get('/admin/export',
-                     extra_environ={'username': 'test-user'},
+                     extra_environ={'username': str('test-user')},
                      status=403)
         r = self.app.post('/admin/export',
-                          extra_environ={'username': '*anonymous'}).follow()
+                          extra_environ={'username': str('*anonymous')}).follow()
         assert_equals(r.request.url, 'http://localhost/auth/')
         self.app.post('/admin/export',
-                      extra_environ={'username': 'test-user'},
+                      extra_environ={'username': str('test-user')},
                       status=403)
 
     def test_ini_option(self):
@@ -1262,7 +1262,7 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'wiki_label1'
         }
         r = self.app.post('/rest/p/test/admin/install_tool/',
-                          extra_environ={'username': '*anonymous'},
+                          extra_environ={'username': str('*anonymous')},
                           status=401,
                           params=data)
         assert_equals(r.status, '401 Unauthorized')

@@ -59,7 +59,7 @@ class TestRootController(TestController):
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
         r = self.app.get('/wiki/Home',
-                         extra_environ=dict(username='*anonymous'))
+                         extra_environ=dict(username=str('*anonymous')))
         assert 'Create Page' not in r, r
 
     def test_create_wiki_page(self):
@@ -82,7 +82,7 @@ class TestRootController(TestController):
 
     def test_root_new_page(self):
         response = self.app.get('/wiki/new_page?title=' + h.urlquote('tést'))
-        assert 'tést' in response
+        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
 
     def test_root_new_search(self):
         self.app.get(h.urlquote('/wiki/tést/'))
@@ -151,17 +151,17 @@ class TestRootController(TestController):
         assert_in('To search for an exact phrase', div.text)
 
     def test_nonexistent_page_edit(self):
-        resp = self.app.get('/wiki/tést/')
+        resp = self.app.get(h.urlquote('/wiki/tést/'))
         assert resp.location.endswith(h.urlquote('/wiki/tést/edit')), resp.location
         resp = resp.follow()
         assert 'tést' in resp
 
     def test_nonexistent_page_noedit(self):
-        self.app.get('/wiki/tést/',
-                     extra_environ=dict(username='*anonymous'),
+        self.app.get(h.urlquote('/wiki/tést/'),
+                     extra_environ=dict(username=str('*anonymous')),
                      status=404)
-        self.app.get('/wiki/tést/',
-                     extra_environ=dict(username='test-user'),
+        self.app.get(h.urlquote('/wiki/tést/'),
+                     extra_environ=dict(username=str('test-user')),
                      status=404)
 
     @patch('forgewiki.wiki_main.g.director.create_activity')
@@ -215,34 +215,34 @@ class TestRootController(TestController):
         assert 'page.dot' in r
 
     def test_subpage_attempt(self):
-        self.app.get('/wiki/tést/')
+        self.app.get(h.urlquote('/wiki/tést/'))
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'text1',
                 'labels': '',
                 })
-        assert '/p/test/wiki/Home/' in self.app.get('/wiki/tést/Home/')
-        self.app.get('/wiki/tést/notthere/', status=404)
+        assert '/p/test/wiki/Home/' in self.app.get(h.urlquote('/wiki/tést/Home/'))
+        self.app.get(h.urlquote('/wiki/tést/notthere/'), status=404)
 
     def test_page_history(self):
-        self.app.get('/wiki/tést/')
+        self.app.get(h.urlquote('/wiki/tést/'))
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'text1',
                 'labels': '',
                 })
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'text2',
                 'labels': '',
                 })
-        response = self.app.get('/wiki/tést/history')
+        response = self.app.get(h.urlquote('/wiki/tést/history'))
         assert 'tést' in response
         # two revisions are shown
         assert '2 by Test Admin' in response
@@ -250,8 +250,8 @@ class TestRootController(TestController):
         # you can revert to an old revison, but not the current one
         assert response.html.find('a', {'data-dialog-id': '1'}), response.html
         assert not response.html.find('a', {'data-dialog-id': '2'})
-        response = self.app.get('/wiki/tést/history',
-                                extra_environ=dict(username='*anonymous'))
+        response = self.app.get(h.urlquote('/wiki/tést/history'),
+                                extra_environ=dict(username=str('*anonymous')))
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
@@ -260,20 +260,20 @@ class TestRootController(TestController):
         assert not response.html.find('a', {'data-dialog-id': '2'})
 
         # view an older version
-        response = self.app.get('/wiki/tést/?version=1')
+        response = self.app.get(h.urlquote('/wiki/tést/') + '?version=1')
         response.mustcontain('text1')
         response.mustcontain(no='text2')
 
     def test_page_diff(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
-        self.app.post('/wiki/tést/revert', params=dict(version='1'))
-        response = self.app.get('/wiki/tést/diff?v1=0&v2=0')
+        self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
+        response = self.app.get(h.urlquote('/wiki/tést/diff') + '?v1=0&v2=0')
         assert 'tést' in response
         d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
 
@@ -371,104 +371,105 @@ class TestRootController(TestController):
 
     def test_page_revert_no_text(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': '',
                 'labels': '',
                 })
-        response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
+        response = self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         assert '.' in response.json['location']
-        response = self.app.get('/wiki/tést/')
+        response = self.app.get(h.urlquote('/wiki/tést/'))
         assert 'tést' in response
 
     def test_page_revert_with_text(self):
-        self.app.get('/wiki/tést/')
+        self.app.get(h.urlquote('/wiki/tést/'))
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
-        response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
+        response = self.app.post(h.urlquote('/wiki/tést/revert'), params=dict(version='1'))
         assert '.' in response.json['location']
-        response = self.app.get('/wiki/tést/')
+        response = self.app.get(h.urlquote('/wiki/tést/'))
         assert 'tést' in response
 
     @patch('forgewiki.wiki_main.g.spam_checker')
     def test_page_update(self, spam_checker):
-        self.app.get('/wiki/tést/')
+        self.app.get(h.urlquote('/wiki/tést/'))
         response = self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
         assert_equal(spam_checker.check.call_args[0][0], 'tést\nsometext')
-        assert 'tést' in response
+        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
 
     def test_page_get_markdown(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': '- [ ] checkbox',
                 'labels': '',
                 })
-        response = self.app.get('/wiki/tést/get_markdown')
+        response = self.app.get(h.urlquote('/wiki/tést/get_markdown'))
         assert '- [ ] checkbox' in response
 
 
     def test_page_update_markdown(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': '- [ ] checkbox',
                 'labels': '',
                 })
         response = self.app.post(
-            '/wiki/tést/update_markdown',
+            h.urlquote('/wiki/tést/update_markdown'),
             params={
                 'text': '- [x] checkbox'})
+        print(response)
         assert response.json['status'] == 'success'
         # anon users can't edit markdown
         response = self.app.post(
-            '/wiki/tést/update_markdown',
+            h.urlquote('/wiki/tést/update_markdown'),
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['status'] == 'no_permission'
 
     def test_page_label_unlabel(self):
-        self.app.get('/wiki/tést/')
+        self.app.get(h.urlquote('/wiki/tést/'))
         response = self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': 'yellow,green',
                 })
-        assert 'tést' in response
+        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
         response = self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': 'yellow',
                 })
-        assert 'tést' in response
+        assert_equal(response.location, 'http://localhost/wiki/t%C3%A9st/')
 
     def test_page_label_count(self):
         labels = "label"
         for i in range(1, 100):
             labels += ',label%s' % i
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': labels,
                 })
@@ -484,46 +485,46 @@ class TestRootController(TestController):
 
     def test_new_attachment(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
         content = file(__file__).read()
-        self.app.post('/wiki/tést/attach',
+        self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test_root.py', content)])
-        response = self.app.get('/wiki/tést/')
+        response = self.app.get(h.urlquote('/wiki/tést/'))
         assert 'test_root.py' in response
 
     def test_attach_two_files(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
         content = file(__file__).read()
-        self.app.post('/wiki/tést/attach',
+        self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test1.py', content), ('file_info', 'test2.py', content)])
-        response = self.app.get('/wiki/tést/')
+        response = self.app.get(h.urlquote('/wiki/tést/'))
         assert 'test1.py' in response
         assert 'test2.py' in response
 
     def test_new_text_attachment_content(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
-        self.app.post('/wiki/tést/attach', upload_files=[upload])
-        page_editor = self.app.get('/wiki/tést/edit')
+        self.app.post(h.urlquote('/wiki/tést/attach'), upload_files=[upload])
+        page_editor = self.app.get(h.urlquote('/wiki/tést/edit'))
         download = page_editor.click(description=file_name)
         assert_true(download.body == file_data)
 
@@ -559,7 +560,7 @@ class TestRootController(TestController):
                 filename) not in img_srcs, img_srcs
 
     def test_sidebar_static_page(self):
-        response = self.app.get('/wiki/tést/')
+        response = self.app.get(h.urlquote('/wiki/tést/'))
         assert 'Edit this page' not in response
         assert 'Related Pages' not in response
 
@@ -599,12 +600,12 @@ class TestRootController(TestController):
         assert 'bbb' in response
 
     def test_show_discussion(self):
-        self.app.post('/wiki/tést/update', params={
-            'title': 'tést',
+        self.app.post(h.urlquote('/wiki/tést/update'), params={
+            'title': 'tést'.encode('utf-8'),
             'text': 'sometext',
             'labels': '',
             })
-        wiki_page = self.app.get('/wiki/tést/')
+        wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('div', {'id': 'new_post_holder'})
         options_admin = self.app.get(
             '/admin/wiki/options', validate_chunk=True)
@@ -614,16 +615,16 @@ class TestRootController(TestController):
         options_admin2 = self.app.get(
             '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_discussion'].checked
-        wiki_page2 = self.app.get('/wiki/tést/')
+        wiki_page2 = self.app.get(h.urlquote('/wiki/tést/'))
         assert not wiki_page2.html.find('div', {'id': 'new_post_holder'})
 
     def test_show_left_bar(self):
-        self.app.post('/wiki/tést/update', params={
-            'title': 'tést',
+        self.app.post(h.urlquote('/wiki/tést/update'), params={
+            'title': 'tést'.encode('utf-8'),
             'text': 'sometext',
             'labels': '',
             })
-        wiki_page = self.app.get('/wiki/tést/')
+        wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('ul', {'class': 'sidebarmenu'})
         options_admin = self.app.get(
             '/admin/wiki/options', validate_chunk=True)
@@ -634,18 +635,18 @@ class TestRootController(TestController):
             '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_left_bar'].checked
         wiki_page2 = self.app.get(
-            '/wiki/tést/', extra_environ=dict(username='*anonymous'))
+            h.urlquote('/wiki/tést/'), extra_environ=dict(username=str('*anonymous')))
         assert not wiki_page2.html.find('ul', {'class': 'sidebarmenu'})
-        wiki_page3 = self.app.get('/wiki/tést/')
+        wiki_page3 = self.app.get(h.urlquote('/wiki/tést/'))
         assert not wiki_page3.html.find('ul', {'class': 'sidebarmenu'})
 
     def test_show_metadata(self):
-        self.app.post('/wiki/tést/update', params={
-            'title': 'tést',
+        self.app.post(h.urlquote('/wiki/tést/update'), params={
+            'title': 'tést'.encode('utf-8'),
             'text': 'sometext',
             'labels': '',
             })
-        wiki_page = self.app.get('/wiki/tést/')
+        wiki_page = self.app.get(h.urlquote('/wiki/tést/'))
         assert wiki_page.html.find('div', {'class': 'editbox'})
         options_admin = self.app.get(
             '/admin/wiki/options', validate_chunk=True)
@@ -655,12 +656,12 @@ class TestRootController(TestController):
         options_admin2 = self.app.get(
             '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_right_bar'].checked
-        wiki_page2 = self.app.get('/wiki/tést/')
+        wiki_page2 = self.app.get(h.urlquote('/wiki/tést/'))
         assert not wiki_page2.html.find('div', {'class': 'editbox'})
 
     def test_change_home_page(self):
-        self.app.post('/wiki/tést/update', params={
-            'title': 'our_néw_home',
+        self.app.post(h.urlquote('/wiki/tést/update'), params={
+            'title': 'our_néw_home'.encode('utf-8'),
             'text': 'sometext',
             'labels': '',
             })
@@ -669,7 +670,7 @@ class TestRootController(TestController):
         homepage_admin.form['new_home'].value = 'our_néw_home'
         homepage_admin.form.submit()
         root_path = self.app.get('/wiki/', status=302)
-        assert root_path.location.endswith('/wiki/our_néw_home/'), root_path.location
+        assert root_path.location.endswith('/wiki/our_n%C3%A9w_home/'), root_path.location
 
     def test_edit_mount_label(self):
         r = self.app.get('/admin/wiki/edit_label', validate_chunk=True)
@@ -944,7 +945,7 @@ class TestRootController(TestController):
 
     def test_sidebar_admin_menu_invisible_to_not_admin(self):
         def assert_invisible_for(username):
-            env = {'username': username}
+            env = {'username': str(username)}
             r = self.app.get('/p/test/wiki/Home/', extra_environ=env)
             menu = r.html.find('div', {'id': 'sidebar-admin-menu'})
             assert_equal(menu, None)

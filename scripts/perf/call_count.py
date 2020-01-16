@@ -116,7 +116,7 @@ def generate_wiki_thread(test):
 def count_page(test, url, verbose=False, debug_html=False):
 
     with LogCapture('stats') as stats, LogCapture('timermiddleware') as calls:
-        resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
+        resp = test.app.get(url, extra_environ=dict(username=str('*anonymous')))
         print url, resp.status
         if debug_html:
             debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits)

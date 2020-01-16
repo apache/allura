@@ -113,7 +113,7 @@ class RootController(WsgiDispatchController):
             # pylons.configuration defaults to "no-cache" only.
             # See also http://blog.55minutes.com/2011/10/how-to-defeat-the-browser-back-button-cache/ and
             # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=en#defining_optimal_cache-control_policy
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers[str('Cache-Control')] = str('no-cache, no-store, must-revalidate')
 
     @expose()
     @with_trailing_slash

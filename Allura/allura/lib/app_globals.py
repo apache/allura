@@ -354,7 +354,7 @@ class Globals(object):
             except AttributeError:
                 script_without_ming_middleware = True
             else:
-                script_without_ming_middleware = env['PATH_INFO'] == '--script--'
+                script_without_ming_middleware = env['PATH_INFO'] == str('--script--')
             if script_without_ming_middleware:
                 kwargs['flush_immediately'] = True
             else:

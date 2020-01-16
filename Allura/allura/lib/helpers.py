@@ -598,7 +598,7 @@ class fixed_attrs_proxy(proxy):
             setattr(self, k, v)
 
 
-@tg.expose(content_type='text/plain')
+@tg.expose(content_type=str('text/plain'))
 def json_validation_error(controller, **kwargs):
     exc = request.validation['exception']
     result = dict(status='Validation Error',

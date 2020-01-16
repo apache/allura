@@ -63,7 +63,7 @@ class TestTroveCategory(TestController):
     def test_enableediting_setting(self):
         def check_access(username=None, status=None):
             self.app.get('/categories/', status=status,
-                         extra_environ=dict(username=username))
+                         extra_environ=dict(username=str(username)))
 
         cfg = {'trovecategories.enableediting': 'true'}
 

@@ -481,7 +481,7 @@ class ScreenshotsController(object):
         if args:
             filename = unquote(filename)
         else:
-            filename = unquote(request.path.rsplit('/', 1)[-1])
+            filename = unquote(request.path.rsplit(str('/'), 1)[-1])
         return ScreenshotController(filename), args
 
 

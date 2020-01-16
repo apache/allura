@@ -222,13 +222,13 @@ class TestProjectHome(TestController):
 
     def test_members_anonymous(self):
         r = self.app.get('/p/test/_members/',
-                         extra_environ=dict(username='*anonymous'))
+                         extra_environ=dict(username=str('*anonymous')))
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
 
     def test_toolaccess_before_subproject(self):
-        self.app.extra_environ = {'username': 'test-admin'}
+        self.app.extra_environ = {'username': str('test-admin')}
         # Add the subproject with a wiki.
         self.app.post('/p/test/admin/update_mounts', params={
             'new.install': 'install',
@@ -259,7 +259,7 @@ class TestProjectHome(TestController):
         })
 
         # Try to access the  installed tool as anon.
-        r = self.app.get('/p/test/test-mount/test-sub/', extra_environ=dict(username='*anonymous'), status=404)
+        r = self.app.get('/p/test/test-mount/test-sub/', extra_environ=dict(username=str('*anonymous')), status=404)
 
         # Try to access the installed tool as Admin.
         r = self.app.get('/p/test/test-mount/test-sub/').follow()

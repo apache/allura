@@ -201,7 +201,7 @@ class TestRestHome(TestRestApiBase):
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test/',
-                         extra_environ={'username': '*anonymous'})
+                         extra_environ={'username': str('*anonymous')})
         assert_equal(r.json['shortname'], 'test')
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
         assert_in('bugs', tool_mounts)
@@ -333,10 +333,10 @@ class TestRestHome(TestRestApiBase):
         if auth_read_perm in acl:
             acl.remove(auth_read_perm)
         self.app.get('/rest/p/test/wiki/Home/',
-                     extra_environ={'username': '*anonymous'},
+                     extra_environ={'username': str('*anonymous')},
                      status=401)
         self.app.get('/rest/p/test/wiki/Home/',
-                     extra_environ={'username': 'test-user-0'},
+                     extra_environ={'username': str('test-user-0')},
                      status=403)
 
     def test_index(self):
@@ -368,7 +368,7 @@ class TestRestHome(TestRestApiBase):
     @td.with_wiki
     def test_cors_POST_req_blocked_by_csrf(self):
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': 'True'}
+        self.app.extra_environ = {'disable_auth_magic': str('True')}
 
         # regular login to get a session cookie set up
         r = self.app.get('/auth/')
@@ -380,7 +380,7 @@ class TestRestHome(TestRestApiBase):
         # simulate CORS ajax request withCredentials (cookie headers)
         # make sure we don't allow the cookies to authorize the request (else could be a CSRF attack vector)
         assert self.app.cookies['allura']
-        self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': 'http://bad.com/'},
+        self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': str('http://bad.com/')},
                       status=401)
 
     @mock.patch('allura.lib.plugin.ThemeProvider._get_site_notification')
@@ -463,7 +463,7 @@ class TestDoap(TestRestApiBase):
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test?doap',
-                         extra_environ={'username': '*anonymous'})
+                         extra_environ={'username': str('*anonymous')})
         p = r.xml.find(self.ns + 'Project')
         tools = p.findall(self.ns_sf + 'feature')
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,

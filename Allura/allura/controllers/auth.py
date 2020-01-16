@@ -392,7 +392,7 @@ class AuthController(BaseController):
             return_to = self._verify_return_to(kwargs.get('return_to'))
             redirect(return_to)
 
-    @expose(content_type='text/plain')
+    @expose(content_type=str('text/plain'))
     def refresh_repo(self, *repo_path):
         # post-commit hooks use this
         if not repo_path:

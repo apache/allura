@@ -76,10 +76,10 @@ class StaticFilesMiddleware(object):
                 resource_cls = ep.load().has_resource(resource_path)
                 if resource_cls:
                     file_path = pkg_resources.resource_filename(resource_cls.__module__, resource_path)
-                    return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
+                    return fileapp.FileApp(file_path, [(str('Access-Control-Allow-Origin'), str('*'))])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename('allura', os.path.join('public', 'nf', filename))
-        return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
+        return fileapp.FileApp(file_path, [(str('Access-Control-Allow-Origin'), str('*'))])
 
 
 class CORSMiddleware(object):
@@ -92,7 +92,7 @@ class CORSMiddleware(object):
         self.cache_preflight = cache or None
 
     def __call__(self, environ, start_response):
-        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
+        is_api_request = environ.get('PATH_INFO', '').startswith(str('/rest/'))
         valid_cors = 'HTTP_ORIGIN' in environ
         if not is_api_request or not valid_cors:
             return self.app(environ, start_response)
@@ -121,17 +121,17 @@ class CORSMiddleware(object):
         return r(environ, start_response)
 
     def get_response_headers(self, preflight=False):
-        headers = [('Access-Control-Allow-Origin', '*')]
+        headers = [(str('Access-Control-Allow-Origin'), str('*'))]
         if preflight:
             ac_methods = ', '.join(self.allowed_methods)
             ac_headers = ', '.join(self.allowed_headers)
             headers.extend([
-                ('Access-Control-Allow-Methods', ac_methods),
-                ('Access-Control-Allow-Headers', ac_headers),
+                (str('Access-Control-Allow-Methods'), str(ac_methods)),
+                (str('Access-Control-Allow-Headers'), str(ac_headers)),
             ])
             if self.cache_preflight:
                 headers.append(
-                    ('Access-Control-Max-Age', str(self.cache_preflight))
+                    (str('Access-Control-Max-Age'), str(self.cache_preflight))
                 )
         return headers
 
@@ -151,7 +151,7 @@ class LoginRedirectMiddleware(object):
 
     def __call__(self, environ, start_response):
         status, headers, app_iter, exc_info = call_wsgi_application(self.app, environ)
-        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
+        is_api_request = environ.get('PATH_INFO', '').startswith(str('/rest/'))
         if status[:3] == '401' and not is_api_request:
             login_url = tg.config.get('auth.login_url', '/auth/')
             if environ['REQUEST_METHOD'] == 'GET':
@@ -207,7 +207,7 @@ class CSRFMiddleware(object):
         def session_start_response(status, headers, exc_info=None):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
                 headers.append(
-                    ('Set-cookie',
+                    (str('Set-cookie'),
                      str('%s=%s; Path=/' % (self._cookie_name, cookie))))
             return start_response(status, headers, exc_info)
 
@@ -397,12 +397,12 @@ class RememberLoginMiddleware(object):
                     session._set_cookie_expires(login_expires)
                 # Replace the cookie header that SessionMiddleware set
                 # with one that has the new expires parameter value
-                cookie = session.cookie[session.key].output(header='')
+                cookie = session.cookie[session.key].output(header=str(''))
                 for i in range(len(headers)):
                     header, contents = headers[i]
                     if header == 'Set-cookie' and \
                             contents.lstrip().startswith(session.key):
-                        headers[i] = ('Set-cookie', cookie)
+                        headers[i] = (str('Set-cookie'), cookie)
                         break
             return start_response(status, headers, exc_info)
 

@@ -178,7 +178,7 @@ class TestController(object):
         pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(
             setup_functional_test(app_name=self.application_under_test, current_pkg=pkg))
-        self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
+        self.app.extra_environ = {str('REMOTE_ADDR'): str('127.0.0.1')}  # remote_addr needed by AntiSpam
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
         if asbool(tg.config.get('smtp.mock')):
@@ -269,7 +269,7 @@ class TestRestApiBase(TestController):
 
         token = self.token(user).api_key
         headers = {
-            'Authorization': 'Bearer {}'.format(token)
+            'Authorization': str('Bearer {}'.format(token))
         }
 
         fn = getattr(self.app, method.lower())

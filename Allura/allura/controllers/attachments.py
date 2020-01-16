@@ -49,7 +49,7 @@ class AttachmentsController(BaseController):
     def _lookup(self, filename=None, *args):
         if filename:
             if not args:
-                filename = request.path.rsplit('/', 1)[-1]
+                filename = request.path.rsplit(str('/'), 1)[-1]
             filename = unquote(filename)
             return self.AttachmentControllerClass(filename, self.artifact), args
         else:

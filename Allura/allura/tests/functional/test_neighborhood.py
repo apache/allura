@@ -46,13 +46,13 @@ class TestNeighborhood(TestController):
         r = r.follow()
         assert 'This is the "Adobe" neighborhood' in str(r), str(r)
         r = self.app.get(
-            '/adobe/admin/', extra_environ=dict(username='test-user'),
+            '/adobe/admin/', extra_environ=dict(username=str('test-user')),
             status=403)
 
     def test_redirect(self):
         r = self.app.post('/adobe/_admin/update',
                           params=dict(redirect='wiki/Home/'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/')
         assert r.location.endswith('/adobe/wiki/Home/')
 
@@ -62,25 +62,25 @@ class TestNeighborhood(TestController):
         assert 'This is the "Adobe" neighborhood' in str(r), str(r)
 
     def test_admin(self):
-        r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/', extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/_admin/accolades',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['google_analytics'] = True
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='',
                                       homepage='# MozQ1!', tracking_id='U-123456'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='',
                                       homepage='# MozQ1!\n[Root]'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         # make sure project_template is validated as proper json
         r = self.app.post('/adobe/_admin/update',
                           params=dict(project_template='{'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'Invalid JSON' in r
 
     def test_admin_overview_audit_log(self):
@@ -106,7 +106,7 @@ class TestNeighborhood(TestController):
 
         }
         self.app.post('/p/_admin/update', params=params,
-                      extra_environ=dict(username='root'))
+                      extra_environ=dict(username=str('root')))
         # must get as many log records as many values are updated
         assert M.AuditLog.query.find().count() == len(params)
 
@@ -128,9 +128,9 @@ class TestNeighborhood(TestController):
         self.app.post('/p/_admin/update',
                       params=dict(name='Projects',
                                   prohibited_tools='wiki, tickets'),
-                      extra_environ=dict(username='root'))
+                      extra_environ=dict(username=str('root')))
 
-        r = self.app.get('/p/_admin/overview', extra_environ=dict(username='root'))
+        r = self.app.get('/p/_admin/overview', extra_environ=dict(username=str('root')))
         assert 'wiki, tickets' in r
 
         c.user = M.User.query.get(username='root')
@@ -143,7 +143,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       prohibited_tools='wiki, test'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'error' in self.webflash(r), self.webflash(r)
 
     @td.with_wiki
@@ -153,26 +153,26 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='wiki:Wiki, tickets:Ticket'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'error' not in self.webflash(r)
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='w!iki:Wiki, tickets:Ticket'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'error' in self.webflash(r)
         assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='wiki:Wiki,'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'error' in self.webflash(r)
         assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='badname,'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert 'error' in self.webflash(r)
         assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
 
@@ -192,7 +192,7 @@ class TestNeighborhood(TestController):
 
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         # if not set show_title must be True
         assert neighborhood.show_title
@@ -203,17 +203,17 @@ class TestNeighborhood(TestController):
                                       homepage='# MozQ1!',
                                       tracking_id='U-123456',
                                       show_title='false'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         # no title now
-        r = self.app.get('/adobe/', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/', extra_environ=dict(username=str('root')))
         assert 'class="project_title"' not in str(r)
         r = self.app.get('/adobe/wiki/Home/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'class="project_title"' not in str(r)
 
         # title must be present on project page
         r = self.app.get('/adobe/adobe-1/admin/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'class="project_title"' in str(r)
 
     def test_admin_stats_del_count(self):
@@ -222,7 +222,7 @@ class TestNeighborhood(TestController):
         proj.deleted = True
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Deleted: 1' in r
         assert 'Private: 0' in r
 
@@ -233,7 +233,7 @@ class TestNeighborhood(TestController):
         proj.private = True
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Deleted: 0' in r
         assert 'Private: 1' in r
 
@@ -243,7 +243,7 @@ class TestNeighborhood(TestController):
         proj.private = False
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/adobe/_admin/stats/adminlist',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         pq = M.Project.query.find(
             dict(neighborhood_id=neighborhood._id, deleted=False))
         pq.sort('name')
@@ -267,11 +267,11 @@ class TestNeighborhood(TestController):
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
-        r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/', extra_environ=dict(username=str('root')))
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='',
                                       homepage='# MozQ1'),
-                          extra_environ=dict(username='root'), upload_files=[upload])
+                          extra_environ=dict(username=str('root')), upload_files=[upload])
         r = self.app.get('/adobe/icon')
         image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
@@ -283,33 +283,33 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['google_analytics'] = True
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Google Analytics ID' in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Google Analytics ID' in r
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Adobe', css='',
                                       homepage='# MozQ1', tracking_id='U-123456'),
-                          extra_environ=dict(username='root'), status=302)
+                          extra_environ=dict(username=str('root')), status=302)
         r = self.app.post('/adobe/adobe-1/admin/update',
                           params=dict(tracking_id='U-654321'),
-                          extra_environ=dict(username='root'), status=302)
+                          extra_environ=dict(username=str('root')), status=302)
         r = self.app.get('/adobe/adobe-1/admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert "_add_tracking('nbhd', 'U-123456');" in r, r
         assert "_add_tracking('proj', 'U-654321');" in r
         # analytics not allowed
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['google_analytics'] = False
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Google Analytics ID' not in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Google Analytics ID' not in r
         r = self.app.get('/adobe/adobe-1/admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert "_add_tracking('nbhd', 'U-123456');" not in r
         assert "_add_tracking('proj', 'U-654321');" not in r
 
@@ -323,7 +323,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/')
         assert test_css not in r
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
@@ -333,7 +333,7 @@ class TestNeighborhood(TestController):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert custom_css in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
@@ -343,7 +343,7 @@ class TestNeighborhood(TestController):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert custom_css in r
 
     def test_picker_css(self):
@@ -351,7 +351,7 @@ class TestNeighborhood(TestController):
         neighborhood.features['css'] = 'picker'
 
         r = self.app.get('/adobe/_admin/overview',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'Project title, font' in r
         assert 'Project title, color' in r
         assert 'Bar on top' in r
@@ -367,7 +367,7 @@ class TestNeighborhood(TestController):
                                   'css-barontop': '#555555',
                                   'css-titlebarbackground': '#333',
                                   'css-titlebarcolor': '#444'},
-                          extra_environ=dict(username='root'), upload_files=[])
+                          extra_environ=dict(username=str('root')), upload_files=[])
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
@@ -384,7 +384,7 @@ class TestNeighborhood(TestController):
                               project_unixname='maxproject1', project_name='Max project1',
                               project_description='', neighborhood='Projects'),
                           antispam=True,
-                          extra_environ=dict(username='root'), status=302)
+                          extra_environ=dict(username=str('root')), status=302)
         assert '/p/maxproject1/admin' in r.location
 
         # Set max value to 0
@@ -395,7 +395,7 @@ class TestNeighborhood(TestController):
                               project_unixname='maxproject2', project_name='Max project2',
                               project_description='', neighborhood='Projects'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         while isinstance(r.response, HTTPFound):
             r = r.follow()
         assert 'You have exceeded the maximum number of projects' in r
@@ -408,7 +408,7 @@ class TestNeighborhood(TestController):
                                   project_unixname='rateproject1', project_name='Rate project1',
                                   project_description='', neighborhood='Projects'),
                               antispam=True,
-                              extra_environ=dict(username='test-user-1'), status=302)
+                              extra_environ=dict(username=str('test-user-1')), status=302)
             assert '/p/rateproject1/admin' in r.location
 
         # Set rate limit to 1 in first hour of user account
@@ -418,7 +418,7 @@ class TestNeighborhood(TestController):
                                   project_unixname='rateproject2', project_name='Rate project2',
                                   project_description='', neighborhood='Projects'),
                               antispam=True,
-                              extra_environ=dict(username='test-user-1'))
+                              extra_environ=dict(username=str('test-user-1')))
             while isinstance(r.response, HTTPFound):
                 r = r.follow()
             assert 'Project creation rate limit exceeded.  Please try again later.' in r
@@ -431,7 +431,7 @@ class TestNeighborhood(TestController):
                                   project_unixname='rateproject1', project_name='Rate project1',
                                   project_description='', neighborhood='Projects'),
                               antispam=True,
-                              extra_environ=dict(username='root'), status=302)
+                              extra_environ=dict(username=str('root')), status=302)
             assert '/p/rateproject1/admin' in r.location
 
         # Set rate limit to 1 in first hour of user account
@@ -441,71 +441,71 @@ class TestNeighborhood(TestController):
                                   project_unixname='rateproject2', project_name='Rate project2',
                                   project_description='', neighborhood='Projects'),
                               antispam=True,
-                              extra_environ=dict(username='root'))
+                              extra_environ=dict(username=str('root')))
             assert '/p/rateproject2/admin' in r.location
 
     def test_invite(self):
         p_nbhd_id = str(M.Neighborhood.query.get(name='Projects')._id)
         r = self.app.get('/adobe/_moderate/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='adobe-1', invite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='no_such_user',
                                       invite='on', neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'invited' in r, r
         assert 'warning' not in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'warning' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', uninvite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'uninvited' in r
         assert 'warning' not in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', uninvite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'warning' in r
         r = self.app.post('/adobe/_moderate/invite',
                           params=dict(pid='test', invite='on',
                                       neighborhood_id=p_nbhd_id),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'invited' in r
         assert 'warning' not in r
 
     def test_evict(self):
         r = self.app.get('/adobe/_moderate/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         r = self.app.post('/adobe/_moderate/evict',
                           params=dict(pid='test'),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'error' in r
         r = self.app.post('/adobe/_moderate/evict',
                           params=dict(pid='adobe-1'),
-                          extra_environ=dict(username='root'))
-        r = self.app.get(r.location, extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
+        r = self.app.get(r.location, extra_environ=dict(username=str('root')))
         assert 'adobe-1 evicted to Projects' in r
 
     def test_home(self):
@@ -518,7 +518,7 @@ class TestNeighborhood(TestController):
                               project_unixname='', project_name='Nothing',
                               project_description='', neighborhood='Adobe'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert r.html.find('div', {'class': 'error'}
                            ).string == 'Please use 3-15 small letters, numbers, and dashes.'
         r = self.app.post('/adobe/register',
@@ -526,14 +526,14 @@ class TestNeighborhood(TestController):
                               project_unixname='mymoz', project_name='My Moz',
                               project_description='', neighborhood='Adobe'),
                           antispam=True,
-                          extra_environ=dict(username='*anonymous'),
+                          extra_environ=dict(username=str('*anonymous')),
                           status=302)
         r = self.app.post('/adobe/register',
                           params=dict(
                               project_unixname='foo.mymoz', project_name='My Moz',
                               project_description='', neighborhood='Adobe'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert r.html.find('div', {'class': 'error'}
                            ).string == 'Please use 3-15 small letters, numbers, and dashes.'
         r = self.app.post('/p/register',
@@ -541,7 +541,7 @@ class TestNeighborhood(TestController):
                               project_unixname='test', project_name='Tester',
                               project_description='', neighborhood='Projects'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert r.html.find('div', {'class': 'error'}
                            ).string == 'This project name is taken.'
         r = self.app.post('/adobe/register',
@@ -549,7 +549,7 @@ class TestNeighborhood(TestController):
                               project_unixname='mymoz', project_name='My Moz',
                               project_description='', neighborhood='Adobe'),
                           antispam=True,
-                          extra_environ=dict(username='root'),
+                          extra_environ=dict(username=str('root')),
                           status=302)
 
     def test_register_private_fails_for_anon(self):
@@ -562,7 +562,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='*anonymous'),
+            extra_environ=dict(username=str('*anonymous')),
             status=302)
         assert config.get('auth.login_url', '/auth/') in r.location, r.location
 
@@ -576,14 +576,14 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='test-user'),
+            extra_environ=dict(username=str('test-user')),
             status=403)
 
     def test_register_private_fails_for_non_private_neighborhood(self):
         # Turn off private
         neighborhood = M.Neighborhood.query.get(name='Projects')
         neighborhood.features['private_projects'] = False
-        r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
+        r = self.app.get('/p/add_project', extra_environ=dict(username=str('root')))
         assert 'private_project' not in r
 
         r = self.app.post(
@@ -595,7 +595,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='root'))
+            extra_environ=dict(username=str('root')))
         cookies = r.headers.getall('Set-Cookie')
         flash_msg_cookies = map(urllib2.unquote, cookies)
 
@@ -608,7 +608,7 @@ class TestNeighborhood(TestController):
         # Turn on private
         neighborhood = M.Neighborhood.query.get(name='Projects')
         neighborhood.features['private_projects'] = True
-        r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
+        r = self.app.get('/p/add_project', extra_environ=dict(username=str('root')))
         assert 'private_project' in r
 
         self.app.post(
@@ -620,7 +620,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='root'))
+            extra_environ=dict(username=str('root')))
 
         proj = M.Project.query.get(
             shortname='myprivate2', neighborhood_id=neighborhood._id)
@@ -637,21 +637,21 @@ class TestNeighborhood(TestController):
                 private_project='on',
                 tools='wiki'),
             antispam=True,
-            extra_environ=dict(username='root'),
+            extra_environ=dict(username=str('root')),
             status=302)
         assert config.get('auth.login_url',
                           '/auth/') not in r.location, r.location
         r = self.app.get(
             '/p/mymoz/wiki/',
-            extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
+            extra_environ=dict(username=str('root'))).follow(extra_environ=dict(username=str('root')), status=200)
         r = self.app.get(
             '/p/mymoz/wiki/',
-            extra_environ=dict(username='*anonymous'),
+            extra_environ=dict(username=str('*anonymous')),
             status=302)
         assert config.get('auth.login_url', '/auth/') in r.location, r.location
         self.app.get(
             '/p/mymoz/wiki/',
-            extra_environ=dict(username='test-user'),
+            extra_environ=dict(username=str('test-user')),
             status=403)
 
     def test_project_template(self):
@@ -714,7 +714,7 @@ class TestNeighborhood(TestController):
                 },
                 "groups": %s
                 }""" % (icon_url, json.dumps(test_groups))),
-            extra_environ=dict(username='root'))
+            extra_environ=dict(username=str('root')))
         r = self.app.post(
             '/adobe/register',
             params=dict(
@@ -724,7 +724,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Mozq1',
                 private_project='off'),
             antispam=True,
-            extra_environ=dict(username='root'),
+            extra_environ=dict(username=str('root')),
             status=302).follow()
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
@@ -740,10 +740,10 @@ class TestNeighborhood(TestController):
         # make sure project is private
         r = self.app.get(
             '/adobe/testtemp/wiki/',
-            extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
+            extra_environ=dict(username=str('root'))).follow(extra_environ=dict(username=str('root')), status=200)
         r = self.app.get(
             '/adobe/testtemp/wiki/',
-            extra_environ=dict(username='*anonymous'),
+            extra_environ=dict(username=str('*anonymous')),
             status=302)
         # check the labels and trove cats
         r = self.app.get('/adobe/testtemp/admin/trove')
@@ -809,7 +809,7 @@ class TestNeighborhood(TestController):
                 "tool_order":["wiki","admin"],
 
                 }"""),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.anchored_tools = 'wiki:Wiki'
         r = self.app.post(
@@ -821,7 +821,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Adobe',
                 private_project='off'),
             antispam=True,
-            extra_environ=dict(username='root'))
+            extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/testtemp/admin/overview')
         assert r.html.find('div', id='top_nav').find(
             'a', href='/adobe/testtemp/wiki/'), r.html
@@ -858,7 +858,7 @@ class TestNeighborhood(TestController):
                               project_unixname='test', project_name='Test again',
                               project_description='', neighborhood='Adobe', tools='wiki'),
                           antispam=True,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         assert r.status_int == 302, r.html.find(
             'div', {'class': 'error'}).string
         r = self.app.get('/adobe/test/wiki/').follow(status=200)
@@ -871,42 +871,42 @@ class TestNeighborhood(TestController):
         upload = ('icon', file_name, file_data)
 
         r = self.app.get('/adobe/_admin/awards',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='FOO', full='A basic foo award'),
-                          extra_environ=dict(username='root'), upload_files=[upload])
+                          extra_environ=dict(username=str('root')), upload_files=[upload])
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='BAR',
                                       full='A basic bar award with no icon'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username=str('root')))
         foo_id = str(M.Award.query.find(dict(short='FOO')).first()._id)
         bar_id = str(M.Award.query.find(dict(short='BAR')).first()._id)
         r = self.app.post('/adobe/_admin/awards/%s/update' % bar_id,
                           params=dict(short='BAR2',
                                       full='Updated description.'),
-                          extra_environ=dict(username='root')).follow().follow()
+                          extra_environ=dict(username=str('root'))).follow().follow()
         assert 'BAR2' in r
         assert 'Updated description.' in r
         r = self.app.get('/adobe/_admin/awards/%s' %
-                         foo_id, extra_environ=dict(username='root'))
+                         foo_id, extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/_admin/awards/%s/icon' %
-                         foo_id, extra_environ=dict(username='root'))
+                         foo_id, extra_environ=dict(username=str('root')))
         image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
                       params=dict(grant='FOO', recipient='adobe-1',
                                   url='http://award.org', comment='Winner!'),
-                      extra_environ=dict(username='root'))
+                      extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/_admin/accolades',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert_in('Winner!', r)
         assert_in('http://award.org', r)
         self.app.get('/adobe/_admin/awards/%s/adobe-1' %
-                     foo_id, extra_environ=dict(username='root'))
+                     foo_id, extra_environ=dict(username=str('root')))
         self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
-                      extra_environ=dict(username='root'))
+                      extra_environ=dict(username=str('root')))
         self.app.post('/adobe/_admin/awards/%s/delete' % foo_id,
-                      extra_environ=dict(username='root'))
+                      extra_environ=dict(username=str('root')))
 
     def test_add_a_project_link(self):
         from tg import tmpl_context as c
@@ -917,24 +917,24 @@ class TestNeighborhood(TestController):
                 p.install_app('home', 'home', 'Home', ordinal=0)
         r = self.app.get('/p/')
         assert 'Add a Project' in r
-        r = self.app.get('/u/', extra_environ=dict(username='test-user'))
+        r = self.app.get('/u/', extra_environ=dict(username=str('test-user')))
         assert 'Add a Project' not in r
-        r = self.app.get('/adobe/', extra_environ=dict(username='test-user'))
+        r = self.app.get('/adobe/', extra_environ=dict(username=str('test-user')))
         assert 'Add a Project' not in r
-        r = self.app.get('/u/', extra_environ=dict(username='root'))
+        r = self.app.get('/u/', extra_environ=dict(username=str('root')))
         assert 'Add a Project' in r
-        r = self.app.get('/adobe/', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/', extra_environ=dict(username=str('root')))
         assert 'Add a Project' in r
 
     def test_help(self):
         r = self.app.get('/p/_admin/help/',
-                         extra_environ=dict(username='root'))
+                         extra_environ=dict(username=str('root')))
         assert 'macro' in r
 
     @td.with_user_project('test-user')
     def test_profile_tools(self):
         r = self.app.get('/u/test-user/',
-                         extra_environ=dict(username='test-user')).follow()
+                         extra_environ=dict(username=str('test-user'))).follow()
         assert r.html.find('div', 'profile-section tools').find(
             'a', href='/u/test-user/profile/'), r.html
 
@@ -1086,7 +1086,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                     project_name='Phone Test',
                     project_description='',
                     neighborhood='Projects'),
-                extra_environ=dict(username='test-user'),
+                extra_environ=dict(username=str('test-user')),
                 antispam=True)
             overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
             assert_not_equal(overlay, None)

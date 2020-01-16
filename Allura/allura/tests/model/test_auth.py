@@ -339,7 +339,7 @@ def test_user_track_active():
     assert_equal(c.user.last_access['session_ip'], None)
     assert_equal(c.user.last_access['session_ua'], None)
 
-    req = Mock(headers={'User-Agent': 'browser'}, remote_addr='addr')
+    req = Mock(headers={'User-Agent': str('browser')}, remote_addr='addr')
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
     assert_not_equal(c.user.last_access['session_date'], None)

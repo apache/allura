@@ -56,7 +56,7 @@ class TestRootController(TestController):
         n_adobe.register_project('adobe-2', u_admin)
 
     def test_index(self):
-        response = self.app.get('/', extra_environ=dict(username='*anonymous'))
+        response = self.app.get('/', extra_environ=dict(username=str('*anonymous')))
         assert_equal(response.location, 'http://localhost/neighborhood')
 
         response = self.app.get('/')
@@ -99,7 +99,7 @@ class TestRootController(TestController):
         for hdr in hdrs:
             # malformed headers used to return 500, just make sure they don't
             # now
-            self.app.get('/', headers=dict(Accept=hdr), validate_skip=True)
+            self.app.get('/', headers=dict(Accept=str(hdr)), validate_skip=True)
 
     def test_encoded_urls(self):
         # not valid unicode
@@ -214,7 +214,7 @@ class TestRootWithSSLPattern(TestController):
     def test_no_weird_ssl_redirect_for_error_document(self):
         # test a 404, same functionality as a 500 from an error
         r = self.app.get('/auth/asdfasdf',
-                         extra_environ={'wsgi.url_scheme': 'https'},
+                         extra_environ={'wsgi.url_scheme': str('https')},
                          status=404)
         assert '302 Found' not in r.body, r.body
         assert '/error/document' not in r.body, r.body

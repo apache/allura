@@ -403,7 +403,7 @@ class TestForum(TestController):
             params[f.find('select')['name']] = 'testforum'
             params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Zero Posts'
             r = self.app.post('/discussion/save_new_topic', params=params,
-                              extra_environ=dict(username='*anonymous'),
+                              extra_environ=dict(username=str('*anonymous')),
                               status=302)
             assert r.location.startswith(
                 'http://localhost/p/test/discussion/testforum/thread/'), r.location
@@ -551,11 +551,11 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
         thread = self.app.post('/discussion/save_new_topic', params=params,
-                               extra_environ=dict(username='*anonymous')).follow()
+                               extra_environ=dict(username=str('*anonymous'))).follow()
 
         # assert post awaiting moderation
         r = self.app.get(thread.request.url,
-                         extra_environ=dict(username='*anonymous'))
+                         extra_environ=dict(username=str('*anonymous')))
         assert 'Post awaiting moderation' in r
         assert 'name="delete"' not in r
         assert 'name="approve"' not in r
@@ -572,9 +572,9 @@ class TestForum(TestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'anon reply to anon post content'
-        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username='*anonymous'))
+        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username=str('*anonymous')))
         r = self.app.get(thread.request.url,
-                         extra_environ=dict(username='*anonymous'))
+                         extra_environ=dict(username=str('*anonymous')))
         assert 'anon reply to anon post' not in r
         assert_equal(spam_checker.check.call_args[0][0], 'anon reply to anon post content')
 
@@ -606,7 +606,7 @@ class TestForum(TestController):
 
         # assert anon can't edit their original post
         r = self.app.get(thread.request.url,
-                    extra_environ=dict(username='*anonymous'))
+                    extra_environ=dict(username=str('*anonymous')))
         assert 'Post content' in r
         post_container = r.html.find('div', {'id': post.slug})
         btn_edit = post_container.find('a', {'title': 'Edit'})
@@ -959,7 +959,7 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic',
-                               params=params).follow(extra_environ=dict(username='*anonymous'))
+                               params=params).follow(extra_environ=dict(username=str('*anonymous')))
         thread_sidebar_menu = str(thread.html.find('div', {'id': 'sidebar'}))
         assert_not_in("flag_as_spam", thread_sidebar_menu)
 
@@ -985,7 +985,7 @@ class TestForum(TestController):
         form.submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'téstforum'.encode('utf-8') in r
-        r = self.app.get('/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
+        r = self.app.get(h.urlquote('/p/test/discussion/create_topic/téstforum/'))
         assert '<option value="téstforum" selected>Tést Forum</option>' in r
 
     def test_create_topic_attachment(self):

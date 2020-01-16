@@ -69,7 +69,7 @@ class Test(TestController):
         assert 'Nothing to see here' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/',
-                              extra_environ=dict(username='*anonymous'))
+                              extra_environ=dict(username=str('*anonymous')))
         # anonymous user can't see Edit links
         assert 'Nothing to see here' in anon_r
         assert '/blog/%s/my-post/edit' % d not in anon_r
@@ -83,7 +83,7 @@ class Test(TestController):
         assert 'Draft' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/',
-                              extra_environ=dict(username='*anonymous'))
+                              extra_environ=dict(username=str('*anonymous')))
         # anonymous user can't see draft posts
         assert 'Nothing to see here' not in anon_r
 
@@ -136,7 +136,7 @@ class Test(TestController):
         assert 'Nothing to see here' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/%s/my-post/' % d,
-                              extra_environ=dict(username='*anonymous'))
+                              extra_environ=dict(username=str('*anonymous')))
         # anonymous user can't see Edit links
         assert 'Nothing to see here' in anon_r
         assert '/blog/%s/my-post/edit' % d not in anon_r
@@ -150,7 +150,7 @@ class Test(TestController):
         assert 'Draft' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/%s/my-post/' % d,
-                              extra_environ=dict(username='*anonymous'))
+                              extra_environ=dict(username=str('*anonymous')))
         # anonymous user can't get to draft posts
         assert 'Nothing to see here' not in anon_r
 
@@ -161,7 +161,7 @@ class Test(TestController):
         assert 'Nothing' in response
         # anon users can't edit
         response = self.app.get('/blog/%s/my-post/edit' % d,
-                                extra_environ=dict(username='*anonymous'))
+                                extra_environ=dict(username=str('*anonymous')))
         assert 'Nothing' not in response
 
     def test_post_get_markdown(self):
@@ -183,7 +183,7 @@ class Test(TestController):
             '/blog/%s/my-post/update_markdown' % d,
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['status'] == 'no_permission'
 
     def test_post_attachments(self):

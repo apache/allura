@@ -319,7 +319,7 @@ class RootController(BaseController, FeedController):
         if attachment is not None:
             post.add_multiple_attachments(attachment)
         notification_tasks.send_usermentions_notification.post(post.index_id(), kw['text'])
-        redirect(h.really_unicode(post.url()).encode('utf-8'))
+        redirect(h.urlquote(h.really_unicode(post.url())))
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
@@ -426,7 +426,7 @@ class PostController(BaseController, FeedController):
         if delete:
             self.post.delete()
             flash('Post deleted', 'info')
-            redirect(h.really_unicode(c.app.url).encode('utf-8'))
+            redirect(h.urlquote(h.really_unicode(c.app.url)))
         else:
             g.spam_checker.check(kw['title'] + '\n' + kw['text'], artifact=self.post,
                                  user=c.user, content_type='blog-post')
@@ -593,7 +593,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
                 text=text,
                 labels=labels.split(','),
                 **kw)
-            return exc.HTTPCreated(headers=dict(Location=h.absurl('/rest' + post.url()).encode('utf-8')))
+            return exc.HTTPCreated(headers=dict(Location=str(h.absurl('/rest' + post.url()).encode('utf-8'))))
 
         else:
             result = RootController().index(limit=limit, page=page)

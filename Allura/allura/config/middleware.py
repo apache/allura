@@ -19,6 +19,8 @@
 
 """WSGI middleware initialization for the allura application."""
 from __future__ import unicode_literals
+
+import ast
 import importlib
 import mimetypes
 
@@ -164,7 +166,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         use_cache=not asbool(global_conf['debug']),
         script_name=app_conf.get('ew.script_name', '/_ew_resources/'),
         url_base=app_conf.get('ew.url_base', '/_ew_resources/'),
-        extra_headers=eval(app_conf.get('ew.extra_headers', 'None')),
+        extra_headers=ast.literal_eval(app_conf.get('ew.extra_headers', '[]')),
         cache_max_age=asint(app_conf.get('ew.cache_header_seconds', 60*60*24*365)),
 
         # settings to pass through to jinja Environment for EW core widgets

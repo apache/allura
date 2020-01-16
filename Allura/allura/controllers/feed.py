@@ -66,8 +66,8 @@ class FeedController(object):
     a customized feed should override :meth:`get_feed`.
 
     """
-    FEED_TYPES = ['.atom', '.rss']
-    FEED_NAMES = ['feed{0}'.format(typ) for typ in FEED_TYPES]
+    FEED_TYPES = [str('.atom'), str('.rss')]
+    FEED_NAMES = [str('feed{0}'.format(typ)) for typ in FEED_TYPES]
 
     def __getattr__(self, name):
         if name in self.FEED_NAMES:
@@ -100,8 +100,8 @@ class FeedController(object):
             feed_def.url,
             feed_def.description,
             since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
+        response.headers['Content-Type'] = str('')
+        response.content_type = str('application/xml')
         return feed.writeString('utf-8')
 
     def get_feed(self, project, app, user):
