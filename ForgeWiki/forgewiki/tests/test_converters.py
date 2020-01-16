@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from IPython.testing.decorators import module_not_available, skipif
 
 from forgewiki import converters

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import calendar
 from urlparse import urlparse
@@ -144,7 +145,7 @@ class EmailAddress(MappedClass):
             ))
 
             allura.tasks.mail_tasks.send_system_mail_to_user(self.email,
-                                                             u'%s - Email address claim attempt' % config['site_name'],
+                                                             '%s - Email address claim attempt' % config['site_name'],
                                                              text)
 
     def set_nonce_hash(self):
@@ -168,7 +169,7 @@ please visit the following URL:
             fromaddr=g.noreply,
             reply_to=g.noreply,
             toaddr=self.email,
-            subject=u'%s - Email address verification' % config['site_name'],
+            subject='%s - Email address verification' % config['site_name'],
             message_id=h.gen_message_id(),
             text=text)
 
@@ -300,8 +301,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         session_ua=str))
 
     def __repr__(self):
-        return (u'<User username={s.username!r} display_name={s.display_name!r} _id={s._id!r} '
-                u'disabled={s.disabled!r} pending={s.pending!r}>'.format(s=self))
+        return ('<User username={s.username!r} display_name={s.display_name!r} _id={s._id!r} '
+                'disabled={s.disabled!r} pending={s.pending!r}>'.format(s=self))
 
     def index(self):
         provider = plugin.AuthenticationProvider.get(None)  # no need in request here
@@ -385,7 +386,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             if login_detail:
                 self.add_login_detail(login_detail)
 
-    def send_password_reset_email(self, email_address=None, subject_tmpl=u'{site_name} Password recovery'):
+    def send_password_reset_email(self, email_address=None, subject_tmpl='{site_name} Password recovery'):
         if email_address is None:
             email_address = self.get_pref('email_address')
         reset_url = self.make_password_reset_url()
@@ -787,8 +788,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append(u'"%s" ' % self.get_pref('display_name'))
-        h.append(u'<%s>' % self.get_pref('email_address'))
+        h.append('"%s" ' % self.get_pref('display_name'))
+        h.append('<%s>' % self.get_pref('email_address'))
         return h
 
     def update_notifications(self):
@@ -1019,7 +1020,7 @@ class AuditLog(object):
 
     @classmethod
     def comment_user(cls, by, message, *args, **kwargs):
-        message = u'Comment by %s: %s' % (by.username, message)
+        message = 'Comment by %s: %s' % (by.username, message)
         return cls.log_user(message, *args, **kwargs)
 
 

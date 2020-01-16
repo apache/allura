@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import logging
 from datetime import datetime, timedelta
@@ -359,12 +360,12 @@ class DeleteProjectsController(object):
         return parsed_projects
 
     def format_parsed_projects(self, projects):
-        template = u'{}    # {}'
+        template = '{}    # {}'
         lines = []
         for input, p, error in projects:
-            comment = u'OK: {}'.format(p.url()) if p else error
+            comment = 'OK: {}'.format(p.url()) if p else error
             lines.append(template.format(input, comment))
-        return u'\n'.join(lines)
+        return '\n'.join(lines)
 
     @with_trailing_slash
     @expose('jinja:allura:templates/site_admin_delete_projects.html')
@@ -380,11 +381,11 @@ class DeleteProjectsController(object):
     @validate(validators=delete_form_validators)
     def confirm(self, projects=None, reason=None, disable_users=False, **kw):
         if not projects:
-            flash(u'No projects specified', 'warning')
+            flash('No projects specified', 'warning')
             redirect('.')
         parsed_projects = self.parse_projects(projects)
         projects = self.format_parsed_projects(parsed_projects)
-        edit_link = u'./?projects={}&reason={}&disable_users={}'.format(
+        edit_link = './?projects={}&reason={}&disable_users={}'.format(
             h.urlquoteplus(projects),
             h.urlquoteplus(reason or ''),
             h.urlquoteplus(disable_users))
@@ -400,20 +401,20 @@ class DeleteProjectsController(object):
     @validate(validators=delete_form_validators)
     def really_delete(self, projects=None, reason=None, disable_users=False, **kw):
         if not projects:
-            flash(u'No projects specified', 'warning')
+            flash('No projects specified', 'warning')
             redirect('.')
         projects = self.parse_projects(projects)
         task_params = [p.url().strip('/') for (_, p, _) in projects if p]
         if not task_params:
-            flash(u'Unable to parse at least one project from your input', 'warning')
+            flash('Unable to parse at least one project from your input', 'warning')
             redirect('.')
-        task_params = u' '.join(task_params)
+        task_params = ' '.join(task_params)
         if reason:
-            task_params = u'-r {} {}'.format(pipes.quote(reason), task_params)
+            task_params = '-r {} {}'.format(pipes.quote(reason), task_params)
         if disable_users:
-            task_params = u'--disable-users {}'.format(task_params)
+            task_params = '--disable-users {}'.format(task_params)
         DeleteProjects.post(task_params)
-        flash(u'Delete scheduled', 'ok')
+        flash('Delete scheduled', 'ok')
         redirect('.')
 
 

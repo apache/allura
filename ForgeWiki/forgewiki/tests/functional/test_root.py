@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import StringIO
 import allura
@@ -52,9 +53,9 @@ class TestRootController(TestController):
         return self.find_form(resp, cond)
 
     def test_root_index(self):
-        page_url = h.urlquote(u'/wiki/tést/')
+        page_url = h.urlquote('/wiki/tést/')
         r = self.app.get(page_url).follow()
-        assert u'tést' in r
+        assert 'tést' in r
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
         r = self.app.get('/wiki/Home',
@@ -62,10 +63,10 @@ class TestRootController(TestController):
         assert 'Create Page' not in r, r
 
     def test_create_wiki_page(self):
-        url = u"/p/test/wiki/create_wiki_page/"
+        url = "/p/test/wiki/create_wiki_page/"
         r = self.app.get(url)
-        assert u'test' in r
-        assert u'Create page' in r.body
+        assert 'test' in r
+        assert 'Create page' in r.body
 
     def test_root_markdown_syntax(self):
         response = self.app.get('/wiki/markdown_syntax/')
@@ -80,13 +81,13 @@ class TestRootController(TestController):
         assert 'Browse Pages' in response
 
     def test_root_new_page(self):
-        response = self.app.get('/wiki/new_page?title=' + h.urlquote(u'tést'))
-        assert u'tést' in response
+        response = self.app.get('/wiki/new_page?title=' + h.urlquote('tést'))
+        assert 'tést' in response
 
     def test_root_new_search(self):
-        self.app.get(h.urlquote(u'/wiki/tést/'))
-        response = self.app.get('/wiki/search/?q=' + h.urlquote(u'tést'))
-        assert u'Search wiki: tést' in response
+        self.app.get(h.urlquote('/wiki/tést/'))
+        response = self.app.get('/wiki/search/?q=' + h.urlquote('tést'))
+        assert 'Search wiki: tést' in response
 
     def test_feed(self):
         for ext in ['', '.rss', '.atom']:
@@ -151,7 +152,7 @@ class TestRootController(TestController):
 
     def test_nonexistent_page_edit(self):
         resp = self.app.get('/wiki/tést/')
-        assert resp.location.endswith(h.urlquote(u'/wiki/tést/edit')), resp.location
+        assert resp.location.endswith(h.urlquote('/wiki/tést/edit')), resp.location
         resp = resp.follow()
         assert 'tést' in resp
 
@@ -405,7 +406,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': '',
                 })
-        assert_equal(spam_checker.check.call_args[0][0], u'tést\nsometext')
+        assert_equal(spam_checker.check.call_args[0][0], 'tést\nsometext')
         assert 'tést' in response
 
     def test_page_get_markdown(self):

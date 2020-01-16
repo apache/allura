@@ -18,6 +18,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 import re
 import os
 import allura
@@ -172,8 +173,8 @@ def test_macro_gittip_button():
         r = g.markdown_wiki.convert('[[gittip_button username=test]]')
     assert_equal(
         r,
-        u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" '
-        u'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
+        '<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" '
+        'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
 
 
 def test_macro_neighborhood_feeds():
@@ -231,26 +232,26 @@ def test_macro_members():
 @with_setup(setUp)
 def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
-    user.display_name = u'Test Admin <script>'
+    user.display_name = 'Test Admin <script>'
     r = g.markdown_wiki.convert('[[members]]')
     assert_equal(r.replace('\n', '').replace('\t', ''),
-                 u'<div class="markdown_content"><h6>Project Members:</h6>'
-                 u'<ul class="md-users-list">'
-                 u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
-                 u'</ul></div>')
+                 '<div class="markdown_content"><h6>Project Members:</h6>'
+                 '<ul class="md-users-list">'
+                 '<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>'
+                 '</ul></div>')
 
 
 @with_setup(setUp)
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
-    user.display_name = u'Test Ådmin <script>'
+    user.display_name = 'Test Ådmin <script>'
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[project_admins]]')
     assert_equal(r.replace('\n', ''),
-                 u'<div class="markdown_content"><h6>Project Admins:</h6>'
-                 u'<ul class="md-users-list">'
-                 u'    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
-                 u'</ul></div>')
+                 '<div class="markdown_content"><h6>Project Admins:</h6>'
+                 '<ul class="md-users-list">'
+                 '    <li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>'
+                 '</ul></div>')
 
 
 @with_setup(setUp)
@@ -618,12 +619,12 @@ def test_hideawards_macro():
 
     app_config_id = ObjectId()
     award = M.Award(app_config_id=app_config_id)
-    award.short = u'Award short'
-    award.full = u'Award full'
+    award.short = 'Award short'
+    award.full = 'Award full'
     award.created_by_neighborhood_id = p_nbhd._id
 
     project = M.Project.query.get(
-        neighborhood_id=p_nbhd._id, shortname=u'test')
+        neighborhood_id=p_nbhd._id, shortname='test')
 
     M.AwardGrant(
         award=award,
@@ -705,8 +706,8 @@ class TestCachedMarkdown(unittest.TestCase):
     def setUp(self):
         self.md = ForgeMarkdown()
         self.post = M.Post()
-        self.post.text = u'**bold**'
-        self.expected_html = u'<p><strong>bold</strong></p>'
+        self.post.text = '**bold**'
+        self.expected_html = '<p><strong>bold</strong></p>'
 
     def test_bad_source_field_name(self):
         self.assertRaises(AttributeError, self.md.cached_convert,
@@ -719,8 +720,8 @@ class TestCachedMarkdown(unittest.TestCase):
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_non_ascii(self):
-        self.post.text = u'å∫ç'
-        expected = u'<p>å∫ç</p>'
+        self.post.text = 'å∫ç'
+        expected = '<p>å∫ç</p>'
         # test with empty cache
         self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
         # test with primed cache
@@ -738,7 +739,7 @@ class TestCachedMarkdown(unittest.TestCase):
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_stale_cache(self):
         old = self.md.cached_convert(self.post, 'text')
-        self.post.text = u'new, different source text'
+        self.post.text = 'new, different source text'
         html = self.md.cached_convert(self.post, 'text')
         self.assertNotEqual(old, html)
         self.assertEqual(html, self.post.text_cache.html)
@@ -755,7 +756,7 @@ class TestCachedMarkdown(unittest.TestCase):
             self.assertEqual(html, self.expected_html)
             self.assertIsInstance(html, Markup)
             self.assertFalse(convert_func.called)
-            self.post.text = u"text [[macro]] pass"
+            self.post.text = "text [[macro]] pass"
             html = self.md.cached_convert(self.post, 'text')
             self.assertTrue(convert_func.called)
 
@@ -795,33 +796,33 @@ class TestEmojis(unittest.TestCase):
 
     def test_markdown_emoji_atomic(self):
         output = g.markdown.convert(':+1:')
-        assert u'<p>\U0001F44D</p>' in output
+        assert '<p>\U0001F44D</p>' in output
         output = g.markdown.convert(':Bosnia_&_Herzegovina:')
-        assert u'<p>\U0001F1E7\U0001F1E6</p>' in output
-        output = g.markdown.convert(u':Åland_Islands:') # emoji code with non-asciii charactor
-        assert u'<p>\U0001F1E6\U0001F1FD</p>' in output
+        assert '<p>\U0001F1E7\U0001F1E6</p>' in output
+        output = g.markdown.convert(':Åland_Islands:') # emoji code with non-asciii charactor
+        assert '<p>\U0001F1E6\U0001F1FD</p>' in output
 
     def test_markdown_emoji_with_text(self):
         output = g.markdown.convert('Thumbs up emoji :+1: wow!')
-        assert u'<p>Thumbs up emoji \U0001F44D wow!</p>' in output
-        output = g.markdown.convert(u'More emojis :+1::camel::three_o’clock: wow!')
-        assert u'<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>' in output
+        assert '<p>Thumbs up emoji \U0001F44D wow!</p>' in output
+        output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
+        assert '<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>' in output
         output = g.markdown.convert(':man_bouncing_ball_medium-light_skin_tone:emoji:+1:')
-        assert u'<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>' in output
+        assert '<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>' in output
 
     def test_markdown_emoji_in_code(self):
         output = g.markdown.convert('This will not become an emoji `:+1:`')
-        assert_in(u'<p>This will not become an emoji <code>:+1:</code></p>', output)
-        output = g.markdown.convert(u'```html\n<p>:camel:</p>\n```')
-        assert_in(u':camel:', output)
-        output = g.markdown.convert(u'~~~\n:camel:\n~~~')
-        assert_in(u'<span class="p">:</span><span class="n">camel</span><span class="p">:</span>', output)
+        assert_in('<p>This will not become an emoji <code>:+1:</code></p>', output)
+        output = g.markdown.convert('```html\n<p>:camel:</p>\n```')
+        assert_in(':camel:', output)
+        output = g.markdown.convert('~~~\n:camel:\n~~~')
+        assert_in('<span class="p">:</span><span class="n">camel</span><span class="p">:</span>', output)
 
     def test_markdown_commit_with_emojis(self):
         output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')
-        assert u'Thumbs up emoji \U0001F44D wow!' in output
-        output = g.markdown.convert(u'More emojis :+1::camel::three_o’clock: wow!')
-        assert u'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
+        assert 'Thumbs up emoji \U0001F44D wow!' in output
+        output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
+        assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
 
 class TestUserMentions(unittest.TestCase):
 
@@ -918,32 +919,32 @@ class TestIconRender(object):
         self.i = g.icons['edit']
 
     def test_default(self):
-        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
+        html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render())
 
     def test_show_title(self):
-        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>&nbsp;Edit</a>'
+        html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>&nbsp;Edit</a>'
         assert_equal(html, self.i.render(show_title=True))
 
-        html = u'<a class="icon" href="#" title="&lt;script&gt;"><i class="fa fa-edit"></i>&nbsp;&lt;script&gt;</a>'
+        html = '<a class="icon" href="#" title="&lt;script&gt;"><i class="fa fa-edit"></i>&nbsp;&lt;script&gt;</a>'
         assert_equal(html, self.i.render(show_title=True, title="<script>"))
 
     def test_extra_css(self):
-        html = u'<a class="icon reply btn" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
+        html = '<a class="icon reply btn" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(extra_css='reply btn'))
 
     def test_no_closing_tag(self):
-        html = u'<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>'
+        html = '<a class="icon" href="#" title="Edit"><i class="fa fa-edit"></i>'
         assert_equal(html, self.i.render(closing_tag=False))
 
     def test_tag(self):
-        html = u'<div class="icon" title="Edit"><i class="fa fa-edit"></i></div>'
+        html = '<div class="icon" title="Edit"><i class="fa fa-edit"></i></div>'
         assert_equal(html, self.i.render(tag='div'))
 
     def test_kwargs(self):
-        html = u'<a class="icon" data-id="123" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
+        html = '<a class="icon" data-id="123" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(**{'data-id': '123'}))
 
     def test_escaping(self):
-        html = u'<a class="icon &#34;" data-url="&gt;" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
+        html = '<a class="icon &#34;" data-url="&gt;" href="#" title="Edit"><i class="fa fa-edit"></i></a>'
         assert_equal(html, self.i.render(extra_css='"', **{'data-url': '>'}))

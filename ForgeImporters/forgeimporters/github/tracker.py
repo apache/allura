@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import logging
 from datetime import datetime
@@ -157,7 +158,7 @@ class GitHubTrackerImporter(ToolImporter):
         return datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ')
 
     def get_user_link(self, user):
-        return u'[{0}](https://github.com/{0})'.format(user)
+        return '[{0}](https://github.com/{0})'.format(user)
 
     def process_fields(self, extractor, ticket, issue):
         ticket.summary = issue['title']
@@ -173,10 +174,10 @@ class GitHubTrackerImporter(ToolImporter):
         body, attachments = self._get_attachments(extractor, issue['body'])
         ticket.add_multiple_attachments(attachments)
         ticket.description = (
-            u'*Originally created by:* {creator}\n'
-            u'{owner}'
-            u'\n'
-            u'{body}').format(
+            '*Originally created by:* {creator}\n'
+            '{owner}'
+            '\n'
+            '{body}').format(
             creator=self.get_user_link(issue['user']['login']),
             owner=owner_line,
             body=self.github_markdown_converter.convert(body),
@@ -188,7 +189,7 @@ class GitHubTrackerImporter(ToolImporter):
             body, attachments = self._get_attachments(
                 extractor, comment['body'])
             if comment['user']:
-                posted_by = u'*Originally posted by:* {}\n\n'.format(
+                posted_by = '*Originally posted by:* {}\n\n'.format(
                     self.get_user_link(comment['user']['login']))
                 body = posted_by + body
             p = ticket.discussion_thread.add_post(

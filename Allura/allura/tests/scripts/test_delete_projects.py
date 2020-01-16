@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
 from tg import app_globals as g
@@ -133,8 +134,8 @@ class TestDeleteProjects(TestController):
         self.proj.add_user(dev, ['Developer'])
         ThreadLocalODMSession.flush_all()
         g.credentials.clear()
-        proj = u'p/{}'.format(self.p_shortname)
-        msg = u'Account disabled because project /{} is deleted. Reason: The Reason'.format(proj)
+        proj = 'p/{}'.format(self.p_shortname)
+        msg = 'Account disabled because project /{} is deleted. Reason: The Reason'.format(proj)
         opts = ['-r', 'The Reason', proj]
         if disable:
             opts.insert(0, '--disable-users')

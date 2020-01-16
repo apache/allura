@@ -16,6 +16,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 from forgefeedback.version import __version__

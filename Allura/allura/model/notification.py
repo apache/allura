@@ -34,6 +34,7 @@ Periodically:
 
 '''
 
+from __future__ import unicode_literals
 import logging
 from bson import ObjectId
 from datetime import datetime, timedelta

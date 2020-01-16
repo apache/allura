@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from urlparse import urlparse, parse_qs
 
 import tg
@@ -34,7 +35,7 @@ class TestGravatar(TestController):
         assert expected_id == actual_id
 
     def test_unicode_id(self):
-        email = u'Vin\u00EDcius@example.com'
+        email = 'Vin\u00EDcius@example.com'
         expected_id = 'e00968255d68523b034a6a39c522efdb'
         actual_id = gravatar.id(email)
         assert expected_id == actual_id, 'Expected gravitar ID %s, got %s' % (

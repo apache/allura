@@ -16,6 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 from datetime import datetime
 import urllib
 import os
@@ -577,12 +578,12 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/edit/')
         opts = r.html.find('select', attrs={'name': '_type'})
         opts = opts.findAll('option')
-        assert_equal(opts[0].get('value'), u'')
-        assert_equal(opts[0].getText(), u'no change')
-        assert_equal(opts[1].get('value'), u'Bug')
-        assert_equal(opts[1].getText(), u'Bug')
-        assert_equal(opts[2].get('value'), u'Feature Request')
-        assert_equal(opts[2].getText(), u'Feature Request')
+        assert_equal(opts[0].get('value'), '')
+        assert_equal(opts[0].getText(), 'no change')
+        assert_equal(opts[1].get('value'), 'Bug')
+        assert_equal(opts[1].getText(), 'Bug')
+        assert_equal(opts[2].get('value'), 'Feature Request')
+        assert_equal(opts[2].getText(), 'Feature Request')
 
     def test_mass_edit_private_field(self):
         kw = {'private': True}
@@ -781,7 +782,7 @@ class TestFunctionalController(TrackerTestController):
 
         # Make sure the 'Create Ticket' button is disabled for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        create_button = r.html.find('a', attrs={'href': u'/p/test/bugs/new/'})
+        create_button = r.html.find('a', attrs={'href': '/p/test/bugs/new/'})
         assert_equal(create_button['class'], ['icon', 'sidebar-disabled'])
 
     def test_render_markdown_syntax(self):
@@ -794,8 +795,8 @@ class TestFunctionalController(TrackerTestController):
         # Create ticket
         params = dict(ticket_num=1,
                       app_config_id=c.app.config._id,
-                      summary=u'test md cache',
-                      description=u'# Test markdown cached_convert',
+                      summary='test md cache',
+                      description='# Test markdown cached_convert',
                       mod_date=datetime(2010, 1, 1, 1, 1, 1))
         ticket = tm.Ticket(**params)
 
@@ -842,12 +843,12 @@ class TestFunctionalController(TrackerTestController):
             'status': 'ccc',
             '_milestone': '',
             'assigned_to': '',
-            'labels': u'yellow,greén'.encode('utf-8'),
+            'labels': 'yellow,greén'.encode('utf-8'),
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        assert_true(u'greén' in response)
+        assert_true('greén' in response)
         assert_true('<li><strong>labels</strong>:  --&gt; yellow, greén</li>' in response)
         self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz',
@@ -1136,9 +1137,9 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         r = self.app.get('/bugs/new/')
-        assert u'<option value="oné">oné</option>'.encode('utf-8') in r
-        assert u'<option value="one and á half">one and á half</option>'.encode('utf-8') in r
-        assert u'<option value="two">two</option>' in r
+        assert '<option value="oné">oné</option>'.encode('utf-8') in r
+        assert '<option value="one and á half">one and á half</option>'.encode('utf-8') in r
+        assert '<option value="two">two</option>' in r
 
     def test_select_custom_field_invalid_quotes(self):
         params = dict(
@@ -1153,9 +1154,9 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         r = self.app.get('/bugs/new/')
-        assert u'<option value="closéd">closéd</option>'.encode('utf-8') in r
-        assert u'<option value="quote">quote</option>' in r
-        assert u'<option value="missing">missing</option>' in r
+        assert '<option value="closéd">closéd</option>'.encode('utf-8') in r
+        assert '<option value="quote">quote</option>' in r
+        assert '<option value="missing">missing</option>' in r
 
     def test_custom_field_update_comments(self):
         params = dict(
@@ -1661,7 +1662,7 @@ class TestFunctionalController(TrackerTestController):
         assert_false('test third ticket' in str(ticket_rows))
 
     def test_new_ticket_notification_contains_attachments(self):
-        file_name = u'tést_root.py'.encode('utf-8')
+        file_name = 'tést_root.py'.encode('utf-8')
         file_data = file(__file__).read()
         upload = ('ticket_form.attachment', file_name, file_data)
         r = self.app.post('/bugs/save_ticket', {
@@ -1675,9 +1676,9 @@ class TestFunctionalController(TrackerTestController):
             dict(task_name='allura.tasks.mail_tasks.sendmail')
         ).first()
         expected_text = (
-            u'**Attachments:**\n\n'
-            u'- [tést_root.py]'
-            u'(http://localhost/p/test/bugs/1/attachment/t%C3%A9st_root.py)')
+            '**Attachments:**\n\n'
+            '- [tést_root.py]'
+            '(http://localhost/p/test/bugs/1/attachment/t%C3%A9st_root.py)')
         assert_in(expected_text, email.kwargs['text'])
 
     def test_ticket_notification_contains_milestones(self):
@@ -1788,9 +1789,9 @@ class TestFunctionalController(TrackerTestController):
 - **Status**: unread --> accepted
 - **Milestone**: 1.0 --> 2.0
 '''
-        email = u'\n'.join([email_header, first_ticket_changes, ''])
+        email = '\n'.join([email_header, first_ticket_changes, ''])
         assert_equal(email, first_user_email.kwargs.text)
-        email = u'\n'.join([email_header, second_ticket_changes, ''])
+        email = '\n'.join([email_header, second_ticket_changes, ''])
         assert_equal(email, second_user_email.kwargs.text)
         assert_in(email_header, admin_email.kwargs.text)
         assert_in(first_ticket_changes, admin_email.kwargs.text)
@@ -2029,7 +2030,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_url = r.headers['Location']
         r = self.app.get(ticket_url, extra_environ=dict(username='*anonymous'))
         a = r.html.find('a', {'class': 'icon edit_ticket'})
-        assert_equal(a.text, u'\xa0Edit')
+        assert_equal(a.text, '\xa0Edit')
 
     def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
         p = M.Project.query.get(shortname='test')
@@ -3357,9 +3358,9 @@ class TestArtifactLinks(TrackerTestController):
         assert_equal(ticket_features.app.config._id, features.config._id)
 
         c.app = bugs
-        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/bugs/1/">[#1]</a></p></div>'
+        link = '<div class="markdown_content"><p><a class="alink" href="/p/test/bugs/1/">[#1]</a></p></div>'
         assert_equal(g.markdown.convert('[#1]'), link)
 
         c.app = features
-        link = u'<div class="markdown_content"><p><a class="alink" href="/p/test/features/1/">[#1]</a></p></div>'
+        link = '<div class="markdown_content"><p><a class="alink" href="/p/test/features/1/">[#1]</a></p></div>'
         assert_equal(g.markdown.convert('[#1]'), link)

@@ -16,6 +16,7 @@
 #       under the License.
 
 #-*- python -*-
+from __future__ import unicode_literals
 import json
 import logging
 import os
@@ -113,7 +114,7 @@ class ForgeWikiApp(Application):
     default_mount_label = 'Wiki'
     default_mount_point = 'wiki'
     ordinal = 5
-    default_root_page_name = u'Home'
+    default_root_page_name = 'Home'
     icons = {
         24: 'images/wiki_24.png',
         32: 'images/wiki_32.png',
@@ -747,7 +748,7 @@ class PageController(BaseController, FeedController):
         else:
             self.page.labels = []
         self.page.commit(subscribe=subscribe)
-        g.spam_checker.check(title + u'\n' + text, artifact=self.page,
+        g.spam_checker.check(title + '\n' + text, artifact=self.page,
                              user=c.user, content_type='wiki')
         if activity_verb == 'created':
             notification_tasks.send_usermentions_notification.post(self.page.index_id(), text)

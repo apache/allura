@@ -18,6 +18,7 @@
 #       under the License.
 
 """The allura package"""
+from __future__ import unicode_literals
 from tg.support.registry import StackedObjectProxy
 
 credentials = StackedObjectProxy(name='credentials')

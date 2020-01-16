@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import re
 from datetime import datetime
@@ -69,7 +70,7 @@ log = logging.getLogger(__name__)
 class GitHubWikiImportForm(ToolImportForm):
     gh_project_name = GitHubProjectNameValidator()
     gh_user_name = fev.UnicodeString(not_empty=True)
-    tool_option = fev.UnicodeString(if_missing=u'')
+    tool_option = fev.UnicodeString(if_missing='')
 
 
 class GitHubWikiImportController(ToolImportController, GitHubOAuthMixin):
@@ -390,12 +391,12 @@ class GitHubWikiImporter(ToolImporter):
 
     def _gollum_external_link(self, link, title, options):
         if title:
-            return u'[{}]({})'.format(title, link)
-        return u'<{}>'.format(link)
+            return '[{}]({})'.format(title, link)
+        return '<{}>'.format(link)
 
     def _gollum_page_link(self, link, title, options):
         page = self._convert_page_name(link)
-        page = page.replace(u'&amp;', u'&')  # allow & in page links
+        page = page.replace('&amp;', '&')  # allow & in page links
         # gollum page lookups are case-insensitive, you'll always get link to
         # whatever comes first in the file system, no matter how you refer to a page.
         # E.g. if you have two pages: a.md and A.md both [[a]] and [[A]] will refer a.md.
@@ -409,8 +410,8 @@ class GitHubWikiImporter(ToolImporter):
             page = self.available_pages[idx]
 
         if title:
-            return u'[{}]({})'.format(title, page)
-        return u'[{}]'.format(page)
+            return '[{}]({})'.format(title, page)
+        return '[{}]'.format(page)
 
     def rewrite_links(self, html, prefix, new_prefix):
         if not prefix.endswith('/'):

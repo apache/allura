@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import warnings
 
@@ -970,7 +971,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
         submit_text='Start',
         neighborhood=None)
     # tools installed by default
-    default_tools = [u'wiki', u'git', u'tickets', u'discussion']
+    default_tools = ['wiki', 'git', 'tickets', 'discussion']
 
     @property
     def fields(self):
@@ -1007,7 +1008,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
         value = super(NeighborhoodAddProjectForm, self).validate(value, state)
         provider = plugin.ProjectRegistrationProvider.get()
         if not provider.phone_verified(c.user, c.project.neighborhood):
-            raise formencode.Invalid(u'phone-verification', value, None)
+            raise formencode.Invalid('phone-verification', value, None)
         return value
 
     def resources(self):

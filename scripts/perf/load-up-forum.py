@@ -16,6 +16,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 import logging
 import uuid
 from ming.orm import ThreadLocalORMSession, session

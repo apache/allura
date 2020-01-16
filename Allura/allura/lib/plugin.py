@@ -18,6 +18,7 @@
 '''
 Allura plugins for authentication and project registration
 '''
+from __future__ import unicode_literals
 import re
 import os
 import logging
@@ -242,14 +243,14 @@ class AuthenticationProvider(object):
 
             if trusted:
                 # current user must change password
-                h.auditlog_user(u'Successful login with password in HIBP breach database, '
-                                u'from trusted source (reason: {})'.format(trusted), user=user)
+                h.auditlog_user('Successful login with password in HIBP breach database, '
+                                'from trusted source (reason: {})'.format(trusted), user=user)
                 return 'hibp'  # reason
             else:
                 # current user may not continue, must reset password via email
                 h.auditlog_user('Attempted login from untrusted location with password in HIBP breach database',
                                 user=user)
-                user.send_password_reset_email(subject_tmpl=u'Update your {site_name} password')
+                user.send_password_reset_email(subject_tmpl='Update your {site_name} password')
                 raise exc.HTTPBadRequest('To ensure account security, you must reset your password via email.'
                                          '\n'
                                          'Please check your email to continue.')
@@ -519,13 +520,13 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         user.disabled = True
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user(u'Account disabled', user=user)
+            h.auditlog_user('Account disabled', user=user)
 
     def enable_user(self, user, **kw):
         user.disabled = False
         session(user).flush(user)
         if kw.get('audit', True):
-            h.auditlog_user(u'Account enabled', user=user)
+            h.auditlog_user('Account enabled', user=user)
 
     def activate_user(self, user, **kw):
         user.pending = False
@@ -1180,7 +1181,7 @@ class ProjectRegistrationProvider(object):
                 log.info('User %s is already disabled', user.username)
                 continue
             provider.disable_user(user, audit=False)
-            msg = u'Account disabled because project {}{} is deleted. Reason: {}'.format(
+            msg = 'Account disabled because project {}{} is deleted. Reason: {}'.format(
                 project.neighborhood.url_prefix,
                 project.shortname,
                 reason)
@@ -1223,29 +1224,29 @@ class ProjectRegistrationProvider(object):
         '''
         from allura.model import Project, Neighborhood
         if url is None:
-            return None, u'Empty url'
+            return None, 'Empty url'
         url = urlparse(url)
         url = [u for u in url.path.split('/') if u]
         if len(url) == 0:
-            return None, u'Empty url'
+            return None, 'Empty url'
         if len(url) == 1:
             q = Project.query.find(dict(shortname=url[0]))
             cnt = q.count()
             if cnt == 0:
-                return None, u'Project not found'
+                return None, 'Project not found'
             if cnt == 1:
                 return q.first(), None
-            return None, u'Too many matches for project: {}'.format(cnt)
-        n = Neighborhood.query.get(url_prefix=u'/{}/'.format(url[0]))
+            return None, 'Too many matches for project: {}'.format(cnt)
+        n = Neighborhood.query.get(url_prefix='/{}/'.format(url[0]))
         if not n:
-            return None, u'Neighborhood not found'
+            return None, 'Neighborhood not found'
         p = Project.query.get(neighborhood_id=n._id, shortname=n.shortname_prefix + url[1])
         if len(url) > 2:
             # Maybe subproject
             subp = Project.query.get(neighborhood_id=n._id, shortname='{}/{}'.format(*url[1:3]))
             if subp:
                 return (subp, None)
-        return (p, u'Project not found' if p is None else None)
+        return (p, 'Project not found' if p is None else None)
 
 
 class ThemeProvider(object):

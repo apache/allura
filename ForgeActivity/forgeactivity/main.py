@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import calendar
 from datetime import timedelta
@@ -158,7 +159,7 @@ class ForgeActivityController(BaseController):
             'link': h.absurl(self.app.url),
             'description': 'Recent activity for %s' % (
                 data['followee'].activity_name),
-            'language': u'en',
+            'language': 'en',
         }
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
@@ -166,7 +167,7 @@ class ForgeActivityController(BaseController):
             feed = FG.Rss201rev2Feed(**d)
         for t in data['timeline']:
             url = h.absurl(t.obj.activity_url.encode('utf-8'))
-            feed.add_item(title=u'%s %s %s%s' % (
+            feed.add_item(title='%s %s %s%s' % (
                                 t.actor.activity_name,
                 t.verb,
                 t.obj.activity_name,

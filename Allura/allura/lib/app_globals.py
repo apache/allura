@@ -20,6 +20,7 @@
 
 """The application's Globals object"""
 
+from __future__ import unicode_literals
 import logging
 import cgi
 import hashlib
@@ -81,7 +82,7 @@ class ForgeMarkdown(markdown.Markdown):
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
             escaped = cgi.escape(h.really_unicode(source))
-            return h.html.literal(u'<pre>%s</pre>' % escaped)
+            return h.html.literal('<pre>%s</pre>' % escaped)
         try:
             return markdown.Markdown.convert(self, source)
         except Exception:
@@ -89,7 +90,7 @@ class ForgeMarkdown(markdown.Markdown):
                      ''.join(traceback.format_stack()), exc_info=True)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
-            return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
+            return h.html.literal("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
 
     def cached_convert(self, artifact, field_name):
@@ -434,7 +435,7 @@ class Globals(object):
             # no highlighting, but we should escape, encode, and wrap it in
             # a <pre>
             text = cgi.escape(text)
-            return h.html.literal(u'<pre>' + text + u'</pre>')
+            return h.html.literal('<pre>' + text + '</pre>')
         else:
             return h.html.literal(pygments.highlight(text, lexer, formatter))
 
@@ -632,7 +633,7 @@ class Icon(object):
 
     def __init__(self, css, title=None):
         self.css = css
-        self.title = title or u''
+        self.title = title or ''
 
     def render(self, show_title=False, extra_css=None, closing_tag=True, tag='a', **kw):
         title = kw.get('title') or self.title
@@ -644,9 +645,9 @@ class Icon(object):
             attrs['href'] = '#'
         attrs.update(kw)
         attrs = ew._Jinja2Widget().j2_attrs(attrs)
-        visible_title = u''
+        visible_title = ''
         if show_title:
-            visible_title = u'&nbsp;{}'.format(Markup.escape(title))
-        closing_tag = u'</{}>'.format(tag) if closing_tag else u''
-        icon = u'<{} {}><i class="{}"></i>{}{}'.format(tag, attrs, self.css, visible_title, closing_tag)
+            visible_title = '&nbsp;{}'.format(Markup.escape(title))
+        closing_tag = '</{}>'.format(tag) if closing_tag else ''
+        icon = '<{} {}><i class="{}"></i>{}{}'.format(tag, attrs, self.css, visible_title, closing_tag)
         return Markup(icon)

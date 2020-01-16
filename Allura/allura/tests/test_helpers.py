@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from unittest import TestCase
 from os import path
 from datetime import datetime, timedelta
@@ -55,7 +56,7 @@ class TestMakeSafePathPortion(TestCase):
         self.f = h.make_safe_path_portion
 
     def test_no_latin1_chars(self):
-        s = self.f(u'Задачи', relaxed=False)
+        s = self.f('Задачи', relaxed=False)
         self.assertEqual(s, '')
 
     def test_some_latin1_chars(self):
@@ -81,7 +82,7 @@ class TestMakeSafePathPortion(TestCase):
 
 def test_escape_json():
     inputdata = {"foo": "bar</script><img src=foobar onerror=alert(1)>"}
-    outputsample = '{"foo": "bar\u003C/script>\u003Cimg src=foobar onerror=alert(1)>"}'
+    outputsample = '{"foo": "bar\\u003C/script>\\u003Cimg src=foobar onerror=alert(1)>"}'
     outputdata = h.escape_json(inputdata)
     assert_equals(outputdata, outputsample)
 
@@ -89,12 +90,12 @@ def test_escape_json():
 def test_really_unicode():
     here_dir = path.dirname(__file__)
     s = h.really_unicode('\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
-    assert s.startswith(u'\ufeff')
+    assert s.startswith('\ufeff')
     s = h.really_unicode(
         open(path.join(here_dir, 'data/unicode_test.txt')).read())
     assert isinstance(s, six.text_type)
     # try non-ascii string in legacy 8bit encoding
-    h.really_unicode(u'\u0410\u0401'.encode('cp1251'))
+    h.really_unicode('\u0410\u0401'.encode('cp1251'))
     # ensure invalid encodings are handled gracefully
     s = h._attempt_encodings('foo', ['LKDJFLDK'])
     assert isinstance(s, six.text_type)
@@ -181,7 +182,7 @@ def test_context_setters():
 
 
 def test_encode_keys():
-    kw = h.encode_keys({u'foo': 5})
+    kw = h.encode_keys({'foo': 5})
     assert type(kw.keys()[0]) != six.text_type
 
 
@@ -201,8 +202,8 @@ def test_ago():
 
 def test_urlquote_unicode():
     # No exceptions please
-    h.urlquote(u'\u0410')
-    h.urlquoteplus(u'\u0410')
+    h.urlquote('\u0410')
+    h.urlquoteplus('\u0410')
 
 
 def test_sharded_path():
@@ -251,8 +252,8 @@ def test_render_any_markup_formatting():
 
 def test_render_any_markdown_encoding():
     # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
-    assert_equals(h.render_any_markup('README.md', u'Müller'.encode('utf8')),
-                  u'<div class="markdown_content"><p>Müller</p></div>')
+    assert_equals(h.render_any_markup('README.md', 'Müller'.encode('utf8')),
+                  '<div class="markdown_content"><p>Müller</p></div>')
 
 
 class AuditLogMock(Mock):
@@ -319,7 +320,7 @@ def test_datetimeformat():
 
 def test_nl2br_jinja_filter():
     assert_equals(h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz'),
-            Markup(u'foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
+            Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
 
 
 def test_split_select_field_options():
@@ -598,14 +599,14 @@ def test_base64uri_text():
 
 
 def test_slugify():
-    assert_equals(h.slugify(u'Foo Bar Bat')[0], 'Foo-Bar-Bat')
-    assert_equals(h.slugify(u'Foo_Bar')[0], 'Foo_Bar')
-    assert_equals(h.slugify(u'Foo   ')[0], 'Foo')
-    assert_equals(h.slugify(u'    Foo   ')[0], 'Foo')
-    assert_equals(h.slugify(u'"    Foo   ')[0], 'Foo')
-    assert_equals(h.slugify(u'Fôö')[0], 'Foo')
-    assert_equals(h.slugify(u'Foo.Bar')[0], 'Foo-Bar')
-    assert_equals(h.slugify(u'Foo.Bar', True)[0], 'Foo.Bar')
+    assert_equals(h.slugify('Foo Bar Bat')[0], 'Foo-Bar-Bat')
+    assert_equals(h.slugify('Foo_Bar')[0], 'Foo_Bar')
+    assert_equals(h.slugify('Foo   ')[0], 'Foo')
+    assert_equals(h.slugify('    Foo   ')[0], 'Foo')
+    assert_equals(h.slugify('"    Foo   ')[0], 'Foo')
+    assert_equals(h.slugify('Fôö')[0], 'Foo')
+    assert_equals(h.slugify('Foo.Bar')[0], 'Foo-Bar')
+    assert_equals(h.slugify('Foo.Bar', True)[0], 'Foo.Bar')
 
 
 class TestRateLimit(TestCase):
@@ -651,4 +652,4 @@ def test_hide_private_info():
 
 
 def test_emojize():
-    assert_equals(h.emojize(':smile:'), u'😄')
+    assert_equals(h.emojize(':smile:'), '😄')

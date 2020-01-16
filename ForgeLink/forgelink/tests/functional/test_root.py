@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 
 from nose.tools import assert_equal, assert_in
@@ -136,7 +137,7 @@ class TestConfigOptions(TestController):
                           menu_item['admin_options'])
                 break
         else:
-            raise AssertionError(u"Didn't find 'link' tool in {}".format(admin_nav_data['menu']))
+            raise AssertionError("Didn't find 'link' tool in {}".format(admin_nav_data['menu']))
 
     @td.with_link
     def test_menu_configurable(self):

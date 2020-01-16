@@ -16,6 +16,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 import datetime
 
 from nose.tools import assert_in, assert_not_in

@@ -16,6 +16,7 @@
 #       under the License.
 
 """Unit and functional test suite for allura."""
+from __future__ import unicode_literals
 import os
 import urllib
 import json
@@ -68,7 +69,7 @@ def get_config_file(config=None, current_pkg=None):
         conf_file = os.path.join(conf_dir, config)
 
     if not os.path.exists(conf_file.split('#')[0]):
-        raise EnvironmentError(u'Cannot find .ini config file {}'.format(conf_file))
+        raise EnvironmentError('Cannot find .ini config file {}'.format(conf_file))
     else:
         return conf_file
 

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 from ming.odm import ThreadLocalORMSession
 from allura import model as M

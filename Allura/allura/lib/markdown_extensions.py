@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import logging
 from urlparse import urljoin
@@ -271,7 +272,7 @@ class ForgeExtension(markdown.Extension):
 
 class EmojiExtension(markdown.Extension):
 
-    EMOJI_RE = u'(%s[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#*]+%s)' % (':', ':')
+    EMOJI_RE = '(%s[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#*]+%s)' % (':', ':')
 
     def __init__(self, **kwargs):
         markdown.Extension.__init__(self)

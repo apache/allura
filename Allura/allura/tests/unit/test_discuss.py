@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from nose.tools import assert_false, assert_true
 
 from allura import model as M

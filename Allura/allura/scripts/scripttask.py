@@ -44,6 +44,7 @@ To call as a task::
 
 """
 
+from __future__ import unicode_literals
 import argparse
 import logging
 import shlex

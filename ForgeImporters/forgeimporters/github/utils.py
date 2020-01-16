@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 
 
@@ -22,7 +23,7 @@ class GitHubMarkdownConverter(object):
 
     def __init__(self, gh_user, gh_project):
         self.gh_project = '%s/%s' % (gh_user, gh_project)
-        self.gh_base_url = u'https://github.com/'
+        self.gh_base_url = 'https://github.com/'
         self.code_patterns = ['```', '~~~']
 
     def convert(self, text):
@@ -110,10 +111,10 @@ class GitHubMarkdownConverter(object):
         return text
 
     def _gh_commit_url(self, project, sha, title):
-        return u'[%s](%s)' % (title, self.gh_base_url + project + '/commit/' + sha)
+        return '[%s](%s)' % (title, self.gh_base_url + project + '/commit/' + sha)
 
     def _gh_ticket_url(self, project, tid, title):
-        return u'[%s](%s)' % (title, self.gh_base_url + project + '/issues/' + str(tid))
+        return '[%s](%s)' % (title, self.gh_base_url + project + '/issues/' + str(tid))
 
     def _convert_sha(self, m):
         return '%s[%s]%s' % (m.group(1), m.group(2)[:6], m.group(3))

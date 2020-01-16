@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from tg import tmpl_context as c, app_globals as g
 
 from alluratest.controller import setup_basic_test, setup_global_objects

@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import re
 import os
@@ -151,11 +152,11 @@ class TestRootController(_TestCase):
         data = json.loads(resp.body)
         assert_equal(
             data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
-            {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
-             u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
-             u'short_id': u'[df3042]',
-             u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
-             u'message': u'Add README', u'row': 2})
+            {'url': '/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
+             'oid': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+             'short_id': '[df3042]',
+             'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+             'message': 'Add README', 'row': 2})
 
     def test_commit_browser_basic_view(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/basic')
@@ -276,17 +277,17 @@ class TestRootController(_TestCase):
     def test_file_raw(self):
         self._setup_weird_chars_repo()
         ci = self._get_ci(repo='/p/test/weird-chars/')
-        url = ci + 'tree/' + h.urlquote(u'привіт.txt') + '?format=raw'
+        url = ci + 'tree/' + h.urlquote('привіт.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in(u'Привіт!\nWhich means Hello!', resp.body.decode('utf-8'))
+        assert_in('Привіт!\nWhich means Hello!', resp.body.decode('utf-8'))
         assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
-                     u'attachment;filename="привіт.txt"')
+                     'attachment;filename="привіт.txt"')
 
-        url = ci + 'tree/' + h.urlquote(u'with space.txt') + '?format=raw'
+        url = ci + 'tree/' + h.urlquote('with space.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in(u'with space', resp.body.decode('utf-8'))
+        assert_in('with space', resp.body.decode('utf-8'))
         assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
-                     u'attachment;filename="with space.txt"')
+                     'attachment;filename="with space.txt"')
 
     def test_invalid_file(self):
         ci = self._get_ci()

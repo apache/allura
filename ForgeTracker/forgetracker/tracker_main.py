@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import re
 from datetime import datetime, timedelta
@@ -157,11 +158,11 @@ def get_change_text(name, new_value, old_value):
 def attachments_info(attachments):
     text = []
     for attach in attachments:
-        text.append(u"{} ({}; {})".format(
+        text.append("{} ({}; {})".format(
             h.really_unicode(attach.filename),
             h.do_filesizeformat(attach.length),
             attach.content_type))
-    return u"\n".join(text)
+    return "\n".join(text)
 
 
 def render_changes(changes, comment=None):
@@ -857,7 +858,7 @@ class RootController(BaseController, FeedController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url),
-                 description='You searched for %s' % q, language=u'en')
+                 description='You searched for %s' % q, language='en')
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
@@ -939,7 +940,7 @@ class RootController(BaseController, FeedController):
             self.rate_limit(TM.Ticket, 'Ticket creation', redir='.')
             ticket = TM.Ticket.new(form_fields=ticket_form)
         ticket.update_fields_finish(ticket_form)
-        g.spam_checker.check(ticket_form['summary'] + u'\n' + ticket_form.get('description', ''), artifact=ticket,
+        g.spam_checker.check(ticket_form['summary'] + '\n' + ticket_form.get('description', ''), artifact=ticket,
                              user=c.user, content_type='ticket')
         c.app.globals.invalidate_bin_counts()
         notification_tasks.send_usermentions_notification.post(ticket.index_id(), ticket_form.get('description', ''))
@@ -1448,7 +1449,7 @@ class TicketController(BaseController, FeedController):
         require_access(self.ticket, 'update')
         old_text = self.ticket.description
         new_text = post_data.get('description', '')
-        g.spam_checker.check(post_data.get('summary', '') + u'\n' + post_data.get('description', ''),
+        g.spam_checker.check(post_data.get('summary', '') + '\n' + post_data.get('description', ''),
                              artifact=self.ticket, user=c.user, content_type='ticket')
         changes = changelog()
         comment = post_data.pop('comment', None)

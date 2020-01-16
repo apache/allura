@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import hmac
 import hashlib
@@ -99,10 +100,10 @@ class TestValidators(TestWebhookBase):
         v = WebhookValidator(sender=sender, app=app, not_empty=True)
         with assert_raises(Invalid) as cm:
             v.to_python(None)
-        assert_equal(cm.exception.msg, u'Please enter a value')
+        assert_equal(cm.exception.msg, 'Please enter a value')
         with assert_raises(Invalid) as cm:
             v.to_python('invalid id')
-        assert_equal(cm.exception.msg, u'Invalid webhook')
+        assert_equal(cm.exception.msg, 'Invalid webhook')
 
         wh = M.Webhook(type='invalid type',
                        app_config_id=invalid_app.config._id,
@@ -112,14 +113,14 @@ class TestValidators(TestWebhookBase):
         # invalid type
         with assert_raises(Invalid) as cm:
             v.to_python(wh._id)
-        assert_equal(cm.exception.msg, u'Invalid webhook')
+        assert_equal(cm.exception.msg, 'Invalid webhook')
 
         wh.type = 'repo-push'
         session(wh).flush(wh)
         # invalild app
         with assert_raises(Invalid) as cm:
             v.to_python(wh._id)
-        assert_equal(cm.exception.msg, u'Invalid webhook')
+        assert_equal(cm.exception.msg, 'Invalid webhook')
 
         wh.app_config_id = app.config._id
         session(wh).flush(wh)
@@ -198,7 +199,7 @@ class TestWebhookController(TestController):
         r = self.app.get(self.url)
         assert_in('<h1>repo-push</h1>', r)
         assert_not_in('http://httpbin.org/post', r)
-        data = {'url': u'http://httpbin.org/post',
+        data = {'url': 'http://httpbin.org/post',
                 'secret': ''}
         msg = 'add webhook repo-push {} {}'.format(
             data['url'], self.git.config.url())
@@ -224,7 +225,7 @@ class TestWebhookController(TestController):
         assert_equal(M.Webhook.query.find().count(), 0)
         limit = json.dumps({'git': 1})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
-            data = {'url': u'http://httpbin.org/post',
+            data = {'url': 'http://httpbin.org/post',
                     'secret': ''}
             r = self.create_webhook(data).follow()
             assert_equal(M.Webhook.query.find().count(), 1)
@@ -264,10 +265,10 @@ class TestWebhookController(TestController):
 
         Maybe something to do with WebhookControllerMeta setup of `validate` decorators?
         """
-        data1 = {'url': u'http://httpbin.org/post',
-                 'secret': u'secret'}
-        data2 = {'url': u'http://example.com/hook',
-                 'secret': u'secret2'}
+        data1 = {'url': 'http://httpbin.org/post',
+                 'secret': 'secret'}
+        data2 = {'url': 'http://example.com/hook',
+                 'secret': 'secret2'}
         self.create_webhook(data1).follow()
         self.create_webhook(data2).follow()
         assert_equal(M.Webhook.query.find().count(), 2)
@@ -299,7 +300,7 @@ class TestWebhookController(TestController):
         form['url'] = data2['url']
         r = form.submit()
         self.find_error(r, '_the_form',
-                        u'"repo-push" webhook already exists for Git http://example.com/hook',
+                        '"repo-push" webhook already exists for Git http://example.com/hook',
                         form_type='edit')
 
     def test_edit_validation(self):
@@ -311,8 +312,8 @@ class TestWebhookController(TestController):
         session(invalid).flush(invalid)
         self.app.get(self.url + '/repo-push/%s' % invalid._id, status=404)
 
-        data = {'url': u'http://httpbin.org/post',
-                'secret': u'secret'}
+        data = {'url': 'http://httpbin.org/post',
+                'secret': 'secret'}
         self.create_webhook(data).follow()
         wh = M.Webhook.query.get(hook_url=data['url'], type='repo-push')
 
@@ -333,8 +334,8 @@ class TestWebhookController(TestController):
                         'You must provide a full domain name (like qwe.com)', 'edit')
 
     def test_delete(self):
-        data = {'url': u'http://httpbin.org/post',
-                'secret': u'secret'}
+        data = {'url': 'http://httpbin.org/post',
+                'secret': 'secret'}
         self.create_webhook(data).follow()
         assert_equal(M.Webhook.query.find().count(), 1)
         wh = M.Webhook.query.get(hook_url=data['url'])
@@ -366,11 +367,11 @@ class TestWebhookController(TestController):
     def test_list_webhooks(self):
         git2 = self.project.app_instance('src2')
         url2 = str(git2.admin_url + 'webhooks')
-        data1 = {'url': u'http://httpbin.org/post',
+        data1 = {'url': 'http://httpbin.org/post',
                  'secret': 'secret'}
-        data2 = {'url': u'http://another-host.org/',
+        data2 = {'url': 'http://another-host.org/',
                  'secret': 'secret2'}
-        data3 = {'url': u'http://another-app.org/',
+        data3 = {'url': 'http://another-app.org/',
                  'secret': 'secret3'}
         self.create_webhook(data1).follow()
         self.create_webhook(data2).follow()
@@ -387,20 +388,20 @@ class TestWebhookController(TestController):
             [{'text': wh1.hook_url},
              {'text': wh1.secret},
              {'href': self.url + '/repo-push/' + str(wh1._id),
-              'text': u'Edit'},
+              'text': 'Edit'},
              {'href': self.url + '/repo-push/delete',
               'data-id': str(wh1._id)}],
             [{'text': wh2.hook_url},
              {'text': wh2.secret},
              {'href': self.url + '/repo-push/' + str(wh2._id),
-              'text': u'Edit'},
+              'text': 'Edit'},
              {'href': self.url + '/repo-push/delete',
               'data-id': str(wh2._id)}],
         ])
         assert_equal(rows, expected_rows)
         # make sure webhooks for another app is not visible
-        assert_not_in(u'http://another-app.org/', r)
-        assert_not_in(u'secret3', r)
+        assert_not_in('http://another-app.org/', r)
+        assert_not_in('secret3', r)
 
     def _format_row(self, row):
         def link(td):
@@ -575,13 +576,13 @@ class TestRepoPushWebhookSender(TestWebhookBase):
         expected_result = {
             'size': 3,
             'commits': [{'id': '1'}, {'id': '2'}, {'id': '3'}],
-            'ref': u'ref',
-            'after': u'1',
-            'before': u'0',
+            'ref': 'ref',
+            'after': '1',
+            'before': '0',
             'repository': {
-                'full_name': u'/adobe/adobe-1/src/',
-                'name': u'Git',
-                'url': u'http://localhost/adobe/adobe-1/src/',
+                'full_name': '/adobe/adobe-1/src/',
+                'name': 'Git',
+                'url': 'http://localhost/adobe/adobe-1/src/',
             },
         }
         assert_equal(result, expected_result)
@@ -660,10 +661,10 @@ class TestModels(TestWebhookBase):
     def test_json(self):
         expected = {
             '_id': six.text_type(self.wh._id),
-            'url': u'http://localhost/rest/adobe/adobe-1/admin'
-                   u'/src/webhooks/repo-push/{}'.format(self.wh._id),
-            'type': u'repo-push',
-            'hook_url': u'http://httpbin.org/post',
+            'url': 'http://localhost/rest/adobe/adobe-1/admin'
+                   '/src/webhooks/repo-push/{}'.format(self.wh._id),
+            'type': 'repo-push',
+            'hook_url': 'http://httpbin.org/post',
             'mod_date': self.wh.mod_date,
         }
         dd.assert_equal(self.wh.__json__(), expected)
@@ -748,17 +749,17 @@ class TestWebhookRestController(TestRestApiBase):
 
         r = self.api_post(self.url + '/repo-push', status=400)
         expected = {
-            u'result': u'error',
-            u'error': {u'url': u'Please enter a value'},
+            'result': 'error',
+            'error': {'url': 'Please enter a value'},
         }
         assert_equal(r.json, expected)
 
         data = {'url': 'qwer', 'secret': 'qwe'}
         r = self.api_post(self.url + '/repo-push', status=400, **data)
         expected = {
-            u'result': u'error',
-            u'error': {
-                u'url': u'You must provide a full domain name (like qwer.com)'
+            'result': 'error',
+            'error': {
+                'url': 'You must provide a full domain name (like qwer.com)'
             },
         }
         assert_equal(r.json, expected)
@@ -766,7 +767,7 @@ class TestWebhookRestController(TestRestApiBase):
 
     def test_create(self):
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
-        data = {u'url': u'http://hook.slack.com/abcd'}
+        data = {'url': 'http://hook.slack.com/abcd'}
         limit = json.dumps({'git': 10})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
             msg = 'add webhook repo-push {} {}'.format(
@@ -788,37 +789,37 @@ class TestWebhookRestController(TestRestApiBase):
 
     def test_create_duplicates(self):
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
-        data = {u'url': self.webhooks[0].hook_url}
+        data = {'url': self.webhooks[0].hook_url}
         limit = json.dumps({'git': 10})
         with h.push_config(config, **{'webhook.repo_push.max_hooks': limit}):
             r = self.api_post(self.url + '/repo-push', status=400, **data)
-        expected = {u'result': u'error',
-                    u'error': u'_the_form: "repo-push" webhook already '
-                              u'exists for Git http://httpbin.org/post/0'}
+        expected = {'result': 'error',
+                    'error': '_the_form: "repo-push" webhook already '
+                              'exists for Git http://httpbin.org/post/0'}
         assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
 
     def test_create_limit_reached(self):
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
-        data = {u'url': u'http://hook.slack.com/abcd'}
+        data = {'url': 'http://hook.slack.com/abcd'}
         r = self.api_post(self.url + '/repo-push', status=400, **data)
         expected = {
-            u'result': u'error',
-            u'limits': {u'max': 3, u'used': 3},
-            u'error': u'You have exceeded the maximum number of webhooks '
-                      u'you are allowed to create for this project/app'}
+            'result': 'error',
+            'limits': {'max': 3, 'used': 3},
+            'error': 'You have exceeded the maximum number of webhooks '
+                      'you are allowed to create for this project/app'}
         assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks))
 
     def test_edit_validation(self):
         webhook = self.webhooks[0]
-        url = u'{}/repo-push/{}'.format(self.url, webhook._id)
+        url = '{}/repo-push/{}'.format(self.url, webhook._id)
         data = {'url': 'qwe', 'secret': 'qwe'}
         r = self.api_post(url, status=400, **data)
         expected = {
-            u'result': u'error',
-            u'error': {
-                u'url': u'You must provide a full domain name (like qwe.com)'
+            'result': 'error',
+            'error': {
+                'url': 'You must provide a full domain name (like qwe.com)'
             },
         }
         assert_equal(r.json, expected)
@@ -870,9 +871,9 @@ class TestWebhookRestController(TestRestApiBase):
         url = '{}/repo-push/{}'.format(self.url, webhook._id)
         data = {'url': 'http://httpbin.org/post/1'}
         r = self.api_post(url, status=400, **data)
-        expected = {u'result': u'error',
-                    u'error': u'_the_form: "repo-push" webhook already '
-                              u'exists for Git http://httpbin.org/post/1'}
+        expected = {'result': 'error',
+                    'error': '_the_form: "repo-push" webhook already '
+                              'exists for Git http://httpbin.org/post/1'}
         assert_equal(r.json, expected)
 
     def test_delete_validation(self):
@@ -887,7 +888,7 @@ class TestWebhookRestController(TestRestApiBase):
             webhook.hook_url, self.git.config.url())
         with td.audits(msg):
             r = self.api_delete(url, status=200)
-        dd.assert_equal(r.json, {u'result': u'ok'})
+        dd.assert_equal(r.json, {'result': 'ok'})
         assert_equal(M.Webhook.query.find().count(), 2)
         assert_equal(M.Webhook.query.get(_id=webhook._id), None)
 

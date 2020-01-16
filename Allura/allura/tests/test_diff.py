@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import unittest
 
 from allura.lib.diff import HtmlSideBySideDiff
@@ -143,4 +144,4 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
         a = ['строка']
         b = ['измененная строка']
         html = self.diff.make_table(a, b, 'file a', 'file b')
-        assert u'строка' in html
+        assert 'строка' in html

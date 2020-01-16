@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from nose.tools import assert_equal
 
 from forgeimporters.github.utils import GitHubMarkdownConverter
@@ -86,12 +87,12 @@ class TestGitHubMarkdownConverter(object):
         assert_equal(self.conv.convert(text), '<s>mistake</s>')
 
     def test_inline_code_block(self):
-        text = u'This `~~some text~~` converts to this ~~strike out~~.'
-        result = u'This `~~some text~~` converts to this <s>strike out</s>.'
+        text = 'This `~~some text~~` converts to this ~~strike out~~.'
+        result = 'This `~~some text~~` converts to this <s>strike out</s>.'
         assert_equal(self.conv.convert(text).strip(), result)
 
     def test_convert_code_blocks(self):
-        text = u'''```python
+        text = '''```python
 print "Hello!"
 ```
 
@@ -102,7 +103,7 @@ for (var i = 0; i < a.length; i++) {
     console.log(i);
 }
 ```'''
-        result = u''':::python
+        result = ''':::python
     print "Hello!"
 
 Two code blocks here!
@@ -114,14 +115,14 @@ Two code blocks here!
         assert_equal(self.conv.convert(text).strip(), result)
 
     def test_code_blocks_without_newline_before(self):
-        text = u'''
+        text = '''
 There are some code snippet:
 ```
 print 'Hello'
 ```
 Pretty cool, ha?'''
 
-        result = u'''
+        result = '''
 There are some code snippet:
 
     print 'Hello'
@@ -130,14 +131,14 @@ Pretty cool, ha?'''
         text = text.replace('```', '~~~')
         assert_equal(self.conv.convert(text).strip(), result.strip())
 
-        text = u'''
+        text = '''
 There are some code snippet:
 ```python
 print 'Hello'
 ```
 Pretty cool, ha?'''
 
-        result = u'''
+        result = '''
 There are some code snippet:
 
     :::python

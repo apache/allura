@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import ew as ew_core
 import ew.jinja2_ew as ew
 

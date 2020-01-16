@@ -28,6 +28,7 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
+from __future__ import unicode_literals
 import os
 from urllib import quote
 

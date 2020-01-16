@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import os.path
 import logging
@@ -89,7 +90,7 @@ class BulkExport(object):
         }
 
         mail_tasks.send_system_mail_to_user(user,
-                                            u'Bulk export for project %s completed' % project.shortname,
+                                            'Bulk export for project %s completed' % project.shortname,
                                             tmpl.render(tmpl_context))
 
     def filter_exportable(self, apps):

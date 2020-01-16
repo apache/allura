@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 from mock import patch
 from datadiff.tools import assert_equal

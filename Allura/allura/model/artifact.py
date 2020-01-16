@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -468,7 +469,7 @@ class Artifact(MappedClass, SearchIndexable):
         False otherwise
         """
         pkg = cls.__module__.split('.', 1)[0]
-        opt = u'{}.rate_limits'.format(pkg)
+        opt = '{}.rate_limits'.format(pkg)
 
         def count_in_app():
             return cls.query.find(dict(app_config_id=app_config._id)).count()
@@ -896,11 +897,11 @@ class Feed(MappedClass):
         self.author_name = ""
         self.author_link = ""
         title_parts = self.title.partition(" modified by ")
-        self.title = u"".join(title_parts[0:2]) + (u"<REDACTED>" if title_parts[2] else '')
+        self.title = "".join(title_parts[0:2]) + ("<REDACTED>" if title_parts[2] else '')
 
     @classmethod
     def from_username(cls, username):
-        return cls.query.find({'author_link': u"/u/{}/".format(username)}).all()
+        return cls.query.find({'author_link': "/u/{}/".format(username)}).all()
 
     @classmethod
     def has_access(cls, artifact):
@@ -960,7 +961,7 @@ class Feed(MappedClass):
              since=None, until=None, page=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
         d = dict(title=title, link=h.absurl(link),
-                 description=description, language=u'en',
+                 description=description, language='en',
                  feed_url=request.url)
         if feed_type == 'atom':
             feed = FG.Atom1Feed(**d)

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from ming.orm import FieldProperty
 from ming import schema as S
 from datetime import datetime, timedelta

@@ -18,3 +18,5 @@
 #       under the License.
 
 """Templates package for the application."""
+
+from __future__ import unicode_literals

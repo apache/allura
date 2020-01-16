@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import unittest
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
@@ -87,7 +88,7 @@ class TestReactor(unittest.TestCase):
 
     def test_unicode_simple_message(self):
         charset = 'utf-8'
-        msg1 = MIMEText(u'''По оживлённым берегам
+        msg1 = MIMEText('''По оживлённым берегам
 Громады стройные теснятся
 Дворцов и башен; корабли
 Толпой со всех концов земли
@@ -98,11 +99,11 @@ class TestReactor(unittest.TestCase):
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
         assert isinstance(msg2['payload'], six.text_type)
-        assert_in(u'всех', msg2['payload'])
+        assert_in('всех', msg2['payload'])
 
     def test_more_encodings(self):
         # these are unicode strings to reflect behavior after loading 'route_email' tasks from mongo
-        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+        s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
 From: <foo@bar.com>
 To: <385@bugs.proj.localhost>
 Subject: bugs
@@ -117,9 +118,9 @@ IGZ0cCx0ZWxuZXQscGluZyBjYW4ndCB3b3JrICEKCgpXaHk/
 """
         msg = parse_message(s_msg)
         assert isinstance(msg['payload'], six.text_type)
-        assert_in(u'The Snap7 application', msg['payload'])
+        assert_in('The Snap7 application', msg['payload'])
 
-        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+        s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
 From: <foo@bar.com>
 To: <385@bugs.proj.localhost>
 Subject: bugs
@@ -136,9 +137,9 @@ Content-Transfer-Encoding: 8bit
 """
         msg = parse_message(s_msg)
         assert isinstance(msg['payload'], six.text_type)
-        assert_in(u'• foo', msg['payload'])
+        assert_in('• foo', msg['payload'])
 
-        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+        s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
 From: <foo@bar.com>
 To: <385@bugs.proj.localhost>
 Subject: bugs
@@ -149,11 +150,11 @@ programmed or èrogrammed ?
 """
         msg = parse_message(s_msg)
         assert isinstance(msg['payload'], six.text_type)
-        assert_in(u'èrogrammed', msg['payload'])
+        assert_in('èrogrammed', msg['payload'])
 
     def test_more_encodings_multipart(self):
         # these are unicode strings to reflect behavior after loading 'route_email' tasks from mongo
-        s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
+        s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
 From: <foo@bar.com>
 To: <385@bugs.proj.localhost>
 Subject: bugs
@@ -180,19 +181,19 @@ Content-Type: text/html; charset="utf-8"
         msg = parse_message(s_msg)
         assert isinstance(msg['parts'][1]['payload'], six.text_type)
         assert isinstance(msg['parts'][2]['payload'], six.text_type)
-        assert_in(u'• foo', msg['parts'][1]['payload'])
-        assert_in(u'• foo', msg['parts'][2]['payload'])
+        assert_in('• foo', msg['parts'][1]['payload'])
+        assert_in('• foo', msg['parts'][2]['payload'])
 
     def test_unicode_complex_message(self):
         charset = 'utf-8'
-        p1 = MIMEText(u'''По оживлённым берегам
+        p1 = MIMEText('''По оживлённым берегам
 Громады стройные теснятся
 Дворцов и башен; корабли
 Толпой со всех концов земли
 К богатым пристаням стремятся;'''.encode(charset),
                       'plain',
                       charset)
-        p2 = MIMEText(u'''<p>По оживлённым берегам
+        p2 = MIMEText('''<p>По оживлённым берегам
 Громады стройные теснятся
 Дворцов и башен; корабли
 Толпой со всех концов земли
@@ -219,15 +220,15 @@ class TestHeader(object):
         assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
 
     def test_ascii(self):
-        our_header = Header(u'[asdf2:wiki] Discussion for Home page')
+        our_header = Header('[asdf2:wiki] Discussion for Home page')
         assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
 
     def test_utf8(self):
-        our_header = Header(u'теснятся')
+        our_header = Header('теснятся')
         assert_equal(str(our_header), '=?utf-8?b?0YLQtdGB0L3Rj9GC0YHRjw==?=')
 
     def test_name_addr(self):
-        our_header = Header(u'"теснятся"', u'<dave@b.com>')
+        our_header = Header('"теснятся"', '<dave@b.com>')
         assert_equal(str(our_header),
                      '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
@@ -337,6 +338,6 @@ class TestMailServer(object):
         listen_port = ('0.0.0.0', 8825)
         mailserver = MailServer(listen_port, None)
         mailserver.process_message('127.0.0.1', 'foo@bar.com', ['1234@tickets.test.p.localhost'],
-                                   u'this is the email body with headers and everything ÎÅ¸'.encode('utf-8'))
+                                   'this is the email body with headers and everything ÎÅ¸'.encode('utf-8'))
         assert_equal([], log.exception.call_args_list)
         log.info.assert_called_with('Msg passed along')

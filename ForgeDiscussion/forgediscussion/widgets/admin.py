@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from formencode import validators as fev
 from formencode import All
 import formencode
@@ -67,7 +68,7 @@ class AddForum(ff.AdminForm):
                          validator=fev.UnicodeString()),
             ew.TextField(name='shortname', label='Short Name',
                          validator=All(
-                             fev.Regex(ur"^[^\s\/\.]*$", not_empty=True, messages={
+                             fev.Regex(r"^[^\s\/\.]*$", not_empty=True, messages={
                                  'invalid': 'Shortname cannot contain space . or /',
                                  'empty': 'You must create a short name for the forum.'}),
                              UniqueForumShortnameValidator())),

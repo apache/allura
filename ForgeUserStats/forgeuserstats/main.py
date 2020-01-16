@@ -16,6 +16,7 @@
 #       under the License.
 
 #-*- python -*-
+from __future__ import unicode_literals
 import logging
 from tg import tmpl_context as c
 from datetime import datetime

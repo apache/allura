@@ -19,6 +19,7 @@
 
 """Unit and functional test suite for allura."""
 
+from __future__ import unicode_literals
 import alluratest.controller
 
 # HACK: prevents test suite from crashing when running under the nose

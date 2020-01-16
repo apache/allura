@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from ming.orm import session
 from nose.tools import assert_equal, assert_not_equal
 import pkg_resources

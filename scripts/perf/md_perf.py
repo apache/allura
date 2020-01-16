@@ -45,6 +45,7 @@ sys     0m1.112s
 
 """
 
+from __future__ import unicode_literals
 import argparse
 import cProfile
 import time

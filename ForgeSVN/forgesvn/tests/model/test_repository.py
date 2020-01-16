@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import shutil
 import unittest
@@ -241,83 +242,83 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'refs': ['HEAD'],
              'committed': {
                  'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
-                 'name': u'coldmind', 'email': ''},
-             'message': u'',
+                 'name': 'coldmind', 'email': ''},
+             'message': '',
              'rename_details': {},
              'id': 6,
              'authored': {
                  'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
-                 'name': u'coldmind',
+                 'name': 'coldmind',
                  'email': ''
              }, 'size': None},
             {'parents': [4],
              'refs': [],
              'committed': {
                  'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
-             'message': u'Copied a => b',
+             'message': 'Copied a => b',
              'rename_details': {},
              'id': 5,
              'authored': {
                  'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
              'size': None},
             {'parents': [3],
              'refs': [],
              'committed': {
                  'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
-             'message': u'Remove hello.txt',
+             'message': 'Remove hello.txt',
              'rename_details': {},
              'id': 4,
              'authored': {
                  'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
              'size': None},
             {'parents': [2],
              'refs': [],
              'committed': {
                  'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
-             'message': u'Modify readme',
+             'message': 'Modify readme',
              'rename_details': {},
              'id': 3,
              'authored':
              {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
-              'name': u'rick446',
+              'name': 'rick446',
               'email': ''},
              'size': None},
             {'parents': [1],
              'refs': [],
              'committed': {
                  'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
-             'message': u'Add path',
+             'message': 'Add path',
              'rename_details': {},
              'id': 2,
              'authored': {
                  'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
              'size': None},
             {'parents': [],
              'refs': [],
              'committed': {
                  'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
-             'message': u'Create readme',
+             'message': 'Create readme',
              'rename_details': {},
              'id': 1,
              'authored': {
                  'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
-                 'name': u'rick446',
+                 'name': 'rick446',
                  'email': ''},
              'size': None}])
 
@@ -326,24 +327,24 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(entries, [
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
                           'email': '',
-                          'name': u'rick446'},
+                          'name': 'rick446'},
              'committed': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
                            'email': '',
-                           'name': u'rick446'},
+                           'name': 'rick446'},
              'id': 3,
-             'message': u'Modify readme',
+             'message': 'Modify readme',
              'parents': [2],
              'refs': [],
              'size': 28,
              'rename_details': {}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
                           'email': '',
-                          'name': u'rick446'},
+                          'name': 'rick446'},
              'committed': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
                            'email': '',
-                           'name': u'rick446'},
+                           'name': 'rick446'},
              'id': 1,
-             'message': u'Create readme',
+             'message': 'Create readme',
              'parents': [],
              'refs': [],
              'size': 15,
@@ -404,7 +405,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_diff_copy(self):
         entry = self.repo.commit(self.repo.log(5, id_only=True, limit=1).next())
         assert_equals(dict(entry.diffs), dict(
-                copied=[{'new': u'/b', 'old': u'/a', 'ratio': 1}],  renamed=[],
+                copied=[{'new': '/b', 'old': '/a', 'ratio': 1}],  renamed=[],
                 changed=[], removed=[], added=[], total=1))
 
     def test_commit(self):
@@ -522,44 +523,44 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             'after': 'r6',
             'before': 'r4',
             'commits': [{
-                'id': u'r6',
-                'url': u'http://localhost/p/test/src/6/',
+                'id': 'r6',
+                'url': 'http://localhost/p/test/src/6/',
                 'timestamp': datetime(2013, 11, 8, 13, 38, 11, 152000),
-                'message': u'',
-                'author': {'name': u'coldmind',
-                           'email': u'',
-                           'username': u''},
-                'committer': {'name': u'coldmind',
-                              'email': u'',
-                              'username': u''},
-                'added': [u'/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
+                'message': '',
+                'author': {'name': 'coldmind',
+                           'email': '',
+                           'username': ''},
+                'committer': {'name': 'coldmind',
+                              'email': '',
+                              'username': ''},
+                'added': ['/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
                 'removed': [],
                 'modified': [],
                 'copied': [],
                 'renamed': [],
             }, {
-                'id': u'r5',
-                'url': u'http://localhost/p/test/src/5/',
+                'id': 'r5',
+                'url': 'http://localhost/p/test/src/5/',
                 'timestamp': datetime(2010, 11, 18, 20, 14, 21, 515000),
-                'message': u'Copied a => b',
-                'author': {'name': u'rick446',
-                           'email': u'',
-                           'username': u''},
-                'committer': {'name': u'rick446',
-                              'email': u'',
-                              'username': u''},
+                'message': 'Copied a => b',
+                'author': {'name': 'rick446',
+                           'email': '',
+                           'username': ''},
+                'committer': {'name': 'rick446',
+                              'email': '',
+                              'username': ''},
                 'added': [],
                 'removed': [],
                 'modified': [],
                 'copied': [
-                    {'new': u'/b', 'old': u'/a', 'ratio': 1},
+                    {'new': '/b', 'old': '/a', 'ratio': 1},
                 ],
                 'renamed': [],
             }],
             'repository': {
-                'name': u'SVN',
-                'full_name': u'/p/test/src/',
-                'url': u'http://localhost/p/test/src/',
+                'name': 'SVN',
+                'full_name': '/p/test/src/',
+                'url': 'http://localhost/p/test/src/',
             },
         }
         assert_equals(payload, expected_payload)
@@ -635,11 +636,11 @@ class TestSVNRev(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         send_notifications(self.repo, [self.repo.rev_to_commit_id(1)])
         ThreadLocalORMSession.flush_all()
-        n = M.Notification.query.find({u'subject': u'[test:src] New commit [r1] by rick446'}).first()
+        n = M.Notification.query.find({'subject': '[test:src] New commit [r1] by rick446'}).first()
 
         assert n
-        assert_in(u'By rick446', n.text)
-        assert_in(u'Create readme', n.text)
+        assert_in('By rick446', n.text)
+        assert_in('Create readme', n.text)
 
 
 class _Test(unittest.TestCase):
@@ -816,8 +817,8 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert_in(u'By Test Committer on 10/08/2010 15:32', n.text)
-                assert_in(u'http://localhost/ci/foo99/', n.text)
+                assert_in('By Test Committer on 10/08/2010 15:32', n.text)
+                assert_in('http://localhost/ci/foo99/', n.text)
                 break
         else:
             assert False, 'Did not find notification'
@@ -921,13 +922,13 @@ class TestCommit(_TestWithRepo):
     def test_diffs_file_renames(self):
         def open_blob(blob):
             blobs = {
-                u'a': u'Leia',
-                u'/b/a/a': u'Darth Vader',
-                u'/b/a/b': u'Luke Skywalker',
-                u'/b/b': u'Death Star will destroy you',
-                u'/b/c': u'Luke Skywalker',  # moved from /b/a/b
+                'a': 'Leia',
+                '/b/a/a': 'Darth Vader',
+                '/b/a/b': 'Luke Skywalker',
+                '/b/b': 'Death Star will destroy you',
+                '/b/c': 'Luke Skywalker',  # moved from /b/a/b
                 # moved from /b/b and modified
-                u'/b/a/z': u'Death Star will destroy you\nALL',
+                '/b/a/z': 'Death Star will destroy you\nALL',
             }
             from cStringIO import StringIO
             return StringIO(blobs.get(blob.path(), ''))
@@ -981,19 +982,19 @@ class TestCommit(_TestWithRepo):
         ci.parent_ids = ['bar']
         self._make_log(ci)
         self.repo._impl.paged_diffs.return_value = {
-            'added': [u'b/c', u'b/a/z'],
-            'removed': [u'/b/a/b', u'b/b'],
+            'added': ['b/c', 'b/a/z'],
+            'removed': ['/b/a/b', 'b/b'],
             'changed': [],
             'copied': [
                 {
-                    'new': u'b/c',
-                    'old': u'b/a/b',
+                    'new': 'b/c',
+                    'old': 'b/a/b',
                     'ratio': 1,
                     'diff': '',
                 },
                 {
-                    'new': u'b/a/z',
-                    'old': u'b/b',
+                    'new': 'b/a/z',
+                    'old': 'b/b',
                     'ratio': 1,
                     'diff': '',
                 },
@@ -1001,9 +1002,9 @@ class TestCommit(_TestWithRepo):
             'renamed': [],
             'total': 2
         }
-        assert_equal(ci.diffs.added, [u'b/a/z', u'b/c'])
+        assert_equal(ci.diffs.added, ['b/a/z', 'b/c'])
         assert_equal(ci.diffs.changed, [])
-        assert_equal(ci.diffs.removed, [u'/b/a/b', u'b/b'])
+        assert_equal(ci.diffs.removed, ['/b/a/b', 'b/b'])
         # see mock for open_blob
         assert_equal(len(ci.diffs.copied), 2)
         assert_equal(ci.diffs.copied[1]['old'], 'b/a/b')
@@ -1077,7 +1078,7 @@ class TestDirectRepoAccess(object):
     def test_paged_diffs(self):
         diffs = self.rev.diffs
         expected = {
-            'added': [u'/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
+            'added': ['/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
             'removed': [],
             'changed': [],
             'copied': [],
@@ -1089,7 +1090,7 @@ class TestDirectRepoAccess(object):
         _id = self.repo._impl._oid(2)
         diffs = self.repo.commit(_id).diffs
         expected = {
-            'added': [u'/a', u'/a/b', u'/a/b/c', u'/a/b/c/hello.txt'],
+            'added': ['/a', '/a/b', '/a/b/c', '/a/b/c/hello.txt'],
             'removed': [],
             'changed': [],
             'renamed': [],
@@ -1104,7 +1105,7 @@ class TestDirectRepoAccess(object):
             'added': [],
             'removed': [],
             'renamed': [],
-            'changed': [u'/README'],
+            'changed': ['/README'],
             'copied': [],
             'total': 1,
         }

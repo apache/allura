@@ -18,3 +18,5 @@
 #       under the License.
 
 """Model test suite for the models of the application."""
+
+from __future__ import unicode_literals

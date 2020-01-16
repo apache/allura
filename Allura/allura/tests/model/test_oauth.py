@@ -18,6 +18,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 from nose.tools import with_setup, assert_equal, assert_not_equal
 
 from ming.odm import ThreadLocalORMSession

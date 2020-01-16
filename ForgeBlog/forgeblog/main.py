@@ -16,6 +16,7 @@
 #       under the License.
 
 #-*- python -*-
+from __future__ import unicode_literals
 import logging
 import urllib2
 import json
@@ -313,7 +314,7 @@ class RootController(BaseController, FeedController):
         self.rate_limit(BM.BlogPost, 'Create/edit', c.app.config.url())
         attachment = kw.pop('attachment', None)
         post = BM.BlogPost.new(**kw)
-        g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=post,
+        g.spam_checker.check(kw['title'] + '\n' + kw['text'], artifact=post,
                              user=c.user, content_type='blog-post')
         if attachment is not None:
             post.add_multiple_attachments(attachment)
@@ -427,7 +428,7 @@ class PostController(BaseController, FeedController):
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))
         else:
-            g.spam_checker.check(kw['title'] + u'\n' + kw['text'], artifact=self.post,
+            g.spam_checker.check(kw['title'] + '\n' + kw['text'], artifact=self.post,
                                  user=c.user, content_type='blog-post')
         attachment = kw.pop('attachment', None)
         old_text = self.post.text

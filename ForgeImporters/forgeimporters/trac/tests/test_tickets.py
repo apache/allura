@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import os
 
@@ -140,12 +141,12 @@ class TestTracTicketImportController(TestController, TestCase):
                           status=302)
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
         self.assertEqual(
-            u'mymount', import_tool.post.call_args[1]['mount_point'])
+            'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
-            u'mylabel', import_tool.post.call_args[1]['mount_label'])
+            'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual('{"orig_user": "new_user"}',
                          import_tool.post.call_args[1]['user_map'])
-        self.assertEqual(u'http://example.com/trac/url/',
+        self.assertEqual('http://example.com/trac/url/',
                          import_tool.post.call_args[1]['trac_url'])
 
     @with_tracker

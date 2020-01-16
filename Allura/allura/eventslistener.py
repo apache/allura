@@ -21,6 +21,7 @@ overwrite the methods defined here, which will be called when the related
 event happens, so that the statistics for the given entity are updated.'''
 
 
+from __future__ import unicode_literals
 class EventsListener:
 
     def newArtifact(self, art_type, art_datetime, project, user):

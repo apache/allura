@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 from unittest import TestCase
 from cStringIO import StringIO
@@ -123,26 +124,26 @@ class TestFile(TestCase):
         self._assert_content(f, 'test2')
 
     def test_serve_embed(self):
-        f = File.from_data(u'te s\u0b6e1.txt', 'test1')
+        f = File.from_data('te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
                 patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
-            etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
+            etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
             assert_equal(['test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert 'Content-Disposition' not in response.headers
 
     def test_serve_embed_false(self):
-        f = File.from_data(u'te s\u0b6e1.txt', 'test1')
+        f = File.from_data('te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
                 patch('allura.lib.utils.tg.response', Response()) as response, \
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
-            etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
+            etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
             assert_equal(['test1'], response_body)
             assert_equal(response.content_type, f.content_type)
@@ -209,7 +210,7 @@ class TestFile(TestCase):
             b'Strukturpr\xfcfung.dvi', fp,
             save_original=True)
         assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
-        assert_equal(attachment.filename, u'Strukturpr\xfcfung.dvi')
+        assert_equal(attachment.filename, 'Strukturpr\xfcfung.dvi')
 
     def _assert_content(self, f, content):
         result = f.rfile().read()

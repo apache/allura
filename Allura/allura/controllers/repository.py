@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import logging
 import difflib
@@ -904,8 +905,8 @@ class FileBrowser(BaseController):
 
         la = list(a)
         lb = list(b)
-        adesc = (u'a' + h.really_unicode(apath)).encode('utf-8')
-        bdesc = (u'b' + h.really_unicode(b.path())).encode('utf-8')
+        adesc = ('a' + h.really_unicode(apath)).encode('utf-8')
+        bdesc = ('b' + h.really_unicode(b.path())).encode('utf-8')
 
         if not fmt:
             fmt = web_session.get('diformat', '')
@@ -916,7 +917,7 @@ class FileBrowser(BaseController):
             if max(a.size, b.size) > asint(tg.config.get('scm.view.max_syntax_highlight_bytes', 500000)):
                 # have to check the original file size, not diff size, because difflib._mdiff inside HtmlSideBySideDiff
                 # can take an extremely long time on large files (and its even a generator)
-                diff = u'<em>File too large for side-by-side view</em>'
+                diff = '<em>File too large for side-by-side view</em>'
             else:
                 hd = HtmlSideBySideDiff()
                 diff = hd.make_table(la, lb, adesc, bdesc)

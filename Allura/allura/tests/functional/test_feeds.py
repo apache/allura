@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController
@@ -44,7 +45,7 @@ class TestFeeds(TestController):
                     status='open',
                     description='This is a description'))),
             status=302)
-        title = u'Descri\xe7\xe3o e Arquitetura'.encode('utf-8')
+        title = 'Descri\xe7\xe3o e Arquitetura'.encode('utf-8')
         self.app.post(
             '/wiki/%s/update' % title,
             params=dict(

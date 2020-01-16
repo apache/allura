@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import logging
 import smtplib
@@ -264,7 +265,7 @@ class SMTPClient(object):
         message['From'] = AddrHeader(fromaddr)
         message['Reply-To'] = AddrHeader(reply_to)
         message['Subject'] = Header(subject)
-        message['Message-ID'] = Header('<' + message_id + u'>')
+        message['Message-ID'] = Header('<' + message_id + '>')
         message['Date'] = email.utils.formatdate()
         if sender:
             message['Sender'] = AddrHeader(sender)
@@ -274,11 +275,11 @@ class SMTPClient(object):
         if in_reply_to:
             if not isinstance(in_reply_to, basestring):
                 raise TypeError('Only strings are supported now, not lists')
-            message['In-Reply-To'] = Header(u'<%s>' % in_reply_to)
+            message['In-Reply-To'] = Header('<%s>' % in_reply_to)
             if not references:
                 message['References'] = message['In-Reply-To']
         if references:
-            references = [u'<%s>' % r for r in aslist(references)]
+            references = ['<%s>' % r for r in aslist(references)]
             message['References'] = Header(*references)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)

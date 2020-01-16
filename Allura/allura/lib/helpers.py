@@ -16,6 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 import base64
 import sys
 import os
@@ -153,7 +154,7 @@ def make_safe_path_portion(ustr, relaxed=True):
 
 
 def escape_json(data):
-    return json.dumps(data).replace('<', '\u003C')
+    return json.dumps(data).replace('<', '\\u003C')
 
 
 def monkeypatch(*objs):
@@ -179,7 +180,7 @@ def urlquoteplus(url, safe=""):
 
 def _attempt_encodings(s, encodings):
     if s is None:
-        return u''
+        return ''
     for enc in encodings:
         try:
             if enc is None:

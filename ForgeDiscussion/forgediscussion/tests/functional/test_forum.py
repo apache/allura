@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import mock
 import random
 import logging
@@ -352,11 +353,11 @@ class TestForum(TestController):
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
-        form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
-        form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        form['add_forum.shortname'] = 'téstforum'.encode('utf-8')
+        form['add_forum.name'] = 'Tést Forum'.encode('utf-8')
         form.submit()
         r = self.app.get('/admin/discussion/forums')
-        assert u'téstforum'.encode('utf-8') in r
+        assert 'téstforum'.encode('utf-8') in r
 
     def test_markdown_description(self):
         r = self.app.get('/admin/discussion/forums')
@@ -467,7 +468,7 @@ class TestForum(TestController):
         r = self.app.post('/discussion/testforum/moderate/save_moderation_bulk_user', params={
             'username': 'test-admin',
             'spam': '1'})
-        assert_in(u'5 posts marked as spam', self.webflash(r))
+        assert_in('5 posts marked as spam', self.webflash(r))
         assert_equal(5, FM.ForumPost.query.find({'status': 'spam'}).count())
 
     def test_posting(self):
@@ -979,13 +980,13 @@ class TestForum(TestController):
     def test_create_topic_unicode(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
-        form['add_forum.shortname'] = u'téstforum'.encode('utf-8')
-        form['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        form['add_forum.shortname'] = 'téstforum'.encode('utf-8')
+        form['add_forum.name'] = 'Tést Forum'.encode('utf-8')
         form.submit()
         r = self.app.get('/admin/discussion/forums')
-        assert u'téstforum'.encode('utf-8') in r
-        r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
-        assert u'<option value="téstforum" selected>Tést Forum</option>' in r
+        assert 'téstforum'.encode('utf-8') in r
+        r = self.app.get('/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
+        assert '<option value="téstforum" selected>Tést Forum</option>' in r
 
     def test_create_topic_attachment(self):
         r = self.app.get('/discussion/create_topic/')

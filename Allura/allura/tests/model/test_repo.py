@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from datetime import datetime
 from collections import defaultdict, OrderedDict
 
@@ -99,12 +100,12 @@ class RepoTestBase(unittest.TestCase):
         repo = M.repository.Repository(tool='git')
         cmd_cats = repo.clone_command_categories(anon=False)
         assert_equal(cmd_cats, [
-            {'key': 'file', 'name': 'File', 'title': u'Filesystem'}
+            {'key': 'file', 'name': 'File', 'title': 'Filesystem'}
         ])
 
         cmd_cats = repo.clone_command_categories(anon=True)
         assert_equal(cmd_cats, [
-            {'key': 'file', 'name': 'File', 'title': u'Filesystem'}
+            {'key': 'file', 'name': 'File', 'title': 'Filesystem'}
         ])
 
         repo = M.repository.Repository(tool='something-else')  # no "something-else" in config so will use defaults

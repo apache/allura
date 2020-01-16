@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from base import Command
 from show_models import ShowModelsCommand, ReindexCommand, EnsureIndexCommand
 from script import ScriptCommand, SetToolAccessCommand

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 from unittest import TestCase
 import urllib2
@@ -35,28 +36,28 @@ class TestGitHubProjectExtractor(TestCase):
         'has_wiki': True,
     }
     CLOSED_ISSUES_LIST = [
-        {u'number': 1},
-        {u'number': 2},
+        {'number': 1},
+        {'number': 2},
     ]
     OPENED_ISSUES_LIST = [
-        {u'number': 3},
-        {u'number': 4},
-        {u'number': 5},
+        {'number': 3},
+        {'number': 4},
+        {'number': 5},
     ]
     OPENED_ISSUES_LIST_PAGE2 = [
-        {u'number': 6},
-        {u'number': 7},
-        {u'number': 8},
+        {'number': 6},
+        {'number': 7},
+        {'number': 8},
     ]
-    ISSUE_COMMENTS = [u'hello', u'mocked_comment']
-    ISSUE_COMMENTS_PAGE2 = [u'hello2', u'mocked_comment2']
+    ISSUE_COMMENTS = ['hello', 'mocked_comment']
+    ISSUE_COMMENTS_PAGE2 = ['hello2', 'mocked_comment2']
     ISSUE_EVENTS = [
-        {u'event': u'closed'},
-        {u'event': u'reopened'},
+        {'event': 'closed'},
+        {'event': 'reopened'},
     ]
     ISSUE_EVENTS_PAGE2 = [
-        {u'event': u'assigned'},
-        {u'event': u'not-supported-event'},
+        {'event': 'assigned'},
+        {'event': 'not-supported-event'},
     ]
 
     def mocked_urlopen(self, url):

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from urllib import unquote
 from datetime import datetime
 import logging
@@ -563,7 +564,7 @@ class ModerationController(BaseController):
                     posted.approve()
                     g.spam_checker.submit_ham(posted.text, artifact=posted, user=posted.author())
                     posted.thread.post_to_feed(posted)
-        flash(u'{} {}'.format(h.text.plural(count, 'post', 'posts'),
+        flash('{} {}'.format(h.text.plural(count, 'post', 'posts'),
                               'deleted' if delete else 'marked as spam' if spam else 'approved'))
         redirect(request.referer or '/')
 

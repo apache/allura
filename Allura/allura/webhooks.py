@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import json
 import hmac
@@ -66,7 +67,7 @@ class WebhookValidator(fev.FancyValidator):
                 pass
         if wh and wh.type == self.sender.type and wh.app_config_id == self.app.config._id:
             return wh
-        raise Invalid(u'Invalid webhook', value, state)
+        raise Invalid('Invalid webhook', value, state)
 
 
 class WebhookCreateForm(schema.Schema):
@@ -121,7 +122,7 @@ class WebhookController(BaseController, AdminControllerMixin):
             session(wh).flush(wh)
         except DuplicateKeyError:
             session(wh).expunge(wh)
-            msg = u'_the_form: "{}" webhook already exists for {} {}'.format(
+            msg = '_the_form: "{}" webhook already exists for {} {}'.format(
                 wh.type, self.app.config.options.mount_label, url)
             raise Invalid(msg, None, None)
 
@@ -470,16 +471,16 @@ class RepoPushWebhookSender(WebhookSender):
                 # Merge commit will have multiple parents. As far as I can tell
                 # the last one will be the branch head before merge
                 return self._convert_id(parents[-1])
-        return u''
+        return ''
 
     def _after(self, commit_ids):
         if len(commit_ids) > 0:
             return self._convert_id(commit_ids[0])
-        return u''
+        return ''
 
     def _convert_id(self, _id):
         if ':' in _id:
-            _id = u'r' + _id.rsplit(':', 1)[1]
+            _id = 'r' + _id.rsplit(':', 1)[1]
         return _id
 
     def get_payload(self, commit_ids, **kw):

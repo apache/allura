@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from tg import tmpl_context as c
 import mock
 from ming.base import Object
@@ -138,7 +139,7 @@ def test_handle_artifact_unicode(qg):
 
     a = app.Application(c.project, c.app.config)
 
-    msg = dict(payload=u'foo ƒ†©¥˙¨ˆ', message_id=1, headers={})
+    msg = dict(payload='foo ƒ†©¥˙¨ˆ', message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
     assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ')
 

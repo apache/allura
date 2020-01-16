@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from tg import tmpl_context as c

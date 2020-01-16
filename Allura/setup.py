@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
 exec open('allura/version.py').read()

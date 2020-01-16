@@ -36,6 +36,7 @@ Example:
 
 """
 
+from __future__ import unicode_literals
 from allura import model as M
 from ming.orm import ThreadLocalORMSession
 

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import datetime as dt
 import calendar
 
@@ -94,16 +95,16 @@ class TestProjectRegistrationProviderParseProjectFromUrl(object):
         self.parse = self.provider.project_from_url
 
     def test_empty_url(self):
-        assert_equal((None, u'Empty url'), self.parse(None))
-        assert_equal((None, u'Empty url'), self.parse(''))
-        assert_equal((None, u'Empty url'), self.parse('/'))
+        assert_equal((None, 'Empty url'), self.parse(None))
+        assert_equal((None, 'Empty url'), self.parse(''))
+        assert_equal((None, 'Empty url'), self.parse('/'))
 
     def test_neighborhood_not_found(self):
-        assert_equal((None, u'Neighborhood not found'), self.parse('/nbhd/project'))
+        assert_equal((None, 'Neighborhood not found'), self.parse('/nbhd/project'))
 
     def test_project_not_found(self):
-        assert_equal((None, u'Project not found'), self.parse('/p/project'))
-        assert_equal((None, u'Project not found'), self.parse('project'))
+        assert_equal((None, 'Project not found'), self.parse('/p/project'))
+        assert_equal((None, 'Project not found'), self.parse('project'))
 
     def test_ok_full(self):
         p = M.Project.query.get(shortname='test')
@@ -118,7 +119,7 @@ class TestProjectRegistrationProviderParseProjectFromUrl(object):
         adobe_n = M.Neighborhood.query.get(url_prefix='/adobe/')
         M.Project(shortname='test', neighborhood_id=adobe_n._id)
         ThreadLocalORMSession.flush_all()
-        assert_equal((None, u'Too many matches for project: 2'), self.parse('test'))
+        assert_equal((None, 'Too many matches for project: 2'), self.parse('test'))
 
     def test_only_shortname_ok(self):
         p = M.Project.query.get(shortname='test')
