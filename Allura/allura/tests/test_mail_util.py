@@ -216,7 +216,7 @@ class TestHeader(object):
 
     @raises(TypeError)
     def test_bytestring(self):
-        our_header = Header('[asdf2:wiki] Discussion for Home page')
+        our_header = Header(b'[asdf2:wiki] Discussion for Home page')
         assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
 
     def test_ascii(self):

@@ -453,8 +453,8 @@ def members(limit=20):
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
     endpoint = oembed.OEmbedEndpoint('http://www.youtube.com/oembed',
-                                     ['http://*.youtube.com/*', 'https://*.youtube.com/*',
-                                      'http://*.youtube-nocookie.com/*', 'https://*.youtube-nocookie.com/*',
+                                     [str('http://*.youtube.com/*'), str('https://*.youtube.com/*'),
+                                      str('http://*.youtube-nocookie.com/*'), str('https://*.youtube-nocookie.com/*'),
                                       ])
     consumer.addEndpoint(endpoint)
 

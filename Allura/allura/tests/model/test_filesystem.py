@@ -116,7 +116,7 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 1
         self._assert_content(f, 'test1')
         with f.wfile() as fp:
-            fp.write('test2')
+            fp.write(b'test2')
         self.session.flush()
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 2

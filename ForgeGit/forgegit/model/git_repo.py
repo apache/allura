@@ -490,7 +490,7 @@ class GitImplementation(M.RepositoryImplementation):
     def _object(self, oid):
         evens = oid[::2]
         odds = oid[1::2]
-        binsha = ''
+        binsha = b''
         for e, o in zip(evens, odds):
             binsha += chr(int(e + o, 16))
         return git.Object.new_from_sha(self._git, binsha)
@@ -772,17 +772,17 @@ class _OpenedGitBlob(object):
         '''
         Yields one line at a time, reading from the stream
         '''
-        buffer = ''
+        buffer = b''
         while True:
             # Replenish buffer until we have a line break
-            while '\n' not in buffer:
+            while b'\n' not in buffer:
                 chars = self._stream.read(self.CHUNK_SIZE)
                 if not chars:
                     break
                 buffer += chars
             if not buffer:
                 break
-            eol = buffer.find('\n')
+            eol = buffer.find(b'\n')
             if eol == -1:
                 # end without \n
                 yield buffer

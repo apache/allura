@@ -53,6 +53,7 @@ from forgetracker import model as tm
 from allura.lib.security import has_access, Credentials
 from allura.lib import helpers as h
 from allura.lib.search import SearchError
+from allura.lib.utils import urlencode
 from allura.tests import decorators as td
 from allura.tasks import mail_tasks
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -1380,7 +1381,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_search_with_strange_chars(self):
         r = self.app.get('/p/test/bugs/search/?' +
-                         urllib.urlencode({'q': 'tést'}))
+                         urlencode({'q': 'tést'}))
         assert 'Search bugs: tést' in r
 
     def test_saved_search_with_strange_chars(self):
