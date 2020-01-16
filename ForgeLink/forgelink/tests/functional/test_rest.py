@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from nose.tools import assert_equal
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -35,20 +36,20 @@ class TestLinkApi(TestRestApiBase):
         h.set_context('test', 'link', neighborhood='Projects')
 
     def test_rest_link(self):
-        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], None)
 
-        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'),
+        r = self.api_post('/rest/p/test/link'.encode('utf-8'),
                           url='http://google.com')
         assert_equal(r.json['url'], 'http://google.com')
 
-        self.api_post(u'/rest/p/test/link'.encode('utf-8'),
+        self.api_post('/rest/p/test/link'.encode('utf-8'),
                       url='http://yahoo.com')
-        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
 
-        self.api_post(u'/rest/p/test/link'.encode('utf-8'))
-        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        self.api_post('/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
 
     def test_rest_link_get_permissions(self):
@@ -76,7 +77,7 @@ class TestLinkApi(TestRestApiBase):
                       params={'url': 'http://yahoo.com'},
                       extra_environ={'username': '*anonymous'},
                       status=200)
-        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
 
 

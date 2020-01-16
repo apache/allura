@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 
 from nose.tools import assert_equal, assert_in, assert_not_equal
@@ -82,9 +83,9 @@ class TestWikiApi(TestRestApiBase):
             'text': 'Embrace the Dark Side',
             'labels': 'head hunting,dark side'
         }
-        r = self.api_post(u'/rest/p/test/wiki/tést/'.encode('utf-8'), **data)
+        r = self.api_post('/rest/p/test/wiki/tést/'.encode('utf-8'), **data)
         assert_equal(r.status_int, 200)
-        r = self.api_get(u'/rest/p/test/wiki/tést/'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/wiki/tést/'.encode('utf-8'))
         assert_equal(r.json['text'], data['text'])
         assert_equal(r.json['labels'], data['labels'].split(','))
 
@@ -95,12 +96,12 @@ class TestWikiApi(TestRestApiBase):
         }
         # Set rate limit to unlimit
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{}'}):
-            r = self.api_post(u'/rest/p/test/wiki/page1/', status=200, **data)
+            r = self.api_post('/rest/p/test/wiki/page1/', status=200, **data)
             p = Page.query.get(title='page1')
             assert_not_equal(p, None)
         # Set rate limit to 1 in first hour of project
         with h.push_config(tg.config, **{'forgewiki.rate_limits': '{"3600": 1}'}):
-            r = self.api_post(u'/rest/p/test/wiki/page2/', status=429, **data)
+            r = self.api_post('/rest/p/test/wiki/page2/', status=429, **data)
             p = Page.query.get(title='page2')
             assert_equal(p, None)
 
@@ -116,7 +117,7 @@ class TestWikiApi(TestRestApiBase):
 
     def test_json_encoding_directly(self):
         # used in @expose('json')
-        assert_equal(tg.jsonify.encode('<'), '"\u003C"')
+        assert_equal(tg.jsonify.encode('<'), '"\\u003C"')
         # make sure these are unchanged
         assert_equal(json.dumps('<'), '"<"')
 

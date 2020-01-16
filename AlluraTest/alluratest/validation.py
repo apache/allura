@@ -20,6 +20,7 @@
 """
 Functions to syntax-validate output content
 """
+from __future__ import unicode_literals
 from os import path
 import os
 import sys
@@ -144,7 +145,7 @@ def validate_html5(html_or_response):
                 sys.stderr.write('WARNING: ' + resp + '\n')
                 break
 
-    resp = resp.replace(u'“', u'"').replace(u'”', u'"').replace(u'–', u'-')
+    resp = resp.replace('“', '"').replace('”', '"').replace('–', '-')
 
     ignored_errors = [
         'Required attributes missing on element "object"',

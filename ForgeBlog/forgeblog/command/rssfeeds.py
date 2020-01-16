@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import calendar
 from datetime import datetime
 
@@ -118,7 +119,7 @@ class RssFeedsCommand(base.BlogCommand):
         parsed_content = filter(
             None, e.get('content') or [e.get('summary_detail')])
         if parsed_content:
-            content = u''
+            content = ''
             for ct in parsed_content:
                 if ct.type != 'text/html':
                     content += plain2markdown(ct.value)
@@ -132,7 +133,7 @@ class RssFeedsCommand(base.BlogCommand):
                                              getattr(e, 'subtitle',
                                                      getattr(e, 'title'))))
 
-        content += u' [link](%s)' % e.link
+        content += ' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(calendar.timegm(e.updated_parsed))
 
         base_slug = BM.BlogPost.make_base_slug(title, updated)

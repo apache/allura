@@ -16,6 +16,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 class TaskController(object):
 
     '''WSGI app providing web-like RPC

@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import datetime as dt
 import bson
@@ -471,9 +472,9 @@ class TestUserDetails(TestController):
         # list of projects
         projects = r.html.findAll('fieldset')[-1]
         projects = [e.getText() for e in projects.findAll('li')]
-        assert_in(u'Test 2\n\u2013\nAdmin\n', projects)
-        assert_in(u'Test Project\n\u2013\nAdmin\n', projects)
-        assert_in(u'Adobe project 1\n\u2013\nAdmin\n', projects)
+        assert_in('Test 2\n\u2013\nAdmin\n', projects)
+        assert_in('Test Project\n\u2013\nAdmin\n', projects)
+        assert_in('Adobe project 1\n\u2013\nAdmin\n', projects)
 
     @patch('allura.model.auth.request')
     @patch('allura.lib.helpers.request')
@@ -501,14 +502,14 @@ class TestUserDetails(TestController):
 
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
-        assert_not_in(u'Comment by test-admin: I was hêre!', r)
+        assert_not_in('Comment by test-admin: I was hêre!', r)
         form = [f for f in r.forms.itervalues() if f.action.endswith('add_audit_trail_entry')][0]
         assert_equal(form['username'].value, 'test-user')
-        form['comment'] = u'I was hêre!'
+        form['comment'] = 'I was hêre!'
         r = form.submit()
-        assert_in(u'Comment added', self.webflash(r))
+        assert_in('Comment added', self.webflash(r))
         r = self.app.get('/nf/admin/user/test-user')
-        assert_in(u'Comment by test-admin: I was hêre!', r)
+        assert_in('Comment by test-admin: I was hêre!', r)
 
     def test_disable_user(self):
         # user was not pending
@@ -522,7 +523,7 @@ class TestUserDetails(TestController):
         with td.audits('Account disabled', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'User disabled', self.webflash(r))
+        assert_in('User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, True)
         assert_equal(M.User.by_username('test-user-3').pending, False)
 
@@ -541,7 +542,7 @@ class TestUserDetails(TestController):
         with td.audits('Account disabled', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'User disabled', self.webflash(r))
+        assert_in('User disabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, True)
         assert_equal(M.User.by_username('test-user-3').pending, True)
 
@@ -560,7 +561,7 @@ class TestUserDetails(TestController):
         with td.audits('Account enabled', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'User enabled', self.webflash(r))
+        assert_in('User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
 
@@ -579,7 +580,7 @@ class TestUserDetails(TestController):
         with td.audits('Account enabled', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'User enabled', self.webflash(r))
+        assert_in('User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
 
@@ -598,7 +599,7 @@ class TestUserDetails(TestController):
         with td.audits('Account enabled', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'User enabled', self.webflash(r))
+        assert_in('User enabled', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, False)
 
@@ -617,7 +618,7 @@ class TestUserDetails(TestController):
         with td.audits('Account changed to pending', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'Set user status to pending', self.webflash(r))
+        assert_in('Set user status to pending', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, True)
 
@@ -636,7 +637,7 @@ class TestUserDetails(TestController):
         with td.audits('Account changed to pending', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
-        assert_in(u'Set user status to pending', self.webflash(r))
+        assert_in('Set user status to pending', self.webflash(r))
         assert_equal(M.User.by_username('test-user-3').disabled, False)
         assert_equal(M.User.by_username('test-user-3').pending, True)
 
@@ -723,7 +724,7 @@ To update your password on %s, please visit the following URL:
         sendmail.post.assert_called_once_with(
             sender='noreply@localhost',
             toaddr='test-user@example.org',
-            fromaddr=u'"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
+            fromaddr='"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
             reply_to=config['forgemail.return_path'],
             subject='Allura Password recovery',
             message_id=gen_message_id(),
@@ -747,14 +748,14 @@ class TestDeleteProjects(TestController):
 
     def test_projects_populated_from_get_params(self):
         r = self.app.get('/nf/admin/delete_projects/')
-        assert_equal(self.delete_form(r)['projects'].value, u'')
+        assert_equal(self.delete_form(r)['projects'].value, '')
         link = '/nf/admin/delete_projects/?projects=/p/test/++++%23+comment%0A/adobe/adobe-1/%0A/p/test2/'
         link += '&reason=The%0AReason&disable_users=True'
         r = self.app.get(link)
         form = self.delete_form(r)
-        assert_equal(form['projects'].value, u'/p/test/    # comment\n/adobe/adobe-1/\n/p/test2/')
-        assert_equal(form['reason'].value, u'The\nReason')
-        assert_equal(form['disable_users'].value, u'on')
+        assert_equal(form['projects'].value, '/p/test/    # comment\n/adobe/adobe-1/\n/p/test2/')
+        assert_equal(form['reason'].value, 'The\nReason')
+        assert_equal(form['disable_users'].value, 'on')
 
     def test_confirm_step_values(self):
         r = self.app.get('/nf/admin/delete_projects/')

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from allura.lib.decorators import task
 from allura.lib import utils
 from tg import tmpl_context as c

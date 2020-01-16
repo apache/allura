@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 from contextlib import contextmanager
 import time
 import string
@@ -498,7 +499,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
                cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
-        etag = u'{0}?{1}'.format(filename, last_modified).encode('utf-8')
+        etag = '{0}?{1}'.format(filename, last_modified).encode('utf-8')
     if etag:
         etag_cache(etag)
     tg.response.headers['Content-Type'] = ''

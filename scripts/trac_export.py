@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 if __name__ == '__main__':
     from allura.scripts.trac_export import main
     main()

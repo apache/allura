@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from datetime import datetime
 from unittest import TestCase
 
@@ -365,9 +366,9 @@ class TestForgeTrackerImportController(TestController, TestCase):
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
         sui.assert_called_once_with(project, 'tickets.json', '{"key": "val"}')
         self.assertEqual(
-            u'mymount', import_tool.post.call_args[1]['mount_point'])
+            'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
-            u'mylabel', import_tool.post.call_args[1]['mount_label'])
+            'mylabel', import_tool.post.call_args[1]['mount_label'])
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')

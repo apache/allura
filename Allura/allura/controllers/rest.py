@@ -18,6 +18,7 @@
 #       under the License.
 
 """REST Controller"""
+from __future__ import unicode_literals
 import logging
 from urllib import unquote
 

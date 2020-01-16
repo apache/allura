@@ -30,6 +30,7 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
 
 """
+from __future__ import unicode_literals
 import logging
 from functools import partial
 

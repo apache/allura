@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from datetime import datetime
 from nose.tools import assert_equal, assert_true
 from tg import tmpl_context as c

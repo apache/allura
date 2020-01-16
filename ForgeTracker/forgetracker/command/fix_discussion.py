@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from bson import ObjectId
 from bson.errors import InvalidId
 from ming.orm import ThreadLocalORMSession

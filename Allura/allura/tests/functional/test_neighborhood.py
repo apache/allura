@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import os
 from cStringIO import StringIO
@@ -747,7 +748,7 @@ class TestNeighborhood(TestController):
         # check the labels and trove cats
         r = self.app.get('/adobe/testtemp/admin/trove')
         assert 'mmi' in r
-        assert u'Communications » Telephony' in r
+        assert 'Communications » Telephony' in r
         assert '5 - Production/Stable' in r
         # check the wiki text
         r = self.app.get('/adobe/testtemp/wiki/').follow()
@@ -1003,7 +1004,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/verify_phone', {'number': '555-444-3333'})
         expected = {
             'status': 'error',
-            'error': u'&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
+            'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
         }
         assert_equal(r.json, expected)
 
@@ -1017,7 +1018,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/verify_phone', {'number': '1-555-444-9999'})
             assert_equal(r.json, {
                 'status': 'error',
-                'error': u'That phone number has already been used.'
+                'error': 'That phone number has already been used.'
             })
 
     def test_check_phone_verification_no_params(self):
@@ -1072,7 +1073,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
         expected = {
             'status': 'error',
-            'error': u'&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
+            'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
         }
         assert_equal(r.json, expected)
 

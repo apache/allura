@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import calendar
 from datetime import datetime, time, timedelta
 from time import time as time_time
@@ -157,7 +158,7 @@ class TestAuth(TestController):
 
         args, kwargs = sendsimplemail.post.call_args
         assert_equal(sendsimplemail.post.call_count, 1)
-        assert_equal(kwargs['subject'], u'Update your %s password' % config['site_name'])
+        assert_equal(kwargs['subject'], 'Update your %s password' % config['site_name'])
         assert_in('/auth/forgotten_password/', kwargs['text'])
 
         assert_equal([], M.UserLoginDetails.query.find().all())  # no records created
@@ -371,7 +372,7 @@ class TestAuth(TestController):
 
         assert sendsimplemail.post.call_count == 1
         assert kwargs['toaddr'] == email_address
-        assert kwargs['subject'] == u'%s - Email address claim attempt' % config['site_name']
+        assert kwargs['subject'] == '%s - Email address claim attempt' % config['site_name']
         assert "You tried to add %s to your Allura account, " \
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
@@ -475,7 +476,7 @@ class TestAuth(TestController):
         args, kwargs = sendsimplemail.post.call_args
         assert sendsimplemail.post.call_count == 1
         assert kwargs['toaddr'] == email_address
-        assert kwargs['subject'] == u'%s - Email address claim attempt' % config['site_name']
+        assert kwargs['subject'] == '%s - Email address claim attempt' % config['site_name']
         assert "You tried to add %s to your Allura account, " \
                "but it is already claimed by your %s account." % (email_address, user.username) in kwargs['text']
 
@@ -1611,7 +1612,7 @@ To update your password on %s, please visit the following URL:
         sendmail.post.assert_called_once_with(
             sender='noreply@localhost',
             toaddr=email.email,
-            fromaddr=u'"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
+            fromaddr='"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
             reply_to=config['forgemail.return_path'],
             subject='Allura Password recovery',
             message_id=gen_message_id(),

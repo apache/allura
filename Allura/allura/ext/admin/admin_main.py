@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import re
 import os
@@ -628,13 +629,13 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def update_mounts(self, subproject=None, tool=None, new=None, page=0, limit=200, **kw):
-        if new and new['ep_name'] == u'subproject':
+        if new and new['ep_name'] == 'subproject':
             new['ep_name'] = ""
         try:
             new_app = self._update_mounts(subproject, tool, new, **kw)
             if new_app:
                 if getattr(new_app, 'tool_label', '') == 'External Link':
-                    flash(u'{} installed successfully.'.format(new_app.tool_label))
+                    flash('{} installed successfully.'.format(new_app.tool_label))
                 else:
                     new_url = new_app.url
                     if callable(new_url):  # subprojects have a method instead of property

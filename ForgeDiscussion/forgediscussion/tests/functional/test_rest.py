@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from nose.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
@@ -79,8 +80,8 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(forums[0]['last_post']['subject'], 'Hi guys')
         assert_equal(forums[0]['last_post']['author'], 'test-admin')
         assert_equal(forums[0]['last_post']['text'], 'Hi boys and girls')
-        assert_equal(forums[1]['name'], u'Say Héllo')
-        assert_equal(forums[1]['description'], u'Say héllo here')
+        assert_equal(forums[1]['name'], 'Say Héllo')
+        assert_equal(forums[1]['description'], 'Say héllo here')
         assert_equal(forums[1]['num_topics'], 0)
         assert_equal(
             forums[1]['url'], 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
@@ -120,7 +121,7 @@ class TestRootRestController(TestDiscussionApiBase):
         self.create_topic('general', 'Hi again', 'It should not be shown')
         t = ForumThread.query.find({'subject': 'Hi again'}).first()
         first_post = t.first_post
-        first_post.status = u'pending'
+        first_post.status = 'pending'
         first_post.commit()
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
@@ -155,7 +156,7 @@ class TestRootRestController(TestDiscussionApiBase):
         resp = self.app.get('/rest/p/test/discussion/?limit=1&page=1')
         forums = resp.json['forums']
         assert_equal(len(forums), 1)
-        assert_equal(forums[0]['name'], u'Say Héllo')
+        assert_equal(forums[0]['name'], 'Say Héllo')
         assert_equal(resp.json['count'], 2)
         assert_equal(resp.json['page'], 1)
         assert_equal(resp.json['limit'], 1)
@@ -236,7 +237,7 @@ class TestRootRestController(TestDiscussionApiBase):
     def test_private_forums(self):
         r = self.app.get('/p/test/admin/discussion/forums')
         form = r.forms['edit-forums']
-        if form['forum-0.shortname'].value == u'héllo':
+        if form['forum-0.shortname'].value == 'héllo':
             form['forum-0.members_only'] = True
         else:
             form['forum-1.members_only'] = True

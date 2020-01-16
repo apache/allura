@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import shutil
 import os
@@ -229,12 +230,12 @@ class TestRootController(SVNTestController):
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
         r = self.app.get('/p/test/svn-tags/19/tree/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.button.text, u'\xa0Download Snapshot')
+        assert_equal(form.button.text, '\xa0Download Snapshot')
         assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
 
         r = self.app.get('/p/test/svn-tags/19/tree/tags/tag-1.0/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.button.text, u'\xa0Download Snapshot')
+        assert_equal(form.button.text, '\xa0Download Snapshot')
         assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
         assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
 

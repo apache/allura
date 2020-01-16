@@ -16,6 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 import tempfile
 
 import mock
@@ -29,7 +30,7 @@ from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
 class TestStopForumSpam(object):
 
     def setUp(self):
-        self.content = u'spåm text'
+        self.content = 'spåm text'
 
         self.artifact = mock.Mock()
         self.artifact.project_id = ObjectId()

@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import allura
 import pkg_resources
@@ -53,12 +54,12 @@ class TestProjectAdmin(TestController):
         with audits(
                 'change summary to Milkshakes are for crazy monkeys',
                 'change project name to My Test Project',
-                u'change short description to (\u00bf A Test Project \?){45}'):
+                'change short description to (\u00bf A Test Project \?){45}'):
             self.app.post('/admin/update', params=dict(
                 name='My Test Project',
                 shortname='test',
                 summary='Milkshakes are for crazy monkeys',
-                short_description=u'\u00bf A Test Project ?'.encode(
+                short_description='\u00bf A Test Project ?'.encode(
                         'utf-8') * 45,
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
@@ -164,7 +165,7 @@ class TestProjectAdmin(TestController):
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
-        with audits(u"change project features to \[u'One', u'Two'\]"):
+        with audits("change project features to \[u'One', u'Two'\]"):
             resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
                 'features-1.feature': '  ',
@@ -181,10 +182,10 @@ class TestProjectAdmin(TestController):
         features = features.findAll('input', {'type': 'text'})
         # two features + extra empty input + stub hidden input for js
         assert_equals(len(features), 2+1+1)
-        assert_equals(features[0]['value'], u'One')
-        assert_equals(features[1]['value'], u'Two')
+        assert_equals(features[0]['value'], 'One')
+        assert_equals(features[1]['value'], 'Two')
         proj = M.Project.query.get(shortname='test')
-        assert_equals(proj.features, [u'One', u'Two'])
+        assert_equals(proj.features, ['One', 'Two'])
 
     @td.with_wiki
     def test_block_user_empty_data(self):
@@ -354,17 +355,17 @@ class TestProjectAdmin(TestController):
 
     def test_install_tool_form(self):
         r = self.app.get('/admin/install_tool?tool_name=wiki')
-        assert_in(u'Installing Wiki', r)
+        assert_in('Installing Wiki', r)
 
     def test_install_tool_form_options(self):
         opts = ['AllowEmailPosting']
         with mock.patch.object(ForgeWikiApp, 'config_on_install', new=opts):
             r = self.app.get('/admin/install_tool?tool_name=wiki')
-            assert_in(u'<input id="AllowEmailPosting" name="AllowEmailPosting"', r)
+            assert_in('<input id="AllowEmailPosting" name="AllowEmailPosting"', r)
 
     def test_install_tool_form_subproject(self):
         r = self.app.get('/admin/install_tool?tool_name=subproject')
-        assert_in(u'Installing Sub Project', r)
+        assert_in('Installing Sub Project', r)
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
@@ -552,13 +553,13 @@ class TestProjectAdmin(TestController):
             r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
-        assert u'<span class="trove_fullpath">Database API » Python Database API</span>' in r
+        assert '<span class="trove_fullpath">Database API » Python Database API</span>' in r
         # delete the cat
         with audits('remove trove root_database: Database Environment :: Database API'):
             r = r.forms['delete_trove_root_database_506'].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
-        assert u'<span class="trove_fullpath">Database API » Python Database API</span>' not in r
+        assert '<span class="trove_fullpath">Database API » Python Database API</span>' not in r
 
     def test_add_remove_label(self):
         setup_trove_categories()
@@ -879,43 +880,43 @@ class TestProjectAdmin(TestController):
             'role_id': anon_id,
             'permission': 'create',
             'allow': 'true'})
-        assert {u'text': u'Inherited permission create from Anonymous',
-                u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
-        assert {u'text': u'Inherited permission create from Anonymous',
-                u'has': u'inherit', u'name': u'create'} in r.json[mem_id]
-        assert {u'text': u'Has permission create', u'has':
-                u'yes', u'name': u'create'} in r.json[anon_id]
+        assert {'text': 'Inherited permission create from Anonymous',
+                'has': 'inherit', 'name': 'create'} in r.json[admin_id]
+        assert {'text': 'Inherited permission create from Anonymous',
+                'has': 'inherit', 'name': 'create'} in r.json[mem_id]
+        assert {'text': 'Has permission create', 'has':
+                'yes', 'name': 'create'} in r.json[anon_id]
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': anon_id,
             'permission': 'create',
             'allow': 'false'})
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[admin_id]
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[mem_id]
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[admin_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[mem_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[anon_id]
         # updates to Member inherit up
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
             'permission': 'create',
             'allow': 'true'})
-        assert {u'text': u'Inherited permission create from Member',
-                u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
-        assert {u'text': u'Has permission create', u'has':
-                u'yes', u'name': u'create'} in r.json[mem_id]
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        assert {'text': 'Inherited permission create from Member',
+                'has': 'inherit', 'name': 'create'} in r.json[admin_id]
+        assert {'text': 'Has permission create', 'has':
+                'yes', 'name': 'create'} in r.json[mem_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[anon_id]
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
             'permission': 'create',
             'allow': 'false'})
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[admin_id]
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[mem_id]
-        assert {u'text': u'Does not have permission create',
-                u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[admin_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[mem_id]
+        assert {'text': 'Does not have permission create',
+                'has': 'no', 'name': 'create'} in r.json[anon_id]
 
     def test_admin_extension_sidebar(self):
 
@@ -972,7 +973,7 @@ class TestExport(TestController):
         exportable_tools = AdminApp.exportable_tools_for(project)
         exportable_mount_points = [
             t.options.mount_point for t in exportable_tools]
-        assert_equals(exportable_mount_points, [u'admin', u'wiki', u'wiki2'])
+        assert_equals(exportable_mount_points, ['admin', 'wiki', 'wiki2'])
 
     def test_access(self):
         r = self.app.get('/admin/export',
@@ -1016,29 +1017,29 @@ class TestExport(TestController):
             exportable_mount_points = [
                 t.options.mount_point for t in exportable_tools]
             assert_equals(exportable_mount_points,
-                          [u'admin', u'search', u'wiki', u'wiki2'])
+                          ['admin', 'search', 'wiki', 'wiki2'])
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
         assert_in('error', self.webflash(r))
 
     def test_bad_tool(self):
-        r = self.app.post('/admin/export', {'tools': u'search'})
+        r = self.app.post('/admin/export', {'tools': 'search'})
         assert_in('error', self.webflash(r))
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_one_tool(self, export_tasks):
-        r = self.app.post('/admin/export', {'tools': u'wiki'})
+        r = self.app.post('/admin/export', {'tools': 'wiki'})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            [u'wiki'], 'test.zip', send_email=True, with_attachments=False)
+            ['wiki'], 'test.zip', send_email=True, with_attachments=False)
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
-        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
+        r = self.app.post('/admin/export', {'tools': ['wiki', 'wiki2']})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            [u'wiki', u'wiki2'], 'test.zip', send_email=True, with_attachments=False)
+            ['wiki', 'wiki2'], 'test.zip', send_email=True, with_attachments=False)
 
     @mock.patch('allura.model.session.project_doc_session')
     def test_export_in_progress(self, session):
@@ -1343,23 +1344,23 @@ class TestRestMountOrder(TestRestApiBase):
     @td.with_wiki
     def test_reorder(self):
         d1 = {
-            '0': u'sub1',
-            '1': u'wiki',
-            '2': u'admin'
+            '0': 'sub1',
+            '1': 'wiki',
+            '2': 'admin'
         }
         d2 = {
-            '0': u'wiki',
-            '1': u'sub1',
-            '2': u'admin'
+            '0': 'wiki',
+            '1': 'sub1',
+            '2': 'admin'
         }
 
         tool = {
-            u'icon': u'tool-admin',
-            u'is_anchored': False,
-            u'mount_point': u'sub1',
-            u'name': u'A Subproject',
-            u'tool_name': u'sub',
-            u'url': u'/p/test/sub1/'
+            'icon': 'tool-admin',
+            'is_anchored': False,
+            'mount_point': 'sub1',
+            'name': 'A Subproject',
+            'tool_name': 'sub',
+            'url': '/p/test/sub1/'
         }
 
         # Set initial order to d1

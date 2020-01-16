@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 import shutil
 import tempfile
 import textwrap
@@ -95,7 +96,7 @@ class TestTotpService(object):
         time.return_value = self.sample_time
         srv = GenericTotpService()
         totp = srv.Totp(key=self.sample_key)
-        srv.verify(totp, u'283 397', None)
+        srv.verify(totp, '283 397', None)
         srv.verify(totp, b'283397', None)
 
     @patch('allura.lib.multifactor.time')

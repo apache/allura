@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import socket
 from logging import getLogger
@@ -143,7 +144,7 @@ def search(q, short_timeout=False, ignore_errors=True, **kw):
         log.exception('Error in solr search')
         if not ignore_errors:
             match = re.search(r'<pre>(.*)</pre>', six.text_type(e))
-            raise SearchError(u'Error running search query: %s' %
+            raise SearchError('Error running search query: %s' %
                               (match.group(1) if match else e))
 
 
@@ -204,9 +205,9 @@ def site_admin_search(model, q, field, **kw):
         # escaping spaces with '\ ' isn't sufficient for display_name_t since its stored as text_general (why??)
         # and wouldn't handle foo@bar.com split on @ either
         # This should work, but doesn't for unknown reasons: q = u'{!term f=%s}%s' % (field, q)
-        q = obj.translate_query(u'%s:(%s)' % (field, q), fields)
+        q = obj.translate_query('%s:(%s)' % (field, q), fields)
         kw['q.op'] = 'AND'  # so that all terms within the () are required
-    fq = [u'type_s:%s' % model.type_s]
+    fq = ['type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)
 
 

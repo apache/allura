@@ -20,6 +20,7 @@
 """
 Model tests for neighborhood
 """
+from __future__ import unicode_literals
 from nose.tools import with_setup
 
 from allura import model as M
@@ -56,11 +57,11 @@ def test_neighborhood():
     assert neighborhood.get_max_projects() == 500
 
     # Check picker css styles
-    test_css_dict = {'barontop': u'#444',
-                     'titlebarbackground': u'#555',
-                     'projecttitlefont': u'arial,sans-serif',
-                     'projecttitlecolor': u'#333',
-                     'titlebarcolor': u'#666'}
+    test_css_dict = {'barontop': '#444',
+                     'titlebarbackground': '#555',
+                     'projecttitlefont': 'arial,sans-serif',
+                     'projecttitlecolor': '#333',
+                     'titlebarcolor': '#666'}
     css_text = neighborhood.compile_css_for_picker(test_css_dict)
     assert '#333' in css_text
     assert '#444' in css_text

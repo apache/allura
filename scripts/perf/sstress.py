@@ -21,6 +21,7 @@
 sstress - an SMTP stress testing tool
 '''
 
+from __future__ import unicode_literals
 import smtplib
 import threading
 import time

@@ -17,6 +17,7 @@
 
 #-*- python -*-
 
+from __future__ import unicode_literals
 import tempfile
 import json
 import os

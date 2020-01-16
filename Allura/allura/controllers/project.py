@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import re
 import logging
 from datetime import datetime, timedelta
@@ -153,7 +154,7 @@ class NeighborhoodController(object):
     def add_project(self, **form_data):
         with h.login_overlay():
             require_access(self.neighborhood, 'register')
-        verify = c.form_errors == {'_the_form': u'phone-verification'}
+        verify = c.form_errors == {'_the_form': 'phone-verification'}
         c.show_phone_verification_overlay = verify
         c.add_project = W.add_project
         form_data.setdefault('tools', W.add_project.default_tools)

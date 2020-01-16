@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import cgi
 import random
 import shlex
@@ -80,7 +81,7 @@ class parse(object):
                 log.warn('macro error.  Upwards stack is %s',
                          ''.join(traceback.format_stack()),
                          exc_info=True)
-                msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
+                msg = cgi.escape('[[%s]] (%s)' % (s, repr(ex)))
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception, ex:
             raise

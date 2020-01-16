@@ -18,6 +18,7 @@
 #       under the License.
 
 """The base Controller API."""
+from __future__ import unicode_literals
 from tg import TGController
 
 __all__ = ['WsgiDispatchController']

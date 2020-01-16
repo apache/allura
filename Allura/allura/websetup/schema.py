@@ -19,6 +19,7 @@
 
 """Setup the allura application"""
 
+from __future__ import unicode_literals
 import logging
 
 import activitystream

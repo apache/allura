@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import time
 import unittest
@@ -342,7 +343,7 @@ def test_empty_cursor():
 
 
 def test_DateJSONEncoder():
-    data = {'message': u'Hi!',
+    data = {'message': 'Hi!',
             'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
@@ -373,7 +374,7 @@ class FakeAttachment(object):
         self._id = ObjectId()
         self.filename = filename
     def __repr__(self):
-        return u'%s %s' % (self._id, self.filename)
+        return '%s %s' % (self._id, self.filename)
 
 
 def unique_attachments():
@@ -417,13 +418,13 @@ def test_lsub_utf8():
     assert_equal(b'asdf',
                  utils.lsub_utf8(h.really_unicode('asdf').encode('utf-8'), 40))
     assert_equal(b'as\xf0\x9f\x98\x84\xc2\xb6\xc2\xba\xc2\xb6',
-                 utils.lsub_utf8(h.really_unicode(u'as😄¶º¶').encode('utf-8'), 40))
+                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 40))
     assert_equal(b'as\xf0\x9f\x98\x84',
-                 utils.lsub_utf8(h.really_unicode(u'as😄¶º¶').encode('utf-8'), 6))
+                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 6))
     # these would truncate the smiley:
     assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode(u'as😄¶º¶').encode('utf-8'), 5))
+                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 5))
     assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode(u'as😄¶º¶').encode('utf-8'), 4))
+                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 4))
     assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode(u'as😄¶º¶').encode('utf-8'), 3))
+                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 3))

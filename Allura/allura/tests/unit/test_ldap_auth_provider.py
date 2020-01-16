@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import calendar
 import platform
 from datetime import datetime, timedelta
@@ -98,21 +99,21 @@ class TestLdapAuthenticationProvider(object):
         ldap.dn.escape_dn_chars = lambda x: x
         dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
         conn = ldap.initialize.return_value
-        conn.search_s.return_value = [(dn, {'cn': [u'åℒƒ'.encode('utf-8')]})]
+        conn.search_s.return_value = [(dn, {'cn': ['åℒƒ'.encode('utf-8')]})]
 
         self.provider._login()
 
         user = M.User.query.get(username=params['username'])
         assert user
-        assert_equal(user.display_name, u'åℒƒ')
+        assert_equal(user.display_name, 'åℒƒ')
 
     @patch('allura.lib.plugin.modlist')
     @patch('allura.lib.plugin.ldap')
     def test_register_user(self, ldap, modlist):
         user_doc = {
-            'username': u'new-user',
-            'display_name': u'New User',
-            'password': u'new-password',
+            'username': 'new-user',
+            'display_name': 'New User',
+            'password': 'new-password',
         }
         ldap.dn.escape_dn_chars = lambda x: x
         self.provider._encode_password = Mock(return_value='new-password-hash')

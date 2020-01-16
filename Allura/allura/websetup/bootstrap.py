@@ -18,6 +18,7 @@
 #       under the License.
 
 """Setup the allura application"""
+from __future__ import unicode_literals
 import os
 import sys
 import logging

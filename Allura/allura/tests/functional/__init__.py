@@ -18,3 +18,5 @@
 #       under the License.
 
 """Functional test suite for the controllers of the application."""
+
+from __future__ import unicode_literals

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import HTMLParser
 import re
@@ -262,7 +263,7 @@ def send_system_mail_to_user(user_or_emailaddr, subject, text):
 
     email = {
         'toaddr': toaddr,
-        'fromaddr': u'"{}" <{}>'.format(
+        'fromaddr': '"{}" <{}>'.format(
             config['site_name'],
             config['forgemail.return_path']
         ),

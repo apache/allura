@@ -17,6 +17,7 @@ the copyright holder hereby grants irrevocably to every recipient
 all rights in this work otherwise reserved under copyright.
 """
 
+from __future__ import unicode_literals
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
 __version__ = "$Revision: 1.3 $"
 __date__ = "$Date: 2009/04/28 10:45:03 $"

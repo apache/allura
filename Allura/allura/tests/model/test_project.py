@@ -20,6 +20,7 @@
 """
 Model tests for project
 """
+from __future__ import unicode_literals
 from nose import with_setup
 from nose.tools import assert_equals, assert_in
 from tg import tmpl_context as c
@@ -187,7 +188,7 @@ def test_project_disabled_users():
 
 def test_screenshot_unicode_serialization():
     p = M.Project.query.get(shortname='test')
-    screenshot_unicode = M.ProjectFile(project_id=p._id, category='screenshot', caption=u"ConSelección", filename=u'ConSelección.jpg')
+    screenshot_unicode = M.ProjectFile(project_id=p._id, category='screenshot', caption="ConSelección", filename='ConSelección.jpg')
     screenshot_ascii = M.ProjectFile(project_id=p._id, category='screenshot', caption='test-screenshot', filename='test_file.jpg')
     ThreadLocalORMSession.flush_all()
 
@@ -196,7 +197,7 @@ def test_screenshot_unicode_serialization():
 
     assert len(screenshots) == 2
     assert screenshots[0]['url'] == 'http://localhost/p/test/screenshot/ConSelecci%C3%B3n.jpg'
-    assert screenshots[0]['caption'] == u"ConSelección"
+    assert screenshots[0]['caption'] == "ConSelección"
     assert screenshots[0]['thumbnail_url'] == 'http://localhost/p/test/screenshot/ConSelecci%C3%B3n.jpg/thumb'
 
     assert screenshots[1]['url'] == 'http://localhost/p/test/screenshot/test_file.jpg'

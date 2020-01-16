@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import datetime as dt
 import json
 
@@ -66,7 +67,7 @@ class Webhook(Artifact):
     def __json__(self):
         return {
             '_id': six.text_type(self._id),
-            'url': h.absurl(u'/rest' + self.url()),
+            'url': h.absurl('/rest' + self.url()),
             'type': six.text_type(self.type),
             'hook_url': six.text_type(self.hook_url),
             'mod_date': self.mod_date,

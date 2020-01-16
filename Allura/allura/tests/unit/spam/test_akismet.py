@@ -18,6 +18,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 import mock
 import unittest
 import urllib
@@ -56,13 +57,13 @@ class TestAkismet(unittest.TestCase):
                 )
             ),
         })
-        self.fake_user = mock.Mock(display_name=u'Søme User',
+        self.fake_user = mock.Mock(display_name='Søme User',
                                    email_addresses=['user@domain'],
                                    _id=ObjectId())
         self.fake_headers = dict(
             USER_AGENT='some browser',
             REFERER='some url')
-        self.content = u'spåm text'
+        self.content = 'spåm text'
         self.expected_data = dict(
             comment_content=self.content.encode('utf8'),
             comment_type='comment',
@@ -111,7 +112,7 @@ class TestAkismet(unittest.TestCase):
         c.user = None
         self.akismet.check(self.content, user=self.fake_user)
         expected_data = self.expected_data
-        expected_data.update(comment_author=u'Søme User'.encode('utf8'),
+        expected_data.update(comment_author='Søme User'.encode('utf8'),
                              comment_author_email='user@domain')
         self.akismet.service.comment_check.assert_called_once_with(**expected_data)
 
@@ -123,7 +124,7 @@ class TestAkismet(unittest.TestCase):
         c.user = self.fake_user
         self.akismet.check(self.content)
         expected_data = self.expected_data
-        expected_data.update(comment_author=u'Søme User'.encode('utf8'),
+        expected_data.update(comment_author='Søme User'.encode('utf8'),
                              comment_author_email='user@domain')
         self.akismet.service.comment_check.assert_called_once_with(**expected_data)
 
@@ -134,7 +135,7 @@ class TestAkismet(unittest.TestCase):
         self.akismet.submit_spam(self.content)
 
         # no IP addr, UA, etc, since this isn't the original request
-        expected_data = dict(comment_content=u'spåm text'.encode('utf8'),
+        expected_data = dict(comment_content='spåm text'.encode('utf8'),
                              comment_type='comment',
                              user_ip='',
                              user_agent='',
@@ -148,7 +149,7 @@ class TestAkismet(unittest.TestCase):
         self.akismet.submit_ham(self.content)
 
         # no IP addr, UA, etc, since this isn't the original request
-        expected_data = dict(comment_content=u'spåm text'.encode('utf8'),
+        expected_data = dict(comment_content='spåm text'.encode('utf8'),
                              comment_type='comment',
                              user_ip='',
                              user_agent='',
@@ -161,7 +162,7 @@ class TestAkismet(unittest.TestCase):
 
         self.akismet.submit_ham(self.content, artifact=self.fake_artifact)
 
-        expected_data = dict(comment_content=u'spåm text'.encode('utf8'),
+        expected_data = dict(comment_content='spåm text'.encode('utf8'),
                              comment_type='comment',
                              user_ip='33.4.5.66',
                              user_agent='',

@@ -19,6 +19,7 @@
 
 """Error controller"""
 
+from __future__ import unicode_literals
 from tg import request, expose
 
 __all__ = ['ErrorController']

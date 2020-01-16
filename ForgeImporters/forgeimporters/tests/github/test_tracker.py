@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from datetime import datetime
 from unittest import TestCase
 from urllib2 import HTTPError
@@ -124,9 +125,9 @@ class TestTrackerImporter(TestCase):
                 'label': 'Milestone',
                 'milestones': [
                         {'name': 'first', 'due_date':
-                            u'2015-04-23', 'complete': False},
+                            '2015-04-23', 'complete': False},
                     {'name': 'second', 'due_date':
-                     u'2015-04-25', 'complete': False},
+                     '2015-04-25', 'complete': False},
                 ],
             },
         ])

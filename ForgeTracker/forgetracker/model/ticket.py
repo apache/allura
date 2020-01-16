@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import urllib
 import json
@@ -84,7 +85,7 @@ SOLR_TYPE_DEFAULTS = dict(_b=False, _d=0)
 
 
 def get_default_for_solr_type(solr_type):
-    return SOLR_TYPE_DEFAULTS.get(solr_type, u'')
+    return SOLR_TYPE_DEFAULTS.get(solr_type, '')
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',

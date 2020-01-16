@@ -16,6 +16,7 @@
 #       under the License.
 
 
+from __future__ import unicode_literals
 class ResponsiveOverrides(object):
     '''
     Placeholder to trigger usage of template overrides in the /override/ dir

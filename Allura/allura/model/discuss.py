@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import logging
 from datetime import datetime
@@ -293,7 +294,7 @@ class Thread(Artifact, ActivityObject):
         roles = [r.name for r in c.project.named_roles]
         spam_check_text = post.text
         if self.include_subject_in_spam_check(post):
-            spam_check_text = self.subject + u'\n' + spam_check_text
+            spam_check_text = self.subject + '\n' + spam_check_text
         spammy = g.spam_checker.check(spam_check_text, artifact=post, user=c.user)
         if c.user in c.project.users_with_role(*roles):
             # always run the check, so it's logged.  But don't act on it for admins/developers of their own project
@@ -772,7 +773,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             # this means artifact was not auto approved, and all the
             # subscribers did not receive notification. Now, moderator approved
             # artifact/post, so we should re-send actual notification
-            msg_id = u'approved-' + msg_id
+            msg_id = 'approved-' + msg_id
             n = Notification.query.get(_id=msg_id)
             if n:
                 # 'approved' notification also exists, re-send

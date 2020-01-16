@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import operator
 import shutil
 import sys
@@ -259,9 +260,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -280,11 +281,11 @@ class TestMailTasks(unittest.TestCase):
     def test_send_email_nonascii(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
-                fromaddr=u'"По" <foo@bar.com>',
+                fromaddr='"По" <foo@bar.com>',
                 destinations=['blah@blah.com'],
-                text=u'Громады стройные теснятся',
+                text='Громады стройные теснятся',
                 reply_to=g.noreply,
-                subject=u'По оживлённым берегам',
+                subject='По оживлённым берегам',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -303,7 +304,7 @@ class TestMailTasks(unittest.TestCase):
             assert_in('Content-Type: text/plain; charset="utf-8"', body)
             assert_in('Content-Transfer-Encoding: base64', body)
             assert_in(
-                b64encode(u'Громады стройные теснятся'.encode('utf-8')), body)
+                b64encode('Громады стройные теснятся'.encode('utf-8')), body)
 
     def test_send_email_with_disabled_user(self):
         c.user = M.User.by_username('test-admin')
@@ -315,9 +316,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(destination_user._id)],
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -334,9 +335,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(destination_user._id)],
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 0)
 
@@ -346,9 +347,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -360,9 +361,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 2)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -375,10 +376,10 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
-                sender=u'tickets@test.p.domain.net',
+                subject='Test subject',
+                sender='tickets@test.p.domain.net',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -391,10 +392,10 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
-                text=u'This is a test',
-                reply_to=u'123@tickets.test.p.domain.net',
-                subject=u'Test subject',
-                sender=u'tickets@test.p.domain.net',
+                text='This is a test',
+                reply_to='123@tickets.test.p.domain.net',
+                subject='Test subject',
+                sender='tickets@test.p.domain.net',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -409,9 +410,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 references=['a', 'b', 'c'],
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
@@ -424,10 +425,10 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
-                references=u'ref',
+                subject='Test subject',
+                references='ref',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -441,10 +442,10 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
-                cc=u'someone@example.com',
+                subject='Test subject',
+                cc='someone@example.com',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -457,9 +458,9 @@ class TestMailTasks(unittest.TestCase):
             mail_tasks.sendsimplemail(
                 fromaddr=c.user._id,
                 toaddr='test@mail.com',
-                text=u'This is a test',
+                text='This is a test',
                 reply_to=g.noreply,
-                subject=u'Test subject',
+                subject='Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
@@ -468,11 +469,11 @@ class TestMailTasks(unittest.TestCase):
     def test_send_email_long_lines_use_quoted_printable(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendsimplemail(
-                fromaddr=u'"По" <foo@bar.com>',
+                fromaddr='"По" <foo@bar.com>',
                 toaddr='blah@blah.com',
-                text=(u'0123456789' * 100) + u'\n\n' + (u'Громады стро ' * 100),
+                text=('0123456789' * 100) + '\n\n' + ('Громады стро ' * 100),
                 reply_to=g.noreply,
-                subject=u'По оживлённым берегам',
+                subject='По оживлённым берегам',
                 message_id=h.gen_message_id())
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
@@ -642,7 +643,7 @@ class TestExportTasks(unittest.TestCase):
     @td.with_wiki
     def test_bulk_export(self, wiki_bulk_export, zipdir, shutil):
         M.MonQTask.query.remove()
-        export_tasks.bulk_export([u'wiki'])
+        export_tasks.bulk_export(['wiki'])
         assert_equal(wiki_bulk_export.call_count, 1)
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'

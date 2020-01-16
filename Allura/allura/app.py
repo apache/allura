@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import logging
 from urllib import basejoin
@@ -655,7 +656,7 @@ class Application(object):
     def admin_menu_collapse_button(self):
         """Returns button for showing/hiding admin sidebar menu"""
         return SitemapEntry(
-            label=u'Admin - {}'.format(self.config.options.mount_label),
+            label='Admin - {}'.format(self.config.options.mount_label),
             extra_html_attrs={
                 'id': 'sidebar-admin-menu-trigger',
             })
@@ -960,7 +961,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 try:
                     val = opt.validate(val)
                 except fev.Invalid as e:
-                    flash(u'{}: {}'.format(opt.name, str(e)), 'error')
+                    flash('{}: {}'.format(opt.name, str(e)), 'error')
                     continue
                 self.app.config.options[opt.name] = val
             if is_admin:

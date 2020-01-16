@@ -20,6 +20,7 @@
 """
 Model tests for artifact
 """
+from __future__ import unicode_literals
 from cStringIO import StringIO
 import time
 from datetime import datetime, timedelta
@@ -200,10 +201,10 @@ def test_attachment_methods():
     fs.filename = 'fake.txt'
     fs.type = 'text/plain'
     fs.file = StringIO('this is the content of the fake file\n')
-    p = t.post(text=u'test message', forum=None, subject='', file_info=fs)
+    p = t.post(text='test message', forum=None, subject='', file_info=fs)
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
-        subject=u'[test:wiki] Test comment notification')
+        subject='[test:wiki] Test comment notification')
     url = h.absurl('{}attachment/{}'.format(p.url(), fs.filename))
     assert_in(
         '\nAttachments:\n\n'
@@ -265,10 +266,10 @@ def test_notification_two_attaches():
     fs2.filename = 'fake2.txt'
     fs2.type = 'text/plain'
     fs2.file = StringIO('this is the content of the fake file\n')
-    p = t.post(text=u'test message', forum=None, subject='', file_info=[fs1, fs2])
+    p = t.post(text='test message', forum=None, subject='', file_info=[fs1, fs2])
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
-        subject=u'[test:wiki] Test comment notification')
+        subject='[test:wiki] Test comment notification')
     base_url = h.absurl('{}attachment/'.format(p.url()))
     assert_in(
         '\nAttachments:\n\n'

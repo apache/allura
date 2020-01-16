@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import mock
 import tg
 from nose.tools import assert_equal, assert_in, assert_not_in
@@ -121,12 +122,12 @@ class TestUserProfile(TestController):
 
         sendsimplemail.post.assert_called_once_with(
             cc=User.by_username('test-admin').get_pref('email_address'),
-            text=u'test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
-            message_id=u'id',
-            subject=u'test subject')
+            message_id='id',
+            subject='test subject')
         sendsimplemail.reset_mock()
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
@@ -134,12 +135,12 @@ class TestUserProfile(TestController):
 
         sendsimplemail.post.assert_called_once_with(
             cc=None,
-            text=u'test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
-            message_id=u'id',
-            subject=u'test subject')
+            message_id='id',
+            subject='test subject')
 
         check.return_value = False
         response = self.app.get(

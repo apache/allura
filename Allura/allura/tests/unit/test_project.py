@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import unittest
 from mock import Mock
 
@@ -40,10 +41,10 @@ class TestProject(unittest.TestCase):
         p.sitemap = Mock(return_value=sitemap_entries)
         entries = p.grouped_navbar_entries()
         expected = [
-            (u'Tickets \u25be', 'proj_url/_list/tickets', 3),
-            (u'wiki', 'wiki url', 0),
-            (u'Discussion \u25be', 'proj_url/_list/discussion', 2),
-            (u'subproject', 'subproject url', 0),
+            ('Tickets \u25be', 'proj_url/_list/tickets', 3),
+            ('wiki', 'wiki url', 0),
+            ('Discussion \u25be', 'proj_url/_list/discussion', 2),
+            ('subproject', 'subproject url', 0),
         ]
         expected_ticket_urls = ['bugs url', 'features url', 'support url']
         actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
@@ -67,11 +68,11 @@ class TestProject(unittest.TestCase):
         p.tool_data['allura'] = {'grouping_threshold': 2}
         entries = p.grouped_navbar_entries()
         expected = [
-            (u'Tickets \u25be', 'proj_url/_list/tickets', 3),
-            (u'wiki', 'wiki url', 0),
-            (u'discuss', 'discuss url', 0),
-            (u'subproject', 'subproject url', 0),
-            (u'help', 'help url', 0),
+            ('Tickets \u25be', 'proj_url/_list/tickets', 3),
+            ('wiki', 'wiki url', 0),
+            ('discuss', 'discuss url', 0),
+            ('subproject', 'subproject url', 0),
+            ('help', 'help url', 0),
         ]
         expected_ticket_urls = ['bugs url', 'features url', 'support url']
         actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]

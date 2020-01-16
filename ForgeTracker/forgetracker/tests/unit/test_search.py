@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import mock
 from nose.tools import assert_equal
 from forgetracker.search import get_facets, query_filter_choices

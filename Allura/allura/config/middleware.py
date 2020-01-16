@@ -18,6 +18,7 @@
 #       under the License.
 
 """WSGI middleware initialization for the allura application."""
+from __future__ import unicode_literals
 import importlib
 import mimetypes
 

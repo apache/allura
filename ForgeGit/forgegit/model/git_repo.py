@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import shutil
 import string
@@ -130,7 +131,7 @@ class Repository(M.Repository):
             author = h.really_unicode(c.user.display_name or c.user.username)
             tmp_repo.git.config('user.name', author.encode('utf8'))
             tmp_repo.git.config('user.email', 'allura@localhost')  # a public email alias could be nice here
-            msg = u'Merge {} branch {} into {}\n\n{}'.format(
+            msg = 'Merge {} branch {} into {}\n\n{}'.format(
                 mr.downstream_repo.url(),
                 mr.source_branch,
                 mr.target_branch,
@@ -563,7 +564,7 @@ class GitImplementation(M.RepositoryImplementation):
             try:
                 hex_sha = ref.commit.hexsha
             except (ValueError, AssertionError) as e:
-                log.debug(u"Found invalid sha: {}".format(ref), exc_info=e)
+                log.debug("Found invalid sha: {}".format(ref), exc_info=e)
                 continue
             refs.append(Object(name=ref.name, object_id=hex_sha))
         time_taken = time() - start_time

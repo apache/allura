@@ -20,6 +20,7 @@
 """
 Model tests for artifact
 """
+from __future__ import unicode_literals
 import re
 from datetime import datetime
 

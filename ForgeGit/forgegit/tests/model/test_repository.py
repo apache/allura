@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import os
 import shutil
 import stat
@@ -268,49 +269,49 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         entries = list(self.repo.log(id_only=False))
         assert_equal(entries, [
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': '1e146e67985dcd71c74de79613719bef7bddca4a',
-             'message': u'Change README\n',
+             'message': 'Change README\n',
              'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
              'refs': ['HEAD', 'foo', 'master'],
              'size': None,
              'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
-             'message': u'Add README\n',
+             'message': 'Add README\n',
              'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              'refs': [],
              'size': None,
              'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 43, 26),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 43, 26),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': '6a45885ae7347f1cac5103b0050cc1be6a1496c8',
-             'message': u'Remove file\n',
+             'message': 'Remove file\n',
              'parents': ['9a7df788cf800241e3bb5a849c8870f2f8259d98'],
              'refs': [],
              'size': None,
              'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 42, 54),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 42, 54),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': '9a7df788cf800241e3bb5a849c8870f2f8259d98',
-             'message': u'Initial commit\n',
+             'message': 'Initial commit\n',
              'parents': [],
              'refs': [],
              'size': None,
@@ -318,32 +319,32 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         ])
 
     def test_log_unicode(self):
-        entries = list(self.repo.log(path=u'völundr', id_only=False))
+        entries = list(self.repo.log(path='völundr', id_only=False))
         assert_equal(entries, [])
 
     def test_log_file(self):
         entries = list(self.repo.log(path='README', id_only=False))
         assert_equal(entries, [
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': '1e146e67985dcd71c74de79613719bef7bddca4a',
-             'message': u'Change README\n',
+             'message': 'Change README\n',
              'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
              'refs': ['HEAD', 'foo', 'master'],
              'size': 28,
              'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
-                          'email': u'rcopeland@geek.net',
-                          'name': u'Rick Copeland'},
+                          'email': 'rcopeland@geek.net',
+                          'name': 'Rick Copeland'},
              'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
-                           'email': u'rcopeland@geek.net',
-                           'name': u'Rick Copeland'},
+                           'email': 'rcopeland@geek.net',
+                           'name': 'Rick Copeland'},
              'id': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
-             'message': u'Add README\n',
+             'message': 'Add README\n',
              'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              'refs': [],
              'size': 15,
@@ -393,7 +394,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
         ThreadLocalORMSession.flush_all()
 
-        n = M.Notification.query.find({'subject': u'[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
+        n = M.Notification.query.find({'subject': '[test:src-git] New commit [1e146e] by Rick Copeland'}).first()
         assert n
         assert_in('Change README', n.text)
 
@@ -403,7 +404,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                                        ])
         ThreadLocalORMSession.flush_all()
         n = M.Notification.query.find(
-            dict(subject=u'[test:src-git] 2 new commits to Git')).first()
+            dict(subject='[test:src-git] 2 new commits to Git')).first()
         assert n
         assert n.text.startswith('\n## Branch: master'), n.text
         assert n.text.find('Add README') < n.text.find('Change README'), n.text
@@ -415,7 +416,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                                        ])
         ThreadLocalORMSession.flush_all()
         n = M.Notification.query.find(
-            dict(subject=u'[test:src-git] 3 new commits to Git')).first()
+            dict(subject='[test:src-git] 3 new commits to Git')).first()
         assert n
         assert n.text.startswith('\n## Branch: master'), n.text
         assert n.text.find('Add README') < n.text.find('Change README'), n.text
@@ -430,7 +431,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                                        ])
         ThreadLocalORMSession.flush_all()
         n = M.Notification.query.find(
-            dict(subject=u'[test:src-git] 4 new commits to Git')).first()
+            dict(subject='[test:src-git] 4 new commits to Git')).first()
         assert n
         assert n.text.startswith('\n## Branch: master'), n.text
         assert n.text.endswith('And 1 more commits.\n'), n.text
@@ -513,17 +514,17 @@ By Dave Brondsema''', text_body)
         c.lcid_cache = {}  # else it'll be a mock
         lcd_map = self.repo.commit('HEAD').tree.ls()
         self.assertEqual(lcd_map, [{
-            'href': u'README',
+            'href': 'README',
             'kind': 'BLOB',
             'last_commit': {
-                    'author': u'Rick Copeland',
-                'author_email': u'rcopeland@geek.net',
+                    'author': 'Rick Copeland',
+                'author_email': 'rcopeland@geek.net',
                 'author_url': None,
                 'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                'href': u'/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
-                'shortlink': u'[1e146e]',
-                'summary': u'Change README'},
-            'name': u'README'}])
+                'href': '/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                'shortlink': '[1e146e]',
+                'summary': 'Change README'},
+            'name': 'README'}])
 
     def test_ls_with_prev(self):
         c.lcid_cache = {}  # else it'll be a mock
@@ -654,46 +655,46 @@ By Dave Brondsema''', text_body)
         payload = sender.get_payload(commit_ids=cids, ref='refs/heads/zz')
         expected_payload = {
             'size': 2,
-            'ref': u'refs/heads/zz',
-            'after': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-            'before': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+            'ref': 'refs/heads/zz',
+            'after': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+            'before': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
             'commits': [{
-                'id': u'5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-                'url': u'http://localhost/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/',
+                'id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
+                'url': 'http://localhost/p/test/src-git/ci/5c47243c8e424136fd5cdd18cd94d34c66d1955c/',
                 'timestamp': datetime.datetime(2013, 3, 28, 18, 54, 16),
-                'message': u'Not repo root',
-                'author': {'name': u'Cory Johns',
-                           'email': u'cjohns@slashdotmedia.com',
+                'message': 'Not repo root',
+                'author': {'name': 'Cory Johns',
+                           'email': 'cjohns@slashdotmedia.com',
                            'username': 'cory'},
-                'committer': {'name': u'Cory Johns',
-                              'email': u'cjohns@slashdotmedia.com',
+                'committer': {'name': 'Cory Johns',
+                              'email': 'cjohns@slashdotmedia.com',
                               'username': 'cory'},
-                'added': [u'bad'],
+                'added': ['bad'],
                 'removed': [],
                 'modified': [],
                 'copied': [],
                 'renamed': [],
             }, {
-                'id': u'1e146e67985dcd71c74de79613719bef7bddca4a',
-                'url': u'http://localhost/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                'id': '1e146e67985dcd71c74de79613719bef7bddca4a',
+                'url': 'http://localhost/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
                 'timestamp': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                'message': u'Change README',
-                'author': {'name': u'Rick Copeland',
-                           'email': u'rcopeland@geek.net',
+                'message': 'Change README',
+                'author': {'name': 'Rick Copeland',
+                           'email': 'rcopeland@geek.net',
                            'username': 'rick'},
-                'committer': {'name': u'Rick Copeland',
-                              'email': u'rcopeland@geek.net',
+                'committer': {'name': 'Rick Copeland',
+                              'email': 'rcopeland@geek.net',
                               'username': 'rick'},
                 'added': [],
                 'removed': [],
-                'modified': [u'README'],
+                'modified': ['README'],
                 'copied': [],
                 'renamed': [],
             }],
             'repository': {
-                'name': u'Git',
-                'full_name': u'/p/test/src-git/',
-                'url': u'http://localhost/p/test/src-git/',
+                'name': 'Git',
+                'full_name': '/p/test/src-git/',
+                'url': 'http://localhost/p/test/src-git/',
             },
         }
         assert_equals(payload, expected_payload)
@@ -746,8 +747,8 @@ By Dave Brondsema''', text_body)
             tmp_repo.git.config.call_args_list,
             [mock.call('user.name', 'Test Admin'),
              mock.call('user.email', 'allura@localhost')])
-        msg = u'Merge downstream-repo-url branch source-branch into target-branch'
-        msg += u'\n\nhttp://localhost/merge-request/1/'
+        msg = 'Merge downstream-repo-url branch source-branch into target-branch'
+        msg += '\n\nhttp://localhost/merge-request/1/'
         tmp_repo.git.merge.assert_called_once_with('cid', '-m', msg)
         tmp_repo.git.push.assert_called_once_with('origin', 'target-branch')
         shutil.rmtree.assert_called_once_with(
@@ -787,7 +788,7 @@ By Dave Brondsema''', text_body)
             'removed': [],
             'changed': [],
             'renamed': [],
-            'added': [u'with space.txt', u'привіт.txt'],
+            'added': ['with space.txt', 'привіт.txt'],
             'copied': [],
             'total': 2,
         }
@@ -799,7 +800,7 @@ By Dave Brondsema''', text_body)
             'removed': [],
             'copied': [],
             'renamed': [],
-            'changed': [u'привіт.txt'],
+            'changed': ['привіт.txt'],
             'total': 1,
         }
         assert_equals(diffs, expected)
@@ -807,7 +808,7 @@ By Dave Brondsema''', text_body)
         # initial commit is special, but must work too
         diffs = repo.paged_diffs('afaa6d93eb5661fb04f8e10e9ba1039b7441a6c7')
         expected = {
-            'added': [u'README.md'],
+            'added': ['README.md'],
             'removed': [],
             'changed': [],
             'copied': [],
@@ -819,7 +820,7 @@ By Dave Brondsema''', text_body)
         # pagination
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=0, end=1)
         expected = {
-            'added': [u'with space.txt'],
+            'added': ['with space.txt'],
             'removed': [],
             'copied': [],
             'renamed': [],
@@ -829,7 +830,7 @@ By Dave Brondsema''', text_body)
         assert_equals(diffs, expected)
         diffs = repo.paged_diffs('407950e8fba4dbc108ffbce0128ed1085c52cfd7', start=1, end=2)
         expected = {
-            'added': [u'привіт.txt'],
+            'added': ['привіт.txt'],
             'removed': [],
             'copied': [],
             'renamed': [],
@@ -839,18 +840,18 @@ By Dave Brondsema''', text_body)
         assert_equals(diffs, expected)
         diffs = repo.paged_diffs('346c52c1dddc729e2c2711f809336401f0ff925e')  # Test copy
         expected = {
-            'added': [u'README.copy'],
+            'added': ['README.copy'],
             'removed': [],
             'copied': [],
             'renamed': [],
-            'changed': [u'README'],
+            'changed': ['README'],
             'total': 2,
         }
         assert_equals(diffs, expected)
         diffs = repo.paged_diffs('3cb2bbcd7997f89060a14fe8b1a363f01883087f')  # Test rename
         expected = {
-            'added': [u'README'],
-            'removed': [u'README-copy.md'],
+            'added': ['README'],
+            'removed': ['README-copy.md'],
             'copied': [],
             'renamed': [],
             'changed': [],
@@ -863,7 +864,7 @@ By Dave Brondsema''', text_body)
             'removed': [],
             'copied': [],
             'renamed': [],
-            'changed': [u'README.copy'],
+            'changed': ['README.copy'],
             'total': 1,
         }
         assert_equals(diffs, expected)
@@ -889,9 +890,9 @@ By Dave Brondsema''', text_body)
         expected = {
             'added': [],
             'removed': [],
-            'copied': [{'new': u'README.copy', 'old': u'README', 'ratio': 1.0}],
+            'copied': [{'new': 'README.copy', 'old': 'README', 'ratio': 1.0}],
             'renamed': [],
-            'changed': [u'README'],
+            'changed': ['README'],
             'total': 2,
         }
         assert_equals(diffs, expected)
@@ -900,7 +901,7 @@ By Dave Brondsema''', text_body)
             'added': [],
             'removed': [],
             'copied': [],
-            'renamed': [{'new': u'README', 'old': u'README-copy.md', 'ratio': 1.0}],
+            'renamed': [{'new': 'README', 'old': 'README-copy.md', 'ratio': 1.0}],
             'changed': [],
             'total': 1,
         }
@@ -915,14 +916,14 @@ By Dave Brondsema''', text_body)
         expected = [
             {'authored': {
                 'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
-                'email': u'cjohns@slashdotmedia.com',
-                'name': u'Cory Johns'},
+                'email': 'cjohns@slashdotmedia.com',
+                'name': 'Cory Johns'},
              'committed': {
                  'date': datetime.datetime(2013, 3, 28, 18, 54, 16),
-                 'email': u'cjohns@slashdotmedia.com',
-                 'name': u'Cory Johns'},
+                 'email': 'cjohns@slashdotmedia.com',
+                 'name': 'Cory Johns'},
              'id': '5c47243c8e424136fd5cdd18cd94d34c66d1955c',
-             'message': u'Not repo root\n',
+             'message': 'Not repo root\n',
              'parents': ['1e146e67985dcd71c74de79613719bef7bddca4a'],
              'refs': ['zz'],
              'rename_details': {},

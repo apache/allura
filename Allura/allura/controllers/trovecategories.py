@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 import re
 from collections import OrderedDict
 
@@ -139,7 +140,7 @@ class TroveCategoryController(BaseController):
         if oldcat:
             raise TroveAdminException(
                 ('A category with shortname "%s" already exists (%s).  Try a different, unique shortname' % (shortname, oldcat.fullpath), "error"),
-                u'?categoryname={}&shortname={}'.format(name, shortname),
+                '?categoryname={}&shortname={}'.format(name, shortname),
                 upper
             )
         else:
@@ -170,9 +171,9 @@ class TroveCategoryController(BaseController):
         flash(*flash_args)
 
         if upper:
-            redirect(u'/categories/{}/{}'.format(upper.trove_cat_id, redir_params))
+            redirect('/categories/{}/{}'.format(upper.trove_cat_id, redir_params))
         else:
-            redirect(u'/categories/{}'.format(redir_params))
+            redirect('/categories/{}'.format(redir_params))
 
     @expose()
     @require_post()

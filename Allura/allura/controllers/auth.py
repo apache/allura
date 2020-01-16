@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 import os
 from datetime import datetime, timedelta
@@ -676,7 +677,7 @@ class PreferencesController(BaseController):
             user=c.user,
             config=config,
         ))
-        send_system_mail_to_user(c.user, u'Password Changed', email_body)
+        send_system_mail_to_user(c.user, 'Password Changed', email_body)
         redirect('.')
 
     @expose()
@@ -775,7 +776,7 @@ class PreferencesController(BaseController):
                 user=c.user,
                 config=config,
             ))
-            send_system_mail_to_user(c.user, u'Two-Factor Authentication Enabled', email_body)
+            send_system_mail_to_user(c.user, 'Two-Factor Authentication Enabled', email_body)
             redirect('/auth/preferences/multifactor_recovery')
 
     @expose()
@@ -797,7 +798,7 @@ class PreferencesController(BaseController):
             user=c.user,
             config=config,
         ))
-        send_system_mail_to_user(c.user, u'Two-Factor Authentication Disabled', email_body)
+        send_system_mail_to_user(c.user, 'Two-Factor Authentication Disabled', email_body)
         redirect('.')
 
     @expose()
@@ -810,7 +811,7 @@ class PreferencesController(BaseController):
             user=c.user,
             config=config,
         ))
-        send_system_mail_to_user(c.user, u'Two-Factor Authentication Apps', email_body)
+        send_system_mail_to_user(c.user, 'Two-Factor Authentication Apps', email_body)
 
     @expose('jinja:allura:templates/user_recovery_codes.html')
     @reconfirm_auth
@@ -850,7 +851,7 @@ class PreferencesController(BaseController):
             config=config,
         ))
         h.auditlog_user('Regenerated multifactor recovery codes')
-        send_system_mail_to_user(c.user, u'Two-Factor Recovery Codes Regenerated', email_body)
+        send_system_mail_to_user(c.user, 'Two-Factor Recovery Codes Regenerated', email_body)
         tg.flash('Your recovery codes have been regenerated.  Save the new codes!')
         redirect('/auth/preferences/multifactor_recovery')
 

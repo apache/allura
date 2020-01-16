@@ -18,6 +18,7 @@
 '''IRC Chatbot Plugin
 '''
 #-*- python -*-
+from __future__ import unicode_literals
 import logging
 from datetime import date, time, datetime, timedelta
 

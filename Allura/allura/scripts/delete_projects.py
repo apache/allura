@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import argparse
 import logging
 
@@ -43,7 +44,7 @@ class DeleteProjects(ScriptTask):
                     user = proj.user_project_of
                     if user:
                         auth_provider.disable_user(user, audit=False)
-                        msg = u'Account disabled because user-project was specified for deletion. Reason: {}'.format(
+                        msg = 'Account disabled because user-project was specified for deletion. Reason: {}'.format(
                             options.reason)
                         log_entry = h.auditlog_user(msg, user=user)
                         session(log_entry).flush(log_entry)

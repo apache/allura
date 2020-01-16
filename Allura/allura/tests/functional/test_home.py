@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import json
 import re
 import os
@@ -61,7 +62,7 @@ class TestProjectHome(TestController):
                                }])
                 break
         else:
-            raise AssertionError(u'Did not find sub1 subproject in menu results: {}'.format(r.json['menu']))
+            raise AssertionError('Did not find sub1 subproject in menu results: {}'.format(r.json['menu']))
         for m in r.json['menu']:
             if m['mount_point'] == 'wiki':
                 assert_in({'className': 'admin_modal',
@@ -78,7 +79,7 @@ class TestProjectHome(TestController):
                            }, m['admin_options'])
                 break
         else:
-            raise AssertionError(u'Did not find wiki in menu results: {}'.format(r.json['menu']))
+            raise AssertionError('Did not find wiki in menu results: {}'.format(r.json['menu']))
 
     @td.with_wiki
     def test_project_group_nav(self):
@@ -92,7 +93,7 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wiki_group = menu[-2]
         wikis = wiki_group.pop('children')
-        assert_equal({'url': '/p/test/_list/wiki', 'name': u'Wiki \u25be', 'mount_point': None,
+        assert_equal({'url': '/p/test/_list/wiki', 'name': 'Wiki \u25be', 'mount_point': None,
                       'icon': 'tool-wiki', 'tool_name': 'wiki', 'is_anchored': False}, wiki_group)
         assert_equal(len(wikis), 2)
         assert_in({'url': '/p/test/wiki/', 'name': 'Wiki', 'mount_point': 'wiki',
@@ -187,8 +188,8 @@ class TestProjectHome(TestController):
         r = self.app.get('/p/test/users', status=200)
         j = json.loads(r.body)
         expected = [{
-            'value': u'test-admin',
-            'label': u'Test Admin (test-admin)'
+            'value': 'test-admin',
+            'label': 'Test Admin (test-admin)'
         }]
         assert_equal(j['options'], expected)
 

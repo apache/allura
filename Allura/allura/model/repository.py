@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import unicode_literals
 import json
 import os
 import stat
@@ -592,14 +593,14 @@ class Repository(Artifact, ActivityObject):
 
     @property
     def email_address(self):
-        return u'noreply@%s%s' % (self.email_domain, config.common_suffix)
+        return 'noreply@%s%s' % (self.email_domain, config.common_suffix)
 
     def index(self):
         result = Artifact.index(self)
         result.update(
             name_s=self.name,
             type_s=self.type_s,
-            title=u'{} {} repository'.format(self.project.name, self.app.tool_label))
+            title='{} {} repository'.format(self.project.name, self.app.tool_label))
         return result
 
     @property
@@ -892,7 +893,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
     @property
     def email_subject(self):
-        return u'Merge request: ' + self.summary
+        return 'Merge request: ' + self.summary
 
     def merge_allowed(self, user):
         """
@@ -1287,12 +1288,12 @@ class Commit(RepoObject, ActivityObject):
             'author': {
                 'name': self.authored.name,
                 'email': self.authored.email,
-                'username': self.authored_user.username if self.authored_user else u'',
+                'username': self.authored_user.username if self.authored_user else '',
             },
             'committer': {
                 'name': self.committed.name,
                 'email': self.committed.email,
-                'username': self.committed_user.username if self.committed_user else u'',
+                'username': self.committed_user.username if self.committed_user else '',
             },
             'added': self.diffs.added,
             'removed': self.diffs.removed,

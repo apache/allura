@@ -16,6 +16,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 import logging
 from calendar import timegm
 from collections import Counter, OrderedDict
@@ -155,7 +156,7 @@ class TroveCategory(MappedClass):
     @property
     def fullpath_within_type(self):
         'remove first section of full path, and use nicer separator'
-        return u' » '.join(self.fullpath.split(' :: ')[1:])
+        return ' » '.join(self.fullpath.split(' :: ')[1:])
 
     def __json__(self):
         return dict(
@@ -684,7 +685,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 if tool_name not in grouped_nav:
                     child = deepcopy(e)
                     # change label to be the tool name (type)
-                    e.label = g.entry_points['tool'][tool_name].tool_label + u' \u25be'
+                    e.label = g.entry_points['tool'][tool_name].tool_label + ' \u25be'
                     # add tool url to list of urls that will match this nav entry
                     # have to do this before changing the url to the list page
                     e.matching_urls.append(e.url)
@@ -782,7 +783,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         try:
             return opt.validate(value)
         except fe.Invalid as e:
-            raise exceptions.ToolError(u'{}: {}'.format(opt.name, str(e)))
+            raise exceptions.ToolError('{}: {}'.format(opt.name, str(e)))
 
     def last_ordinal_value(self):
         last_menu_item = self.ordered_mounts(include_hidden=True)[-1]

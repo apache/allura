@@ -122,6 +122,7 @@ The positioners are:
 **TODO:** Support multiple partial themes
 
 """
+from __future__ import unicode_literals
 import pkg_resources
 import os
 

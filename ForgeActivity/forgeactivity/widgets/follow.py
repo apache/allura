@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
 from tg import tmpl_context as c
 from formencode import validators as fev
 import ew as ew_core
@@ -50,7 +51,7 @@ class FollowToggle(ew.SimpleForm):
 
     def success_message(self, following):
         context = self.prepare_context({})
-        return u'You are {state} {action}ing {thing}.'.format(
+        return 'You are {state} {action}ing {thing}.'.format(
             state='now' if following else 'no longer',
             action=context['action_label'],
             thing=context['thing'],
