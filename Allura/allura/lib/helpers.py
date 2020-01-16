@@ -164,14 +164,14 @@ def monkeypatch(*objs):
     return patchem
 
 
-def urlquote(url, safe="/"):
+def urlquote(url, safe=b"/"):
     try:
         return urllib.quote(str(url), safe=safe)
     except UnicodeEncodeError:
         return urllib.quote(url.encode('utf-8'), safe=safe)
 
 
-def urlquoteplus(url, safe=""):
+def urlquoteplus(url, safe=b""):
     try:
         return urllib.quote_plus(str(url), safe=safe)
     except UnicodeEncodeError:
