@@ -928,7 +928,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/1/', dict(page=1))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
-                      upload_files=[('file_info', 'test.txt', 'HiThere!')])
+                      upload_files=[('file_info', 'test.txt', b'HiThere!')])
         r = self.app.get('/bugs/1/', dict(page=1))
         assert '<i class="fa fa-trash-o" aria-hidden="true"></i>' in r
         r.forms[5].submit()
@@ -2370,7 +2370,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1/')
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'attach',
-                          upload_files=[('file_info', 'test.txt', 'test')])
+                          upload_files=[('file_info', 'test.txt', b'test')])
         # move ticket
         p = M.Project.query.get(shortname='test2')
         bugs2 = p.app_instance('bugs2')
@@ -2444,7 +2444,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/1/', dict(page=1))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
-                      upload_files=[('file_info', 'test.txt', 'test attach')])
+                      upload_files=[('file_info', 'test.txt', b'test attach')])
         r = self.app.get('/p/test/bugs/1/')
         discussion_url = r.html.findAll('form')[-1]['action'][:-4]
         r = self.app.get('/rest/p/test/bugs/1/')

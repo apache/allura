@@ -37,7 +37,7 @@ class TestTracImportController(TestController):
         form['trac_url'] = 'http://example.com/trac'
         form['project_name'] = 'My Project'
         form['project_shortname'] = 'my-project'
-        form['user_map'] = '', ''
+        form['user_map'] = ('', b'')
 
         with patch('forgeimporters.trac.requests.head') as mock_head:
             mock_head.return_value.status_code = 200  # so our 'trac_url' above is deemed as an okay URL
