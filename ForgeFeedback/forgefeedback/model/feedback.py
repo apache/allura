@@ -41,7 +41,7 @@ log = logging.getLogger(__name__)
 class Feedback(VersionedArtifact, ActivityObject):
 
     class __mongometa__:
-        name = 'feedback'
+        name = str('feedback')
         indexes = [
             ('project_id', 'reported_by_id'),
         ]

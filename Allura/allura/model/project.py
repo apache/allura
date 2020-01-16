@@ -86,7 +86,7 @@ class ProjectCategory(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'project_category'
+        name = str('project_category')
 
     _id = FieldProperty(S.ObjectId)
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
@@ -119,7 +119,7 @@ class TroveCategory(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'trove_category'
+        name = str('trove_category')
         extensions = [TroveCategoryMapperExtension]
         indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
 
@@ -192,7 +192,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'project'
+        name = str('project')
         indexes = [
             'name',
             'neighborhood_id',
@@ -1301,7 +1301,7 @@ class AppConfig(MappedClass, ActivityObject):
 
     class __mongometa__:
         session = project_orm_session
-        name = 'config'
+        name = str('config')
         indexes = [
             'project_id',
             'options.import_id',

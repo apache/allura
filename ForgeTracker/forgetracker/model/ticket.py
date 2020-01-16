@@ -95,7 +95,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = 'globals'
+        name = str('globals')
         session = project_orm_session
         indexes = ['app_config_id']
 
@@ -540,7 +540,7 @@ class Globals(MappedClass):
 class TicketHistory(Snapshot):
 
     class __mongometa__:
-        name = 'ticket_history'
+        name = str('ticket_history')
 
     def original(self):
         return Ticket.query.get(_id=self.artifact_id)
@@ -586,7 +586,7 @@ class TicketHistory(Snapshot):
 class Bin(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = 'bin'
+        name = str('bin')
 
     type_s = 'Bin'
     _id = FieldProperty(schema.ObjectId)
@@ -628,7 +628,7 @@ class Bin(Artifact, ActivityObject):
 class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     class __mongometa__:
-        name = 'ticket'
+        name = str('ticket')
         history_class = TicketHistory
         indexes = [
             'ticket_num',
@@ -1368,7 +1368,7 @@ class TicketAttachment(BaseAttachment):
     ArtifactType = Ticket
 
     class __mongometa__:
-        polymorphic_identity = 'TicketAttachment'
+        polymorphic_identity = str('TicketAttachment')
     attachment_type = FieldProperty(str, if_missing='TicketAttachment')
 
 
@@ -1376,7 +1376,7 @@ class MovedTicket(MovedArtifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = 'moved_ticket'
+        name = str('moved_ticket')
         indexes = [
             ('app_config_id', 'ticket_num'),
         ]

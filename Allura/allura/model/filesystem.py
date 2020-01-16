@@ -47,7 +47,7 @@ class File(MappedClass):
 
     class __mongometa__:
         session = project_orm_session
-        name = 'fs'
+        name = str('fs')
         indexes = ['filename']
 
     _id = FieldProperty(schema.ObjectId)

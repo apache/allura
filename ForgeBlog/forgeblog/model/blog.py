@@ -43,7 +43,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = 'blog-globals'
+        name = str('blog-globals')
         session = M.project_orm_session
         indexes = ['app_config_id']
 
@@ -57,7 +57,7 @@ class Globals(MappedClass):
 class BlogPostSnapshot(M.Snapshot):
 
     class __mongometa__:
-        name = 'blog_post_snapshot'
+        name = str('blog_post_snapshot')
     type_s = 'Blog Post Snapshot'
 
     def original(self):
@@ -102,7 +102,7 @@ class BlogPostSnapshot(M.Snapshot):
 class BlogPost(M.VersionedArtifact, ActivityObject):
 
     class __mongometa__:
-        name = 'blog_post'
+        name = str('blog_post')
         history_class = BlogPostSnapshot
         unique_indexes = [('app_config_id', 'slug')]
         indexes = [
@@ -334,7 +334,7 @@ class BlogAttachment(M.BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = 'BlogAttachment'
+        polymorphic_identity = str('BlogAttachment')
     attachment_type = FieldProperty(str, if_missing='BlogAttachment')
 
 

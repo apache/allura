@@ -68,7 +68,7 @@ class EmailAddress(MappedClass):
     re_format = re.compile('^.*\s+<(.*)>\s*$')
 
     class __mongometa__:
-        name = 'email_address'
+        name = str('email_address')
         session = main_orm_session
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
@@ -176,7 +176,7 @@ please visit the following URL:
 
 class AuthGlobals(MappedClass):
     class __mongometa__:
-        name = 'auth_globals'
+        name = str('auth_globals')
         session = main_orm_session
 
     _id = FieldProperty(int)
@@ -225,7 +225,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
     class __mongometa__:
-        name = 'user'
+        name = str('user')
         session = main_orm_session
         indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
@@ -818,7 +818,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
-        name = 'user'
+        name = str('user')
         unique_indexes = [('user_id', 'project_id', 'name')]
 
 
@@ -836,7 +836,7 @@ class ProjectRole(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = 'project_role'
+        name = str('project_role')
         unique_indexes = [('user_id', 'project_id', 'name')]
         indexes = [
             ('user_id',),
@@ -968,7 +968,7 @@ class ProjectRole(MappedClass):
 
 
 audit_log = collection(
-    'audit_log', main_doc_session,
+    str('audit_log'), main_doc_session,
     Field('_id', S.ObjectId()),
     Field('project_id', S.ObjectId, if_missing=None,
           index=True),  # main view of audit log queries by project_id
@@ -1039,7 +1039,7 @@ class UserLoginDetails(MappedClass):
     """
 
     class __mongometa__:
-        name = 'user_login_details'
+        name = str('user_login_details')
         session = main_explicitflush_orm_session
         indexes = ['user_id']
         unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail

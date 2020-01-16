@@ -46,7 +46,7 @@ from forgewiki import model as WM
 class Checkmessage(M.Message):
 
     class __mongometa__:
-        name = 'checkmessage'
+        name = str('checkmessage')
 
     def url(self):
         return ''

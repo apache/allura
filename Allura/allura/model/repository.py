@@ -344,7 +344,7 @@ class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
 
     class __mongometa__:
-        name = 'generic-repository'
+        name = str('generic-repository')
         indexes = ['upstream_repo.name']
     _impl = None
     repo_id = 'repo'
@@ -794,7 +794,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     statuses = ['open', 'merged', 'rejected']
 
     class __mongometa__:
-        name = 'merge-request'
+        name = str('merge-request')
         indexes = ['commit_id', 'creator_id']
         unique_indexes = [('app_config_id', 'request_number')]
     type_s = 'MergeRequest'
@@ -989,7 +989,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 # One of these for each commit in the physical repo on disk. The _id is the
 # hexsha of the commit (for Git and Hg).
 CommitDoc = collection(
-    'repo_ci', main_doc_session,
+    str('repo_ci'), main_doc_session,
     Field('_id', str),
     Field('tree_id', str),
     Field('committed', SUser),
@@ -1001,7 +1001,7 @@ CommitDoc = collection(
 
 # Basic tree information
 TreeDoc = collection(
-    'repo_tree', main_doc_session,
+    str('repo_tree'), main_doc_session,
     Field('_id', str),
     Field('tree_ids', [dict(name=str, id=str)]),
     Field('blob_ids', [dict(name=str, id=str)]),
@@ -1009,7 +1009,7 @@ TreeDoc = collection(
 
 # Information about the last commit to touch a tree
 LastCommitDoc = collection(
-    'repo_last_commit', main_doc_session,
+    str('repo_last_commit'), main_doc_session,
     Field('_id', S.ObjectId()),
     Field('commit_id', str),
     Field('path', str),
