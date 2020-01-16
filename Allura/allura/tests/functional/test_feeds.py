@@ -20,6 +20,7 @@ from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController
 from allura.tests import decorators as td
+from allura.lib import helpers as h
 
 
 class TestFeeds(TestController):
@@ -91,7 +92,7 @@ class TestFeeds(TestController):
             summary='This is a new ticket',
             status='unread',
             milestone='',
-            description='This is another description'), extra_environ=dict(username='root'))
+            description='This is another description'), extra_environ=dict(username=str('root')))
         r = self.app.get('/bugs/1/feed.atom')
         assert '=&amp;gt' in r
         assert '\n+' in r

@@ -479,7 +479,7 @@ class TestRootController(_TestCase):
         assert_in('refresh queued', r)
         assert_equal(1, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
 
-        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': '/p/test/src-git/'}, status=302)
+        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': str('/p/test/src-git/')}, status=302)
         assert_in('is being refreshed', self.webflash(r))
         assert_equal(2, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
 
@@ -634,7 +634,7 @@ class TestFork(_TestCase):
 
     def test_merge_request_invisible_to_non_admin(self):
         assert 'Request Merge' not in self._fork_page(
-            extra_environ=dict(username='test-user'))
+            extra_environ=dict(username=str('test-user')))
 
     def test_merge_action_available_to_admin(self):
         self.app.get('/p/test2/code/request_merge')
@@ -642,7 +642,7 @@ class TestFork(_TestCase):
     def test_merge_action_unavailable_to_non_admin(self):
         self.app.get(
             '/p/test2/code/request_merge',
-            status=403, extra_environ=dict(username='test-user'))
+            status=403, extra_environ=dict(username=str('test-user')))
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
@@ -798,7 +798,7 @@ class TestFork(_TestCase):
                               'summary': 'changed summary',
                               'description': 'changed description'
                           },
-                          extra_environ=dict(username='*anonymous'),
+                          extra_environ=dict(username=str('*anonymous')),
                           status=302,
                           ).follow()
         assert 'Login' in r
@@ -869,7 +869,7 @@ class TestFork(_TestCase):
             '/p/test/src-git/merge-requests/1/update_markdown',
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username='*anonymous'))
+            extra_environ=dict(username=str('*anonymous')))
         assert response.json['status'] == 'no_permission'
 
     @patch.object(GM.Repository, 'merge_request_commits', autospec=True)

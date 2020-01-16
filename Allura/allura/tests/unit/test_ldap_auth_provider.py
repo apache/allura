@@ -76,7 +76,7 @@ class TestLdapAuthenticationProvider(object):
             'password': 'test-password',
         }
         self.provider.request.method = 'POST'
-        self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()])
+        self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()]).encode('utf-8')
         ldap.dn.escape_dn_chars = lambda x: x
 
         self.provider._login()
@@ -95,7 +95,7 @@ class TestLdapAuthenticationProvider(object):
             'password': 'test-password',
         }
         self.provider.request.method = 'POST'
-        self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()])
+        self.provider.request.body = '&'.join(['%s=%s' % (k,v) for k,v in params.iteritems()]).encode('utf-8')
         ldap.dn.escape_dn_chars = lambda x: x
         dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
         conn = ldap.initialize.return_value

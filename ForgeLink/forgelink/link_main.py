@@ -129,6 +129,8 @@ class RootController(BaseController):
         path = "/".join(remainder)
         url = c.app.config.options.get('url')
         if url:
+            # h.urlquote is better than utf8 encoding for Location headers, but in this case the url can be a full
+            # http://... url and we don't want to urlquote/urlencode that part
             redirect(url + h.really_unicode(path).encode('utf-8'))
         return dict()
 

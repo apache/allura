@@ -148,7 +148,7 @@ class TestFile(TestCase):
             assert_equal(['test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert_equal(response.headers['Content-Disposition'],
-                         'attachment;filename="te s\xe0\xad\xae1.txt"')
+                         'attachment;filename="te%20s%E0%AD%AE1.txt"')
 
     def test_image(self):
         path = os.path.join(

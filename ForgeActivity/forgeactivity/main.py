@@ -152,8 +152,8 @@ class ForgeActivityController(BaseController):
     @expose()
     def feed(self, **kw):
         data = self._get_activities_data(**kw)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
+        response.headers['Content-Type'] = str('')
+        response.content_type = str('application/xml')
         d = {
             'title': 'Activity for %s' % data['followee'].activity_name,
             'link': h.absurl(self.app.url),
@@ -161,7 +161,7 @@ class ForgeActivityController(BaseController):
                 data['followee'].activity_name),
             'language': 'en',
         }
-        if request.environ['PATH_INFO'].endswith('.atom'):
+        if request.environ['PATH_INFO'].endswith(str('.atom')):
             feed = FG.Atom1Feed(**d)
         else:
             feed = FG.Rss201rev2Feed(**d)

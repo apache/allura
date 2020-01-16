@@ -182,10 +182,10 @@ class TestWebhookController(TestController):
     def test_access(self):
         self.app.get(self.url + '/repo-push/')
         self.app.get(self.url + '/repo-push/',
-                     extra_environ={'username': 'test-user'},
+                     extra_environ={'username': str('test-user')},
                      status=403)
         r = self.app.get(self.url + '/repo-push/',
-                         extra_environ={'username': '*anonymous'},
+                         extra_environ={'username': str('*anonymous')},
                          status=302)
         assert_equal(r.location,
                      'http://localhost/auth/'
@@ -451,7 +451,7 @@ class TestSendWebhookHelper(TestWebhookBase):
         response = Mock(
             status_code=500,
             text='that is why',
-            headers={'Content-Type': 'application/json'})
+            headers={str('Content-Type'): str('application/json')})
         assert_equal(
             self.h.log_msg('Error', response=response),
             "Error: repo-push http://httpbin.org/post /adobe/adobe-1/src/ 500 "

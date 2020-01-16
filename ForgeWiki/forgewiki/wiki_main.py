@@ -388,7 +388,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        redirect(h.really_unicode(c.app.root_page_name).encode('utf-8') + '/')
+        redirect(h.urlquote(h.really_unicode(c.app.root_page_name)+ '/'))
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -397,7 +397,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @expose()
     def new_page(self, title):
-        redirect(h.really_unicode(title).encode('utf-8') + '/')
+        redirect(h.urlquote(h.really_unicode(title) + '/'))
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/search.html')
@@ -674,7 +674,7 @@ class PageController(BaseController, FeedController):
         return dict(p1=p1, p2=p2, edits=result)
 
     @without_trailing_slash
-    @expose(content_type='text/plain')
+    @expose(content_type=str('text/plain'))
     def raw(self):
         if not self.page:
             raise exc.HTTPNotFound
@@ -756,8 +756,7 @@ class PageController(BaseController, FeedController):
             notification_tasks.send_usermentions_notification.post(self.page.index_id(), text, old_text)
         g.director.create_activity(c.user, activity_verb, self.page,
                                    related_nodes=[c.project], tags=['wiki'])
-        redirect('../' + h.really_unicode(self.page.title)
-                 .encode('utf-8') + ('/' if not name_conflict else '/edit'))
+        redirect('../' + h.urlquote(h.really_unicode(self.page.title)) + ('/' if not name_conflict else '/edit'))
 
     @without_trailing_slash
     @expose('json:')
@@ -927,9 +926,8 @@ class WikiAdminController(DefaultAdminController):
         flash('Home updated')
         mount_base = c.project.url() + \
             self.app.config.options.mount_point + '/'
-        url = h.really_unicode(mount_base).encode('utf-8') + \
-            h.really_unicode(new_home).encode('utf-8') + '/'
-        redirect(url)
+        url = h.really_unicode(mount_base) + h.really_unicode(new_home) + '/'
+        redirect(h.urlquote(url))
 
     @without_trailing_slash
     @expose()

@@ -40,21 +40,21 @@ class TestSiteAdmin(TestController):
 
     def test_access(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
-            username='test-user'), status=403)
+            username=str('test-user')), status=403)
 
         r = self.app.get('/nf/admin/', extra_environ=dict(
-            username='*anonymous'), status=302)
+            username=str('*anonymous')), status=302)
         r = r.follow()
         assert 'Login' in r
 
     def test_home(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         assert 'Site Admin Home' in r
 
     def test_stats(self):
         r = self.app.get('/nf/admin/stats/', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         assert 'Forge Site Admin' in r.html.find(
             'h2', {'class': 'dark title'}).contents[0]
         stats_table = r.html.find('table')
@@ -63,18 +63,18 @@ class TestSiteAdmin(TestController):
 
     def test_tickets_access(self):
         self.app.get('/nf/admin/api_tickets', extra_environ=dict(
-            username='test-user'), status=403)
+            username=str('test-user')), status=403)
 
     def test_new_projects_access(self):
         self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='test_user'), status=403)
+            username=str('test_user')), status=403)
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+            username=str('*anonymous')), status=302).follow()
         assert 'Login' in r
 
     def test_new_projects(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         headers = r.html.find('table').findAll('th')
         assert headers[1].contents[0] == 'Created'
         assert headers[2].contents[0] == 'Shortname'
@@ -87,18 +87,18 @@ class TestSiteAdmin(TestController):
     def test_new_projects_deleted_projects(self):
         '''Deleted projects should not be visible here'''
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         count = len(r.html.find('table').findAll('tr'))
         p = M.Project.query.get(shortname='test')
         p.deleted = True
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         assert_equal(len(r.html.find('table').findAll('tr')), count - 1)
 
     def test_new_projects_daterange_filtering(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         count = len(r.html.find('table').findAll('tr'))
         assert_equal(count, 7)
 
@@ -111,7 +111,7 @@ class TestSiteAdmin(TestController):
 
     def test_reclone_repo_access(self):
         r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+            username=str('*anonymous')), status=302).follow()
         assert 'Login' in r
 
     def test_reclone_repo(self):
@@ -124,7 +124,7 @@ class TestSiteAdmin(TestController):
 
     def test_task_list(self):
         r = self.app.get('/nf/admin/task_manager',
-                         extra_environ=dict(username='*anonymous'), status=302)
+                         extra_environ=dict(username=str('*anonymous')), status=302)
         import math
         M.MonQTask.post(math.ceil, (12.5,))
         r = self.app.get('/nf/admin/task_manager?page_num=1')
@@ -135,7 +135,7 @@ class TestSiteAdmin(TestController):
         task = M.MonQTask.post(math.ceil, (12.5,))
         url = '/nf/admin/task_manager/view/%s' % task._id
         r = self.app.get(
-            url, extra_environ=dict(username='*anonymous'), status=302)
+            url, extra_environ=dict(username=str('*anonymous')), status=302)
         r = self.app.get(url)
         assert 'math.ceil' in r, r
         assert 'ready' in r, r
@@ -185,9 +185,9 @@ class TestSiteAdminNotifications(TestController):
 
     def test_site_notifications_access(self):
         self.app.get('/nf/admin/site_notifications', extra_environ=dict(
-            username='test_user'), status=403)
+            username=str('test_user')), status=403)
         r = self.app.get('/nf/admin/site_notifications', extra_environ=dict(
-            username='*anonymous'), status=302).follow()
+            username=str('*anonymous')), status=302).follow()
         assert 'Login' in r
 
     def test_site_notifications(self):
@@ -201,7 +201,7 @@ class TestSiteAdminNotifications(TestController):
         assert M.notification.SiteNotification.query.find().count() == 1
 
         r = self.app.get('/nf/admin/site_notifications/', extra_environ=dict(
-            username='root'))
+            username=str('root')))
         table = r.html.find('table')
         headers = table.findAll('th')
         row = table.findAll('td')
@@ -496,7 +496,7 @@ class TestUserDetails(TestController):
     def test_add_audit_trail_entry_access(self):
         self.app.get('/nf/admin/user/add_audit_log_entry', status=404)  # GET is not allowed
         r = self.app.post('/nf/admin/user/add_audit_log_entry',
-                          extra_environ={'username': '*anonymous'},
+                          extra_environ={'username': str('*anonymous')},
                           status=302)
         assert_equal(r.location, 'http://localhost/auth/')
 
@@ -649,7 +649,7 @@ class TestUserDetails(TestController):
                 'new_addr.addr': 'test@example.com',
                 'new_addr.claim': 'Claim Address',
                 'primary_addr': 'test@example.com'},
-                extra_environ=dict(username='test-admin'))
+                extra_environ=dict(username=str('test-admin')))
         r = self.app.get('/nf/admin/user/test-user')
         assert_in('test@example.com', r)
         em = M.EmailAddress.get(email='test@example.com')
@@ -664,7 +664,7 @@ class TestUserDetails(TestController):
                 'new_addr.addr': 'test2@example.com',
                 'new_addr.claim': 'Claim Address',
                 'primary_addr': 'test@example.com'},
-                extra_environ=dict(username='test-admin'))
+                extra_environ=dict(username=str('test-admin')))
         r = self.app.get('/nf/admin/user/test-user')
         assert_in('test2@example.com', r)
         em = M.EmailAddress.get(email='test2@example.com')
@@ -678,7 +678,7 @@ class TestUserDetails(TestController):
                 'username': 'test-user',
                 'new_addr.addr': '',
                 'primary_addr': 'test2@example.com'},
-                extra_environ=dict(username='test-admin'))
+                extra_environ=dict(username=str('test-admin')))
         r = self.app.get('/nf/admin/user/test-user')
         user = M.User.query.get(username='test-user')
         assert_equal(user.get_pref('email_address'), 'test2@example.com')
@@ -693,7 +693,7 @@ class TestUserDetails(TestController):
                 'addr-3.delete': 'on',
                 'new_addr.addr': '',
                 'primary_addr': 'test2@example.com'},
-                extra_environ=dict(username='test-admin'))
+                extra_environ=dict(username=str('test-admin')))
         r = self.app.get('/nf/admin/user/test-user')
         user = M.User.query.get(username='test-user')
         # test@example.com set as primary since test2@example.com is deleted

@@ -55,7 +55,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_anon_read(self):
         r = self.app.get('/u/test-user-1',
-                extra_environ={'username': '*anonymous'}).follow().follow()
+                extra_environ={'username': str('*anonymous')}).follow().follow()
         assert r.html.find('div', 'profile-section tools').find('a',
                 dict(href='/u/test-user-1/activity/')), \
                         'No Activity tool in top nav'
@@ -165,7 +165,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_background_aggregation(self):
         self.app.post('/u/test-admin/activity/follow', {'follow': 'true'},
-                      extra_environ=dict(username='test-user-1'))
+                      extra_environ=dict(username=str('test-user-1')))
         # new ticket, creates activity
         d = {'ticket_form.summary': 'New Ticket'}
         self.app.post('/bugs/save_ticket', params=d)
@@ -429,7 +429,7 @@ class TestActivityController(TestController):
     def test_delete_item_gone(self):
         self.app.post('/u/test-user-1/activity/delete_item',
                       {'activity_id': str(ObjectId())},
-                      extra_environ={'username': 'root'},  # nbhd admin
+                      extra_environ={'username': str('root')},  # nbhd admin
                       status=410)
 
     @td.with_tool('u/test-user-1', 'activity')
@@ -475,7 +475,7 @@ class TestActivityController(TestController):
 
         self.app.post('/u/test-user-1/activity/delete_item',
                       {'activity_id': activity_id},
-                      extra_environ={'username': 'root'},  # nbhd admin
+                      extra_environ={'username': str('root')},  # nbhd admin
                       status=200)
         ThreadLocalODMSession.flush_all()
 

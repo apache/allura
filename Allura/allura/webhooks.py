@@ -235,7 +235,7 @@ class WebhookRestController(BaseController):
     @expose('json:')
     @require_post()
     def index(self, **kw):
-        response.content_type = 'application/json'
+        response.content_type = str('application/json')
         try:
             params = {'secret': kw.pop('secret', ''),
                       'url': kw.pop('url', None)}

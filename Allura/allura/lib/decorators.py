@@ -110,7 +110,7 @@ class require_post(object):
             if request.method != 'POST':
                 if self.redir is not None:
                     redirect(self.redir)
-                raise exc.HTTPMethodNotAllowed(headers={'Allow': 'POST'})
+                raise exc.HTTPMethodNotAllowed(headers={str('Allow'): str('POST')})
         before_validate(check_method)(func)
         return func
 

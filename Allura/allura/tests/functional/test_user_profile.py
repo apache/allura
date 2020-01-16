@@ -150,7 +150,7 @@ class TestUserProfile(TestController):
     @td.with_user_project('test-user')
     def test_send_message_for_anonymous(self):
         r = self.app.get('/u/test-user/profile/send_message',
-                         extra_environ={'username': '*anonymous'},
+                         extra_environ={'username': str('*anonymous')},
                          status=302)
         assert 'You must be logged in to send user messages.' in self.webflash(
             r)
@@ -159,7 +159,7 @@ class TestUserProfile(TestController):
                           params={'subject': 'test subject',
                                   'message': 'test message',
                                   'cc': 'on'},
-                          extra_environ={'username': '*anonymous'},
+                          extra_environ={'username': str('*anonymous')},
                           status=302)
         assert 'You must be logged in to send user messages.' in self.webflash(
             r)

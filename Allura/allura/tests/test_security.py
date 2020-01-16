@@ -69,7 +69,7 @@ class TestSecurity(TestController):
                      status=200)
         # This should fail b/c test-user doesn't have the permission
         self.app.get('/security/test-user/needs_artifact_access_fail',
-                     extra_environ=dict(username='test-user'), status=403)
+                     extra_environ=dict(username=str('test-user')), status=403)
         # This should succeed b/c users with the 'admin' permission on a
         # project implicitly have all permissions to everything in the project
         self.app.get(

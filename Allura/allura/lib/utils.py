@@ -502,7 +502,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
         etag = '{0}?{1}'.format(filename, last_modified).encode('utf-8')
     if etag:
         etag_cache(etag)
-    tg.response.headers['Content-Type'] = ''
+    tg.response.headers['Content-Type'] = str('')
     tg.response.content_type = content_type.encode('utf-8')
     tg.response.cache_expires = cache_expires or asint(
         tg.config.get('files_expires_header_secs', 60 * 60))
@@ -514,15 +514,16 @@ def serve_file(fp, filename, content_type, last_modified=None,
     if 'Cache-Control' in tg.response.headers:
         del tg.response.headers['Cache-Control']
     if not embed:
+        from allura.lib import helpers as h
         tg.response.headers.add(
-            'Content-Disposition',
-            'attachment;filename="%s"' % filename.encode('utf-8'))
+            str('Content-Disposition'),
+            str('attachment;filename="%s"' % h.urlquote(filename)))
     # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension
     block_size = 4096
     if 'wsgi.file_wrapper' in tg.request.environ:
         return tg.request.environ['wsgi.file_wrapper'](fp, block_size)
     else:
-        return iter(lambda: fp.read(block_size), '')
+        return iter(lambda: fp.read(block_size), b'')
 
 
 class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):

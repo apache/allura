@@ -391,8 +391,8 @@ class ProjectRestController(object):
     @expose('json:')
     def index(self, **kw):
         if 'doap' in kw:
-            response.headers['Content-Type'] = ''
-            response.content_type = 'application/rdf+xml'
+            response.headers['Content-Type'] = str('')
+            response.content_type = str('application/rdf+xml')
             return '<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()
 

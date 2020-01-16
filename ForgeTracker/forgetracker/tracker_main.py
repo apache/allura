@@ -855,11 +855,11 @@ class RootController(BaseController, FeedController):
             q = query
         result = TM.Ticket.paged_search(
             c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
+        response.headers['Content-Type'] = str('')
+        response.content_type = str('application/xml')
         d = dict(title='Ticket search results', link=h.absurl(c.app.url),
                  description='You searched for %s' % q, language='en')
-        if request.environ['PATH_INFO'].endswith('.atom'):
+        if request.environ['PATH_INFO'].endswith(str('.atom')):
             feed = FG.Atom1Feed(**d)
         else:
             feed = FG.Rss201rev2Feed(**d)
