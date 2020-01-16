@@ -136,7 +136,7 @@ class TestTracTicketImportController(TestController, TestCase):
                       )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                           upload_files=[(
-                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                              'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )],
                           status=302)
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
@@ -163,7 +163,7 @@ class TestTracTicketImportController(TestController, TestCase):
                       )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                           upload_files=[(
-                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                              'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )],
                           status=302).follow()
         self.assertIn('Please wait and try again', r)
@@ -180,7 +180,7 @@ class TestTracTicketImportController(TestController, TestCase):
                       )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                           upload_files=[(
-                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                              'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )])
         self.assertEqual(import_tool.post.call_count, 0)
 

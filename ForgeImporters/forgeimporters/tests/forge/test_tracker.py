@@ -357,7 +357,7 @@ class TestForgeTrackerImportController(TestController, TestCase):
     def test_create(self, import_tool, sui):
         project = M.Project.query.get(shortname='test')
         params = {
-            'tickets_json': webtest.Upload('tickets.json', '{"key": "val"}'),
+            'tickets_json': webtest.Upload('tickets.json', b'{"key": "val"}'),
             'mount_label': 'mylabel',
             'mount_point': 'mymount',
         }
@@ -378,7 +378,7 @@ class TestForgeTrackerImportController(TestController, TestCase):
         project.set_tool_data('ForgeTrackerImporter', pending=1)
         ThreadLocalORMSession.flush_all()
         params = {
-            'tickets_json': webtest.Upload('tickets.json', '{"key": "val"}'),
+            'tickets_json': webtest.Upload('tickets.json', b'{"key": "val"}'),
             'mount_label': 'mylabel',
             'mount_point': 'mymount',
         }

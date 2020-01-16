@@ -433,7 +433,7 @@ class TestAttachment(TestDiscussBase):
 
     def test_attach(self):
         r = self.app.post(self.post_link + 'attach',
-                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+                          upload_files=[('file_info', 'test.txt', b'HiThere!')])
         r = self.app.get(self.thread_link)
         assert '<div class="attachment_holder">' in r
         alink = self.attach_link()
@@ -441,12 +441,12 @@ class TestAttachment(TestDiscussBase):
         assert r.content_type == 'text/plain'
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
-                          upload_files=[('file_info', 'test.o12', 'HiThere!')])
+                          upload_files=[('file_info', 'test.o12', b'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
 
     def test_attach_svg(self):
         r = self.app.post(self.post_link + 'attach',
-                          upload_files=[('file_info', 'test.svg', '<svg onclick="prompt(document.domain)"></svg>')])
+                          upload_files=[('file_info', 'test.svg', b'<svg onclick="prompt(document.domain)"></svg>')])
         alink = self.attach_link()
         r = self.app.get(alink)
         assert r.content_type == 'image/svg+xml'
@@ -455,7 +455,7 @@ class TestAttachment(TestDiscussBase):
     def test_attach_img(self):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'handtinyblack.gif',
-                                         'GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;')])
+                                         b'GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;')])
         alink = self.attach_link()
         r = self.app.get(alink)
         assert r.content_type == 'image/gif'
@@ -475,8 +475,8 @@ class TestAttachment(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'Reply'
         r = self.app.post(self.post_link + 'reply',
                           params=params,
-                          upload_files=[('file_info', 'test.txt', 'HiThere!'),
-                                        ('file_info', 'test2.txt', 'HiAgain!')])
+                          upload_files=[('file_info', 'test.txt', b'HiThere!'),
+                                        ('file_info', 'test2.txt', b'HiAgain!')])
         r = self.app.get(self.thread_link)
         assert "test.txt" in r
 

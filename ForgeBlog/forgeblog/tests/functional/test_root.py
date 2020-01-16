@@ -188,8 +188,8 @@ class Test(TestController):
 
     def test_post_attachments(self):
         # create
-        upload = ('attachment', 'nums.txt', '123412341234')
-        upload2 = ('attachment', 'more_nums.txt', '56789')
+        upload = ('attachment', 'nums.txt', b'123412341234')
+        upload2 = ('attachment', 'more_nums.txt', b'56789')
         self._post(extra_app_post_params=dict(upload_files=[upload, upload2]))
 
         # check it is listed
@@ -199,7 +199,7 @@ class Test(TestController):
 
         # edit
         slug = '/%s/my-post' % d
-        upload = ('attachment', 'letters.txt', 'abcdefghij')
+        upload = ('attachment', 'letters.txt', b'abcdefghij')
         self._post(slug=slug,
                    extra_app_post_params=dict(upload_files=[upload]))
 

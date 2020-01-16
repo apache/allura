@@ -263,13 +263,13 @@ class TestForumMessageHandling(TestController):
         r = self.app.get(thd_url + reply.slug + '/')
         # Check attachments
         r = self.app.post(url + 'attach',
-                          upload_files=[('file_info', 'test.txt', 'This is a textfile')])
+                          upload_files=[('file_info', 'test.txt', b'This is a textfile')])
         r = self.app.post(url + 'attach',
                           upload_files=[('file_info', 'test.asdfasdtxt',
-                                         'This is a textfile')])
+                                         b'This is a textfile')])
         r = self.app.post(url + 'attach',
-                          upload_files=[('file_info', 'test1.txt', 'This is a textfile'),
-                                        ('file_info', 'test2.txt', 'This is a textfile')])
+                          upload_files=[('file_info', 'test1.txt', b'This is a textfile'),
+                                        ('file_info', 'test2.txt', b'This is a textfile')])
         r = self.app.get(url)
         assert "test1.txt" in r
         assert "test2.txt" in r
