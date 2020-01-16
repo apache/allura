@@ -41,6 +41,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
+import six
 
 
 log = logging.getLogger(__name__)
@@ -200,7 +201,7 @@ class WebhookController(BaseController, AdminControllerMixin):
             raise exc.HTTPNotFound()
         c.form_values = {'url': kw.get('url') or wh.hook_url,
                          'secret': kw.get('secret') or wh.secret,
-                         'webhook': unicode(wh._id)}
+                         'webhook': six.text_type(wh._id)}
         return {'sender': self.sender,
                 'action': 'edit',
                 'form': form}
@@ -219,7 +220,7 @@ class WebhookRestController(BaseController):
         if error:
             _error = {}
             for k, v in error.iteritems():
-                _error[k] = unicode(v)
+                _error[k] = six.text_type(v)
             return _error
         error = getattr(e, 'msg', None)
         if not error:
@@ -297,7 +298,7 @@ class WebhookRestController(BaseController):
         try:
             params = {'secret': kw.pop('secret', old_secret),
                       'url': kw.pop('url', old_url),
-                      'webhook': unicode(webhook._id)}
+                      'webhook': six.text_type(webhook._id)}
             valid = form.to_python(params)
         except Exception as e:
             response.status_int = 400

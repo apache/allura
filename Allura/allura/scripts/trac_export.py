@@ -31,6 +31,7 @@ from itertools import islice
 from bs4 import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
+import six
 
 try:
     from forgeimporters.base import ProjectExtractor
@@ -172,7 +173,7 @@ class TracExport(object):
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
             c['date'] = self.trac2z_date(
                 comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
-            changes = unicode(comment.find('ul', 'changes') or '')
+            changes = six.text_type(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
             c['comment'] = html2text.html2text(changes + body)

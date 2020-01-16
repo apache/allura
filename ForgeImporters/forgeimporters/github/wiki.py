@@ -427,7 +427,7 @@ class GitHubWikiImporter(ToolImporter):
                     a.string = new_page
                 elif a.string == prefix + page:
                     a.string = new_prefix + new_page
-        return unicode(soup)
+        return six.text_type(soup)
 
     def _prepare_textile_text(self, text):
         # need to convert lists properly

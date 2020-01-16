@@ -41,6 +41,7 @@ from ming.base import Object
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
+import six
 
 log = logging.getLogger('teamforge-import')
 
@@ -663,7 +664,7 @@ def load(project_id, *paths):
     in_file = os.path.join(options.output_dir, project_id, *paths)
     with open(in_file) as input:
         content = input.read()
-    return unicode(content, 'utf-8')
+    return six.text_type(content, 'utf-8')
 
 
 def loadjson(*args):

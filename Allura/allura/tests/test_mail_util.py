@@ -40,6 +40,7 @@ from allura.lib.mail_util import (
 )
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
+import six
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -96,7 +97,7 @@ class TestReactor(unittest.TestCase):
         msg1['Message-ID'] = '<foo@bar.com>'
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
-        assert isinstance(msg2['payload'], unicode)
+        assert isinstance(msg2['payload'], six.text_type)
         assert_in(u'всех', msg2['payload'])
 
     def test_more_encodings(self):
@@ -115,7 +116,7 @@ c28uMyIsClRoZSBhcHBsaWNhdGlvbidzIGNvbW11bmljYXRpb24gd29yayB3ZWxsICxidXQgdGhl
 IGZ0cCx0ZWxuZXQscGluZyBjYW4ndCB3b3JrICEKCgpXaHk/
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], unicode)
+        assert isinstance(msg['payload'], six.text_type)
         assert_in(u'The Snap7 application', msg['payload'])
 
         s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
@@ -134,7 +135,7 @@ Content-Transfer-Encoding: 8bit
 > 
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], unicode)
+        assert isinstance(msg['payload'], six.text_type)
         assert_in(u'• foo', msg['payload'])
 
         s_msg = u"""Date: Sat, 25 May 2019 09:32:00 +1000
@@ -147,7 +148,7 @@ Content-Transfer-Encoding: 8BIT
 programmed or èrogrammed ?
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], unicode)
+        assert isinstance(msg['payload'], six.text_type)
         assert_in(u'èrogrammed', msg['payload'])
 
     def test_more_encodings_multipart(self):
@@ -177,8 +178,8 @@ Content-Type: text/html; charset="utf-8"
 &gt; • foo.txt (1.0 kB; text/plain)
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['parts'][1]['payload'], unicode)
-        assert isinstance(msg['parts'][2]['payload'], unicode)
+        assert isinstance(msg['parts'][1]['payload'], six.text_type)
+        assert isinstance(msg['parts'][2]['payload'], six.text_type)
         assert_in(u'• foo', msg['parts'][1]['payload'])
         assert_in(u'• foo', msg['parts'][2]['payload'])
 
@@ -207,7 +208,7 @@ Content-Type: text/html; charset="utf-8"
         for part in msg2['parts']:
             if part['payload'] is None:
                 continue
-            assert isinstance(part['payload'], unicode)
+            assert isinstance(part['payload'], six.text_type)
 
 
 class TestHeader(object):

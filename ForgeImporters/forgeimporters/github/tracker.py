@@ -19,6 +19,7 @@ import re
 import logging
 from datetime import datetime
 from urllib2 import HTTPError
+import six
 
 try:
     from cStringIO import StringIO
@@ -242,7 +243,7 @@ class GitHubTrackerImporter(ToolImporter):
         for milestone in self.open_milestones:
             global_milestones['milestones'].append({
                 'name': milestone[0],
-                'due_date': unicode(milestone[1].date()) if milestone[1] else None,
+                'due_date': six.text_type(milestone[1].date()) if milestone[1] else None,
                 'complete': False,
             })
         return [global_milestones]

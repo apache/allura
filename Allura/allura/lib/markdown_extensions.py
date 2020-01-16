@@ -33,6 +33,7 @@ from . import macro
 from . import helpers as h
 from allura import model as M
 from allura.lib.utils import ForgeHTMLSanitizerFilter, is_nofollow_url
+import six
 
 log = logging.getLogger(__name__)
 
@@ -450,7 +451,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'src')
 
         # html5lib parser adds html/head/body tags, so output <body> without its own tags
-        return unicode(soup.body)[len('<body>'):-len('</body>')]
+        return six.text_type(soup.body)[len('<body>'):-len('</body>')]
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
