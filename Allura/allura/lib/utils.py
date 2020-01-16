@@ -15,6 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 from __future__ import unicode_literals
+
+import base64
+import operator
 from contextlib import contextmanager
 import time
 import string
@@ -229,27 +232,25 @@ class AntiSpam(object):
 
     @staticmethod
     def _wrap(s):
-        '''Encode a string to make it HTML id-safe (starts with alpha, includes
+        '''Encode bytes to make it HTML id-safe (starts with alpha, includes
         only digits, hyphens, underscores, colons, and periods).  Luckily, base64
         encoding doesn't use hyphens, underscores, colons, nor periods, so we'll
         use these characters to replace its plus, slash, equals, and newline.
         '''
-        tx_tbl = string.maketrans('+/', '-_')
-        s = binascii.b2a_base64(s)
+        s = base64.b64encode(s)
         s = s.rstrip('=\n')
-        s = s.translate(tx_tbl)
+        s = s.replace('+', '-').replace('/', '_')
         s = 'X' + s
         return s
 
     @staticmethod
     def _unwrap(s):
-        tx_tbl = string.maketrans('-_', '+/')
         s = s[1:]
-        s = str(s).translate(tx_tbl)
+        s = s.replace('-', '+').replace('_', '/')
         i = len(s) % 4
         if i > 0:
             s += '=' * (4 - i)
-        s = binascii.a2b_base64(s + '\n')
+        s = base64.b64decode(s + '\n')
         return s
 
     def enc(self, plain, css_safe=False):
@@ -259,10 +260,16 @@ class AntiSpam(object):
         '''
         # Plain starts with its length, includes the ordinals for its
         #   characters, and is padded with random data
+
+        # limit to plain ascii, which should be sufficient for field names
+        # I don't think the logic below would work with non-ascii multi-byte text anyway
+        plain.encode('ascii')
+
         plain = ([len(plain)]
                  + map(ord, plain)
                  + self.random_padding[:len(self.spinner_ord) - len(plain) - 1])
-        enc = ''.join(chr(p ^ s) for p, s in zip(plain, self.spinner_ord))
+        enc = ''.join(six.unichr(p ^ s) for p, s in zip(plain, self.spinner_ord))
+        enc = six.ensure_binary(enc)
         enc = self._wrap(enc)
         if css_safe:
             enc = ''.join(ch for ch in enc if ch.isalpha())
@@ -270,10 +277,11 @@ class AntiSpam(object):
 
     def dec(self, enc):
         enc = self._unwrap(enc)
+        enc = six.ensure_text(enc)
         enc = list(map(ord, enc))
         plain = [e ^ s for e, s in zip(enc, self.spinner_ord)]
         plain = plain[1:1 + plain[0]]
-        plain = ''.join(map(chr, plain))
+        plain = ''.join(map(six.unichr, plain))
         return plain
 
     def extra_fields(self):
