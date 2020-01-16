@@ -41,6 +41,7 @@ import cgi
 
 import emoji
 import tg
+import six
 try:
     import cchardet as chardet
 except ImportError:
@@ -182,13 +183,13 @@ def _attempt_encodings(s, encodings):
     for enc in encodings:
         try:
             if enc is None:
-                return unicode(s)  # try default encoding
+                return six.text_type(s)  # try default encoding
             else:
-                return unicode(s, enc)
+                return six.text_type(s, enc)
         except (UnicodeDecodeError, LookupError):
             pass
     # Return the repr of the str -- should always be safe
-    return unicode(repr(str(s)))[1:-1]
+    return six.text_type(repr(str(s)))[1:-1]
 
 
 def really_unicode(s):
@@ -1209,7 +1210,7 @@ def slugify(name, allow_periods=False):
     """
     dash_collapse_pattern = r'[^.\w]+' if allow_periods else r'[^\w]+'
     slug = re.sub(r'(^-)|(-$)', '',  # leading - or trailing - gets removed
-                  unicode(
+                  six.text_type(
                       re.sub(dash_collapse_pattern, '-',  # replace non ". alphanum_" sequences into single -
                              re.sub(r"'", '',  # remove any apostrophes
                                     unicodedata.normalize('NFKD', name)

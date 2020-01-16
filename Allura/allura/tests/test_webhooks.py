@@ -48,6 +48,7 @@ from alluratest.controller import (
     TestController,
     TestRestApiBase,
 )
+import six
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and
@@ -123,7 +124,7 @@ class TestValidators(TestWebhookBase):
         wh.app_config_id = app.config._id
         session(wh).flush(wh)
         assert_equal(v.to_python(wh._id), wh)
-        assert_equal(v.to_python(unicode(wh._id)), wh)
+        assert_equal(v.to_python(six.text_type(wh._id)), wh)
 
 
 class TestWebhookController(TestController):
@@ -275,7 +276,7 @@ class TestWebhookController(TestController):
         form = r.forms[0]
         assert_equal(form['url'].value, data1['url'])
         assert_equal(form['secret'].value, data1['secret'])
-        assert_equal(form['webhook'].value, unicode(wh1._id))
+        assert_equal(form['webhook'].value, six.text_type(wh1._id))
         form['url'] = 'http://host.org/hook'
         form['secret'] = 'new secret'
         msg = 'edit webhook repo-push\n{} => {}\n{}'.format(
@@ -318,7 +319,7 @@ class TestWebhookController(TestController):
         # invalid id in hidden field, just in case
         r = self.app.get(self.url + '/repo-push/%s' % wh._id)
         data = {k: v[0].value for (k, v) in r.forms[0].fields.items()}
-        data['webhook'] = unicode(invalid._id)
+        data['webhook'] = six.text_type(invalid._id)
         self.app.post(self.url + '/repo-push/edit', data, status=404)
 
         # empty values
@@ -337,7 +338,7 @@ class TestWebhookController(TestController):
         self.create_webhook(data).follow()
         assert_equal(M.Webhook.query.find().count(), 1)
         wh = M.Webhook.query.get(hook_url=data['url'])
-        data = {'webhook': unicode(wh._id)}
+        data = {'webhook': six.text_type(wh._id)}
         msg = 'delete webhook repo-push {} {}'.format(
             wh.hook_url, self.git.config.url())
         with td.audits(msg):
@@ -357,7 +358,7 @@ class TestWebhookController(TestController):
         data = {'webhook': ''}
         self.app.post(self.url + '/repo-push/delete', data, status=404)
 
-        data = {'webhook': unicode(invalid._id)}
+        data = {'webhook': six.text_type(invalid._id)}
         self.app.post(self.url + '/repo-push/delete', data, status=404)
         assert_equal(M.Webhook.query.find().count(), 1)
 
@@ -658,7 +659,7 @@ class TestModels(TestWebhookBase):
 
     def test_json(self):
         expected = {
-            '_id': unicode(self.wh._id),
+            '_id': six.text_type(self.wh._id),
             'url': u'http://localhost/rest/adobe/adobe-1/admin'
                    u'/src/webhooks/repo-push/{}'.format(self.wh._id),
             'type': u'repo-push',
@@ -711,12 +712,12 @@ class TestWebhookRestController(TestRestApiBase):
     def test_webhooks_list(self):
         r = self.api_get(self.url)
         webhooks = [{
-            '_id': unicode(wh._id),
+            '_id': six.text_type(wh._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(wh._id),
             'type': 'repo-push',
             'hook_url': 'http://httpbin.org/post/{}'.format(n),
-            'mod_date': unicode(wh.mod_date),
+            'mod_date': six.text_type(wh.mod_date),
         } for n, wh in enumerate(self.webhooks)]
         expected = {
             'webhooks': webhooks,
@@ -731,12 +732,12 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = self.webhooks[0]
         r = self.api_get('{}/repo-push/{}'.format(self.url, webhook._id))
         expected = {
-            '_id': unicode(webhook._id),
+            '_id': six.text_type(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': 'http://httpbin.org/post/0',
-            'mod_date': unicode(webhook.mod_date),
+            'mod_date': six.text_type(webhook.mod_date),
         }
         dd.assert_equal(r.status_int, 200)
         dd.assert_equal(r.json, expected)
@@ -775,12 +776,12 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = M.Webhook.query.get(hook_url=data['url'])
         assert_equal(webhook.secret, 'super-secret')  # secret generated
         expected = {
-            '_id': unicode(webhook._id),
+            '_id': six.text_type(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': data['url'],
-            'mod_date': unicode(webhook.mod_date),
+            'mod_date': six.text_type(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks) + 1)
@@ -835,12 +836,12 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, data['url'])
         assert_equal(webhook.secret, 'secret-0')
         expected = {
-            '_id': unicode(webhook._id),
+            '_id': six.text_type(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': data['url'],
-            'mod_date': unicode(webhook.mod_date),
+            'mod_date': six.text_type(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 
@@ -855,12 +856,12 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, 'http://hook.slack.com/abcd')
         assert_equal(webhook.secret, 'new-secret')
         expected = {
-            '_id': unicode(webhook._id),
+            '_id': six.text_type(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': 'http://hook.slack.com/abcd',
-            'mod_date': unicode(webhook.mod_date),
+            'mod_date': six.text_type(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 

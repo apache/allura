@@ -36,6 +36,7 @@ from bs4 import BeautifulSoup
 from allura.lib.utils import socket_default_timeout
 from . import helpers as h
 from . import security
+import six
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ class parse(object):
             if s.startswith('quote '):
                 return '[[' + s[len('quote '):] + ']]'
             try:
-                parts = [unicode(x, 'utf-8')
+                parts = [six.text_type(x, 'utf-8')
                          for x in shlex.split(s.encode('utf-8'))]
                 if not parts:
                     return '[[' + s + ']]'

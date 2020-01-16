@@ -52,11 +52,11 @@ def Header(text, *more_text):
     # email.header.Header handles str vs unicode differently
     # see
     # http://docs.python.org/library/email.header.html#email.header.Header.append
-    if type(text) != unicode:
+    if type(text) != six.text_type:
         raise TypeError('This must be unicode: %r' % text)
     head = header.Header(text)
     for m in more_text:
-        if type(m) != unicode:
+        if type(m) != six.text_type:
             raise TypeError('This must be unicode: %r' % text)
         head.append(m)
     return head
@@ -285,7 +285,7 @@ class SMTPClient(object):
         smtp_addrs = [a for a in smtp_addrs if isvalid(a)]
         if not smtp_addrs:
             log.warning('No valid addrs in %s, so not sending mail',
-                        map(unicode, addrs))
+                        map(six.text_type, addrs))
             return
         try:
             self._client.sendmail(

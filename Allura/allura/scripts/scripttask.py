@@ -50,6 +50,7 @@ import shlex
 import sys
 
 from allura.lib.decorators import task
+import six
 
 
 log = logging.getLogger(__name__)
@@ -74,7 +75,7 @@ class ScriptTask(object):
     @classmethod
     def _execute_task(cls, arg_string):
         try:
-            if isinstance(arg_string, unicode):
+            if isinstance(arg_string, six.text_type):
                 # shlex doesn't support unicode fully, so encode it http://stackoverflow.com/a/14219159/79697
                 # decode has to happen in the arg parser (e.g. see delete_projects.py)
                 arg_string = arg_string.encode('utf8')

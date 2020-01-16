@@ -21,6 +21,7 @@ import logging
 from tg import config
 from paste.deploy.converters import asbool
 import pysolr
+import six
 
 
 log = logging.getLogger(__name__)
@@ -150,7 +151,7 @@ class MockSOLR(object):
     def search(self, q, fq=None, **kw):
         if q is None:
             q = ''  # shlex will hang on None
-        if isinstance(q, unicode):
+        if isinstance(q, six.text_type):
             q = q.encode('latin-1')
         # Parse query
         preds = []

@@ -18,6 +18,7 @@
 #-*- python -*-
 import re
 from bs4 import BeautifulSoup
+import six
 
 _inline_img = re.compile(r'\[\[(File|Image):([^\]|]+)[^]]*\]\]', re.UNICODE)
 _inline_img_markdown = r'[[img src=\2]]'
@@ -53,7 +54,7 @@ def _convert_toc(wiki_html):
     soup = BeautifulSoup(wiki_html, 'html.parser')
     for toc_div in soup.findAll('div', id='toc'):
         toc_div.replaceWith('[TOC]')
-    return unicode(soup)
+    return six.text_type(soup)
 
 
 def mediawiki2markdown(source):

@@ -716,7 +716,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):
-                result[k + '_s'] = unicode(v)
+                result[k + '_s'] = six.text_type(v)
 
             # Now let's also index with proper Solr types.
             solr_type = self.app.globals.get_custom_field_solr_type(k)

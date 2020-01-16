@@ -27,6 +27,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib import mail_util
 from allura.lib import exceptions as exc
+import six
 
 log = logging.getLogger(__name__)
 
@@ -265,8 +266,8 @@ def send_system_mail_to_user(user_or_emailaddr, subject, text):
             config['site_name'],
             config['forgemail.return_path']
         ),
-        'sender': unicode(config['forgemail.return_path']),
-        'reply_to': unicode(config['forgemail.return_path']),
+        'sender': six.text_type(config['forgemail.return_path']),
+        'reply_to': six.text_type(config['forgemail.return_path']),
         'message_id': h.gen_message_id(),
         'subject': subject,
         'text': text,

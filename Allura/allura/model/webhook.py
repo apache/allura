@@ -24,6 +24,7 @@ from tg import config
 
 from allura.model import Artifact
 from allura.lib import helpers as h
+import six
 
 
 class Webhook(Artifact):
@@ -64,9 +65,9 @@ class Webhook(Artifact):
 
     def __json__(self):
         return {
-            '_id': unicode(self._id),
+            '_id': six.text_type(self._id),
             'url': h.absurl(u'/rest' + self.url()),
-            'type': unicode(self.type),
-            'hook_url': unicode(self.hook_url),
+            'type': six.text_type(self.type),
+            'hook_url': six.text_type(self.hook_url),
             'mod_date': self.mod_date,
         }

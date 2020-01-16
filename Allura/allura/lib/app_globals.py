@@ -66,6 +66,7 @@ from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.model.session import artifact_orm_session
+import six
 
 __all__ = ['Globals']
 
@@ -583,7 +584,7 @@ class Globals(object):
 
     @LazyProperty
     def noreply(self):
-        return unicode(config.get('noreply', 'noreply@%s' % config['domain']))
+        return six.text_type(config.get('noreply', 'noreply@%s' % config['domain']))
 
     @property
     def build_key(self):

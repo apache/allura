@@ -31,6 +31,7 @@ from pysolr import SolrError
 from allura.lib import helpers as h
 from allura.lib.solr import escape_solr_arg
 from allura.lib.utils import urlencode
+import six
 
 log = getLogger(__name__)
 
@@ -141,7 +142,7 @@ def search(q, short_timeout=False, ignore_errors=True, **kw):
     except (SolrError, socket.error) as e:
         log.exception('Error in solr search')
         if not ignore_errors:
-            match = re.search(r'<pre>(.*)</pre>', unicode(e))
+            match = re.search(r'<pre>(.*)</pre>', six.text_type(e))
             raise SearchError(u'Error running search query: %s' %
                               (match.group(1) if match else e))
 

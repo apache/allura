@@ -41,6 +41,7 @@ from allura.tests.decorators import with_tool
 from allura.tests.test_globals import squish_spaces
 from forgegit.tests import with_git
 from forgegit import model as GM
+import six
 
 
 class _TestCase(TestController):
@@ -813,7 +814,7 @@ class TestFork(_TestCase):
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
         changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
-        dd_assert_equal(unicode(changes), """
+        dd_assert_equal(six.text_type(changes), """
 <div class="markdown_content"><ul>
 <li>
 <p><strong>Summary</strong>: summary --&gt; changed summary</p>

@@ -33,6 +33,7 @@ from hashlib import sha256
 from base64 import b64encode
 from datetime import datetime, timedelta
 import calendar
+import six
 
 try:
     import ldap
@@ -1466,7 +1467,7 @@ class ThemeProvider(object):
             Takes an instance of class Application, or else a string.
             Expected to be overriden by derived Themes.
         """
-        if isinstance(app, unicode):
+        if isinstance(app, six.text_type):
             app = str(app)
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:

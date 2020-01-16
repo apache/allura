@@ -41,6 +41,7 @@ from allura.lib.security import has_access
 from allura.lib.security import Credentials
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
+import six
 
 
 def setUp(self):
@@ -91,12 +92,12 @@ def test_really_unicode():
     assert s.startswith(u'\ufeff')
     s = h.really_unicode(
         open(path.join(here_dir, 'data/unicode_test.txt')).read())
-    assert isinstance(s, unicode)
+    assert isinstance(s, six.text_type)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode(u'\u0410\u0401'.encode('cp1251'))
     # ensure invalid encodings are handled gracefully
     s = h._attempt_encodings('foo', ['LKDJFLDK'])
-    assert isinstance(s, unicode)
+    assert isinstance(s, six.text_type)
 
 
 def test_find_project():
@@ -181,7 +182,7 @@ def test_context_setters():
 
 def test_encode_keys():
     kw = h.encode_keys({u'foo': 5})
-    assert type(kw.keys()[0]) != unicode
+    assert type(kw.keys()[0]) != six.text_type
 
 
 def test_ago():

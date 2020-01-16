@@ -54,6 +54,7 @@ from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
 from ming.odm import session
+import six
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -785,8 +786,8 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
                                            errors) for arg in s])
-            return unicode(s).encode(encoding, errors)
-    elif isinstance(s, unicode):
+            return six.text_type(s).encode(encoding, errors)
+    elif isinstance(s, six.text_type):
         r = s.encode(encoding, errors)
         return r
     elif s and encoding != 'utf-8':

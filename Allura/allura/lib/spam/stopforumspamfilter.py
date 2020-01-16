@@ -24,6 +24,7 @@ from tg import request
 
 from allura.lib import utils
 from allura.lib.spam import SpamFilter
+import six
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class StopForumSpamSpamFilter(SpamFilter):
                 if int(record[1]) > int(config.get('spam.stopforumspam.threshold', 20)):
                     ip = record[0]
                     # int is the smallest memory representation of an IP addr
-                    ip_int = int(ipaddress.ip_address(unicode(ip)))
+                    ip_int = int(ipaddress.ip_address(six.text_type(ip)))
                     self.packed_ips.add(ip_int)
         # to get actual memory usage, use: from pympler.asizeof import asizeof
         log.info('Read stopforumspam file; %s recs, probably %s bytes stored in memory', len(self.packed_ips),
@@ -58,7 +59,7 @@ class StopForumSpamSpamFilter(SpamFilter):
     def check(self, text, artifact=None, user=None, content_type='comment', **kw):
         ip = utils.ip_address(request)
         if ip:
-            ip_int = int(ipaddress.ip_address(unicode(ip)))
+            ip_int = int(ipaddress.ip_address(six.text_type(ip)))
             res = ip_int in self.packed_ips
             self.record_result(res, artifact, user)
         else:
