@@ -116,8 +116,8 @@ class TestWikiApi(TestRestApiBase):
         assert_equal(r.json['text'], 'foo <img src=x onerror=alert(1)> bar')
 
     def test_json_encoding_directly(self):
-        # used in @expose('json')
-        assert_equal(tg.jsonify.encode('<'), '"\\u003C"')
+        # used in @expose('json'), monkey-patched in our patches.py
+        assert_equal(tg.jsonify.encode('<'), '"\u003C"')
         # make sure these are unchanged
         assert_equal(json.dumps('<'), '"<"')
 

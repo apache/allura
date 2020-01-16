@@ -89,16 +89,18 @@ def test_escape_json():
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
-    s = h.really_unicode('\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
-    assert s.startswith('\ufeff')
+    s = h.really_unicode(b'\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
+    assert s.startswith('\ufeff'), repr(s)
     s = h.really_unicode(
         open(path.join(here_dir, 'data/unicode_test.txt')).read())
     assert isinstance(s, six.text_type)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode('\u0410\u0401'.encode('cp1251'))
     # ensure invalid encodings are handled gracefully
-    s = h._attempt_encodings('foo', ['LKDJFLDK'])
+    s = h._attempt_encodings(b'foo', ['LKDJFLDK'])
     assert isinstance(s, six.text_type)
+    # unicode stays the same
+    assert_equals(h.really_unicode('¬∂•°‹'), '¬∂•°‹')
 
 
 def test_find_project():

@@ -724,7 +724,7 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
     renders any other markup format using the pypeline
     Returns jinja-safe text
     """
-    if txt == '':
+    if not txt:
         txt = '<p><em>Empty File</em></p>'
     else:
         fmt = g.pypeline_markup.can_render(name)
@@ -970,7 +970,7 @@ class exceptionless(object):
                         'Error calling %s(args=%s, kwargs=%s): %s',
                         fname, args, kwargs, str(e))
                 return self.error_result
-        inner.__name__ = fname
+        inner.__name__ = str(fname)
         return inner
 
 

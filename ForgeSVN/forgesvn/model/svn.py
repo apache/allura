@@ -703,7 +703,7 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             # need to set system locale to handle all symbols in filename
             import locale
-            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            locale.setlocale(locale.LC_ALL, str('en_US.UTF-8'))
             self._svn.export(path,
                              tmpdest,
                              revision=pysvn.Revision(

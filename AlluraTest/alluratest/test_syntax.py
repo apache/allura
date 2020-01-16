@@ -114,11 +114,11 @@ def create_many_lint_methods():
             continue
 
         lint_test_method = lambda self, these_files=files: run_linter(these_files)
-        lint_test_method.__name__ = 'test_pylint_{}'.format(i)
+        lint_test_method.__name__ = str('test_pylint_{}'.format(i))
         setattr(TestLinters, 'test_pylint_{}'.format(i), lint_test_method)
 
         pyflake_test_method = lambda self, these_files=files: run_pyflakes(these_files)
-        pyflake_test_method.__name__ = 'test_pyflakes_{}'.format(i)
+        pyflake_test_method.__name__ = str('test_pyflakes_{}'.format(i))
         setattr(TestLinters, 'test_pyflakes_{}'.format(i), pyflake_test_method)
 
 
