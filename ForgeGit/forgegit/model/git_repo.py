@@ -64,7 +64,7 @@ class Repository(M.Repository):
     type_s = 'Git Repository'
 
     class __mongometa__:
-        name = 'git-repository'
+        name = str('git-repository')
 
     @LazyProperty
     def _impl(self):

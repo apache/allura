@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 class Discussion(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = 'discussion'
+        name = str('discussion')
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.Deprecated)
@@ -134,7 +134,7 @@ class Discussion(Artifact, ActivityObject):
 class Thread(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = 'thread'
+        name = str('thread')
         indexes = [
             ('artifact_id',),
             ('ref_id',),
@@ -458,7 +458,7 @@ class Thread(Artifact, ActivityObject):
 class PostHistory(Snapshot):
 
     class __mongometa__:
-        name = 'post_history'
+        name = str('post_history')
 
     artifact_id = ForeignIdProperty('Post')
 
@@ -493,7 +493,7 @@ class PostHistory(Snapshot):
 class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     class __mongometa__:
-        name = 'post'
+        name = str('post')
         history_class = PostHistory
         indexes = [
             # used in general lookups, last_post, etc
@@ -817,7 +817,7 @@ class DiscussionAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = 'DiscussionAttachment'
+        polymorphic_identity = str('DiscussionAttachment')
         indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
 
     discussion_id = FieldProperty(schema.ObjectId)

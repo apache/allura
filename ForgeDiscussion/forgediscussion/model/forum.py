@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 class Forum(M.Discussion):
 
     class __mongometa__:
-        name = 'forum'
+        name = str('forum')
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
@@ -138,7 +138,7 @@ class Forum(M.Discussion):
 class ForumThread(M.Thread):
 
     class __mongometa__:
-        name = 'forum_thread'
+        name = str('forum_thread')
         indexes = [
             'flags',
             'discussion_id',
@@ -209,7 +209,7 @@ class ForumThread(M.Thread):
 class ForumPostHistory(M.PostHistory):
 
     class __mongometa__:
-        name = 'post_history'
+        name = str('post_history')
 
     artifact_id = ForeignIdProperty('ForumPost')
 
@@ -217,7 +217,7 @@ class ForumPostHistory(M.PostHistory):
 class ForumPost(M.Post):
 
     class __mongometa__:
-        name = 'forum_post'
+        name = str('forum_post')
         history_class = ForumPostHistory
         indexes = [
             'timestamp',  # for the posts_24hr site_stats query
@@ -253,7 +253,7 @@ class ForumAttachment(M.DiscussionAttachment):
     PostClass = ForumPost
 
     class __mongometa__:
-        polymorphic_identity = 'ForumAttachment'
+        polymorphic_identity = str('ForumAttachment')
     attachment_type = FieldProperty(str, if_missing='ForumAttachment')
 
 

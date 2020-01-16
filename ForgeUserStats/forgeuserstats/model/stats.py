@@ -30,7 +30,7 @@ from allura.model import Stats
 class UserStats(Stats):
 
     class __mongometa__:
-        name = 'userstats'
+        name = str('userstats')
         session = main_orm_session
         unique_indexes = ['_id', 'user_id']
 

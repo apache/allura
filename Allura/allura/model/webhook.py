@@ -30,7 +30,7 @@ import six
 
 class Webhook(Artifact):
     class __mongometa__:
-        name = 'webhook'
+        name = str('webhook')
         unique_indexes = [('app_config_id', 'type', 'hook_url')]
 
     type = FieldProperty(str)
