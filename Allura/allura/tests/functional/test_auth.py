@@ -1150,7 +1150,7 @@ class TestPreferences(TestController):
         # Check if setting a wrong date everything works correctly
         r = self.app.post('/auth/user_info/change_personal_data',
                           params=dict(birthdate='30/02/1998', _session_id=self.app.cookies['_session_id']))
-        assert 'Please enter a valid date' in str(r)
+        assert 'Please enter a valid date' in r.text
         user = M.User.query.get(username='test-admin')
         sex = user.sex
         assert sex == setsex

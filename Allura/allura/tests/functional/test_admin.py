@@ -63,7 +63,7 @@ class TestProjectAdmin(TestController):
                         'utf-8') * 45,
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
-        assert 'A Test Project ?\xc2\xbf A' in r
+        assert b'A Test Project ?\xc2\xbf A' in r.body
         assert 'Test Subproject' not in r
         assert 'Milkshakes are for crazy monkeys' in r
         sidebar = r.html.find(id='sidebar')
@@ -707,8 +707,8 @@ class TestProjectAdmin(TestController):
                 'table', {'id': 'usergroup_admin'}).findAll('tr')[2]
             mem_holder = r.html.find(
                 'table', {'id': 'usergroup_admin'}).findAll('tr')[3]
-            assert 'All users in Admin group' in str(dev_holder)
-            assert 'All users in Developer group' in str(mem_holder)
+            assert 'All users in Admin group' in dev_holder.text
+            assert 'All users in Developer group' in mem_holder.text
 
         r = self.app.get('/admin/groups/')
 
@@ -806,7 +806,7 @@ class TestProjectAdmin(TestController):
                               params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
         role_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[4]
-        assert 'RoleNew1' in str(role_holder)
+        assert 'RoleNew1' in role_holder.text
         role_id = role_holder['data-group']
 
         # add test-user to role
@@ -821,7 +821,7 @@ class TestProjectAdmin(TestController):
                 'group_name': 'RoleNew1'})
         assert 'deleted' in self.webflash(r)
         r = self.app.get('/admin/groups/', status=200)
-        roles = [str(t) for t in r.html.findAll('td', {'class': 'group'})]
+        roles = [t.text for t in r.html.findAll('td', {'class': 'group'})]
         assert 'RoleNew1' not in roles
 
         # make sure can still access homepage after one of user's roles were
@@ -1047,7 +1047,7 @@ class TestExport(TestController):
         session.return_value = {'result': [{"total_size": 10000}]}
         export_tasks.bulk_export.post(['wiki'])
         r = self.app.get('/admin/export')
-        assert_in('<h2>Busy</h2>', r.body)
+        assert_in('<h2>Busy</h2>', r.text)
 
     @td.with_user_project('test-user')
     def test_bulk_export_path_for_user_project(self):

@@ -88,8 +88,8 @@ class TestRootController(TestController):
 
         response = self.app.get('/neighborhood')
         # inject it into the sidebar data
-        content = str(response.html.find('div', {'id': 'content_base'}))
-        assert '<script>' not in content
+        content = response.html.find('div', {'id': 'content_base'}).prettify()
+        assert '<script>' not in content, content
         assert '&lt;script&gt;' in content
 
     def test_strange_accept_headers(self):

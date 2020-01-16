@@ -674,9 +674,8 @@ class TestForum(TestController):
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
         r = self.app.get(thread_url)
-        assert 'zzz' in str(r.html.find('div', {'class': 'display_post'}))
-        assert 'Last edit: Test Admin ' in str(
-            r.html.find('div', {'class': 'display_post'}))
+        assert 'zzz' in r.html.find('div', {'class': 'display_post'}).text
+        assert 'Last edit: Test Admin ' in r.html.find('div', {'class': 'display_post'}).text
 
     def test_subscription_controls(self):
         r = self.app.get('/discussion/create_topic/')
@@ -824,8 +823,8 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/')
         rows = self.get_table_rows(r, 'forum_threads')
         assert_equal(len(rows), 2)
-        assert 'topic1' in str(rows[0])
-        assert 'topic2' in str(rows[1])
+        assert 'topic1' in rows[0].text
+        assert 'topic2' in rows[1].text
 
         # Reset Sticky flag
         r = self.app.post(url1 + 'moderate', params=dict(

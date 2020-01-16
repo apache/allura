@@ -1606,16 +1606,16 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/?sort=summary+asc')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed"\
                         "&sort=snippet_s+asc&limit=25&filter=&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
 
     def test_bulk_edit_milestone(self):
         self.new_ticket(summary='test first ticket',
@@ -1629,17 +1629,17 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/milestone/1.0/?sort=ticket_num+asc')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
-        assert_in('test third ticket', str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
+        assert_in('test third ticket', ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=_milestone%3A1.0&sort=ticket_num_i+asc&limit=25&filter=&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
-        assert_in('test third ticket', str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
+        assert_in('test third ticket', ticket_rows.text)
 
     def test_bulk_edit_search(self):
         self.new_ticket(summary='test first ticket', status='open')
@@ -1650,17 +1650,17 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=status%3Aopen')
         ticket_rows = response.html.find('table', {'class': 'ticket-list'}).find('tbody')
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
-        assert_false('test third ticket' in str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
+        assert_false('test third ticket' in ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=status%3Aopen&limit=25&filter=%7B%7D&page=0"
         assert_equal(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
-        assert_in('test first ticket', str(ticket_rows))
-        assert_in('test second ticket', str(ticket_rows))
-        assert_false('test third ticket' in str(ticket_rows))
+        assert_in('test first ticket', ticket_rows.text)
+        assert_in('test second ticket', ticket_rows.text)
+        assert_false('test third ticket' in ticket_rows.text)
 
     def test_new_ticket_notification_contains_attachments(self):
         file_name = 'tést_root.py'.encode('utf-8')
