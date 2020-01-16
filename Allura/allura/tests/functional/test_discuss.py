@@ -369,10 +369,8 @@ class TestDiscuss(TestDiscussBase):
         reply_form = r.html.find(
             'div', {'class': 'edit_post_form reply'}).find('form')
         post_link = str(reply_form['action'])
-        assert 'This is a post' in str(
-            r.html.find('div', {'class': 'display_post'}))
-        assert 'Last edit:' not in str(
-            r.html.find('div', {'class': 'display_post'}))
+        assert 'This is a post' in r.html.find('div', {'class': 'display_post'}).text
+        assert 'Last edit:' not in r.html.find('div', {'class': 'display_post'}).text
         params = dict()
         inputs = reply_form.findAll('input')
         for field in inputs:
@@ -383,9 +381,8 @@ class TestDiscuss(TestDiscussBase):
         assert create_activity.call_count == 1, create_activity.call_count
         assert create_activity.call_args[0][1] == 'modified'
         r = self.app.get(thread_url)
-        assert 'zzz' in str(r.html.find('div', {'class': 'display_post'}))
-        assert 'Last edit: Test Admin ' in str(
-            r.html.find('div', {'class': 'display_post'}))
+        assert 'zzz' in r.html.find('div', {'class': 'display_post'}).text
+        assert 'Last edit: Test Admin ' in r.html.find('div', {'class': 'display_post'}).text
 
     def test_deleted_post(self):
         r = self._make_post('This is a post')
