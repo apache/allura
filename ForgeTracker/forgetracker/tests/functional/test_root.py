@@ -1129,7 +1129,7 @@ class TestFunctionalController(TrackerTestController):
         params = dict(
             custom_fields=[
                 dict(name='_testselect', label='Test', type='select',
-                     options='oné "one and á half" two'),
+                     options='oné "one and á half" two'.encode('utf-8')),
             ],
             open_status_names='aa bb',
             closed_status_names='cc',
@@ -1138,15 +1138,17 @@ class TestFunctionalController(TrackerTestController):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         r = self.app.get('/bugs/new/')
-        assert '<option value="oné">oné</option>'.encode('utf-8') in r
-        assert '<option value="one and á half">one and á half</option>'.encode('utf-8') in r
-        assert '<option value="two">two</option>' in r
+
+        r.mustcontain('<option value="oné">oné</option>')
+        assert '<option value="oné">oné</option>' in r.text
+        assert '<option value="one and á half">one and á half</option>' in r.text
+        assert '<option value="two">two</option>' in r.text
 
     def test_select_custom_field_invalid_quotes(self):
         params = dict(
             custom_fields=[
                 dict(name='_testselect', label='Test', type='select',
-                     options='closéd "quote missing'),
+                     options='closéd "quote missing'.encode('utf-8')),
             ],
             open_status_names='aa bb',
             closed_status_names='cc',
@@ -1203,7 +1205,7 @@ class TestFunctionalController(TrackerTestController):
                 show_in_search='on',
                 type='milestone',
                 milestones=[
-                    dict(name='aaaé'),
+                    dict(name='aaaé'.encode('utf-8')),
                     dict(name='bbb'),
                     dict(name='ccc')])]}
         self.app.post('/admin/bugs/set_custom_fields',
@@ -1244,7 +1246,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/bugs/update_milestones', {
             'field_name': '_milestone',
             'milestones-0.old_name': '1.0',
-            'milestones-0.new_name': 'zzzé',
+            'milestones-0.new_name': 'zzzé'.encode('utf-8'),
             'milestones-0.description': '',
             'milestones-0.complete': 'Open',
             'milestones-0.due_date': ''

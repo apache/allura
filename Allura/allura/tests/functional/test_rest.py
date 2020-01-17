@@ -310,15 +310,15 @@ class TestRestHome(TestRestApiBase):
 
     def test_unicode(self):
         self.app.post(
-            '/wiki/tést/update',
+            h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést',
+                'title': 'tést'.encode('utf-8'),
                 'text': 'sometext',
                 'labels': '',
                 })
-        r = self.api_get('/rest/p/test/wiki/tést/')
+        r = self.api_get(h.urlquote('/rest/p/test/wiki/tést/'))
         assert r.status_int == 200
-        assert r.json['title'].encode('utf-8') == 'tést', r.json
+        assert r.json['title'] == 'tést', r.json
 
     @td.with_wiki
     def test_deny_access(self):

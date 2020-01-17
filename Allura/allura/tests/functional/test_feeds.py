@@ -46,16 +46,16 @@ class TestFeeds(TestController):
                     status='open',
                     description='This is a description'))),
             status=302)
-        title = 'Descri\xe7\xe3o e Arquitetura'.encode('utf-8')
+        title = 'Descri\xe7\xe3o e Arquitetura'
         self.app.post(
-            '/wiki/%s/update' % title,
+            h.urlquote('/wiki/%s/update' % title),
             params=dict(
-                title=title,
+                title=title.encode('utf-8'),
                 text="Nothing much",
                 labels='',
             ),
             status=302)
-        self.app.get('/wiki/%s/' % title)
+        self.app.get(h.urlquote('/wiki/%s/' % title))
 
     def test_project_feed(self):
         self.app.get('/feed.rss')
