@@ -95,14 +95,17 @@ class ForgeDiscussionImporter(ToolImporter):
 		discussion_json['discussion_config']['options'].pop('import_id', None)
 
 		mount_point = mount_point or 'discussion'
+		mount_label = mount_label or 'Discussion'
 
-
-		_id = discussions_json.get('_id', 'undefined')
+		_id = discussions_json['discussion_config'].get('_id', 'undefined')
 		_open_status_names = discussions_json.get('open_status_names', 'undefined')
 		_closed_status_names = discussions_json.get('closed_status_names', 'undefined')
 
 		app = project.install_app('discussion', mount_point, mount_label,
-                    import_id={'source': self.source, 'app_config_id': _id },
+                    import_id={
+                        'source': self.source, 
+                        'app_config_id': _id 
+                    },
 					open_status_names=_open_status_names,
 					closed_status_names=_closed_status_names,
 					**discussion_json['discussion_config']['options']
@@ -117,6 +120,7 @@ class ForgeDiscussionImporter(ToolImporter):
 				print("forum_json: ", forum_json)
 
 				new_forum = dict(
+                    app_config_id = app.config._id,
                     shortname=forum_json['shortname'],
                     _id=forum_json.get('_id', ''),
                     description=forum_json['description'],
@@ -125,7 +129,7 @@ class ForgeDiscussionImporter(ToolImporter):
                     parent='',
                     members_only=False,
                     anon_posts=False,
-                    monitoring_email=None
+                    monitoring_email=None,
 				) 
 
 				print(new_forum)
@@ -136,21 +140,22 @@ class ForgeDiscussionImporter(ToolImporter):
 					thread = forum.get_discussion_thread(dict(
                                 headers=dict(Subject=thread_json['subject'])))[0]
 
-					self.add_posts(thread, thread_json['posts'])
+					self.add_posts(thread, thread_json['posts'], app)
 
 				session(forum).flush(forum)
 				session(forum).expunge(forum)
-
-                #perform_import(discussion_json, user)
 
 				print("Forum %s created" % (new_forum["shortname"]))
 
 			g.post_event('project_updated')
 			app.globals.invalidate_bin_counts()
+			ThreadLocalORMSession.flush_all()
 			return app
 		except Exception:
 			h.make_app_admin_only(app)
 			raise
+		finally:
+			M.session.artifact_orm_session._get().skip_mod_date = False
                                      
 
     def get_user(self, username):
@@ -167,12 +172,12 @@ class ForgeDiscussionImporter(ToolImporter):
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
 
-    def add_posts(self, thread, posts):
+    def add_posts(self, thread, posts, app):
         for post_json in posts:
             print("Author: ", post_json["author"])
             user = self.get_user(post_json["author"])
             print("User", user)
-            with h.push_config(c, user=user):
+            with h.push_config(c, user=user, app=app):
                 p = thread.add_post(
                         subject=post_json['subject'],
                         text=post_json['text'], 
