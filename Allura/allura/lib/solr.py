@@ -152,11 +152,17 @@ class MockSOLR(object):
     def search(self, q, fq=None, **kw):
         if q is None:
             q = ''  # shlex will hang on None
-        if isinstance(q, six.text_type):
-            q = q.encode('latin-1')
         # Parse query
         preds = []
-        q_parts = shlex.split(q)
+        if six.PY2:
+            # shlex can't handle unicode in py2
+            q_parts = [
+                _.decode('latin-1')
+                for _ in
+                shlex.split(q.encode('latin-1'))
+            ]
+        else:
+            q_parts = shlex.split(q)
         if fq:
             q_parts += fq
         for part in q_parts:
