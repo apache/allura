@@ -3,6 +3,7 @@ import json
 from dateutil.parser import parse
 
 from tg import tmpl_context as c
+from tg import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
 
 from tg import (
@@ -29,6 +30,7 @@ from allura import model as M
 from allura.lib.decorators import require_post
 from allura.lib import validators as v 
 from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 
 from forgediscussion import utils, import_support
 from forgediscussion import model as DM
@@ -89,27 +91,19 @@ class ForgeDiscussionImporter(ToolImporter):
 		print("import_tool")
 		import_id_converter = ImportIdConverter.get()
 		discussion_json = self._load_json(project)
-		discussion_json['discussion_config']['options'].pop('ordinal', None)
-		discussion_json['discussion_config']['options'].pop('mount_point', None)
-		discussion_json['discussion_config']['options'].pop('mount_label', None)
-		discussion_json['discussion_config']['options'].pop('import_id', None)
+		#discussion_json['discussion_config']['options'].pop('ordinal', None)
+		#discussion_json['discussion_config']['options'].pop('mount_point', None)
+		#discussion_json['discussion_config']['options'].pop('mount_label', None)
+		#discussion_json['discussion_config']['options'].pop('import_id', None)
 
 		mount_point = mount_point or 'discussion'
 		mount_label = mount_label or 'Discussion'
 
-		_id = discussions_json['discussion_config'].get('_id', 'undefined')
-		_open_status_names = discussions_json.get('open_status_names', 'undefined')
-		_closed_status_names = discussions_json.get('closed_status_names', 'undefined')
+		#_id = discussion_json['discussion_config'].get('_id', 'undefined')
+		#_open_status_names = discussion_json.get('open_status_names', 'undefined')
+		#_closed_status_names = discussion_json.get('closed_status_names', 'undefined')
 
-		app = project.install_app('discussion', mount_point, mount_label,
-                    import_id={
-                        'source': self.source, 
-                        'app_config_id': _id 
-                    },
-					open_status_names=_open_status_names,
-					closed_status_names=_closed_status_names,
-					**discussion_json['discussion_config']['options']
-		)
+		app = project.install_app('discussion', mount_point, mount_label)
 		ThreadLocalORMSession.flush_all()
        
 		try:
@@ -148,7 +142,6 @@ class ForgeDiscussionImporter(ToolImporter):
 				print("Forum %s created" % (new_forum["shortname"]))
 
 			g.post_event('project_updated')
-			app.globals.invalidate_bin_counts()
 			ThreadLocalORMSession.flush_all()
 			return app
 		except Exception:
