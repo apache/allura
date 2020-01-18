@@ -91,20 +91,19 @@ class ForgeDiscussionImporter(ToolImporter):
 		print("import_tool")
 		import_id_converter = ImportIdConverter.get()
 		discussion_json = self._load_json(project)
-		#discussion_json['discussion_config']['options'].pop('ordinal', None)
-		#discussion_json['discussion_config']['options'].pop('mount_point', None)
-		#discussion_json['discussion_config']['options'].pop('mount_label', None)
-		#discussion_json['discussion_config']['options'].pop('import_id', None)
 
 		mount_point = mount_point or 'discussion'
 		mount_label = mount_label or 'Discussion'
 
-		#_id = discussion_json['discussion_config'].get('_id', 'undefined')
-		#_open_status_names = discussion_json.get('open_status_names', 'undefined')
-		#_closed_status_names = discussion_json.get('closed_status_names', 'undefined')
-
-		app = project.install_app('discussion', mount_point, mount_label)
+		app = project.install_app('discussion', mount_point, mount_label, 
+			import_id={ 'source': self.source }
+		)
 		ThreadLocalORMSession.flush_all()
+
+		# Deleting the forums that are created by default
+		forums = app.forums
+		for forum in forums:
+			forum.delete()
        
 		try:
 			M.session.artifact_orm_session._get().skip_mod_date = True
@@ -114,25 +113,25 @@ class ForgeDiscussionImporter(ToolImporter):
 				print("forum_json: ", forum_json)
 
 				new_forum = dict(
-                    app_config_id = app.config._id,
-                    shortname=forum_json['shortname'],
-                    _id=forum_json.get('_id', ''),
-                    description=forum_json['description'],
-                    name=forum_json['name'],
-                    create='on',
-                    parent='',
-                    members_only=False,
-                    anon_posts=False,
-                    monitoring_email=None,
-				) 
+                    			app_config_id = app.config._id,
+                    			shortname=forum_json['shortname'],
+                    			_id=forum_json.get('_id', ''),
+                    			description=forum_json['description'],
+                    			name=forum_json['name'],
+                    			create='on',
+                    			parent='',
+                    			members_only=False,
+                    			anon_posts=False,
+                    			monitoring_email=None,
+				)
 
-				print(new_forum)
+				print("New Forum:", new_forum)
 
 				forum = utils.create_forum(app, new_forum=new_forum)
 
 				for thread_json in forum_json["threads"]:
 					thread = forum.get_discussion_thread(dict(
-                                headers=dict(Subject=thread_json['subject'])))[0]
+                                		headers=dict(Subject=thread_json['subject'])))[0]
 
 					self.add_posts(thread, thread_json['posts'], app)
 
