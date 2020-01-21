@@ -448,7 +448,7 @@ class TestProjectAdmin(TestController):
         screenshots = project.get_screenshots()
         assert_equals(screenshots[0].filename, 'admin_24.png')
         # reverse order
-        params = dict((str(ss._id), len(screenshots) - 1 - i)
+        params = dict((str(ss._id), str(len(screenshots) - 1 - i))
                       for i, ss in enumerate(screenshots))
         self.app.post('/admin/sort_screenshots', params)
         assert_equals(project.get_screenshots()[0].filename, 'admin_32.png')

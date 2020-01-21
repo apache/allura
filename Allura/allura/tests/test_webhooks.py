@@ -319,7 +319,7 @@ class TestWebhookController(TestController):
 
         # invalid id in hidden field, just in case
         r = self.app.get(self.url + '/repo-push/%s' % wh._id)
-        data = {k: v[0].value for (k, v) in r.forms[0].fields.items()}
+        data = {k: v[0].value for (k, v) in r.forms[0].fields.items() if k}
         data['webhook'] = six.text_type(invalid._id)
         self.app.post(self.url + '/repo-push/edit', data, status=404)
 

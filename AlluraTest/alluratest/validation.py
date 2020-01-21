@@ -31,6 +31,7 @@ import json
 import urllib2
 import re
 import pkg_resources
+import six
 
 import webtest
 from webtest import TestApp
@@ -261,17 +262,41 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
             if not isinstance(k, basestring):
                 raise TypeError('%s key %s is %s, not str' %
                                 (method, k, type(k)))
-            if not isinstance(v, (basestring, webtest.forms.File)):
+            self._validate_val(k, v, method)
+
+    def _validate_val(self, k, v, method):
+        if isinstance(v, (list, tuple)):
+            for vv in v:
+                self._validate_val(k, vv, method)
+        elif not isinstance(v, (basestring, webtest.forms.File, webtest.forms.Upload)):
+            raise TypeError(
+                '%s key %s has value %s of type %s, not str. ' %
+                (method, k, v, type(v)))
+        elif six.PY2 and isinstance(v, six.text_type):
+            try:
+                v.encode('ascii')
+                #pass
+            except UnicodeEncodeError:
                 raise TypeError(
-                    '%s key %s has value %s of type %s, not str. ' %
+                    '%s key "%s" has value "%s" of type %s, should be utf-8 encoded. ' %
                     (method, k, v, type(v)))
 
     def get(self, *args, **kwargs):
-        self._validate_params(kwargs.get('params'), 'get')
+        params = None
+        if 'params' in kwargs:
+            params = kwargs['params']
+        elif len(args) > 1:
+            params = args[1]
+        self._validate_params(params, 'get')
         return super(PostParamCheckingTestApp, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        self._validate_params(kwargs.get('params'), 'post')
+        params = None
+        if 'params' in kwargs:
+            params = kwargs['params']
+        elif len(args) > 1:
+            params = args[1]
+        self._validate_params(params, 'post')
         return super(PostParamCheckingTestApp, self).post(*args, **kwargs)
 
 
