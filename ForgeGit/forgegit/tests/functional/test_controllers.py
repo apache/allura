@@ -367,7 +367,7 @@ class TestRootController(_TestCase):
 
         # subscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
-                          {'subscribe': True},
+                          {'subscribe': 'True'},
                           extra_environ={'username': str(user.username)})
         assert_equal(r.json, {'status': 'ok', 'subscribed': True})
         # user is subscribed
@@ -379,7 +379,7 @@ class TestRootController(_TestCase):
 
         # unsubscribe
         r = self.app.post(str(ci + 'tree/subscribe'),
-                          {'unsubscribe': True},
+                          {'unsubscribe': 'True'},
                           extra_environ={'username': str(user.username)})
         assert_equal(r.json, {'status': 'ok', 'subscribed': False})
         # user is not subscribed

@@ -815,7 +815,7 @@ class TestDeleteProjects(TestController):
 
     @patch('allura.controllers.site_admin.DeleteProjects', autospec=True)
     def test_admins_and_devs_are_disabled(self, dp):
-        data = {'projects': '/p/test\np/test2', 'disable_users': True}
+        data = {'projects': '/p/test\np/test2', 'disable_users': 'True'}
         self.app.post('/nf/admin/delete_projects/really_delete', data)
         dp.post.assert_called_once_with('--disable-users p/test p/test2')
 

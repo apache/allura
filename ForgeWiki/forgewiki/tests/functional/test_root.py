@@ -844,7 +844,7 @@ class TestRootController(TestController):
         sidebar_menu = r.html.find('div', attrs={'id': 'sidebar'})
         assert 'Subscribe to wiki' in str(sidebar_menu)
         # subscribe
-        self.app.post('/p/test/wiki/subscribe', {'subscribe': True},
+        self.app.post('/p/test/wiki/subscribe', {'subscribe': 'True'},
                       extra_environ={'username': str(user.username)}).follow()
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
@@ -852,7 +852,7 @@ class TestRootController(TestController):
         sidebar_menu = r.html.find('div', attrs={'id': 'sidebar'})
         assert 'Unsubscribe' in str(sidebar_menu)
         # unsubscribe
-        self.app.post('/p/test/wiki/subscribe', {'unsubscribe': True},
+        self.app.post('/p/test/wiki/subscribe', {'unsubscribe': 'True'},
                       extra_environ={'username': str(user.username)}).follow()
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)

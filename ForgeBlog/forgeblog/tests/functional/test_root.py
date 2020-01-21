@@ -239,7 +239,7 @@ class Test(TestController):
     def test_post_revert(self):
         self._post()
         d = self._blog_date()
-        self._post('/%s/my-post' % d, text='sometést')
+        self._post('/%s/my-post' % d, text='sometést'.encode('utf-8'))
         response = self.app.post('/blog/%s/my-post/revert' % d, params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get('/blog/%s/my-post/' % d)

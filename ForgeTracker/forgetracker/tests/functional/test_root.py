@@ -420,7 +420,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/edit/?q=ticket')
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
-            '__ticket_ids': [first_ticket._id],
+            '__ticket_ids': [str(first_ticket._id)],
             '_milestone': '2.0',
         })
         M.MonQTask.run_ready()
@@ -431,8 +431,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                first_ticket._id,
-                second_ticket._id),
+                str(first_ticket._id),
+                str(second_ticket._id)),
             '_milestone': '1.0',
         })
         M.MonQTask.run_ready()
@@ -444,8 +444,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                first_ticket._id,
-                second_ticket._id),
+                str(first_ticket._id),
+                str(second_ticket._id)),
             'status': 'accepted',
         })
         M.MonQTask.run_ready()
@@ -465,9 +465,9 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,
-                ticket3._id),
+                str(ticket1._id),
+                str(ticket2._id),
+                str(ticket3._id)),
             'labels': 'tag2, tag3',
         })
         M.MonQTask.run_ready()
@@ -503,8 +503,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
+                str(ticket1._id),
+                str(ticket2._id),),
             'status': 'accepted',
             '_major': 'False'
         })
@@ -524,8 +524,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
+                str(ticket1._id),
+                str(ticket2._id),),
             'status': 'accepted',
             '_major': 'True'
         })
@@ -542,7 +542,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket2._id,),
+                str(ticket2._id),),
             '_major': 'False'
         })
         M.MonQTask.run_ready()
@@ -552,8 +552,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
+                str(ticket1._id),
+                str(ticket2._id),),
             'status': 'accepted',
             '_major': ''
         })
@@ -596,9 +596,9 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
-            'private': False
+                str(ticket1._id),
+                str(ticket2._id),),
+            'private': 'False',
         })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
@@ -613,9 +613,9 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
-            'private': True
+                str(ticket1._id),
+                str(ticket2._id),),
+            'private': 'True'
         })
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
@@ -631,8 +631,8 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                ticket1._id,
-                ticket2._id,),
+                str(ticket1._id),
+                str(ticket2._id),),
             'private': ''
         })
         M.MonQTask.run_ready()
@@ -925,14 +925,14 @@ class TestFunctionalController(TrackerTestController):
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', b'HiThere!')])
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         assert '<i class="fa fa-trash-o" aria-hidden="true"></i>' in r
         r.forms[5].submit()
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         assert '<i class="fa fa-trash-o" aria-hidden="true"></i>' not in r
 
     def test_new_text_attachment_content(self):
@@ -1216,7 +1216,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'zzz',
             'description': 'bbb',
             'status': 'ccc',
-            '_milestone': 'aaaé',
+            '_milestone': 'aaaé'.encode('utf-8'),
             'assigned_to': '',
             'labels': '',
             'comment': ''
@@ -1390,7 +1390,7 @@ class TestFunctionalController(TrackerTestController):
         '''Sidebar must be visible even with a strange characters in saved search terms'''
         r = self.app.post('/admin/bugs/bins/save_bin', {
             'summary': 'Strange chars in terms here',
-            'terms': 'labels:tést',
+            'terms': 'labels:tést'.encode('utf-8'),
             'old_summary': '',
             'sort': ''}).follow()
         r = self.app.get('/bugs/')
@@ -1514,7 +1514,7 @@ class TestFunctionalController(TrackerTestController):
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(post_content in r)
         assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1)
 
@@ -1530,7 +1530,7 @@ class TestFunctionalController(TrackerTestController):
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(summary + ' --&gt; ' + new_summary in r)
         assert_true(len(r.html.findAll(attrs={'class': 'discussion-post meta_post'})) == 1)
 
@@ -1549,9 +1549,9 @@ class TestFunctionalController(TrackerTestController):
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=-1))
+        r = self.app.get('/bugs/1/', dict(page='-1'))
         assert_true(summary in r)
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(post_content in r)
         # no pager if just one page
         assert_false('Page 1 of 1' in r)
@@ -1559,7 +1559,7 @@ class TestFunctionalController(TrackerTestController):
         for i in range(2):
             r = self.app.post(f['action'].encode('utf-8'), params=params,
                               headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=1, limit=2))
+        r = self.app.get('/bugs/1/', dict(page='1', limit='2'))
         assert_true('Page 2 of 2' in r)
 
     def test_discussion_feed(self):
@@ -1737,9 +1737,9 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                first_ticket._id,
-                second_ticket._id,
-                third_ticket._id),
+                str(first_ticket._id),
+                str(second_ticket._id),
+                str(third_ticket._id)),
             'status': 'accepted',
             '_milestone': '2.0',
             'assigned_to': 'test-admin'})
@@ -1815,7 +1815,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
-            '__ticket_ids': [ticket._id],
+            '__ticket_ids': [str(ticket._id)],
             'status': 'accepted'})
         M.MonQTask.run_ready()
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
@@ -1855,7 +1855,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             'status': 'accepted'})
         M.MonQTask.run_ready()
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
@@ -1896,7 +1896,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             'status': 'accepted'})
         M.MonQTask.run_ready()
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
@@ -2050,7 +2050,7 @@ class TestFunctionalController(TrackerTestController):
         env = {'username': str('test-user')}
         post_data = {
             'ticket_form.summary': 'Private ticket title',
-            'ticket_form.private': True
+            'ticket_form.private': 'True'
         }
         self.app.post('/bugs/save_ticket', post_data, extra_environ=env)
         # ... and can see it
@@ -2193,7 +2193,7 @@ class TestFunctionalController(TrackerTestController):
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'].encode('utf-8'), params=params,
                           headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
-        r = self.app.get('/p/test2/bugs2/1/', dict(page=1))
+        r = self.app.get('/p/test2/bugs2/1/', dict(page='1'))
         assert_true(post_content in r)
         comments_cnt = len(r.html.findAll(attrs={'class': 'discussion-post'}))
         assert_equal(comments_cnt, 2)  # moved auto comment + new comment
@@ -2320,7 +2320,7 @@ class TestFunctionalController(TrackerTestController):
         user = M.User.query.get(username='test-user')
 
         # subscribe test-user to ticket #2
-        self.app.post('/p/test/bugs/2/subscribe', {'subscribe': True},
+        self.app.post('/p/test/bugs/2/subscribe', {'subscribe': 'True'},
                       extra_environ={'username': str('test-user')})
         assert M.Mailbox.query.get(user_id=user._id,
                                    project_id=p._id,
@@ -2443,7 +2443,7 @@ class TestFunctionalController(TrackerTestController):
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'].encode('utf-8'), params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
-        r = self.app.get('/bugs/1/', dict(page=1))
+        r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
                       upload_files=[('file_info', 'test.txt', b'test attach')])
@@ -2572,7 +2572,7 @@ class TestFunctionalController(TrackerTestController):
             'status': 'closed',
             'assigned_to': '',
             'labels': '',
-            'private': True,
+            'private': 'True',
             'comment': 'closing ticket of a user that is gone'
         })
         self.app.get('/p/test/bugs/1/', status=200)
@@ -2590,9 +2590,9 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/p/test/bugs/update_tickets', {
             '__search': '',
             '__ticket_ids': (
-                first_ticket._id,
-                second_ticket._id),
-            'deleted': True})
+                str(first_ticket._id),
+                str(second_ticket._id)),
+            'deleted': 'True'})
         M.MonQTask.run_ready()
 
         r = self.app.get('/bugs/')
@@ -3026,7 +3026,7 @@ class TestBulkMove(TrackerTestController):
         original_tracker = original_p.app_instance('bugs')
         self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             '__search': '',
         })
         M.MonQTask.run_ready()
@@ -3064,7 +3064,7 @@ class TestBulkMove(TrackerTestController):
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             '__search': '',
         })
         M.MonQTask.run_ready()
@@ -3127,7 +3127,7 @@ class TestBulkMove(TrackerTestController):
         M.MonQTask.query.remove()
         self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             '__search': '',
         })
         M.MonQTask.run_ready()
@@ -3183,7 +3183,7 @@ class TestBulkMove(TrackerTestController):
         tracker = p.app_instance('bugs2')
         self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             '__search': '',
         })
         M.MonQTask.run_ready()
@@ -3231,7 +3231,7 @@ class TestBulkMove(TrackerTestController):
         tracker = p.app_instance('bugs2')
         self.app.post('/p/test/bugs/move_tickets', {
             'tracker': str(tracker.config._id),
-            '__ticket_ids': [t._id for t in tickets],
+            '__ticket_ids': [str(t._id) for t in tickets],
             '__search': '',
         })
         M.MonQTask.run_ready()

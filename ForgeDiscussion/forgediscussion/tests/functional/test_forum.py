@@ -700,7 +700,7 @@ class TestForum(TestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         self.app.post(str(subscribe_url), params=params)
-        self.app.post('/discussion/general/subscribe_to_forum', {'subscribe': True})
+        self.app.post('/discussion/general/subscribe_to_forum', {'subscribe': 'True'})
         f = thread.html.find('div', {'class': 'comment-row reply_post_form'}).find('form')
         rep_url = f.get('action')
         params = dict()
