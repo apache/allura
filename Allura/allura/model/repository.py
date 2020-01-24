@@ -40,6 +40,7 @@ from tg import app_globals as g
 import pymongo
 import pymongo.errors
 import bson
+import six
 
 from ming import schema as S
 from ming import Field, collection, Index
@@ -1235,7 +1236,7 @@ class Commit(RepoObject, ActivityObject):
         changes = self.repo.get_changes(self._id)
         changed_paths = set()
         for change in changes:
-            node = change.strip('/')
+            node = six.ensure_text(change).strip('/')
             changed_paths.add(node)
             node_path = os.path.dirname(node)
             while node_path:
@@ -1521,6 +1522,9 @@ class Blob(object):
 
     @LazyProperty
     def text(self):
+        """
+        Direct binary contents of file.  Convert with h.really_unicode() if you think it is textual.
+        """
         return self.open().read()
 
 
@@ -1816,6 +1820,7 @@ class GitLikeTree(object):
         self._hex = None
 
     def get_tree(self, path):
+        path = six.ensure_text(path)
         if path.startswith('/'):
             path = path[1:]
         if not path:
@@ -1826,6 +1831,7 @@ class GitLikeTree(object):
         return cur
 
     def get_blob(self, path):
+        path = six.ensure_text(path)
         if path.startswith('/'):
             path = path[1:]
         path_parts = path.split('/')
@@ -1836,6 +1842,7 @@ class GitLikeTree(object):
         return cur.blobs[last]
 
     def set_blob(self, path, oid):
+        path = six.ensure_text(path)
         if path.startswith('/'):
             path = path[1:]
         path_parts = path.split('/')
@@ -1849,15 +1856,15 @@ class GitLikeTree(object):
         '''Compute a recursive sha1 hash on the tree'''
         # dependent on __repr__ below
         if self._hex is None:
-            sha_obj = sha1('tree\n' + repr(self))
+            sha_obj = sha1(b'tree\n' + repr(self))
             self._hex = sha_obj.hexdigest()
         return self._hex
 
     def __repr__(self):
         # this can't change, is used in hex() above
-        lines = ['t %s %s' % (t.hex(), name)
+        lines = ['t %s %s' % (t.hex(), h.really_unicode(name))
                  for name, t in self.trees.iteritems()]
-        lines += ['b %s %s' % (oid, name)
+        lines += ['b %s %s' % (oid, h.really_unicode(name))
                   for name, oid in self.blobs.iteritems()]
         return h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
 

@@ -477,10 +477,12 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
 
 
 def generate_code_stats(blob):
+    from allura.lib import helpers as h
+
     stats = {'line_count': 0,
              'code_size': 0,
              'data_line_count': 0}
-    code = blob.text
+    code = h.really_unicode(blob.text)
     lines = code.split('\n')
     stats['code_size'] = blob.size
     stats['line_count'] = len(lines)

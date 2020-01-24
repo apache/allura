@@ -17,6 +17,9 @@
 
 from __future__ import unicode_literals
 import difflib
+
+import six
+
 from allura.lib import helpers as h
 
 
@@ -55,7 +58,7 @@ class HtmlSideBySideDiff(object):
     def _preprocess(self, line):
         if not line:
             return line
-        line = line.expandtabs(self._tabsize)
+        line = six.ensure_text(line).expandtabs(self._tabsize)
         return line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
     def _replace_marks(self, line):
@@ -110,8 +113,8 @@ class HtmlSideBySideDiff(object):
 
         Uses difflib._mdiff function to generate diff.
         """
-        adesc = adesc or ''
-        bdesc = bdesc or ''
+        adesc = six.ensure_text(adesc) or ''
+        bdesc = six.ensure_text(bdesc) or ''
         diff = difflib._mdiff(a, b, context=context)
         lines = [self._make_line(d) for d in diff]
         return h.really_unicode(
