@@ -178,6 +178,23 @@ def urlquoteplus(url, safe=b""):
         return urllib.quote_plus(url.encode('utf-8'), safe=safe)
 
 
+def urlquote_path_only(url):
+    """
+    Given a relative url like /fö/bar/?sdf&sdf
+    urlquote only the path portion of it, leaving any querystring or target hash unquoted
+    :param url:
+    :return:
+    """
+    if '?' in url:
+        url_path, url_joiner, url_remainder = url.partition('?')
+    elif '#' in url:
+        url_path, url_joiner, url_remainder = url.partition('#')
+    else:
+        url_path = url
+        url_joiner = url_remainder = ''
+    return urlquote(url_path) + url_joiner + url_remainder
+
+
 def _attempt_encodings(s, encodings):
     if s is None:
         return ''

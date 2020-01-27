@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -33,7 +34,7 @@ class TestFeeds(TestController):
 
     def _post(self, slug='', **kw):
         d = {
-            'title': 'My Post',
+            'title': 'My Pôst'.encode('utf-8'),
             'text': 'Nothing to see here',
             'labels': '',
             'state': 'published'}
@@ -60,8 +61,11 @@ class TestFeeds(TestController):
         return datetime.datetime.utcnow().strftime('%Y/%m')
 
     def test_feeds(self):
-        self.app.get('/blog/feed.rss')
-        self.app.get('/blog/feed.atom')
+        self._post()
+        r = self.app.get('/blog/feed.rss')
+        r.mustcontain('/my-p%C3%B4st/</link>')
+        r = self.app.get('/blog/feed.atom')
+        r.mustcontain('/my-p%C3%B4st/"')
 
     def test_rss_feed_contains_self_link(self):
         r = self.app.get('/blog/feed.rss')
@@ -74,9 +78,9 @@ class TestFeeds(TestController):
     def test_post_feeds(self):
         self._post()
         d = self._blog_date()
-        response = self.app.get('/blog/%s/my-post/feed.rss' % d)
+        response = self.app.get(h.urlquote('/blog/%s/my-pôst/feed.rss' % d))
         assert 'Nothing to see' in response
-        response = self.app.get('/blog/%s/my-post/feed.atom' % d)
+        response = self.app.get(h.urlquote('/blog/%s/my-pôst/feed.atom' % d))
         assert 'Nothing to see' in response
         self._post(title='test', text='*sometext*')
         response = self.app.get('/blog/feed')
@@ -139,7 +143,7 @@ class TestFeeds(TestController):
             blog_post.discussion_thread.add_post(text='You are a good blogger, I am a boring commentor.')
         ThreadLocalORMSession.flush_all()
 
-        resp = self.app.get("/blog/" + self._blog_date() + "/my-post/feed.rss")
+        resp = self.app.get(h.urlquote("/blog/" + self._blog_date() + "/my-pôst/feed.rss"))
         assert_in('boring comment', resp)
 
         resp = self.app.get("/blog/feed.rss")

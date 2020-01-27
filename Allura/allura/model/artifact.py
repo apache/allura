@@ -960,7 +960,7 @@ class Feed(MappedClass):
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, page=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
-        d = dict(title=title, link=h.absurl(link),
+        d = dict(title=title, link=h.absurl(h.urlquote(link)),
                  description=description, language='en',
                  feed_url=request.url)
         if feed_type == 'atom':
@@ -982,7 +982,7 @@ class Feed(MappedClass):
         cur = cur.skip(limit * page)
         for r in cur:
             feed.add_item(title=r.title,
-                          link=h.absurl(r.link.encode('utf-8')),
+                          link=h.absurl(h.urlquote_path_only(r.link)),
                           pubdate=r.pubdate,
                           description=r.description,
                           unique_id=h.absurl(r.unique_id),
