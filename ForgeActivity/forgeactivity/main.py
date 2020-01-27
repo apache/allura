@@ -166,7 +166,8 @@ class ForgeActivityController(BaseController):
         else:
             feed = FG.Rss201rev2Feed(**d)
         for t in data['timeline']:
-            url = h.absurl(t.obj.activity_url.encode('utf-8'))
+            url_id = h.absurl(t.obj.activity_url)  # try to keep this consistent over time (not url-quoted)
+            url = h.absurl(h.urlquote_path_only(t.obj.activity_url))
             feed.add_item(title='%s %s %s%s' % (
                                 t.actor.activity_name,
                 t.verb,
@@ -176,7 +177,7 @@ class ForgeActivityController(BaseController):
                 link=url,
                 pubdate=t.published,
                 description=t.obj.activity_extras.get('summary'),
-                unique_id=url,
+                unique_id=url_id,
                 author_name=t.actor.activity_name,
                 author_link=h.absurl(t.actor.activity_url))
         return feed.writeString('utf-8')

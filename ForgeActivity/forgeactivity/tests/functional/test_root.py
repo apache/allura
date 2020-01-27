@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -192,7 +193,7 @@ class TestActivityController(TestController):
                 "activity_extras": {
                     "summary": "Just wanted to leave a comment on this..."
                 },
-                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_url": "/p/test/unicode•º/?limit=25#ed7c",
                 "activity_name": "a comment"
             },
             "target": {
@@ -228,8 +229,10 @@ class TestActivityController(TestController):
                      'Administrator 1 posted a comment on ticket #34')
         assert_equal(activity.find('description').text,
                      'Just wanted to leave a comment on this...')
+        assert_equal(activity.find('guid').text,
+                     'http://localhost/p/test/unicode•º/?limit=25#ed7c')
         assert_equal(activity.find('link').text,
-                     'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+                     'http://localhost/p/test/unicode%E2%80%A2%C2%BA/?limit=25#ed7c')
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
