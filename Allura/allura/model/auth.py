@@ -757,7 +757,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         that role.
         """
         if self.is_anonymous():
-            return
+            return []
         reaching_role_ids = list(
             g.credentials.user_roles(user_id=self._id).reaching_ids_set)
         reaching_roles = ProjectRole.query.find(
