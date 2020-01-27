@@ -657,7 +657,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 return result
 
         # full registration into LDAP
-        uid = str(M.AuthGlobals.get_next_uid())
+        uid = str(M.AuthGlobals.get_next_uid()).encode('utf-8')
         try:
             con = ldap_conn()
             uname = user_doc['username'].encode('utf-8')
@@ -665,14 +665,14 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             ldif_u = modlist.addModlist(dict(
                 uid=uname,
                 userPassword=self._encode_password(user_doc['password']),
-                objectClass=['account', 'posixAccount'],
+                objectClass=[b'account', b'posixAccount'],
                 cn=display_name,
                 uidNumber=uid,
-                gidNumber='10001',
-                homeDirectory='/home/' + uname,
-                loginShell='/bin/bash',
+                gidNumber=b'10001',
+                homeDirectory=b'/home/' + uname,
+                loginShell=b'/bin/bash',
                 gecos=uname,
-                description='SCM user account'))
+                description=b'SCM user account'))
             try:
                 con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
             except ldap.ALREADY_EXISTS:
@@ -720,9 +720,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         rounds = asint(config.get(cfg_prefix + 'rounds', 6000))
         salt = self._get_salt(salt_len) if salt is None else salt
         encrypted = crypt.crypt(
-            password.encode('utf-8'),
+            six.ensure_str(password),
             '$%s$rounds=%s$%s' % (algorithm, rounds, salt))
-        return '{CRYPT}%s' % encrypted
+        return b'{CRYPT}%s' % encrypted.encode('utf-8')
 
     def by_username(self, username):
         from allura import model as M
@@ -739,7 +739,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con = ldap_conn(ldap_ident, ldap_pass)
             new_password = self._encode_password(new_password)
             con.modify_s(
-                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
+                dn, [(ldap.MOD_REPLACE, b'userPassword', new_password)])
             con.unbind_s()
             user.last_password_updated = datetime.utcnow()
             session(user).flush(user)
@@ -1734,7 +1734,7 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
             con = ldap_conn()
             ldap_attr = self.fields[pref_name]
             con.modify_s(ldap_user_dn(user.username),
-                         [(ldap.MOD_REPLACE, ldap_attr, pref_value.encode('utf-8'))])
+                         [(ldap.MOD_REPLACE, ldap_attr.encode('utf-8'), pref_value.encode('utf-8'))])
             con.unbind_s()
         else:
             return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)

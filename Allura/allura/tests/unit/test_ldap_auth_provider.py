@@ -64,9 +64,9 @@ class TestLdapAuthenticationProvider(object):
         self.provider.set_password(user, 'old-pass', 'new-pass')
         ldap.initialize.assert_called_once_with('ldaps://localhost/')
         connection = ldap.initialize.return_value
-        connection.bind_s.called_once_with(dn, 'old-pass')
+        connection.bind_s.called_once_with(dn, b'old-pass')
         connection.modify_s.assert_called_once_with(
-            dn, [(ldap.MOD_REPLACE, 'userPassword', 'new-pass-hash')])
+            dn, [(ldap.MOD_REPLACE, b'userPassword', b'new-pass-hash')])
         assert_equal(connection.unbind_s.call_count, 1)
 
     @patch('allura.lib.plugin.ldap')
