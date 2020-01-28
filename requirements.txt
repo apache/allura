@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-activitystream==0.2.2
+activitystream==0.3.0
 asn1crypto==0.24.0        # via cryptography
 backlash==0.1.4
 backports.functools-lru-cache==1.5  # via soupsieve
@@ -97,4 +97,4 @@ webtest==2.0.33
 wrapt==1.11.2
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools
+# setuptools==44.0.0        # via ipython
