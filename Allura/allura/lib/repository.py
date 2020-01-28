@@ -125,8 +125,10 @@ class RepositoryApp(Application):
     def sidebar_menu(self):
         if not self.repo or self.repo.status != 'ready':
             return []
-        links = [SitemapEntry('Browse Commits', c.app.url +
-                              'commit_browser', ui_icon=g.icons['browse_commits'])]
+        links = []
+        if not self.repo.is_empty():
+            links.append(SitemapEntry('Browse Commits', c.app.url + 'commit_browser',
+                                      ui_icon=g.icons['browse_commits']))
         if self.forkable and self.repo.status == 'ready' and not self.repo.is_empty():
             links.append(
                 SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
@@ -196,6 +198,12 @@ class RepositoryApp(Application):
                         'More Branches',
                         ref_url + 'branches/',
                     ))
+        elif not self.repo.is_empty():
+            # SVN repos, for example, should have a sidebar link to get to the main view
+            links.append(
+                SitemapEntry('Browse Files', c.app.url)
+            )
+
         tags = self.repo.get_tags()
         if tags:
             links.append(SitemapEntry('Tags'))
