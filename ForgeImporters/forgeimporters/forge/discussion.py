@@ -115,7 +115,8 @@ class ForgeDiscussionImporter(ToolImporter):
 				new_forum = dict(
                     			app_config_id = app.config._id,
                     			shortname=forum_json['shortname'],
-                    			_id=forum_json.get('_id', ''),
+                                discussion_id=forum_json.get('discussion_id', None),
+                    			_id=forum_json.get('_id', None),
                     			description=forum_json['description'],
                     			name=forum_json['name'],
                     			create='on',
@@ -174,8 +175,12 @@ class ForgeDiscussionImporter(ToolImporter):
                         subject=post_json['subject'],
                         text=post_json['text'], 
                         ignore_security=True,
-                        timestamp=parse(post_json['timestamp'])
+                        timestamp=parse(post_json['timestamp']),
+                        last_edited=post_json['last_edited']
                 )
+
+                if "slug" in post_json.keys():
+                    p.slug = post_json['slug']
 
                 try:
                     p.add_multiple_attachments([File(a['url'])
