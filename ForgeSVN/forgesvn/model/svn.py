@@ -695,8 +695,8 @@ class SVNImplementation(M.RepositoryImplementation):
         archive_name = self._repo.tarball_filename(commit, path)
         dest = os.path.join(self._repo.tarball_path, archive_name)
         tmpdest = os.path.join(self._repo.tarball_tmpdir, archive_name)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
-        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip')).encode('utf-8')
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp')).encode('utf-8')
         rmtree(dest.encode('utf8'), ignore_errors=True)  # must encode into bytes or it'll fail on non-ascii filenames
         rmtree(tmpdest.encode('utf8'), ignore_errors=True)
         path = os.path.join(self._url, path)
