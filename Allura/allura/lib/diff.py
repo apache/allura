@@ -58,7 +58,7 @@ class HtmlSideBySideDiff(object):
     def _preprocess(self, line):
         if not line:
             return line
-        line = six.ensure_text(line).expandtabs(self._tabsize)
+        line = h.really_unicode(line).expandtabs(self._tabsize)
         return line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
     def _replace_marks(self, line):
