@@ -35,6 +35,7 @@ from allura.lib.exceptions import CompoundError
 from allura.lib import helpers as h
 from allura.lib import utils
 from . import base
+import six
 
 
 class ShowModelsCommand(base.Command):
@@ -237,14 +238,14 @@ class EnsureIndexCommand(base.Command):
                 idx = project_indexes[cname]
             idx.extend(mgr.indexes)
         base.log.info('Updating indexes for main DB')
-        for odm_session, db_indexes in main_indexes.iteritems():
+        for odm_session, db_indexes in six.iteritems(main_indexes):
             db = odm_session.impl.db
-            for name, indexes in db_indexes.iteritems():
+            for name, indexes in six.iteritems(db_indexes):
                 self._update_indexes(db[name], indexes)
         base.log.info('Updating indexes for project DB')
         db = M.project_doc_session.db
         base.log.info('... DB: %s', db)
-        for name, indexes in project_indexes.iteritems():
+        for name, indexes in six.iteritems(project_indexes):
             self._update_indexes(db[name], indexes)
         base.log.info('Done updating indexes')
 
@@ -263,7 +264,7 @@ class EnsureIndexCommand(base.Command):
         unique_flag_drop = {}
         unique_flag_add = {}
         try:
-            existing_indexes = collection.index_information().iteritems()
+            existing_indexes = six.iteritems(collection.index_information())
         except OperationFailure:
             # exception is raised if db or collection doesn't exist yet
             existing_indexes = {}
@@ -282,13 +283,13 @@ class EnsureIndexCommand(base.Command):
                 else:
                     prev_indexes[iname] = keys
 
-        for iname, keys in unique_flag_drop.iteritems():
+        for iname, keys in six.iteritems(unique_flag_drop):
             self._recreate_index(collection, iname, list(keys), unique=False)
-        for iname, keys in unique_flag_add.iteritems():
+        for iname, keys in six.iteritems(unique_flag_add):
             self._recreate_index(collection, iname, list(keys), unique=True)
 
         # Ensure all indexes
-        for keys, idx in uindexes.iteritems():
+        for keys, idx in six.iteritems(uindexes):
             base.log.info('...... ensure %s:%s', collection.name, idx)
             while True:
                 try:
@@ -303,11 +304,11 @@ class EnsureIndexCommand(base.Command):
                 except DuplicateKeyError as err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
-        for keys, idx in indexes.iteritems():
+        for keys, idx in six.iteritems(indexes):
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.ensure_index(idx.index_spec, background=True, **idx.index_options)
         # Drop obsolete indexes
-        for iname, keys in prev_indexes.iteritems():
+        for iname, keys in six.iteritems(prev_indexes):
             if keys not in indexes:
                 if self.options.clean:
                     base.log.info('...... drop index %s:%s', collection.name, iname)
@@ -315,7 +316,7 @@ class EnsureIndexCommand(base.Command):
                 else:
                     base.log.info('...... potentially unneeded index, could be removed by running with --clean %s:%s',
                                   collection.name, iname)
-        for iname, keys in prev_uindexes.iteritems():
+        for iname, keys in six.iteritems(prev_uindexes):
             if keys not in uindexes:
                 if self.options.clean:
                     base.log.info('...... drop index %s:%s', collection.name, iname)
@@ -359,7 +360,7 @@ class EnsureIndexCommand(base.Command):
 
 def build_model_inheritance_graph():
     graph = dict((m.mapped_class, ([], [])) for m in Mapper.all_mappers())
-    for cls, (parents, children) in graph.iteritems():
+    for cls, (parents, children) in six.iteritems(graph):
         for b in cls.__bases__:
             if b not in graph:
                 continue

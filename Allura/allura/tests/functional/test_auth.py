@@ -54,6 +54,7 @@ from allura import model as M
 from allura.lib import plugin
 from allura.lib import helpers as h
 from allura.lib.multifactor import TotpService, RecoveryCodeService
+import six
 
 
 def unentity(s):
@@ -848,7 +849,7 @@ class TestAuth(TestController):
 
     def _find_subscriptions_form(self, r):
         form = None
-        for f in r.forms.itervalues():
+        for f in six.itervalues(r.forms):
             if f.action == 'update_subscriptions':
                 form = f
                 break
@@ -857,7 +858,7 @@ class TestAuth(TestController):
 
     def _find_subscriptions_field(self, form, subscribed=False):
         field_name = None
-        for k, v in form.fields.iteritems():
+        for k, v in six.iteritems(form.fields):
             if subscribed:
                 check = c and v[0].value == 'on'
             else:

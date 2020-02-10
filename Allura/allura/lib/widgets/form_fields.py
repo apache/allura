@@ -27,6 +27,7 @@ from webhelpers import paginate
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+import six
 
 log = logging.getLogger(__name__)
 
@@ -328,7 +329,7 @@ class PageList(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k, v in request.params.iteritems():
+        for k, v in six.iteritems(request.params):
             if k not in ['limit', 'count', 'page']:
                 url_params[k] = v
         return url_params
@@ -346,7 +347,7 @@ class PageSize(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k, v in request.params.iteritems():
+        for k, v in six.iteritems(request.params):
             if k not in ['limit', 'count', 'page']:
                 url_params[k] = v
         return url_params
@@ -445,7 +446,7 @@ class StateField(JQueryMixin, ew.CompoundField):
 
     @property
     def fields(self):
-        return [self.selector] + self.states.values()
+        return [self.selector] + list(self.states.values())
 
 
 class DateField(JQueryMixin, ew.TextField):

@@ -280,7 +280,7 @@ def push_config(obj, **kw):
 
     saved_attrs = {}
     new_attrs = []
-    for k, v in kw.iteritems():
+    for k, v in six.iteritems(kw):
         try:
             saved_attrs[k] = getattr(obj, k)
         except AttributeError:
@@ -289,7 +289,7 @@ def push_config(obj, **kw):
     try:
         yield obj
     finally:
-        for k, v in saved_attrs.iteritems():
+        for k, v in six.iteritems(saved_attrs):
             setattr(obj, k, v)
         for k in new_attrs:
             delattr(obj, k)
@@ -390,7 +390,7 @@ def encode_keys(d):
     a valid kwargs argument'''
     return dict(
         (k.encode('utf-8'), v)
-        for k, v in d.iteritems())
+        for k, v in six.iteritems(d))
 
 
 def vardec(fun):
@@ -422,7 +422,7 @@ def convert_bools(conf, prefix=''):
 
     return {
         k: (convert_value(v) if k.startswith(prefix) else v)
-        for k, v in conf.iteritems()
+        for k, v in six.iteritems(conf)
     }
 
 
@@ -547,7 +547,7 @@ def gen_message_id(_id=None):
 class ProxiedAttrMeta(type):
 
     def __init__(cls, name, bases, dct):
-        for v in dct.itervalues():
+        for v in six.itervalues(dct):
             if isinstance(v, attrproxy):
                 v.cls = cls
 
@@ -611,7 +611,7 @@ class fixed_attrs_proxy(proxy):
     """
     def __init__(self, obj, **kw):
         self._obj = obj
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             setattr(self, k, v)
 
 
@@ -619,7 +619,7 @@ class fixed_attrs_proxy(proxy):
 def json_validation_error(controller, **kwargs):
     exc = request.validation['exception']
     result = dict(status='Validation Error',
-                  errors={fld: str(err) for fld, err in exc.error_dict.iteritems()},
+                  errors={fld: str(err) for fld, err in six.iteritems(exc.error_dict)},
                   value=exc.value,
                   params=kwargs)
     response.status = 400
@@ -647,7 +647,7 @@ def config_with_prefix(d, prefix):
     with the prefix stripped
     '''
     plen = len(prefix)
-    return dict((k[plen:], v) for k, v in d.iteritems()
+    return dict((k[plen:], v) for k, v in six.iteritems(d)
                 if k.startswith(prefix))
 
 
@@ -908,7 +908,7 @@ def ming_config(**conf):
         yield
     finally:
         Session._datastores = datastores
-        for name, session in Session._registry.iteritems():
+        for name, session in six.iteritems(Session._registry):
             session.bind = datastores.get(name, None)
             session._name = name
 
@@ -1071,7 +1071,7 @@ def iter_entry_points(group, *a, **kw):
         by_name = defaultdict(list)
         for ep in entry_points:
             by_name[ep.name].append(ep)
-        for name, eps in by_name.iteritems():
+        for name, eps in six.iteritems(by_name):
             ep_count = len(eps)
             if ep_count == 1:
                 yield eps[0]
@@ -1080,8 +1080,8 @@ def iter_entry_points(group, *a, **kw):
 
     def subclass(entry_points):
         loaded = dict((ep, ep.load()) for ep in entry_points)
-        for ep, cls in loaded.iteritems():
-            others = loaded.values()[:]
+        for ep, cls in six.iteritems(loaded):
+            others = list(loaded.values())[:]
             others.remove(cls)
             if all([issubclass(cls, other) for other in others]):
                 return ep

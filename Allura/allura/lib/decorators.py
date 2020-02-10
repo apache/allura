@@ -161,7 +161,7 @@ def memoize(func, instance, args, kwargs):
         # decorating a method
         dic = getattr_(instance, "_memoize_dic__{}".format(func.__name__), dict)
 
-    cache_key = (args, frozenset(kwargs.items()))
+    cache_key = (args, frozenset(list(kwargs.items())))
     if cache_key in dic:
         return dic[cache_key]
     else:

@@ -27,6 +27,7 @@ import mock
 import json
 
 from allura.lib import helpers as h
+import six
 
 _patched = False
 def apply():
@@ -60,7 +61,7 @@ def apply():
         else:
             return
 
-        for content_type, content_engine in engines.iteritems():
+        for content_type, content_engine in six.iteritems(engines):
             template = template.split(':', 1)
             template.extend(content_engine[2:])
             try:

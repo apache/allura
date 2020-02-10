@@ -58,6 +58,7 @@ from allura.lib.utils import urlencode
 from allura.tests import decorators as td
 from allura.tasks import mail_tasks
 from ming.orm.ormsession import ThreadLocalORMSession
+import six
 
 
 class TrackerTestController(TestController):
@@ -84,7 +85,7 @@ class TrackerTestController(TestController):
         response = self.app.get(mount_point + 'new/',
                                 extra_environ=extra_environ)
         form = self._find_new_ticket_form(response)
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             if type(v) == bool:
                 form['ticket_form.%s' % k] = v
             else:
@@ -1952,7 +1953,7 @@ class TestFunctionalController(TrackerTestController):
             tickets[1]._id: tickets[1],
         }
         filtered_changes = c.app.globals.filtered_by_subscription(changes)
-        filtered_users = [uid for uid, data in filtered_changes.iteritems()]
+        filtered_users = [uid for uid, data in six.iteritems(filtered_changes)]
         assert_equal(sorted(filtered_users),
                      sorted([u._id for u in users[:-1] + [admin]]))
         ticket_ids = [t._id for t in tickets]
@@ -2298,7 +2299,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         field_name = None  # comment text textarea name
         form = r.forms['ticket-form']
-        for name, field in form.fields.iteritems():
+        for name, field in six.iteritems(form.fields):
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
@@ -2405,7 +2406,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1/')
         field_name = None  # comment text textarea name
         form = r.forms['ticket-form']
-        for name, field in form.fields.iteritems():
+        for name, field in six.iteritems(form.fields):
             if field[0].tag == 'textarea':
                 field_name = name
         assert field_name, "Can't find comment field"
@@ -2619,7 +2620,7 @@ class TestMilestoneAdmin(TrackerTestController):
                  show_in_search='on',
                  type='milestone',
                  milestones=[
-                     dict((k, v) for k, v in d.iteritems()) for d in mf['milestones']])
+                     dict((k, v) for k, v in six.iteritems(d)) for d in mf['milestones']])
             for mf in milestones]}
         return self._post(params)
 

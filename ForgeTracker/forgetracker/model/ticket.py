@@ -282,7 +282,7 @@ class Globals(MappedClass):
             app_config_id=self.app_config_id)).sort('ticket_num').all()
         filtered = self.filtered_by_subscription({t._id: t for t in tickets})
         original_ticket_nums = {t._id: t.ticket_num for t in tickets}
-        users = User.query.find({'_id': {'$in': filtered.keys()}}).all()
+        users = User.query.find({'_id': {'$in': list(filtered.keys())}}).all()
         moved_tickets = {}
         for ticket in tickets:
             moved = ticket.move(tracker, notify=False)
@@ -324,7 +324,7 @@ class Globals(MappedClass):
                 'original_num': original_ticket_nums[_id],
                 'destination_num': moved_tickets[_id].ticket_num,
                 'summary': moved_tickets[_id].summary
-            } for _id, t in moved_tickets.iteritems()
+            } for _id, t in six.iteritems(moved_tickets)
                 if (not t.private or
                     self.app_config.options.get('TicketMonitoringType') ==
                     'AllTicketChanges')]
@@ -392,7 +392,7 @@ class Globals(MappedClass):
             if labels:
                 values['labels'] = self.append_new_labels(
                     ticket.labels, labels.split(','))
-            for k, v in sorted(values.iteritems()):
+            for k, v in sorted(six.iteritems(values)):
                 if k == 'deleted':
                     if v:
                         ticket.soft_delete()
@@ -422,7 +422,7 @@ class Globals(MappedClass):
                         v,
                         getattr(ticket, k))
                 setattr(ticket, k, v)
-            for k, v in sorted(custom_values.iteritems()):
+            for k, v in sorted(six.iteritems(custom_values)):
                 def cf_val(cf):
                     return ticket.get_custom_user(cf.name) \
                         if cf.type == 'user' \
@@ -445,7 +445,7 @@ class Globals(MappedClass):
 
         filtered_changes = self.filtered_by_subscription(changed_tickets)
         users = User.query.find(
-            {'_id': {'$in': filtered_changes.keys()}}).all()
+            {'_id': {'$in': list(filtered_changes.keys())}}).all()
 
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
@@ -463,12 +463,12 @@ class Globals(MappedClass):
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
-        for f, v in sorted(values.iteritems()):
+        for f, v in sorted(six.iteritems(values)):
             if f == 'assigned_to_id':
                 user = User.query.get(_id=v)
                 v = user.display_name if user else v
             head.append('- **%s**: %s' % (get_label(f), v))
-        for f, v in sorted(custom_values.iteritems()):
+        for f, v in sorted(six.iteritems(custom_values)):
             cf = custom_fields[f]
             if cf.type == 'user':
                 user = User.by_username(v)
@@ -515,19 +515,19 @@ class Globals(MappedClass):
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
         ac_id = app_config_id if app_config_id else self.app_config_id
-        ticket_ids = tickets.keys()
+        ticket_ids = list(tickets.keys())
         tickets_index_id = {
-            ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
+            ticket.index_id(): t_id for t_id, ticket in six.iteritems(tickets)}
         subscriptions = Mailbox.query.find({
             'project_id': p_id,
             'app_config_id': ac_id,
-            'artifact_index_id': {'$in': tickets_index_id.keys() + [None]}})
+            'artifact_index_id': {'$in': list(tickets_index_id.keys()) + [None]}})
         filtered = {}
         for subscription in subscriptions:
             if subscription.artifact_index_id is None:
                 # subscribed to entire tool, will see all changes
                 filtered[subscription.user_id] = set(ticket_ids)
-            elif subscription.artifact_index_id in tickets_index_id.keys():
+            elif subscription.artifact_index_id in list(tickets_index_id.keys()):
                 user = filtered.setdefault(subscription.user_id, set())
                 user.add(tickets_index_id[subscription.artifact_index_id])
         return filtered
@@ -578,7 +578,7 @@ class TicketHistory(Snapshot):
         # `text`, so we're appending all other field values into `text`, to match on it too.
         result['text'] += '\n'.join([six.text_type(v)
                                      for k, v
-                                     in result.iteritems()
+                                     in six.iteritems(result)
                                      if k not in ('id', 'project_id_s')
                                      ])
         return result
@@ -714,7 +714,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             votes_total_i=(self.votes_up - self.votes_down),
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
         )
-        for k, v in self.custom_fields.iteritems():
+        for k, v in six.iteritems(self.custom_fields):
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):
@@ -734,7 +734,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         # match on it too.
         result['text'] += '\n'.join([six.text_type(v)
                                      for k, v
-                                     in result.iteritems()
+                                     in six.iteritems(result)
                                      if k not in ('id', 'project_id_s')
                                      ])
         return result
@@ -987,7 +987,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if 'custom_fields' not in ticket_form:
                 ticket_form['custom_fields'] = dict()
             ticket_form['custom_fields']['_milestone'] = milestone
-        for k, v in ticket_form.iteritems():
+        for k, v in six.iteritems(ticket_form):
             if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
@@ -999,7 +999,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
-            for k, v in ticket_form['custom_fields'].iteritems():
+            for k, v in six.iteritems(ticket_form['custom_fields']):
                 if k in custom_users:
                     # restrict custom user field values to project members
                     user = self.app_config.project.user_in_project(v)

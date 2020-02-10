@@ -53,7 +53,7 @@ def escape_solr_arg(term):
     """ Apply escaping to the passed in query terms
         escaping special characters like : , etc"""
     term = term.replace('\\', r'\\')   # escape \ first
-    for char, escaped_char in escape_rules.iteritems():
+    for char, escaped_char in six.iteritems(escape_rules):
         term = term.replace(char, escaped_char)
 
     return term

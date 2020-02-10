@@ -242,7 +242,7 @@ class NeighborhoodController(object):
             anchored_tools = neighborhood.get_anchored_tools()
             install_params = []
             for i, tool in enumerate(tools):
-                if (tool.lower() not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
+                if (tool.lower() not in list(anchored_tools.keys())) and (c.project.app_instance(tool) is None):
                     install_params.append(dict(ep_name=tool, ordinal=i + offset))
             c.project.install_apps(install_params)
         redirect(c.project.script_name + 'admin/?first-visit')

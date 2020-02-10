@@ -1062,7 +1062,7 @@ class Commit(RepoObject, ActivityObject):
     repo = None
 
     def __init__(self, **kw):
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             setattr(self, k, v)
 
     @property
@@ -1626,13 +1626,13 @@ class LastCommit(RepoObject):
                 entries = {}
             # paths are fully-qualified; shorten them back to just node names
             entries = {
-                os.path.basename(path): commit_id for path, commit_id in entries.iteritems()}
+                os.path.basename(path): commit_id for path, commit_id in six.iteritems(entries)}
         # update with the nodes changed in this tree's commit
         entries.update({node: tree.commit._id for node in changed})
         # convert to a list of dicts, since mongo doesn't handle arbitrary keys
         # well (i.e., . and $ not allowed)
         entries = [{'name': name, 'commit_id': value}
-                   for name, value in entries.iteritems()]
+                   for name, value in six.iteritems(entries)]
         lcd = cls(
             commit_id=tree.commit._id,
             path=path,
@@ -1690,7 +1690,7 @@ class ModelCache(object):
     def _normalize_query(self, query):
         _query = query
         if not isinstance(_query, tuple):
-            _query = tuple(sorted(_query.items(), key=lambda k: k[0]))
+            _query = tuple(sorted(list(_query.items()), key=lambda k: k[0]))
         return _query
 
     def _model_query(self, cls):
@@ -1789,7 +1789,7 @@ class ModelCache(object):
             return len(self._instance_cache[cls])
 
     def instance_ids(self, cls):
-        return self._instance_cache[cls].keys()
+        return list(self._instance_cache[cls].keys())
 
     def batch_load(self, cls, query, attrs=None):
         '''
@@ -1800,7 +1800,7 @@ class ModelCache(object):
         the given query.
         '''
         if attrs is None:
-            attrs = query.keys()
+            attrs = list(query.keys())
         for result in self._model_query(cls).find(query):
             keys = {a: getattr(result, a) for a in attrs}
             self.set(cls, keys, result)
@@ -1864,9 +1864,9 @@ class GitLikeTree(object):
     def __repr__(self):
         # this can't change, is used in hex() above
         lines = ['t %s %s' % (t.hex(), h.really_unicode(name))
-                 for name, t in self.trees.iteritems()]
+                 for name, t in six.iteritems(self.trees)]
         lines += ['b %s %s' % (oid, h.really_unicode(name))
-                  for name, oid in self.blobs.iteritems()]
+                  for name, oid in six.iteritems(self.blobs)]
         return h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
 
     def __unicode__(self):
@@ -1877,9 +1877,9 @@ class GitLikeTree(object):
         lines = [' ' * indent + 't %s %s' %
                  (name, '\n' + t.unicode_full_tree(indent + 2, show_id=show_id)
                   if recurse else t.hex())
-                 for name, t in sorted(self.trees.iteritems())]
+                 for name, t in sorted(six.iteritems(self.trees))]
         lines += [' ' * indent + 'b %s %s' % (name, oid if show_id else '')
-                  for name, oid in sorted(self.blobs.iteritems())]
+                  for name, oid in sorted(six.iteritems(self.blobs))]
         output = h.really_unicode('\n'.join(lines)).encode('utf-8')
         return output
 

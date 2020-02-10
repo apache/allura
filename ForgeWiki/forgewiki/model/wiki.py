@@ -258,7 +258,7 @@ class Page(VersionedArtifact, ActivityObject):
             t = {}
             for user in users:
                 t[user.username] = user.id
-            return t.values()
+            return list(t.values())
         user_ids = uniq([r.author for r in self.history().all()])
         return User.query.find({
             '_id': {'$in': user_ids},

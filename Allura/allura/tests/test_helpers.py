@@ -186,7 +186,7 @@ def test_context_setters():
 
 def test_encode_keys():
     kw = h.encode_keys({'foo': 5})
-    assert type(kw.keys()[0]) != six.text_type
+    assert type(list(kw.keys())[0]) != six.text_type
 
 
 def test_ago():
@@ -229,7 +229,7 @@ def test_paging_sanitizer():
         (10, 0): (10, 0),
         ('junk', 'more junk'): (25, 0),
     }
-    for input, output in test_data.iteritems():
+    for input, output in six.iteritems(test_data):
         assert (h.paging_sanitizer(*input)) == output
 
 

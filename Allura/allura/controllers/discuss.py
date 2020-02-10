@@ -48,6 +48,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.model.auth import User
 from .attachments import AttachmentsController, AttachmentController
 from .feed import FeedArgs, FeedController
+import six
 
 log = logging.getLogger(__name__)
 
@@ -319,7 +320,7 @@ class PostController(BaseController):
             post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
-            for k, v in post_fields.iteritems():
+            for k, v in six.iteritems(post_fields):
                 try:
                     setattr(self.post, k, v)
                 except AttributeError:

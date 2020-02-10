@@ -438,7 +438,7 @@ class TestDoap(TestRestApiBase):
         user = maintainers[0].find(self.foaf + 'Person')
         assert_equal(user.find(self.foaf + 'name').text, 'Test Admin')
         assert_equal(user.find(self.foaf + 'nick').text, 'test-admin')
-        assert_equal(user.find(self.foaf + 'homepage').items()[0][1],
+        assert_equal(list(user.find(self.foaf + 'homepage').items())[0][1],
                      'http://localhost/u/test-admin/')
 
     @td.with_tool('test', 'Tickets', 'bugs')
@@ -457,7 +457,7 @@ class TestDoap(TestRestApiBase):
         p = r.xml.find(self.ns + 'Project')
         tools = p.findall(self.ns_sf + 'feature')
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
-                  t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items()[0][1])
+                  list(t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items())[0][1])
                  for t in tools]
         assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
         assert_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)
@@ -468,7 +468,7 @@ class TestDoap(TestRestApiBase):
         p = r.xml.find(self.ns + 'Project')
         tools = p.findall(self.ns_sf + 'feature')
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,
-                  t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items()[0][1])
+                  list(t.find(self.ns_sf + 'Feature').find(self.foaf + 'page').items())[0][1])
                  for t in tools]
         assert_in(('Tickets', 'http://localhost/p/test/bugs/'), tools)
         assert_not_in(('Tickets', 'http://localhost/p/test/private-bugs/'), tools)

@@ -46,8 +46,8 @@ def main(opts):
         repo = hg.repository(HgUI(), six.ensure_str(opts.repo_path))
         cid = None if opts.cid == 'HEAD' else ['%s:0' % opts.cid]
         path = opts.path.strip('/')
-        filenames = repo[
-            'tip' if opts.cid == 'HEAD' else opts.cid].manifest().keys()
+        filenames = list(repo[
+            'tip' if opts.cid == 'HEAD' else opts.cid].manifest().keys())
         filenames = [
             name for name in filenames if name.startswith(('%s/' % path).lstrip('/'))]
         names = set()

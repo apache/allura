@@ -115,7 +115,7 @@ class SearchIndexable(object):
         # the same suffixes, but different field types. E.g.:
         # query 'shortname:test' with fields.keys() == ['name_t', 'shortname_s']
         # will be translated to 'shortname_t:test', which makes no sense
-        fields = sorted(fields.keys(), key=len, reverse=True)
+        fields = sorted(list(fields.keys()), key=len, reverse=True)
         for f in fields:
             if '_' in f:
                 base, typ = f.rsplit('_', 1)
@@ -171,7 +171,7 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         fq.append('project_id_s:%s' % c.project._id)
 
     fq += kw.pop('fq', [])
-    for name, values in (filter or {}).iteritems():
+    for name, values in six.iteritems((filter or {})):
         field_name = name + '_s'
         parts = []
         for v in values:

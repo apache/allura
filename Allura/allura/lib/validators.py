@@ -25,6 +25,7 @@ from formencode import validators as fev
 from tg import tmpl_context as c
 from . import helpers as h
 from datetime import datetime
+import six
 
 
 class URL(fev.URL):
@@ -299,7 +300,7 @@ class UserMapJsonFile(JsonFile):
     def _to_python(self, value, state):
         value = super(self.__class__, self)._to_python(value, state)
         try:
-            for k, v in value.iteritems():
+            for k, v in six.iteritems(value):
                 if not(isinstance(k, basestring) and isinstance(v, basestring)):
                     raise
             return json.dumps(value) if self.as_string else value

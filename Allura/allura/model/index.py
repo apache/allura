@@ -38,6 +38,7 @@ from allura.lib import helpers as h
 
 from .session import main_doc_session, main_orm_session
 from .project import Project
+import six
 
 log = logging.getLogger(__name__)
 
@@ -167,13 +168,13 @@ class Shortlink(object):
                 else:
                     result[link] = parsed_links.pop(link)
             q = cls.query.find(dict(
-                link={'$in': links_by_artifact.keys()},
+                link={'$in': list(links_by_artifact.keys())},
                 project_id={'$in': list(project_ids)}
             ), validate=False)
             matches_by_artifact = dict(
                 (link, list(matches))
                 for link, matches in groupby(q, key=lambda s: unquote(s.link)))
-            for link, d in parsed_links.iteritems():
+            for link, d in six.iteritems(parsed_links):
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
                     m for m in matches

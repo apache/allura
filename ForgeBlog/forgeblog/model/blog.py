@@ -36,6 +36,7 @@ from allura.model.timeline import ActivityObject
 from allura.model.types import MarkdownCache
 from allura.lib import helpers as h
 from allura.lib import utils
+import six
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
@@ -295,7 +296,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     def new(cls, **kw):
         post = cls()
         subscribe = kw.pop('subscribe', False)
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             setattr(post, k, v)
         post.neighborhood_id = c.project.neighborhood_id
         post.make_slug()

@@ -407,7 +407,7 @@ def include(ref=None, repo=None, **kw):
 
 @macro()
 def img(src=None, **kw):
-    attrs = ('%s="%s"' % t for t in kw.iteritems())
+    attrs = ('%s="%s"' % t for t in six.iteritems(kw))
     included = request.environ.setdefault('allura.macro.att_embedded', set())
     included.add(src)
     if '://' in src:

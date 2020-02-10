@@ -35,6 +35,7 @@ from threading import Lock
 from collections import deque
 
 import fuse
+import six
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class check_access(object):
             new_kwargs = dict(kwargs)
             for i, (mode, path) in enumerate(zip(self._args, args)):
                 new_args[i] = self.check(inst, path, mode)
-            for name, mode in self._kwargs.iteritems():
+            for name, mode in six.iteritems(self._kwargs):
                 new_kwargs[name] = self.check(inst, kwargs.get(name), mode)
             return func(inst, *new_args, **new_kwargs)
         return wrapper

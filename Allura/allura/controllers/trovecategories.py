@@ -33,6 +33,7 @@ from allura.lib.security import require_authenticated, require_site_admin
 from allura.lib.widgets import forms
 from allura.lib.plugin import SiteAdminExtension
 from allura.app import SitemapEntry
+import six
 
 
 class F(object):
@@ -100,7 +101,7 @@ class TroveCategoryController(BaseController):
             (self.generate_category(child) for child in category.subcategories)
         }
 
-        return category.fullname, OrderedDict(sorted(children.iteritems()))
+        return category.fullname, OrderedDict(sorted(six.iteritems(children)))
 
     @without_trailing_slash
     @expose('jinja:allura:templates/browse_trove_categories.html')
@@ -111,7 +112,7 @@ class TroveCategoryController(BaseController):
             for (key, value) in
             (self.generate_category(child) for child in parent_categories)
         }
-        return dict(tree=OrderedDict(sorted(tree.iteritems())))
+        return dict(tree=OrderedDict(sorted(six.iteritems(tree))))
 
     @classmethod
     def _create(cls, name, upper_id, shortname):

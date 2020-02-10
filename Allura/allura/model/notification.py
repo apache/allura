@@ -58,6 +58,7 @@ import allura.tasks.mail_tasks
 
 from .session import main_orm_session
 from .auth import User, AlluraUserProperty
+import six
 
 
 log = logging.getLogger(__name__)
@@ -651,7 +652,7 @@ class Mailbox(MappedClass):
                         'Error sending notification: %s to mbox %s (user %s)',
                         n._id, self._id, self.user_id)
             # Accumulate messages from same address with same subject
-            for (subject, from_address, reply_to_address, author_id), ns in ngroups.iteritems():
+            for (subject, from_address, reply_to_address, author_id), ns in six.iteritems(ngroups):
                 try:
                     if len(ns) == 1:
                         ns[0].send_direct(self.user_id)

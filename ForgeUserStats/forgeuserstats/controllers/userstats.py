@@ -135,7 +135,7 @@ class ForgeUserStatsController(BaseController):
                     categories[cat] += 1
                 else:
                     categories[cat] = 1
-        categories = sorted(categories.items(),
+        categories = sorted(list(categories.items()),
                             key=lambda (x, y): y, reverse=True)
 
         ret_dict['lastmonth_logins'] = stats.getLastMonthLogins()

@@ -105,7 +105,7 @@ class Credentials(object):
         roles_by_project = dict((pid, []) for pid in project_ids)
         for role in q:
             roles_by_project[role['project_id']].append(role)
-        for pid, roles in roles_by_project.iteritems():
+        for pid, roles in six.iteritems(roles_by_project):
             self.users[user_id, pid] = RoleCache(self, roles)
 
     def load_project_roles(self, *project_ids):
@@ -120,7 +120,7 @@ class Credentials(object):
         roles_by_project = dict((pid, []) for pid in project_ids)
         for role in q:
             roles_by_project[role['project_id']].append(role)
-        for pid, roles in roles_by_project.iteritems():
+        for pid, roles in six.iteritems(roles_by_project):
             self.projects[pid] = RoleCache(self, roles)
 
     def project_roles(self, project_id):
@@ -179,7 +179,7 @@ class RoleCache(object):
         self.q = q
 
     def find(self, **kw):
-        tests = kw.items()
+        tests = list(kw.items())
 
         def _iter():
             for r in self:
@@ -200,7 +200,7 @@ class RoleCache(object):
         return None
 
     def __iter__(self):
-        return self.index.itervalues()
+        return six.itervalues(self.index)
 
     def __len__(self):
         return len(self.index)
@@ -252,7 +252,7 @@ class RoleCache(object):
     @LazyProperty
     def reaching_roles(self):
         def _iter():
-            to_visit = self.index.items()
+            to_visit = list(self.index.items())
             project_ids = set([r['project_id'] for _id, r in to_visit])
             pr_index = {r['_id']: r for r in self.cred.project_role.find({
                 'project_id': {'$in': list(project_ids)},

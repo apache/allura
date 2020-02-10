@@ -47,6 +47,7 @@ from .project import AppConfig
 from .notification import MailFooter
 
 from .filesystem import File
+import six
 
 log = logging.getLogger(__name__)
 
@@ -632,7 +633,7 @@ class VersionedArtifact(Artifact):
     def revert(self, version):
         ss = self.get_version(version)
         old_version = self.version
-        for k, v in ss.data.iteritems():
+        for k, v in six.iteritems(ss.data):
             setattr(self, k, v)
         self.version = old_version
 

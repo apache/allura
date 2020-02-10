@@ -50,6 +50,7 @@ from forgesvn import model as SM
 from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
+import six
 
 
 class TestNewRepo(unittest.TestCase):
@@ -652,7 +653,7 @@ class _Test(unittest.TestCase):
         t, isnew = M.repository.Tree.upsert(object_id)
         repo = getattr(self, 'repo', None)
         t.repo = repo
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
             if isinstance(v, basestring):
                 obj = M.repository.Blob(
                     t, k, self.idgen.next())

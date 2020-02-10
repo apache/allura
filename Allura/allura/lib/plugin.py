@@ -1063,7 +1063,7 @@ class ProjectRegistrationProvider(object):
             for i, tool in enumerate(project_template['tools'].keys()):
                 tool_config = project_template['tools'][tool]
                 tool_options = tool_config.get('options', {})
-                for k, v in tool_options.iteritems():
+                for k, v in six.iteritems(tool_options):
                     if isinstance(v, basestring):
                         tool_options[k] = \
                             string.Template(v).safe_substitute(
@@ -1532,7 +1532,7 @@ class ThemeProvider(object):
 
         if note_to_show:
             cookie_chunks = []
-            for note_id, views_closed in cookie_info.iteritems():
+            for note_id, views_closed in six.iteritems(cookie_info):
                 cookie_chunks.append('{}-{}-{}'.format(note_id, views_closed[0], views_closed[1]))
             set_cookie_value = '_'.join(sorted(cookie_chunks))
             return note_to_show, set_cookie_value

@@ -49,6 +49,7 @@ from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
 from allura.tasks import index_tasks
+import six
 
 log = logging.getLogger(__name__)
 
@@ -614,7 +615,7 @@ class Application(object):
         :return: a list of :class:`WebhookSender <allura.webhooks.WebhookSender>`
         """
         tool_name = self.config.tool_name.lower()
-        webhooks = [w for w in g.entry_points['webhooks'].itervalues()
+        webhooks = [w for w in six.itervalues(g.entry_points['webhooks'])
                     if tool_name in w.triggered_by]
         return webhooks
 
@@ -666,7 +667,7 @@ class Application(object):
     def admin_menu_delete_button(self):
         """Returns button for deleting an app if app can be deleted"""
         anchored_tools = self.project.neighborhood.get_anchored_tools()
-        anchored = self.tool_label.lower() in anchored_tools.keys()
+        anchored = self.tool_label.lower() in list(anchored_tools.keys())
         if self.uninstallable and not anchored:
             return SitemapEntry(
                 label='Delete Everything',

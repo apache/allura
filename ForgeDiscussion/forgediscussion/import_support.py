@@ -29,6 +29,7 @@ from tg import tmpl_context as c
 from allura import model as M
 
 from forgediscussion import model as DM
+import six
 
 log = logging.getLogger(__name__)
 
@@ -52,11 +53,11 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
                     c.app.config.options.mount_point,
                     w)
 
-    for name, forum in json.forums.iteritems():
+    for name, forum in six.iteritems(json.forums):
         log.info('... %s has %d threads with %d total posts',
-                 name, len(forum.threads), sum(len(t) for t in forum.threads.itervalues()))
+                 name, len(forum.threads), sum(len(t) for t in six.itervalues(forum.threads)))
 
-    for name, forum in json.forums.iteritems():
+    for name, forum in six.iteritems(json.forums):
         log.info('... creating %s/%s: %s',
                  c.project.shortname,
                  c.app.config.options.mount_point,
@@ -66,7 +67,7 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
             name=forum['name'],
             shortname=forum['name'],
             description=forum['description'])
-        for tid, posts in forum.threads.iteritems():
+        for tid, posts in six.iteritems(forum.threads):
             rest, head = posts[:-1], posts[-1]
             t = DM.ForumThread.new(
                 _id=tid,

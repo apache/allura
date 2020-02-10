@@ -46,6 +46,7 @@ from allura.lib import helpers as h
 from allura.websetup.schema import REGISTRY
 #from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
+import six
 
 DFL_APP_NAME = 'main'
 
@@ -212,7 +213,7 @@ class TestController(object):
 
     def find_form(self, resp, cond):
         """Find form on the page that meets given condition"""
-        for f in resp.forms.itervalues():
+        for f in six.itervalues(resp.forms):
             if cond(f):
                 return f
 

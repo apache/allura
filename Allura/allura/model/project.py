@@ -62,6 +62,7 @@ from .types import ACL, ACE
 from .monq_model import MonQTask
 
 from .filesystem import File
+import six
 
 log = logging.getLogger(__name__)
 
@@ -480,7 +481,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         project_index = dict((p._id, p) for p in projects)
         result = dict((p._id, None) for p in projects)
         for icon in ProjectFile.query.find(dict(
-                project_id={'$in': result.keys()},
+                project_id={'$in': list(result.keys())},
                 category='icon')):
             result[icon.project_id] = project_index[icon.project_id].url() + 'icon'
         return result
@@ -491,7 +492,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         from .artifact import AwardGrant
         result = dict((p._id, []) for p in projects)
         for award in AwardGrant.query.find(dict(
-                granted_to_project_id={'$in': result.keys()})):
+                granted_to_project_id={'$in': list(result.keys())})):
             result[award.granted_to_project_id].append(award)
         return result
 
@@ -574,8 +575,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
                     if is_nofollow_url(entry.url):
                         entry.extra_html_attrs = {'rel': 'nofollow'}
-                    if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
-                        ordinal = anchored_tools.keys().index(
+                    if not self.is_nbhd_project and (entry.tool_name.lower() in list(anchored_tools.keys())):
+                        ordinal = list(anchored_tools.keys()).index(
                             entry.tool_name.lower())
                     elif ac.tool_name == 'admin':
                         ordinal = 100
@@ -610,7 +611,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         i = 0
         new_tools = []
         if not self.is_nbhd_project:
-            for tool, label in anchored_tools.iteritems():
+            for tool, label in six.iteritems(anchored_tools):
                 if (tool not in installed_tools) and (self.app_instance(tool) is None):
                     try:
                         new_tools.append(
@@ -633,7 +634,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                          icon=s.ui_icon or 'tool-admin',
                          tool_name=s.tool_name or 'sub',
                          mount_point=s.mount_point,
-                         is_anchored=s.tool_name in anchored_tools.keys(),
+                         is_anchored=s.tool_name in list(anchored_tools.keys()),
                          )
             if admin_options and s.tool_name and s.mount_point:
                 try:
@@ -707,7 +708,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                         e.mount_point = None
                         e.extra_html_attrs = {}
                         grouped_nav[tool_name].children.append(e)
-        return grouped_nav.values()
+        return list(grouped_nav.values())
 
     def parent_iter(self):
         yield self
@@ -762,7 +763,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             mount_points[App] = mount_point
 
         # count mount point names
-        mount_point_counts = Counter(mount_points.values())
+        mount_point_counts = Counter(list(mount_points.values()))
 
         # install each app with unique names
         for app_params in apps_params:
@@ -824,7 +825,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
         options_on_install = {o.name: o for o in App.options_on_install()}
-        for o, val in override_options.iteritems():
+        for o, val in six.iteritems(override_options):
             if o in options_on_install:
                 val = self._validate_tool_option(options_on_install[o], val)
             options[o] = val
@@ -895,8 +896,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
-                if not self.is_nbhd_project and (ac.tool_name.lower() in anchored_tools.keys()):
-                    ordinal = anchored_tools.keys().index(ac.tool_name.lower())
+                if not self.is_nbhd_project and (ac.tool_name.lower() in list(anchored_tools.keys())):
+                    ordinal = list(anchored_tools.keys()).index(ac.tool_name.lower())
                 else:
                     ordinal = int(ac.options.get('ordinal', 0)) + i
                 result.append({'ordinal': int(ordinal), 'ac': ac})

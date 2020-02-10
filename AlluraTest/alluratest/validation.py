@@ -226,7 +226,7 @@ class AntiSpamTestApp(TestApp):
                 antispam.enc('honey0'): '',
                 antispam.enc('honey1'): '',
             }
-            for k, v in kwargs['params'].iteritems():
+            for k, v in six.iteritems(kwargs['params']):
                 params[antispam.enc(k)] = v
             params['_session_id'] = kwargs['params'].get('_session_id')  # exclude csrf token from encryption
             kwargs['params'] = params
@@ -240,7 +240,7 @@ class AntiSpamTestApp(TestApp):
         timestamp = form['timestamp'].value
         spinner = form['spinner'].value
         antispam = utils.AntiSpam(timestamp=int(timestamp), spinner=utils.AntiSpam._unwrap(spinner))
-        names = form.fields.keys()
+        names = list(form.fields.keys())
         name_mapping = {}
         for name in names:
             try:
@@ -258,7 +258,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
             return
         # params can be a list or a dict
         if hasattr(params, 'items'):
-            params = params.items()
+            params = list(params.items())
         for k, v in params:
             if not isinstance(k, basestring):
                 raise TypeError('%s key %s is %s, not str' %

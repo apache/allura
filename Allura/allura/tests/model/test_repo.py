@@ -213,7 +213,7 @@ class TestLastCommit(unittest.TestCase):
         return commit
 
     def _log(self, revs, path, id_only=True, limit=None):
-        for commit_id, commit in reversed(self.repo._commits.items()):
+        for commit_id, commit in reversed(list(self.repo._commits.items())):
             if path in commit.changed_paths:
                 yield commit_id
 

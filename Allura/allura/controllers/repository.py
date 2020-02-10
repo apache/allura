@@ -58,6 +58,7 @@ from allura.controllers.base import DispatchIndex
 from allura.controllers.rest import AppRestControllerMixin
 from allura.controllers.feed import FeedController, FeedArgs
 from .base import BaseController
+import six
 
 log = logging.getLogger(__name__)
 
@@ -270,7 +271,7 @@ class RepoRootController(BaseController, FeedController):
         parents = {}
         children = defaultdict(list)
         dates = {}
-        for row, (oid, ci) in enumerate(commits_by_id.iteritems()):
+        for row, (oid, ci) in enumerate(six.iteritems(commits_by_id)):
             parents[oid] = list(ci.parent_ids)
             dates[oid] = ci.committed.date
             for p_oid in ci.parent_ids:

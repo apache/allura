@@ -221,7 +221,7 @@ class WebhookRestController(BaseController):
         error = getattr(e, 'error_dict', None)
         if error:
             _error = {}
-            for k, v in error.iteritems():
+            for k, v in six.iteritems(error):
                 _error[k] = six.text_type(v)
             return _error
         error = getattr(e, 'msg', None)

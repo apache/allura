@@ -33,6 +33,7 @@ from tg import tmpl_context as c, app_globals as g
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.plugin import ProjectRegistrationProvider
+import six
 
 log = logging.getLogger(__name__)
 
@@ -242,12 +243,12 @@ def create_project(p, nbhd, options):
     project.notifications_disabled = True
 
     if options.ensure_tools and 'tools' in project_template:
-        for i, tool in enumerate(project_template['tools'].iterkeys()):
+        for i, tool in enumerate(six.iterkeys(project_template['tools'])):
             tool_config = project_template['tools'][tool]
             if project.app_instance(tool_config['mount_point']):
                 continue
             tool_options = tool_config.get('options', {})
-            for k, v in tool_options.iteritems():
+            for k, v in six.iteritems(tool_options):
                 if isinstance(v, basestring):
                     tool_options[k] = string.Template(v).safe_substitute(
                         project.root_project.__dict__.get('root_project', {}))

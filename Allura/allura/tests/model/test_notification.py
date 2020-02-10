@@ -493,7 +493,7 @@ class TestSiteNotification(unittest.TestCase):
         assert isinstance(note_json, dict)
 
     def test_json_keys(self):
-        keys = self.note.__json__().keys()
+        keys = list(self.note.__json__().keys())
         assert 'active' in keys
         assert 'impressions' in keys
         assert 'content' in keys

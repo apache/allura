@@ -40,6 +40,7 @@ from allura.lib import plugin
 from allura.lib.exceptions import Invalid
 from allura.lib.decorators import require_post
 from allura.lib.security import has_access
+import six
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class RestController(object):
         """
         summary = dict()
         stats = dict()
-        for stat, provider in g.entry_points['site_stats'].iteritems():
+        for stat, provider in six.iteritems(g.entry_points['site_stats']):
             stats[stat] = provider()
         if stats:
             summary['site_stats'] = stats

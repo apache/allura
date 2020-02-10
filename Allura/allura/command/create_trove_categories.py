@@ -27,6 +27,7 @@ from mock import patch, Mock
 from . import base
 
 from allura import model as M
+import six
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class CreateTroveCategoriesCommand(base.Command):
             sys.exit("Couldn't find TroveCategory with trove_cat_id=%s" %
                      trove_cat_id)
         for t in ts:
-            for k, v in attr_dict.iteritems():
+            for k, v in six.iteritems(attr_dict):
                 setattr(t, k, v)
 
     # patching to avoid a *lot* of event hooks firing, and taking a long long time

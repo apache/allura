@@ -299,7 +299,7 @@ class Globals(object):
 
         # Set listeners to update stats
         statslisteners = []
-        for name, ep in self.entry_points['stats'].iteritems():
+        for name, ep in six.iteritems(self.entry_points['stats']):
             statslisteners.append(ep())
         self.statsUpdater = PostEvent(statslisteners)
 

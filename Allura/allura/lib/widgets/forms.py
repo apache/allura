@@ -36,6 +36,7 @@ from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
+import six
 
 
 log = logging.getLogger(__name__)
@@ -260,7 +261,7 @@ class PersonalDataForm(ForgeForm):
                 validator=V.MapValidator(country_names, not_empty=False),
                 options=[ew.Option(py_value=" ", label=" -- Unknown -- ", selected=False)] +
                         [ew.Option(py_value=c, label=n, selected=False)
-                         for c, n in sorted(country_names.items(),
+                         for c, n in sorted(list(country_names.items()),
                                             key=lambda (k, v): v)],
                 attrs={'onchange': 'selectTimezone(this.value)'}),
             ew.TextField(
@@ -978,7 +979,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def fields(self):
         provider = plugin.ProjectRegistrationProvider.get()
         tools_options = []
-        for ep, tool in g.entry_points["tool"].iteritems():
+        for ep, tool in six.iteritems(g.entry_points["tool"]):
             if tool.status == 'production' and tool._installable(tool_name=ep,
                                                                  nbhd=c.project.neighborhood,
                                                                  project_tools=[]):

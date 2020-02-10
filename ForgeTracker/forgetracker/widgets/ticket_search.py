@@ -22,6 +22,7 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
+import six
 
 
 
@@ -47,7 +48,7 @@ class TicketSearchResults(ew_core.SimpleForm):
     def __init__(self, filters, *args, **kw):
         super(TicketSearchResults, self).__init__(*args, **kw)
         self.filters = {}
-        for name, field in filters.iteritems():
+        for name, field in six.iteritems(filters):
             self.filters[name] = options = [{
                 'value': val,
                 'label': '%s (%s)' % (val, count),

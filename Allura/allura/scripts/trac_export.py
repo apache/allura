@@ -105,7 +105,7 @@ class TracExport(object):
     def remap_fields(self, dict):
         "Remap fields to adhere to standard taxonomy."
         out = {}
-        for k, v in dict.iteritems():
+        for k, v in six.iteritems(dict):
             key = self.match_pattern(r'\W*(\w+)\W*', k)
             out[self.FIELD_MAP.get(key, key)] = v
 

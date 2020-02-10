@@ -30,6 +30,7 @@ from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M
+import six
 
 
 class NullValidator(fev.FancyValidator):
@@ -268,7 +269,7 @@ class HierWidget(ew_core.Widget):
         return response
 
     def resources(self):
-        for w in self.widgets.itervalues():
+        for w in six.itervalues(self.widgets):
             for r in w.resources():
                 yield r
 
@@ -315,7 +316,7 @@ class Post(HierWidget):
     def resources(self):
         for r in super(Post, self).resources():
             yield r
-        for w in self.widgets.itervalues():
+        for w in six.itervalues(self.widgets):
             for r in w.resources():
                 yield r
         yield ew.CSSScript('''
@@ -361,7 +362,7 @@ class Thread(HierWidget):
     def resources(self):
         for r in super(Thread, self).resources():
             yield r
-        for w in self.widgets.itervalues():
+        for w in six.itervalues(self.widgets):
             for r in w.resources():
                 yield r
         yield ew.JSScript('''

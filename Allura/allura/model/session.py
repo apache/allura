@@ -29,6 +29,7 @@ from contextlib import contextmanager
 
 from allura.lib.utils import chunked_list
 from allura.tasks import index_tasks
+import six
 
 log = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ class IndexerSessionExtension(ManagedSessionExtension):
         for obj_list, action in actions:
             if obj_list:
                 types_objects_map = self._objects_by_types(obj_list)
-                for class_path, obj_list in types_objects_map.iteritems():
+                for class_path, obj_list in six.iteritems(types_objects_map):
                     tasks = self.TASKS.get(class_path)
                     if tasks:
                         self._index_action(tasks, obj_list, action)

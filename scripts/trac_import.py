@@ -23,6 +23,7 @@ from optparse import OptionParser
 
 from allura.lib.import_api import AlluraImportApiClient
 from tracwikiimporter.scripts.wiki_from_trac.loaders import import_wiki
+import six
 
 
 def main():
@@ -42,7 +43,7 @@ def main():
             user_map = json.load(f)
             if type(user_map) is not type({}):
                 raise ValueError
-            for k, v in user_map.iteritems():
+            for k, v in six.iteritems(user_map):
                 print(k, v)
                 if not isinstance(k, basestring) or not isinstance(v, basestring):
                     raise ValueError

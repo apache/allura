@@ -332,7 +332,7 @@ class TestTicketModel(TrackerTestWithModel):
 
     def test_json_parents(self):
         ticket = Ticket.new()
-        json_keys = ticket.__json__().keys()
+        json_keys = list(ticket.__json__().keys())
         assert_in('related_artifacts', json_keys)  # from Artifact
         assert_in('votes_up', json_keys)  # VotableArtifact
         assert_in('ticket_num', json_keys)  # Ticket

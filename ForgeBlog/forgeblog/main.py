@@ -435,7 +435,7 @@ class PostController(BaseController, FeedController):
         old_text = self.post.text
         if attachment is not None:
             self.post.add_multiple_attachments(attachment)
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             setattr(self.post, k, v)
         self.post.commit()
         notification_tasks.send_usermentions_notification.post(self.post.index_id(), kw['text'], old_text)

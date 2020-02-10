@@ -35,6 +35,7 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.plugin import LocalAuthenticationProvider
+import six
 
 
 class TestSiteAdmin(TestController):
@@ -504,7 +505,7 @@ class TestUserDetails(TestController):
     def test_add_comment(self):
         r = self.app.get('/nf/admin/user/test-user')
         assert_not_in('Comment by test-admin: I was hêre!', r)
-        form = [f for f in r.forms.itervalues() if f.action.endswith('add_audit_trail_entry')][0]
+        form = [f for f in six.itervalues(r.forms) if f.action.endswith('add_audit_trail_entry')][0]
         assert_equal(form['username'].value, 'test-user')
         form['comment'] = 'I was hêre!'
         r = form.submit()

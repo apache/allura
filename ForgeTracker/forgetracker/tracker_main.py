@@ -83,6 +83,7 @@ from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
+import six
 
 log = logging.getLogger(__name__)
 
@@ -1696,7 +1697,7 @@ class TrackerAdminController(DefaultAdminController):
     @validate(W.options_admin, error_handler=options)
     def set_options(self, **kw):
         require_access(self.app, 'configure')
-        for k, v in kw.iteritems():
+        for k, v in six.iteritems(kw):
             self.app.config.options[k] = v
         flash('Options updated')
         redirect(request.referer or '/')

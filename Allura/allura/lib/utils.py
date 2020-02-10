@@ -810,7 +810,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
 
 def generate_smart_str(params):
-    for (key, value) in params.iteritems():
+    for (key, value) in six.iteritems(params):
         yield smart_str(key), smart_str(value)
 
 

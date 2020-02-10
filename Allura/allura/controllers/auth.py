@@ -57,6 +57,7 @@ from allura.lib.multifactor import TotpService, RecoveryCodeService
 from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
+import six
 
 log = logging.getLogger(__name__)
 
@@ -649,7 +650,7 @@ class PreferencesController(BaseController):
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
                 h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'])
-            for k, v in preferences.iteritems():
+            for k, v in six.iteritems(preferences):
                 if k == 'results_per_page':
                     v = int(v)
                 c.user.set_pref(k, v)
@@ -1165,14 +1166,14 @@ class SubscriptionsController(BaseController):
 
         # Dictionary containing all tools (subscribed and un-subscribed).
         my_tools = M.AppConfig.query.find(dict(
-            project_id={'$in': my_projects.keys()}))
+            project_id={'$in': list(my_projects.keys())}))
 
         # Dictionary containing all the currently subscribed tools for a given user.
         my_tools_subscriptions = dict(
             (mb.app_config_id, mb) for mb in M.Mailbox.query.find(dict(
                 user_id=c.user._id,
-                project_id={'$in': projects.keys()},
-                app_config_id={'$in': app_index.keys()},
+                project_id={'$in': list(projects.keys())},
+                app_config_id={'$in': list(app_index.keys())},
                 artifact_index_id=None)))
 
         # Add the remaining tools that are eligible for subscription.

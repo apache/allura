@@ -39,6 +39,7 @@ from allura.model.repository import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 from allura.model.auth import User
 from allura.model.timeline import TransientActor
+import six
 
 log = logging.getLogger(__name__)
 
@@ -106,10 +107,10 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         from allura.webhooks import RepoPushWebhookSender
         by_branches, by_tags = _group_commits(repo, commit_ids)
         params = []
-        for b, commits in by_branches.iteritems():
+        for b, commits in six.iteritems(by_branches):
             ref = 'refs/heads/{}'.format(b) if b != '__default__' else None
             params.append(dict(commit_ids=commits, ref=ref))
-        for t, commits in by_tags.iteritems():
+        for t, commits in six.iteritems(by_tags):
             ref = 'refs/tags/{}'.format(t)
             params.append(dict(commit_ids=commits, ref=ref))
         if params:
@@ -306,11 +307,11 @@ def _group_commits(repo, commit_ids):
         if tags:
             current_tags = tags
         for b in current_branches:
-            if b not in by_branches.keys():
+            if b not in list(by_branches.keys()):
                 by_branches[b] = []
             by_branches[b].append(commit)
         for t in current_tags:
-            if t not in by_tags.keys():
+            if t not in list(by_tags.keys()):
                 by_tags[t] = []
             by_tags[t].append(commit)
     return by_branches, by_tags

@@ -44,6 +44,7 @@ from allura.command import CreateTroveCategoriesCommand
 from allura.websetup.schema import REGISTRY
 
 from forgewiki import model as WM
+import six
 
 log = logging.getLogger(__name__)
 
@@ -254,7 +255,7 @@ def bootstrap(command, conf, vars):
             log.info('Registering initial apps')
             with h.push_config(c, user=u_admin):
                 p0.install_apps([{'ep_name': ep_name}
-                                 for ep_name, app in g.entry_points['tool'].iteritems()
+                                 for ep_name, app in six.iteritems(g.entry_points['tool'])
                                  if app._installable(tool_name=ep_name,
                                                      nbhd=n_projects,
                                                      project_tools=[])

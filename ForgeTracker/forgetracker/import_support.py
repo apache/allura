@@ -34,6 +34,7 @@ from allura.lib.plugin import ImportIdConverter
 
 # Local imports
 from forgetracker import model as TM
+import six
 
 try:
     from forgeimporters.base import ProjectExtractor
@@ -199,7 +200,7 @@ class ImportSupport(object):
 
     def make_artifact(self, ticket_dict):
         remapped = {}
-        for f, v in ticket_dict.iteritems():
+        for f, v in six.iteritems(ticket_dict):
             transform = self.FIELD_MAP.get(f, ())
             if transform is None:
                 continue
@@ -309,7 +310,7 @@ class ImportSupport(object):
     def validate_user_mapping(self):
         if 'user_map' not in self.options:
             self.options['user_map'] = {}
-        for foreign_user, allura_user in self.options['user_map'].iteritems():
+        for foreign_user, allura_user in six.iteritems(self.options['user_map']):
             u = M.User.by_username(allura_user)
             if not u:
                 raise ImportException(
@@ -325,7 +326,7 @@ class ImportSupport(object):
         self.validate_user_mapping()
 
         project_doc = json.loads(doc)
-        tracker_names = project_doc['trackers'].keys()
+        tracker_names = list(project_doc['trackers'].keys())
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings
@@ -345,7 +346,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         self.validate_user_mapping()
 
         project_doc = json.loads(doc)
-        tracker_names = project_doc['trackers'].keys()
+        tracker_names = list(project_doc['trackers'].keys())
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings

@@ -76,7 +76,7 @@ class SectionsUtil(object):
         for section in re.split(r'\s*,\s*', section_ordering):
             if section in sections:
                 ordered_sections.append(sections.pop(section))
-        sections = ordered_sections + sections.values()
+        sections = ordered_sections + list(sections.values())
         return sections
 
 

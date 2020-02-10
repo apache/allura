@@ -53,6 +53,7 @@ from allura.tasks import export_tasks
 from allura.lib.widgets.project_list import ProjectScreenshots
 
 from . import widgets as aw
+import six
 
 
 log = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ class AdminApp(Application):
     @staticmethod
     def installable_tools_for(project):
         tools = []
-        for name, App in g.entry_points['tool'].iteritems():
+        for name, App in six.iteritems(g.entry_points['tool']):
             cfg = M.AppConfig(project_id=project._id, tool_name=name)
             app = App(project, cfg)
             if app.installable:
@@ -249,7 +250,7 @@ class ProjectAdminController(BaseController):
         first_troves = aslist(config.get('trovecategories.admin.order', 'topic,license,os'), ',')
         base_troves = [
             base_troves_by_name.pop(t) for t in first_troves
-        ] + sorted(base_troves_by_name.values(), key=attrgetter('fullname'))
+        ] + sorted(list(base_troves_by_name.values()), key=attrgetter('fullname'))
 
         trove_recommendations = {}
         for trove in base_troves:
@@ -613,7 +614,7 @@ class ProjectAdminController(BaseController):
                 App = g.entry_points['tool'][ep_name]
                 # pass only options which app expects
                 config_on_install = {
-                    k: v for (k, v) in kw.iteritems()
+                    k: v for (k, v) in six.iteritems(kw)
                     if k in [o.name for o in App.options_on_install()]
                 }
                 new_app = c.project.install_app(
@@ -705,7 +706,7 @@ class ProjectAdminRestController(BaseController):
         if not kw:
             raise exc.HTTPBadRequest('Expected kw params in the form of "ordinal: mount_point"')
         try:
-            sorted_tools = sorted(kw.items(), key=lambda x: int(x[0]))
+            sorted_tools = sorted(list(kw.items()), key=lambda x: int(x[0]))
         except ValueError:
             raise exc.HTTPBadRequest('Invalid kw: expected "ordinal: mount_point"')
 
@@ -1004,7 +1005,7 @@ class PermissionsController(BaseController):
             role_ids = map(ObjectId, group_ids + new_group_ids)
             permissions[perm] = role_ids
         c.project.acl = []
-        for perm, role_ids in permissions.iteritems():
+        for perm, role_ids in six.iteritems(permissions):
             role_names = lambda ids: ','.join(sorted(
                 pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
             old_role_ids = old_permissions.get(perm, [])

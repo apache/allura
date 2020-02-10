@@ -864,7 +864,7 @@ def get_homepage_wiki(project):
             download_file('wiki', img_url, project.id,
                           'wiki', 'homepage', filename)
 
-    for path, text in pages.iteritems():
+    for path, text in six.iteritems(pages):
         if options.default_wiki_text in text:
             log.debug('skipping default wiki page %s' % path)
         else:
@@ -1078,7 +1078,7 @@ def test_make_valid_sf_username():
         'u012345678901234567890': 'u0123456789-mmi',
         'foo^213': 'foo213-mmi'
     }
-    for k, v in tests.iteritems():
+    for k, v in six.iteritems(tests):
         assert make_valid_sf_username(k) == v
 
 

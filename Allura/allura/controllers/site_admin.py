@@ -51,6 +51,7 @@ import allura
 
 from six.moves.urllib.parse import urlparse
 from webhelpers import paginate
+import six
 
 
 log = logging.getLogger(__name__)
@@ -286,7 +287,7 @@ class SiteAdminController(object):
         def convert_fields(obj):
             # throw the type away (e.g. '_s' from 'url_s')
             result = {}
-            for k,val in obj.iteritems():
+            for k,val in six.iteritems(obj):
                 name = k.rsplit('_', 1)
                 if len(name) == 2:
                     name = name[0]

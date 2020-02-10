@@ -41,6 +41,7 @@ from ming.odm import session
 
 from allura.model.multifactor import RecoveryCode
 from allura.lib.utils import umask
+import six
 
 
 log = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ class GoogleAuthenticatorFile(object):
     def dump(self):
         lines = []
         lines.append(b32encode(self.key).replace('=', ''))
-        for opt, value in self.options.iteritems():
+        for opt, value in six.iteritems(self.options):
             parts = ['"', opt]
             if value is not None:
                 parts.append(value)

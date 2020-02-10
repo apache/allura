@@ -46,7 +46,7 @@ class AlluraImportApiClient(object):
         if self.verbose:
             log.info("Import API URL: %s", url)
 
-        params = self.sign(six.moves.urllib.parse.urlparse(url).path, params.items())
+        params = self.sign(six.moves.urllib.parse.urlparse(url).path, list(params.items()))
 
         while True:
             try:
