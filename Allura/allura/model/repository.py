@@ -1558,7 +1558,7 @@ class LastCommit(RepoObject):
             # on the top-level dir, the relevant commit should always be the current commit
             return commit._id
         try:
-            rev = commit.repo.log(commit._id, path, id_only=True, limit=1).next()
+            rev = next(commit.repo.log(commit._id, path, id_only=True, limit=1))
             return commit.repo.rev_to_commit_id(rev)
         except StopIteration:
             log.error('Tree node not recognized by SCM: %s @ %s',
@@ -1574,8 +1574,8 @@ class LastCommit(RepoObject):
             return lcid_cache[path]
         try:
             log_iter = commit.repo.log(commit._id, path, id_only=True, limit=2)
-            log_iter.next()
-            rev = log_iter.next()
+            next(log_iter)
+            rev = next(log_iter)
             return commit.repo.rev_to_commit_id(rev)
         except StopIteration:
             return None

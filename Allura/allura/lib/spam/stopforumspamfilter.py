@@ -56,7 +56,7 @@ class StopForumSpamSpamFilter(SpamFilter):
                     self.packed_ips.add(ip_int)
         # to get actual memory usage, use: from pympler.asizeof import asizeof
         log.info('Read stopforumspam file; %s recs, probably %s bytes stored in memory', len(self.packed_ips),
-                 len(self.packed_ips) * getsizeof(iter(self.packed_ips).next()) * 2)
+                 len(self.packed_ips) * getsizeof(next(iter(self.packed_ips))) * 2)
 
     def check(self, text, artifact=None, user=None, content_type='comment', **kw):
         ip = utils.ip_address(request)

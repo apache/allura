@@ -155,7 +155,7 @@ class TracExport(object):
         url = self.full_url(self.TICKET_URL % id, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        ticket_fields = reader.next()
+        ticket_fields = next(reader)
         ticket_fields['class'] = 'ARTIFACT'
         ticket = self.remap_fields(ticket_fields)
 
@@ -228,7 +228,7 @@ class TracExport(object):
         url = self.full_url(self.QUERY_MAX_ID_URL, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
-        fields = reader.next()
+        fields = next(reader)
         print(fields)
         return int(fields['id'])
 
@@ -261,7 +261,7 @@ class TracExport(object):
                     raise StopIteration
             raise
         reader = csv.reader(f)
-        cols = reader.next()
+        cols = next(reader)
         for r in reader:
             if r and r[0].isdigit():
                 id = int(r[0])

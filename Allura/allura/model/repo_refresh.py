@@ -71,7 +71,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
 
     # Refresh child references
     for i, oid in enumerate(commit_ids):
-        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+        ci = next(CommitDoc.m.find(dict(_id=oid), validate=False))
         refresh_children(ci)
         if (i + 1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s',

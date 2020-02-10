@@ -1054,8 +1054,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     def social_account(self, socialnetwork):
         try:
-            account = (
-                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
+            account = next((
+                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork))
         except StopIteration:
             return None
         else:

@@ -115,7 +115,7 @@ def test_find_project():
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
     pr = M.ProjectRole.anonymous()
-    assert h.make_roles([pr._id]).next() == pr
+    assert next(h.make_roles([pr._id])) == pr
 
 
 @td.with_wiki

@@ -169,7 +169,7 @@ class TestSiteAdmin(TestController):
             user='root',
             path='/p/test/admin',
         ), status=302)
-        task = M.MonQTask.query.find({}).sort('_id', -1).next()
+        task = next(M.MonQTask.query.find({}).sort('_id', -1))
         assert str(task._id) in r.location
         assert task.context['project_id'] == project._id
         assert task.context['app_config_id'] == app.config._id
@@ -249,7 +249,7 @@ class TestSiteAdminNotifications(TestController):
             user_role=user_role,
             page_regex=page_regex,
             page_tool_type=page_tool_type))
-        note = M.notification.SiteNotification.query.find().sort('_id', -1).next()
+        note = next(M.notification.SiteNotification.query.find().sort('_id', -1))
 
         assert '/nf/admin/site_notifications' in r.location
 
@@ -312,7 +312,7 @@ class TestSiteAdminNotifications(TestController):
             page_tool_type=page_tool_type))
         ThreadLocalORMSession().flush_all()
 
-        note = M.notification.SiteNotification.query.find().sort('_id', -1).next()
+        note = next(M.notification.SiteNotification.query.find().sort('_id', -1))
 
         assert '/nf/admin/site_notifications' in r.location
         assert M.notification.SiteNotification.query.find().count() == count
