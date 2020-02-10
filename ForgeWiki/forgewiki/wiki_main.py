@@ -488,8 +488,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
                         page_tags[label] = []
                     page_tags[label].append(page)
         count = len(page_tags)
-        name_labels = list(page_tags)
-        name_labels.sort()
+        name_labels = sorted(page_tags)
         return dict(labels=page_tags,
                     limit=limit,
                     count=count,

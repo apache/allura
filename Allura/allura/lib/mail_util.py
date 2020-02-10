@@ -55,11 +55,11 @@ def Header(text, *more_text):
     # email.header.Header handles str vs unicode differently
     # see
     # http://docs.python.org/library/email.header.html#email.header.Header.append
-    if type(text) != six.text_type:
+    if not isinstance(text, six.text_type):
         raise TypeError('This must be unicode: %r' % text)
     head = header.Header(text)
     for m in more_text:
-        if type(m) != six.text_type:
+        if not isinstance(m, six.text_type):
             raise TypeError('This must be unicode: %r' % text)
         head.append(m)
     return head

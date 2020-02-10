@@ -212,7 +212,7 @@ class TracExport(object):
                 text=re.compile('added by')).nextSibling.renderContents()
             d['description'] = ''
             # Skip whitespace
-            while attach.nextSibling and type(attach.nextSibling) is NavigableString:
+            while attach.nextSibling and isinstance(attach.nextSibling, NavigableString):
                 attach = attach.nextSibling
             # if there's a description, there will be a <dd> element, other
             # immediately next <dt>

@@ -87,7 +87,7 @@ class TrackerTestController(TestController):
                                 extra_environ=extra_environ)
         form = self._find_new_ticket_form(response)
         for k, v in six.iteritems(kw):
-            if type(v) == bool:
+            if isinstance(v, bool):
                 form['ticket_form.%s' % k] = v
             else:
                 form['ticket_form.%s' % k].force_value(v)

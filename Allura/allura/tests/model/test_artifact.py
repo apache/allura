@@ -197,7 +197,7 @@ def test_messages_unknown_lookup():
     from bson import ObjectId
     m = Checkmessage()
     m.author_id = ObjectId()  # something new
-    assert type(m.author()) == M.User, type(m.author())
+    assert isinstance(m.author(), M.User), type(m.author())
     assert m.author() == M.User.anonymous()
 
 

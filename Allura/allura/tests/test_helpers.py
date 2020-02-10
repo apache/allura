@@ -187,7 +187,7 @@ def test_context_setters():
 
 def test_encode_keys():
     kw = h.encode_keys({'foo': 5})
-    assert type(list(kw.keys())[0]) != six.text_type
+    assert not isinstance(list(kw.keys())[0], six.text_type)
 
 
 def test_ago():

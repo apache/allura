@@ -42,7 +42,7 @@ def main():
         f = open(options.user_map_file)
         try:
             user_map = json.load(f)
-            if type(user_map) is not type({}):
+            if not isinstance(user_map, type({})):
                 raise ValueError
             for k, v in six.iteritems(user_map):
                 print(k, v)

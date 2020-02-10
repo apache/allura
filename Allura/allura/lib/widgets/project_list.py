@@ -52,21 +52,21 @@ class ProjectSummary(ew_core.Widget):
         if response['accolades'] is None:
             response['accolades'] = value.accolades
 
-        if type(response['columns']) == six.text_type:
+        if isinstance(response['columns'], six.text_type):
             response['columns'] = int(response['columns'])
 
         true_list = ['true', 't', '1', 'yes', 'y']
-        if type(response['show_proj_icon']) == six.text_type:
+        if isinstance(response['show_proj_icon'], six.text_type):
             if response['show_proj_icon'].lower() in true_list:
                 response['show_proj_icon'] = True
             else:
                 response['show_proj_icon'] = False
-        if type(response['show_download_button']) == six.text_type:
+        if isinstance(response['show_download_button'], six.text_type):
             if response['show_download_button'].lower() in true_list:
                 response['show_download_button'] = True
             else:
                 response['show_download_button'] = False
-        if type(response['show_awards_banner']) == six.text_type:
+        if isinstance(response['show_awards_banner'], six.text_type):
             if response['show_awards_banner'].lower() in true_list:
                 response['show_awards_banner'] = True
             else:
@@ -104,7 +104,7 @@ class ProjectList(ew_core.Widget):
         if response['accolades_index'] is None and response['show_awards_banner']:
             response['accolades_index'] = M.Project.accolades_index(projects)
 
-        if type(response['columns']) == six.text_type:
+        if isinstance(response['columns'], six.text_type):
             response['columns'] = int(response['columns'])
 
         return response

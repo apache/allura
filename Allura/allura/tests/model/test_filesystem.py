@@ -199,7 +199,7 @@ class TestFile(TestCase):
         c.app.config._id = None
         attachment = M.BaseAttachment.save_attachment('user.png', fp,
                                                       save_original=True)
-        assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
+        assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
         assert_equal(attachment.length, 500)
         assert_equal(attachment.filename, 'user.png')
 
@@ -211,7 +211,7 @@ class TestFile(TestCase):
         attachment = M.BaseAttachment.save_attachment(
             b'Strukturpr\xfcfung.dvi', fp,
             save_original=True)
-        assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
+        assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
         assert_equal(attachment.filename, 'Strukturpr\xfcfung.dvi')
 
     def _assert_content(self, f, content):

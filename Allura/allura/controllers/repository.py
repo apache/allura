@@ -699,7 +699,7 @@ class CommitBrowser(BaseController):
         # ('removed', u'bbb.txt', 'tree', None),
         # ('removed', u'ddd.txt', 'tree', None),
         # ('changed', u'ccc.txt', 'blob', True)]
-        result['artifacts'].sort(key=lambda x: x[1]['old'] if(type(x[1]) == dict) else x[1])
+        result['artifacts'].sort(key=lambda x: x[1]['old'] if(isinstance(x[1], dict)) else x[1])
         return result
 
     @expose('jinja:allura:templates/repo/commit_basic.html')

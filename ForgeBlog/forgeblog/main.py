@@ -545,7 +545,7 @@ class BlogAdminController(DefaultAdminController):
     @require_post()
     def set_exfeed(self, new_exfeed=None, **kw):
         exfeed_val = kw.get('exfeed', [])
-        if type(exfeed_val) == six.text_type:
+        if isinstance(exfeed_val, six.text_type):
             tmp_exfeed_list = []
             tmp_exfeed_list.append(exfeed_val)
         else:
