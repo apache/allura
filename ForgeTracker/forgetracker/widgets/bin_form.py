@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import ew
 from ew import jinja2_ew
 from allura.lib import validators as V

@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from IPython.testing.decorators import module_not_available, skipif
 
 from forgewiki import converters

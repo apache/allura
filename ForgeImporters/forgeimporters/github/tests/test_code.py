@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from unittest import TestCase
 from mock import Mock, patch
 from ming.odm import ThreadLocalORMSession

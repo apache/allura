@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from formencode.variabledecode import variable_encode
 
 from allura.tests import TestController

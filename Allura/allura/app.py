@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import os
 import logging
 from urllib import basejoin
@@ -877,7 +878,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         """Render the permissions management web page.
 
         """
-        from ext.admin.widgets import PermissionCard, BlockUser, BlockList
+        from .ext.admin.widgets import PermissionCard, BlockUser, BlockList
         c.card = PermissionCard()
         c.block_user = BlockUser()
         c.block_list = BlockList()

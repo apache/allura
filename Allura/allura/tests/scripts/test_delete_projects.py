@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
 from tg import app_globals as g

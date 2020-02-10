@@ -16,6 +16,7 @@
 #       under the License.
 from __future__ import unicode_literals
 
+from __future__ import absolute_import
 import base64
 import operator
 from contextlib import contextmanager

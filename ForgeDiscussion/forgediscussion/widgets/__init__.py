@@ -16,9 +16,10 @@
 #       under the License.
 
 from __future__ import unicode_literals
-from forum_widgets import ThreadSubscriptionForm, AnnouncementsTable
-from forum_widgets import ModerateThread, ForumHeader, ThreadHeader
-from forum_widgets import Post, Thread, Forum
+from __future__ import absolute_import
+from .forum_widgets import ThreadSubscriptionForm, AnnouncementsTable
+from .forum_widgets import ModerateThread, ForumHeader, ThreadHeader
+from .forum_widgets import Post, Thread, Forum
 
 __all__ = [
     'ThreadSubscriptionForm', 'AnnouncementsTable', 'ModerateThread', 'ForumHeader',

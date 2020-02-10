@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from tg import tmpl_context as c
 
 from alluratest.controller import setup_basic_test, setup_global_objects

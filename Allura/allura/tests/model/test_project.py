@@ -21,6 +21,7 @@
 Model tests for project
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from nose import with_setup
 from nose.tools import assert_equals, assert_in
 from tg import tmpl_context as c

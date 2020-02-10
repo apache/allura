@@ -21,6 +21,7 @@
 Model tests for artifact
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from cStringIO import StringIO
 import time
 from datetime import datetime, timedelta

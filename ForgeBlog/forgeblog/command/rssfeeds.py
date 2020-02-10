@@ -16,13 +16,14 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import calendar
 from datetime import datetime
 
 import feedparser
 from bson import ObjectId
 
-import base
+from . import base
 from allura.command import base as allura_base
 
 from ming.orm import session

@@ -18,6 +18,7 @@
 """ ForgeDiscussion utilities. """
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from bson import ObjectId
 from tg import flash
 from allura.lib import helpers as h

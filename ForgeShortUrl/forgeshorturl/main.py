@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from tg import expose, validate, redirect, flash, request
 from tg.decorators import without_trailing_slash
 

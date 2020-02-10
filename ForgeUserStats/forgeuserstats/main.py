@@ -17,6 +17,7 @@
 
 #-*- python -*-
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
 from tg import tmpl_context as c
 from datetime import datetime
@@ -25,8 +26,8 @@ from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
 from allura import model as M
 from allura.eventslistener import EventsListener
-from model.stats import UserStats
-from controllers.userstats import ForgeUserStatsController
+from .model.stats import UserStats
+from .controllers.userstats import ForgeUserStatsController
 
 from forgeuserstats import version
 

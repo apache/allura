@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from nose.tools import assert_false, assert_true
 
 from allura import model as M

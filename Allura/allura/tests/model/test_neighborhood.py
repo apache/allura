@@ -21,6 +21,7 @@
 Model tests for neighborhood
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from nose.tools import with_setup
 
 from allura import model as M

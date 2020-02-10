@@ -20,6 +20,7 @@
 
 # Make our own Git tool test decorator
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from allura.tests.decorators import with_tool
 
 with_git = with_tool('test', 'Git', 'src-git', 'Git', type='git')

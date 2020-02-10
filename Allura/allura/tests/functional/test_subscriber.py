@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.model.notification import Mailbox

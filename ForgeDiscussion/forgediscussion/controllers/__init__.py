@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from root import RootController, RootRestController
+from __future__ import absolute_import
+from .root import RootController, RootRestController

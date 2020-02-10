@@ -20,6 +20,7 @@
 """Setup the allura application"""
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
 
 from allura.config.environment import load_environment
@@ -28,8 +29,8 @@ __all__ = ['setup_app']
 
 log = logging.getLogger(__name__)
 
-from schema import setup_schema
-import bootstrap
+from .schema import setup_schema
+from . import bootstrap
 
 
 def setup_app(command, conf, vars):

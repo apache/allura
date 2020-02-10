@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from nose.tools import assert_equal
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase

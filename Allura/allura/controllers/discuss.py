@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from urllib import unquote
 from datetime import datetime
 import logging
@@ -33,7 +34,7 @@ from ming.odm import session
 from ming.utils import LazyProperty
 
 from allura import model as M
-from base import BaseController
+from .base import BaseController
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post, memorable_forget

@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from forum import Forum, ForumThread, ForumPost, ForumAttachment
+from __future__ import absolute_import
+from .forum import Forum, ForumThread, ForumPost, ForumAttachment

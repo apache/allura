@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from feedback import Feedback
+from __future__ import absolute_import
+from .feedback import Feedback

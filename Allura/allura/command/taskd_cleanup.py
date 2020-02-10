@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import os
 import time
 import signal
@@ -24,7 +25,7 @@ import subprocess
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
-import base
+from . import base
 
 
 class TaskdCleanupCommand(base.Command):

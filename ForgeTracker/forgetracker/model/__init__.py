@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ticket import Globals, Bin, Ticket, TicketAttachment, MovedTicket
+from __future__ import absolute_import
+from .ticket import Globals, Bin, Ticket, TicketAttachment, MovedTicket

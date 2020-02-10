@@ -30,6 +30,7 @@ this authorization code without Allura set up and configured on the git host.
 
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from mod_python import apache
 import os
 import json

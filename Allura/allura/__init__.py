@@ -19,6 +19,7 @@
 
 """The allura package"""
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from tg.support.registry import StackedObjectProxy
 
 credentials = StackedObjectProxy(name='credentials')

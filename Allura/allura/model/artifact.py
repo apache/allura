@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -45,7 +46,7 @@ from .types import ACL, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
 
-from filesystem import File
+from .filesystem import File
 
 log = logging.getLogger(__name__)
 

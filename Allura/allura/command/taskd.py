@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import os
 import time
@@ -33,7 +34,7 @@ from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
 
-import base
+from . import base
 
 faulthandler.enable()
 

@@ -21,6 +21,7 @@
 Model tests for auth
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from nose.tools import (
     with_setup,
     assert_equal,

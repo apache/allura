@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from datetime import datetime, timedelta
 from tg import app_globals as g
 from datadiff.tools import assert_equal

@@ -17,6 +17,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
 from calendar import timegm
 from collections import Counter, OrderedDict
@@ -60,7 +61,7 @@ from .timeline import ActivityNode, ActivityObject
 from .types import ACL, ACE
 from .monq_model import MonQTask
 
-from filesystem import File
+from .filesystem import File
 
 log = logging.getLogger(__name__)
 

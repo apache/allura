@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from main import ForgeActivityApp
+from __future__ import absolute_import
+from .main import ForgeActivityApp

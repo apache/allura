@@ -20,6 +20,7 @@
 
 # Make our own SVN tool test decorator
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from allura.tests.decorators import with_tool
 
 with_svn = with_tool('test', 'SVN', 'src', 'SVN')

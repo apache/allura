@@ -17,6 +17,7 @@
 
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from setuptools import setup, find_packages
 
 from forgefeedback.version import __version__

@@ -17,6 +17,7 @@
 
 #-*- python -*-
 from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
 import urllib
 import json
@@ -44,7 +45,7 @@ from forgediscussion import utils
 from forgediscussion import version
 from .controllers import RootController, RootRestController
 
-from widgets.admin import OptionsAdmin, AddForum
+from .widgets.admin import OptionsAdmin, AddForum
 
 
 log = logging.getLogger(__name__)

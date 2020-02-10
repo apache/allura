@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from git_repo import Repository
+from __future__ import absolute_import
+from .git_repo import Repository
