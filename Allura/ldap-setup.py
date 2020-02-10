@@ -27,6 +27,7 @@ from contextlib import contextmanager
 from tempfile import mkstemp
 from six.moves.configparser import ConfigParser, NoOptionError
 from io import open
+from six.moves import input
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger('ldap-setup')
@@ -88,7 +89,7 @@ def get_value(key, default):
         default = config.get('scm', key)
     except NoOptionError:
         pass
-    value = raw_input('%s? [%s]' % (key, default))
+    value = input('%s? [%s]' % (key, default))
     if not value:
         value = default
     config.set('scm', key, value)

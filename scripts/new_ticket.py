@@ -23,6 +23,7 @@ import sys
 import argparse
 import requests
 from pprint import pprint
+from six.moves import input
 
 
 def get_parser():
@@ -43,8 +44,8 @@ def get_opts():
 
 if __name__ == '__main__':
     opts = get_opts()
-    access_token = raw_input('Access (bearer) token: ')
-    summary = raw_input('Summary: ')
+    access_token = input('Access (bearer) token: ')
+    summary = input('Summary: ')
     print('Description (C-d to end):')
     print('-----------------------------------------------')
     description = sys.stdin.read()

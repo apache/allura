@@ -46,6 +46,7 @@ from allura.websetup.schema import REGISTRY
 from forgewiki import model as WM
 import six
 from six.moves import range
+from six.moves import input
 
 log = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ def bootstrap(command, conf, vars):
         root = create_user('Root', make_project=False)
     else:
         from getpass import getpass
-        root_name = raw_input('Enter username for root user (default "root"): ').strip()
+        root_name = input('Enter username for root user (default "root"): ').strip()
         if not root_name:
             root_name = 'root'
         ok = False

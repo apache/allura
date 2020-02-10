@@ -31,6 +31,7 @@ from six.moves.configparser import ConfigParser, NoOptionError
 import webbrowser
 import oauth2 as oauth
 from io import open
+from six.moves import input
 
 
 def main():
@@ -103,7 +104,7 @@ def make_oauth_client(base_url):
             print(("Go to %s" % pin_url))
         else:
             webbrowser.open(pin_url)
-        oauth_verifier = raw_input('What is the PIN? ')
+        oauth_verifier = input('What is the PIN? ')
 
         token = oauth.Token(
             request_token['oauth_token'], request_token['oauth_token_secret'])
@@ -133,7 +134,7 @@ def option(cp, section, key, prompt=None):
     if cp.has_option(section, key):
         value = cp.get(section, key)
     else:
-        value = raw_input(prompt or ('%s: ' % key))
+        value = input(prompt or ('%s: ' % key))
         cp.set(section, key, value)
     return value
 
