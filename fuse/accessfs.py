@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import os
 import json
 import urllib
@@ -102,7 +103,7 @@ class AccessFS(fuse.Fuse):
         return os.readlink("." + path)
 
     def readdir(self, path, offset):
-        print 'Readdir!'
+        print('Readdir!')
         for e in os.listdir("." + path):
             yield fuse.Direntry(e)
 
@@ -312,7 +313,7 @@ class PermissionCache(object):
             entry, timestamp = self._data[uid, path]
             elapsed = time.time() - timestamp
             if elapsed > self._timeout:
-                print 'Timeout!', elapsed
+                print('Timeout!', elapsed)
                 uname = self._uid_cache.get(uid)
                 entry = self._refresh_result(
                     uid, path, self._api_lookup(uname, path))
@@ -339,10 +340,10 @@ class PermissionCache(object):
             + urllib.urlencode(dict(
                 repo_path=path,
                 username=uname)))
-        print 'Checking access for %s at %s (%s)' % (uname, url, path)
+        print('Checking access for %s at %s (%s)' % (uname, url, path))
         fp = urllib2.urlopen(url)
         result = json.load(fp)
-        print result
+        print(result)
         entry = 0
         if result['allow_read']:
             entry |= os.R_OK
@@ -414,7 +415,7 @@ Userspace nullfs-alike: mirror the filesystem tree from some point on.
         if server.fuse_args.mount_expected():
             os.chdir(server.root)
     except OSError:
-        print >> sys.stderr, "can't enter root of underlying filesystem"
+        print("can't enter root of underlying filesystem", file=sys.stderr)
         sys.exit(1)
 
     server.main()

@@ -29,6 +29,7 @@ things that would make it faster, if we need/want to.
 """
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import os
 from datetime import datetime
 import argparse
@@ -118,8 +119,8 @@ class CreateSitemapFiles(ScriptTask):
                                      'date': p.last_updated.strftime("%Y-%m-%d")})
 
                 except Exception as e:
-                    print "Error creating sitemap for project '%s': %s" %\
-                        (p.shortname, e)
+                    print("Error creating sitemap for project '%s': %s" %\
+                        (p.shortname, e))
                 creds.clear()
                 if len(locs) >= options.urls_per_file:
                     write_sitemap(locs[:options.urls_per_file], file_count)

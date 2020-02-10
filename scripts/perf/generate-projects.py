@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import re
 from ming.odm import ThreadLocalORMSession
 from allura import model as M
@@ -29,10 +30,10 @@ def main(start, cnt):
         name = 'gen-proj-{}'.format(i)
         project = n.register_project(name, admin)
         if (i-start) > 0 and (i-start) % 100 == 0:
-            print 'Created {} projects'.format(i-start)
-    print 'Flushing...'
+            print('Created {} projects'.format(i-start))
+    print('Flushing...')
     ThreadLocalORMSession.flush_all()
-    print 'Done'
+    print('Done')
 
 if __name__ == '__main__':
     import sys

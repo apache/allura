@@ -46,6 +46,7 @@ sys     0m1.112s
 """
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import argparse
 import cProfile
 import time
@@ -86,24 +87,24 @@ def main(opts):
 
 def render(artifact, md, opts):
     start = begin = time.time()
-    print "%4s %20s %10s %s" % ('', 'Conversion Time (s)', 'Text Size', 'Post._id')
+    print("%4s %20s %10s %s" % ('', 'Conversion Time (s)', 'Text Size', 'Post._id'))
     for i, p in enumerate(artifact.discussion_thread.posts):
         text = DUMMYTEXT or p.text
         if opts.n and i + 1 not in opts.n:
-            print 'Skipping post %s' % str(i + 1)
+            print('Skipping post %s' % str(i + 1))
             continue
         if opts.profile:
-            print 'Profiling post %s' % str(i + 1)
+            print('Profiling post %s' % str(i + 1))
             cProfile.runctx('output = md.convert(text)', globals(), locals())
         else:
             output = md.convert(text)
         elapsed = time.time() - start
-        print "%4s %1.18f %10s %s" % (i + 1, elapsed, len(text), p._id)
+        print("%4s %1.18f %10s %s" % (i + 1, elapsed, len(text), p._id))
         if opts.output:
-            print 'Input:', text[:min(300, len(text))]
-            print 'Output:', output[:min(MAX_OUTPUT, len(output))]
+            print('Input:', text[:min(300, len(text))])
+            print('Output:', output[:min(MAX_OUTPUT, len(output))])
         start = time.time()
-    print "Total time:", start - begin
+    print("Total time:", start - begin)
     return output
 
 
@@ -129,4 +130,4 @@ if __name__ == '__main__':
     if opts.compare:
         opts.re2 = not opts.re2
         out2 = main(opts)
-        print 're/re2 outputs match: ', out1 == out2
+        print('re/re2 outputs match: ', out1 == out2)

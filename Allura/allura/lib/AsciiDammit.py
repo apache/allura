@@ -18,6 +18,7 @@ all rights in this work otherwise reserved under copyright.
 """
 
 from __future__ import unicode_literals
+from __future__ import print_function
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
 __version__ = "$Revision: 1.3 $"
 __date__ = "$Date: 2009/04/28 10:45:03 $"
@@ -214,11 +215,11 @@ def demoronise(t):
 if __name__ == '__main__':
 
     french = b'\x93Sacr\xe9 bleu!\x93'
-    print "First we mangle some French."
-    print asciiDammit(french)
-    print htmlDammit(french)
+    print("First we mangle some French.")
+    print(asciiDammit(french))
+    print(htmlDammit(french))
 
-    print
-    print "And now we fix the MS-quotes but leave the French alone."
-    print demoronise(french)
-    print htmlDammit(french, 1)
+    print()
+    print("And now we fix the MS-quotes but leave the French alone.")
+    print(demoronise(french))
+    print(htmlDammit(french, 1))

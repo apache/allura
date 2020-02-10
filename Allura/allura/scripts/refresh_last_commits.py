@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import argparse
 import logging
 from datetime import datetime
@@ -141,11 +142,11 @@ class RefreshLastCommits(ScriptTask):
         )
         c.model_cache = model_cache
         timings = []
-        print 'Processing last commits'
+        print('Processing last commits')
         for i, commit_id in enumerate(commit_ids):
             commit = M.repository.Commit.query.get(_id=commit_id)
             if commit is None:
-                print "Commit missing, skipping: %s" % commit_id
+                print("Commit missing, skipping: %s" % commit_id)
                 continue
             commit.set_context(c.app.repo)
             with time(timings):
@@ -188,8 +189,8 @@ class RefreshLastCommits(ScriptTask):
         tt = sum(timings)
         at = tt / len(timings)
         mat = sum(timings[-debug_step:]) / debug_step
-        print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f)' % (
-            processed, mt, at, mat, tt)
+        print('  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f)' % (
+            processed, mt, at, mat, tt))
 
 
 @contextmanager

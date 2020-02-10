@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import os
 import shutil
 import stat
@@ -1054,7 +1055,7 @@ class TestGitCommit(unittest.TestCase):
                  + self.rev.diffs.changed
                  + self.rev.diffs.copied)
         for d in diffs:
-            print d
+            print(d)
 
     def test_log(self):
         # path only

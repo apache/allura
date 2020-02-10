@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import os
 import sys
 import urllib
@@ -53,17 +54,17 @@ def main():
             page_data = urllib.urlopen(from_url).read()
             page_json = json.loads(page_data)
             if options.debug:
-                print page_json['text']
+                print(page_json['text'])
                 break
             resp = oauth_client.request(
                 to_url, 'POST', body=urllib.urlencode(dict(text=page_json['text'].encode('utf-8'))))
             if resp[0]['status'] == '200':
-                print "Posted {0} to {1}".format(page_json['title'], to_url)
+                print("Posted {0} to {1}".format(page_json['title'], to_url))
             else:
-                print "Error posting {0} to {1}: {2} (project may not exist)".format(page_json['title'], to_url, resp[0]['status'])
+                print("Error posting {0} to {1}: {2} (project may not exist)".format(page_json['title'], to_url, resp[0]['status']))
                 break
         except:
-            print "Error processing " + p
+            print("Error processing " + p)
             raise
 
 
@@ -97,7 +98,7 @@ def make_oauth_client(base_url):
             AUTHORIZE_URL, request_token['oauth_token'])
         if getattr(webbrowser.get(), 'name', '') == 'links':
             # sandboxes
-            print("Go to %s" % pin_url)
+            print(("Go to %s" % pin_url))
         else:
             webbrowser.open(pin_url)
         oauth_verifier = raw_input('What is the PIN? ')
@@ -116,8 +117,8 @@ def make_oauth_client(base_url):
 
     # save oauth token for later use
     cp.write(open(config_file, 'w'))
-    print 'Saving oauth tokens in {} for later re-use'.format(config_file)
-    print
+    print('Saving oauth tokens in {} for later re-use'.format(config_file))
+    print()
 
     access_token = oauth.Token(oauth_token, oauth_token_secret)
     oauth_client = oauth.Client(consumer, access_token)

@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import sys
 from collections import defaultdict
 from contextlib import contextmanager
@@ -47,7 +48,7 @@ class ShowModelsCommand(base.Command):
         graph = build_model_inheritance_graph()
         for depth, cls in dfs(MappedClass, graph):
             for line in dump_cls(depth, cls):
-                print line
+                print(line)
 
 
 class ReindexCommand(base.Command):

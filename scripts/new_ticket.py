@@ -17,6 +17,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import sys
 import argparse
 import requests
@@ -43,10 +44,10 @@ if __name__ == '__main__':
     opts = get_opts()
     access_token = raw_input('Access (bearer) token: ')
     summary = raw_input('Summary: ')
-    print 'Description (C-d to end):'
-    print '-----------------------------------------------'
+    print('Description (C-d to end):')
+    print('-----------------------------------------------')
     description = sys.stdin.read()
-    print '-----------------------------------------------'
+    print('-----------------------------------------------')
 
     r = requests.post(opts.url, params={
         'access_token': access_token,
@@ -54,7 +55,7 @@ if __name__ == '__main__':
         'ticket_form.description': description,
     })
     if r.status_code == 200:
-        print 'Ticket created at: %s' % r.url
+        print('Ticket created at: %s' % r.url)
         pprint(r.json())
     else:
-        print 'Error [%s]:\n%s' % (r.status_code, r.text)
+        print('Error [%s]:\n%s' % (r.status_code, r.text))

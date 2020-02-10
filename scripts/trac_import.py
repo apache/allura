@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import json
 from optparse import OptionParser
 
@@ -41,7 +42,7 @@ def main():
             if type(user_map) is not type({}):
                 raise ValueError
             for k, v in user_map.iteritems():
-                print k, v
+                print(k, v)
                 if not isinstance(k, basestring) or not isinstance(v, basestring):
                     raise ValueError
         except ValueError:
@@ -72,10 +73,10 @@ def import_forum(cli, project, tool, user_map, doc_txt, validate=True,
             )
     if validate:
         url += '/validate_import'
-        print cli.call(url, doc=doc_txt, user_map=json.dumps(user_map))
+        print(cli.call(url, doc=doc_txt, user_map=json.dumps(user_map)))
     else:
         url += '/perform_import'
-        print cli.call(url, doc=doc_txt, user_map=json.dumps(user_map))
+        print(cli.call(url, doc=doc_txt, user_map=json.dumps(user_map)))
 
 
 def parse_options():

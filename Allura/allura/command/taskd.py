@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 import os
 import time
@@ -193,7 +194,7 @@ class TaskCommand(base.Command):
         else:
             q = dict(state=self.options.state)
         for t in M.MonQTask.query.find(q):
-            print t
+            print(t)
 
     def _retry(self):
         '''Retry tasks in an error state'''

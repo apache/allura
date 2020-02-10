@@ -22,6 +22,7 @@ sstress - an SMTP stress testing tool
 '''
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import smtplib
 import threading
 import time
@@ -44,8 +45,8 @@ def main():
         t.join()
     end = time.time()
     elapsed = end - begin
-    print '%d requests completed in %f seconds' % (N, elapsed)
-    print '%f requests/second' % (N / elapsed)
+    print('%d requests completed in %f seconds' % (N, elapsed))
+    print('%f requests/second' % (N / elapsed))
 
 
 def stress():

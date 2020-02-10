@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 
 from ming.odm import ThreadLocalORMSession, state
@@ -30,7 +31,7 @@ def main():
     for chunk in utils.chunked_find(M.MergeRequest):
         for mr in chunk:
             try:
-                print 'Processing {0}'.format(mr.url())
+                print('Processing {0}'.format(mr.url()))
                 mr.subscribe(user=mr.creator)
                 ThreadLocalORMSession.flush_all()
             except:

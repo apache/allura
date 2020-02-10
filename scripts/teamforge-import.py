@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 from getpass import getpass
 from optparse import OptionParser
@@ -134,7 +135,7 @@ def main():
         project_ids = [p.id for p in projects.dataRows]
 
     if options.list_project_ids:
-        print ' '.join(project_ids)
+        print(' '.join(project_ids))
         return
 
     if not os.path.exists(options.output_dir):

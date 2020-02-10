@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 
 from ming.odm import ThreadLocalORMSession, state
@@ -29,7 +30,7 @@ log = logging.getLogger(__name__)
 def main():
     for chunk in utils.chunked_find(M.User):
         for user in chunk:
-            print 'Processing {0}'.format(user.username)
+            print('Processing {0}'.format(user.username))
             user.pending = False
             # Ming doesn't mark document for update, since pending is False
             # by default, even if field is missing from mongo

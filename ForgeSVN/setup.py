@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 from setuptools import setup, find_packages
 
 from forgesvn.version import __version__
@@ -26,7 +27,7 @@ from forgesvn.version import __version__
 try:
     import pysvn
 except ImportError:
-    print '\npysvn must be installed for ForgeSVN to work\n'
+    print('\npysvn must be installed for ForgeSVN to work\n')
     raise
 
 setup(name='ForgeSVN',

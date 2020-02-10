@@ -16,6 +16,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import calendar
 from datetime import datetime, time, timedelta
 from time import time as time_time
@@ -599,7 +600,7 @@ class TestAuth(TestController):
                       params=change_params)
 
         u = M.User.by_username('test-admin')
-        print(u.get_tool_data('AuthPasswordReset', 'hash'))
+        print((u.get_tool_data('AuthPasswordReset', 'hash')))
         assert_equal(u.get_tool_data('AuthPasswordReset', 'hash'), '')
         assert_equal(u.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
 

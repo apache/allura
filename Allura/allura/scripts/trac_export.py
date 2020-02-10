@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 import sys
 import csv
@@ -122,7 +123,7 @@ class TracExport(object):
     def log_url(self, url):
         log.info(url)
         if self.verbose:
-            print >>sys.stderr, url
+            print(url, file=sys.stderr)
 
     @classmethod
     def trac2z_date(cls, s):
@@ -227,7 +228,7 @@ class TracExport(object):
         f = self.csvopen(url)
         reader = csv.DictReader(f)
         fields = reader.next()
-        print fields
+        print(fields)
         return int(fields['id'])
 
     def get_ticket(self, id, extra={}):

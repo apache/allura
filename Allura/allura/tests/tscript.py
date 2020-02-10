@@ -16,13 +16,14 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import logging
 
 from allura import model as M
 
 log = logging.getLogger(__name__)
 
-print 'In a script'
+print('In a script')
 log.info('in a script')
 
 for p in M.Project.query.find():

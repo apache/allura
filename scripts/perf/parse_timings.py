@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import json
 from datetime import datetime
 import argparse
@@ -52,6 +53,6 @@ for line in args.input_file:
 
 timings.sort()  # in case of multiple input files
 
-print '\t'.join(['Time'] + args.timings)
+print('\t'.join(['Time'] + args.timings))
 for t in timings:
-    print '\t'.join(map(str, t))
+    print('\t'.join(map(str, t)))

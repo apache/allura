@@ -18,11 +18,12 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 from smtpd import DebuggingServer
 
 
 class BetterDebuggingServer(DebuggingServer, object):
 
     def process_message(self, peer, mailfrom, rcpttos, data):
-        print 'TO: ' + ', '.join(rcpttos)
+        print('TO: ' + ', '.join(rcpttos))
         super(BetterDebuggingServer, self).process_message(peer, mailfrom, rcpttos, data)

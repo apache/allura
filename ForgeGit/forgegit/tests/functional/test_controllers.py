@@ -18,6 +18,7 @@
 #       under the License.
 
 from __future__ import unicode_literals
+from __future__ import print_function
 import json
 import re
 import os
@@ -576,9 +577,9 @@ class TestFork(_TestCase):
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
-            print r.request.url
+            print(r.request.url)
         while r.status_int == 302:
-            print ' ==> 302 ==> %s' % r.location
+            print(' ==> 302 ==> %s' % r.location)
             r = r.follow(**kw)
         return r
 
