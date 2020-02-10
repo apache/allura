@@ -1212,7 +1212,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         q = cls.query.find(
             dict(query, app_config_id=app_config._id, deleted=deleted))
         q = q.sort('ticket_num', pymongo.DESCENDING)
-        if sort:
+        if sort and ' ' in sort:
             field, direction = sort.split()
             if field.startswith('_'):
                 field = 'custom_fields.' + field
@@ -1321,7 +1321,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         search_query - query in solr syntax
         """
         solr_sort = None
-        if sort:
+        if sort and ' ' in sort:
             from forgetracker.tracker_main import _mongo_col_to_solr_col
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
