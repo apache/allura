@@ -197,7 +197,7 @@ class RepositoryImplementation(object):
 
     def url_for_commit(self, commit, url_type='ci'):
         'return an URL, given either a commit or object id'
-        if isinstance(commit, basestring):
+        if isinstance(commit, six.string_types):
             object_id = commit
         else:
             object_id = commit._id

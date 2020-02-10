@@ -183,7 +183,7 @@ def load_users():
 
 
 def save_user(usernames):
-    if isinstance(usernames, basestring):
+    if isinstance(usernames, six.string_types):
         usernames = [usernames]
 
     load_users()

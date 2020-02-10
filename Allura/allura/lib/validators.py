@@ -301,7 +301,7 @@ class UserMapJsonFile(JsonFile):
         value = super(self.__class__, self)._to_python(value, state)
         try:
             for k, v in six.iteritems(value):
-                if not(isinstance(k, basestring) and isinstance(v, basestring)):
+                if not(isinstance(k, six.string_types) and isinstance(v, six.string_types)):
                     raise
             return json.dumps(value) if self.as_string else value
         except:

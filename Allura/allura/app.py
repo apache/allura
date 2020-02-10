@@ -993,9 +993,9 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
             new_group_ids = args.get('new', [])
             del_group_ids = []
             group_ids = args.get('value', [])
-            if isinstance(new_group_ids, basestring):
+            if isinstance(new_group_ids, six.string_types):
                 new_group_ids = [new_group_ids]
-            if isinstance(group_ids, basestring):
+            if isinstance(group_ids, six.string_types):
                 group_ids = [group_ids]
 
             for acl in old_acl:

@@ -70,7 +70,7 @@ def AddrHeader(fromaddr):
         foo@bar.com
         "Foo Bar" <foo@bar.com>
     '''
-    if isinstance(fromaddr, basestring) and ' <' in fromaddr:
+    if isinstance(fromaddr, six.string_types) and ' <' in fromaddr:
         name, addr = fromaddr.rsplit(' <', 1)
         addr = '<' + addr  # restore the char we just split off
         addrheader = Header(name, addr)
@@ -274,7 +274,7 @@ class SMTPClient(object):
             message['CC'] = AddrHeader(cc)
             addrs.append(cc)
         if in_reply_to:
-            if not isinstance(in_reply_to, basestring):
+            if not isinstance(in_reply_to, six.string_types):
                 raise TypeError('Only strings are supported now, not lists')
             message['In-Reply-To'] = Header('<%s>' % in_reply_to)
             if not references:

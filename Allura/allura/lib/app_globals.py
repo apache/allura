@@ -572,7 +572,7 @@ class Globals(object):
         'h.set_context() is preferred over this method'
         if isinstance(pid_or_project, M.Project):
             c.project = pid_or_project
-        elif isinstance(pid_or_project, basestring):
+        elif isinstance(pid_or_project, six.string_types):
             raise TypeError('need a Project instance, got %r' % pid_or_project)
         elif pid_or_project is None:
             c.project = None

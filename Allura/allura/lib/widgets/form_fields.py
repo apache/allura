@@ -64,7 +64,7 @@ class LabelEdit(ew.InputField):
         placeholder=None)
 
     def from_python(self, value, state=None):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             return value
         elif value is None:
             return ''

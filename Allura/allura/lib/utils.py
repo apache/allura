@@ -789,7 +789,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     if strings_only and isinstance(s, (types.NoneType, int)):
         return s
-    elif not isinstance(s, basestring):
+    elif not isinstance(s, six.string_types):
         try:
             return str(s)
         except UnicodeEncodeError:

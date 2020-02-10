@@ -985,9 +985,9 @@ class PermissionsController(BaseController):
             perm = args['id']
             new_group_ids = args.get('new', [])
             group_ids = args.get('value', [])
-            if isinstance(new_group_ids, basestring):
+            if isinstance(new_group_ids, six.string_types):
                 new_group_ids = [new_group_ids]
-            if isinstance(group_ids, basestring):
+            if isinstance(group_ids, six.string_types):
                 group_ids = [group_ids]
             # make sure the admin group has the admin permission
             if perm == 'admin':

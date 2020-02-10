@@ -655,7 +655,7 @@ class _Test(unittest.TestCase):
         repo = getattr(self, 'repo', None)
         t.repo = repo
         for k, v in six.iteritems(kwargs):
-            if isinstance(v, basestring):
+            if isinstance(v, six.string_types):
                 obj = M.repository.Blob(
                     t, k, next(self.idgen))
                 t.blob_ids.append(Object(

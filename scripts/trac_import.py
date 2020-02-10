@@ -46,7 +46,7 @@ def main():
                 raise ValueError
             for k, v in six.iteritems(user_map):
                 print(k, v)
-                if not isinstance(k, basestring) or not isinstance(v, basestring):
+                if not isinstance(k, six.string_types) or not isinstance(v, six.string_types):
                     raise ValueError
         except ValueError:
             optparser.error(

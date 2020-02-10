@@ -28,6 +28,7 @@ from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import helpers as h
 from allura.lib import validators as v
+import six
 
 
 class TicketCustomFields(ew.CompoundField):
@@ -90,7 +91,7 @@ class GenericTicketForm(ew.SimpleForm):
         since normally `ProjectUserCombo` shows without any options, and loads
         them asynchronously (via ajax).
         """
-        if isinstance(user, basestring):
+        if isinstance(user, six.string_types):
             user = M.User.by_username(user)
         if user and user != M.User.anonymous():
             field.options = [

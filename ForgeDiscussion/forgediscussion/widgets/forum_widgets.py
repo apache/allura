@@ -30,6 +30,7 @@ from allura.lib.widgets.forms import CsrfForm
 from allura.lib.widgets.subscriptions import SubscribeForm
 
 from forgediscussion import model as M
+import six
 
 
 class _ThreadsTable(DW._ThreadsTable):
@@ -88,7 +89,7 @@ class _ForumSelector(ew.SingleSelectField):
         return result
 
     def from_python(self, value, state):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             return value
         else:
             return value.shortname

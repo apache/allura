@@ -250,7 +250,7 @@ def create_project(p, nbhd, options):
                 continue
             tool_options = tool_config.get('options', {})
             for k, v in six.iteritems(tool_options):
-                if isinstance(v, basestring):
+                if isinstance(v, six.string_types):
                     tool_options[k] = string.Template(v).safe_substitute(
                         project.root_project.__dict__.get('root_project', {}))
             project.install_app(tool,

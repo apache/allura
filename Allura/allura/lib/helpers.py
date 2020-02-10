@@ -348,7 +348,7 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
     else:
-        if isinstance(app_config_id, basestring):
+        if isinstance(app_config_id, six.string_types):
             app_config_id = ObjectId(app_config_id)
         app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
@@ -413,7 +413,7 @@ def convert_bools(conf, prefix=''):
     :return: dict
     '''
     def convert_value(val):
-        if isinstance(val, basestring):
+        if isinstance(val, six.string_types):
             if val.strip().lower() == 'true':
                 return True
             elif val.strip().lower() == 'false':
