@@ -26,6 +26,7 @@ import json
 import StringIO
 import allura
 import mock
+from io import open
 
 import PIL
 from bs4 import BeautifulSoup
@@ -880,7 +881,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_new_attachment(self):
         file_name = 'test_root.py'
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
@@ -895,7 +896,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_delete_attachment(self):
         file_name = 'test_root.py'
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
@@ -940,7 +941,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
@@ -953,7 +954,7 @@ class TestFunctionalController(TrackerTestController):
     def test_two_attachments(self):
         file_name1 = 'test_root1.py'
         file_name2 = 'test_root2.py'
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         self.new_ticket(summary='test new attachment')
         ticket_editor = self.app.post('/bugs/1/update_ticket', {
             'summary': 'zzz'
@@ -967,7 +968,7 @@ class TestFunctionalController(TrackerTestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test new attachment')
         self.app.post('/bugs/1/update_ticket', {
@@ -1672,7 +1673,7 @@ class TestFunctionalController(TrackerTestController):
 
     def test_new_ticket_notification_contains_attachments(self):
         file_name = 'tést_root.py'.encode('utf-8')
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         upload = ('ticket_form.attachment', file_name, file_data)
         r = self.app.post('/bugs/save_ticket', {
             'ticket_form.summary': 'new ticket with attachment'
@@ -2366,7 +2367,7 @@ class TestFunctionalController(TrackerTestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('attachment', file_name, file_data)
         self.new_ticket(summary='test move attachment')
 
@@ -2466,7 +2467,7 @@ class TestFunctionalController(TrackerTestController):
                      11)
 
         file_name = 'test_root.py'
-        file_data = open(__file__).read()
+        file_data = open(__file__, 'rb').read()
         upload = ('attachment', file_name, file_data)
         r = self.app.post('/bugs/1/update_ticket', {
             'summary': 'test rest attach'

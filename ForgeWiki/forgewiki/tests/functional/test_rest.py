@@ -20,6 +20,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
+from io import open
 
 from nose.tools import assert_equal, assert_in, assert_not_equal
 import tg
@@ -48,7 +49,7 @@ class TestWikiApi(TestRestApiBase):
     def test_get_page(self):
         r = self.app.get('/p/test/wiki/Home/')
         discussion_url = r.html.find('form', id='edit_post')['action'][:-4]
-        content = open(__file__).read()
+        content = open(__file__, 'rb').read()
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/rest/p/test/wiki/Home/')

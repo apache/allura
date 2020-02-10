@@ -23,6 +23,7 @@ import allura
 import pkg_resources
 import StringIO
 import logging
+from io import open
 
 import tg
 import PIL
@@ -372,7 +373,7 @@ class TestProjectAdmin(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('icon', file_name, file_data)
 
         self.app.get('/admin/')
@@ -396,7 +397,7 @@ class TestProjectAdmin(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
@@ -436,7 +437,7 @@ class TestProjectAdmin(TestController):
         for file_name in ('admin_24.png', 'admin_32.png'):
             file_path = os.path.join(allura.__path__[0], 'nf', 'allura',
                                      'images', file_name)
-            file_data = open(file_path).read()
+            file_data = open(file_path, 'rb').read()
             upload = ('screenshot', file_name, file_data)
             self.app.post('/admin/add_screenshot', params=dict(
                 caption=file_name),

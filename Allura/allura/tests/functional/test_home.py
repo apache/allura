@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import json
 import re
 import os
+from io import open
 
 from tg import tmpl_context as c
 from nose.tools import assert_equal, assert_not_in, assert_in
@@ -157,7 +158,7 @@ class TestProjectHome(TestController):
     def test_user_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('icon', file_name, file_data)
         with td.audits('update project icon'):
             self.app.post('/u/test-admin/admin/update', params=dict(

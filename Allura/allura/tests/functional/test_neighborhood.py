@@ -22,6 +22,7 @@ import json
 import os
 from cStringIO import StringIO
 import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+from io import open
 
 import PIL
 from mock import patch
@@ -266,7 +267,7 @@ class TestNeighborhood(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('icon', file_name, file_data)
 
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username=str('root')))
@@ -869,7 +870,7 @@ class TestNeighborhood(TestController):
         file_name = 'adobe_icon.png'
         file_path = os.path.join(
             allura.__path__[0], 'public', 'nf', 'images', file_name)
-        file_data = open(file_path).read()
+        file_data = open(file_path, 'rb').read()
         upload = ('icon', file_name, file_data)
 
         r = self.app.get('/adobe/_admin/awards',
