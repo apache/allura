@@ -321,7 +321,7 @@ def search_app(q='', fq=None, app=True, **kw):
                 else:
                     return doc
 
-            filtered_results = filter(None, imap(filter_unauthorized, results))
+            filtered_results = [_f for _f in imap(filter_unauthorized, results) if _f]
             count -= len(results) - len(filtered_results)
             results = filtered_results
             results = imap(historize_urls, results)

@@ -37,6 +37,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
 import six
+from six.moves import filter
 
 
 log = logging.getLogger(__name__)
@@ -288,12 +289,12 @@ class PersonalDataForm(ForgeForm):
 
         self._fields = self.fields
 
-        birthdate_field = filter(lambda x: x.name == 'birthdate', self._fields)
+        birthdate_field = [x for x in self._fields if x.name == 'birthdate']
 
-        sex_field = filter(lambda x: x.name == 'sex', self._fields)[0]
-        country_field = filter(lambda x: x.name == 'country', self._fields)[0]
-        city_field = filter(lambda x: x.name == 'city', self._fields)[0]
-        timezone_field = filter(lambda x: x.name == 'timezone', self._fields)[0]
+        sex_field = [x for x in self._fields if x.name == 'sex'][0]
+        country_field = [x for x in self._fields if x.name == 'country'][0]
+        city_field = [x for x in self._fields if x.name == 'city'][0]
+        timezone_field = [x for x in self._fields if x.name == 'timezone'][0]
 
         for opt in sex_field.options:
             if opt.label == user.sex:

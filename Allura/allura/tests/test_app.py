@@ -174,6 +174,6 @@ Content-Type: text/html; charset="utf-8"
 --_----------=_150235203132168580--
     """
     msg = mail_util.parse_message(msg_raw)
-    for p in filter(lambda p: p['payload'] != None, msg['parts']):
+    for p in [p for p in msg['parts'] if p['payload'] != None]:
         # filter here mimics logic in `route_email`
         a.handle_artifact_message(ticket, p)

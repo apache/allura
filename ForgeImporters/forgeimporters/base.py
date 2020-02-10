@@ -27,6 +27,7 @@ import traceback
 from six.moves.urllib.parse import urlparse
 from datetime import datetime
 from io import open
+from six.moves import filter
 try:
     from cStringIO import StringIO
 except ImportError:

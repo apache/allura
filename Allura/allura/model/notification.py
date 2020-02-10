@@ -59,6 +59,7 @@ import allura.tasks.mail_tasks
 from .session import main_orm_session
 from .auth import User, AlluraUserProperty
 import six
+from six.moves import filter
 
 
 log = logging.getLogger(__name__)
@@ -333,7 +334,7 @@ class Notification(MappedClass):
         def perm_check(notification):
             return not (user and artifact) or \
                 security.has_access(artifact, 'read', user)()
-        notifications = filter(perm_check, notifications)
+        notifications = list(filter(perm_check, notifications))
 
         log.debug('Sending digest of notifications [%s] to user %s', ', '.join(
             [n._id for n in notifications]), user_id)

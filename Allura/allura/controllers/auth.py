@@ -265,7 +265,7 @@ class AuthController(BaseController):
     def send_verification_link(self, a):
         addr = M.EmailAddress.get(email=a, claimed_by_user_id=c.user._id)
         confirmed_emails = M.EmailAddress.find(dict(email=a, confirmed=True)).all()
-        confirmed_emails = filter(lambda item: item != addr, confirmed_emails)
+        confirmed_emails = [item for item in confirmed_emails if item != addr]
 
         if addr:
             if any(email.confirmed for email in confirmed_emails):
@@ -279,7 +279,7 @@ class AuthController(BaseController):
 
     def _verify_addr(self, addr, do_auth_check=True):
         confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
-        confirmed_by_other = filter(lambda item: item != addr, confirmed_by_other)
+        confirmed_by_other = [item for item in confirmed_by_other if item != addr]
 
         if addr and not confirmed_by_other:
             user = addr.claimed_by_user(include_pending=True)
@@ -597,7 +597,7 @@ class PreferencesController(BaseController):
                     user.email_addresses.append(em.email)
                     em.claimed_by_user_id = user._id
 
-                    confirmed_emails = filter(lambda email: email.confirmed, claimed_emails)
+                    confirmed_emails = [email for email in claimed_emails if email.confirmed]
                     if not confirmed_emails:
                         if not admin:
                             em.send_verification_link()

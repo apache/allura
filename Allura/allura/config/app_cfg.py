@@ -47,6 +47,7 @@ import allura
 # needed for tg.configuration to work
 from allura.lib import app_globals, helpers
 from allura.lib.package_path_loader import PackagePathLoader
+from six.moves import filter
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(tg.i18n)
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
-        jinja2_env.filters['filter'] = lambda s, t=None: filter(t and jinja2_env.tests[t], s)
+        jinja2_env.filters['filter'] = lambda s, t=None: list(filter(t and jinja2_env.tests[t], s))
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
         config['tg.app_globals'].jinja2_env = jinja2_env  # TG doesn't need this, but we use g.jinja2_env a lot

@@ -110,7 +110,7 @@ def create_many_lint_methods():
     py_files = find_stdout.split('\n')
 
     for i, files in enumerate(grouper(40, py_files)):
-        files = filter(None, files)
+        files = [_f for _f in files if _f]
         if not files:
             continue
 

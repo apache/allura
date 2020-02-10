@@ -117,8 +117,7 @@ class RssFeedsCommand(base.BlogCommand):
     def process_entry(self, e, appid):
         title = e.title
         allura_base.log.info(" ...entry '%s'", title)
-        parsed_content = filter(
-            None, e.get('content') or [e.get('summary_detail')])
+        parsed_content = [_f for _f in e.get('content') or [e.get('summary_detail')] if _f]
         if parsed_content:
             content = ''
             for ct in parsed_content:
