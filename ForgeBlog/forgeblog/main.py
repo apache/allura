@@ -19,7 +19,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import json
 
 # Non-stdlib imports
@@ -332,7 +332,7 @@ class RootController(BaseController, FeedController):
     def _lookup(self, year=None, month=None, name=None, *rest):
         if year is None or month is None or name is None:
             raise exc.HTTPNotFound()
-        slug = '/'.join((year, month, urllib2.unquote(name).decode('utf-8')))
+        slug = '/'.join((year, month, six.moves.urllib.parse.unquote(name).decode('utf-8')))
         post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if post is None:
             raise exc.HTTPNotFound()
@@ -610,7 +610,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
     def _lookup(self, year=None, month=None, title=None, *rest):
         if not (year and month and title):
             raise exc.HTTPNotFound()
-        slug = '/'.join((year, month, urllib2.unquote(title).decode('utf-8')))
+        slug = '/'.join((year, month, six.moves.urllib.parse.unquote(title).decode('utf-8')))
         post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if not post:
             raise exc.HTTPNotFound()

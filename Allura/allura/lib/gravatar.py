@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import re
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import hashlib
 
 from tg import config
@@ -88,7 +88,7 @@ def url(email=None, gravatar_id=None, **kw):
         kw['r'] = 'pg'
     if 'd' not in kw and config.get('default_avatar_image'):
         kw['d'] = h.absurl(config['default_avatar_image'])
-    return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
+    return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, six.moves.urllib.parse.urlencode(kw)))
 
 
 def for_user(user):

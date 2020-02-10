@@ -23,7 +23,7 @@ import socket
 import asyncore
 import asynchat
 import random
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 from datetime import datetime, timedelta
 
 import tg

@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from datetime import datetime
 from unittest import TestCase
-from urllib2 import HTTPError
+from six.moves.urllib.error import HTTPError
 import mock
 
 from ...github import tracker

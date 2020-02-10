@@ -19,7 +19,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import json
 
 import mock
@@ -193,7 +193,7 @@ class TestController(object):
 
     def webflash(self, response):
         "Extract webflash content from current state of WebTest app"
-        return urllib.unquote(self.app.cookies.get('webflash', ''))
+        return six.moves.urllib.parse.unquote(self.app.cookies.get('webflash', ''))
 
     def subscription_options(self, response):
         """

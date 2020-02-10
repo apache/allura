@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import calendar
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 from email import header
 from hashlib import sha256
 from datetime import timedelta, datetime, time

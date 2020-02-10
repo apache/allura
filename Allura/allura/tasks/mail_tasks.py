@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import HTMLParser
+import six.moves.html_parser
 import re
 
 from tg import tmpl_context as c, app_globals as g, config
@@ -128,7 +128,7 @@ def create_multipart_msg(text, metalink=None):
                         plain_text,
                         flags=re.DOTALL,  # match newlines too
                         )
-    plain_text = HTMLParser.HTMLParser().unescape(plain_text)  # put literal HTML tags back into plaintext
+    plain_text = six.moves.html_parser.HTMLParser().unescape(plain_text)  # put literal HTML tags back into plaintext
     plain_msg = mail_util.encode_email_part(plain_text, 'plain')
 
     html_text = g.forge_markdown(email=True).convert(text)

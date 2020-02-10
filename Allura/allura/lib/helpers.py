@@ -23,15 +23,15 @@ import sys
 import os
 import os.path
 import difflib
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import re
 import unicodedata
 import json
 import logging
 import string
 import random
-import cPickle as pickle
+import six.moves.cPickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -167,16 +167,16 @@ def monkeypatch(*objs):
 
 def urlquote(url, safe=b"/"):
     try:
-        return urllib.quote(str(url), safe=safe)
+        return six.moves.urllib.parse.quote(str(url), safe=safe)
     except UnicodeEncodeError:
-        return urllib.quote(url.encode('utf-8'), safe=safe)
+        return six.moves.urllib.parse.quote(url.encode('utf-8'), safe=safe)
 
 
 def urlquoteplus(url, safe=b""):
     try:
-        return urllib.quote_plus(str(url), safe=safe)
+        return six.moves.urllib.parse.quote_plus(str(url), safe=safe)
     except UnicodeEncodeError:
-        return urllib.quote_plus(url.encode('utf-8'), safe=safe)
+        return six.moves.urllib.parse.quote_plus(url.encode('utf-8'), safe=safe)
 
 
 def urlquote_path_only(url):
@@ -1005,9 +1005,9 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
     attempts = 0
     while True:
         try:
-            return urllib2.urlopen(url, timeout=timeout)
+            return six.moves.urllib.request.urlopen(url, timeout=timeout)
         except IOError as e:
-            no_retry = isinstance(e, urllib2.HTTPError) and e.code not in codes
+            no_retry = isinstance(e, six.moves.urllib.error.HTTPError) and e.code not in codes
             if attempts < retries and not no_retry:
                 attempts += 1
                 continue

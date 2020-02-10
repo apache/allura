@@ -19,7 +19,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import json
 import os
 
@@ -103,7 +103,7 @@ class ForgeDiscussionApp(Application):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        shortname = urllib.unquote_plus(topic.replace('.', '/'))
+        shortname = six.moves.urllib.parse.unquote_plus(topic.replace('.', '/'))
         forum = DM.Forum.query.get(
             shortname=shortname, app_config_id=self.config._id)
         if forum is None:

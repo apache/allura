@@ -230,7 +230,7 @@ def allura_globals_middleware(app):
 def get_tg_vars(context):
     import tg
     from allura.lib import helpers as h
-    from urllib import quote, quote_plus
+    from six.moves.urllib.parse import quote, quote_plus
     context.setdefault('g', tg.app_globals)
     context.setdefault('c', tg.tmpl_context)
     context.setdefault('h', h)

@@ -22,7 +22,7 @@ import json
 import logging
 import os
 from pprint import pformat
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash, jsonify

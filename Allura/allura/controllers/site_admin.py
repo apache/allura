@@ -49,7 +49,7 @@ from allura.command.show_models import dfs, build_model_inheritance_graph
 from allura.scripts.delete_projects import DeleteProjects
 import allura
 
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 from webhelpers import paginate
 
 

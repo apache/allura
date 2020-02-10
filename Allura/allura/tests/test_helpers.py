@@ -441,8 +441,8 @@ class TestUrlOpen(TestCase):
     @patch('allura.lib.helpers.urllib2')
     def test_no_error(self, urllib2):
         r = h.urlopen('myurl')
-        self.assertEqual(r, urllib2.urlopen.return_value)
-        urllib2.urlopen.assert_called_once_with('myurl', timeout=None)
+        self.assertEqual(r, six.moves.urllib.request.urlopen.return_value)
+        six.moves.urllib.request.urlopen.assert_called_once_with('myurl', timeout=None)
 
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_socket_timeout(self, urlopen):
@@ -467,7 +467,7 @@ class TestUrlOpen(TestCase):
 
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_handled_http_error(self, urlopen):
-        from urllib2 import HTTPError
+        from six.moves.urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 408, 'timeout', None, None)
@@ -477,7 +477,7 @@ class TestUrlOpen(TestCase):
 
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_unhandled_http_error(self, urlopen):
-        from urllib2 import HTTPError
+        from six.moves.urllib.error import HTTPError
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 404, 'timeout', None, None)

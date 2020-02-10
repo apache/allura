@@ -21,7 +21,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 import oauth2 as oauth
 from paste.util.converters import asbool

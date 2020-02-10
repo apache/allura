@@ -21,7 +21,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 import re
-from urlparse import urlparse, urljoin
+from six.moves.urllib.parse import urlparse, urljoin
 
 import bson
 import tg

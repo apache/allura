@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import re
 import logging
 from datetime import datetime
-from urllib2 import HTTPError
+from six.moves.urllib.error import HTTPError
 import six
 
 try:

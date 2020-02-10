@@ -22,12 +22,12 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 import sys
-import urllib
-import urlparse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.parse
 from optparse import OptionParser
 import json
 
-from ConfigParser import ConfigParser, NoOptionError
+from six.moves.configparser import ConfigParser, NoOptionError
 import webbrowser
 import oauth2 as oauth
 
@@ -46,19 +46,19 @@ def main():
     base_url = options.to_wiki.split('/rest/')[0]
     oauth_client = make_oauth_client(base_url)
 
-    wiki_data = urllib.urlopen(options.from_wiki).read()
+    wiki_data = six.moves.urllib.request.urlopen(options.from_wiki).read()
     wiki_json = json.loads(wiki_data)['pages']
     for p in wiki_json:
-        from_url = options.from_wiki + urllib.quote(p)
-        to_url = options.to_wiki + urllib.quote(p)
+        from_url = options.from_wiki + six.moves.urllib.parse.quote(p)
+        to_url = options.to_wiki + six.moves.urllib.parse.quote(p)
         try:
-            page_data = urllib.urlopen(from_url).read()
+            page_data = six.moves.urllib.request.urlopen(from_url).read()
             page_json = json.loads(page_data)
             if options.debug:
                 print(page_json['text'])
                 break
             resp = oauth_client.request(
-                to_url, 'POST', body=urllib.urlencode(dict(text=page_json['text'].encode('utf-8'))))
+                to_url, 'POST', body=six.moves.urllib.parse.urlencode(dict(text=page_json['text'].encode('utf-8'))))
             if resp[0]['status'] == '200':
                 print("Posted {0} to {1}".format(page_json['title'], to_url))
             else:
@@ -94,7 +94,7 @@ def make_oauth_client(base_url):
         resp, content = client.request(REQUEST_TOKEN_URL, 'GET')
         assert resp['status'] == '200', resp
 
-        request_token = dict(urlparse.parse_qsl(content))
+        request_token = dict(six.moves.urllib.parse.parse_qsl(content))
         pin_url = "%s?oauth_token=%s" % (
             AUTHORIZE_URL, request_token['oauth_token'])
         if getattr(webbrowser.get(), 'name', '') == 'links':
@@ -109,7 +109,7 @@ def make_oauth_client(base_url):
         token.set_verifier(oauth_verifier)
         client = oauth.Client(consumer, token)
         resp, content = client.request(ACCESS_TOKEN_URL, "GET")
-        access_token = dict(urlparse.parse_qsl(content))
+        access_token = dict(six.moves.urllib.parse.parse_qsl(content))
         oauth_token = access_token['oauth_token']
         oauth_token_secret = access_token['oauth_token_secret']
 

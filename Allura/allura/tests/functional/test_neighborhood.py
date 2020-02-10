@@ -21,7 +21,7 @@ from __future__ import absolute_import
 import json
 import os
 from cStringIO import StringIO
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 import PIL
 from mock import patch
@@ -598,7 +598,7 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username=str('root')))
         cookies = r.headers.getall('Set-Cookie')
-        flash_msg_cookies = map(urllib2.unquote, cookies)
+        flash_msg_cookies = map(six.moves.urllib.parse.unquote, cookies)
 
         assert any('Internal Error' in cookie for cookie in flash_msg_cookies)
 

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import re
 import logging
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 
 from tg import config
 from bs4 import BeautifulSoup

@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
 from unittest import TestCase
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 from mock import patch, Mock
 
@@ -204,7 +204,7 @@ class TestGitHubProjectExtractor(TestCase):
             mock_resp = StringIO('{}')
             mock_resp.info = lambda: {}
             urlopen.side_effect = [mock_resp]
-            raise urllib2.HTTPError(
+            raise six.moves.urllib.error.HTTPError(
                 'url', 403, 'msg', limit_exceeded_headers, StringIO('{}'))
         urlopen.side_effect = urlopen_side_effect
         e = github.GitHubProjectExtractor('test_project')

@@ -17,7 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 from webob import exc
 
 from tg import expose, request, redirect

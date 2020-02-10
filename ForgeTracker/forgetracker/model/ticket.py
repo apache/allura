@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import json
 import difflib
 from datetime import datetime, timedelta
@@ -604,7 +604,7 @@ class Bin(Artifact, ActivityObject):
         params = dict(q=(h.really_unicode(self.terms).encode('utf-8') or ''))
         if self.sort:
             params['sort'] = self.sort
-        return base + urllib.urlencode(params)
+        return base + six.moves.urllib.parse.urlencode(params)
 
     def shorthand_id(self):
         return self.summary

@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import re
 import logging
 from datetime import datetime, timedelta
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, config, session

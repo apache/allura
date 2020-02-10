@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 import cgi
 import json
 

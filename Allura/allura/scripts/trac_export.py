@@ -23,8 +23,8 @@ from __future__ import absolute_import
 import logging
 import sys
 import csv
-import urlparse
-import urllib2
+import six.moves.urllib.parse
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import json
 import time
 import re
@@ -43,7 +43,7 @@ except ImportError:
     try:
         from allura.lib.helpers import urlopen
     except ImportError:
-        from urllib2 import urlopen
+        from six.moves.urllib.request import urlopen
 
 log = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class TracExport(object):
         return out
 
     def full_url(self, suburl, type=None):
-        url = urlparse.urljoin(self.base_url, suburl)
+        url = six.moves.urllib.parse.urljoin(self.base_url, suburl)
         if type is None:
             return url
         glue = '&' if '?' in suburl else '?'
@@ -146,7 +146,7 @@ class TracExport(object):
         # telling that access denied. So, we'll emulate 403 ourselves.
         # TODO: currently, any non-csv result treated as 403.
         if not f.info()['Content-Type'].startswith('text/csv'):
-            raise urllib2.HTTPError(
+            raise six.moves.urllib.error.HTTPError(
                 url, 403, 'Forbidden - emulated', f.info(), f)
         return f
 
@@ -254,7 +254,7 @@ class TracExport(object):
         url = self.full_url(self.QUERY_BY_PAGE_URL % self.page, 'csv')
         try:
             f = self.csvopen(url)
-        except urllib2.HTTPError as e:
+        except six.moves.urllib.error.HTTPError as e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
                 if 'beyond the number of pages in the query' in six.ensure_text(body):

@@ -23,7 +23,7 @@ from calendar import timegm
 from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import re
 from xml.etree import ElementTree as ET
 
@@ -1188,10 +1188,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             screenshots=[
                 dict(
                     url=h.absurl(self.url() + 'screenshot/' +
-                                 urllib.quote(ss.filename.encode('utf8'))),
+                                 six.moves.urllib.parse.quote(ss.filename.encode('utf8'))),
                     thumbnail_url=h.absurl(
                         self.url(
-                        ) + 'screenshot/' + urllib.quote(ss.filename.encode('utf8')) + '/thumb'),
+                        ) + 'screenshot/' + six.moves.urllib.parse.quote(ss.filename.encode('utf8')) + '/thumb'),
                     caption=ss.caption,
                 )
                 for ss in self.get_screenshots()

@@ -27,7 +27,7 @@ import cgi
 import hashlib
 import json
 import datetime
-from urllib import urlencode
+from six.moves.urllib.parse import urlencode
 from subprocess import Popen, PIPE
 import os
 import time

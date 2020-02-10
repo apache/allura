@@ -21,7 +21,7 @@ import os
 import logging
 import difflib
 from datetime import datetime
-from urllib import quote, unquote
+from six.moves.urllib.parse import quote, unquote
 from collections import defaultdict, OrderedDict
 
 

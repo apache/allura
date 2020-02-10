@@ -31,7 +31,7 @@ Please read http://pythonpaste.org/webtest/ for more information.
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
-from urllib import quote
+from six.moves.urllib.parse import quote
 
 from tg import tmpl_context as c
 from nose.tools import assert_equal, assert_in

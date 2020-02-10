@@ -27,12 +27,12 @@ import os
 from time import mktime
 import time
 import json
-from urlparse import urlparse
-import urllib2
-import urllib
-from cookielib import CookieJar
+from six.moves.urllib.parse import urlparse
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+from six.moves.http_cookiejar import CookieJar
 from datetime import datetime
-from ConfigParser import ConfigParser
+from six.moves.configparser import ConfigParser
 import random
 import string
 
@@ -62,7 +62,7 @@ client = None  # main api client
 users = {}
 
 cj = CookieJar()
-loggedInOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+loggedInOpener = six.moves.urllib.request.build_opener(six.moves.urllib.request.HTTPCookieProcessor(cj))
 
 
 def make_client(api_url, app):
@@ -701,7 +701,7 @@ def download_file(tool, url_path, *filepaths):
     else:
         hostname = urlparse(options.api_url).hostname
         scheme = urlparse(options.api_url).scheme
-        url = scheme + '://' + hostname + action_url + urllib.quote(url_path)
+        url = scheme + '://' + hostname + action_url + six.moves.urllib.parse.quote(url_path)
     log.debug('fetching %s' % url)
 
     resp = loggedInOpener.open(url)
@@ -709,7 +709,7 @@ def download_file(tool, url_path, *filepaths):
     # log in to make sure the file should really be html
     if resp.headers.type == 'text/html':
         # log in and save the file
-        resp = loggedInOpener.open(scheme + '://' + hostname + "/sf/sfmain/do/login", urllib.urlencode({
+        resp = loggedInOpener.open(scheme + '://' + hostname + "/sf/sfmain/do/login", six.moves.urllib.parse.urlencode({
             'username': options.username,
             'password': options.password,
             'returnToUrl': url,

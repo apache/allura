@@ -29,7 +29,7 @@ import logging
 import tempfile
 import subprocess
 import json
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import re
 import pkg_resources
 import six
@@ -64,8 +64,8 @@ class Config(object):
     def test_ini(self):
         if not self.ini_config:
             from . import controller
-            import ConfigParser
-            conf = ConfigParser.ConfigParser(
+            import six.moves.configparser
+            conf = six.moves.configparser.ConfigParser(
                 {'validate_html5': 'false', 'validate_inlinejs': 'false'})
             conf.read(controller.get_config_file())
             self.ini_config = conf

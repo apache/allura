@@ -22,8 +22,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 import json
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import sys
 import pwd
 import errno
@@ -338,11 +338,11 @@ class PermissionCache(object):
         url = (
             self._host
             + '/auth/repo_permissions?'
-            + urllib.urlencode(dict(
+            + six.moves.urllib.parse.urlencode(dict(
                 repo_path=path,
                 username=uname)))
         print('Checking access for %s at %s (%s)' % (uname, url, path))
-        fp = urllib2.urlopen(url)
+        fp = six.moves.urllib.request.urlopen(url)
         result = json.load(fp)
         print(result)
         entry = 0

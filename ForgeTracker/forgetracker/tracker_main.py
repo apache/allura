@@ -21,7 +21,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from functools import partial
-from urllib import urlencode, unquote
+from six.moves.urllib.parse import urlencode, unquote
 from webob import exc
 import json
 import os

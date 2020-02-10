@@ -17,9 +17,9 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import urllib
-import urllib2
-import urlparse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import six.moves.urllib.parse
 import hmac
 import hashlib
 import json
@@ -42,24 +42,24 @@ class AlluraImportApiClient(object):
         return params
 
     def call(self, url, **params):
-        url = urlparse.urljoin(self.base_url, url)
+        url = six.moves.urllib.parse.urljoin(self.base_url, url)
         if self.verbose:
             log.info("Import API URL: %s", url)
 
-        params = self.sign(urlparse.urlparse(url).path, params.items())
+        params = self.sign(six.moves.urllib.parse.urlparse(url).path, params.items())
 
         while True:
             try:
-                result = urllib2.urlopen(url, urllib.urlencode(params))
+                result = six.moves.urllib.request.urlopen(url, six.moves.urllib.parse.urlencode(params))
                 resp = result.read()
                 return json.loads(resp)
-            except urllib2.HTTPError as e:
+            except six.moves.urllib.error.HTTPError as e:
                 e.msg += ' ({0})'.format(url)
                 if self.verbose:
                     error_content = e.read()
                     e.msg += '. Error response:\n' + error_content
                 raise e
-            except (urllib2.URLError, IOError):
+            except (six.moves.urllib.error.URLError, IOError):
                 if self.retry:
                     log.exception('Error making API request, will retry')
                     continue

@@ -20,9 +20,9 @@ from __future__ import absolute_import
 import re
 import logging
 from itertools import groupby
-from cPickle import dumps, loads
+from six.moves.cPickle import dumps, loads
 from collections import defaultdict
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 import bson
 import pymongo

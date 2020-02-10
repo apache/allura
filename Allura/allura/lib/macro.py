@@ -22,12 +22,12 @@ import random
 import shlex
 import logging
 import traceback
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 import oembed
 import jinja2
 from operator import attrgetter
-from urlparse import urlparse, urlunparse
+from six.moves.urllib.parse import urlparse, urlunparse
 
 import pymongo
 from tg import tmpl_context as c, app_globals as g
@@ -466,7 +466,7 @@ def embed(url=None):
             html = consumer.embed(url)['html']
         except oembed.OEmbedNoEndpoint:
             html = None
-        except urllib2.HTTPError as e:
+        except six.moves.urllib.error.HTTPError as e:
             if e.code == 404:
                 return 'Video not available'
             else:

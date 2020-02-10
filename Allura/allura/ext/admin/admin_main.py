@@ -23,7 +23,7 @@ import os
 from random import randint
 from collections import OrderedDict
 from datetime import datetime
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 import json
 from operator import itemgetter, attrgetter
 import pkg_resources

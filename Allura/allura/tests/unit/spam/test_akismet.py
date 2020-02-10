@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import mock
 import unittest
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 from datetime import datetime
 
 from bson import ObjectId
@@ -40,7 +40,7 @@ class TestAkismet(unittest.TestCase):
         def side_effect(*args, **kw):
             # side effect to test that data being sent to
             # akismet can be successfully urlencoded
-            urllib.urlencode(kw.get('data', {}))
+            six.moves.urllib.parse.urlencode(kw.get('data', {}))
         self.akismet.service.comment_check = mock.Mock(side_effect=side_effect)
         self.akismet.service.submit_spam = mock.Mock(side_effect=side_effect)
         self.akismet.service.submit_ham = mock.Mock(side_effect=side_effect)

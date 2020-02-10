@@ -17,7 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from urlparse import urlparse, parse_qs
+from six.moves.urllib.parse import urlparse, parse_qs
 
 import tg
 from nose.tools import assert_equal

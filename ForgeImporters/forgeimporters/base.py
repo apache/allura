@@ -20,11 +20,11 @@ from __future__ import absolute_import
 import os
 import errno
 import logging
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 from collections import defaultdict
 import traceback
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 from datetime import datetime
 try:
     from cStringIO import StringIO
@@ -169,7 +169,7 @@ class ProjectExtractor(object):
 
     @staticmethod
     def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, **kw):
-        req = urllib2.Request(url, **kw)
+        req = six.moves.urllib.request.Request(url, **kw)
         req.add_header(
             'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         return h.urlopen(req, retries=retries, codes=codes, timeout=timeout)
@@ -209,7 +209,7 @@ class ProjectExtractor(object):
 
         """
         return self.PAGE_MAP[page_name].format(
-            project_name=urllib.quote(self.project_name), **kw)
+            project_name=six.moves.urllib.parse.quote(self.project_name), **kw)
 
     def parse_page(self, page):
         """Transforms the result of a `urlopen` call before returning it from

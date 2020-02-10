@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from tg import tmpl_context as c
 from datetime import datetime
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 import mock
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -319,7 +319,7 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
         assert_equal(len(ticket.attachments), 0)
-        f = urllib2.urlopen('file://%s' % __file__)
+        f = six.moves.urllib.request.urlopen('file://%s' % __file__)
         TicketAttachment.save_attachment(
             'test_ticket_model.py', ResettableStream(f),
             artifact_id=ticket._id)

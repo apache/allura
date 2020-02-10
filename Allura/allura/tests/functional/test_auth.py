@@ -22,8 +22,8 @@ import calendar
 from datetime import datetime, time, timedelta
 from time import time as time_time
 import json
-from urlparse import urlparse, parse_qs
-from urllib import urlencode
+from six.moves.urllib.parse import urlparse, parse_qs
+from six.moves.urllib.parse import urlencode
 
 from bson import ObjectId
 import re

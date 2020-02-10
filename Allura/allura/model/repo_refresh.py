@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 from itertools import chain
-from cPickle import dumps
+from six.moves.cPickle import dumps
 from collections import OrderedDict
 
 import bson

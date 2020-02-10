@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
 import logging
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 from datetime import date, datetime, timedelta, time
 import calendar
 from collections import OrderedDict

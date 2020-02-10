@@ -25,7 +25,7 @@ import string
 import logging
 from contextlib import contextmanager
 from tempfile import mkstemp
-from ConfigParser import ConfigParser, NoOptionError
+from six.moves.configparser import ConfigParser, NoOptionError
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger('ldap-setup')

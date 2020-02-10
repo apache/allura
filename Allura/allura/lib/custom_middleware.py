@@ -295,7 +295,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import ming
         import pymongo
         import socket
-        import urllib2
+        import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
         import activitystream
         import pygments
         import difflib

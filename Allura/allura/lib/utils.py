@@ -35,8 +35,8 @@ import magic
 from itertools import groupby
 import operator as op
 import collections
-from urlparse import urlparse
-import urllib
+from six.moves.urllib.parse import urlparse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import types
 import socket
 
@@ -820,7 +820,7 @@ def urlencode(params):
     unicode strings. The parameters are first case to UTF-8 encoded strings and
     then encoded as per normal.
     """
-    return urllib.urlencode([i for i in generate_smart_str(params)])
+    return six.moves.urllib.parse.urlencode([i for i in generate_smart_str(params)])
 
 
 def close_ipv4_addrs(ip1, ip2):

@@ -28,9 +28,9 @@ from hashlib import sha1
 from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict, OrderedDict
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 from threading import Thread
-from Queue import Queue
+from six.moves.queue import Queue
 from itertools import chain, islice
 from difflib import SequenceMatcher
 
