@@ -37,6 +37,7 @@ from collections import deque
 import fuse
 import six
 from io import open
+from six.moves import zip
 
 log = logging.getLogger(__name__)
 

@@ -28,6 +28,7 @@ from ... import github
 # Can't use cStringIO here, because we cannot set attributes or subclass it,
 # and this is needed in mocked_urlopen below
 from StringIO import StringIO
+from six.moves import zip
 
 
 class TestGitHubProjectExtractor(TestCase):
@@ -112,9 +113,9 @@ class TestGitHubProjectExtractor(TestCase):
 
     def test_iter_issues(self):
         issues = list(self.extractor.iter_issues())
-        all_issues = zip((1, 2), self.CLOSED_ISSUES_LIST)
-        all_issues += zip((3, 4, 5), self.OPENED_ISSUES_LIST)
-        all_issues += zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2)
+        all_issues = list(zip((1, 2), self.CLOSED_ISSUES_LIST))
+        all_issues += list(zip((3, 4, 5), self.OPENED_ISSUES_LIST))
+        all_issues += list(zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2))
         self.assertEqual(issues, all_issues)
 
     def test_iter_comments(self):

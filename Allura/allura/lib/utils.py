@@ -61,6 +61,7 @@ from ming.odm.odmsession import ODMCursor
 from ming.odm import session
 import six
 from six.moves import range
+from six.moves import zip
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 

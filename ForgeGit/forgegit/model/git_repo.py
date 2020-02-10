@@ -41,6 +41,7 @@ from allura.lib import helpers as h
 from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
 from io import open
+from six.moves import zip
 
 log = logging.getLogger(__name__)
 

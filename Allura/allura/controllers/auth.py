@@ -58,6 +58,7 @@ from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 import six
+from six.moves import zip
 
 log = logging.getLogger(__name__)
 
