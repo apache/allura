@@ -877,7 +877,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             provider.shortname_validator.to_python(
                 name, check_allowed=False, neighborhood=self.neighborhood)
         except exceptions.Invalid:
-            raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
+            raise exceptions.ToolError('Mount point "%s" is invalid' % name)
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 
     def ordered_mounts(self, include_hidden=False):

@@ -35,7 +35,7 @@ class BaseController(object):
     def _lookup(self, name=None, *remainder):
         """Provide explicit default lookup to avoid dispatching backtracking
         and possible loops."""
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)
 
     def rate_limit(self, artifact_class, message, redir='..'):
         if artifact_class.is_limit_exceeded(c.app.config, user=c.user):

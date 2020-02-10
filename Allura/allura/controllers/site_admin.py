@@ -84,7 +84,7 @@ class SiteAdminController(object):
             controller = admin_extension().controllers.get(name)
             if controller:
                 return controller(), remainder
-        raise HTTPNotFound, name
+        raise HTTPNotFound(name)
 
     def sidebar_menu(self):
         base_url = '/nf/admin/'

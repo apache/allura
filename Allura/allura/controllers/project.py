@@ -346,7 +346,7 @@ class ProjectController(FeedController):
 
         if c.project.deleted:
             if c.user not in c.project.admins():
-                raise exc.HTTPNotFound, name
+                raise exc.HTTPNotFound(name)
         app = c.project.app_instance(name)
 
         if app:
@@ -360,7 +360,7 @@ class ProjectController(FeedController):
             c.project = subproject
             c.app = None
             return ProjectController(), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)
 
     @expose('jinja:allura:templates/members.html')
     @with_trailing_slash

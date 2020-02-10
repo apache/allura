@@ -110,17 +110,17 @@ def parse_address(addr):
             domain = domain[:-len(suffix)]
             break
     else:
-        raise exc.AddressException, 'Unknown domain: ' + domain
+        raise exc.AddressException('Unknown domain: ' + domain)
     path = '/'.join(reversed(domain.split('.')))
     project, mount_point = h.find_project('/' + path)
     if project is None:
-        raise exc.AddressException, 'Unknown project: ' + domain
+        raise exc.AddressException('Unknown project: ' + domain)
     if len(mount_point) != 1:
-        raise exc.AddressException, 'Unknown tool: ' + domain
+        raise exc.AddressException('Unknown tool: ' + domain)
     with h.push_config(c, project=project):
         app = project.app_instance(mount_point[0])
         if not app:
-            raise exc.AddressException, 'Unknown tool: ' + domain
+            raise exc.AddressException('Unknown tool: ' + domain)
     return userpart, project, app
 
 

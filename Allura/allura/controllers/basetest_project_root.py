@@ -104,10 +104,10 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             try:
                 c.project.install_app(ep_name, name)
             except KeyError:
-                raise exc.HTTPNotFound, name
+                raise exc.HTTPNotFound(name)
             app = c.project.app_instance(name)
             if app is None:
-                raise exc.HTTPNotFound, name
+                raise exc.HTTPNotFound(name)
         c.app = app
         return app.root, remainder
 

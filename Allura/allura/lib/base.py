@@ -37,7 +37,7 @@ class WsgiDispatchController(TGController):
 
     def _setup_request(self):
         '''Responsible for setting all the values we need to be set on tg.tmpl_context'''
-        raise NotImplementedError, '_setup_request'
+        raise NotImplementedError('_setup_request')
 
     def _perform_call(self, context):
         self._setup_request()

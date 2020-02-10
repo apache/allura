@@ -829,11 +829,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 fld = f
                 break
         if not fld:
-            raise KeyError, 'Custom field "%s" does not exist.' % custom_user_field_name
+            raise KeyError('Custom field "%s" does not exist.' % custom_user_field_name)
         if fld.type != 'user':
-            raise TypeError, 'Custom field "%s" is of type "%s"; expected ' \
+            raise TypeError('Custom field "%s" is of type "%s"; expected ' \
                              'type "user".' % (
-                                 custom_user_field_name, fld.type)
+                                 custom_user_field_name, fld.type))
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
             return None

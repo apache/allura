@@ -1058,4 +1058,4 @@ class WebhooksLookup(BaseController, AdminControllerMixin):
         for hook in self.app._webhooks:
             if hook.type == name and hook.controller:
                 return hook.controller(hook, self.app), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)

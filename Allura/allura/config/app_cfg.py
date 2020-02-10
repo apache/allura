@@ -123,7 +123,7 @@ class JinjaEngine(ew.TemplateEngine):
         try:
             return self._environ.get_template(template_name)
         except jinja2.TemplateNotFound:
-            raise ew.errors.TemplateNotFound, '%s not found' % template_name
+            raise ew.errors.TemplateNotFound('%s not found' % template_name)
 
     def parse(self, template_text, filepath=None):
         return self._environ.from_string(template_text)

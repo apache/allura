@@ -351,4 +351,4 @@ class RestWebhooksLookup(BaseController):
         for hook in self.app._webhooks:
             if hook.type == name and hook.api_controller:
                 return hook.api_controller(hook, self.app), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)

@@ -197,7 +197,7 @@ class AdminExtensionLookup(object):
             controller = admin_extension().project_admin_controllers.get(name)
             if controller:
                 return controller(), remainder
-        raise exc.HTTPNotFound, name
+        raise exc.HTTPNotFound(name)
 
 
 class ProjectAdminController(BaseController):
@@ -301,7 +301,7 @@ class ProjectAdminController(BaseController):
     def _lookup(self, name, *remainder):
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return app.admin, remainder
 
     @without_trailing_slash
@@ -956,11 +956,11 @@ class ProjectAdminRestController(BaseController):
     @expose()
     def _lookup(self, *args):
         if len(args) == 0:
-            raise exc.HTTPNotFound, args
+            raise exc.HTTPNotFound(args)
         name, remainder = args[0], args[1:]
         app = c.project.app_instance(name)
         if app is None or app.admin_api_root is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return app.admin_api_root, remainder
 
 

@@ -1379,7 +1379,7 @@ class TicketController(BaseController, FeedController):
                         subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count)
         else:
-            raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
+            raise exc.HTTPNotFound('Ticket #%s does not exist.' % self.ticket_num)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing

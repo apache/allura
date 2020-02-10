@@ -112,7 +112,7 @@ class RestController(object):
             c.user = c.api_token.user
         neighborhood = M.Neighborhood.query.get(url_prefix='/' + name + '/')
         if not neighborhood:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return NeighborhoodRestController(neighborhood), remainder
 
 
@@ -345,9 +345,9 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
             log.info('Configuring %s database for access to %r', pname, remainder)
             project.configure_project(is_user_project=True)
         else:
-            raise exc.HTTPNotFound, pname
+            raise exc.HTTPNotFound(pname)
     if project is None or (project.deleted and not has_access(project, 'update')()):
-        raise exc.HTTPNotFound, pname
+        raise exc.HTTPNotFound(pname)
     return project, remainder
 
 
@@ -384,10 +384,10 @@ class ProjectRestController(object):
             return ProjectRestController(), remainder
         app = c.project.app_instance(name)
         if app is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         c.app = app
         if app.api_root is None:
-            raise exc.HTTPNotFound, name
+            raise exc.HTTPNotFound(name)
         return app.api_root, remainder
 
     @expose('json:')
