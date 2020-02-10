@@ -32,6 +32,7 @@ from webob import Request, Response
 
 from allura import model as M
 from alluratest.controller import setup_unit_test
+from io import open
 
 
 class File(M.File):

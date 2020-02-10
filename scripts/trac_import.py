@@ -24,6 +24,7 @@ from optparse import OptionParser
 from allura.lib.import_api import AlluraImportApiClient
 from tracwikiimporter.scripts.wiki_from_trac.loaders import import_wiki
 import six
+from io import open
 
 
 def main():

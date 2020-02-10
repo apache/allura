@@ -48,6 +48,7 @@ from allura.webhooks import RepoPushWebhookSender
 from forgegit import model as GM
 from forgegit.tests import with_git
 from forgewiki import model as WM
+from io import open
 
 
 class TestNewGit(unittest.TestCase):

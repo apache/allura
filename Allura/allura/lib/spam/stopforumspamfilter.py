@@ -27,6 +27,7 @@ from tg import request
 from allura.lib import utils
 from allura.lib.spam import SpamFilter
 import six
+from io import open
 
 log = logging.getLogger(__name__)
 

@@ -47,6 +47,7 @@ from allura.lib import helpers as h
 from allura.model.auth import User
 from allura.model.repository import zipdir
 from allura.model import repository as RM
+from io import open
 
 log = logging.getLogger(__name__)
 

@@ -32,6 +32,7 @@ from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgewiki import model as WM
+from io import open
 
 
 class TestBulkExport(object):

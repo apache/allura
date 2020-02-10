@@ -23,6 +23,7 @@ import sys
 from optparse import OptionParser
 
 from tracwikiimporter.scripts.wiki_from_trac.extractors import WikiExporter
+from io import open
 
 
 def parse_options():

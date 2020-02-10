@@ -50,6 +50,7 @@ from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
 from allura.tasks import index_tasks
 import six
+from io import open
 
 log = logging.getLogger(__name__)
 

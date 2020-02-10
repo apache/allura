@@ -38,6 +38,7 @@ from forgeimporters.trac.tickets import (
     TracTicketImportController,
     TracImportSupport,
 )
+from io import open
 
 
 class TestTracTicketImporter(TestCase):

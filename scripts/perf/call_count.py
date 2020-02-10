@@ -38,6 +38,7 @@ from allura.tests import TestController
 from allura.tests.decorators import patch_middleware_config
 
 from forgewiki import model as WM
+from io import open
 
 
 def parse_args():

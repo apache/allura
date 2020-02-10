@@ -36,6 +36,7 @@ from collections import deque
 
 import fuse
 import six
+from io import open
 
 log = logging.getLogger(__name__)
 

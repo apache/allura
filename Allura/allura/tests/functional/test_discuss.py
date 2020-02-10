@@ -27,6 +27,7 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from tg import config
+from io import open
 
 
 

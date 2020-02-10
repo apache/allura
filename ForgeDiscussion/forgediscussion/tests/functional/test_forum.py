@@ -44,6 +44,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 
 from forgediscussion import model as FM
+from io import open
 
 log = logging.getLogger(__name__)
 

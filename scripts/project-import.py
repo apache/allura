@@ -34,6 +34,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.plugin import ProjectRegistrationProvider
 import six
+from io import open
 
 log = logging.getLogger(__name__)
 

@@ -45,6 +45,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
 import six
+from io import open
 
 log = logging.getLogger('teamforge-import')
 

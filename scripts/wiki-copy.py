@@ -30,6 +30,7 @@ import json
 from six.moves.configparser import ConfigParser, NoOptionError
 import webbrowser
 import oauth2 as oauth
+from io import open
 
 
 def main():

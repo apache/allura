@@ -26,6 +26,7 @@ from collections import defaultdict
 import traceback
 from six.moves.urllib.parse import urlparse
 from datetime import datetime
+from io import open
 try:
     from cStringIO import StringIO
 except ImportError:

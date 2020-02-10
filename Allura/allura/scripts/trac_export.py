@@ -35,6 +35,7 @@ from bs4 import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
 import six
+from io import open
 
 try:
     from forgeimporters.base import ProjectExtractor

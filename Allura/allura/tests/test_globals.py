@@ -49,6 +49,7 @@ from allura.tests import decorators as td
 
 from forgewiki import model as WM
 from forgeblog import model as BM
+from io import open
 
 
 def squish_spaces(text):

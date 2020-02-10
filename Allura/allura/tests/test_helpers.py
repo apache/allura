@@ -44,6 +44,7 @@ from allura.lib.security import Credentials
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 import six
+from io import open
 
 
 def setUp(self):

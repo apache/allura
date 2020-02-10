@@ -60,6 +60,7 @@ from .monq_model import MonQTask
 from .project import AppConfig
 from .session import main_doc_session
 from .session import repository_orm_session
+from io import open
 
 
 log = logging.getLogger(__name__)

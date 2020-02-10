@@ -50,6 +50,7 @@ from forgeimporters.base import (
     get_importer_upload_path,
     save_importer_upload,
 )
+from io import open
 
 
 class ForgeTrackerImportForm(ToolImportForm):

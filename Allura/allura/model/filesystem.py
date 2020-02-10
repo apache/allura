@@ -31,6 +31,7 @@ from ming.orm.declarative import MappedClass
 
 from .session import project_orm_session
 from allura.lib import utils
+from io import open
 
 log = logging.getLogger(__name__)
 

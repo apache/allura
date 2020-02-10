@@ -45,6 +45,7 @@ from allura.tests.test_globals import squish_spaces
 from forgegit.tests import with_git
 from forgegit import model as GM
 import six
+from io import open
 
 
 class _TestCase(TestController):

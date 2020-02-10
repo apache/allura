@@ -51,6 +51,7 @@ from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
 import six
+from io import open
 
 
 class TestNewRepo(unittest.TestCase):

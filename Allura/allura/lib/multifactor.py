@@ -42,6 +42,7 @@ from ming.odm import session
 from allura.model.multifactor import RecoveryCode
 from allura.lib.utils import umask
 import six
+from io import open
 
 
 log = logging.getLogger(__name__)

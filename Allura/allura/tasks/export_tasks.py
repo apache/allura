@@ -29,6 +29,7 @@ from allura.tasks import mail_tasks
 from allura.lib.decorators import task
 from allura.lib import helpers as h
 from allura.model.repository import zipdir
+from io import open
 
 
 log = logging.getLogger(__name__)
