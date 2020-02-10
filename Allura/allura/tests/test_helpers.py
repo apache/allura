@@ -319,7 +319,7 @@ def test_inject_user(context):
 
 def test_datetimeformat():
     from datetime import date
-    assert h.datetimeformat(date(2013, 01, 01)) == '2013-01-01 00:00:00'
+    assert h.datetimeformat(date(2013, 1, 1)) == '2013-01-01 00:00:00'
 
 
 def test_nl2br_jinja_filter():

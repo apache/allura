@@ -345,7 +345,7 @@ def test_empty_cursor():
 
 def test_DateJSONEncoder():
     data = {'message': 'Hi!',
-            'date': dt.datetime(2015, 01, 30, 13, 13, 13)}
+            'date': dt.datetime(2015, 1, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
     assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
 

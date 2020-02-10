@@ -652,7 +652,7 @@ class TestModels(TestWebhookBase):
 
     @patch('allura.model.webhook.dt', autospec=True)
     def test_update_limit(self, dt_mock):
-        _now = dt.datetime(2015, 02, 02, 13, 39)
+        _now = dt.datetime(2015, 2, 2, 13, 39)
         dt_mock.datetime.utcnow.return_value = _now
         assert_equal(self.wh.last_sent, None)
         self.wh.update_limit()

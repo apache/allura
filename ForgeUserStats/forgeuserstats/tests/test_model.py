@@ -443,12 +443,12 @@ class TestUserStats(unittest.TestCase):
                    login_datetime) < timedelta(seconds=1)
 
     def test_start_date(self):
-        stats = USM.UserStats(registration_date=datetime(2012, 04, 01))
-        self.assertEqual(stats.start_date, datetime(2012, 04, 01))
+        stats = USM.UserStats(registration_date=datetime(2012, 4, 1))
+        self.assertEqual(stats.start_date, datetime(2012, 4, 1))
         with h.push_config(config, **{'userstats.start_date': '2013-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2013, 04, 01))
+            self.assertEqual(stats.start_date, datetime(2013, 4, 1))
         with h.push_config(config, **{'userstats.start_date': '2011-04-01'}):
-            self.assertEqual(stats.start_date, datetime(2012, 04, 01))
+            self.assertEqual(stats.start_date, datetime(2012, 4, 1))
 
     @mock.patch('allura.model.stats.difflib.unified_diff')
     def test_count_loc(self, unified_diff):

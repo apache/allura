@@ -155,6 +155,6 @@ class TestLdapAuthenticationProvider(object):
 
     def test_get_last_password_updated(self):
         user = Mock()
-        user.last_password_updated = datetime(2014, 06, 04, 13, 13, 13)
+        user.last_password_updated = datetime(2014, 6, 4, 13, 13, 13)
         upd = self.provider.get_last_password_updated(user)
         assert_equal(upd, user.last_password_updated)
