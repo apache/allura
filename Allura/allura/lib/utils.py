@@ -60,6 +60,7 @@ from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
 from ming.odm import session
 import six
+from six.moves import range
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -183,7 +184,7 @@ def lsub_utf8(s, n):
 def chunked_list(l, n):
     """ Yield successive n-sized chunks from l.
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
 
 

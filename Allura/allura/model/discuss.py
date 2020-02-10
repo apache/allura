@@ -43,6 +43,7 @@ from .attachments import BaseAttachment
 from .auth import User, ProjectRole, AlluraUserProperty
 from .timeline import ActivityObject
 from .types import MarkdownCache
+from six.moves import range
 
 log = logging.getLogger(__name__)
 

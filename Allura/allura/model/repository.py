@@ -61,6 +61,7 @@ from .project import AppConfig
 from .session import main_doc_session
 from .session import repository_orm_session
 from io import open
+from six.moves import range
 
 
 log = logging.getLogger(__name__)

@@ -34,6 +34,7 @@ from allura.command import base, script, set_neighborhood_features, \
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
+from six.moves import range
 
 test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
@@ -503,7 +504,7 @@ class TestReindexCommand(object):
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
         cmd.options, args = cmd.parser.parse_args([])
-        cmd._post_add_artifacts(range(5))
+        cmd._post_add_artifacts(list(range(5)))
         kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs}
         expected = [
             call([0, 1, 2, 3, 4], **kw),
@@ -526,7 +527,7 @@ class TestReindexCommand(object):
         cmd = show_models.ReindexCommand('reindex')
         cmd.options = Mock(ming_config=None)
         with td.raises(pymongo.errors.InvalidDocument):
-            cmd._post_add_artifacts(range(5))
+            cmd._post_add_artifacts(list(range(5)))
 
     @td.with_wiki  # so there's some artifacts to reindex
     def test_ming_config(self):

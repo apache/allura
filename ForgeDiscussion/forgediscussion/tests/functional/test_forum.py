@@ -45,6 +45,7 @@ from allura.tests import decorators as td
 
 from forgediscussion import model as FM
 from io import open
+from six.moves import range
 
 log = logging.getLogger(__name__)
 

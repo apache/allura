@@ -51,6 +51,7 @@ from alluratest.controller import (
     TestRestApiBase,
 )
 import six
+from six.moves import range
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and

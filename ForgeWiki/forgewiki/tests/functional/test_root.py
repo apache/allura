@@ -37,6 +37,7 @@ from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 from forgewiki import model
+from six.moves import range
 
 
 class TestRootController(TestController):

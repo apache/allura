@@ -46,6 +46,7 @@ from alluratest.controller import setup_unit_test
 from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
+from six.moves import range
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
@@ -99,7 +100,7 @@ class TestChunkedIterator(unittest.TestCase):
 class TestChunkedList(unittest.TestCase):
 
     def test_chunked_list(self):
-        l = range(10)
+        l = list(range(10))
         chunks = list(utils.chunked_list(l, 3))
         self.assertEqual(len(chunks), 4)
         self.assertEqual(len(chunks[0]), 3)

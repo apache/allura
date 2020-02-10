@@ -29,6 +29,7 @@ import allura
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
+from six.moves import range
 
 
 class TestProjectHome(TestController):

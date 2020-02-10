@@ -21,6 +21,7 @@ from __future__ import absolute_import
 import re
 from ming.odm import ThreadLocalORMSession
 from allura import model as M
+from six.moves import range
 
 def main(start, cnt):
     n = M.Neighborhood.query.get(url_prefix='/p/')

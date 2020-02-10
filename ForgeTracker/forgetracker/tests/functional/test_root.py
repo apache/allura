@@ -59,6 +59,7 @@ from allura.tests import decorators as td
 from allura.tasks import mail_tasks
 from ming.orm.ormsession import ThreadLocalORMSession
 import six
+from six.moves import range
 
 
 class TrackerTestController(TestController):

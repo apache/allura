@@ -27,6 +27,7 @@ from forgediscussion.model import ForumPost, Forum
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
 from allura.lib import helpers as h
 from random import randint
+from six.moves import range
 
 
 log = logging.getLogger(__name__)

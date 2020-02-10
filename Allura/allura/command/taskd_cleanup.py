@@ -26,6 +26,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from . import base
+from six.moves import range
 
 
 class TaskdCleanupCommand(base.Command):

@@ -20,6 +20,7 @@ from tg import tmpl_context as c
 
 from allura.lib.search import search
 import six
+from six.moves import range
 
 
 FACET_PARAMS = {
@@ -61,6 +62,6 @@ def get_facets(solr_hit):
     if solr_hit is not None:
         for facet_name, values in six.iteritems(solr_hit.facets['facet_fields']):
             field_name = facet_name.rsplit('_s', 1)[0]
-            values = [(values[i], values[i+1]) for i in xrange(0, len(values), 2)]
+            values = [(values[i], values[i+1]) for i in range(0, len(values), 2)]
             result[field_name] = values
     return result

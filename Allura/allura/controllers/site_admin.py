@@ -52,6 +52,7 @@ import allura
 from six.moves.urllib.parse import urlparse
 from webhelpers import paginate
 import six
+from six.moves import range
 
 
 log = logging.getLogger(__name__)

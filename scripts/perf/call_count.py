@@ -39,6 +39,7 @@ from allura.tests.decorators import patch_middleware_config
 
 from forgewiki import model as WM
 from io import open
+from six.moves import range
 
 
 def parse_args():
@@ -123,7 +124,7 @@ def count_page(test, url, verbose=False, debug_html=False):
         print(url, resp.status)
         if debug_html:
             debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits)
-                                                   for n in xrange(10)]))
+                                                   for n in range(10)]))
             with open(debug_filename, 'w') as out:
                 out.write(resp.body)
             print(debug_filename)

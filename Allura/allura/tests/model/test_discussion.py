@@ -40,6 +40,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_global_objects
+from six.moves import range
 
 
 def setUp():

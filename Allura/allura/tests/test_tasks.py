@@ -53,6 +53,7 @@ from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
+from six.moves import range
 
 
 class TestRepoTasks(unittest.TestCase):

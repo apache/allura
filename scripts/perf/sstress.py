@@ -27,6 +27,7 @@ from __future__ import absolute_import
 import smtplib
 import threading
 import time
+from six.moves import range
 
 C = 5
 N = 1000
@@ -38,7 +39,7 @@ EMAIL_TEXT = 'X' * SIZE
 
 
 def main():
-    threads = [threading.Thread(target=stress) for x in xrange(C)]
+    threads = [threading.Thread(target=stress) for x in range(C)]
     begin = time.time()
     for t in threads:
         t.start()
@@ -52,7 +53,7 @@ def main():
 
 def stress():
     server = smtplib.SMTP(SERVER, PORT)
-    for x in xrange(N / C):
+    for x in range(N / C):
         server.sendmail('sstress@localhost', TOADDR, EMAIL_TEXT)
 
 if __name__ == '__main__':

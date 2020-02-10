@@ -43,6 +43,7 @@ import cgi
 import emoji
 import tg
 import six
+from six.moves import range
 try:
     import cchardet as chardet
 except ImportError:
@@ -717,7 +718,7 @@ def _add_table_line_numbers_to_text(txt):
 
     def _len_to_str_column(l, start=1):
         max_num = l + start
-        return '\n'.join(map(_prepend_whitespaces, range(start, max_num), [max_num] * l))
+        return '\n'.join(map(_prepend_whitespaces, list(range(start, max_num)), [max_num] * l))
 
     lines = txt.splitlines(True)
     linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + \

@@ -55,6 +55,7 @@ from allura.lib import plugin
 from allura.lib import helpers as h
 from allura.lib.multifactor import TotpService, RecoveryCodeService
 import six
+from six.moves import range
 
 
 def unentity(s):
@@ -2597,7 +2598,7 @@ class TestTwoFactor(TestController):
         r = r.follow()
 
         # try some invalid codes
-        for i in xrange(3):
+        for i in range(3):
             r.form['code'] = 'invalid-code'
             r = r.form.submit()
             assert_in('Invalid code', r)

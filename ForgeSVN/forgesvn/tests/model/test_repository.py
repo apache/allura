@@ -52,6 +52,7 @@ from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
 import six
 from io import open
+from six.moves import range
 
 
 class TestNewRepo(unittest.TestCase):

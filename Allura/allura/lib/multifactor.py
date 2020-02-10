@@ -43,6 +43,7 @@ from allura.model.multifactor import RecoveryCode
 from allura.lib.utils import umask
 import six
 from io import open
+from six.moves import range
 
 
 log = logging.getLogger(__name__)
@@ -361,7 +362,7 @@ class RecoveryCodeService(object):
     def generate_one_code(self):
         # for compatibility with Google PAM file, we only do digits
         length = asint(config.get('auth.multifactor.recovery_code.length', 8))
-        return ''.join([random.choice(string.digits) for i in xrange(length)])
+        return ''.join([random.choice(string.digits) for i in range(length)])
 
     def regenerate_codes(self, user):
         '''
@@ -372,7 +373,7 @@ class RecoveryCodeService(object):
         '''
         count = asint(config.get('auth.multifactor.recovery_code.count', 10))
         codes = [
-            self.generate_one_code() for i in xrange(count)
+            self.generate_one_code() for i in range(count)
         ]
         self.replace_codes(user, codes)
         return codes

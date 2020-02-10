@@ -30,6 +30,7 @@ import git
 import pysvn
 from mercurial import ui, hg, cmdutil
 import six
+from six.moves import range
 
 
 def main(opts):

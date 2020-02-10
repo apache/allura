@@ -48,6 +48,7 @@ from allura.model.auth import User
 from allura.model.repository import zipdir
 from allura.model import repository as RM
 from io import open
+from six.moves import range
 
 log = logging.getLogger(__name__)
 
@@ -327,7 +328,7 @@ class SVNImplementation(M.RepositoryImplementation):
         commit) and ending with the root (first commit).
         """
         head_revno = self.head
-        return map(self._oid, range(head_revno, 0, -1))
+        return map(self._oid, list(range(head_revno, 0, -1)))
 
     def new_commits(self, all_commits=False):
         head_revno = self.head

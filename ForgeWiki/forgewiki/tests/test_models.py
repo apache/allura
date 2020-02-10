@@ -28,6 +28,7 @@ from allura.lib import helpers as h
 
 
 from forgewiki.model import Page
+from six.moves import range
 
 
 class TestPageSnapshots(TestController):

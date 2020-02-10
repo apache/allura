@@ -30,6 +30,7 @@ from allura.model.session import (
     ArtifactSessionExtension,
     substitute_extensions,
 )
+from six.moves import range
 
 
 def test_extensions_cm():
@@ -232,7 +233,7 @@ class TestBatchIndexer(TestCase):
                 e.args = e.args + ("doc:  {'task_name': 'allura.tasks.index_tasks.add_artifacts', ........",)
                 raise e
         index_tasks.add_artifacts.post.side_effect = on_post
-        self.ext._post(index_tasks.add_artifacts, range(5))
+        self.ext._post(index_tasks.add_artifacts, list(range(5)))
         expected = [
             mock.call([0, 1, 2, 3, 4]),
             mock.call([0, 1]),
@@ -253,4 +254,4 @@ class TestBatchIndexer(TestCase):
             raise pymongo.errors.InvalidDocument("Cannot encode object...")
         index_tasks.add_artifacts.post.side_effect = on_post
         with td.raises(pymongo.errors.InvalidDocument):
-            self.ext._post(index_tasks.add_artifacts, range(5))
+            self.ext._post(index_tasks.add_artifacts, list(range(5)))

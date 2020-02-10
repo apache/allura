@@ -28,6 +28,7 @@ from webhelpers import paginate
 import ew as ew_core
 import ew.jinja2_ew as ew
 import six
+from six.moves import range
 
 log = logging.getLogger(__name__)
 
@@ -310,7 +311,7 @@ class PageList(ew_core.Widget):
             params = request.GET.copy()
             params['page'] = page - page_offset
             return url(request.path, params)
-        return paginate.Page(range(count), page + page_offset, int(limit),
+        return paginate.Page(list(range(count)), page + page_offset, int(limit),
                              url=page_url)
 
     def prepare_context(self, context):

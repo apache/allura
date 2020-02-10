@@ -29,6 +29,7 @@ from datetime import timedelta
 import difflib
 
 from allura.model.session import main_orm_session
+from six.moves import range
 
 
 class Stats(MappedClass):

@@ -36,6 +36,7 @@ from base64 import b64encode
 from datetime import datetime, timedelta
 import calendar
 import six
+from six.moves import range
 
 try:
     import ldap
@@ -575,7 +576,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         from allura import model as M
         if salt is None:
             salt = ''.join(chr(randint(1, 0x7f))
-                           for i in xrange(M.User.SALT_LEN))
+                           for i in range(M.User.SALT_LEN))
         hashpass = sha256(salt + password.encode('utf-8')).digest()
         return 'sha256' + salt + b64encode(hashpass)
 

@@ -35,6 +35,7 @@ from allura.lib import helpers as h
 from allura.lib.plugin import ProjectRegistrationProvider
 import six
 from io import open
+from six.moves import range
 
 log = logging.getLogger(__name__)
 

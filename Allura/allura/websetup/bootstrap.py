@@ -45,6 +45,7 @@ from allura.websetup.schema import REGISTRY
 
 from forgewiki import model as WM
 import six
+from six.moves import range
 
 log = logging.getLogger(__name__)
 

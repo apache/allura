@@ -28,6 +28,7 @@ from mock import patch
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
+from six.moves import range
 
 
 class Test(TestController):

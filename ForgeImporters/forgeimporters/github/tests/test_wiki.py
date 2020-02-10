@@ -33,6 +33,7 @@ from alluratest.controller import setup_basic_test
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
+from six.moves import range
 
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the
