@@ -48,7 +48,7 @@ def load_requests_lib(req):
     virtualenv_path = req.get_options().get('ALLURA_VIRTUALENV', None)
     if virtualenv_path:
         activate_this = '%s/bin/activate_this.py' % virtualenv_path
-        execfile(activate_this, {'__file__': activate_this})
+        exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})
     global requests
     import requests as requests_lib
     requests = requests_lib
