@@ -678,7 +678,7 @@ def twophase_transaction(*engines):
         raise
 
 
-def paging_sanitizer(limit, page, total_count=sys.maxint, zero_based_pages=True):
+def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to
     valid ranges based on total_count.
 
