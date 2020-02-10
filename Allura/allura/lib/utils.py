@@ -790,7 +790,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     This function was borrowed from Django
     """
-    if strings_only and isinstance(s, (types.NoneType, int)):
+    if strings_only and isinstance(s, (type(None), int)):
         return s
     elif not isinstance(s, six.string_types):
         try:

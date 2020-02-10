@@ -176,7 +176,7 @@ def _repl(match, html=0):
     "Replace the matched character with its HTML or ASCII equivalent."
     g = match.group(0)
     a = CHARS.get(g, g)
-    if isinstance(a, types.TupleType):
+    if isinstance(a, tuple):
         a = a[html]
         if html:
             a = '&' + a + ';'
