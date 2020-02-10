@@ -250,7 +250,7 @@ class JsonValidator(fev.FancyValidator):
     def _to_python(self, value, state):
         try:
             json.loads(value)
-        except ValueError, e:
+        except ValueError as e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
         return value
 
@@ -265,7 +265,7 @@ class JsonConverter(fev.FancyValidator):
     def _to_python(self, value, state):
         try:
             obj = json.loads(value)
-        except ValueError, e:
+        except ValueError as e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
         if not isinstance(obj, dict):
             raise fe.Invalid('Not a dict (JSON object)', value, state)

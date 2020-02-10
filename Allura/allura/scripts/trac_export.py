@@ -252,7 +252,7 @@ class TracExport(object):
         url = self.full_url(self.QUERY_BY_PAGE_URL % self.page, 'csv')
         try:
             f = self.csvopen(url)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
                 if 'beyond the number of pages in the query' in six.ensure_text(body):

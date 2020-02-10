@@ -205,7 +205,7 @@ class MonQTask(MappedClass):
                     sort=cls.sort)
                 if obj is not None:
                     return obj
-            except pymongo.errors.OperationFailure, exc:
+            except pymongo.errors.OperationFailure as exc:
                 if 'No matching object found' not in exc.args[0]:
                     raise
             if waitfunc is None:
@@ -266,7 +266,7 @@ class MonQTask(MappedClass):
                 self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
-        except Exception, exc:
+        except Exception as exc:
             if asbool(config.get('monq.raise_errors')):
                 raise
             else:

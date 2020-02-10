@@ -685,7 +685,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             try:
                 session(ticket).flush(ticket)
                 return ticket
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning('Try to create duplicate ticket %s',
                                 ticket.url())
@@ -1096,7 +1096,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             try:
                 session(self).flush(self)
                 break
-            except OperationFailure, err:
+            except OperationFailure as err:
                 if 'duplicate' in err.args[0]:
                     log.warning(
                         'Try to create duplicate ticket %s when moving from %s' %

@@ -66,7 +66,7 @@ MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 def permanent_redirect(url):
     try:
         tg.redirect(url)
-    except exc.HTTPFound, err:
+    except exc.HTTPFound as err:
         raise exc.HTTPMovedPermanently(location=err.location)
 
 

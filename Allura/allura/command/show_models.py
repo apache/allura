@@ -137,7 +137,7 @@ class ReindexCommand(base.Command):
                     M.artifact_orm_session.clear()
                     try:
                         self._chunked_add_artifacts(ref_ids)
-                    except CompoundError, err:
+                    except CompoundError as err:
                         base.log.exception(
                             'Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
@@ -298,7 +298,7 @@ class EnsureIndexCommand(base.Command):
                         del index_options['unique']
                     collection.ensure_index(idx.index_spec, **index_options)
                     break
-                except DuplicateKeyError, err:
+                except DuplicateKeyError as err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
         for keys, idx in indexes.iteritems():

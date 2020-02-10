@@ -366,7 +366,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
             for a_entry in attachments:
                 try:
                     self.make_attachment(a['id'], t._id, a_entry)
-                except Exception, e:
+                except Exception as e:
                     self.warnings.append(
                         'Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)

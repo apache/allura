@@ -52,7 +52,7 @@ class AlluraImportApiClient(object):
                 result = urllib2.urlopen(url, urllib.urlencode(params))
                 resp = result.read()
                 return json.loads(resp)
-            except urllib2.HTTPError, e:
+            except urllib2.HTTPError as e:
                 e.msg += ' ({0})'.format(url)
                 if self.verbose:
                     error_content = e.read()

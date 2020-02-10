@@ -48,7 +48,7 @@ class ReindexUsers(ScriptTask):
                         cls._post_add_users(chunk)
                     else:
                         add_users(chunk)
-            except CompoundError, err:
+            except CompoundError as err:
                 log.exception('Error indexing users:\n%r', err)
                 log.error('%s', err.format_error())
             M.main_orm_session.flush()

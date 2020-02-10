@@ -232,7 +232,7 @@ def create_project(p, nbhd, options):
                                             p.admin,
                                             project_name=p.name.name,
                                             private_project=p.private)
-        except Exception, e:
+        except Exception as e:
             log.exception('[%s] %s' % (worker_name, str(e)))
             return 0
     else:

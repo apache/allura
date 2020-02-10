@@ -323,7 +323,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
             warnings, doc = import_support.validate_import(
                 doc, username_mapping)
             return dict(warnings=warnings, errors=[])
-        except Exception, e:
+        except Exception as e:
             raise
             log.exception(e)
             return dict(status=False, errors=[repr(e)])
@@ -344,7 +344,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
             warnings = import_support.perform_import(
                 doc, username_mapping, default_username, create_users)
             return dict(warnings=warnings, errors=[])
-        except Exception, e:
+        except Exception as e:
             raise
             log.exception(e)
             return dict(status=False, errors=[str(e)])

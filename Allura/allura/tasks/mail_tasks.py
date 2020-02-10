@@ -101,7 +101,7 @@ def route_email(
                                 c.app.handle_message(userpart, msg)
                         else:
                             c.app.handle_message(userpart, msg)
-            except exc.MailError, e:
+            except exc.MailError as e:
                 log.error('Error routing email to %s: %s', addr, e)
             except:
                 log.exception('Error routing mail to %s', addr)

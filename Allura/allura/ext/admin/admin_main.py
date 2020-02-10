@@ -641,7 +641,7 @@ class ProjectAdminController(BaseController):
                     if callable(new_url):  # subprojects have a method instead of property
                         new_url = new_url()
                     redirect(new_url)
-        except forge_exc.ForgeError, exc:
+        except forge_exc.ForgeError as exc:
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         if request.referer is not None and tool is not None and 'delete' in tool[0] and \

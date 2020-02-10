@@ -117,7 +117,7 @@ class CreateSitemapFiles(ScriptTask):
                         locs.append({'url': url,
                                      'date': p.last_updated.strftime("%Y-%m-%d")})
 
-                except Exception, e:
+                except Exception as e:
                     print "Error creating sitemap for project '%s': %s" %\
                         (p.shortname, e)
                 creds.clear()

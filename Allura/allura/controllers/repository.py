@@ -153,7 +153,7 @@ class RepoRootController(BaseController, FeedController):
                     redirect(to_project.url() + mount_point + '/')
                 except exc.HTTPRedirection:
                     raise
-                except Exception, ex:
+                except Exception as ex:
                     flash(str(ex), 'error')
                     redirect(request.referer or '/')
 

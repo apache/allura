@@ -62,7 +62,7 @@ class ReindexProjects(ScriptTask):
                         cls._post_add_projects(chunk)
                     else:
                         add_projects(chunk)
-            except CompoundError, err:
+            except CompoundError as err:
                 log.exception('Error indexing projects:\n%r', err)
                 log.error('%s', err.format_error())
             M.main_orm_session.flush()

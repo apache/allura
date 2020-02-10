@@ -166,7 +166,7 @@ class GitImplementation(M.RepositoryImplementation):
             _git = git.Repo(self._repo.full_fs_path, odbt=git.GitCmdObjectDB)
             _git.git = GitLibCmdWrapper(_git.git)
             return _git
-        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError), err:
+        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError) as err:
             log.error('Problem looking up repo: %r', err)
             return None
 

@@ -686,7 +686,7 @@ class PreferencesController(BaseController):
         ap = plugin.AuthenticationProvider.get(request)
         try:
             ap.upload_sshkey(c.user.username, key)
-        except AssertionError, ae:
+        except AssertionError as ae:
             flash('Error uploading key: %s' % ae, 'error')
         flash('Key uploaded')
         redirect('.')

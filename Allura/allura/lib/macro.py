@@ -83,7 +83,7 @@ class parse(object):
                          exc_info=True)
                 msg = cgi.escape('[[%s]] (%s)' % (s, repr(ex)))
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
-        except Exception, ex:
+        except Exception as ex:
             raise
             return '[[Error parsing %s: %s]]' % (s, ex)
 

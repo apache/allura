@@ -117,7 +117,7 @@ def validate_json(json_or_response):
 
     try:
         obj = json.loads(j)
-    except Exception, e:
+    except Exception as e:
         ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
 
     return obj
