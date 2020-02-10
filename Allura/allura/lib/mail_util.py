@@ -35,6 +35,7 @@ from tg import app_globals as g
 from allura.lib.utils import ConfigProxy
 from allura.lib import exceptions as exc
 from allura.lib import helpers as h
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -283,11 +284,11 @@ class SMTPClient(object):
             references = ['<%s>' % r for r in aslist(references)]
             message['References'] = Header(*references)
         content = message.as_string()
-        smtp_addrs = map(_parse_smtp_addr, addrs)
+        smtp_addrs = list(map(_parse_smtp_addr, addrs))
         smtp_addrs = [a for a in smtp_addrs if isvalid(a)]
         if not smtp_addrs:
             log.warning('No valid addrs in %s, so not sending mail',
-                        map(six.text_type, addrs))
+                        list(map(six.text_type, addrs)))
             return
         try:
             self._client.sendmail(

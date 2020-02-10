@@ -51,6 +51,7 @@ from allura import model as M
 from allura.tasks import index_tasks
 import six
 from io import open
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -859,7 +860,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
     @require_post()
     def unblock_user(self, user_id=None, perm=None, **kw):
         try:
-            user_id = map(ObjectId, user_id)
+            user_id = list(map(ObjectId, user_id))
         except InvalidId:
             user_id = []
         users = model.User.query.find({'_id': {'$in': user_id}}).all()
@@ -1006,9 +1007,9 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
 
             def get_role(_id):
                 return model.ProjectRole.query.get(_id=ObjectId(_id))
-            groups = map(get_role, group_ids)
-            new_groups = map(get_role, new_group_ids)
-            del_groups = map(get_role, del_group_ids)
+            groups = list(map(get_role, group_ids))
+            new_groups = list(map(get_role, new_group_ids))
+            del_groups = list(map(get_role, del_group_ids))
 
             def group_names(groups):
                 return ', '.join((role.name or '<Unnamed>') for role in groups if role)
@@ -1020,7 +1021,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                     group_names(groups + new_groups),
                     self.app.config.options['mount_point']))
 
-            role_ids = map(ObjectId, group_ids + new_group_ids)
+            role_ids = list(map(ObjectId, group_ids + new_group_ids))
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]
 

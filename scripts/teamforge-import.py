@@ -46,6 +46,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 import six
 from io import open
+from six.moves import map
 
 log = logging.getLogger('teamforge-import')
 
@@ -212,10 +213,10 @@ def get_project(project):
     save(json.dumps(dict(
         data=dict(data),
         access_level=access_level,
-        admins=map(dict, admins),
-        members=map(dict, members),
-        groups=map(dict, groups),
-        categories=map(dict, categories),
+        admins=list(map(dict, admins)),
+        members=list(map(dict, members)),
+        groups=list(map(dict, groups)),
+        categories=list(map(dict, categories)),
     ), default=str),
         project, project.id + '.json')
 

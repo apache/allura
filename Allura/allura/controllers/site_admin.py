@@ -53,6 +53,7 @@ from six.moves.urllib.parse import urlparse
 from webhelpers import paginate
 import six
 from six.moves import range
+from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -300,7 +301,7 @@ class SiteAdminController(object):
         return {
             'q': q,
             'f': f,
-            'objects': map(convert_fields, objects),
+            'objects': list(map(convert_fields, objects)),
             'count': count,
             'page': page,
             'limit': limit,

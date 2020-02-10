@@ -25,6 +25,7 @@ from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
+from six.moves import map
 
 
 class TestUserProfile(TestController):
@@ -211,7 +212,7 @@ class TestUserProfile(TestController):
             m.name = n
             m.load()().display.return_value = 'Section %s' % n
             return m
-        eps = map(ep, ['a', 'b', 'c', 'd'])
+        eps = list(map(ep, ['a', 'b', 'c', 'd']))
         order = {'user_profile_sections.order': 'b, d,c , f '}
         if hasattr(type(app), '_sections'):
             delattr(type(app), '_sections')

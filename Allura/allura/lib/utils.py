@@ -62,6 +62,7 @@ from ming.odm import session
 import six
 from six.moves import range
 from six.moves import zip
+from six.moves import map
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -219,7 +220,7 @@ class AntiSpam(object):
             self.spinner_text = request.params['spinner']
             self.timestamp = int(self.timestamp_text)
             self.spinner = self._unwrap(self.spinner_text)
-        self.spinner_ord = map(ord, self.spinner)
+        self.spinner_ord = list(map(ord, self.spinner))
         self.random_padding = [random.randint(0, 255) for x in self.spinner]
         self.honey_class = self.enc(self.spinner_text, css_safe=True)
 
@@ -269,7 +270,7 @@ class AntiSpam(object):
         plain.encode('ascii')
 
         plain = ([len(plain)]
-                 + map(ord, plain)
+                 + list(map(ord, plain))
                  + self.random_padding[:len(self.spinner_ord) - len(plain) - 1])
         enc = ''.join(six.unichr(p ^ s) for p, s in zip(plain, self.spinner_ord))
         enc = six.ensure_binary(enc)

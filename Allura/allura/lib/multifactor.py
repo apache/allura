@@ -44,6 +44,7 @@ from allura.lib.utils import umask
 import six
 from io import open
 from six.moves import range
+from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -300,7 +301,7 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
         rate_limits = gaf.options['RATE_LIMIT'].split(' ')
         num_allowed = int(rate_limits.pop(0))
         time_allowed = int(rate_limits.pop(0))
-        prev_attempts = map(int, rate_limits)
+        prev_attempts = list(map(int, rate_limits))
 
         ok, attempts_in_limit = check_rate_limit(num_allowed, time_allowed, prev_attempts)
 

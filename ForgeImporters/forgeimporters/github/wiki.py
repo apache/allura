@@ -65,6 +65,7 @@ from forgewiki.converters import mediawiki2markdown
 
 
 import logging
+from six.moves import map
 log = logging.getLogger(__name__)
 
 
@@ -195,7 +196,7 @@ class GitHubWikiImporter(ToolImporter):
 
     def _set_available_pages(self, commit):
         pages = [blob.name for blob in commit.tree.traverse()]
-        pages = map(os.path.splitext, pages)
+        pages = list(map(os.path.splitext, pages))
         pages = [self._convert_page_name(name) for name, ext in pages
                  if ext in self.supported_formats]
         self.available_pages = pages
@@ -374,7 +375,7 @@ class GitHubWikiImporter(ToolImporter):
         title = options = None
         if len(link) == 1:
             link = link[0]
-        elif any(map(lambda opt: link[1].startswith(opt), available_options)):
+        elif any([link[1].startswith(opt) for opt in available_options]):
             # second element is option -> first is the link
             link, options = link[0], link[1:]
         else:
@@ -403,8 +404,7 @@ class GitHubWikiImporter(ToolImporter):
         # E.g. if you have two pages: a.md and A.md both [[a]] and [[A]] will refer a.md.
         # We're emulating this behavior using list of all available pages
         try:
-            idx = map(lambda p: p.lower(),
-                      self.available_pages).index(page.lower())
+            idx = [p.lower() for p in self.available_pages].index(page.lower())
         except ValueError:
             idx = None
         if idx is not None:

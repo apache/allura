@@ -54,6 +54,7 @@ from allura.lib.widgets.project_list import ProjectScreenshots
 
 from . import widgets as aw
 import six
+from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -1002,7 +1003,7 @@ class PermissionsController(BaseController):
                         'You cannot remove the admin group from the admin permission.', 'warning')
                     group_ids.append(admin_group_id)
             permissions[perm] = []
-            role_ids = map(ObjectId, group_ids + new_group_ids)
+            role_ids = list(map(ObjectId, group_ids + new_group_ids))
             permissions[perm] = role_ids
         c.project.acl = []
         for perm, role_ids in six.iteritems(permissions):

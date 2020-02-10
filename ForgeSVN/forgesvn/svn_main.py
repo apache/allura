@@ -47,6 +47,7 @@ from . import version
 from . import widgets
 from .controllers import BranchBrowser
 from .model.svn import svn_path_exists
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -206,7 +207,7 @@ class SVNCommitBrowserController(BaseController):
             data['commits'].append(str(commit['id']))
             data['built_tree'][commit['id']] = {
                 'column': 0,
-                'parents': map(str, commit['parents']),
+                'parents': list(map(str, commit['parents'])),
                 'short_id': '[r%s]' % commit['id'],
                 'message': commit['message'],
                 'oid': str(commit['id']),

@@ -32,6 +32,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects, setup_unit_test
 from forgetracker.tests.functional.test_root import TrackerTestController
+from six.moves import map
 
 
 class TestPersonalDashboard(TestController):
@@ -51,7 +52,7 @@ class TestPersonalDashboard(TestController):
             m.name = n
             m.load()().display.return_value = 'Section %s' % n
             return m
-        eps = map(ep, ['a', 'b', 'c', 'd'])
+        eps = list(map(ep, ['a', 'b', 'c', 'd']))
         order = {'personal_dashboard_sections.order': 'b, d,c , f '}
         with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
             with mock.patch.dict(tg.config, order):

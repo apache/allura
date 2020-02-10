@@ -84,6 +84,7 @@ from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 import six
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -1861,7 +1862,7 @@ class RootRestController(BaseController, AppRestControllerMixin):
 
         results = TM.Ticket.paged_search(
             c.app.config, c.user, q, limit, page, sort, show_deleted=False)
-        results['tickets'] = map(_convert_ticket, results['tickets'])
+        results['tickets'] = list(map(_convert_ticket, results['tickets']))
         return results
 
     @expose()

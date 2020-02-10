@@ -44,6 +44,7 @@ from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
 import six
+from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -341,7 +342,7 @@ class SendWebhookHelper(object):
     @property
     def retries(self):
         t = aslist(config.get('webhook.retry', [60, 120, 240]))
-        return map(int, t)
+        return list(map(int, t))
 
     def sign(self, json_payload):
         signature = hmac.new(

@@ -38,6 +38,7 @@ from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.lib import utils
 from alluratest.controller import setup_trove_categories
+from six.moves import map
 
 
 class TestNeighborhood(TestController):
@@ -598,7 +599,7 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username=str('root')))
         cookies = r.headers.getall('Set-Cookie')
-        flash_msg_cookies = map(six.moves.urllib.parse.unquote, cookies)
+        flash_msg_cookies = list(map(six.moves.urllib.parse.unquote, cookies))
 
         assert any('Internal Error' in cookie for cookie in flash_msg_cookies)
 

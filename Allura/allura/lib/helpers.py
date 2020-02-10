@@ -44,6 +44,7 @@ import emoji
 import tg
 import six
 from six.moves import range
+from six.moves import map
 try:
     import cchardet as chardet
 except ImportError:
@@ -934,7 +935,7 @@ def split_select_field_options(field_options):
         # it's better to pass properly encoded byte-string
         field_options = shlex.split(field_options.encode('utf-8'))
         # convert splitted string back to unicode
-        field_options = map(really_unicode, field_options)
+        field_options = list(map(really_unicode, field_options))
     except ValueError:
         field_options = field_options.split()
         # After regular split field_options might contain a " characters,

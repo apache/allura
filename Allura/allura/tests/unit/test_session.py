@@ -31,6 +31,7 @@ from allura.model.session import (
     substitute_extensions,
 )
 from six.moves import range
+from six.moves import map
 
 
 def test_extensions_cm():
@@ -105,7 +106,7 @@ class TestIndexerSessionExtension(TestSessionExtension):
         self.extension.objects_deleted = deleted
         self.extension.after_flush()
         self.tasks['add'].post.assert_called_once_with([1, 2, 3, 4, 5])
-        self.tasks['del'].post.assert_called_once_with(map(id, deleted))
+        self.tasks['del'].post.assert_called_once_with(list(map(id, deleted)))
 
     def test_flush_skips_update(self):
         modified = [self._mock_indexable(_id=i) for i in range(5)]

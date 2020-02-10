@@ -44,6 +44,7 @@ from .auth import User, ProjectRole, AlluraUserProperty
 from .timeline import ActivityObject
 from .types import MarkdownCache
 from six.moves import range
+from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -624,7 +625,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):
-            map(self.add_attachment, file_info)
+            list(map(self.add_attachment, file_info))
         else:
             self.add_attachment(file_info)
 

@@ -24,6 +24,7 @@ import json
 from datetime import datetime
 import argparse
 import sys
+from six.moves import map
 
 
 parser = argparse.ArgumentParser(description='Parse TimerMiddleware json lines (e.g. stats.log), filter them, output tab-delimited')

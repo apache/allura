@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import webob.exc
 from formencode import Invalid
+from six.moves import map
 
 
 class ForgeError(Exception):

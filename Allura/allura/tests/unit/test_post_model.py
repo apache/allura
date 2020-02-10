@@ -25,6 +25,7 @@ from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import create_post
 from six.moves import range
+from six.moves import map
 
 
 class TestPostModel(WithDatabase):
