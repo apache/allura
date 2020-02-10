@@ -625,7 +625,8 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):
-            list(map(self.add_attachment, file_info))
+            for fi in file_info:
+                self.add_attachment(fi)
         else:
             self.add_attachment(file_info)
 
