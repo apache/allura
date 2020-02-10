@@ -38,6 +38,7 @@ from allura.lib import exceptions as forge_exc
 from allura import model as M
 import six
 from six.moves import filter
+from functools import reduce
 
 
 log = logging.getLogger(__name__)

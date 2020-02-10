@@ -30,6 +30,7 @@ import difflib
 
 from allura.model.session import main_orm_session
 from six.moves import range
+from functools import reduce
 
 
 class Stats(MappedClass):
