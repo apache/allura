@@ -68,7 +68,7 @@ def apply():
                 override_mapping = request._override_mapping
             except AttributeError:
                 override_mapping = request._override_mapping = {}
-            override_mapping[controller.im_func] = {content_type: template}
+            override_mapping[controller.__func__] = {content_type: template}
 
     @h.monkeypatch(tg, tg.decorators)
     @decorator
