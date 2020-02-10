@@ -30,6 +30,7 @@ from tg.support.middlewares import _call_wsgi_application as call_wsgi_applicati
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
+import six
 
 from allura.lib import helpers as h
 import allura.model.repository
@@ -295,7 +296,10 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import ming
         import pymongo
         import socket
-        import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+        if six.PY2:
+            import urllib2 as urlopen_pkg
+        else:
+            import urllib.requests as urlopen_pkg
         import activitystream
         import pygments
         import difflib
@@ -341,7 +345,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
                   'flush', debug_each_call=False),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
-            Timer('urlopen', urllib2, 'urlopen'),
+            Timer('urlopen', urlopen_pkg, 'urlopen'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
             Timer('pygments', pygments, 'highlight'),  # often called from within a template so will overlap w/ jinja

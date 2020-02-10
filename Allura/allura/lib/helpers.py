@@ -24,7 +24,6 @@ import os
 import os.path
 import difflib
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
-import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import re
 import unicodedata
 import json

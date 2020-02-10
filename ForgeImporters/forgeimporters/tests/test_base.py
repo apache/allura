@@ -36,7 +36,7 @@ from forgeimporters import base
 class TestProjectExtractor(TestCase):
 
     @mock.patch('forgeimporters.base.h.urlopen')
-    @mock.patch('forgeimporters.base.urllib2.Request')
+    @mock.patch('six.moves.urllib.request.Request')
     def test_urlopen(self, Request, urlopen):
         r = base.ProjectExtractor.urlopen('myurl', data='foo')
         Request.assert_called_once_with('myurl', data='foo')

@@ -438,13 +438,13 @@ back\\\\\-slash escaped
 
 class TestUrlOpen(TestCase):
 
-    @patch('allura.lib.helpers.urllib2')
-    def test_no_error(self, urllib2):
+    @patch('six.moves.urllib.request.urlopen')
+    def test_no_error(self, urlopen):
         r = h.urlopen('myurl')
-        self.assertEqual(r, six.moves.urllib.request.urlopen.return_value)
-        six.moves.urllib.request.urlopen.assert_called_once_with('myurl', timeout=None)
+        self.assertEqual(r, urlopen.return_value)
+        urlopen.assert_called_once_with('myurl', timeout=None)
 
-    @patch('allura.lib.helpers.urllib2.urlopen')
+    @patch('six.moves.urllib.request.urlopen')
     def test_socket_timeout(self, urlopen):
         import socket
 
@@ -454,7 +454,7 @@ class TestUrlOpen(TestCase):
         self.assertRaises(socket.timeout, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('allura.lib.helpers.urllib2.urlopen')
+    @patch('six.moves.urllib.request.urlopen')
     def test_socket_reset(self, urlopen):
         import socket
         import errno
@@ -465,7 +465,7 @@ class TestUrlOpen(TestCase):
         self.assertRaises(socket.error, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('allura.lib.helpers.urllib2.urlopen')
+    @patch('six.moves.urllib.request.urlopen')
     def test_handled_http_error(self, urlopen):
         from six.moves.urllib.error import HTTPError
 
@@ -475,7 +475,7 @@ class TestUrlOpen(TestCase):
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
 
-    @patch('allura.lib.helpers.urllib2.urlopen')
+    @patch('six.moves.urllib.request.urlopen')
     def test_unhandled_http_error(self, urlopen):
         from six.moves.urllib.error import HTTPError
 
