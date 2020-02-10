@@ -31,8 +31,8 @@ def run(cmd):
     proc = Popen(cmd, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
     # must capture & reprint stdount, so that nosetests can capture it
     (stdout, stderr) = proc.communicate()
-    sys.stdout.write(stdout)
-    sys.stderr.write(stderr)
+    sys.stdout.write(stdout.decode('utf-8'))
+    sys.stderr.write(stderr.decode('utf-8'))
     return proc.returncode
 
 
@@ -106,6 +106,8 @@ class TestLinters(object):
 def create_many_lint_methods():
     proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
     (find_stdout, stderr) = proc.communicate()
+    find_stdout = find_stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     sys.stderr.write(stderr)
     assert proc.returncode == 0, proc.returncode
     py_files = find_stdout.split('\n')
