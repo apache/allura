@@ -1381,6 +1381,9 @@ class TestFunctionalController(TrackerTestController):
         assert '3 results' in response, response.showbrowser()
         assert 'test third ticket' in response, response.showbrowser()
 
+        # 'filter' is special kwarg, don't let it cause problems
+        r = self.app.get('/p/test/bugs/search/?q=test&filter=blah')
+
     def test_search_with_strange_chars(self):
         r = self.app.get('/p/test/bugs/search/?' +
                          urlencode({'q': 'tést'}))

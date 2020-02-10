@@ -92,7 +92,7 @@ search_validators = dict(
     limit=validators.Int(if_invalid=None),
     page=validators.Int(if_empty=0, if_invalid=0),
     sort=validators.UnicodeString(if_empty=None),
-    filter=V.JsonConverter(if_empty={}),
+    filter=V.JsonConverter(if_empty={}, if_invalid={}),
     deleted=validators.StringBool(if_empty=False))
 
 
@@ -713,10 +713,6 @@ class RootController(BaseController, FeedController):
             show_deleted = [False, True]
         elif deleted and not has_access(c.app, 'delete'):
             deleted = False
-
-        if not isinstance(filter, dict):
-            # JsonConverter above can return an int, string, etc, if users give bad inputs, but it needs to be a dict
-            filter = {}
 
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)

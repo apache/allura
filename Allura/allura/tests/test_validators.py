@@ -45,6 +45,8 @@ class TestJsonConverter(unittest.TestCase):
     def test_invalid(self):
         with self.assertRaises(fe.Invalid):
             self.val.to_python('{')
+        with self.assertRaises(fe.Invalid):
+            self.val.to_python('3')
 
 
 class TestJsonFile(unittest.TestCase):

@@ -1261,7 +1261,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         limit, page, start = g.handle_paging(limit, page, default=25)
         count = 0
         tickets = []
-        if filter is None: filter = {}
+        if filter is None:
+            filter = {}
         refined_sort = sort if sort else 'ticket_num_i desc'
         if 'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'

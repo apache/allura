@@ -257,13 +257,18 @@ class JsonValidator(fev.FancyValidator):
 
 class JsonConverter(fev.FancyValidator):
 
-    """Deserializes a string to JSON and returns a Python object"""
+    """
+    Deserializes a string to JSON and returns a Python object
+    Must be an object, not a simple literal
+    """
 
     def _to_python(self, value, state):
         try:
             obj = json.loads(value)
         except ValueError, e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
+        if not isinstance(obj, dict):
+            raise fe.Invalid('Not a dict (JSON object)', value, state)
         return obj
 
 
