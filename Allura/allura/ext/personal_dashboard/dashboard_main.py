@@ -21,7 +21,7 @@ import logging
 
 from tg import tmpl_context as c, app_globals as g
 from tg import expose, redirect, config
-from itertools import islice, ifilter
+from itertools import islice
 from ming.orm import session
 
 from allura.model.timeline import perm_check, get_activity_object
@@ -30,6 +30,7 @@ from allura.controllers.feed import FeedController
 from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
 from allura.lib.widgets import form_fields as ffw
 from paste.deploy.converters import asbool
+from six.moves import filter
 
 log = logging.getLogger(__name__)
 
@@ -152,7 +153,7 @@ class ActivitySection(DashboardSectionBase):
             self.user, page=0, limit=100,
             actor_only=False,
         )
-        filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
+        filtered_timeline = list(islice(filter(perm_check(c.user), full_timeline),
                                         0, 8))
         for activity in filtered_timeline:
             # Get the project for the activity.obj so we can use it in the

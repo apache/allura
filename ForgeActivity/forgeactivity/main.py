@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import logging
 import calendar
 from datetime import timedelta
-from itertools import islice, ifilter
+from itertools import islice
 
 from bson import ObjectId
 from ming.orm import session
@@ -46,6 +46,7 @@ from allura.lib.widgets.form_fields import PageList
 from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
+from six.moves import filter
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ class ForgeActivityController(BaseController):
         timeline = g.director.get_timeline(followee, page,
                                            limit=extra_limit,
                                            actor_only=actor_only)
-        filtered_timeline = list(islice(ifilter(perm_check(c.user), timeline),
+        filtered_timeline = list(islice(filter(perm_check(c.user), timeline),
                                         0, limit))
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for
@@ -290,7 +291,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             self.user, page=0, limit=100,
             actor_only=True,
         )
-        filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
+        filtered_timeline = list(islice(filter(perm_check(c.user), full_timeline),
                                         0, 8))
         for activity in filtered_timeline:
             # Get the project for the activity.obj so we can use it in the

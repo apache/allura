@@ -20,8 +20,9 @@ from __future__ import absolute_import
 import os.path
 from subprocess import Popen, PIPE
 import sys
-from itertools import izip_longest
+
 from unittest import SkipTest
+from six.moves import zip_longest
 
 toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
@@ -42,7 +43,7 @@ find_py = "find Allura Forge* -name '*.py'"
 def grouper(n, iterable, fillvalue=None):
     "grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n
-    return izip_longest(fillvalue=fillvalue, *args)
+    return zip_longest(fillvalue=fillvalue, *args)
 
 
 def test_no_local_tz_functions():

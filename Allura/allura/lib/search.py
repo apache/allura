@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import re
 import socket
 from logging import getLogger
-from itertools import imap
+
 
 import bson
 import markdown
@@ -34,6 +34,7 @@ from allura.lib import helpers as h
 from allura.lib.solr import escape_solr_arg
 from allura.lib.utils import urlencode
 import six
+from six.moves import map
 
 log = getLogger(__name__)
 
@@ -321,12 +322,12 @@ def search_app(q='', fq=None, app=True, **kw):
                 else:
                     return doc
 
-            filtered_results = [_f for _f in imap(filter_unauthorized, results) if _f]
+            filtered_results = [_f for _f in map(filter_unauthorized, results) if _f]
             count -= len(results) - len(filtered_results)
             results = filtered_results
-            results = imap(historize_urls, results)
-            results = imap(add_matches, results)
-            results = imap(paginate_comment_urls, results)
+            results = map(historize_urls, results)
+            results = map(add_matches, results)
+            results = map(paginate_comment_urls, results)
 
     # Provide sort urls to the view
     score_url = 'score desc'
