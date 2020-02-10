@@ -46,6 +46,7 @@ RUN a2enmod cgi proxy proxy_http
 ADD ./git-http.conf /etc/apache2/sites-available/
 RUN a2dissite 000-default.conf
 RUN a2ensite git-http.conf
+RUN apachectl configtest
 
 ADD git-http-backend-wrapper.sh /usr/lib/git-core
 RUN adduser www-data sudo
