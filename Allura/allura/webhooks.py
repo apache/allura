@@ -102,8 +102,7 @@ class WebhookControllerMeta(type):
         return type.__call__(cls, sender, app, *args, **kw)
 
 
-class WebhookController(BaseController, AdminControllerMixin):
-    __metaclass__ = WebhookControllerMeta
+class WebhookController(six.with_metaclass(WebhookControllerMeta, BaseController, AdminControllerMixin)):
     create_form = WebhookCreateForm
     edit_form = WebhookEditForm
 

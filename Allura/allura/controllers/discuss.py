@@ -149,8 +149,7 @@ class AppDiscussionController(DiscussionController):
             app_config_id=c.app.config._id)
 
 
-class ThreadsController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ThreadsController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -171,8 +170,7 @@ class ThreadsController(BaseController):
             raise exc.HTTPNotFound()
 
 
-class ThreadController(BaseController, FeedController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ThreadController(six.with_metaclass(h.ProxiedAttrMeta, BaseController, FeedController)):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -280,8 +278,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     redirect(request.referer or '/')
 
 
-class PostController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -472,8 +469,7 @@ class DiscussionAttachmentsController(AttachmentsController):
     AttachmentControllerClass = DiscussionAttachmentController
 
 
-class ModerationController(BaseController):
-    __metaclass__ = h.ProxiedAttrMeta
+class ModerationController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
     PostModel = M.Post
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')

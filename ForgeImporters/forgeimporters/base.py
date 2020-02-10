@@ -28,6 +28,7 @@ from six.moves.urllib.parse import urlparse
 from datetime import datetime
 from io import open
 from six.moves import filter
+import six
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -354,11 +355,10 @@ class ToolImportControllerMeta(type):
         return type.__call__(cls, importer, *args, **kw)
 
 
-class ToolImportController(BaseController):
+class ToolImportController(six.with_metaclass(ToolImportControllerMeta, BaseController)):
     """ Base class for ToolImporter controllers.
 
     """
-    __metaclass__ = ToolImportControllerMeta
 
     def __init__(self, importer):
         """
@@ -395,7 +395,7 @@ class ToolImporterMeta(type):
         return type.__call__(cls, *args, **kw)
 
 
-class ToolImporter(object):
+class ToolImporter(six.with_metaclass(ToolImporterMeta, object)):
 
     """
     Base class for tool importers.
@@ -431,7 +431,6 @@ class ToolImporter(object):
        The controller for this importer, to handle single tool imports.
 
     """
-    __metaclass__ = ToolImporterMeta
 
     target_app = None  # app or list of apps
     source = None  # string description of source, must match project importer
