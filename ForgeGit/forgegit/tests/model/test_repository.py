@@ -458,7 +458,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         multipart_msg = sendmail.call_args_list[0][0][6]
         text_msg = sendmail.call_args_list[1][0][6]
         text_body = text_msg.get_payload(decode=True).decode('utf-8')
-        html_body = email.iterators.typed_subpart_iterator(multipart_msg, 'text', 'html').next()\
+        html_body = next(email.iterators.typed_subpart_iterator(multipart_msg, 'text', 'html'))\
             .get_payload(decode=True).decode('utf-8')
 
         # no extra HTML in commit messages
