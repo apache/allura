@@ -39,8 +39,8 @@ def init(uname):
     os.mkdir(ssh)
     u = pwd.getpwnam(uname)
     g = grp.getgrnam('scm')
-    os.chmod(home, 0700)
-    os.chmod(ssh, 0700)
+    os.chmod(home, 0o700)
+    os.chmod(ssh, 0o700)
     os.chown(home, u.pw_uid, g.gr_gid)
     os.chown(ssh, u.pw_uid, g.gr_gid)
 
@@ -52,7 +52,7 @@ def upload(uname, pubkey):
     with open(keyfile, 'w') as fp:
         fp.write(pubkey)
     os.chown(keyfile, u.pw_uid, g.gr_gid)
-    os.chmod(keyfile, 0600)
+    os.chmod(keyfile, 0o600)
 
 if __name__ == '__main__':
     main()

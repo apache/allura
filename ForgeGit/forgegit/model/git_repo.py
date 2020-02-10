@@ -487,7 +487,7 @@ class GitImplementation(M.RepositoryImplementation):
                           'hooks', 'post-receive')
         with open(fn, 'w') as fp:
             fp.write(text)
-        os.chmod(fn, 0755)
+        os.chmod(fn, 0o755)
 
     def _object(self, oid):
         evens = oid[::2]

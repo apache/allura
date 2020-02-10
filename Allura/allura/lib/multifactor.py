@@ -258,7 +258,7 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
         if autocreate:
             userdir = os.path.dirname(self.config_file(user))
             if not os.path.exists(userdir):
-                os.makedirs(userdir, 0700)
+                os.makedirs(userdir, 0o700)
 
         try:
             with open(self.config_file(user)) as f:

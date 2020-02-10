@@ -236,7 +236,7 @@ class SVNImplementation(M.RepositoryImplementation):
                               'hooks', hook_name)
             with open(fn, 'wb') as fp:
                 fp.write('#!/bin/sh\n')
-            os.chmod(fn, 0755)
+            os.chmod(fn, 0o755)
 
         def clear_hook(hook_name):
             fn = os.path.join(self._repo.fs_path, self._repo.name,
@@ -611,7 +611,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
-        os.chmod(fn, 0755)
+        os.chmod(fn, 0o755)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])
