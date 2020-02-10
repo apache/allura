@@ -48,7 +48,7 @@ class TestWikiApi(TestRestApiBase):
     def test_get_page(self):
         r = self.app.get('/p/test/wiki/Home/')
         discussion_url = r.html.find('form', id='edit_post')['action'][:-4]
-        content = file(__file__).read()
+        content = open(__file__).read()
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/rest/p/test/wiki/Home/')

@@ -494,7 +494,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': '',
                 })
-        content = file(__file__).read()
+        content = open(__file__).read()
         self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test_root.py', content)])
         response = self.app.get(h.urlquote('/wiki/tést/'))
@@ -508,7 +508,7 @@ class TestRootController(TestController):
                 'text': 'sometext',
                 'labels': '',
                 })
-        content = file(__file__).read()
+        content = open(__file__).read()
         self.app.post(h.urlquote('/wiki/tést/attach'),
                       upload_files=[('file_info', 'test1.py', content), ('file_info', 'test2.py', content)])
         response = self.app.get(h.urlquote('/wiki/tést/'))
@@ -524,7 +524,7 @@ class TestRootController(TestController):
                 'labels': '',
                 })
         file_name = 'test_root.py'
-        file_data = file(__file__).read()
+        file_data = open(__file__).read()
         upload = ('file_info', file_name, file_data)
         self.app.post(h.urlquote('/wiki/tést/attach'), upload_files=[upload])
         page_editor = self.app.get(h.urlquote('/wiki/tést/edit'))
@@ -540,7 +540,7 @@ class TestRootController(TestController):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(
             allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = file(file_path).read()
+        file_data = open(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])
         h.set_context('test', 'wiki', neighborhood='Projects')
@@ -713,7 +713,7 @@ class TestRootController(TestController):
             'labels': '',
             }
         self.app.post('/wiki/TEST/update', params=params)
-        content = file(__file__).read()
+        content = open(__file__).read()
         self.app.post('/wiki/TEST/attach',
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/wiki/TEST/')

@@ -157,7 +157,7 @@ class TestProjectHome(TestController):
     def test_user_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0], 'nf', 'allura', 'images', file_name)
-        file_data = file(file_path).read()
+        file_data = open(file_path).read()
         upload = ('icon', file_name, file_data)
         with td.audits('update project icon'):
             self.app.post('/u/test-admin/admin/update', params=dict(
