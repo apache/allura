@@ -370,7 +370,7 @@ def create_project(pid, nbhd):
         icon_file = 'emsignia-SOLUTIONS-blue.gif'
     if project.icon:
         M.ProjectFile.remove(dict(project_id=project._id, category='icon'))
-    with open(os.path.join('..', 'scripts', icon_file)) as fp:
+    with open(os.path.join('..', 'scripts', icon_file), 'rb') as fp:
         M.ProjectFile.save_image(
             icon_file, fp, content_type=utils.guess_mime_type(icon_file),
             square=True, thumbnail_size=(48, 48),
@@ -666,9 +666,9 @@ def check_unsupported_tools(project):
 
 def load(project_id, *paths):
     in_file = os.path.join(options.output_dir, project_id, *paths)
-    with open(in_file) as input:
+    with open(in_file, encoding='utf-8') as input:
         content = input.read()
-    return six.text_type(content, 'utf-8')
+    return content
 
 
 def loadjson(*args):

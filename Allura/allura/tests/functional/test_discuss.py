@@ -481,7 +481,7 @@ class TestAttachment(TestDiscussBase):
 
     def test_deleted_post_attachment(self):
         f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
-        with open(f) as f:
+        with open(f, 'rb') as f:
             pic = f.read()
         self.app.post(
             self.post_link + 'attach',
@@ -503,7 +503,7 @@ class TestAttachment(TestDiscussBase):
         moderator = {'username': str('test-admin')}
         # set up attachment
         f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
-        with open(f) as f:
+        with open(f, 'rb') as f:
             pic = f.read()
         self.app.post(
             self.post_link + 'attach',

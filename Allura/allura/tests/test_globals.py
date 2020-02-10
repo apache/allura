@@ -90,7 +90,7 @@ def test_macro_projects():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     c.project = p_test
-    icon_file = open(file_path)
+    icon_file = open(file_path, 'rb')
     M.ProjectFile.save_image(
         file_name, icon_file, content_type='image/png',
         square=True, thumbnail_size=(48, 48),
@@ -99,7 +99,7 @@ def test_macro_projects():
     p_test2 = M.Project.query.get(
         shortname='test2', neighborhood_id=p_nbhd._id)
     c.project = p_test2
-    icon_file = open(file_path)
+    icon_file = open(file_path, 'rb')
     M.ProjectFile.save_image(
         file_name, icon_file, content_type='image/png',
         square=True, thumbnail_size=(48, 48),
@@ -108,7 +108,7 @@ def test_macro_projects():
     p_sub1 = M.Project.query.get(
         shortname='test/sub1', neighborhood_id=p_nbhd._id)
     c.project = p_sub1
-    icon_file = open(file_path)
+    icon_file = open(file_path, 'rb')
     M.ProjectFile.save_image(
         file_name, icon_file, content_type='image/png',
         square=True, thumbnail_size=(48, 48),

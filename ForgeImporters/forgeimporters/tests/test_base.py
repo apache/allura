@@ -367,7 +367,7 @@ def test_save_importer_upload(giup, os):
     os.makedirs.side_effect = OSError(errno.EEXIST, 'foo')
     _open = mock.MagicMock()
     fp = _open.return_value.__enter__.return_value
-    with mock.patch('__builtin__.open', _open):
+    with mock.patch.object(base, 'open', _open):
         base.save_importer_upload('project', 'file', 'data')
     os.makedirs.assert_called_once_with('path')
     _open.assert_called_once_with('path/file', 'w')

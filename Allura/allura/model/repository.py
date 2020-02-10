@@ -229,7 +229,7 @@ class RepositoryImplementation(object):
             self._repo.fs_path, self._repo.name, tg.config.get(
                 'scm.magic_file', '.ALLURA-REPOSITORY'))
         with open(magic_file, 'w') as f:
-            f.write(self._repo.repo_id)
+            f.write(six.ensure_text(self._repo.repo_id))
         os.chmod(magic_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
         self._setup_hooks(source_path)
 

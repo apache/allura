@@ -67,7 +67,7 @@ class ScriptCommand(base.Command):
                     cProfile.run(fp, '%s.profile' %
                                  os.path.basename(self.args[1]))
                 else:
-                    exec fp in ns
+                    exec fp.read() in ns
 
 
 class SetToolAccessCommand(base.Command):

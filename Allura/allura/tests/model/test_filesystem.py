@@ -155,7 +155,7 @@ class TestFile(TestCase):
     def test_image(self):
         path = os.path.join(
             os.path.dirname(__file__), '..', 'data', 'user.png')
-        with open(path) as fp:
+        with open(path, 'rb') as fp:
             f, t = File.save_image(
                 'user.png',
                 fp,

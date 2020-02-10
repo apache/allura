@@ -285,7 +285,7 @@ def create_project(p, nbhd, options):
                      granted_by_neighborhood_id=nbhd._id)
 
     if p.icon:
-        with open(p.icon) as icon_file:
+        with open(p.icon, 'rb') as icon_file:
             project.save_icon(p.icon, icon_file)
 
     project.notifications_disabled = False

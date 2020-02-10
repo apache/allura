@@ -587,7 +587,7 @@ def test_convert_bools():
 
 def test_base64uri_img():
     img_file = path.join(path.dirname(__file__), 'data', 'user.png')
-    with open(img_file) as img_file_handle:
+    with open(img_file, 'rb') as img_file_handle:
         img = PIL.Image.open(img_file_handle)
         b64img = h.base64uri(img)
         assert b64img.startswith('data:image/png;base64,'), b64img[:100]
