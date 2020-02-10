@@ -912,6 +912,9 @@ class TestHandlePaging(unittest.TestCase):
         c.user.set_pref('results_per_page', 'bar')
         self.assertEqual(g.handle_paging(None, 0, 30), (30, 0, 0))
 
+    def test_with_invalid_page(self):
+        self.assertEqual(g.handle_paging(10, 'asdf', 30), (10, 0, 0))
+
 
 class TestIconRender(object):
 

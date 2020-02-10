@@ -383,7 +383,10 @@ class Globals(object):
         limit = self.manage_paging_preference(limit, default)
         limit = max(int(limit), 1)
         limit = min(limit, asint(config.get('limit_param_max', 500)))
-        page = max(int(page), 0)
+        try:
+            page = max(int(page), 0)
+        except ValueError:
+            page = 0
         start = page * int(limit)
         return (limit, page, start)
 
