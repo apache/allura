@@ -193,7 +193,7 @@ def chunked_list(l, n):
 def chunked_iter(iterable, max_size):
     '''return iterable 'chunks' from the iterable of max size max_size'''
     eiter = enumerate(iterable)
-    keyfunc = lambda (i, x): i // max_size
+    keyfunc = lambda i_x: i_x[0] // max_size
     for _, chunk in groupby(eiter, keyfunc):
         yield (x for i, x in chunk)
 

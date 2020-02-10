@@ -263,7 +263,7 @@ class PersonalDataForm(ForgeForm):
                 options=[ew.Option(py_value=" ", label=" -- Unknown -- ", selected=False)] +
                         [ew.Option(py_value=c, label=n, selected=False)
                          for c, n in sorted(list(country_names.items()),
-                                            key=lambda (k, v): v)],
+                                            key=lambda k_v: k_v[1])],
                 attrs={'onchange': 'selectTimezone(this.value)'}),
             ew.TextField(
                 name='city',
