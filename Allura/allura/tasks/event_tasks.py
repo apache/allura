@@ -20,6 +20,7 @@ import sys
 
 from allura.lib.decorators import task, event_handler
 from allura.lib.exceptions import CompoundError
+import six
 
 
 @task
@@ -32,6 +33,6 @@ def event(event_type, *args, **kwargs):
             exceptions.append(sys.exc_info())
     if exceptions:
         if len(exceptions) == 1:
-            raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
+            six.reraise(exceptions[0][0], exceptions[0][1], exceptions[0][2])
         else:
             raise CompoundError(*exceptions)

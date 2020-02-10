@@ -28,6 +28,7 @@ from allura.lib import helpers as h
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
 from allura.lib.solr import make_solr_from_config
+import six
 
 
 log = logging.getLogger(__name__)
@@ -112,7 +113,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
         __get_solr(solr_hosts).add(solr_updates)
 
     if len(exceptions) == 1:
-        raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
+        six.reraise(exceptions[0][0], exceptions[0][1], exceptions[0][2])
     if exceptions:
         raise CompoundError(*exceptions)
 
