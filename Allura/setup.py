@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from setuptools import setup, find_packages
 
-exec open('allura/version.py').read()
+exec(open('allura/version.py').read())
 
 PROJECT_DESCRIPTION = '''
 Allura is an open source implementation of a software "forge", a web site
