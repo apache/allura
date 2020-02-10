@@ -255,7 +255,7 @@ class TracExport(object):
         except urllib2.HTTPError, e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
-                if 'beyond the number of pages in the query' in body or 'Log in with a SourceForge account' in body:
+                if 'beyond the number of pages in the query' in six.ensure_text(body):
                     raise StopIteration
             raise
         reader = csv.reader(f)
@@ -263,8 +263,8 @@ class TracExport(object):
         for r in reader:
             if r and r[0].isdigit():
                 id = int(r[0])
-                extra = {'date': self.trac2z_date(
-                    r[1]), 'date_updated': self.trac2z_date(r[2])}
+                extra = {'date': self.trac2z_date(r[1]),
+                         'date_updated': self.trac2z_date(r[2])}
                 res.append((id, extra))
         self.page += 1
 
