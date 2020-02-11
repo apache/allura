@@ -1236,7 +1236,7 @@ class Commit(RepoObject, ActivityObject):
         changes = self.repo.get_changes(self._id)
         changed_paths = set()
         for change in changes:
-            node = six.ensure_text(change).strip('/')
+            node = h.really_unicode(change).strip('/')
             changed_paths.add(node)
             node_path = os.path.dirname(node)
             while node_path:
@@ -1820,7 +1820,7 @@ class GitLikeTree(object):
         self._hex = None
 
     def get_tree(self, path):
-        path = six.ensure_text(path)
+        path = h.really_unicode(path)
         if path.startswith('/'):
             path = path[1:]
         if not path:
@@ -1831,7 +1831,7 @@ class GitLikeTree(object):
         return cur
 
     def get_blob(self, path):
-        path = six.ensure_text(path)
+        path = h.really_unicode(path)
         if path.startswith('/'):
             path = path[1:]
         path_parts = path.split('/')
@@ -1842,7 +1842,7 @@ class GitLikeTree(object):
         return cur.blobs[last]
 
     def set_blob(self, path, oid):
-        path = six.ensure_text(path)
+        path = h.really_unicode(path)
         if path.startswith('/'):
             path = path[1:]
         path_parts = path.split('/')
