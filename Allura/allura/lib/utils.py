@@ -565,7 +565,8 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                           }
         self.allowed_elements = set(html5lib.filters.sanitizer.allowed_elements) - _form_elements
 
-        # srcset is used in our own project_list/project_summary widgets which are used as macros so go through markdown
+        # srcset is used in our own project_list/project_summary widgets
+        # which are used as macros so go through markdown
         self.allowed_attributes = html5lib.filters.sanitizer.allowed_attributes | {(None, 'srcset')}
 
         self.valid_iframe_srcs = ('https://www.youtube.com/embed/',
@@ -742,7 +743,7 @@ def umask(new_mask):
 
 
 def get_reaction_emoji_list():
-    """ Get reactions emoji list from .ini file. If not defined there get fixed 
+    """ Get reactions emoji list from .ini file. If not defined there get fixed
     default emoji list """
     emo_list = tg.config.get('reactions.emoji_list')
     if emo_list is None:
@@ -756,8 +757,9 @@ def get_reactions_json():
     """ Returns global reactions json """
     j = OrderedDict()
     for em in get_reaction_emoji_list():
-        j[em] =  emoji.emojize(em, use_aliases=True)
+        j[em] = emoji.emojize(em, use_aliases=True)
     return json.dumps(j)
+
 
 def get_usernames_from_md(text):
     """ Returns a unique usernames set from a text """
@@ -767,6 +769,7 @@ def get_usernames_from_md(text):
     for mention in soup.select('a.user-mention'):
         usernames.add(mention.get_text().replace('@', ''))
     return usernames
+
 
 def get_key_from_value(d, val):
     """ Get key from given value. return empty str if not exists """

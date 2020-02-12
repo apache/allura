@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-#-*- python -*-
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
@@ -75,8 +74,8 @@ class W:
     view_post_form = widgets.ViewPostForm()
     attachment_list = ffw.AttachmentList()
     confirmation = ffw.Lightbox(name='confirm',
-                            trigger='a.post-link',
-                            options="{ modalCSS: { minHeight: 0, width: 'inherit', top: '150px'}}")
+                                trigger='a.post-link',
+                                options="{ modalCSS: { minHeight: 0, width: 'inherit', top: '150px'}}")
     preview_post_form = widgets.PreviewPostForm()
     subscribe_form = SubscribeForm(thing='post')
     search_results = SearchResults()
@@ -444,18 +443,18 @@ class PostController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def update_markdown(self, text=None, **kw):  
+    def update_markdown(self, text=None, **kw):
         if has_access(self.post, 'edit'):
             self.post.text = text
             self.post.commit()
             g.spam_checker.check(text, artifact=self.post,
-                user=c.user, content_type='blog-post')
+                                 user=c.user, content_type='blog-post')
             return {
-                'status' : 'success'
+                'status': 'success'
             }
         else:
             return {
-                'status' : 'no_permission'
+                'status': 'no_permission'
             }
 
     @expose()
@@ -531,8 +530,6 @@ class BlogAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/admin_exfeed.html')
     def exfeed(self):
-        #self.app.external_feeds_list = ['feed1', 'feed2']
-        #log.info("EXFEED: %s" % self.app.external_feeds_list)
         feeds_list = []
         for feed in self.app.external_feeds_list:
             feeds_list.append(feed)

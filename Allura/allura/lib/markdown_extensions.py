@@ -251,7 +251,9 @@ class ForgeExtension(markdown.Extension):
         # this has to be before the 'escape' processor, otherwise weird
         # placeholders are inserted for escaped chars within urls, and then the
         # autolink can't match the whole url
-        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
+        md.inlinePatterns.add('autolink_without_brackets',
+                              AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md),
+                              '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
         md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
@@ -277,11 +279,11 @@ class EmojiExtension(markdown.Extension):
 
     def __init__(self, **kwargs):
         markdown.Extension.__init__(self)
-        
+
     def extendMarkdown(self, md, md_globals):
         md.inlinePatterns["emoji"] = EmojiInlinePattern(self.EMOJI_RE)
 
-        
+
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
     
     def __init__(self, pattern):
@@ -290,6 +292,7 @@ class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m):
         emoji_code = m.group(2)
         return emoji.emojize(emoji_code, use_aliases=True)
+
 
 class UserMentionExtension(markdown.Extension):
 
@@ -300,6 +303,7 @@ class UserMentionExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         md.inlinePatterns["user_mentions"] = UserMentionInlinePattern(self.UM_RE)
+
 
 class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
 
@@ -320,6 +324,7 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
             result = "@%s" % user_name
         return result
 
+
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
@@ -337,7 +342,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         except IndexError:
             href = m.group(2)
             is_link_with_brackets = True
-            if el.text == 'x' or el.text == ' ': # skip [ ] and [x] for markdown checklist 
+            if el.text == 'x' or el.text == ' ':  # skip [ ] and [x] for markdown checklist
                 return '[' + el.text + ']'
         try:
             title = m.group(13)
@@ -441,7 +446,8 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         self._make_absolute = make_absolute
 
     def run(self, text):
-        soup = BeautifulSoup(text, 'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
+        soup = BeautifulSoup(text,
+                             'html5lib')  # 'html.parser' parser gives weird </li> behaviour with test_macro_members
 
         if self._make_absolute:
             rewrite = self._rewrite_abs

@@ -40,10 +40,8 @@ from nose.tools import (
     assert_not_in,
     assert_true,
     assert_false,
-    assert_raises
 )
 from tg import tmpl_context as c, app_globals as g
-from webob import exc
 import oauth2
 
 from allura.tests import TestController
@@ -506,7 +504,8 @@ class TestAuth(TestController):
         email1.confirmed = True
         ThreadLocalORMSession.flush_all()
         # Verify first email with the verification link
-        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username=str('test-user')))
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
+                         extra_environ=dict(username=str('test-user')))
 
         assert json.loads(self.webflash(r))['status'] == 'error'
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
@@ -529,17 +528,20 @@ class TestAuth(TestController):
                       extra_environ=dict(username=str('test-user')))
 
         # logged out, gets redirected to login page
-        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username=str('*anonymous')))
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
+                         extra_environ=dict(username=str('*anonymous')))
         assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
 
         # logged in as someone else
-        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username=str('test-admin')))
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
+                         extra_environ=dict(username=str('test-admin')))
         assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
         assert_equal('You must be logged in to the correct account', json.loads(self.webflash(r))['message'])
         assert_equal('warning', json.loads(self.webflash(r))['status'])
 
         # logged in as correct user
-        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce), extra_environ=dict(username=str('test-user')))
+        r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
+                         extra_environ=dict(username=str('test-user')))
         assert_in('confirmed', json.loads(self.webflash(r))['message'])
         assert_equal('ok', json.loads(self.webflash(r))['status'])
 
@@ -648,13 +650,13 @@ class TestAuth(TestController):
 
         # Attempt change password with weak pwd
         r = self.app.post('/auth/preferences/change_password',
-                      extra_environ=dict(username=str('test-admin')),
-                      params={
-                          'oldpw': 'foo',
-                          'pw': 'password',
-                          'pw2': 'password',
-                          '_session_id': self.app.cookies['_session_id'],
-                      })
+                          extra_environ=dict(username=str('test-admin')),
+                          params={
+                              'oldpw': 'foo',
+                              'pw': 'password',
+                              'pw2': 'password',
+                              '_session_id': self.app.cookies['_session_id'],
+                          })
 
         assert 'Unsafe' in str(r.headers)
 
@@ -832,7 +834,6 @@ class TestAuth(TestController):
                     else:
                         assert str(ac._id) in r, "Page doesn't list tool %s" % ac.tool_name
 
-
     @td.with_user_project('test-admin')
     def test_update_user_notifications(self):
         self.app.get('/').follow()  # establish session
@@ -846,7 +847,6 @@ class TestAuth(TestController):
                               '_session_id': self.app.cookies['_session_id'],
                               })
         assert M.User.query.get(username='test-admin').get_pref('mention_notifications')
-
 
     def _find_subscriptions_form(self, r):
         form = None
@@ -1793,7 +1793,6 @@ class TestOAuth(TestController):
     def test_interactive(self):
         with mock.patch('allura.controllers.rest.oauth.Server') as Server, \
                 mock.patch('allura.controllers.rest.oauth.Request') as Request:   # these are the oauth2 libs
-            #M.OAuthConsumerToken.consumer = mock.Mock()
             user = M.User.by_username('test-admin')
             M.OAuthConsumerToken(
                 api_key='api_key',
@@ -1838,7 +1837,6 @@ class TestOAuth(TestController):
             oa2kwargs = oa2_req.call_args[1]
         self.app.get(oa2url, headers=oa2kwargs['headers'], status=200)
         self.app.get(oa2url.replace('oauth_signature=', 'removed='), headers=oa2kwargs['headers'], status=401)
-
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -2129,7 +2127,7 @@ class TestDisableAccount(TestController):
 
 class TestPasswordExpire(TestController):
     def login(self, username='test-user', pwd='foo', query_string=''):
-        extra = extra_environ={'username': str('*anonymous'), 'REMOTE_ADDR': str('127.0.0.1')}
+        extra = {'username': str('*anonymous'), 'REMOTE_ADDR': str('127.0.0.1')}
         r = self.app.get('/auth/' + query_string, extra_environ=extra)
 
         f = r.forms[0]
@@ -2637,7 +2635,8 @@ class TestTwoFactor(TestController):
         r = r.form.submit()
 
         # sent back to regular login
-        assert_equal('Your multifactor login was disrupted, please start over.', json.loads(self.webflash(r))['message'],
+        assert_equal('Your multifactor login was disrupted, please start over.',
+                     json.loads(self.webflash(r))['message'],
                      self.webflash(r))
         r = r.follow()
         assert_in('Password Login', r)

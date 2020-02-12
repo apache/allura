@@ -27,8 +27,7 @@ import shutil
 import tempfile
 
 from datadiff.tools import assert_equal as dd_assert_equal
-from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal, assert_less
-import tg
+from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import pkg_resources
 from nose.tools import assert_regexp_matches
 from tg import tmpl_context as c
@@ -107,9 +106,15 @@ class TestUIController(TestController):
     def test_status_html(self):
         resp = self.app.get('/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/')
         sortedCommits = resp.html.findAll('td')
-        actualCommit = ['added', 'aaa.txt', 'removed', 'bbb.txt', 'changed', 'ccc.txt', 'removed', 'ddd.txt', 'added', 'eee.txt', 'added', 'ggg.txt']
+        actualCommit = ['added', 'aaa.txt',
+                        'removed', 'bbb.txt',
+                        'changed', 'ccc.txt',
+                        'removed', 'ddd.txt',
+                        'added', 'eee.txt',
+                        'added', 'ggg.txt']
         for i, item in enumerate(sortedCommits):
             assert_equal(actualCommit[i], ''.join(item.findAll(text=True)).strip())
+
 
 class TestRootController(_TestCase):
     @with_tool('test', 'Git', 'weird-chars', 'WeirdChars', type='git')
@@ -130,7 +135,7 @@ class TestRootController(_TestCase):
     def test_status_html(self):
         resp = self.app.get('/src-git/').follow().follow()
         # repo status not displayed if 'ready'
-        assert None == resp.html.find('div', dict(id='repo_status'))
+        assert resp.html.find('div', dict(id='repo_status')) is None
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.status = 'analyzing'
         ThreadLocalORMSession.flush_all()
@@ -402,13 +407,13 @@ class TestRootController(_TestCase):
     def test_checkout_input(self):
         ci = self._get_ci()
         r = self.app.get('/src-git/commit_browser')
-        assert not '<div id="access_urls"' in r
+        assert '<div id="access_urls"' not in r
         r = self.app.get('/src-git/fork')
-        assert not '<div id="access_urls"' in r
+        assert '<div id="access_urls"' not in r
         r = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
-        assert not '<div id="access_urls"' in r
+        assert '<div id="access_urls"' not in r
         r = self.app.get(ci + 'tree/README')
-        assert not '<div id="access_urls"' in r
+        assert '<div id="access_urls"' not in r
         r = self.app.get(ci + 'tree/')
         assert '<div id="access_urls"' in r
 
@@ -484,7 +489,8 @@ class TestRootController(_TestCase):
         assert_in('refresh queued', r)
         assert_equal(1, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
 
-        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': str('/p/test/src-git/')}, status=302)
+        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': str('/p/test/src-git/')},
+                         status=302)
         assert_in('is being refreshed', self.webflash(r))
         assert_equal(2, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
 
@@ -847,23 +853,23 @@ class TestFork(_TestCase):
 
     def test_merge_request_get_markdown(self):
         self.app.post('/p/test2/code/do_request_merge',
-                          params={
-                              'source_branch': 'zz',
-                              'target_branch': 'master',
-                              'summary': 'summary',
-                              'description': 'description',
-                          })
+                      params={
+                          'source_branch': 'zz',
+                          'target_branch': 'master',
+                          'summary': 'summary',
+                          'description': 'description',
+                      })
         response = self.app.get('/p/test/src-git/merge-requests/1/get_markdown')
         assert 'description' in response
 
     def test_merge_request_update_markdown(self):
         self.app.post('/p/test2/code/do_request_merge',
-                          params={
-                              'source_branch': 'zz',
-                              'target_branch': 'master',
-                              'summary': 'summary',
-                              'description': 'description',
-                          })
+                      params={
+                          'source_branch': 'zz',
+                          'target_branch': 'master',
+                          'summary': 'summary',
+                          'description': 'description',
+                      })
         response = self.app.post(
             '/p/test/src-git/merge-requests/1/update_markdown',
             params={

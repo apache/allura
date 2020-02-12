@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import re
 from six.moves.urllib.parse import urlparse, urljoin
 
@@ -36,7 +36,6 @@ from beaker.session import _session_id
 
 import allura.tasks.repo_tasks
 from allura import model as M
-from allura.lib import validators as V
 from allura.lib.security import require_authenticated, has_access, is_site_admin
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -300,7 +299,7 @@ class AuthController(BaseController):
             addr.confirmed = True
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s',  addr.email, user=user)
-            if(user.get_pref('email_address') == None):
+            if user.get_pref('email_address') is None:
                 user.set_pref('email_address', addr.email)
             if user.pending:
                 plugin.AuthenticationProvider.get(request).activate_user(user)
@@ -539,7 +538,6 @@ class PreferencesController(BaseController):
     def _check_security(self):
         require_authenticated()
 
-
     @with_trailing_slash
     @expose('jinja:allura:templates/user_prefs.html')
     def index(self, **kw):
@@ -725,7 +723,7 @@ class PreferencesController(BaseController):
         provider = plugin.AuthenticationProvider.get(request)
 
         return dict(
-            menu = provider.account_navigation(),
+            menu=provider.account_navigation(),
             qr=qr,
             setup=True,
         )
@@ -746,7 +744,7 @@ class PreferencesController(BaseController):
         return dict(
             qr=qr,
             setup=False,
-            menu = provider.account_navigation(),
+            menu=provider.account_navigation(),
         )
 
     @expose('jinja:allura:templates/user_totp.html')
@@ -836,7 +834,7 @@ class PreferencesController(BaseController):
 
         return dict(
             codes=codes,
-            menu = provider.account_navigation(),
+            menu=provider.account_navigation(),
             windows_line_endings=windows_line_endings
         )
 

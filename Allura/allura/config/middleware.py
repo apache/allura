@@ -175,9 +175,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         # (the Allura [easy_widgets.engines] entry point is named "jinja" (not jinja2) but it doesn't need
         #  any settings since it is a class that uses the same jinja env as the rest of allura)
         **{
-        'jinja2.auto_reload': config['auto_reload_templates'],
-        'jinja2.bytecode_cache': AlluraJinjaRenderer._setup_bytecode_cache(),
-        'jinja2.cache_size': config.get('jinja_cache_size', -1),
+            'jinja2.auto_reload': config['auto_reload_templates'],
+            'jinja2.bytecode_cache': AlluraJinjaRenderer._setup_bytecode_cache(),
+            'jinja2.cache_size': config.get('jinja_cache_size', -1),
         }
     )
     # Handle static files (by tool)
