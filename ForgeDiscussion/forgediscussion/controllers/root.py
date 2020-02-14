@@ -257,7 +257,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             {'$sort': {
                 '_id': pymongo.ASCENDING,
             }},
-        ])['result']
+        ], cursor={})
 
         def reformat_data(mongo_data):
             def item(day, val):

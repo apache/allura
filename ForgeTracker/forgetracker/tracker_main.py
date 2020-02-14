@@ -702,8 +702,8 @@ class RootController(BaseController, FeedController):
             {'$match': {'labels': {'$regex': '^%s' % term, '$options': 'i'}}},
             {'$group': {'_id': '$labels', 'count': {'$sum': 1}}},
             {'$sort': SON([('count', -1), ('_id', 1)])}
-        ])
-        return json.dumps([tag['_id'] for tag in tags.get('result', [])])
+        ], cursor={})
+        return json.dumps([tag['_id'] for tag in tags])
 
     @with_trailing_slash
     @h.vardec

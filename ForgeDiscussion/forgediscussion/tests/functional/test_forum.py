@@ -1024,7 +1024,7 @@ class TestForumStats(TestController):
     @mock.patch('ming.session.Session.aggregate')
     def test_stats_data(self, aggregate):
         # partial data, some days are implicit 0
-        aggregate.return_value = {'result': [
+        aggregate.return_value = iter([
             {
                 "_id": {
                     "year": 2013,
@@ -1046,7 +1046,7 @@ class TestForumStats(TestController):
                     "day": 5},
                 "posts": 2
             },
-        ]}
+        ])
         r = self.app.get(
             '/discussion/stats_data?begin=2013-01-01&end=2013-01-06')
         assert_equal(r.json, {

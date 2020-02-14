@@ -673,7 +673,7 @@ class ProjectAdminController(BaseController):
         db = M.session.project_doc_session.db
         files_id = db.attachment.find({"app_config_id": {"$in": apps_id}}).distinct("file_id")
         try:
-            total_size = db.attachment.files.aggregate([
+            total_size = list(db.attachment.files.aggregate([
                 {
                     "$match": {"_id": {"$in": files_id}}
                 },
@@ -683,7 +683,7 @@ class ProjectAdminController(BaseController):
                 {
                     "$project": {"_id": 0, "total_size": {"$divide": ["$total_size", 1000000]}}
                 }
-            ]).get('result')[0].get('total_size')
+            ], cursor={}))[0].get('total_size')
         except IndexError:
             total_size = 0
         return {
