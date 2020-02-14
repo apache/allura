@@ -52,7 +52,7 @@ services:
       - /allura-data/solr:/opt/solr/server/solr/allura/data
 
   mongo:
-    image: mongo:3.4
+    image: mongo:4.2
     ports:
       - "27017:27017"
     volumes:
