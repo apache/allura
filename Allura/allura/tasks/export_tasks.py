@@ -21,6 +21,7 @@ import os
 import os.path
 import logging
 import shutil
+import codecs
 
 import tg
 from tg import app_globals as g, tmpl_context as c
@@ -29,7 +30,6 @@ from allura.tasks import mail_tasks
 from allura.lib.decorators import task
 from allura.lib import helpers as h
 from allura.model.repository import zipdir
-from io import open
 
 
 log = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class BulkExport(object):
         tool = app.config.options.mount_point
         json_file = os.path.join(export_path, '%s.json' % tool)
         try:
-            with open(json_file, 'w') as f:
+            with codecs.open(json_file, 'w', encoding='utf-8') as f:
                 app.bulk_export(f, export_path, with_attachments)
         except Exception:
             log.error('Error exporting: %s on %s', tool,

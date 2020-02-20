@@ -30,12 +30,12 @@ import time
 import re
 from optparse import OptionParser
 from itertools import islice
+import codecs
 
 from bs4 import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
 import six
-from io import open
 
 try:
     from forgeimporters.base import ProjectExtractor
@@ -326,7 +326,7 @@ def main():
 
     out_file = sys.stdout
     if options.out_filename:
-        out_file = open(options.out_filename, 'w')
+        out_file = codecs.open(options.out_filename, 'w', encoding='utf-8')
     out_file.write(
         json.dumps(doc, cls=DateJSONEncoder, indent=2, sort_keys=True))
     # It's bad habit not to terminate lines

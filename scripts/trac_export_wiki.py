@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import sys
 from optparse import OptionParser
+import codecs
 
 from tracwikiimporter.scripts.wiki_from_trac.extractors import WikiExporter
-from io import open
 
 
 def parse_options():
@@ -54,6 +54,6 @@ if __name__ == '__main__':
 
     out = sys.stdout
     if options.out_filename:
-        out = open(options.out_filename, 'w')
+        out = codecs.open(options.out_filename, 'w', encoding='utf-8')
 
     exporter.export(out)
