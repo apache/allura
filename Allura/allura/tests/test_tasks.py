@@ -641,12 +641,10 @@ class TestExportTasks(unittest.TestCase):
 
     @mock.patch('allura.tasks.export_tasks.shutil')
     @mock.patch('allura.tasks.export_tasks.zipdir')
-    @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
     @td.with_wiki
-    def test_bulk_export(self, wiki_bulk_export, zipdir, shutil):
+    def test_bulk_export(self, zipdir, shutil):
         M.MonQTask.query.remove()
         export_tasks.bulk_export(['wiki'])
-        assert_equal(wiki_bulk_export.call_count, 1)
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'
         zipdir.assert_called_with(temp, zipfn)

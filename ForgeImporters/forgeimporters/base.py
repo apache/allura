@@ -26,7 +26,7 @@ from collections import defaultdict
 import traceback
 from six.moves.urllib.parse import urlparse
 from datetime import datetime
-from io import open
+import codecs
 from six.moves import filter
 import six
 try:
@@ -665,6 +665,6 @@ def save_importer_upload(project, filename, data):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    with open(dest_file, 'w') as fp:
+    with codecs.open(dest_file, 'w', encoding='utf-8') as fp:
         fp.write(data)
     return dest_file
