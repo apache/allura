@@ -38,7 +38,7 @@ echo "# No robots.txt rules here" > /allura-data/www-misc/robots.txt
 # share venv to allow update and sharing across containers
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
-    pip install virtualenv
+    pip install 'virtualenv < 20'  # https://github.com/pypa/virtualenv/issues/1670
     virtualenv /allura-data/virtualenv
     ln -s /usr/lib/python2.7/dist-packages/pysvn /allura-data/virtualenv/lib/python2.7/site-packages/
     echo # just a new line
