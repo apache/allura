@@ -99,46 +99,48 @@ class ForgeDiscussionImporter(ToolImporter):
 		)
 		ThreadLocalORMSession.flush_all()
 
-		# Deleting the forums that are created by default
-		forums = app.forums
-		for forum in forums:
-			forum.delete()
-       
-		try:
-			M.session.artifact_orm_session._get().skip_mod_date = True
+        with h.push_config(c, app=app):
 
-			for forum_json in discussion_json['forums']:
+            # Deleting the forums that are created by default
+            forums = app.forums
+            for forum in forums:
+                forum.delete()
+           
+            try:
+                M.session.artifact_orm_session._get().skip_mod_date = True
 
-				print("forum_json: ", forum_json)
+                for forum_json in discussion_json['forums']:
 
-				new_forum = dict(
-                    			app_config_id = app.config._id,
-                    			shortname=forum_json['shortname'],
-                                discussion_id=forum_json.get('discussion_id', None),
-                    			_id=forum_json.get('_id', None),
-                    			description=forum_json['description'],
-                    			name=forum_json['name'],
-                    			create='on',
-                    			parent='',
-                    			members_only=False,
-                    			anon_posts=False,
-                    			monitoring_email=None,
-				)
+                    print("forum_json: ", forum_json)
 
-				print("New Forum:", new_forum)
+                    new_forum = dict(
+                                    app_config_id = app.config._id,
+                                    shortname=forum_json['shortname'],
+                                    discussion_id=forum_json.get('discussion_id', None),
+                                    _id=forum_json.get('_id', None),
+                                    description=forum_json['description'],
+                                    name=forum_json['name'],
+                                    create='on',
+                                    parent='',
+                                    members_only=False,
+                                    anon_posts=False,
+                                    monitoring_email=None,
+                    )
 
-				forum = utils.create_forum(app, new_forum=new_forum)
+                    print("New Forum:", new_forum)
 
-				for thread_json in forum_json["threads"]:
-					thread = forum.get_discussion_thread(dict(
-                                		headers=dict(Subject=thread_json['subject'])))[0]
+                    forum = utils.create_forum(app, new_forum=new_forum)
 
-					self.add_posts(thread, thread_json['posts'], app)
+                    for thread_json in forum_json["threads"]:
+                        thread = forum.get_discussion_thread(dict(
+                                            headers=dict(Subject=thread_json['subject'])))[0]
 
-				session(forum).flush(forum)
-				session(forum).expunge(forum)
+                        self.add_posts(thread, thread_json['posts'], app)
 
-				print("Forum %s created" % (new_forum["shortname"]))
+                    session(forum).flush(forum)
+                    session(forum).expunge(forum)
+
+                    print("Forum %s created" % (new_forum["shortname"]))
 
 			g.post_event('project_updated')
 			ThreadLocalORMSession.flush_all()
