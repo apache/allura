@@ -89,7 +89,6 @@ class ForgeDiscussionImporter(ToolImporter):
                      mount_label=None, **kw):
         
 		print("import_tool")
-		import_id_converter = ImportIdConverter.get()
 		discussion_json = self._load_json(project)
 
 		mount_point = mount_point or 'discussion'
@@ -156,14 +155,16 @@ class ForgeDiscussionImporter(ToolImporter):
             return M.User.anonymous()
         user = M.User.by_username(username)
         if not user:
-            print("No user with ", username, "found! (",user,")")
+            print("No user with " + str(username) +  " found! (" + str(user) + ")")
             user = M.User.anonymous()
         return user
+
 
     def annotate(self, text, user, username, label=''):
         if username and user.is_anonymous() and username != 'nobody':
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
+
 
     def add_posts(self, thread, posts, app):
         for post_json in posts:
@@ -188,5 +189,3 @@ class ForgeDiscussionImporter(ToolImporter):
                 except:
                     print("Could not add attachemtns to post")
 
-    def process_bins(self, app, bins):
-        pass 
