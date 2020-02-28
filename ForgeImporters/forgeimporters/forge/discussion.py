@@ -76,8 +76,10 @@ class ForgeDiscussionImporter(ToolImporter):
     tool_label = 'Discussion'
     tool_description = 'Import an allura discussion.'
 
+
     def __init__(self, *args, **kwargs):
         super(ForgeDiscussionImporter, self).__init__(*args, **kwargs)
+
 
     def _load_json(self, project):
         upload_path = get_importer_upload_path(project)
@@ -85,26 +87,25 @@ class ForgeDiscussionImporter(ToolImporter):
         with open(full_path) as fp:
             return json.load(fp)
 
+
     def import_tool(self, project, user, mount_point=None,
                      mount_label=None, **kw):
         
-		print("import_tool")
-		discussion_json = self._load_json(project)
+        print("import_tool")
+        discussion_json = self._load_json(project)
 
-		mount_point = mount_point or 'discussion'
-		mount_label = mount_label or 'Discussion'
+        mount_point = mount_point or 'discussion'
+        mount_label = mount_label or 'Discussion'
 
-		app = project.install_app('discussion', mount_point, mount_label, 
+        app = project.install_app('discussion', mount_point, mount_label, 
 			import_id={ 'source': self.source }
 		)
-		ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.flush_all()
 
         with h.push_config(c, app=app):
 
             # Deleting the forums that are created by default
-            forums = app.forums
-            for forum in forums:
-                forum.delete()
+            self.__clear_forums(app)
            
             try:
                 M.session.artifact_orm_session._get().skip_mod_date = True
@@ -116,8 +117,8 @@ class ForgeDiscussionImporter(ToolImporter):
                     new_forum = dict(
                                     app_config_id = app.config._id,
                                     shortname=forum_json['shortname'],
-                                    discussion_id=forum_json.get('discussion_id', None),
-                                    _id=forum_json.get('_id', None),
+                                    #discussion_id=forum_json.get('discussion_id', None),
+                                    #_id=forum_json.get('_id', None),
                                     description=forum_json['description'],
                                     name=forum_json['name'],
                                     create='on',
@@ -135,22 +136,46 @@ class ForgeDiscussionImporter(ToolImporter):
                         thread = forum.get_discussion_thread(dict(
                                             headers=dict(Subject=thread_json['subject'])))[0]
 
+                        #if "_id" in thread_json:
+                        #    thread._id = thread_json["_id"]
+                        if "import_id" in thread_json:
+                            thread.import_id = thread_json["import_id"]
+                        #if "discussion_id" in thread_json:
+                        #    thread.discussion_id = thread_json["discussion_id"]
+
+                        print("Thread: " + str(thread))
+
                         self.add_posts(thread, thread_json['posts'], app)
 
                     session(forum).flush(forum)
                     session(forum).expunge(forum)
 
-                    print("Forum %s created" % (new_forum["shortname"]))
+                    print("Forum '%s' created" % (new_forum["shortname"]))
 
-			g.post_event('project_updated')
-			ThreadLocalORMSession.flush_all()
-			return app
-		except Exception:
-			h.make_app_admin_only(app)
-			raise
-		finally:
-			M.session.artifact_orm_session._get().skip_mod_date = False
+                M.AuditLog.log(
+                    "import tool %s from exported Allura JSON" % (
+                        app.config.options.mount_point,
+                    ),
+                    project=project,
+                    user=user,
+                    url=app.url,
+                )
+
+                g.post_event('project_updated')
+                ThreadLocalORMSession.flush_all()
+                return app
+            except Exception:
+                h.make_app_admin_only(app)
+                raise
+            finally:
+                M.session.artifact_orm_session._get().skip_mod_date = False
                                      
+
+    def __clear_forums(self, app):
+      forums = app.forums
+      for forum in forums:
+          forum.delete()
+
 
     def get_user(self, username):
         if username is None:
@@ -178,12 +203,15 @@ class ForgeDiscussionImporter(ToolImporter):
                         subject=post_json['subject'],
                         text=post_json['text'], 
                         ignore_security=True,
-                        timestamp=parse(post_json['timestamp']),
-                        last_edited=post_json['last_edited']
                 )
 
                 if "slug" in post_json.keys():
                     p.slug = post_json['slug']
+                if "last_edited" in post_json and post_json["last_edited"] != None:
+                    print("Last edited: " + str(post_json["last_edited"]))
+                    p.last_edit_date = parse(post_json["last_edited"])
+                if "timestamp" in post_json:
+                    p.timestamp = parse(post_json["timestamp"])
 
                 try:
                     p.add_multiple_attachments([File(a['url'])
