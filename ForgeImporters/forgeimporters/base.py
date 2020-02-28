@@ -27,6 +27,7 @@ import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 from collections import defaultdict
 import traceback
 from six.moves.urllib.parse import urlparse
+from urllib import unquote
 from datetime import datetime
 import codecs
 from six.moves import filter
@@ -628,7 +629,7 @@ class File(object):
     def __init__(self, url, filename=None):
         extractor = ProjectExtractor(None, url, parser=bytesio_parser)
         self.url = url
-        self.filename = filename or os.path.basename(urlparse(url).path)
+        self.filename = filename or unquote(os.path.basename(urlparse(url).path))
         # try to get the mime-type from the filename first, because
         # some files (e.g., attachements) may have the Content-Type header
         # forced to encourage the UA to download / save the file
