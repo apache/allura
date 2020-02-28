@@ -35,6 +35,7 @@ from allura.lib.plugin import ImportIdConverter
 from forgediscussion import utils, import_support
 from forgediscussion import model as DM
 
+
 class ForgeDiscussionImportForm(ToolImportForm):
     discussions_json = v.JsonFile(not_empty=True)
 
@@ -188,34 +189,30 @@ class ForgeDiscussionImporter(ToolImporter):
 
 
     def annotate(self, text, user, username, label=''):
-        if username and user.is_anonymous() and username != 'nobody':
+        if username and user.is_anonymous() and username != 'nobody' and username != '*anonymous':
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
 
 
     def add_posts(self, thread, posts, app):
         for post_json in posts:
-            print("Author: ", post_json["author"])
-            user = self.get_user(post_json["author"])
-            print("User", user)
+            username = post_json["author"]
+            print("Author: " + str(username))
+            user = self.get_user(username)
+            print("User: " + str(user))
             with h.push_config(c, user=user, app=app):
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=post_json['text'], 
-                        ignore_security=True,
+                        text=self.annotate(post_json['text'], user, username, " created"),
+                        timestamp=parse(post_json["timestamp"]),
+                        ignore_security=True
                 )
 
-                if "slug" in post_json.keys():
-                    p.slug = post_json['slug']
                 if "last_edited" in post_json and post_json["last_edited"] != None:
                     print("Last edited: " + str(post_json["last_edited"]))
                     p.last_edit_date = parse(post_json["last_edited"])
-                if "timestamp" in post_json:
-                    p.timestamp = parse(post_json["timestamp"])
+                if "slug" in post_json.keys():
+                    p.slug = post_json['slug']
 
-                try:
-                    p.add_multiple_attachments([File(a['url'])
-                                                for a in post_json['attachments']])
-                except:
-                    print("Could not add attachemtns to post")
+                p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
 
