@@ -188,8 +188,10 @@ class ForgeDiscussionImporter(ToolImporter):
         return user
 
 
-    def annotate(self, text, user, username, label=''):
+    def annotate(self, text, user, username):
         if username and user.is_anonymous() and username != 'nobody' and username != '*anonymous':
+            label = " created"
+
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
 
@@ -203,7 +205,7 @@ class ForgeDiscussionImporter(ToolImporter):
             with h.push_config(c, user=user, app=app):
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=self.annotate(post_json['text'], user, username, " created"),
+                        text=self.annotate(post_json['text'], user, username),
                         timestamp=parse(post_json["timestamp"]),
                         ignore_security=True
                 )
