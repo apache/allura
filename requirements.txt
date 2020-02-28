@@ -11,7 +11,7 @@ backports.functools-lru-cache==1.5  # via soupsieve
 backports.shutil-get-terminal-size==1.0.0  # via ipython
 beaker==1.10.1
 beautifulsoup4==4.8.0
-bleach==3.1.0             # via pypeline
+bleach==3.1.1             # via pypeline
 certifi==2019.6.16        # via requests
 cffi==1.12.2              # via cryptography
 chardet==3.0.4
@@ -65,7 +65,7 @@ pycparser==2.19           # via cffi
 pyflakes==2.1.1
 pygments==2.4.2
 pymongo==2.8.1
-pypeline[creole,markdown,rst,textile]==0.5.1
+pypeline[creole,markdown,rst,textile]==0.5.2
 pysolr==3.6.0
 python-dateutil==2.8.0
 python-magic==0.4.15
@@ -97,4 +97,4 @@ webtest==2.0.33
 wrapt==1.11.2
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==44.0.0        # via ipython
+# setuptools
