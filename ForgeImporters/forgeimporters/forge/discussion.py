@@ -21,7 +21,6 @@ from forgeimporters.base import (
     ToolImportForm,
     ToolImportController,
     File,
-    ToolImporter,
     get_importer_upload_path,
     save_importer_upload
 )
@@ -35,6 +34,7 @@ from allura.lib.plugin import ImportIdConverter
 from forgediscussion import utils, import_support
 from forgediscussion import model as DM
 
+from alluraImporter import AlluraImporter
 
 class ForgeDiscussionImportForm(ToolImportForm):
     discussions_json = v.JsonFile(not_empty=True)
@@ -70,7 +70,7 @@ class ForgeDiscussionImportController(ToolImportController):
         redirect(c.project.url() + 'admin/')
 
 
-class ForgeDiscussionImporter(ToolImporter):
+class ForgeDiscussionImporter(AlluraImporter):
     source = 'Allura'
     target_app_ep_names = 'discussion'
     controller = ForgeDiscussionImportController
@@ -178,22 +178,10 @@ class ForgeDiscussionImporter(ToolImporter):
           forum.delete()
 
 
-    def get_user(self, username):
-        if username is None:
-            return M.User.anonymous()
-        user = M.User.by_username(username)
-        if not user:
-            print("No user with " + str(username) +  " found! (" + str(user) + ")")
-            user = M.User.anonymous()
-        return user
-
-
-    def annotate(self, text, user, username):
-        if username and user.is_anonymous() and username != 'nobody' and username != '*anonymous':
-            label = " created"
-
-            return '*Originally%s by:* %s\n\n%s' % (label, username, text)
-        return text
+    def annotateText(self, text, user, username):
+        label = " created"
+        
+        return self.annotate(text, user, username, label)
 
 
     def add_posts(self, thread, posts, app):
@@ -205,7 +193,7 @@ class ForgeDiscussionImporter(ToolImporter):
             with h.push_config(c, user=user, app=app):
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=self.annotate(post_json['text'], user, username),
+                        text=self.annotateText(post_json['text'], user, username),
                         timestamp=parse(post_json["timestamp"]),
                         ignore_security=True
                 )
