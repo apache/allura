@@ -178,7 +178,7 @@ class ForgeDiscussionImporter(AlluraImporter):
           forum.delete()
 
 
-    def annotateText(self, text, user, username):
+    def annotate_text(self, text, user, username):
         label = " created"
         
         return self.annotate(text, user, username, label)
@@ -193,7 +193,7 @@ class ForgeDiscussionImporter(AlluraImporter):
             with h.push_config(c, user=user, app=app):
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=self.annotateText(post_json['text'], user, username),
+                        text=self.annotate_text(post_json['text'], user, username),
                         timestamp=parse(post_json["timestamp"]),
                         ignore_security=True
                 )
