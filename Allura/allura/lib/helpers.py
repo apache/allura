@@ -1028,11 +1028,17 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
                     url_string = url.get_full_url()  # if url is Request obj
                 except Exception:
                     url_string = url
+                if hasattr(e, 'filename') and url_string != e.filename:
+                    url_string += ' => {}'.format(e.filename)
                 if timeout is None:
                     timeout = socket.getdefaulttimeout()
+                if hasattr(e, 'fp'):
+                    body = e.fp.read()
+                else:
+                    body = ''
                 log.exception(
                     'Failed after %s retries on url with a timeout of %s: %s: %s',
-                    attempts, timeout, url_string, e)
+                    attempts, timeout, url_string, body[:250])
                 raise e
 
 

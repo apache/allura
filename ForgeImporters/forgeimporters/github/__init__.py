@@ -75,10 +75,10 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         super(GitHubProjectExtractor, self).__init__(*args, **kw)
 
     def add_token(self, url):
+        headers = {}
         if self.token:
-            glue = '&' if '?' in url else '?'
-            url += glue + 'access_token=' + self.token
-        return url
+            headers['Authorization'] = 'token {}'.format(self.token)
+        return url, headers
 
     def wait_for_limit_reset(self, headers):
         reset = headers.get('X-RateLimit-Reset')
@@ -89,10 +89,15 @@ class GitHubProjectExtractor(base.ProjectExtractor):
                  'Sleeping until %s UTC' % (limit, reset))
         time.sleep((reset - now).total_seconds())
 
-    def urlopen(self, url, **kw):
+    def urlopen(self, url, headers=None, **kw):
+        if headers is None:
+            headers = {}
         try:
-            resp = super(GitHubProjectExtractor, self).urlopen(
-                self.add_token(url), **kw)
+            url, auth_headers = self.add_token(url)
+            # need to use unredirected_hdrs for Authorization for APIs that redirect to an AWS file asset which has
+            # separate authentication added automatically
+            resp = super(GitHubProjectExtractor, self).urlopen(url,
+                                                               headers=headers, unredirected_hdrs=auth_headers, **kw)
         except six.moves.urllib.error.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
             # We're checking for limit on every request below, but we still
@@ -109,7 +114,9 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return resp
 
     def check_readable(self):
-        resp = requests.head(self.add_token(self.get_page_url('project_info')), timeout=10)
+        url, headers = self.add_token(self.get_page_url('project_info'))
+        headers['User-Agent'] = 'Allura Data Importer (https://allura.apache.org/)'
+        resp = requests.head(url, headers=headers, timeout=10)
         return resp.status_code == 200
 
     def get_next_page_url(self, link):
@@ -179,18 +186,29 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return self.get_page('project_info').get('has_issues')
 
 
-def valid_access_token(access_token):
-    # https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
+def oauth_app_basic_auth(config):
     client_id = config['github_importer.client_id']
     secret = config['github_importer.client_secret']
-    token_valid_resp = requests.get('https://api.github.com/applications/{}/tokens/{}'.format(client_id, access_token),
-                                    auth=requests.auth.HTTPBasicAuth(client_id, secret),
-                                    timeout=10)
-    return token_valid_resp.status_code == 200
+    return requests.auth.HTTPBasicAuth(client_id, secret)
+
+
+def valid_access_token(access_token):
+    return access_token_details(access_token).status_code == 200
+
+
+def access_token_details(access_token):
+    # https://developer.github.com/v3/apps/oauth_applications/#check-a-token
+    client_id = config['github_importer.client_id']
+    url = 'https://api.github.com/applications/{}/token'.format(client_id)
+    return requests.post(url, auth=oauth_app_basic_auth(config), timeout=10, json=dict(
+        access_token=access_token,
+    ))
 
 
 class GitHubOAuthMixin(object):
-    '''Support for github oauth web application flow.'''
+    '''
+    Support for github oauth web application flow.  This is an "OAuth App" not a "GitHub App"
+    '''
 
     def oauth_begin(self, scope=None):
         client_id = config.get('github_importer.client_id')
@@ -241,8 +259,6 @@ class GitHubOAuthMixin(object):
         token = c.user.get_tool_data('GitHubProjectImport', 'token')
         if not token:
             return False
-        url = 'https://api.github.com/?access_token={}'.format(token)
-        r = requests.head(url, timeout=10)
-        scopes = r.headers.get('X-OAuth-Scopes', '')
-        scopes = [s.strip() for s in scopes.split(',')]
+        r = access_token_details(token)
+        scopes = r.json()['scopes']
         return scope in scopes

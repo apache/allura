@@ -83,13 +83,14 @@ class TestGitHubOAuth(TestController):
         user = M.User.by_username('test-admin')
         assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), 'abc')
 
-        with patch('forgeimporters.github.requests.get') as valid_access_token_get:
-            valid_access_token_get.return_value = Mock(status_code=200)
+        with patch('forgeimporters.github.requests.post') as valid_access_token_post:
+            valid_access_token_post.return_value = Mock(status_code=200)
             r = self.app.get('/p/import_project/github/')
 
         # token in user data, so oauth isn't triggered
         assert_equal(r.status_int, 200)
 
-        valid_access_token_get.assert_called_once_with('https://api.github.com/applications/client_id/tokens/abc',
-                                                       auth=requests.auth.HTTPBasicAuth('client_id', 'secret'),
-                                                       timeout=10)
+        valid_access_token_post.assert_called_once_with('https://api.github.com/applications/client_id/token',
+                                                        auth=requests.auth.HTTPBasicAuth('client_id', 'secret'),
+                                                        json={'access_token': 'abc'},
+                                                        timeout=10)

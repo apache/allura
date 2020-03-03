@@ -169,10 +169,12 @@ class ProjectExtractor(object):
             self.get_page(page_name, **kw)
 
     @staticmethod
-    def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, **kw):
+    def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, unredirected_hdrs=None, **kw):
         req = six.moves.urllib.request.Request(url, **kw)
-        req.add_header(
-            'User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
+        if unredirected_hdrs:
+            for k, v in unredirected_hdrs.items():
+                req.add_unredirected_header(k, v)
+        req.add_header('User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         return h.urlopen(req, retries=retries, codes=codes, timeout=timeout)
 
     def get_page(self, page_name_or_url, parser=None, **kw):

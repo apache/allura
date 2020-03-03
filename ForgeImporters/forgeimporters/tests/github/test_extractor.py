@@ -148,12 +148,9 @@ class TestGitHubProjectExtractor(TestCase):
         e = github.GitHubProjectExtractor('test_project', user=user)
         e.urlopen(url)
         request = urlopen.call_args[0][0]
-        self.assertEqual(request.get_full_url(), url + '?access_token=abc')
-
-        url = 'https://github.com/u/p/?p=1'
-        e.urlopen(url)
-        request = urlopen.call_args[0][0]
-        self.assertEqual(request.get_full_url(), url + '&access_token=abc')
+        self.assertEqual(request.get_full_url(), url)
+        assert request.headers['User-agent']
+        self.assertEqual(request.unredirected_hdrs['Authorization'], 'token abc')
 
     @patch('forgeimporters.base.h.urlopen')
     @patch('forgeimporters.github.time.sleep')
