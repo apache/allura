@@ -43,20 +43,31 @@ class TestGitHubOAuthMixin(TestController, TestCase):
         c.user.get_tool_data.return_value = None
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
 
+    @patch.dict(config, {'github_importer.client_id': '123456',
+                         'github_importer.client_secret': 'deadbeef'})
     @patch('forgeimporters.github.requests')
-    def test_oauth_has_access_no_headers(self, req):
-        c.user.get_tool_data.return_value = 'token'
+    def test_oauth_has_access_no(self, req):
+        c.user.get_tool_data.return_value = 'some-token'
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
-        req.head.assert_called_once_with('https://api.github.com/?access_token=token', timeout=10)
+        call_args = req.post.call_args[0]
+        self.assertEqual(call_args, ('https://api.github.com/applications/123456/token',))
+        call_kwargs = req.post.call_args[1]
+        assert call_kwargs['auth']
+        self.assertEqual(call_kwargs['json'], {'access_token': 'some-token'})
 
+    @patch.dict(config, {'github_importer.client_id': '123456',
+                         'github_importer.client_secret': 'deadbeef'})
     @patch('forgeimporters.github.requests')
-    def test_oauth_has_access_with_headers(self, req):
-        c.user.get_tool_data.return_value = 'token'
-        req.head.return_value.headers = {'X-OAuth-Scopes': ''}
+    def test_oauth_has_access_yes(self, req):
+        c.user.get_tool_data.return_value = 'some-token'
+
+        req.post.return_value.json.return_value = {'scopes': []}
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
-        req.head.return_value.headers = {'X-OAuth-Scopes': 'some, other:scopes'}
+
+        req.post.return_value.json.return_value = {'scopes': ['some', 'other:scopes']}
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
-        req.head.return_value.headers = {'X-OAuth-Scopes': 'write:repo_hook, user'}
+
+        req.post.return_value.json.return_value = {'scopes': ['write:repo_hook', 'user']}
         self.assertTrue(self.mix.oauth_has_access('write:repo_hook'))
 
     @patch.dict(config, {'github_importer.client_id': '123456',
