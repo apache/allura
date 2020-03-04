@@ -26,6 +26,7 @@ from ming.odm import ThreadLocalORMSession
 from allura import model as M
 from forgeimporters.forge import discussion
 from forgediscussion import utils
+from forgeimporters.base import File
 
 
 class TestDiscussionImporter(TestCase):
@@ -886,6 +887,50 @@ class TestDiscussionImporter(TestCase):
         except:
             pass
 
+
+    @mock.patch.object(discussion, 'File')
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts_with_attachments(self, h, c, File):
+        """ This method checks if add_posts supports posts with attachment """
+
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+        File.side_effect = ['a1', 'a2', 'a3']
+
+        _json = [
+            {
+                "attachments": [
+                    {
+                        "url": "http://www.foo.com/attachment0",
+                        "path": "path/to/attachment0",
+                        "bytes": 145 
+                    },
+                    {
+                        "url": "http://www.foo.com/attachment1",
+                        "path": "path/to/attachment1",
+                        "bytes": 184
+                    },
+                    {
+                        "url": "http://www.foo.com/attachment2",
+                        "path": "path/to/attachment2",
+                        "bytes": 145 
+                    },
+                ],
+                "author": "user02",
+                "timestamp": "2020-01-29 22:42:58.478000",
+                "text": "asdf as",
+                "subject": "topic with attachments"
+            }
+        ]
+
+        importer.add_posts(thread, _json, app)
+
+        post.add_multiple_attachments.assert_called_once()
+        self.assertEqual(File.call_args_list, [
+            mock.call('http://www.foo.com/attachment0'),
+            mock.call('http://www.foo.com/attachment1'),
+            mock.call('http://www.foo.com/attachment2')
+        ])
 
     def __init_add_posts_tests(self):
         importer = discussion.ForgeDiscussionImporter()
