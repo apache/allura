@@ -1101,6 +1101,43 @@ class TestDiscussionImporter(TestCase):
         self.assertEqual(importer.annotate_text(text, user, usernames[1]), text)
 
         
+    def test_annotate_text_with_unicode(self):
+        """ This method tests if annotate text can handle unicode characters """
+
+        importer = discussion.ForgeDiscussionImporter()
+
+        # unicode in text of an existing user
+        text = "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
+        user = mock.Mock(_id=1, is_anonymous=lambda: False)
+        username = "username1"
+        try:
+            importer.annotate_text(text, user, username)
+        except:
+            self.fail("annotate_text() can't handle unicode characters")
+
+
+        # unicode in text of a not existing user
+        text = "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
+        user = mock.Mock(is_anonymous=lambda: True)
+        username = "user2"
+
+        try:
+            importer.annotate_text(text, user, username)
+        except:
+            self.fail("annotate_text() can't handle unicode characters")
+
+
+        # unicode in text of an anonymous user
+        text = "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
+        user = mock.Mock(is_anonymous=lambda: True)
+        username = "*anonymous"
+
+        try:
+            importer.annotate_text(text, user, username)
+        except:
+            self.fail("annotate_text() can't handle unicode characters")
+
+
     def test_annotate_text_with_junk(self):
         """ This test tests if the annotate_text method correctly handles junk data """
 
