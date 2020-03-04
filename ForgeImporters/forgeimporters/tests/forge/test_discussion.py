@@ -803,6 +803,90 @@ class TestDiscussionImporter(TestCase):
         post.add_multiple_attachments.assert_called_once_with([])
         
 
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts_with_last_edited(self, h, c):
+        """ This method tests if the last edited attribute of a post is correctly updated if specified """
+
+        # Test with legit timestamp
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "test",
+                "subject": "post with last edited",
+                "last_edited": "2020-01-29 22:47:52.951000"
+            }
+        ]
+
+        importer.add_posts(thread, _json, app)
+
+        self.assertEqual(post.last_edit_date, parse(_json[0]['last_edited']))
+
+
+        # Test with none
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "test",
+                "subject": "post with last edited",
+                "last_edited": None
+            }
+        ]
+
+        post.last_edit_date = '-'
+        importer.add_posts(thread, _json, app)
+
+        self.assertEqual(post.last_edit_date, '-')
+
+       
+        # Test with no last edited 
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "test",
+                "subject": "post with last edited",
+            }
+        ]
+
+        post.last_edit_date = '-'
+        importer.add_posts(thread, _json, app)
+
+        self.assertEqual(post.last_edit_date, '-')
+
+        
+        # Test with junk last edited 
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "test",
+                "subject": "post with last edited",
+                "last_edited": "asdf asd"
+            }
+        ]
+
+        try:
+            importer.add_posts(thread, _json, app)
+            self.fail("add_posts() didn't throw exception even last_edited was junk data")
+        except:
+            pass
+
+
     def __init_add_posts_tests(self):
         importer = discussion.ForgeDiscussionImporter()
 
