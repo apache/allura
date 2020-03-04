@@ -668,17 +668,55 @@ class TestDiscussionImporter(TestCase):
         self.assertEqual(h.make_app_admin_only.call_count, 6)
 
 
-    def __check_missing(self, project, user, importer, h, g, utils):
-        try:       
-            importer.import_tool(project, user, 'mount_point', 'mount_label')
-            self.fail("import_tool() didn't raise Exception")
-        except Exception:
-            pass
-       
-        print("after try except")
- 
-        g.post_event.assert_not_called()
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts(self, h, c):
+        """ This methods tests if a post is correctly added to a thread """
 
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [ {
+            "attachments": [],
+            "author": "admin1",
+            "timestamp": "2020-01-29 22:30:42.497000",
+            "text": "foo",
+            "subject": "Foo subject"
+        }]
+
+        importer.add_posts(thread, _json, app)
+
+        importer.get_user.assert_called_once_with('admin1')
+        h.push_config.assert_called_once_with(c, user=user, app=app)
+        thread.add_post.assert_called_once_with(
+                subject=_json[0]['subject'],
+                text='foo',
+                timestamp=parse(_json[0]['timestamp']),
+                ignore_security=True
+        )
+        post.add_multiple_attachments.assert_called_once_with([])
+        
+    
+    def __init_add_posts_tests(self):
+        importer = discussion.ForgeDiscussionImporter()
+
+        user1 = mock.Mock(_id=1, is_anonymous=lambda: False)
+
+        importer.get_user = mock.Mock(return_value=user1)
+        importer.annotate_text = mock.Mock(return_value='foo')
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        thread = mock.Mock()
+        post = mock.Mock()
+        thread.add_post.return_value = post
+
+        return importer, app, thread, user1, post
 
     def test_annotate_text_with_existing_user(self):
         """ This test tests the annotate_text method if an existing user is passed as argument """
@@ -758,5 +796,17 @@ class TestDiscussionImporter(TestCase):
         )
 
         return new_forum
+
+
+    def __check_missing(self, project, user, importer, h, g, utils):
+        try:       
+            importer.import_tool(project, user, 'mount_point', 'mount_label')
+            self.fail("import_tool() didn't raise Exception")
+        except Exception:
+            pass
+       
+        print("after try except")
+ 
+        g.post_event.assert_not_called()
 
 
