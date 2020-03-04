@@ -91,8 +91,6 @@ class ForgeDiscussionImporter(AlluraImporter):
 
     def import_tool(self, project, user, mount_point=None,
                      mount_label=None, **kw):
-        
-        print("import_tool")
         discussion_json = self._load_json(project)
 
         mount_point = mount_point or 'discussion'
@@ -106,7 +104,7 @@ class ForgeDiscussionImporter(AlluraImporter):
         with h.push_config(c, app=app):
 
             # Deleting the forums that are created by default
-            self.__clear_forums(app)
+            self._clear_forums(app)
            
             try:
                 M.session.artifact_orm_session._get().skip_mod_date = True
@@ -132,6 +130,13 @@ class ForgeDiscussionImporter(AlluraImporter):
                     print("New Forum:", new_forum)
 
                     forum = utils.create_forum(app, new_forum=new_forum)
+                    
+                    if "import_id" in forum_json.keys():
+                        print("Import id for forum: " + forum_json["import_id"])
+                        forum.import_id = forum_json["import_id"]
+
+                        print("Forum: " + str(forum))
+                        print("Forum import id: " + str(forum.import_id))
 
                     for thread_json in forum_json["threads"]:
                         thread = forum.get_discussion_thread(dict(
@@ -172,7 +177,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                 M.session.artifact_orm_session._get().skip_mod_date = False
                                      
 
-    def __clear_forums(self, app):
+    def _clear_forums(self, app):
       forums = app.forums
       for forum in forums:
           forum.delete()
