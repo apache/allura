@@ -932,6 +932,104 @@ class TestDiscussionImporter(TestCase):
             mock.call('http://www.foo.com/attachment2')
         ])
 
+
+    @mock.patch.object(discussion, 'File')
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts_with_missing_keys(self, h, c, File):
+        """ This method checks if add_posts will throw an error if required keys are missing """
+        
+        # Test with author attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "subject": "foo",
+            "text": "foo",
+            "timestamp": "2020-01-29 22:42:58.478000",
+            "attachments": []
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+        # Test with subject attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "author": "admin1",
+            "text": "foo",
+            "timestamp": "2020-01-29 22:42:58.478000",
+            "attachments": []
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+        # Test with text attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "author": "admin1",
+            "timestamp": "2020-01-29 22:42:58.478000",
+            "subject": "foo",
+            "attachments": []
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+        # Test with timestamp attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "author": "admin1",
+            "text": "foo",
+            "subject": "foo",
+            "attachments": []
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+        # Test with attachments attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "author": "admin1",
+            "text": "foo",
+            "subject": "foo",
+            "timestamp": "2020-01-29 22:42:58.478000"
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+        # Test with url of attachments attribute missing
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = {
+            "author": "admin1",
+            "text": "foo",
+            "subject": "foo",
+            "timestamp": "2020-01-29 22:42:58.478000",
+            "attachments": [
+                {
+                    "byte": 147,
+                    "path": "path/to/attachment"
+                }
+            ]
+        }
+
+        self.__check_posts_exceptions(importer, thread, _json, app)
+
+
+    def __check_posts_exceptions(self, importer, thread, posts, app):
+        try:
+            importer.add_posts(thread, posts, app)
+            self.fail("add_posts() didn't throw an exception even though attribute are missing")
+        except:
+            pass
+
     def __init_add_posts_tests(self):
         importer = discussion.ForgeDiscussionImporter()
 
