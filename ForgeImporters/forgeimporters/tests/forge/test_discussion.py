@@ -771,6 +771,38 @@ class TestDiscussionImporter(TestCase):
         self.assertEqual(8, thread.add_post.call_count)
         self.assertEqual(8, post.add_multiple_attachments.call_count)
     
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts_with_unicode(self, h, c):
+        """ This method tests if it is possible to add posts which contain unicode characters in subject and text """
+
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+        importer.annotate_text.return_value = "test with un\u00ef\u00e7\u00f8\u2202\u00e9 text"
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "test with un\u00ef\u00e7\u00f8\u2202\u00e9 text",
+                "subject": "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
+            }
+        ]
+
+        importer.add_posts(thread, _json, app)
+
+        importer.get_user.assert_called_once()
+        h.push_config.assert_called_once()
+        thread.add_post.assert_called_once_with(
+            subject=_json[0]['subject'],
+            text=importer.annotate_text.return_value,
+            timestamp=parse(_json[0]['timestamp']),
+            ignore_security=True
+        )
+        post.add_multiple_attachments.assert_called_once_with([])
+        
+
     def __init_add_posts_tests(self):
         importer = discussion.ForgeDiscussionImporter()
 
