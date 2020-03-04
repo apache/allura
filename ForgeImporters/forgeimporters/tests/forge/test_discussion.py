@@ -23,6 +23,9 @@ from dateutil.parser import parse
 
 from ming.odm import ThreadLocalORMSession
 
+from allura.tests import TestController
+from allura.tests.decorators import with_tracker
+
 from allura import model as M
 from forgeimporters.forge import discussion
 from forgediscussion import utils
@@ -1179,5 +1182,23 @@ class TestDiscussionImporter(TestCase):
         print("after try except")
  
         g.post_event.assert_not_called()
+
+
+class TestForgeDiscussionController(TestController, TestCase):
+
+    
+    def setUp(self):
+        super(TestForgeDiscussionController, self).setUp()
+        from forgetracker.tracker_main import TrackerAdminController
+        TrackerAdminController._importer = \
+                discussion.ForgeDiscussionImportController(discussion.ForgeDiscussionImporter())
+
+    
+    @with_tracker
+    def test_index(self):
+        r = self.app.get('/p/test/admin/bugs/_importer/')
+        self.assertIsNotNone(r.html.find(attrs=dict(name="discussions_json")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
 
