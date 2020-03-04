@@ -30,6 +30,7 @@ from forgediscussion import utils
 
 class TestDiscussionImporter(TestCase):
 
+
     def setUp(self):
         super(TestDiscussionImporter, self).setUp()
 
@@ -111,17 +112,8 @@ class TestDiscussionImporter(TestCase):
         h.push_config.assert_called_once_with(c, app=app)
 
         forum_json = _json['forums'][0]
-        new_forum = dict(
-            app_config_id = app.config._id,
-            shortname=forum_json['shortname'],
-            description=forum_json['description'],
-            name=forum_json['name'],
-            create='on',
-            parent='',
-            members_only=False,
-            anon_posts=False,
-            monitoring_email=None
-        )
+        new_forum = self.__get_forum_dict(app, forum_json)
+
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
         forum.get_discussion_thread(dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
         importer.add_posts.assert_called_once_with(thread1, _json["forums"][0]["threads"][0]["posts"], app)
@@ -201,17 +193,8 @@ class TestDiscussionImporter(TestCase):
         )
 
         forum_json = _json["forums"][0]
-        new_forum = dict(
-             app_config_id = app.config._id,
-             shortname=forum_json['shortname'],
-             description=forum_json['description'],
-             name=forum_json['name'],
-             create='on',
-             parent='',
-             members_only=False,
-             anon_posts=False,
-             monitoring_email=None
-        )
+        new_forum = self.__get_forum_dict(app, forum_json)
+
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
         forum.get_discussion_thread.assert_called_once_with(dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
         
@@ -233,6 +216,468 @@ class TestDiscussionImporter(TestCase):
         p.add_multiple_attachments.assert_called_once_with([])
 
         g.post_event.assert_called_once_with('project_updated')
+
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'g')
+    @mock.patch.object(discussion, 'M')
+    @mock.patch.object(discussion, 'session')
+    @mock.patch.object(discussion, 'h')
+    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    def test_import_tool_multiple_forums(self, tlos, h, session, m, g, c):
+        """ This test tests if it is possible to create a discussion with multiple forums """
+
+        importer = discussion.ForgeDiscussionImporter()
+
+        _json = {
+            "forums": [
+                {
+                    "shortname": "general",
+                    "description": "Forum about anything you want to talk about.", 
+                    "name": "General Discussion",
+                    "threads": []    
+                },
+                {
+                    "shortname": "dev",
+                    "description": "Forum for Devs.", 
+                    "name": "Developers' Corner",
+                    "threads": []
+                },
+                {
+                    "shortname": "announcements",
+                    "description": "Announcements are posted here", 
+                    "name": "Announcements",
+                    "threads": []
+                },
+                {
+                    "shortname": "cc",
+                    "description": "Forum about improvements of our codebase", 
+                    "name": "Clean Code",
+                    "threads": []
+                }
+            ]
+        }
+
+        
+        importer._load_json = mock.Mock(return_value=_json)
+        importer.add_posts = mock.Mock()        
+        importer._clear_forums = mock.Mock()
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        utils.create_forum = mock.Mock()
+        forum = mock.Mock()
+        utils.create_forum.return_value = forum
+
+        g.post_event = mock.Mock()
+        m.AuditLog.log = mock.Mock()
+
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+
+        h.push_config.assert_called_once_with(c, app=app)
+        importer._clear_forums.assert_called_once_with(app)
+
+        forum0 = self.__get_forum_dict(app, _json['forums'][0])
+        forum1 = self.__get_forum_dict(app, _json['forums'][1])
+        forum2 = self.__get_forum_dict(app, _json['forums'][2])
+        forum3 = self.__get_forum_dict(app, _json['forums'][3])
+ 
+        utils.create_forum.assert_has_calls([
+            mock.call(app, new_forum=forum0),
+            mock.call(app, new_forum=forum1),
+            mock.call(app, new_forum=forum2),
+            mock.call(app, new_forum=forum3)
+        ])
+
+        forum.get_discussion_thread.assert_not_called()
+        importer.add_posts.assert_not_called()
+
+        m.AuditLog.log.assert_called_once()
+        g.post_event.assert_called_once()
+
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'g')
+    @mock.patch.object(discussion, 'M')
+    @mock.patch.object(discussion, 'session')
+    @mock.patch.object(discussion, 'h')
+    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    def test_import_tool_multiple_threads(self, tlos, h, session, m, g, c):
+        """ This method tests if import_tool can handle multiple threads """
+
+        importer = discussion.ForgeDiscussionImporter()
+
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "shortname": "general", 
+                "name": "General Discussion",
+                "threads": [
+                        {
+                            "page": None,
+                            "subject": "Thread0",
+                            "posts": []
+                        },
+                        {
+                            "page": None,
+                            "subject": "Thread1",
+                            "posts": []
+                        },
+                        {
+                            "page": None,
+                            "subject": "Thread2",
+                            "posts": []
+                        },
+                        {
+                            "page": None,
+                            "subject": "Thread3",
+                            "posts": []
+                        },
+                        {
+                            "page": None,
+                            "subject": "Thread4",
+                            "posts": []
+                        }
+                    ]}
+                ]
+            }
+
+            
+        importer._load_json = mock.Mock(return_value=_json)
+        importer.add_posts = mock.Mock()        
+        importer._clear_forums = mock.Mock()
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        utils.create_forum = mock.Mock()
+        forum = mock.Mock()
+        forum.get_discussion_thread.return_value = (mock.Mock(), mock.Mock())
+
+        utils.create_forum.return_value = forum
+
+        g.post_event = mock.Mock()
+        m.AuditLog.log= mock.Mock()
+
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+
+        project.install_app.assert_called_once_with('discussion', 'mount_point', 'mount_label', import_id={'source': 'Allura'})
+        h.push_config.assert_called_once_with(c, app=app)
+
+        utils.create_forum.assert_called_once()
+
+        thread_json = _json["forums"][0]["threads"]
+        forum.get_discussion_thread.assert_has_calls([
+            mock.call(dict(
+                headers=dict(Subject=thread_json[0]["subject"])
+            )),
+            mock.call(dict(
+                headers=dict(Subject=thread_json[1]["subject"])
+            )),
+            mock.call(dict(
+                headers=dict(Subject=thread_json[2]["subject"])
+            )),
+            mock.call(dict(
+                headers=dict(Subject=thread_json[3]["subject"])
+            )),
+            mock.call(dict(
+                headers=dict(Subject=thread_json[4]["subject"])
+            ))
+        ])
+
+        self.assertEqual(importer.add_posts.call_count, 5)
+        m.AuditLog.log.assert_called_once()
+        g.post_event.assert_called_once()
+
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'g')
+    @mock.patch.object(discussion, 'M')
+    @mock.patch.object(discussion, 'session')
+    @mock.patch.object(discussion, 'h')
+    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    def test_import_tool_forum_import_id(self, tlos, h, session, m, g, c):
+        """ This method tests if an import id is added to a forum """
+        
+        importer = discussion.ForgeDiscussionImporter()
+
+        # Test with import id
+        import_id = "qwert258"
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "shortname": "general", 
+                "name": "General Discussion",
+                "import_id": import_id,
+                "threads": []
+                }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        importer.add_posts = mock.Mock()        
+        importer._clear_forums = mock.Mock()
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        forum = mock.Mock()
+        utils.create_forum = mock.Mock(return_value=forum)
+        forum.get_discussion_thread.return_value = (mock.Mock(), mock.Mock())
+
+        utils.create_forum.return_value = forum
+
+        g.post_event = mock.Mock()
+        m.AuditLog.log= mock.Mock()
+       
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+        
+        self.assertEqual(import_id, forum.import_id)
+        
+
+        # Test without import id
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "shortname": "general", 
+                "name": "General Discussion",
+                "threads": []
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        forum = mock.Mock()
+        forum.import_id = ''
+        utils.create_forum(return_value=forum)
+
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+
+        self.assertEqual('', forum.import_id)
+
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'g')
+    @mock.patch.object(discussion, 'M')
+    @mock.patch.object(discussion, 'session')
+    @mock.patch.object(discussion, 'h')
+    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    def test_import_tool_thread_import_id(self, tlos, h, session, m, g, c):
+        """ This method tests if an import id is assigned to a thread """
+
+        importer = discussion.ForgeDiscussionImporter()
+
+        # Test with import id
+        import_id = "qwert123"
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "shortname": "general", 
+                "name": "General Discussion",
+                "threads": [{
+                        "limit": None,
+                        "posts": [],
+                        "subject": "Thread",
+                        "import_id": import_id
+                    }]
+                }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        importer.add_posts = mock.Mock()        
+        importer._clear_forums = mock.Mock()
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        forum = mock.Mock()
+        utils.create_forum = mock.Mock(return_value=forum)
+        thread = mock.Mock()
+        forum.get_discussion_thread.return_value = (thread, mock.Mock())
+
+        utils.create_forum.return_value = forum
+
+        g.post_event = mock.Mock()
+        m.AuditLog.log= mock.Mock()
+       
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+
+        self.assertEqual(import_id, thread.import_id)
+
+        # Test with no import id 
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "shortname": "general", 
+                "name": "General Discussion",
+                "threads": [{
+                        "limit": None,
+                        "posts": [],
+                        "subject": "Thread",
+                    }]
+                }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        thread = mock.Mock()
+        thread.import_id = ''
+        
+        forum.get_discussion_thread.return_value = (thread, mock.Mock())
+        
+        importer.import_tool(project, user, 'mount_point', 'mount_label')
+
+        self.assertEqual('', thread.import_id)
+
+
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'g')
+    @mock.patch.object(discussion, 'M')
+    @mock.patch.object(discussion, 'session')
+    @mock.patch.object(discussion, 'h')
+    @mock.patch.object(discussion, 'ThreadLocalORMSession')
+    def test_import_tool_missing_keys(self, tlos, h, session, m, g, c):
+        """ This method tests if missing keys are handled correctly """
+
+        # Check if shortname missing
+        _json = {
+            "forums": [ {
+                "description": "Forum about anything you want to talk about.", 
+                "name": "General Discussion",
+                "threads": []
+            }]
+        }
+
+        importer = discussion.ForgeDiscussionImporter()
+        importer._load_json = mock.Mock(return_value=_json)
+        
+        u = mock.Mock(_id=123, is_anonymous=lambda: False)
+        importer.get_user = mock.Mock(return_value=u)
+
+        project, user = mock.Mock(), mock.Mock()
+        app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = { 'source': 'Allura' }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
+        app.forums = []
+
+        forum = mock.Mock()
+        utils.create_forum = mock.Mock(return_value=forum)
+        thread = mock.Mock()
+        forum.get_discussion_thread.return_value = (thread, mock.Mock())
+
+        utils.create_forum.return_value = forum
+
+        g.post_event = mock.Mock()
+        m.AuditLog.log= mock.Mock()
+
+        self.__check_missing(project, user, importer, h, g, utils) 
+
+        
+        # Check if description is missing
+        _json = {
+            "forums": [ {
+                "shortname": "general",
+                "name": "General Discussion",
+                "threads": []
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        self.__check_missing(project, user, importer, h, g, utils)
+        utils.create_forum.assert_not_called()
+
+
+        # Check if name is missing
+        _json = {
+            "forums": [ {
+                "shortname": "general",
+                "description": "Description of forum",
+                "threads": []
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        self.__check_missing(project, user, importer, h, g, utils)
+        utils.create_forum.assert_not_called()
+
+        
+        # Check if threads are missing
+        _json = {
+            "forums": [ {
+                "shortname": "general",
+                "description": "Description of forum",
+                "name": "General Discussion"
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        self.__check_missing(project, user, importer, h, g, utils)
+
+        
+        # Check if subject of threads are missing
+        _json = {
+            "forums": [ {
+                "shortname": "general",
+                "description": "Description of forum",
+                "name": "General Discussion",
+                "threads": [{
+                   "posts": [] 
+                }]
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        self.__check_missing(project, user, importer, h, g, utils)
+
+
+        # Check if posts of threads are missing
+        _json = {
+            "forums": [ {
+                "shortname": "general",
+                "description": "Description of forum",
+                "name": "General Discussion",
+                "threads": [{
+                    "subject": "Thread"
+                }]
+            }]
+        }
+
+        importer._load_json = mock.Mock(return_value=_json)
+        self.__check_missing(project, user, importer, h, g, utils)
+        
+        self.assertEqual(h.make_app_admin_only.call_count, 6)
+
+
+    def __check_missing(self, project, user, importer, h, g, utils):
+        try:       
+            importer.import_tool(project, user, 'mount_point', 'mount_label')
+            self.fail("import_tool() didn't raise Exception")
+        except Exception:
+            pass
+       
+        print("after try except")
+ 
+        g.post_event.assert_not_called()
 
 
     def test_annotate_text_with_existing_user(self):
@@ -297,3 +742,21 @@ class TestDiscussionImporter(TestCase):
 
         text = 'foo'
         self.assertEqual(importer.annotate_text(text, user, username), text)
+
+
+    def __get_forum_dict(self, app, forum_json):
+        new_forum = dict(
+            app_config_id = app.config._id,
+            shortname=forum_json['shortname'],
+            description=forum_json['description'],
+            name=forum_json['name'],
+            create='on',
+            parent='',
+            members_only=False,
+            anon_posts=False,
+            monitoring_email=None
+        )
+
+        return new_forum
+
+
