@@ -696,6 +696,81 @@ class TestDiscussionImporter(TestCase):
         post.add_multiple_attachments.assert_called_once_with([])
         
     
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
+    def test_add_posts_with_many_posts(self, h, c):
+        """ This methods tests if many posts of a thread are added to this thread """
+
+        importer, app, thread, user, post = self.__init_add_posts_tests()
+
+        _json = [
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo0",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo1",
+                "subject": "Foo subject"
+            },
+            {
+
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo2",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo3",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo4",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo5",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo6",
+                "subject": "Foo subject"
+            },
+            {
+                "attachments": [],
+                "author": "admin1",
+                "timestamp": "2020-01-29 22:30:42.497000",
+                "text": "foo7",
+                "subject": "Foo subject"
+            }
+        ]
+
+        
+        importer.add_posts(thread, _json, app)
+
+        self.assertEqual(8, importer.get_user.call_count)
+        self.assertEqual(8, h.push_config.call_count)
+        self.assertEqual(8, thread.add_post.call_count)
+        self.assertEqual(8, post.add_multiple_attachments.call_count)
+    
     def __init_add_posts_tests(self):
         importer = discussion.ForgeDiscussionImporter()
 
