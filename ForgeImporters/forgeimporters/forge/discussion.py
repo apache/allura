@@ -206,8 +206,6 @@ class ForgeDiscussionImporter(AlluraImporter):
                 if "last_edited" in post_json and post_json["last_edited"] != None:
                     print("Last edited: " + str(post_json["last_edited"]))
                     p.last_edit_date = parse(post_json["last_edited"])
-                if "slug" in post_json.keys():
-                    p.slug = post_json['slug']
 
                 p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
 
