@@ -69,8 +69,6 @@ class ForgeDiscussionImportController(ToolImportController):
     @expose()
     @require_post()
     def create(self, discussions_json, mount_point, mount_label, **kw):
-        # TODO: delete debug output
-        #self.importer.clear_pending(c.project) # TODO: Delete this line
         if self.importer.enforce_limit(c.project):
             save_importer_upload(c.project, 'discussions.json', json.dumps(discussions_json))
             self.importer.post(mount_point=mount_point, mount_label=mount_label)
@@ -123,8 +121,6 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                 for forum_json in discussion_json['forums']:
 
-                    print("forum_json: ", forum_json)
-
                     new_forum = dict(
                                     app_config_id = app.config._id,
                                     shortname=forum_json['shortname'],
@@ -139,36 +135,23 @@ class ForgeDiscussionImporter(AlluraImporter):
                                     monitoring_email=None,
                     )
 
-                    print("New Forum:", new_forum)
-
                     forum = utils.create_forum(app, new_forum=new_forum)
                     
                     if "import_id" in forum_json.keys():
-                        print("Import id for forum: " + forum_json["import_id"])
                         forum.import_id = forum_json["import_id"]
-
-                        print("Forum: " + str(forum))
-                        print("Forum import id: " + str(forum.import_id))
 
                     for thread_json in forum_json["threads"]:
                         thread = forum.get_discussion_thread(dict(
                                             headers=dict(Subject=thread_json['subject'])))[0]
 
-                        #if "_id" in thread_json:
-                        #    thread._id = thread_json["_id"]
                         if "import_id" in thread_json:
                             thread.import_id = thread_json["import_id"]
-                        #if "discussion_id" in thread_json:
-                        #    thread.discussion_id = thread_json["discussion_id"]
-
-                        print("Thread: " + str(thread))
 
                         self.add_posts(thread, thread_json['posts'], app)
 
                     session(forum).flush(forum)
                     session(forum).expunge(forum)
 
-                    print("Forum '%s' created" % (new_forum["shortname"]))
 
                 M.AuditLog.log(
                     "import tool %s from exported Allura JSON" % (
@@ -221,12 +204,9 @@ class ForgeDiscussionImporter(AlluraImporter):
                         pos = slug.rindex('/')
                         parent_slug = slug[:pos]
 
-                        print("Parent slug: " + parent_slug)
-                        
                         for cp in created_posts:
                             if cp.get(parent_slug, None) != None:
                                 parent_id = cp[parent_slug]._id
-                                print("Parent_id found")
                                 break
 
                 p = thread.add_post(
@@ -238,7 +218,6 @@ class ForgeDiscussionImporter(AlluraImporter):
                 )
 
                 if "last_edited" in post_json and post_json["last_edited"] != None:
-                    print("Last edited: " + str(post_json["last_edited"]))
                     p.last_edit_date = parse(post_json["last_edited"])
 
                 p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
