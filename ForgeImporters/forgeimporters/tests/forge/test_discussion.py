@@ -1066,12 +1066,12 @@ class TestDiscussionImporter(TestCase):
         # Test with author attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "subject": "foo",
             "text": "foo",
             "timestamp": "2020-01-29 22:42:58.478000",
             "attachments": []
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
@@ -1079,12 +1079,12 @@ class TestDiscussionImporter(TestCase):
         # Test with subject attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "author": "admin1",
             "text": "foo",
             "timestamp": "2020-01-29 22:42:58.478000",
             "attachments": []
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
@@ -1092,12 +1092,12 @@ class TestDiscussionImporter(TestCase):
         # Test with text attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "author": "admin1",
             "timestamp": "2020-01-29 22:42:58.478000",
             "subject": "foo",
             "attachments": []
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
@@ -1105,12 +1105,12 @@ class TestDiscussionImporter(TestCase):
         # Test with timestamp attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "author": "admin1",
             "text": "foo",
             "subject": "foo",
             "attachments": []
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
@@ -1118,12 +1118,12 @@ class TestDiscussionImporter(TestCase):
         # Test with attachments attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "author": "admin1",
             "text": "foo",
             "subject": "foo",
             "timestamp": "2020-01-29 22:42:58.478000"
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
@@ -1131,7 +1131,7 @@ class TestDiscussionImporter(TestCase):
         # Test with url of attachments attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
-        _json = {
+        _json = [{
             "author": "admin1",
             "text": "foo",
             "subject": "foo",
@@ -1142,7 +1142,7 @@ class TestDiscussionImporter(TestCase):
                     "path": "path/to/attachment"
                 }
             ]
-        }
+        }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
