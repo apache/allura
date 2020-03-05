@@ -53,19 +53,14 @@ class ForgeDiscussionImportController(ToolImportController):
     @require_post()
     def create(self, discussions_json, mount_point, mount_label, **kw):
         # TODO: delete debug output
-        self.importer.clear_pending(c.project) # TODO: Delete this line
+        #self.importer.clear_pending(c.project) # TODO: Delete this line
         if self.importer.enforce_limit(c.project):
-            print("import 1")
-            save_importer_upload(c.project, 'discussion.json', json.dumps(discussions_json))
-            print("import 2")
+            save_importer_upload(c.project, 'discussions.json', json.dumps(discussions_json))
             self.importer.post(mount_point=mount_point, mount_label=mount_label)
-            print("import 3")
             flash('Discussion import has begun. Your new discussion will be available when the import is complete')
             
         else:
-            print("import limit")
             flash('There are too many imports pending at this time. Please wait and try again.', 'error')
-        print("import none	")
 
         redirect(c.project.url() + 'admin/')
 
