@@ -190,17 +190,33 @@ class ForgeDiscussionImporter(AlluraImporter):
 
 
     def add_posts(self, thread, posts, app):
+        prev = None
+        number_slashes = 0
+
         for post_json in posts:
             username = post_json["author"]
             print("Author: " + str(username))
             user = self.get_user(username)
             print("User: " + str(user))
             with h.push_config(c, user=user, app=app):
+                timestamp = parse(post_json['timestamp'])
+
+                # For nested posts
+                parent_id = None
+                if prev != None and "slug" in post_json.keys():
+                    count = post_json["slug"].count('/')
+                   
+                    if number_slashes < count:
+                        parent_id = prev._id
+                    
+                    number_slashes = count
+
                 p = thread.add_post(
                         subject=post_json['subject'],
                         text=self.annotate_text(post_json['text'], user, username),
-                        timestamp=parse(post_json["timestamp"]),
-                        ignore_security=True
+                        timestamp=timestamp,
+                        ignore_security=True,
+                        parent_id=parent_id
                 )
 
                 if "last_edited" in post_json and post_json["last_edited"] != None:
@@ -208,4 +224,6 @@ class ForgeDiscussionImporter(AlluraImporter):
                     p.last_edit_date = parse(post_json["last_edited"])
 
                 p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
+
+                prev = p
 
