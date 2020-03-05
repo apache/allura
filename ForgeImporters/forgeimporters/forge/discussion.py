@@ -79,7 +79,7 @@ class ForgeDiscussionImporter(AlluraImporter):
 
     def _load_json(self, project):
         upload_path = get_importer_upload_path(project)
-        full_path = os.path.join(upload_path, 'discussion.json')
+        full_path = os.path.join(upload_path, 'discussions.json')
         with open(full_path) as fp:
             return json.load(fp)
 
@@ -185,26 +185,32 @@ class ForgeDiscussionImporter(AlluraImporter):
 
 
     def add_posts(self, thread, posts, app):
-        prev = None
-        number_slashes = 0
+        created_posts = []
 
         for post_json in posts:
             username = post_json["author"]
-            print("Author: " + str(username))
             user = self.get_user(username)
-            print("User: " + str(user))
+
             with h.push_config(c, user=user, app=app):
                 timestamp = parse(post_json['timestamp'])
 
                 # For nested posts
                 parent_id = None
-                if prev != None and "slug" in post_json.keys():
-                    count = post_json["slug"].count('/')
-                   
-                    if number_slashes < count:
-                        parent_id = prev._id
-                    
-                    number_slashes = count
+                slug = ''
+                if "slug" in post_json.keys():
+                    slug = post_json["slug"]
+
+                    if slug.count('/') >= 1:
+                        pos = slug.rindex('/')
+                        parent_slug = slug[:pos]
+
+                        print("Parent slug: " + parent_slug)
+                        
+                        for cp in created_posts:
+                            if cp.get(parent_slug, None) != None:
+                                parent_id = cp[parent_slug]._id
+                                print("Parent_id found")
+                                break
 
                 p = thread.add_post(
                         subject=post_json['subject'],
@@ -220,5 +226,5 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                 p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
 
-                prev = p
-
+                if slug != '': 
+                    created_posts.append({ slug: p })
