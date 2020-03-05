@@ -943,6 +943,123 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'File')
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
+    def test_add_posts_nested_posts(self, h, c, File):
+        """ This method tests if nested posts were handled correctly """
+
+        # Test with author attribute missing
+        importer, app, _, user, post = self.__init_add_posts_tests()
+        thread = mock.Mock()
+        thread.add_post.side_effect=[ 
+            mock.Mock(_id=0),
+            mock.Mock(_id=1),
+            mock.Mock(_id=2),
+            mock.Mock(_id=3),
+            mock.Mock(_id=4),
+            mock.Mock(_id=5)
+        ]
+
+        _json = [
+            {
+              "attachments": [], 
+              "author": "admin1", 
+              "timestamp": "2020-01-29 22:39:31.483000", 
+              "text": "hi", 
+              "slug": "0d1d", 
+              "subject": "topic with lots of replies"
+            }, 
+            {
+              "attachments": [], 
+              "author": "admin1", 
+              "timestamp": "2020-01-29 22:39:43.525000", 
+              "text": "hello", 
+              "slug": "0d1d/d421", 
+              "subject": "topic with lots of replies"
+            }, 
+            {
+              "attachments": [], 
+              "author": "admin1", 
+              "timestamp": "2020-01-29 22:39:50.086000", 
+              "text": "goodbye", 
+              "slug": "0d1d/d421/f37d", 
+              "subject": "topic with lots of replies"
+            }, 
+            {
+              "attachments": [], 
+              "author": "admin1", 
+              "timestamp": "2020-01-29 22:42:13.740000", 
+              "text": "hi again", 
+              "slug": "012f", 
+              "subject": "topic with lots of replies"
+            }, 
+            {
+              "attachments": [], 
+              "author": "user02", 
+              "timestamp": "2020-01-29 22:42:51.645000", 
+              "text": "hi there", 
+              "slug": "012f/211a", 
+              "subject": "topic with lots of replies"
+            }, 
+            {
+              "attachments": [], 
+              "author": "user02", 
+              "timestamp": "2020-01-29 22:42:58.478000", 
+              "text": "hi here", 
+              "slug": "0d1d/00a0", 
+              "subject": "topic with lots of replies"
+            }
+         ]
+
+        importer.add_posts(thread, _json, app)
+
+        thread.add_post.assert_has_calls([
+            mock.call(
+                subject=_json[0]['subject'],
+                text='foo',
+                timestamp=parse(_json[0]['timestamp']),
+                ignore_security=True,
+                parent_id=None
+            ),
+            mock.call(
+                subject=_json[1]['subject'],
+                text='foo',
+                timestamp=parse(_json[1]['timestamp']),
+                ignore_security=True,
+                parent_id=0
+            ),
+            mock.call(
+                subject=_json[2]['subject'],
+                text='foo',
+                timestamp=parse(_json[2]['timestamp']),
+                ignore_security=True,
+                parent_id=1
+            ),
+            mock.call(
+                subject=_json[3]['subject'],
+                text='foo',
+                timestamp=parse(_json[3]['timestamp']),
+                ignore_security=True,
+                parent_id=None
+            ),
+            mock.call(
+                subject=_json[4]['subject'],
+                text='foo',
+                timestamp=parse(_json[4]['timestamp']),
+                ignore_security=True,
+                parent_id=3
+            ),
+            mock.call(
+                subject=_json[5]['subject'],
+                text='foo',
+                timestamp=parse(_json[5]['timestamp']),
+                ignore_security=True,
+                parent_id=0
+            )
+        ])
+
+
+    @mock.patch.object(discussion, 'File')
+    @mock.patch.object(discussion, 'c')
+    @mock.patch.object(discussion, 'h')
     def test_add_posts_with_missing_keys(self, h, c, File):
         """ This method checks if add_posts will throw an error if required keys are missing """
         
