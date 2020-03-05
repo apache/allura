@@ -22,9 +22,10 @@ import mock
 from dateutil.parser import parse
 
 from ming.odm import ThreadLocalORMSession
+import webtest
 
 from allura.tests import TestController
-from allura.tests.decorators import with_tracker
+from allura.tests.decorators import with_discussion
 
 from allura import model as M
 from forgeimporters.forge import discussion
@@ -214,7 +215,8 @@ class TestDiscussionImporter(TestCase):
             subject=post["subject"],
             text='aa',
             timestamp=parse(post["timestamp"]),
-            ignore_security=True
+            ignore_security=True,
+            parent_id=None
         )
         importer.annotate_text.assert_called_once_with(post["text"], admin, post["author"])
         p.add_multiple_attachments.assert_called_once_with([])
@@ -695,7 +697,8 @@ class TestDiscussionImporter(TestCase):
                 subject=_json[0]['subject'],
                 text='foo',
                 timestamp=parse(_json[0]['timestamp']),
-                ignore_security=True
+                ignore_security=True,
+                parent_id=None
         )
         post.add_multiple_attachments.assert_called_once_with([])
         
@@ -802,7 +805,8 @@ class TestDiscussionImporter(TestCase):
             subject=_json[0]['subject'],
             text=importer.annotate_text.return_value,
             timestamp=parse(_json[0]['timestamp']),
-            ignore_security=True
+            ignore_security=True,
+            parent_id=None
         )
         post.add_multiple_attachments.assert_called_once_with([])
         
@@ -1189,16 +1193,54 @@ class TestForgeDiscussionController(TestController, TestCase):
     
     def setUp(self):
         super(TestForgeDiscussionController, self).setUp()
-        from forgetracker.tracker_main import TrackerAdminController
-        TrackerAdminController._importer = \
+        from forgediscussion.forum_main import ForumAdminController
+        ForumAdminController._importer = \
                 discussion.ForgeDiscussionImportController(discussion.ForgeDiscussionImporter())
 
     
-    @with_tracker
+    @with_discussion
     def test_index(self):
-        r = self.app.get('/p/test/admin/bugs/_importer/')
+        r = self.app.get('/p/test/admin/ext/import/forge-discussion/')
         self.assertIsNotNone(r.html.find(attrs=dict(name="discussions_json")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+
+
+    @with_discussion
+    @mock.patch('forgeimporters.forge.discussion.save_importer_upload')
+    @mock.patch('forgeimporters.base.import_tool')
+    def test_create(self, import_tool, siu):
+        project = M.Project.query.get(shortname='test')
+        params = {
+            'discussions_json': webtest.Upload('discussions.json', b'{"key": "val"}'),
+            'mount_label': 'mylabel',
+            'mount_point': 'mymount',
+        }
+        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create', params,
+                          status=302)
+        self.assertEqual(r.location, 'http://localhost/p/test/admin/')
+        siu.assert_called_once_with(project, 'discussions.json', '{"key": "val"}')
+        self.assertEqual(
+            'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(
+            'mylabel', import_tool.post.call_args[1]['mount_label'])
+
+
+    @with_discussion
+    @mock.patch('forgeimporters.forge.discussion.save_importer_upload')
+    @mock.patch('forgeimporters.base.import_tool')
+    def test_create_limit(self, import_tool, siu):
+        project = M.Project.query.get(shortname='test')
+        project.set_tool_data('ForgeDiscussionImporter', pending=1)
+        ThreadLocalORMSession.flush_all()
+        params = {
+            'discussions_json': webtest.Upload('discussions.json', b'{"key": "val"}'),
+            'mount_label': 'mylabel',
+            'mount_point': 'mymount',
+        }
+        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create', params,
+                          status=302).follow()
+        self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)
 
 
