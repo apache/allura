@@ -290,7 +290,7 @@ def wipe_database():
                 continue
             log.info('Wiping database %s', database)
             db = conn[database]
-            for coll in db.collection_names():
+            for coll in list(db.collection_names()):
                 if coll.startswith('system.'):
                     continue
                 log.info('Dropping collection %s:%s', database, coll)
@@ -304,7 +304,7 @@ def clear_all_database_tables():
     conn = M.main_doc_session.bind.conn
     for db in conn.database_names():
         db = conn[db]
-        for coll in db.collection_names():
+        for coll in list(db.collection_names()):
             if coll == 'system.indexes':
                 continue
             db.drop_collection(coll)
