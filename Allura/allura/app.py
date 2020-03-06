@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 import logging
-from urllib import basejoin
+from six.moves.urllib_parse import urljoin
 from io import BytesIO
 from collections import defaultdict
 from xml.etree import ElementTree as ET
@@ -169,7 +169,7 @@ class SitemapEntry(object):
         if callable(lbl):
             lbl = lbl(app)
         if url is not None:
-            url = basejoin(app.url, url)
+            url = urljoin(app.url, url)
         return SitemapEntry(lbl, url,
                             [ch.bind_app(app) for ch in self.children],
                             className=self.className,
