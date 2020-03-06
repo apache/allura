@@ -1310,9 +1310,6 @@ class TestForgeDiscussionController(TestController, TestCase):
     
     def setUp(self):
         super(TestForgeDiscussionController, self).setUp()
-        from forgediscussion.forum_main import ForumAdminController
-        ForumAdminController._importer = \
-                discussion.ForgeDiscussionImportController(discussion.ForgeDiscussionImporter())
 
     
     @with_discussion
