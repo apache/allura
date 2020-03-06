@@ -21,7 +21,11 @@ import inspect
 import sys
 import json
 import logging
-from six.moves.http_cookies import Cookie
+import six
+if six.PY3:
+    from http.cookies import SimpleCookie as Cookie
+else:
+    from Cookie import Cookie
 from collections import defaultdict
 from six.moves.urllib.parse import unquote
 from datetime import datetime
