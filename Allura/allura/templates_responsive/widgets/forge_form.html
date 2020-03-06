@@ -29,7 +29,7 @@
       {% if enctype %}enctype="{{enctype}}"{% endif %}
       {% if target %}target="{{target}}"{% endif %}
       action="{{action}}">
-  {% if errors and not errors.iteritems and show_errors %}
+  {% if errors and not errors.items and show_errors %}
   <div class=""><span {{widget.j2_attrs({'class':error_class})}}>{{errors|nl2br}}</span></div>
   {% endif %}
   {% for field in widget.fields %}

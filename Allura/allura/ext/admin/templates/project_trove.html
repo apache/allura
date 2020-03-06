@@ -50,7 +50,7 @@
   <div class="grid-19 trove_add_container">
     {% if trove_recommendations[base.shortname] %}
         Recommended to choose from:
-            {% for trove_id, label in trove_recommendations[base.shortname].iteritems() %}
+            {% for trove_id, label in trove_recommendations[base.shortname].items() %}
                 <a href="#" data-id="{{ trove_id }}" data-trove="{{ base.shortname }}" class="recommended_trove"><i class="fa fa-plus-circle"></i> {{ label }}</a>
             {% endfor %}
         <br>

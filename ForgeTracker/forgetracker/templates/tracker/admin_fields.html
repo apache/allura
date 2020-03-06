@@ -37,7 +37,7 @@
             <th>Show in list views (e.g. search results, milestone views)</th>
         </tr>
         </thead>
-        {%for column, full_name in columns.iteritems() %}
+        {%for column, full_name in columns.items() %}
         <tr>
             <td>{{full_name}}</td> <td><input type="checkbox" name="{{column}}" {%if globals.show_in_search[column]%}checked {%endif%}></td>
         </tr>

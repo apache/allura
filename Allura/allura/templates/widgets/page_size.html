@@ -17,7 +17,7 @@
        under the License.
 -#}
 <form method="get">
-  {% for k,v in widget.url_params.iteritems() %}
+  {% for k,v in widget.url_params.items() %}
     <input type="hidden" name="{{k}}" value="{{v}}"/>
   {% endfor %}
   {% if limit %}

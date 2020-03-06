@@ -25,10 +25,10 @@
     <h3><a href="/categories">(back)</a></h3>
     <h3>Trove Categories</h3>
     <ul>
-        {% for key, value in tree.iteritems() recursive %}
+        {% for key, value in tree.items() recursive %}
             <li>{{ key }}</li>
             {% if value %}
-                <ul>{{ loop(value.iteritems()) }}</ul>
+                <ul>{{ loop(value.items()) }}</ul>
             {% endif %}
         {% endfor %}
     </ul>

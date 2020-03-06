@@ -25,7 +25,7 @@
       <span class="{{ error_class }}">{{ ctx.errors }}</span><br/>
     {% endif %}
     {{ selector.display(css_class=selector_cls, **ctx) }}
-    {% for name, field in states.iteritems() %}
+    {% for name, field in states.items() %}
         {% set ctx = widget.context_for(field) %}
         <div class="{{ field_cls }}" data-name="{{ name }}">
             {% if field.show_label %}<label for="{{ ctx.name }}">{{ field.label }}</label><br/>{% endif %}

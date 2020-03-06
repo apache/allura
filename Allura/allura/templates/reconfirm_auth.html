@@ -35,7 +35,7 @@
     <input type="submit" value="Submit">
 
     {# include any post params again, so that their original form submit can go through successfully #}
-    {% for key, val in request.POST.iteritems() %}
+    {% for key, val in request.POST.items() %}
         {% if key != 'password' %}
             <input type="hidden" name="{{ key }}" value="{{ val }}">
         {% endif %}

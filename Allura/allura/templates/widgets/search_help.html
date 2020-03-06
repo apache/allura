@@ -24,7 +24,7 @@
 {% if fields %}
     <p>To search on specific fields, use these field names instead of a general text search.  You can group with <code>AND</code> or <code>OR</code>.</p>
     <ul>
-    {% for fld, descr in fields.iteritems() %}
+    {% for fld, descr in fields.items() %}
         <li><b>{{ fld }}:</b>{{ descr }}</li>
     {% endfor %}
     </ul>
