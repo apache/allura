@@ -17,10 +17,10 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
 from tg import tmpl_context as c
 from formencode import validators as fev
-from webhelpers.html.builder import literal
-
+from markupsafe import Markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 
@@ -81,7 +81,7 @@ class GenericTicketForm(ew.SimpleForm):
 
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display += literal("<div class='error'>") + ctx['errors'] + literal("</div>")
+            display += Markup("<div class='error'>") + ctx['errors'] + Markup("</div>")
         return display
 
     def _add_current_value_to_user_field(self, field, user):

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import re
 import logging
+
 from six.moves.urllib.parse import urljoin
 
 from tg import config
@@ -30,6 +31,7 @@ import html5lib.serializer
 import html5lib.filters.alphabeticalattributes
 import markdown
 import emoji
+from markupsafe import Markup
 
 from . import macro
 from . import helpers as h
@@ -431,7 +433,7 @@ class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
 class MarkAsSafe(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
-        return h.html.literal(text)
+        return Markup(text)
 
 
 class AddCustomClass(markdown.postprocessors.Postprocessor):

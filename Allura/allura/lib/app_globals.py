@@ -83,7 +83,7 @@ class ForgeMarkdown(markdown.Markdown):
             # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
             escaped = cgi.escape(h.really_unicode(source))
-            return h.html.literal('<pre>%s</pre>' % escaped)
+            return Markup('<pre>%s</pre>' % escaped)
         try:
             return markdown.Markdown.convert(self, source)
         except Exception:
@@ -91,7 +91,7 @@ class ForgeMarkdown(markdown.Markdown):
                      ''.join(traceback.format_stack()), exc_info=True)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
-            return h.html.literal("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
+            return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
 
     def cached_convert(self, artifact, field_name):
@@ -117,7 +117,7 @@ class ForgeMarkdown(markdown.Markdown):
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             if cache.md5 == md5 and getattr(cache, 'fix7528', False) == bugfix_rev:
-                return h.html.literal(cache.html)
+                return Markup(cache.html)
 
         # Convert the markdown and time the result.
         start = time.time()
@@ -418,8 +418,8 @@ class Globals(object):
     def highlight(self, text, lexer=None, filename=None):
         if not text:
             if lexer == 'diff':
-                return h.html.literal('<em>File contents unchanged</em>')
-            return h.html.literal('<em>Empty file</em>')
+                return Markup('<em>File contents unchanged</em>')
+            return Markup('<em>Empty file</em>')
         # Don't use line numbers for diff highlight's, as per [#1484]
         if lexer == 'diff':
             formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite', linenos=False)
@@ -439,9 +439,9 @@ class Globals(object):
             # no highlighting, but we should escape, encode, and wrap it in
             # a <pre>
             text = cgi.escape(text)
-            return h.html.literal('<pre>' + text + '</pre>')
+            return Markup('<pre>' + text + '</pre>')
         else:
-            return h.html.literal(pygments.highlight(text, lexer, formatter))
+            return Markup(pygments.highlight(text, lexer, formatter))
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''

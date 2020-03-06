@@ -29,6 +29,7 @@ from pytz import common_timezones, country_timezones, country_names
 from paste.deploy.converters import aslist, asint, asbool
 import tg
 from tg import config
+from markupsafe import Markup
 
 from allura.lib import validators as V
 from allura.lib import helpers as h
@@ -108,7 +109,7 @@ class ForgeForm(ew.SimpleForm):
             or ctx['name'])
         html = '<label for="%s">%s</label>' % (
             ctx['id'], label_text)
-        return h.html.literal(html)
+        return Markup(html)
 
     def context_for(self, field):
         ctx = super(ForgeForm, self).context_for(field)
@@ -122,7 +123,7 @@ class ForgeForm(ew.SimpleForm):
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "%s<div class='error'>%s</div>" % (display,
                                                          ctx['errors'])
-        return h.html.literal(display)
+        return Markup(display)
 
 
 class ForgeFormResponsive(ForgeForm):
@@ -900,7 +901,7 @@ class NeighborhoodOverviewForm(ForgeForm):
                 display = "%s<div class='error'>%s</div>" % (display,
                                                              ctx['errors'])
 
-            return h.html.literal(display)
+            return Markup(display)
         else:
             return super(NeighborhoodOverviewForm, self).display_field(field, ignore_errors)
 

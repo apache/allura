@@ -40,7 +40,7 @@ from tg import app_globals as g
 from tg.renderers.jinja import JinjaRenderer
 import jinja2
 from tg.configuration import AppConfig, config
-from webhelpers.html import literal
+from markupsafe import Markup
 import ew
 
 import allura
@@ -133,7 +133,7 @@ class JinjaEngine(ew.TemplateEngine):
         context = self.context(context)
         with ew.utils.push_context(ew.widget_context, render_context=context):
             text = template.render(**context)
-            return literal(text)
+            return Markup(text)
 
 
 base_config = ForgeConfig()

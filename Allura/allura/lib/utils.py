@@ -50,7 +50,7 @@ from tg import redirect, app_globals as g
 from tg.decorators import before_validate
 from tg.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
-from webhelpers.html import literal
+from markupsafe import Markup
 from webob import exc
 from pygments.formatters import HtmlFormatter
 from setproctitle import getproctitle
@@ -294,7 +294,7 @@ class AntiSpam(object):
         for fldno in range(self.num_honey):
             fld_name = self.enc('honey%d' % (fldno))
             fld_id = self.enc('honey%d%d' % (self.counter, fldno))
-            yield literal(self.honey_field_template.substitute(
+            yield Markup(self.honey_field_template.substitute(
                 honey_class=self.honey_class,
                 fld_id=fld_id,
                 fld_name=fld_name))

@@ -44,7 +44,7 @@ def mail_meta_content(metalink):
     :param metalink:  url to the page the action button links to
     '''
 
-    return h.html.literal("""\
+    return markupsafe.Markup("""\
     <div itemscope itemtype="http://schema.org/EmailMessage">
     <div itemprop="action" itemscope itemtype="http://schema.org/ViewAction">
       <link itemprop="url" href="%s"></link>
