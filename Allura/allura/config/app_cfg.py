@@ -42,6 +42,7 @@ import jinja2
 from tg.configuration import AppConfig, config
 from markupsafe import Markup
 import ew
+from tg.support.converters import asint
 
 import allura
 # needed for tg.configuration to work
@@ -103,7 +104,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
             auto_reload=config['auto_reload_templates'],
             autoescape=True,
             bytecode_cache=bcc,
-            cache_size=config.get('jinja_cache_size', -1),
+            cache_size=asint(config.get('jinja_cache_size', -1)),
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(tg.i18n)
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
