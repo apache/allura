@@ -433,8 +433,13 @@ def nonce(length=4):
 
 
 def cryptographic_nonce(length=40):
+    rand_bytes = os.urandom(length)
+    if six.PY2:
+        rand_ints = tuple(map(ord, rand_bytes))
+    else:
+        rand_ints = tuple(rand_bytes)
     hex_format = '%.2x' * length
-    return hex_format % tuple(map(ord, os.urandom(length)))
+    return hex_format % rand_ints
 
 
 def random_password(length=20, chars=string.ascii_uppercase + string.digits):

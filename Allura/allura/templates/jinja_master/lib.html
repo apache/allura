@@ -18,13 +18,13 @@
 -#}
 
 {% macro csrf() -%}
-  {% if request -%}
+  {% if request is defined -%}
     {{ request.cookies['_session_id'] or request.environ['_session_id'] }}
   {%- endif %}
 {%- endmacro %}
 
 {% macro csrf_token() -%}
-  {% if request %}
+  {% if request is defined %}
     <input name="_session_id" type="hidden" value="{{csrf()}}">
   {% endif %}
 {%- endmacro %}

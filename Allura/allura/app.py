@@ -118,8 +118,6 @@ class SitemapEntry(object):
         """
         self.label = label
         self.className = className
-        if url is not None:
-            url = url.encode('utf-8')
         self.url = url
         self.small = small
         self.ui_icon = ui_icon

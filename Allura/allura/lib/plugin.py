@@ -577,8 +577,8 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         if salt is None:
             salt = ''.join(chr(randint(1, 0x7f))
                            for i in range(M.User.SALT_LEN))
-        hashpass = sha256(salt + password.encode('utf-8')).digest()
-        return 'sha256' + salt + b64encode(hashpass)
+        hashpass = sha256((salt + password).encode('utf-8')).digest()
+        return 'sha256' + salt + six.ensure_text(b64encode(hashpass))
 
     def user_project_shortname(self, user):
         # "_" isn't valid for subdomains (which project names are used with)

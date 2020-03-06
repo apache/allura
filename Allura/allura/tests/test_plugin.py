@@ -598,6 +598,7 @@ class TestLocalAuthenticationProvider(object):
         ep = self.provider._encode_password
         assert ep('test_pass') != ep('test_pass')
         assert ep('test_pass', '0000') == ep('test_pass', '0000')
+        assert_equal(ep('test_pass', '0000'), 'sha2560000j7pRjKKZ5L8G0jScZKja9ECmYF2zBV82Mi+E3wkop30=')
 
     def test_set_password_with_old_password(self):
         user = Mock()

@@ -241,7 +241,7 @@ class SSLMiddleware(object):
 
         try:
             request_uri = req.url
-            request_uri.decode('ascii')
+            six.ensure_binary(request_uri).decode('ascii')
         except UnicodeError:
             resp = exc.HTTPBadRequest()
         else:
