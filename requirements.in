@@ -45,7 +45,7 @@ setproctitle==1.1.9
 six==1.12.0
 TimerMiddleware==0.5.1
 TurboGears2==2.3.12
-WebHelpers==1.3
+WebHelpers2
 WebOb==1.7.4
 wrapt==1.11.2
 
