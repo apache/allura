@@ -21,6 +21,7 @@ MarkupSafe
 Ming==0.5.6
 # oauth2 doesn't have py3.6 support.  There's a fork with fixes but no pypi releases I can find.  https://github.com/joestump/python-oauth2/issues/223
 oauth2
+paginate
 Paste
 PasteDeploy
 PasteScript

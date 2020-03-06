@@ -23,7 +23,7 @@ import json
 import logging
 
 from formencode import validators as fev
-from webhelpers import paginate
+import paginate
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -312,7 +312,9 @@ class PageList(ew_core.Widget):
             params['page'] = page - page_offset
             return url(request.path, params)
         return paginate.Page(list(range(count)), page + page_offset, int(limit),
-                             url=page_url)
+                             url=page_url,
+                             url_maker=lambda pagenum: '?page={}&limit={}'.format(pagenum-1, limit)
+                             )
 
     def prepare_context(self, context):
         context = super(PageList, self).prepare_context(context)

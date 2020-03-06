@@ -33,6 +33,7 @@ from tg import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound, HTTPFound
 from ming.odm import ThreadLocalORMSession
+import paginate
 
 from allura.app import SitemapEntry
 from allura.lib import helpers as h
@@ -50,7 +51,6 @@ from allura.scripts.delete_projects import DeleteProjects
 import allura
 
 from six.moves.urllib.parse import urlparse
-from webhelpers import paginate
 import six
 from six.moves import range
 from six.moves import map

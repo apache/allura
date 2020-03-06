@@ -23,7 +23,7 @@
 {% if pager_output.strip() %}
 <div>
     <div class="page_list">
-      {{ pager_output }}
+      {{ pager_output|safe }}
     </div>
     <div class="clear"></div>
 </div>
