@@ -1103,7 +1103,13 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         elif not self.is_root:
             shortname = self.shortname.split('/')[1]
 
-        return config['bulk_export_filename'].format(project=shortname, date=datetime.utcnow())
+        filename_format = config['bulk_export_filename']
+        if six.PY2:
+            # in py3 ConfigParser requires %% to escape literal "%"
+            # since % has interpolation meaning within ConfigParser
+            # but in py2 the "%%" stays as "%%" so we have to switch it back to a single one
+            filename_format = filename_format.replace('%%', '%')
+        return filename_format.format(project=shortname, date=datetime.utcnow())
 
     def bulk_export_status(self):
         '''

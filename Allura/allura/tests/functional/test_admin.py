@@ -19,6 +19,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
+from datetime import datetime
+
 import allura
 import pkg_resources
 from io import BytesIO
@@ -1030,6 +1032,7 @@ class TestExport(TestController):
         assert_in('error', self.webflash(r))
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
+    @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     def test_selected_one_tool(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': 'wiki'})
         assert_in('ok', self.webflash(r))
@@ -1037,6 +1040,7 @@ class TestExport(TestController):
             ['wiki'], 'test.zip', send_email=True, with_attachments=False)
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
+    @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': ['wiki', 'wiki2']})
         assert_in('ok', self.webflash(r))
@@ -1060,11 +1064,15 @@ class TestExport(TestController):
     @td.with_user_project('test-user')
     def test_bulk_export_filename_for_user_project(self):
         project = M.Project.query.get(shortname='u/test-user')
-        assert_equals(project.bulk_export_filename(), 'test-user.zip')
+        filename = project.bulk_export_filename()
+        assert filename.startswith('test-user-backup-{}-'.format(datetime.utcnow().year))
+        assert filename.endswith('.zip')
 
     def test_bulk_export_filename_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
-        assert_equals(project.bulk_export_filename(), 'p.zip')
+        filename = project.bulk_export_filename()
+        assert filename.startswith('p-backup-{}-'.format(datetime.utcnow().year))
+        assert filename.endswith('.zip')
 
     def test_bulk_export_path_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
@@ -1129,6 +1137,7 @@ class TestRestExport(TestRestApiBase):
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
     @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
+    @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     def test_export_ok(self, bulk_export, exportable_tools, MonQTask):
         MonQTask.query.get.return_value = None
         exportable_tools.return_value = [

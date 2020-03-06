@@ -641,6 +641,7 @@ class TestExportTasks(unittest.TestCase):
 
     @mock.patch('allura.tasks.export_tasks.shutil')
     @mock.patch('allura.tasks.export_tasks.zipdir')
+    @mock.patch.dict(tg.config, {'bulk_export_filename': '{project}.zip'})
     @td.with_wiki
     def test_bulk_export(self, zipdir, shutil):
         M.MonQTask.query.remove()
