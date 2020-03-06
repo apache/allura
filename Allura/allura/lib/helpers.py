@@ -65,8 +65,7 @@ import formencode
 from jinja2 import Markup
 from jinja2.filters import contextfilter, escape, do_filesizeformat
 from paste.deploy.converters import asbool, aslist, asint
-
-from webhelpers import date, feedgenerator, html, number, misc, text
+from webhelpers import date, html, number, misc, text
 from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc

@@ -37,7 +37,7 @@ from formencode import validators
 from bson import ObjectId
 from bson.son import SON
 from bson.errors import InvalidId
-from webhelpers import feedgenerator as FG
+import feedgenerator as FG
 
 from ming import schema
 from ming.odm import session

@@ -29,7 +29,7 @@ from ming.orm import state, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
-from webhelpers import feedgenerator as FG
+import feedgenerator as FG
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -961,7 +961,7 @@ class Feed(MappedClass):
     @classmethod
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, page=None, limit=None):
-        "Produces webhelper.feedgenerator Feed"
+        "Produces feedgenerator Feed"
         d = dict(title=title, link=h.absurl(h.urlquote(link)),
                  description=description, language='en',
                  feed_url=request.url)

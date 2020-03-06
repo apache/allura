@@ -30,7 +30,7 @@ from tg import expose, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import asbool, asint
 from webob import exc
-from webhelpers import feedgenerator as FG
+import feedgenerator as FG
 from activitystream.storage.mingstorage import Activity
 
 from allura.app import Application
