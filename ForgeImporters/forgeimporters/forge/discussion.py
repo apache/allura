@@ -124,8 +124,6 @@ class ForgeDiscussionImporter(AlluraImporter):
                     new_forum = dict(
                                     app_config_id = app.config._id,
                                     shortname=forum_json['shortname'],
-                                    #discussion_id=forum_json.get('discussion_id', None),
-                                    #_id=forum_json.get('_id', None),
                                     description=forum_json['description'],
                                     name=forum_json['name'],
                                     create='on',
