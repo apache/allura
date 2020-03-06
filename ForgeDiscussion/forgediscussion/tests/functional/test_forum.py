@@ -22,9 +22,9 @@ from __future__ import absolute_import
 import mock
 import random
 import logging
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
+from six.moves.email_mime_text import MIMEText
+from six.moves.email_mime_image import MIMEImage
+from six.moves.email_mime_multipart import MIMEMultipart
 
 import pkg_resources
 import pymongo

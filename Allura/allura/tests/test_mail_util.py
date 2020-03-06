@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import unittest
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from six.moves.email_mime_multipart import MIMEMultipart
+from six.moves.email_mime_text import MIMEText
 
 import mock
 from nose.tools import raises, assert_equal, assert_false, assert_true, assert_in
