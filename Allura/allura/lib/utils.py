@@ -213,14 +213,15 @@ class AntiSpam(object):
             self.timestamp = timestamp if timestamp else int(time.time())
             self.spinner = spinner if spinner else self.make_spinner()
             self.timestamp_text = str(self.timestamp)
-            self.spinner_text = self._wrap(self.spinner)
+            self.spinner_text = six.ensure_text(self._wrap(self.spinner))
         else:
             self.request = request
             self.timestamp_text = request.params['timestamp']
             self.spinner_text = request.params['spinner']
             self.timestamp = int(self.timestamp_text)
             self.spinner = self._unwrap(self.spinner_text)
-        self.spinner_ord = list(map(ord, self.spinner))
+        trans_fn = ord if six.PY2 else int
+        self.spinner_ord = list(map(trans_fn, self.spinner))
         self.random_padding = [random.randint(0, 255) for x in self.spinner]
         self.honey_class = self.enc(self.spinner_text, css_safe=True)
 
@@ -241,20 +242,21 @@ class AntiSpam(object):
         encoding doesn't use hyphens, underscores, colons, nor periods, so we'll
         use these characters to replace its plus, slash, equals, and newline.
         '''
-        s = base64.b64encode(s)
-        s = s.rstrip('=\n')
-        s = s.replace('+', '-').replace('/', '_')
-        s = 'X' + s
+        s = base64.b64encode(six.ensure_binary(s))
+        s = s.rstrip(b'=\n')
+        s = s.replace(b'+', b'-').replace(b'/', b'_')
+        s = b'X' + s
         return s
 
     @staticmethod
     def _unwrap(s):
         s = s[1:]
-        s = s.replace('-', '+').replace('_', '/')
+        s = six.ensure_binary(s)
+        s = s.replace(b'-', b'+').replace(b'_', b'/')
         i = len(s) % 4
         if i > 0:
-            s += '=' * (4 - i)
-        s = base64.b64decode(s + '\n')
+            s += b'=' * (4 - i)
+        s = base64.b64decode(s + b'\n')
         return s
 
     def enc(self, plain, css_safe=False):
@@ -275,6 +277,7 @@ class AntiSpam(object):
         enc = ''.join(six.unichr(p ^ s) for p, s in zip(plain, self.spinner_ord))
         enc = six.ensure_binary(enc)
         enc = self._wrap(enc)
+        enc = six.ensure_text(enc)
         if css_safe:
             enc = ''.join(ch for ch in enc if ch.isalpha())
         return enc
@@ -315,7 +318,7 @@ class AntiSpam(object):
         ip_chunk = '.'.join(octets[0:3])
         plain = '%d:%s:%s' % (
             timestamp, ip_chunk, tg.config.get('spinner_secret', 'abcdef'))
-        return hashlib.sha1(plain).digest()
+        return hashlib.sha1(six.ensure_binary(plain)).digest()
 
     @classmethod
     def validate_request(cls, request=None, now=None, params=None):
@@ -339,11 +342,11 @@ class AntiSpam(object):
                     raise ValueError('Post from the distant past')
                 if obj.spinner != expected_spinner:
                     raise ValueError('Bad spinner value')
-                for k in new_params.keys():
+                for k in list(new_params.keys()):
                     try:
                         new_params[obj.dec(k)] = new_params[k]
                         new_params.pop(k)
-                    except:
+                    except Exception as ex:
                         pass
                 for fldno in range(obj.num_honey):
                     try:
