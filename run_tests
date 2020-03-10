@@ -17,16 +17,19 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
-from copy import copy
 from glob import glob
 import multiprocessing
 from multiprocessing.pool import ThreadPool
 import subprocess
 import sys
 import threading
-import textwrap
 import os
+
+import six
 
 CPUS = multiprocessing.cpu_count()
 CONCURRENT_SUITES = (CPUS // 4) or CPUS
@@ -42,10 +45,14 @@ NOT_MULTIPROC_SAFE = [
     'ForgeSVN',
 ]
 
+# unless you want to mess with changing stdout's own encoding, this works well:
+#  py2 gets utf-8 encoded (binary) and py3 gets unicode text
+print_ensured = six.ensure_binary if six.PY2 else six.ensure_text
+
 
 def run_one(cmd, **popen_kwargs):
-    cmd_to_show = u'`{}` in {}'.format(cmd, popen_kwargs.get('cwd', '.'))
-    print u'{} running {}\n'.format(threading.current_thread(), cmd_to_show)
+    cmd_to_show = '`{}` in {}'.format(cmd, popen_kwargs.get('cwd', '.'))
+    print('{} running {}\n'.format(threading.current_thread(), cmd_to_show))
     sys.stdout.flush()
 
     all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
@@ -56,15 +63,15 @@ def run_one(cmd, **popen_kwargs):
     proc = subprocess.Popen(cmd, **all_popen_kwargs)
     while proc.poll() is None:
         line = proc.stdout.readline()
-        sys.stdout.write(line)
-        if 'No data to combine' in line:
+        sys.stdout.write(print_ensured(line))
+        if b'No data to combine' in line:
             sys.stdout.write('^^ error from "coverage combine" command.  Make sure your package has a setup.cfg with coverage settings like other packages\n')
         sys.stdout.flush()
     # wait for completion and get remainder of output
     out_remainder, _ = proc.communicate()
-    sys.stdout.write(out_remainder)
+    sys.stdout.write(print_ensured(out_remainder))
     sys.stdout.flush()
-    print u'finished {}'.format(cmd_to_show)
+    print('finished {}'.format(cmd_to_show))
     sys.stdout.flush()
     return proc
 
@@ -108,7 +115,7 @@ def check_packages(packages):
         try:
             __import__(pkg.lower())
         except ImportError:
-            print "Not running tests for {}, since it isn't set up".format(pkg)
+            print("Not running tests for {}, since it isn't set up".format(pkg))
         else:
             yield pkg
 
