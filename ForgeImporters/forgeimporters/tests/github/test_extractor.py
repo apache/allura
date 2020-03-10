@@ -19,15 +19,13 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
 from unittest import TestCase
+from io import BytesIO
 import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 
 from mock import patch, Mock
 
 from ... import github
 
-# Can't use cStringIO here, because we cannot set attributes or subclass it,
-# and this is needed in mocked_urlopen below
-from StringIO import StringIO
 from six.moves import zip
 
 
@@ -65,24 +63,24 @@ class TestGitHubProjectExtractor(TestCase):
     def mocked_urlopen(self, url):
         headers = {}
         if url.endswith('/test_project'):
-            response = StringIO(json.dumps(self.PROJECT_INFO))
+            response = BytesIO(json.dumps(self.PROJECT_INFO))
         elif url.endswith('/issues?state=closed'):
-            response = StringIO(json.dumps(self.CLOSED_ISSUES_LIST))
+            response = BytesIO(json.dumps(self.CLOSED_ISSUES_LIST))
         elif url.endswith('/issues?state=open'):
-            response = StringIO(json.dumps(self.OPENED_ISSUES_LIST))
+            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST))
             headers = {'Link': '</issues?state=open&page=2>; rel="next"'}
         elif url.endswith('/issues?state=open&page=2'):
-            response = StringIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2))
+            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2))
         elif url.endswith('/comments'):
-            response = StringIO(json.dumps(self.ISSUE_COMMENTS))
+            response = BytesIO(json.dumps(self.ISSUE_COMMENTS))
             headers = {'Link': '</comments?page=2>; rel="next"'}
         elif url.endswith('/comments?page=2'):
-            response = StringIO(json.dumps(self.ISSUE_COMMENTS_PAGE2))
+            response = BytesIO(json.dumps(self.ISSUE_COMMENTS_PAGE2))
         elif url.endswith('/events'):
-            response = StringIO(json.dumps(self.ISSUE_EVENTS))
+            response = BytesIO(json.dumps(self.ISSUE_EVENTS))
             headers = {'Link': '</events?page=2>; rel="next"'}
         elif url.endswith('/events?page=2'):
-            response = StringIO(json.dumps(self.ISSUE_EVENTS_PAGE2))
+            response = BytesIO(json.dumps(self.ISSUE_EVENTS_PAGE2))
 
         response.info = lambda: headers
         return response
@@ -166,9 +164,9 @@ class TestGitHubProjectExtractor(TestCase):
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': '1382693522',
         }
-        response_limit_exceeded = StringIO('{}')
+        response_limit_exceeded = BytesIO(b'{}')
         response_limit_exceeded.info = lambda: limit_exceeded_headers
-        response_ok = StringIO('{}')
+        response_ok = BytesIO(b'{}')
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_limit_exceeded, response_ok]
         e = github.GitHubProjectExtractor('test_project')
@@ -182,7 +180,7 @@ class TestGitHubProjectExtractor(TestCase):
         sleep.reset_mock()
         urlopen.reset_mock()
         log.warn.reset_mock()
-        response_ok = StringIO('{}')
+        response_ok = BytesIO(b'{}')
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_ok]
         e.get_page('fake 2')
@@ -202,11 +200,11 @@ class TestGitHubProjectExtractor(TestCase):
         }
 
         def urlopen_side_effect(*a, **kw):
-            mock_resp = StringIO('{}')
+            mock_resp = BytesIO(b'{}')
             mock_resp.info = lambda: {}
             urlopen.side_effect = [mock_resp]
             raise six.moves.urllib.error.HTTPError(
-                'url', 403, 'msg', limit_exceeded_headers, StringIO('{}'))
+                'url', 403, 'msg', limit_exceeded_headers, BytesIO(b'{}'))
         urlopen.side_effect = urlopen_side_effect
         e = github.GitHubProjectExtractor('test_project')
         e.get_page('fake')

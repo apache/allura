@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 import allura
-from StringIO import StringIO
 import logging
 
 import PIL

@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import os
 import logging
 from urllib import basejoin
-from cStringIO import StringIO
+from io import BytesIO
 from collections import defaultdict
 from xml.etree import ElementTree as ET
 from copy import copy
@@ -50,7 +50,7 @@ from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
 from allura.tasks import index_tasks
 import six
-from io import open
+from io import open, BytesIO
 from six.moves import map
 
 log = logging.getLogger(__name__)
@@ -710,7 +710,7 @@ class Application(object):
         if message.get('filename'):
             # Special case - the actual post may not have been created yet
             log.info('Saving attachment %s', message['filename'])
-            fp = StringIO(message['payload'])
+            fp = BytesIO(six.ensure_binary(message['payload']))
             self.AttachmentClass.save_attachment(
                 message['filename'], fp,
                 content_type=message.get(
@@ -728,9 +728,9 @@ class Application(object):
                 message_id)
 
             try:
-                fp = StringIO(message['payload'].encode('utf-8'))
+                fp = BytesIO(message['payload'].encode('utf-8'))
             except UnicodeDecodeError:
-                fp = StringIO(message['payload'])
+                fp = BytesIO(message['payload'])
 
             post.attach(
                 'alternate', fp,

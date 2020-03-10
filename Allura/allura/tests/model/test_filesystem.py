@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 from unittest import TestCase
-from cStringIO import StringIO
 from io import BytesIO
 
 from tg import tmpl_context as c
@@ -55,7 +54,7 @@ class TestFile(TestCase):
         self.db.fs.chunks.remove()
 
     def test_from_stream(self):
-        f = File.from_stream('test1.txt', StringIO('test1'))
+        f = File.from_stream('test1.txt', BytesIO(b'test1'))
         self.session.flush()
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 1
@@ -65,7 +64,7 @@ class TestFile(TestCase):
         self._assert_content(f, 'test1')
 
     def test_from_data(self):
-        f = File.from_data('test2.txt', 'test2')
+        f = File.from_data('test2.txt', b'test2')
         self.session.flush(f)
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 1
@@ -86,7 +85,7 @@ class TestFile(TestCase):
         assert text.startswith('# -*-')
 
     def test_delete(self):
-        f = File.from_data('test1.txt', 'test1')
+        f = File.from_data('test1.txt', b'test1')
         self.session.flush()
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 1
@@ -98,8 +97,8 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 0
 
     def test_remove(self):
-        File.from_data('test1.txt', 'test1')
-        File.from_data('test2.txt', 'test2')
+        File.from_data('test1.txt', b'test1')
+        File.from_data('test2.txt', b'test2')
         self.session.flush()
         assert self.db.fs.count() == 2
         assert self.db.fs.files.count() == 2
@@ -111,7 +110,7 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 1
 
     def test_overwrite(self):
-        f = File.from_data('test1.txt', 'test1')
+        f = File.from_data('test1.txt', b'test1')
         self.session.flush()
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 1
@@ -126,7 +125,7 @@ class TestFile(TestCase):
         self._assert_content(f, 'test2')
 
     def test_serve_embed(self):
-        f = File.from_data('te s\u0b6e1.txt', 'test1')
+        f = File.from_data('te s\u0b6e1.txt', b'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
                 patch('allura.lib.utils.tg.response', Response()) as response, \
@@ -139,7 +138,7 @@ class TestFile(TestCase):
             assert 'Content-Disposition' not in response.headers
 
     def test_serve_embed_false(self):
-        f = File.from_data('te s\u0b6e1.txt', 'test1')
+        f = File.from_data('te s\u0b6e1.txt', b'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
                 patch('allura.lib.utils.tg.response', Response()) as response, \
@@ -175,7 +174,7 @@ class TestFile(TestCase):
     def test_not_image(self):
         f, t = File.save_image(
             'file.txt',
-            StringIO('blah'),
+            BytesIO(b'blah'),
             thumbnail_size=(16, 16),
             square=True,
             save_original=True)
@@ -185,7 +184,7 @@ class TestFile(TestCase):
     def test_invalid_image(self):
         f, t = File.save_image(
             'bogus.png',
-            StringIO('bogus data here!'),
+            BytesIO(b'bogus data here!'),
             thumbnail_size=(16, 16),
             square=True,
             save_original=True)

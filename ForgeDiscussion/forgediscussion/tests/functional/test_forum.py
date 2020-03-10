@@ -212,13 +212,13 @@ class TestForumMessageHandling(TestController):
         assert_equal(FM.ForumPost.query.find().count(), 3)
 
     def test_attach(self):
-        self._post('testforum', 'Attachment Thread', 'This is a text file',
+        self._post('testforum', 'Attachment Thread', 'This is text attachment',
                    message_id='test.attach.100@domain.net',
                    filename='test.txt',
                    content_type='text/plain')
-        self._post('testforum', 'Test Thread', 'Nothing here',
+        self._post('testforum', 'Test Thread', b'Nothing here',
                    message_id='test.attach.100@domain.net')
-        self._post('testforum', 'Attachment Thread', 'This is a text file',
+        self._post('testforum', 'Attachment Thread', 'This is binary ¶¬¡™£¢¢•º™™¶'.encode('utf-8'),
                    message_id='test.attach.100@domain.net',
                    content_type='text/plain')
 

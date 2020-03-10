@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 import os
-import StringIO
+from io import BytesIO
 import allura
 import json
 from io import open
@@ -550,11 +550,11 @@ class TestRootController(TestController):
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/wiki/TEST/attachment/' + filename)
-        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(BytesIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/wiki/TEST/attachment/' + filename + '/thumb')
 
-        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(BytesIO(r.body))
         assert thumbnail.size == (100, 100)
 
         # Make sure thumbnail is absent

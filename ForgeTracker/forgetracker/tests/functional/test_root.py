@@ -23,7 +23,7 @@ import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import os
 import time
 import json
-import StringIO
+from io import BytesIO
 import allura
 import mock
 from io import open
@@ -979,11 +979,11 @@ class TestFunctionalController(TrackerTestController):
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/bugs/1/attachment/' + filename)
-        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(BytesIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/bugs/1/attachment/' + filename + '/thumb')
 
-        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(BytesIO(r.body))
         assert thumbnail.size == (100, 100)
 
     def test_sidebar_static_page(self):

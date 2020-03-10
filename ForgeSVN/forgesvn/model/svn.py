@@ -27,7 +27,7 @@ import time
 import operator as op
 from subprocess import Popen, PIPE
 from hashlib import sha1
-from cStringIO import StringIO
+from io import BytesIO
 from datetime import datetime
 import tempfile
 from shutil import rmtree
@@ -578,7 +578,7 @@ class SVNImplementation(M.RepositoryImplementation):
         data = self._svn.cat(
             self._url + blob.path(),
             revision=self._revision(blob.commit._id))
-        return StringIO(data)
+        return BytesIO(data)
 
     def blob_size(self, blob):
         try:

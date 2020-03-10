@@ -26,10 +26,10 @@ import json
 import os
 from operator import attrgetter
 from cgi import FieldStorage
+from io import BytesIO
 
 from nose.tools import assert_equal
 from tg import tmpl_context as c
-from cStringIO import StringIO
 
 from forgediscussion.site_stats import posts_24hr
 from ming.orm import ThreadLocalORMSession
@@ -96,7 +96,7 @@ class TestBulkExport(TestDiscussionApiBase):
         test_file1 = FieldStorage()
         test_file1.name = 'file_info'
         test_file1.filename = 'test_file'
-        test_file1.file = StringIO('test file1\n')
+        test_file1.file = BytesIO(b'test file1\n')
         post.add_attachment(test_file1)
         ThreadLocalORMSession.flush_all()
 

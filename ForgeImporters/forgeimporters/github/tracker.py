@@ -22,11 +22,7 @@ import logging
 from datetime import datetime
 from six.moves.urllib.error import HTTPError
 import six
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import BytesIO
 
 from formencode import validators as fev
 from tg import (
@@ -289,7 +285,7 @@ class Attachment(object):
     def get_file(self, extractor):
         try:
             fp_ish = extractor.urlopen(self.url)
-            fp = StringIO(fp_ish.read())
+            fp = BytesIO(fp_ish.read())
             return fp
         except HTTPError as e:
             if e.code == 404:

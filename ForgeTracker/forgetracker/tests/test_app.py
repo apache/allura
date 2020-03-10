@@ -21,11 +21,11 @@ import tempfile
 import json
 import operator
 import os
+from io import BytesIO
 
 from nose.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 from cgi import FieldStorage
-from cStringIO import StringIO
 
 from alluratest.controller import setup_basic_test
 from ming.orm import ThreadLocalORMSession
@@ -102,7 +102,7 @@ class TestBulkExport(TrackerTestController):
         test_file1 = FieldStorage()
         test_file1.name = 'file_info'
         test_file1.filename = 'test_file'
-        test_file1.file = StringIO('test file1\n')
+        test_file1.file = BytesIO(b'test file1\n')
         self.post.add_attachment(test_file1)
         ThreadLocalORMSession.flush_all()
 

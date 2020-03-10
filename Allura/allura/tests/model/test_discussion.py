@@ -22,7 +22,7 @@ Model tests for artifact
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from cStringIO import StringIO
+from io import BytesIO
 import time
 from datetime import datetime, timedelta
 from cgi import FieldStorage
@@ -178,14 +178,14 @@ def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    p_att = p.attach('foo.text', StringIO('Hello, world!'),
+    p_att = p.attach('foo.text', BytesIO(b'Hello, world!'),
                      discussion_id=d._id,
                      thread_id=t._id,
                      post_id=p._id)
-    t_att = p.attach('foo2.text', StringIO('Hello, thread!'),
+    t_att = p.attach('foo2.text', BytesIO(b'Hello, thread!'),
                      discussion_id=d._id,
                      thread_id=t._id)
-    d_att = p.attach('foo3.text', StringIO('Hello, discussion!'),
+    d_att = p.attach('foo3.text', BytesIO(b'Hello, discussion!'),
                      discussion_id=d._id)
 
     ThreadLocalORMSession.flush_all()
@@ -202,7 +202,7 @@ def test_attachment_methods():
     fs.name = 'file_info'
     fs.filename = 'fake.txt'
     fs.type = 'text/plain'
-    fs.file = StringIO('this is the content of the fake file\n')
+    fs.file = BytesIO(b'this is the content of the fake file\n')
     p = t.post(text='test message', forum=None, subject='', file_info=fs)
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
@@ -220,12 +220,12 @@ def test_multiple_attachments():
     test_file1.name = 'file_info'
     test_file1.filename = 'test1.txt'
     test_file1.type = 'text/plain'
-    test_file1.file = StringIO('test file1\n')
+    test_file1.file = BytesIO(b'test file1\n')
     test_file2 = FieldStorage()
     test_file2.name = 'file_info'
     test_file2.filename = 'test2.txt'
     test_file2.type = 'text/plain'
-    test_file2.file = StringIO('test file2\n')
+    test_file2.file = BytesIO(b'test file2\n')
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     test_post = t.post('test post')
@@ -243,7 +243,7 @@ def test_add_attachment():
     test_file.name = 'file_info'
     test_file.filename = 'test.txt'
     test_file.type = 'text/plain'
-    test_file.file = StringIO('test file\n')
+    test_file.file = BytesIO(b'test file\n')
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     test_post = t.post('test post')
@@ -262,12 +262,12 @@ def test_notification_two_attaches():
     fs1.name = 'file_info'
     fs1.filename = 'fake.txt'
     fs1.type = 'text/plain'
-    fs1.file = StringIO('this is the content of the fake file\n')
+    fs1.file = BytesIO(b'this is the content of the fake file\n')
     fs2 = FieldStorage()
     fs2.name = 'file_info'
     fs2.filename = 'fake2.txt'
     fs2.type = 'text/plain'
-    fs2.file = StringIO('this is the content of the fake file\n')
+    fs2.file = BytesIO(b'this is the content of the fake file\n')
     p = t.post(text='test message', forum=None, subject='', file_info=[fs1, fs2])
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
@@ -285,7 +285,7 @@ def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    p.attach('foo.text', StringIO(''),
+    p.attach('foo.text', BytesIO(b''),
              discussion_id=d._id,
              thread_id=t._id,
              post_id=p._id)
@@ -302,7 +302,7 @@ def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    p.attach('foo.text', StringIO(''),
+    p.attach('foo.text', BytesIO(b''),
              discussion_id=d._id,
              thread_id=t._id,
              post_id=p._id)
@@ -315,7 +315,7 @@ def test_post_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
-    p.attach('foo.text', StringIO(''),
+    p.attach('foo.text', BytesIO(b''),
              discussion_id=d._id,
              thread_id=t._id,
              post_id=p._id)

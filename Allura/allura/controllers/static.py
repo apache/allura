@@ -17,8 +17,9 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from cStringIO import StringIO
+from io import BytesIO
 
+import six
 from tg import expose
 from tg.decorators import without_trailing_slash
 from webob import exc
@@ -55,4 +56,4 @@ class NewForgeController(object):
         """
         css, md5 = g.tool_icon_css
         return utils.serve_file(
-            StringIO(css), 'tool_icon_css', 'text/css', etag=md5)
+            BytesIO(six.ensure_binary(css)), 'tool_icon_css', 'text/css', etag=md5)

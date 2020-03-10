@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
 import os
-from cStringIO import StringIO
+from io import BytesIO
 import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 from io import open
 
@@ -276,7 +276,7 @@ class TestNeighborhood(TestController):
                                       homepage='# MozQ1'),
                           extra_environ=dict(username=str('root')), upload_files=[upload])
         r = self.app.get('/adobe/icon')
-        image = PIL.Image.open(StringIO(r.body))
+        image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (48, 48)
 
         r = self.app.get('/adobe/icon?foo=bar')
@@ -894,7 +894,7 @@ class TestNeighborhood(TestController):
                          foo_id, extra_environ=dict(username=str('root')))
         r = self.app.get('/adobe/_admin/awards/%s/icon' %
                          foo_id, extra_environ=dict(username=str('root')))
-        image = PIL.Image.open(StringIO(r.body))
+        image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
                       params=dict(grant='FOO', recipient='adobe-1',

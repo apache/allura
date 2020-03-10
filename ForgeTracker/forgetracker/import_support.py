@@ -21,7 +21,7 @@ from __future__ import absolute_import
 import logging
 import json
 from datetime import datetime
-from cStringIO import StringIO
+from io import BytesIO
 
 # Non-stdlib imports
 from tg import tmpl_context as c
@@ -67,7 +67,7 @@ class ResettableStream(object):
     def _read_header(self):
         if self.buf is None:
             data = self.fp.read(self.buf_size)
-            self.buf = StringIO(data)
+            self.buf = BytesIO(data)
             self.buf_len = len(data)
             self.stream_pos = self.buf_len
 

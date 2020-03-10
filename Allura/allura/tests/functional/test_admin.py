@@ -21,7 +21,7 @@ from __future__ import absolute_import
 import os
 import allura
 import pkg_resources
-import StringIO
+from io import BytesIO
 import logging
 from io import open
 
@@ -384,12 +384,12 @@ class TestProjectAdmin(TestController):
                 short_description='A Test Project'),
                 upload_files=[upload])
         r = self.app.get('/p/test/icon')
-        image = PIL.Image.open(StringIO.StringIO(r.body))
+        image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (48, 48)
 
         r = self.app.get('/p/test/icon?foo=bar')
         r = self.app.get('/p/test/icon?w=96')
-        image = PIL.Image.open(StringIO.StringIO(r.body))
+        image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (96, 96)
         r = self.app.get('/p/test/icon?w=12345', status=404)
 
@@ -411,10 +411,10 @@ class TestProjectAdmin(TestController):
         filename = project.get_screenshots()[0].filename
         r = self.app.get('/p/test/screenshot/' + filename)
         uploaded = PIL.Image.open(file_path)
-        screenshot = PIL.Image.open(StringIO.StringIO(r.body))
+        screenshot = PIL.Image.open(BytesIO(r.body))
         assert uploaded.size == screenshot.size
         r = self.app.get('/p/test/screenshot/' + filename + '/thumb')
-        thumb = PIL.Image.open(StringIO.StringIO(r.body))
+        thumb = PIL.Image.open(BytesIO(r.body))
         assert thumb.size == (150, 150)
         # FIX: home pages don't currently support screenshots (now that they're a wiki);
         # reinstate this code (or appropriate) when we have a macro for that

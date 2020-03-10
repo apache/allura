@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 import re
-from cStringIO import StringIO
+from io import BytesIO
 import logging
 
 import PIL
@@ -103,7 +103,7 @@ class File(MappedClass):
 
     @classmethod
     def from_data(cls, filename, data, **kw):
-        return cls.from_stream(filename, StringIO(data), **kw)
+        return cls.from_stream(filename, BytesIO(data), **kw)
 
     def delete(self):
         self._fs().delete(self.file_id)

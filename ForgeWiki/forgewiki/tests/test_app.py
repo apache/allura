@@ -22,8 +22,8 @@ import tempfile
 import json
 import operator
 import os
+from io import BytesIO
 
-from cStringIO import StringIO
 from nose.tools import assert_equal
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
@@ -96,7 +96,7 @@ class TestBulkExport(object):
         self.page.text = 'test_text'
         self.page.mod_date = datetime.datetime(2013, 7, 5)
         self.page.labels = ['test_label1', 'test_label2']
-        self.page.attach('some/path/test_file', StringIO('test string'))
+        self.page.attach('some/path/test_file', BytesIO(b'test string'))
         ThreadLocalORMSession.flush_all()
 
     def test_bulk_export_with_attachmetns(self):

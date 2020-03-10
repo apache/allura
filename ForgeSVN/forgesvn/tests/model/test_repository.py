@@ -26,8 +26,9 @@ import pkg_resources
 from itertools import count, product
 from datetime import datetime
 from zipfile import ZipFile
-
+from io import BytesIO
 from collections import defaultdict
+
 from tg import tmpl_context as c, app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in
@@ -921,8 +922,7 @@ class TestCommit(_TestWithRepo):
             return counter.i
         counter.i = 0
         blobs = defaultdict(counter)
-        from cStringIO import StringIO
-        return lambda blob: StringIO(str(blobs[blob.path()]))
+        return lambda blob: BytesIO(str(blobs[blob.path()]))
 
     def test_diffs_file_renames(self):
         def open_blob(blob):
@@ -935,8 +935,7 @@ class TestCommit(_TestWithRepo):
                 # moved from /b/b and modified
                 '/b/a/z': 'Death Star will destroy you\nALL',
             }
-            from cStringIO import StringIO
-            return StringIO(blobs.get(blob.path(), ''))
+            return BytesIO(blobs.get(blob.path(), ''))
         self.repo._impl.open_blob = open_blob
 
         self.repo._impl.commit = mock.Mock(return_value=self.ci)

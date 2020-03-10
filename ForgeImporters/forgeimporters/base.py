@@ -20,6 +20,8 @@ from __future__ import absolute_import
 import os
 import errno
 import logging
+from io import BytesIO
+
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 from collections import defaultdict
@@ -29,10 +31,6 @@ from datetime import datetime
 import codecs
 from six.moves import filter
 import six
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 from bs4 import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
@@ -616,17 +614,17 @@ class ImportAdminExtension(AdminExtension):
         sidebar_links.append(link)
 
 
-def stringio_parser(page):
+def bytesio_parser(page):
     return {
         'content-type': page.info()['content-type'],
-        'data': StringIO(page.read()),
+        'data': BytesIO(page.read()),
     }
 
 
 class File(object):
 
     def __init__(self, url, filename=None):
-        extractor = ProjectExtractor(None, url, parser=stringio_parser)
+        extractor = ProjectExtractor(None, url, parser=bytesio_parser)
         self.url = url
         self.filename = filename or os.path.basename(urlparse(url).path)
         # try to get the mime-type from the filename first, because

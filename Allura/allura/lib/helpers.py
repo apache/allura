@@ -23,6 +23,7 @@ import sys
 import os
 import os.path
 import difflib
+
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import re
 import unicodedata
@@ -37,7 +38,7 @@ from collections import defaultdict
 import shlex
 import socket
 from functools import partial
-from cStringIO import StringIO
+from io import BytesIO
 import cgi
 
 import emoji
@@ -1211,7 +1212,7 @@ def rate_limit(cfg_opt, artifact_count, start_date, exception=None):
 
 def base64uri(content_or_image, image_format='PNG', mimetype='image/png', windows_line_endings=False):
     if hasattr(content_or_image, 'save'):
-        output = StringIO()
+        output = BytesIO()
         content_or_image.save(output, format=image_format)
         content = output.getvalue()
     else:

@@ -29,7 +29,7 @@ import crypt
 import random
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.parse import urlparse
-from cStringIO import StringIO
+from io import BytesIO
 from random import randint
 from hashlib import sha256
 from base64 import b64encode
@@ -1094,7 +1094,7 @@ class ProjectRegistrationProvider(object):
                     troves.append(
                         M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
         if 'icon' in project_template:
-            icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+            icon_file = BytesIO(urlopen(project_template['icon']['url']).read())
             p.save_icon(project_template['icon']['filename'], icon_file)
 
         if user_project:
