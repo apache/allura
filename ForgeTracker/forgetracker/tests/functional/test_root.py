@@ -1381,9 +1381,13 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        response = self.app.get('/p/test/bugs/search/?q=test')
-        assert '3 results' in response, response.showbrowser()
-        assert 'test third ticket' in response, response.showbrowser()
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=2')
+        response.mustcontain('results of 3')
+        response.mustcontain('test second ticket')
+        next_page_link = response.html.select('.page_list a')[0]
+        assert_equal(next_page_link.text, '2')
+        # keep 'q' and zero-based page nums:
+        assert_equal(next_page_link['href'], '/p/test/bugs/search/?q=test&limit=2&page=1')
 
         # 'filter' is special kwarg, don't let it cause problems
         r = self.app.get('/p/test/bugs/search/?q=test&filter=blah')
