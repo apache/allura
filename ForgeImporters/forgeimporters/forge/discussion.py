@@ -53,6 +53,7 @@ from forgediscussion import model as DM
 
 from alluraImporter import AlluraImporter
 
+
 class ForgeDiscussionImportForm(ToolImportForm):
     discussions_json = v.JsonFile(not_empty=True)
 
@@ -70,34 +71,41 @@ class ForgeDiscussionImportController(ToolImportController):
     @require_post()
     def create(self, discussions_json, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
-            save_importer_upload(c.project, 'discussions.json', json.dumps(discussions_json))
+            save_importer_upload(
+                            c.project,
+                            'discussions.json',
+                            json.dumps(discussions_json)
+                           )
             self.importer.post(mount_point=mount_point, mount_label=mount_label)
-            flash('Discussion import has begun. Your new discussion will be available when the import is complete')
-            
+            flash('Discussion import has begun. ' \
+                   + 'Your new discussion will be available ' \
+                   + 'when the import is complete'
+                 )
         else:
-            flash('There are too many imports pending at this time. Please wait and try again.', 'error')
-
+            flash('There are too many imports pending at this time. ' \
+                  + 'Please wait and try again.', 
+                  'error'
+                 )
         redirect(c.project.url() + 'admin/')
 
 
 class ForgeDiscussionImporter(AlluraImporter):
+
+
     source = 'Allura'
     target_app_ep_names = 'discussion'
     controller = ForgeDiscussionImportController
     tool_label = 'Discussion'
     tool_description = 'Import an allura discussion.'
 
-
     def __init__(self, *args, **kwargs):
         super(ForgeDiscussionImporter, self).__init__(*args, **kwargs)
-
 
     def _load_json(self, project):
         upload_path = get_importer_upload_path(project)
         full_path = os.path.join(upload_path, 'discussions.json')
         with open(full_path) as fp:
             return json.load(fp)
-
 
     def import_tool(self, project, user, mount_point=None,
                      mount_label=None, **kw):
@@ -140,7 +148,10 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                     for thread_json in forum_json["threads"]:
                         thread = forum.get_discussion_thread(dict(
-                                            headers=dict(Subject=thread_json['subject'])))[0]
+                                            headers=dict(
+                                                Subject=thread_json['subject']
+                                            )
+                                        ))[0]
 
                         if "import_id" in thread_json:
                             thread.import_id = thread_json["import_id"]
@@ -149,7 +160,6 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                     session(forum).flush(forum)
                     session(forum).expunge(forum)
-
 
                 M.AuditLog.log(
                     "import tool %s from exported Allura JSON" % (
@@ -169,18 +179,15 @@ class ForgeDiscussionImporter(AlluraImporter):
             finally:
                 M.session.artifact_orm_session._get().skip_mod_date = False
                                      
-
     def _clear_forums(self, app):
       forums = app.forums
       for forum in forums:
           forum.delete()
 
-
     def annotate_text(self, text, user, username):
         label = " created"
         
         return self.annotate(text, user, username, label)
-
 
     def add_posts(self, thread, posts, app):
         created_posts = []
@@ -209,16 +216,24 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=self.annotate_text(post_json['text'], user, username),
+                        text=self.annotate_text(post_json['text'],
+                                                user,
+                                                username
+                                               ),
                         timestamp=timestamp,
                         ignore_security=True,
                         parent_id=parent_id
                 )
 
-                if "last_edited" in post_json and post_json["last_edited"] != None:
+                if ("last_edited" in post_json) \
+                    and (post_json["last_edited"] != None):
                     p.last_edit_date = parse(post_json["last_edited"])
 
-                p.add_multiple_attachments([File(a["url"]) for a in post_json["attachments"]])
+                p.add_multiple_attachments(
+                        [File(a["url"]) for a in post_json["attachments"]]
+                )
 
                 if slug != '': 
                     created_posts.append({ slug: p })
+
+

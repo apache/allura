@@ -16,7 +16,6 @@
 #       under the License.
 
 from unittest import TestCase
-
 import mock
 
 from dateutil.parser import parse
@@ -42,11 +41,9 @@ class TestDiscussionImporter(TestCase):
         self.patcher_g = mock.patch('forgeimporters.base.g', mock.MagicMock())
         self.patcher_g.start()
 
-
     def tearDown(self):
         super(TestDiscussionImporter, self).tearDown()
         self.patcher_g.stop()
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
@@ -55,7 +52,10 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'h')
     @mock.patch.object(discussion, 'ThreadLocalORMSession')
     def test_import_tool_with_general_discussion(self, tlos, h, session, m, g, c):
-        """ This test creates a general discussion forum with one thread and one post from admin """
+        """ This test creates a general discussion forum with
+             one thread and one post from admin 
+        """
+
         importer = discussion.ForgeDiscussionImporter()
         _json = { 
             'forums': [{
@@ -75,7 +75,7 @@ class TestDiscussionImporter(TestCase):
                                 'attachments': [],
                                 'author': 'admin1',
                                 'timestamp': '2020-01-29 22:30:42.497000',
-                                'author_icon_url': 'https://secure.gravatar.com/avatar/2ba5bfa33e6faca31f7dd150960ce926?r=pg&d=https%3A%2F%2F4.xb.sf.net%2Fnf%2F0%2F_ew_%2Ftheme%2Fsftheme%2Fimages%2Fsandiego%2Ficons%2Fdefault-avatar.png',
+                                'author_icon_url': 'bla',
                                 'text': 'hi',
                                 'last_edited': None,
                                 'slug': '00aa',
@@ -107,7 +107,10 @@ class TestDiscussionImporter(TestCase):
         g.post_event = mock.Mock()
         m.AuditLog.log = mock.Mock()
 
-        importer.import_tool(project, user, mount_point='mount_point', mount_label='mount_label')
+        importer.import_tool(project, user, 
+                             mount_point='mount_point', 
+                             mount_label='mount_label'
+                            )
 
         project.install_app.assert_called_once_with(
             'discussion', 'mount_point', 'mount_label',
@@ -120,12 +123,24 @@ class TestDiscussionImporter(TestCase):
         new_forum = self.__get_forum_dict(app, forum_json)
 
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
-        forum.get_discussion_thread(dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
-        importer.add_posts.assert_called_once_with(thread1, _json["forums"][0]["threads"][0]["posts"], app)
+        forum.get_discussion_thread(
+              dict(
+                   headers=dict(
+                        Subject=_json["forums"][0]["threads"][0]["subject"]
+                  )))
+        importer.add_posts.assert_called_once_with(
+                                    thread1, 
+                                    _json["forums"][0]["threads"][0]["posts"],
+                                    app
+        )
 
-        m.AuditLog.log.assert_called_once_with("import tool mount_point from exported Allura JSON", project=project, user=user, url='foo')
+        m.AuditLog.log.assert_called_once_with(
+                        "import tool mount_point from exported Allura JSON",
+                        project=project,
+                        user=user,
+                        url='foo'
+                    )
         g.post_event.assert_called_once_with("project_updated")
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
@@ -134,7 +149,9 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'h')
     @mock.patch.object(discussion, 'ThreadLocalORMSession')
     def test_import_tool_unicode(self, tlos, h, session, m, g, c):
-        """ This method tests if the import tool method supports unicode characters """
+        """ This method tests if the import tool method 
+            supports unicode characters 
+        """
         
         importer = discussion.ForgeDiscussionImporter()
 
@@ -154,7 +171,7 @@ class TestDiscussionImporter(TestCase):
                               "attachments": [],
                               "author": "admin1",
                               "timestamp": "2020-01-29 22:32:00.584000",
-                              "author_icon_url": "https://secure.gravatar.com/avatar/2ba5bfa33e6faca31f7dd150960ce926?r=pg&d=https%3A%2F%2F4.xb.sf.net%2Fnf%2F0%2F_ew_%2Ftheme%2Fsftheme%2Fimages%2Fsandiego%2Ficons%2Fdefault-avatar.png",
+                              "author_icon_url": "bla",
                               "text": "test with un\u00ef\u00e7\u00f8\u2202\u00e9 text",
                               "last_edited": None,
                               "slug": "0e0e",
@@ -190,7 +207,11 @@ class TestDiscussionImporter(TestCase):
         importer.get_user = mock.Mock(return_value=admin)
         importer.annotate_text = mock.Mock(return_value='aa')
 
-        importer.import_tool(project, user, mount_point='mount_point', mount_label='mount_label')
+        importer.import_tool(project,
+                             user,
+                             mount_point='mount_point',
+                             mount_label='mount_label'
+                            )
 
         project.install_app.assert_called_once_with(
             'discussion', 'mount_point', 'mount_label',
@@ -201,7 +222,11 @@ class TestDiscussionImporter(TestCase):
         new_forum = self.__get_forum_dict(app, forum_json)
 
         utils.create_forum.assert_called_once_with(app, new_forum=new_forum)
-        forum.get_discussion_thread.assert_called_once_with(dict(headers=dict(Subject=_json["forums"][0]["threads"][0]["subject"])))
+        forum.get_discussion_thread.assert_called_once_with(
+                    dict(
+                        headers=dict(
+                            Subject=_json["forums"][0]["threads"][0]["subject"]
+            )))
         
         importer.get_user.assert_called_once_with('admin1')
     
@@ -218,11 +243,14 @@ class TestDiscussionImporter(TestCase):
             ignore_security=True,
             parent_id=None
         )
-        importer.annotate_text.assert_called_once_with(post["text"], admin, post["author"])
+        importer.annotate_text.assert_called_once_with(
+                post["text"],
+                admin,
+                post["author"]
+        )
         p.add_multiple_attachments.assert_called_once_with([])
 
         g.post_event.assert_called_once_with('project_updated')
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
@@ -231,7 +259,9 @@ class TestDiscussionImporter(TestCase):
     @mock.patch.object(discussion, 'h')
     @mock.patch.object(discussion, 'ThreadLocalORMSession')
     def test_import_tool_multiple_forums(self, tlos, h, session, m, g, c):
-        """ This test tests if it is possible to create a discussion with multiple forums """
+        """ This test tests if it is possible to create 
+            a discussion with multiple forums 
+        """
 
         importer = discussion.ForgeDiscussionImporter()
 
@@ -263,7 +293,6 @@ class TestDiscussionImporter(TestCase):
                 }
             ]
         }
-
         
         importer._load_json = mock.Mock(return_value=_json)
         importer.add_posts = mock.Mock()        
@@ -306,7 +335,6 @@ class TestDiscussionImporter(TestCase):
 
         m.AuditLog.log.assert_called_once()
         g.post_event.assert_called_once()
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
@@ -354,7 +382,6 @@ class TestDiscussionImporter(TestCase):
                 ]
             }
 
-            
         importer._load_json = mock.Mock(return_value=_json)
         importer.add_posts = mock.Mock()        
         importer._clear_forums = mock.Mock()
@@ -378,7 +405,12 @@ class TestDiscussionImporter(TestCase):
 
         importer.import_tool(project, user, 'mount_point', 'mount_label')
 
-        project.install_app.assert_called_once_with('discussion', 'mount_point', 'mount_label', import_id={'source': 'Allura'})
+        project.install_app.assert_called_once_with(
+                'discussion',
+                'mount_point',
+                'mount_label',
+                import_id={'source': 'Allura'}
+        )
         h.push_config.assert_called_once_with(c, app=app)
 
         utils.create_forum.assert_called_once()
@@ -406,7 +438,6 @@ class TestDiscussionImporter(TestCase):
         m.AuditLog.log.assert_called_once()
         g.post_event.assert_called_once()
 
-
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
     @mock.patch.object(discussion, 'M')
@@ -422,7 +453,7 @@ class TestDiscussionImporter(TestCase):
         import_id = "qwert258"
         _json = {
             "forums": [ {
-                "description": "Forum about anything you want to talk about.", 
+                "description": "Forum about anything you want to talk about.",
                 "shortname": "general", 
                 "name": "General Discussion",
                 "import_id": import_id,
@@ -454,7 +485,6 @@ class TestDiscussionImporter(TestCase):
         importer.import_tool(project, user, 'mount_point', 'mount_label')
         
         self.assertEqual(import_id, forum.import_id)
-        
 
         # Test without import id
         _json = {
@@ -474,7 +504,6 @@ class TestDiscussionImporter(TestCase):
         importer.import_tool(project, user, 'mount_point', 'mount_label')
 
         self.assertEqual('', forum.import_id)
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
@@ -533,7 +562,7 @@ class TestDiscussionImporter(TestCase):
         _json = {
             "forums": [ {
                 "description": "Forum about anything you want to talk about.", 
-                "shortname": "general", 
+                "shortname": "general",
                 "name": "General Discussion",
                 "threads": [{
                         "limit": None,
@@ -553,7 +582,6 @@ class TestDiscussionImporter(TestCase):
 
         self.assertEqual('', thread.import_id)
 
-
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'g')
     @mock.patch.object(discussion, 'M')
@@ -563,10 +591,10 @@ class TestDiscussionImporter(TestCase):
     def test_import_tool_missing_keys(self, tlos, h, session, m, g, c):
         """ This method tests if missing keys are handled correctly """
 
-        # Check if shortname missing
+        # Check when shortname missing
         _json = {
             "forums": [ {
-                "description": "Forum about anything you want to talk about.", 
+                "description": "Forum about anything you want to talk about.",
                 "name": "General Discussion",
                 "threads": []
             }]
@@ -597,9 +625,8 @@ class TestDiscussionImporter(TestCase):
         m.AuditLog.log= mock.Mock()
 
         self.__check_missing(project, user, importer, h, g, utils) 
-
         
-        # Check if description is missing
+        # Check when description is missing
         _json = {
             "forums": [ {
                 "shortname": "general",
@@ -612,8 +639,7 @@ class TestDiscussionImporter(TestCase):
         self.__check_missing(project, user, importer, h, g, utils)
         utils.create_forum.assert_not_called()
 
-
-        # Check if name is missing
+        # Check when name is missing
         _json = {
             "forums": [ {
                 "shortname": "general",
@@ -625,9 +651,8 @@ class TestDiscussionImporter(TestCase):
         importer._load_json = mock.Mock(return_value=_json)
         self.__check_missing(project, user, importer, h, g, utils)
         utils.create_forum.assert_not_called()
-
         
-        # Check if threads are missing
+        # Check when threads are missing
         _json = {
             "forums": [ {
                 "shortname": "general",
@@ -639,8 +664,7 @@ class TestDiscussionImporter(TestCase):
         importer._load_json = mock.Mock(return_value=_json)
         self.__check_missing(project, user, importer, h, g, utils)
 
-        
-        # Check if subject of threads are missing
+        # Check when subject of threads are missing
         _json = {
             "forums": [ {
                 "shortname": "general",
@@ -656,7 +680,7 @@ class TestDiscussionImporter(TestCase):
         self.__check_missing(project, user, importer, h, g, utils)
 
 
-        # Check if posts of threads are missing
+        # Check when posts of threads are missing
         _json = {
             "forums": [ {
                 "shortname": "general",
@@ -672,7 +696,6 @@ class TestDiscussionImporter(TestCase):
         self.__check_missing(project, user, importer, h, g, utils)
         
         self.assertEqual(h.make_app_admin_only.call_count, 6)
-
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
@@ -701,12 +724,13 @@ class TestDiscussionImporter(TestCase):
                 parent_id=None
         )
         post.add_multiple_attachments.assert_called_once_with([])
-        
     
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
     def test_add_posts_with_many_posts(self, h, c):
-        """ This methods tests if many posts of a thread are added to this thread """
+        """ This methods tests if many posts of 
+            a thread are added to this thread 
+        """
 
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -777,15 +801,17 @@ class TestDiscussionImporter(TestCase):
         self.assertEqual(8, h.push_config.call_count)
         self.assertEqual(8, thread.add_post.call_count)
         self.assertEqual(8, post.add_multiple_attachments.call_count)
-    
 
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
     def test_add_posts_with_unicode(self, h, c):
-        """ This method tests if it is possible to add posts which contain unicode characters in subject and text """
+        """ This method tests if it is possible to add 
+            posts which contain unicode characters in subject and text
+        """
 
         importer, app, thread, user, post = self.__init_add_posts_tests()
-        importer.annotate_text.return_value = "test with un\u00ef\u00e7\u00f8\u2202\u00e9 text"
+        importer.annotate_text.return_value = "test" \
+                + " with un\u00ef\u00e7\u00f8\u2202\u00e9 text"
 
         _json = [
             {
@@ -810,11 +836,12 @@ class TestDiscussionImporter(TestCase):
         )
         post.add_multiple_attachments.assert_called_once_with([])
         
-
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
     def test_add_posts_with_last_edited(self, h, c):
-        """ This method tests if the last edited attribute of a post is correctly updated if specified """
+        """ This method tests if the last edited attribute 
+            of a post is correctly updated if specified
+        """
 
         # Test with legit timestamp
         importer, app, thread, user, post = self.__init_add_posts_tests()
@@ -833,7 +860,6 @@ class TestDiscussionImporter(TestCase):
         importer.add_posts(thread, _json, app)
 
         self.assertEqual(post.last_edit_date, parse(_json[0]['last_edited']))
-
 
         # Test with none
         importer, app, thread, user, post = self.__init_add_posts_tests()
@@ -854,7 +880,6 @@ class TestDiscussionImporter(TestCase):
 
         self.assertEqual(post.last_edit_date, '-')
 
-       
         # Test with no last edited 
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -873,7 +898,6 @@ class TestDiscussionImporter(TestCase):
 
         self.assertEqual(post.last_edit_date, '-')
 
-        
         # Test with junk last edited 
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -890,10 +914,10 @@ class TestDiscussionImporter(TestCase):
 
         try:
             importer.add_posts(thread, _json, app)
-            self.fail("add_posts() didn't throw exception even last_edited was junk data")
+            self.fail("add_posts() didn't throw exception" \
+                      + " even last_edited was junk data")
         except:
             pass
-
 
     @mock.patch.object(discussion, 'File')
     @mock.patch.object(discussion, 'c')
@@ -936,9 +960,8 @@ class TestDiscussionImporter(TestCase):
         self.assertEqual(File.call_args_list, [
             mock.call('http://www.foo.com/attachment0'),
             mock.call('http://www.foo.com/attachment1'),
-            mock.call('http://www.foo.com/attachment2')
+            mock.call('http://www.foo.com/attachment2'),
         ])
-
 
     @mock.patch.object(discussion, 'File')
     @mock.patch.object(discussion, 'c')
@@ -955,7 +978,7 @@ class TestDiscussionImporter(TestCase):
             mock.Mock(_id=2),
             mock.Mock(_id=3),
             mock.Mock(_id=4),
-            mock.Mock(_id=5)
+            mock.Mock(_id=5),
         ]
 
         _json = [
@@ -1056,12 +1079,13 @@ class TestDiscussionImporter(TestCase):
             )
         ])
 
-
     @mock.patch.object(discussion, 'File')
     @mock.patch.object(discussion, 'c')
     @mock.patch.object(discussion, 'h')
     def test_add_posts_with_missing_keys(self, h, c, File):
-        """ This method checks if add_posts will throw an error if required keys are missing """
+        """ This method checks if add_posts will 
+            throw an error if required keys are missing
+        """
         
         # Test with author attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
@@ -1075,7 +1099,6 @@ class TestDiscussionImporter(TestCase):
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
-
         # Test with subject attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -1087,7 +1110,6 @@ class TestDiscussionImporter(TestCase):
         }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
-
 
         # Test with text attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
@@ -1101,7 +1123,6 @@ class TestDiscussionImporter(TestCase):
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
-
         # Test with timestamp attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -1114,7 +1135,6 @@ class TestDiscussionImporter(TestCase):
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
-
         # Test with attachments attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
 
@@ -1126,7 +1146,6 @@ class TestDiscussionImporter(TestCase):
         }]
 
         self.__check_posts_exceptions(importer, thread, _json, app)
-
 
         # Test with url of attachments attribute missing
         importer, app, thread, user, post = self.__init_add_posts_tests()
@@ -1146,11 +1165,11 @@ class TestDiscussionImporter(TestCase):
 
         self.__check_posts_exceptions(importer, thread, _json, app)
 
-
     def __check_posts_exceptions(self, importer, thread, posts, app):
         try:
             importer.add_posts(thread, posts, app)
-            self.fail("add_posts() didn't throw an exception even though attribute are missing")
+            self.fail("add_posts() didn't throw an "\
+                    + "exception even though attribute are missing")
         except:
             pass
 
@@ -1177,7 +1196,9 @@ class TestDiscussionImporter(TestCase):
         return importer, app, thread, user1, post
 
     def test_annotate_text_with_existing_user(self):
-        """ This test tests the annotate_text method if an existing user is passed as argument """
+        """ This test tests the annotate_text method if 
+            an existing user is passed as argument 
+        """
 
         importer = discussion.ForgeDiscussionImporter()
         
@@ -1188,9 +1209,10 @@ class TestDiscussionImporter(TestCase):
 
         self.assertEqual(importer.annotate_text('foo', user, username), 'foo')
 
-
     def test_annotate_text_with_not_existing_user(self):
-        """ This test tests the annotate_text method with a not existing user """
+        """ This test tests the annotate_text method 
+            with a not existing user
+        """
 
         importer = discussion.ForgeDiscussionImporter()
 
@@ -1203,10 +1225,13 @@ class TestDiscussionImporter(TestCase):
         text = 'foo'
 
         # Text that the method should return
-        return_text = '*Originally created by:* {username}\n\n{text}'.format(username=username, text=text)
+        return_text = '*Originally created by:* {username}\n\n{text}' \
+                .format(username=username, text=text)
 
-        self.assertEqual(importer.annotate_text(text, user, username), return_text)
-
+        self.assertEqual(
+                         importer.annotate_text(text, user, username),
+                         return_text
+                        )
 
     def test_annotate_text_with_anonymous_user(self):
         """ This test tests the annotate_text method with an anonymous user """
@@ -1221,12 +1246,19 @@ class TestDiscussionImporter(TestCase):
 
         text = 'foo'
 
-        self.assertEqual(importer.annotate_text(text, user, usernames[0]), text)
-        self.assertEqual(importer.annotate_text(text, user, usernames[1]), text)
-
+        self.assertEqual(
+                importer.annotate_text(text, user, usernames[0]),
+                text
+        )
+        self.assertEqual(
+                importer.annotate_text(text, user, usernames[1]),
+                text
+        )
         
     def test_annotate_text_with_unicode(self):
-        """ This method tests if annotate text can handle unicode characters """
+        """ This method tests if annotate text 
+            can handle unicode characters
+        """
 
         importer = discussion.ForgeDiscussionImporter()
 
@@ -1239,7 +1271,6 @@ class TestDiscussionImporter(TestCase):
         except:
             self.fail("annotate_text() can't handle unicode characters")
 
-
         # unicode in text of a not existing user
         text = "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
         user = mock.Mock(is_anonymous=lambda: True)
@@ -1249,7 +1280,6 @@ class TestDiscussionImporter(TestCase):
             importer.annotate_text(text, user, username)
         except:
             self.fail("annotate_text() can't handle unicode characters")
-
 
         # unicode in text of an anonymous user
         text = "post with un\u00ef\u00e7\u00f8\u2202\u00e9"
@@ -1261,9 +1291,10 @@ class TestDiscussionImporter(TestCase):
         except:
             self.fail("annotate_text() can't handle unicode characters")
 
-
     def test_annotate_text_with_junk(self):
-        """ This test tests if the annotate_text method correctly handles junk data """
+        """ This test tests if the annotate_text method
+            correctly handles junk data
+        """
 
         importer = discussion.ForgeDiscussionImporter()
 
@@ -1275,7 +1306,6 @@ class TestDiscussionImporter(TestCase):
 
         text = 'foo'
         self.assertEqual(importer.annotate_text(text, user, username), text)
-
 
     def __get_forum_dict(self, app, forum_json):
         new_forum = dict(
@@ -1291,7 +1321,6 @@ class TestDiscussionImporter(TestCase):
         )
 
         return new_forum
-
 
     def __check_missing(self, project, user, importer, h, g, utils):
         try:       
@@ -1310,7 +1339,6 @@ class TestForgeDiscussionController(TestController, TestCase):
     
     def setUp(self):
         super(TestForgeDiscussionController, self).setUp()
-
     
     @with_discussion
     def test_index(self):
@@ -1319,26 +1347,30 @@ class TestForgeDiscussionController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
-
     @with_discussion
     @mock.patch('forgeimporters.forge.discussion.save_importer_upload')
     @mock.patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool, siu):
         project = M.Project.query.get(shortname='test')
         params = {
-            'discussions_json': webtest.Upload('discussions.json', b'{"key": "val"}'),
+            'discussions_json': webtest.Upload('discussions.json',
+                                               b'{"key": "val"}'),
             'mount_label': 'mylabel',
             'mount_point': 'mymount',
         }
-        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create', params,
-                          status=302)
+        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create',
+                          params,
+                          status=302
+                         )
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
-        siu.assert_called_once_with(project, 'discussions.json', '{"key": "val"}')
+        siu.assert_called_once_with(project,
+                                    'discussions.json',
+                                    '{"key": "val"}'
+                                    )
         self.assertEqual(
             'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
             'mylabel', import_tool.post.call_args[1]['mount_label'])
-
 
     @with_discussion
     @mock.patch('forgeimporters.forge.discussion.save_importer_upload')
@@ -1348,11 +1380,14 @@ class TestForgeDiscussionController(TestController, TestCase):
         project.set_tool_data('ForgeDiscussionImporter', pending=1)
         ThreadLocalORMSession.flush_all()
         params = {
-            'discussions_json': webtest.Upload('discussions.json', b'{"key": "val"}'),
+            'discussions_json': webtest.Upload('discussions.json',
+                                               b'{"key": "val"}'
+                                              ),
             'mount_label': 'mylabel',
             'mount_point': 'mymount',
         }
-        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create', params,
+        r = self.app.post('/p/test/admin/ext/import/forge-discussion/create',
+                          params,
                           status=302).follow()
         self.assertIn('Please wait and try again', r)
         self.assertEqual(import_tool.post.call_count, 0)
