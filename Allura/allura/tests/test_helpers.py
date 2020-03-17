@@ -192,6 +192,7 @@ def test_encode_keys():
 
 def test_ago():
     assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
+    assert_equals(h.ago(datetime.utcnow() + timedelta(days=2)), 'in 2 days')
     assert_equals(h.ago_ts(time.time() - 60 * 60 * 2), '2 hours ago')
     d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()
     assert_equals(h.ago_string(d_str), '3 hours ago')
@@ -202,6 +203,11 @@ def test_ago():
     assert 'ago' not in h.ago(monthish)
     assert_equals(h.ago(monthish, show_date_after=90), '1 month ago')
     assert_equals(h.ago(monthish, show_date_after=None), '1 month ago')
+
+    monthish = datetime.utcnow() + timedelta(days=32)
+    assert 'in ' not in h.ago(monthish)
+    assert_equals(h.ago(monthish, show_date_after=90), 'in 1 month')
+    assert_equals(h.ago(monthish, show_date_after=None), 'in 1 month')
 
 
 def test_urlquote_unicode():
