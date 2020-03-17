@@ -42,15 +42,16 @@
 
         <div class="grid-6">
         <form action='/nf/admin/user/set_status' method="POST">
-          <div class='grid-6'>
+          Account Status:<br>
             <label><input type="radio" name="status" value="enable"{% if status == 'enabled' %} checked="checked"{% endif %}>Enabled</label><br>
             <label><input type="radio" name="status" value="disable"{% if status == 'disabled' %} checked="checked"{% endif %}>Disabled</label><br>
             <label><input type="radio" name="status" value="pending"{% if status == 'pending' %} checked="checked"{% endif %}>Pending</label>
-          </div>
           <input type='hidden' name='username' value='{{ user.username }}'>
           {{lib.csrf_token()}}
         </form>
 
+        {% if status == 'enabled' %}
+        <br>
         <form action='/nf/admin/user/set_random_password' method="POST">
           <input type="submit" value="Set random password">
           <input type='hidden' name='username' value='{{ user.username }}'>
@@ -75,6 +76,7 @@
             <a href="#" id="password_reset_url_copy">copy</a>
             <p>Whenever you regenerate a new password reset URL, previous URLs are invalidated.</p>
         </div>
+        {% endif %}
 
         </div>
       </fieldset>
