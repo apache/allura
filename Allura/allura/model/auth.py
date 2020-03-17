@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import calendar
+
+from markupsafe import Markup
 from six.moves.urllib.parse import urlparse
 from email import header
 from hashlib import sha256
@@ -983,6 +985,21 @@ class AuditLog(object):
     @property
     def timestamp_str(self):
         return self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+
+    @property
+    def message_html(self):
+        standard_metadata_prefixes = (
+            'Done by user:',
+            'IP Address:',
+            'User-Agent:',
+        )
+        with_br = h.nl2br_jinja_filter(self.message)
+        message_bold = '<br>\n'.join([
+            line if line.startswith(standard_metadata_prefixes) else '<b>{}</b>'.format(line)
+            for line in
+            with_br.split('<br>\n')
+        ])
+        return Markup(message_bold)
 
     @property
     def url_str(self):

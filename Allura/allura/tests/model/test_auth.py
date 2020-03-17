@@ -22,6 +22,10 @@ Model tests for auth
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import textwrap
+from datetime import datetime, timedelta
+
 from nose.tools import (
     with_setup,
     assert_equal,
@@ -33,7 +37,7 @@ from nose.tools import (
 from tg import tmpl_context as c, app_globals as g, request
 from webob import Request
 from mock import patch, Mock
-from datetime import datetime, timedelta
+from markupsafe import Markup
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.odm import session
@@ -444,3 +448,17 @@ def test_user_backfill_login_details():
     assert_equal(details[0].ua, 'TestBrowser/56')
     assert_equal(details[1].ip, '127.0.0.1')
     assert_equal(details[1].ua, 'TestBrowser/57')
+
+
+class TestAuditLog(object):
+
+    def test_message_html(self):
+        al = h.auditlog_user('our message <script>alert(1)</script>')
+        assert_equal(al.message, textwrap.dedent('''\
+            IP Address: 127.0.0.1
+            User-Agent: None
+            our message <script>alert(1)</script>'''))
+        assert_equal(al.message_html, textwrap.dedent('''\
+            IP Address: 127.0.0.1<br>
+            User-Agent: None<br>
+            <b>our message &lt;script&gt;alert(1)&lt;/script&gt;</b>'''))

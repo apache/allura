@@ -34,10 +34,10 @@
         <tr>
           <td style="white-space: nowrap">{{ entry.timestamp_str }}</td>
           <td>{{ entry.user and entry.user.username or 'Unknown' }}</td>
-          <td>{{ entry.url_str }}</td>
+          <td class="auditlog_url">{{ entry.url_str }}</td>
         </tr>
         <tr>
-          <td></td><td colspan="2">{{ entry.message|nl2br }}</td>
+          <td></td><td colspan="2" class="auditlog_message">{{ entry.message_html }}</td>
         </tr>
         {% endfor %}
       </tbody>
