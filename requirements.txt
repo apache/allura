@@ -43,7 +43,7 @@ ipaddress==1.0.22         # via cryptography
 ipython-genutils==0.2.0   # via traitlets
 ipython==5.8.0
 iso8601==0.1.12           # via colander
-jinja2==2.10
+jinja2==2.11.1
 markdown-checklist==0.4.1
 markdown==2.6.11
 markupsafe==1.1.1
@@ -59,7 +59,7 @@ pastescript==3.1.0
 pathlib2==2.3.4           # via ipython, pickleshare
 pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pillow==6.2.0
+pillow==6.2.2
 profanityfilter==2.0.6
 prompt-toolkit==1.0.16    # via ipython
 ptyprocess==0.6.0         # via pexpect
@@ -89,8 +89,8 @@ timermiddleware==0.5.1
 traitlets==4.3.2          # via ipython
 translationstring==1.3    # via colander
 turbogears2==2.3.12
-urllib3==1.25.3           # via requests
-waitress==1.3.0           # via webtest
+urllib3==1.25.8           # via requests
+waitress==1.4.3           # via webtest
 wcwidth==0.1.7            # via prompt-toolkit
 webencodings==0.5.1       # via bleach, html5lib
 webhelpers2==2.0
