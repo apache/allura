@@ -1032,7 +1032,7 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
                     url_string += ' => {}'.format(e.filename)
                 if timeout is None:
                     timeout = socket.getdefaulttimeout()
-                if hasattr(e, 'fp'):
+                if getattr(e, 'fp', None):
                     body = e.fp.read()
                 else:
                     body = ''

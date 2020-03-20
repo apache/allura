@@ -172,8 +172,8 @@ class ProjectExtractor(object):
     def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=120, unredirected_hdrs=None, **kw):
         req = six.moves.urllib.request.Request(url, **kw)
         if unredirected_hdrs:
-            for k, v in unredirected_hdrs.items():
-                req.add_unredirected_header(k, v)
+            for key, val in unredirected_hdrs.items():
+                req.add_unredirected_header(key, val)
         req.add_header('User-Agent', 'Allura Data Importer (https://allura.apache.org/)')
         return h.urlopen(req, retries=retries, codes=codes, timeout=timeout)
 
