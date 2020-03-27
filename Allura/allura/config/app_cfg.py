@@ -34,6 +34,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 from functools import partial
+import six
+import sys
 
 import tg
 from tg import app_globals as g
@@ -84,7 +86,10 @@ class AlluraJinjaRenderer(JinjaRenderer):
                 import pylibmc
                 from jinja2 import MemcachedBytecodeCache
                 client = pylibmc.Client([config['memcached_host']])
-                bcc = MemcachedBytecodeCache(client, prefix='jinja2/{}/'.format(jinja2.__version__))
+                bcc_prefix = 'jinja2/{}/'.format(jinja2.__version__)
+                if six.PY3:
+                    bcc_prefix += 'py{}{}/'.format(sys.version_info.major, sys.version_info.minor)
+                bcc = MemcachedBytecodeCache(client, prefix=bcc_prefix)
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
                 bcc = FileSystemBytecodeCache(pattern='__jinja2_{}_%s.cache'.format(jinja2.__version__))
