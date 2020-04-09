@@ -18,6 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from datetime import datetime
+from operator import itemgetter
 from unittest import TestCase
 from six.moves.urllib.error import HTTPError
 import mock
@@ -119,7 +120,9 @@ class TestTrackerImporter(TestCase):
             ('second', datetime(day=25, month=4, year=2015))
         ])
         milestones = importer.postprocess_milestones()
-        self.assertItemsEqual(milestones, [
+        # for stable order
+        milestones[0]['milestones'] = sorted(milestones[0]['milestones'], key=itemgetter('name'))
+        self.assertEqual(milestones, [
             {
                 'name': '_milestone',
                 'type': 'milestone',

@@ -38,7 +38,6 @@ from nose.tools import (
     assert_in,
     assert_raises,
     assert_not_in,
-    assert_items_equal,
     assert_not_equal,
 )
 from formencode.variabledecode import variable_encode
@@ -3343,8 +3342,8 @@ def test_status_passthru():
                           open_status_names='foo bar', closed_status_names='qux baz')
     ThreadLocalORMSession.flush_all()
     app = c.project.app_instance('tsp')
-    assert_items_equal(app.globals.set_of_open_status_names, ['foo', 'bar'])
-    assert_items_equal(app.globals.set_of_closed_status_names, ['qux', 'baz'])
+    assert_equal(app.globals.set_of_open_status_names, {'foo', 'bar'})
+    assert_equal(app.globals.set_of_closed_status_names, {'qux', 'baz'})
     assert_not_in('open_status_names', app.config.options)
     assert_not_in('closed_status_names', app.config.options)
 
