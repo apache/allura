@@ -515,7 +515,7 @@ class Globals(object):
                 url = self.theme.app_icon_url(tool_name.lower(), size)
                 css += '.ui-icon-tool-%s-%i {background: url(%s) no-repeat;}\n' % (
                     tool_name, size, url)
-        return css, hashlib.md5(css).hexdigest()
+        return css, hashlib.md5(css.encode('utf-8')).hexdigest()
 
     @property
     def resource_manager(self):

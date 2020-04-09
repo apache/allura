@@ -1237,7 +1237,7 @@ def base64uri(content_or_image, image_format='PNG', mimetype='image/png', window
     if windows_line_endings:
         content = content.replace('\n', '\r\n')
 
-    data = base64.b64encode(content)
+    data = six.ensure_text(base64.b64encode(six.ensure_binary(content)))
     return 'data:{};base64,{}'.format(mimetype, data)
 
 
