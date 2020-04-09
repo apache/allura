@@ -293,17 +293,17 @@ class TestPrefixPathsUnion(unittest.TestCase):
     def test_disjoint(self):
         a = set(['a1', 'a2', 'a3'])
         b = set(['b1', 'b1/foo', 'b2'])
-        self.assertItemsEqual(prefix_paths_union(a, b), [])
+        self.assertEqual(prefix_paths_union(a, b), set())
 
     def test_exact(self):
         a = set(['a1', 'a2', 'a3'])
         b = set(['b1', 'a2', 'a3'])
-        self.assertItemsEqual(prefix_paths_union(a, b), ['a2', 'a3'])
+        self.assertEqual(prefix_paths_union(a, b), {'a2', 'a3'})
 
     def test_prefix(self):
         a = set(['a1', 'a2', 'a3'])
         b = set(['b1', 'a2/foo', 'b3/foo'])
-        self.assertItemsEqual(prefix_paths_union(a, b), ['a2'])
+        self.assertEqual(prefix_paths_union(a, b), {'a2'})
 
 
 class TestGroupCommits(object):
