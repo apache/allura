@@ -734,7 +734,7 @@ class TestCachedMarkdown(unittest.TestCase):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
         self.assertEqual(html, self.post.text_cache.html)
-        self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
+        self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
                          self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
@@ -745,7 +745,7 @@ class TestCachedMarkdown(unittest.TestCase):
         html = self.md.cached_convert(self.post, 'text')
         self.assertNotEqual(old, html)
         self.assertEqual(html, self.post.text_cache.html)
-        self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
+        self.assertEqual(hashlib.md5(self.post.text.encode('utf-8')).hexdigest(),
                          self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 

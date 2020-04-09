@@ -666,7 +666,7 @@ def clean_phone_number(number):
 
 def phone_number_hash(number):
     number = clean_phone_number(number)
-    return hashlib.sha1(number).hexdigest()
+    return hashlib.sha1(number.encode('utf-8')).hexdigest()
 
 
 @contextmanager
