@@ -290,14 +290,14 @@ class TestRootController(_TestCase):
         url = ci + 'tree/' + h.urlquote('привіт.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in('Привіт!\nWhich means Hello!', resp.text)
-        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
-                     'attachment;filename="привіт.txt"')
+        assert_equal(six.ensure_text(resp.headers.get('Content-Disposition')),
+                     'attachment;filename="%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt"')
 
         url = ci + 'tree/' + h.urlquote('with space.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in('with space', resp.text)
-        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
-                     'attachment;filename="with space.txt"')
+        assert_equal(six.ensure_text(resp.headers.get('Content-Disposition')),
+                     'attachment;filename="with%20space.txt"')
 
         url = ci + 'tree/' + h.urlquote('with%2Furlquote-literal.txt') + '?format=raw'
         resp = self.app.get(url)

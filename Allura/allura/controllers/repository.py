@@ -320,7 +320,7 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
     @expose('json:')
     def commits(self, rev=None, limit=25, **kw):
         '''
-        Return 25 latest commits   : /rest/p/code/logs/ 
+        Return 25 latest commits   : /rest/p/code/logs/
         Return 25 commits since sha: /rest/p/code/logs/e1a2ad
         Return 04 commits since sha: /rest/p/code/logs/e1a2ad/4
         Return 120 latest commits  : /rest/p/code/logs/?limit=120
@@ -502,7 +502,7 @@ class MergeRequestController(object):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def update_markdown(self, text=None, **kw):  
+    def update_markdown(self, text=None, **kw):
         if has_access(self.req, 'write'):
             self.req.description = text
             self.req.commit()
@@ -863,19 +863,18 @@ class FileBrowser(BaseController):
                 force_display=force_display
             )
 
-    @expose()
     def raw(self, **kw):
-        content_type = self._blob.content_type.encode('utf-8')
-        filename = self._blob.name.encode('utf-8')
+        content_type = self._blob.content_type
+        filename = self._blob.name
         response.headers['Content-Type'] = str('')
-        response.content_type = content_type
+        response.content_type = str(content_type)
         if self._blob.content_encoding is not None:
-            content_encoding = self._blob.content_encoding.encode('utf-8')
+            content_encoding = self._blob.content_encoding
             response.headers['Content-Encoding'] = str('')
-            response.content_encoding = content_encoding
+            response.content_encoding = str(content_encoding)
         response.headers.add(
             str('Content-Disposition'),
-            str('attachment;filename="%s"') % filename)
+            str('attachment;filename="%s"') % h.urlquote(filename))
         return iter(self._blob)
 
     def diff(self, prev_commit, fmt=None, prev_file=None, **kw):
