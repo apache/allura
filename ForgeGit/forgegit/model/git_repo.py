@@ -32,6 +32,7 @@ import gitdb
 from tg import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 from paste.deploy.converters import asbool
+import six
 
 from ming.base import Object
 from ming.orm import Mapper, session
@@ -438,7 +439,7 @@ class GitImplementation(M.RepositoryImplementation):
         stream = proc.stdout
         commit_lines = []
         while True:
-            line = stream.readline()
+            line = six.ensure_text(stream.readline())
             if '\x00' in line or not(len(line)):
                 # hash line read, need to yield previous commit
                 # first, cleaning lines a bit
@@ -495,7 +496,7 @@ class GitImplementation(M.RepositoryImplementation):
         odds = oid[1::2]
         binsha = b''
         for e, o in zip(evens, odds):
-            binsha += chr(int(e + o, 16))
+            binsha += six.int2byte(int(e + o, 16))
         return git.Object.new_from_sha(self._git, binsha)
 
     def rev_parse(self, rev):
