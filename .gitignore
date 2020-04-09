@@ -25,6 +25,7 @@ solr_config/core1/data/
 var/
 .nose-stopwatch-times
 .noseids
+.tox
 env
 env-docker
 Allura/allura/public/nf/js/build/
