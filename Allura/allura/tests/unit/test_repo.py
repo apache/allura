@@ -112,17 +112,17 @@ class TestBlob(unittest.TestCase):
 
     def test_has_html_view_text_mime(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
-        blob.content_type = b'text/plain'
+        blob.content_type = 'text/plain'
         assert_equal(blob.has_html_view, True)
 
     def test_has_html_view_text_ext(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL.txt', 'blob1')
-        blob.content_type = b'foo/bar'
+        blob.content_type = 'foo/bar'
         assert_equal(blob.has_html_view, True)
 
     def test_has_html_view_text_contents(self):
         blob = M.repository.Blob(MagicMock(), 'INSTALL', 'blob1')
-        blob.content_type = b'foo/bar'
+        blob.content_type = 'foo/bar'
         blob.text = b'hello world, this is text here'
         assert_equal(blob.has_html_view, True)
 
@@ -132,13 +132,13 @@ class TestBlob(unittest.TestCase):
 
     def test_has_html_view_bin_content(self):
         blob = M.repository.Blob(MagicMock(), 'myfile', 'blob1')
-        blob.content_type = b'whatever'
+        blob.content_type = 'whatever'
         blob.text = b'\0\0\0\0'
         assert_equal(blob.has_html_view, False)
 
     def test_has_html_view__local_setting_override_bin(self):
         blob = M.repository.Blob(MagicMock(), 'myfile.dat', 'blob1')
-        blob.content_type = b'whatever'
+        blob.content_type = 'whatever'
         blob.text = b'\0\0\0\0'
         blob.repo._additional_viewable_extensions = ['.dat']
         assert_equal(blob.has_html_view, True)
