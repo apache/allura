@@ -395,12 +395,12 @@ def test_post_url_paginated():
     limit = 3
     c.user.set_pref('results_per_page', limit)
     for i, _p in enumerate(p):
-        page = i / limit
+        page = i // limit
         url = t.url() + '?limit=%s' % limit
         if page > 0:
             url += '&page=%s' % page
         url += '#' + _p.slug
-        assert _p.url_paginated() == url, _p.url_paginated()
+        assert_equal(_p.url_paginated(), url)
 
 
 @with_setup(setUp, tearDown)

@@ -704,7 +704,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
                 traverse(posts)
                 return len(q)
 
-            page = find_i(posts) / limit
+            page = find_i(posts) // limit
 
         slug = h.urlquote(self.slug)
         url = self.main_url()

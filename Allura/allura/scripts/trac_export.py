@@ -97,7 +97,7 @@ class TracExport(object):
         # and example).
         self.ticket_map = {}
         self.start_id = start_id
-        self.page = (start_id - 1) / self.PAGE_SIZE + 1
+        self.page = (start_id - 1) // self.PAGE_SIZE + 1
         self.verbose = verbose
         self.do_attachments = do_attachments
         self.exhausted = False
