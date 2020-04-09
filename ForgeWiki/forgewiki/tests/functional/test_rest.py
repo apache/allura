@@ -53,7 +53,7 @@ class TestWikiApi(TestRestApiBase):
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/rest/p/test/wiki/Home/')
-        r = json.loads(r.body)
+        r = json.loads(r.text)
         assert_equal(r['attachments'][0]['url'],
                      'http://localhost/p/test/wiki/Home/attachment/test_root.py')
         assert_equal(r['discussion_thread_url'], 'http://localhost/rest%s' %
@@ -63,7 +63,7 @@ class TestWikiApi(TestRestApiBase):
         self.app.post('/wiki/Home/attach',
                       upload_files=[('file_info', '__init__.py', content), ])
         r = self.app.get('/rest/p/test/wiki/Home/')
-        r = json.loads(r.body)
+        r = json.loads(r.text)
         assert_equal(len(r['attachments']), 2)
 
     def test_page_does_not_exist(self):
@@ -113,7 +113,7 @@ class TestWikiApi(TestRestApiBase):
                       text='foo <img src=x onerror=alert(1)> bar')
         r = self.api_get('/rest/p/test/wiki/foo.html')
         # raw text is not an HTML tag
-        assert_in(r'foo \u003Cimg src=x onerror=alert(1)> bar', r.body)
+        assert_in(r'foo \u003Cimg src=x onerror=alert(1)> bar', r.text)
         # and json still is parsed into correct content
         assert_equal(r.json['text'], 'foo <img src=x onerror=alert(1)> bar')
 

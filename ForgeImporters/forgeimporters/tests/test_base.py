@@ -319,7 +319,7 @@ class TestProjectToolsImportController(TestController):
             import1_page = import_main_page.click('Import', href=r'importer1$')
         url = import1_page.request.path
         assert url.endswith('/admin/ext/import/importer1'), url
-        assert_equal(import1_page.body, 'test importer 1 controller webpage')
+        assert_equal(import1_page.text, 'test importer 1 controller webpage')
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_hidden(self, iep):

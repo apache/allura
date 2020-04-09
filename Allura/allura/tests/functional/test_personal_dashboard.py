@@ -64,11 +64,11 @@ class TestPersonalDashboard(TestController):
                     eps[2].load(),
                     eps[0].load()])
                 r = self.app.get('/dashboard')
-                assert_in('Section a', r.body)
-                assert_in('Section b', r.body)
-                assert_in('Section c', r.body)
-                assert_in('Section d', r.body)
-                assert_not_in('Section f', r.body)
+                assert_in('Section a', r.text)
+                assert_in('Section b', r.text)
+                assert_in('Section c', r.text)
+                assert_in('Section d', r.text)
+                assert_not_in('Section f', r.text)
 
 
 class TestTicketsSection(TrackerTestController):

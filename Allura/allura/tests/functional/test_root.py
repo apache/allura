@@ -217,5 +217,5 @@ class TestRootWithSSLPattern(TestController):
         r = self.app.get('/auth/asdfasdf',
                          extra_environ={'wsgi.url_scheme': str('https')},
                          status=404)
-        assert '302 Found' not in r.body, r.body
-        assert '/error/document' not in r.body, r.body
+        assert '302 Found' not in r.text, r.text
+        assert '/error/document' not in r.text, r.text

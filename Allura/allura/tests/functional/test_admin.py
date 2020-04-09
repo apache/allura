@@ -156,7 +156,7 @@ class TestProjectAdmin(TestController):
 
         # Check the audit log
         r = self.app.get('/admin/audit/')
-        assert "uninstall tool test-tool" in r.body, r.body
+        assert "uninstall tool test-tool" in r.text, r.text
 
         # Make sure several 'project_menu_updated' events got sent
         menu_updated_events = M.MonQTask.query.find({
@@ -953,7 +953,7 @@ class TestProjectAdmin(TestController):
             foo_page = main_page.click(description='Foo Settings')
             url = foo_page.request.path
             assert url.endswith('/admin/ext/foo'), url
-            assert_equals('here the foo settings go', foo_page.body)
+            assert_equals('here the foo settings go', foo_page.text)
 
     def test_nbhd_invitations(self):
         r = self.app.get('/admin/invitations')
@@ -1329,11 +1329,11 @@ class TestRestInstallTool(TestRestApiBase):
 class TestRestAdminOptions(TestRestApiBase):
     def test_no_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/', status=400)
-        assert_in('Must provide a mount point', r.body)
+        assert_in('Must provide a mount point', r.text)
 
     def test_invalid_mount_point(self):
         r = self.api_get('/rest/p/test/admin/admin_options/?mount_point=asdf', status=400)
-        assert_in('The mount point you provided was invalid', r.body)
+        assert_in('The mount point you provided was invalid', r.text)
 
     @td.with_tool('test', 'Git', 'git')
     def test_valid_mount_point(self):
@@ -1344,12 +1344,12 @@ class TestRestAdminOptions(TestRestApiBase):
 class TestRestMountOrder(TestRestApiBase):
     def test_no_kw(self):
         r = self.api_post('/rest/p/test/admin/mount_order/', status=400)
-        assert_in('Expected kw params in the form of "ordinal: mount_point"', r.body)
+        assert_in('Expected kw params in the form of "ordinal: mount_point"', r.text)
 
     def test_invalid_kw(self):
         data = {'1': 'git', 'two': 'admin'}
         r = self.api_post('/rest/p/test/admin/mount_order/', status=400, **data)
-        assert_in('Invalid kw: expected "ordinal: mount_point"', r.body)
+        assert_in('Invalid kw: expected "ordinal: mount_point"', r.text)
 
     @td.with_wiki
     def test_reorder(self):
@@ -1395,7 +1395,7 @@ class TestRestToolGrouping(TestRestApiBase):
         for invalid_value in ('100', 'asdf'):
             r = self.api_post('/rest/p/test/admin/configure_tool_grouping/', grouping_threshold=invalid_value,
                               status=400)
-            assert_in('Invalid threshold. Expected a value between 1 and 10', r.body)
+            assert_in('Invalid threshold. Expected a value between 1 and 10', r.text)
 
     @td.with_wiki
     @td.with_tool('test', 'Wiki', 'wiki2')

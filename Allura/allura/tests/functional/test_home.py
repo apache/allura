@@ -149,7 +149,7 @@ class TestProjectHome(TestController):
 
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
-        assert_not_in('Profile', r.follow().body)
+        assert_not_in('Profile', r.follow().text)
 
     def test_user_icon_missing(self):
         r = self.app.get('/u/test-user/user_icon', status=302)
@@ -171,7 +171,7 @@ class TestProjectHome(TestController):
 
     def test_user_search(self):
         r = self.app.get('/p/test/user_search?term=test', status=200)
-        j = json.loads(r.body)
+        j = json.loads(r.text)
         assert j['users'][0]['id'].startswith('test')
 
     def test_user_search_for_disabled_user(self):
@@ -179,7 +179,7 @@ class TestProjectHome(TestController):
         user.disabled = True
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/p/test/user_search?term=test', status=200)
-        j = json.loads(r.body)
+        j = json.loads(r.text)
         assert j == {'users': []}
 
     def test_user_search_noparam(self):
@@ -190,7 +190,7 @@ class TestProjectHome(TestController):
 
     def test_users(self):
         r = self.app.get('/p/test/users', status=200)
-        j = json.loads(r.body)
+        j = json.loads(r.text)
         expected = [{
             'value': 'test-admin',
             'label': 'Test Admin (test-admin)'
