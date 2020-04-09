@@ -59,12 +59,11 @@ class TestProjectAdmin(TestController):
                 'change summary to Milkshakes are for crazy monkeys',
                 'change project name to My Test Project',
                 'change short description to (\u00bf A Test Project \?){45}'):
-            self.app.post('/admin/update', params=dict(
+            self.app.post('/admin/update', status=302, params=dict(
                 name='My Test Project',
                 shortname='test',
                 summary='Milkshakes are for crazy monkeys',
-                short_description='\u00bf A Test Project ?'.encode(
-                        'utf-8') * 45,
+                short_description=('\u00bf A Test Project ?' * 45).encode('utf-8'),
                 labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
         assert b'A Test Project ?\xc2\xbf A' in r.body
