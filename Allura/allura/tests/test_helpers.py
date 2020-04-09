@@ -212,8 +212,9 @@ def test_ago():
 
 def test_urlquote_unicode():
     # No exceptions please
-    h.urlquote('\u0410')
-    h.urlquoteplus('\u0410')
+    assert_equals('%D0%90', h.urlquote('\u0410'))
+    assert_equals('%D0%90', h.urlquoteplus('\u0410'))
+    assert_equals('%D0%BF%D1%80%D0%B8%D0%B2%D1%96%D1%82.txt', h.urlquote('привіт.txt'))
 
 
 def test_sharded_path():

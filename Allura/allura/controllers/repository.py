@@ -799,7 +799,7 @@ class TreeBrowser(BaseController, DispatchIndex):
             # Might be a file rather than a dir
             filename = h.really_unicode(
                 unquote(
-                    request.environ['PATH_INFO'].rsplit(str('/'))[-1]))
+                    request.path.rsplit(str('/'))[-1]))
             if filename:
                 try:
                     obj = self._tree[filename]
@@ -865,19 +865,18 @@ class FileBrowser(BaseController):
                 force_display=force_display
             )
 
-    @expose()
     def raw(self, **kw):
-        content_type = self._blob.content_type.encode('utf-8')
-        filename = self._blob.name.encode('utf-8')
+        content_type = self._blob.content_type
+        filename = self._blob.name
         response.headers['Content-Type'] = str('')
-        response.content_type = content_type
+        response.content_type = str(content_type)
         if self._blob.content_encoding is not None:
-            content_encoding = self._blob.content_encoding.encode('utf-8')
+            content_encoding = self._blob.content_encoding
             response.headers['Content-Encoding'] = str('')
-            response.content_encoding = content_encoding
+            response.content_encoding = str(content_encoding)
         response.headers.add(
             str('Content-Disposition'),
-            str('attachment;filename="%s"') % filename)
+            str('attachment;filename="%s"') % h.urlquote(filename))
         return iter(self._blob)
 
     def diff(self, prev_commit, fmt=None, prev_file=None, **kw):
