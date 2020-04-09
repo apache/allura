@@ -702,7 +702,7 @@ def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True
     except ValueError:
         limit = 25
     limit = min(limit, asint(tg.config.get('limit_param_max', 500)))
-    max_page = (total_count / limit) + (1 if total_count % limit else 0)
+    max_page = (total_count // limit) + (1 if total_count % limit else 0)
     max_page = max(0, max_page - (1 if zero_based_pages else 0))
     try:
         page = int(page or 0)

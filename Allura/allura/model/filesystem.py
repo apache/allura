@@ -143,10 +143,10 @@ class File(MappedClass):
                 new_image = PIL.Image.new('RGB', (sz, sz), 'white')
             if height < width:
                 # image is wider than tall, so center horizontally
-                new_image.paste(image, ((width - height) / 2, 0))
+                new_image.paste(image, ((width - height) // 2, 0))
             elif height > width:
                 # image is taller than wide, so center vertically
-                new_image.paste(image, (0, (height - width) / 2))
+                new_image.paste(image, (0, (height - width) // 2))
             image = new_image
 
         if thumbnail_size:
@@ -156,7 +156,7 @@ class File(MappedClass):
         thumbnail = cls(
             filename=filename, content_type=content_type, **thumbnail_meta)
         format = image.format or 'png'
-        if format == 'BMP': # use jpg format if bmp is provided
+        if format == 'BMP':  # use jpg format if bmp is provided
             format = 'PNG'
         with thumbnail.wfile() as fp_w:
             save_kwargs = {}
