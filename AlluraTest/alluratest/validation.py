@@ -97,8 +97,8 @@ def dump_to_file(prefix, contents, suffix=''):
 
 
 def validate_html(html_or_response):
-    if hasattr(html_or_response, 'body'):
-        html = html_or_response.body
+    if hasattr(html_or_response, 'text'):
+        html = html_or_response.text
     else:
         html = html_or_response
 
@@ -111,8 +111,8 @@ def validate_html(html_or_response):
 
 
 def validate_json(json_or_response):
-    if hasattr(json_or_response, 'body'):
-        j = json_or_response.body
+    if hasattr(json_or_response, 'text'):
+        j = json_or_response.text
     else:
         j = json_or_response
 
@@ -125,8 +125,8 @@ def validate_json(json_or_response):
 
 
 def validate_html5(html_or_response):
-    if hasattr(html_or_response, 'body'):
-        html = html_or_response.body
+    if hasattr(html_or_response, 'text'):
+        html = html_or_response.text
     else:
         html = html_or_response
     count = 3
@@ -183,10 +183,10 @@ def validate_html5_chunk(html):
 
 
 def validate_js(html_or_response, within_html=False):
-    if hasattr(html_or_response, 'body'):
+    if hasattr(html_or_response, 'text'):
         if html_or_response.status_int != 200:
             return
-        text = html_or_response.body
+        text = html_or_response.text
     else:
         text = html_or_response
     fname = dump_to_file('eslint-', text, suffix='.html' if within_html else '.js')
@@ -312,23 +312,22 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         if resp.status_int != 200:
             return
 
-        content = resp.body
         content_type = resp.headers['Content-Type']
         if content_type.startswith('text/html'):
             if val_params['validate_chunk']:
                 if Config.instance().validation_enabled('html5'):
-                    validate_html5_chunk(content)
+                    validate_html5_chunk(resp.text)
             else:
                 validate_page(resp)
         elif content_type.split(';', 1)[0] in ('text/plain', 'text/x-python', 'application/octet-stream'):
             pass
         elif content_type.startswith('application/json'):
-            validate_json(content)
+            validate_json(resp.text)
         elif content_type.startswith(('application/x-javascript', 'application/javascript', 'text/javascript')):
-            validate_js(content)
+            validate_js(resp.text)
         elif content_type.startswith('application/xml'):
             import feedparser
-            d = feedparser.parse(content)
+            d = feedparser.parse(resp.text)
             assert d.bozo == 0, 'Non-wellformed feed'
         elif content_type.startswith('image/'):
             pass

@@ -70,7 +70,7 @@ class TestRootController(TestController):
         url = "/p/test/wiki/create_wiki_page/"
         r = self.app.get(url)
         assert 'test' in r
-        assert 'Create page' in r.body
+        assert 'Create page' in r.text
 
     def test_root_markdown_syntax(self):
         response = self.app.get('/wiki/markdown_syntax/')

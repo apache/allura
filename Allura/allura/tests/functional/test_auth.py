@@ -932,7 +932,7 @@ class TestAuth(TestController):
                 _session_id=self.app.cookies['_session_id'],
             ))
         r = r.follow().follow()
-        assert 'User "aaa" registered' in unentity(r.body)
+        assert 'User "aaa" registered' in unentity(r.text)
         r = self.app.post(
             '/auth/save_new',
             params=dict(
@@ -1503,7 +1503,7 @@ class TestPreferences(TestController):
         with mock.patch.object(plugin.UserPreferencesProvider, 'get') as upp_get:
             upp_get.return_value = MyPP()
             r = self.app.get('/auth/new_page')
-            assert_equal(r.body, 'new page')
+            assert_equal(r.text, 'new page')
             self.app.get('/auth/not_page', status=404)
 
 
@@ -1674,16 +1674,16 @@ To update your password on %s, please visit the following URL:
         user.set_tool_data('AuthPasswordReset',
                            hash_expiry=datetime(2000, 10, 10))
         r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
-        assert_in('Unable to process reset, please try again', r.follow().body)
+        assert_in('Unable to process reset, please try again', r.follow().text)
         r = self.app.post('/auth/set_new_password/%s' %
                           hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321',
                                                  '_session_id': self.app.cookies['_session_id'],
                                                  })
-        assert_in('Unable to process reset, please try again', r.follow().body)
+        assert_in('Unable to process reset, please try again', r.follow().text)
 
     def test_hash_invalid(self):
         r = self.app.get('/auth/forgotten_password/123412341234', status=302)
-        assert_in('Unable to process reset, please try again', r.follow().body)
+        assert_in('Unable to process reset, please try again', r.follow().text)
 
     @patch('allura.lib.plugin.AuthenticationProvider')
     def test_provider_disabled(self, AP):
@@ -1805,7 +1805,7 @@ class TestOAuth(TestController):
                 'oauth_callback': 'http://my.domain.com/callback',
             }
             r = self.app.post('/rest/oauth/request_token', params={})
-            rtok = parse_qs(r.body)['oauth_token'][0]
+            rtok = parse_qs(r.text)['oauth_token'][0]
             r = self.app.post('/rest/oauth/authorize',
                               params={'oauth_token': rtok})
             r = r.forms[0].submit('yes')
@@ -1817,7 +1817,7 @@ class TestOAuth(TestController):
                 'oauth_verifier': pin,
             }
             r = self.app.get('/rest/oauth/access_token')
-            atok = parse_qs(r.body)
+            atok = parse_qs(r.text)
             assert_equal(len(atok['oauth_token']), 1)
             assert_equal(len(atok['oauth_token_secret']), 1)
 
@@ -1866,7 +1866,7 @@ class TestOAuth(TestController):
         Server().verify_request.assert_called_once_with(req, consumer_token.consumer, None)
         request_token = M.OAuthRequestToken.query.get(consumer_token_id=consumer_token._id)
         assert_is_not_none(request_token)
-        assert_equal(r.body, request_token.to_string())
+        assert_equal(r.text, request_token.to_string())
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
@@ -1905,8 +1905,8 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         r = self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'})
-        assert_in('ctok_desc', r.body)
-        assert_in('api_key', r.body)
+        assert_in('ctok_desc', r.text)
+        assert_in('api_key', r.text)
 
     def test_authorize_invalid(self):
         self.app.post('/rest/oauth/authorize', params={'oauth_token': 'api_key'}, status=401)
@@ -2076,7 +2076,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/rest/oauth/access_token')
-        atok = parse_qs(r.body)
+        atok = parse_qs(r.text)
         assert_equal(len(atok['oauth_token']), 1)
         assert_equal(len(atok['oauth_token_secret']), 1)
 

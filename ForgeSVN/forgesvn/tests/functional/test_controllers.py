@@ -70,7 +70,7 @@ class TestRootController(SVNTestController):
 
     def test_status(self):
         resp = self.app.get('/src/status')
-        d = json.loads(resp.body)
+        d = json.loads(resp.text)
         assert d == dict(status='ready')
 
     def test_status_html(self):
@@ -100,7 +100,7 @@ class TestRootController(SVNTestController):
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
-        data = json.loads(resp.body)
+        data = json.loads(resp.text)
         assert_equal(data['max_row'], 5)
         assert_equal(data['next_column'], 1)
         for val in data['built_tree'].values():

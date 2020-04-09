@@ -129,7 +129,7 @@ class TestRootController(_TestCase):
 
     def test_status(self):
         resp = self.app.get('/src-git/status')
-        d = json.loads(resp.body)
+        d = json.loads(resp.text)
         assert d == dict(status='ready')
 
     def test_status_html(self):
@@ -159,7 +159,7 @@ class TestRootController(_TestCase):
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
-        data = json.loads(resp.body)
+        data = json.loads(resp.text)
         assert_equal(
             data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
             {'url': '/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
@@ -289,13 +289,13 @@ class TestRootController(_TestCase):
         ci = self._get_ci(repo='/p/test/weird-chars/')
         url = ci + 'tree/' + h.urlquote('привіт.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('Привіт!\nWhich means Hello!', resp.body.decode('utf-8'))
+        assert_in('Привіт!\nWhich means Hello!', resp.text)
         assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
                      'attachment;filename="привіт.txt"')
 
         url = ci + 'tree/' + h.urlquote('with space.txt') + '?format=raw'
         resp = self.app.get(url)
-        assert_in('with space', resp.body.decode('utf-8'))
+        assert_in('with space', resp.text)
         assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
                      'attachment;filename="with space.txt"')
 
@@ -680,7 +680,7 @@ class TestFork(_TestCase):
         ThreadLocalORMSession.close_all()  # close ming connections so that new data gets loaded later
 
         def assert_commit_details(r):
-            assert_in('Improve documentation', r.body)
+            assert_in('Improve documentation', r.text)
             revs = r.html.findAll('tr', attrs={'class': 'rev'})
             assert_equal(len(revs), 1)
             rev_links = revs[0].findAll('a', attrs={'class': 'rev'})

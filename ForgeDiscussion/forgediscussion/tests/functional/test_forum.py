@@ -660,9 +660,9 @@ class TestForum(TestController):
             'div', {'class': 'display_post'})[0].find('p').string == 'aaa'
         assert thread.html.findAll(
             'div', {'class': 'display_post'})[1].find('p').string == 'bbb'
-        assert thread.response.body.count(
+        assert thread.response.text.count(
             '<div class="comment-row reply_post_form') == 2
-        assert thread.response.body.count('<div class="edit_post_form') == 2
+        assert thread.response.text.count('<div class="edit_post_form') == 2
 
         # test edit post
         thread_url = thread.request.url
@@ -765,7 +765,7 @@ class TestForum(TestController):
         url = thread.request.url
 
         # Check that the newly created topic is the most recent in the rss feed
-        f = self.app.get('/discussion/feed.rss').body
+        f = self.app.get('/discussion/feed.rss').text
         f = feedparser.parse(f)
         newest_entry = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
         assert newest_entry == 'Test_Description'
@@ -776,7 +776,7 @@ class TestForum(TestController):
         form.submit()
 
         # Check that reply matches the newest in the rss feed
-        f = self.app.get('/discussion/feed.rss').body
+        f = self.app.get('/discussion/feed.rss').text
         f = feedparser.parse(f)
         newest_reply = f['entries'][0]['summary_detail']['value'].split("</p>")[0].split("<p>")[-1]
         assert newest_reply == 'Test_Reply'

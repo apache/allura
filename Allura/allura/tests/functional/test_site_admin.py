@@ -180,7 +180,7 @@ class TestSiteAdmin(TestController):
     def test_task_doc(self):
         r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
             task_name='allura.tests.functional.test_site_admin.test_task'))
-        assert json.loads(r.body)['doc'] == 'test_task doc string'
+        assert json.loads(r.text)['doc'] == 'test_task doc string'
 
 
 class TestSiteAdminNotifications(TestController):

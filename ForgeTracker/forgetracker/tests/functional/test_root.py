@@ -348,17 +348,17 @@ class TestFunctionalController(TrackerTestController):
                 {'name': '1.0', 'count': 2},
                 {'name': '2.0', 'count': 0}
             ]}
-        assert_equal(r.body, json.dumps(counts))
+        assert_equal(r.text, json.dumps(counts))
         # Private tickets shouldn't be included in counts if user doesn't
         # have read access to private tickets.
         r = self.app.get('/bugs/milestone_counts',
                          extra_environ=dict(username=str('*anonymous')))
         counts['milestone_counts'][0]['count'] = 1
-        assert_equal(r.body, json.dumps(counts))
+        assert_equal(r.text, json.dumps(counts))
 
         self.app.post('/bugs/1/delete')
         r = self.app.get('/bugs/milestone_counts')
-        assert_equal(r.body, json.dumps(counts))
+        assert_equal(r.text, json.dumps(counts))
 
     def test_bin_counts(self):
         self.new_ticket(summary='test new')
@@ -647,10 +647,10 @@ class TestFunctionalController(TrackerTestController):
 
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
-        assert_in('<label class="simple">Private:</label> No', squish_spaces(ticket_view.body))
+        assert_in('<label class="simple">Private:</label> No', squish_spaces(ticket_view.text))
         ticket_view = self.new_ticket(summary='Private Ticket',
                                       private=True).follow()
-        assert_in('<label class="simple">Private:</label> Yes', squish_spaces(ticket_view.body))
+        assert_in('<label class="simple">Private:</label> Yes', squish_spaces(ticket_view.text))
         M.MonQTask.run_ready()
         # Creator sees private ticket on list page...
         index_response = self.app.get('/p/test/bugs/')
@@ -1049,8 +1049,8 @@ class TestFunctionalController(TrackerTestController):
         assert_not_in('Tickets: <s>#1</s>', r)
         assert_in('Tickets: <s>#2</s>', r)
 
-        assert_in('<a class="alink" href="/p/test/bugs/1/">[#1]</a>', r.body)
-        assert_in('<a class="alink strikethrough" href="/p/test/bugs/2/">[#2]</a>', r.body)
+        assert_in('<a class="alink" href="/p/test/bugs/1/">[#1]</a>', r.text)
+        assert_in('<a class="alink strikethrough" href="/p/test/bugs/2/">[#2]</a>', r.text)
 
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
@@ -2437,9 +2437,9 @@ class TestFunctionalController(TrackerTestController):
         # Testing only empty 'term', because mim doesn't support aggregation
         # calls
         r = self.app.get('/p/test/bugs/tags')
-        assert_equal(json.loads(r.body), [])
+        assert_equal(json.loads(r.text), [])
         r = self.app.get('/p/test/bugs/tags?term=')
-        assert_equal(json.loads(r.body), [])
+        assert_equal(json.loads(r.text), [])
 
     def test_rest_tickets(self):
         ticket_view = self.new_ticket(summary='test').follow()
@@ -2461,7 +2461,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1/')
         discussion_url = r.html.findAll('form')[-1]['action'][:-4]
         r = self.app.get('/rest/p/test/bugs/1/')
-        r = json.loads(r.body)
+        r = json.loads(r.text)
         assert_equal(r['ticket']['discussion_thread_url'],
                      'http://localhost/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
@@ -2477,7 +2477,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'test rest attach'
         }, upload_files=[upload]).follow()
         r = self.app.get('/rest/p/test/bugs/1/')
-        r = json.loads(r.body)
+        r = json.loads(r.text)
         assert_equal(r['ticket']['attachments'][0]['url'],
                      'http://localhost/p/test/bugs/1/attachment/test_root.py')
 
@@ -3272,7 +3272,7 @@ def sidebar_contains(response, text):
 class TestStats(TrackerTestController):
     def test_stats(self):
         r = self.app.get('/bugs/stats/', status=200)
-        assert_in('# tickets: 0', r.body)
+        assert_in('# tickets: 0', r.text)
 
 
 class TestNotificationEmailGrouping(TrackerTestController):
