@@ -351,8 +351,9 @@ class ToolImportControllerMeta(type):
 
         """
         if hasattr(cls, 'create') and getattr(cls.create.decoration, 'validation', None) is None:
+            index_meth = getattr(cls.index, '__func__', cls.index)
             cls.create = validate(cls.import_form(aslist(importer.target_app)[0]),
-                    error_handler=cls.index.__func__)(cls.create)
+                                  error_handler=index_meth)(cls.create)
         return type.__call__(cls, importer, *args, **kw)
 
 

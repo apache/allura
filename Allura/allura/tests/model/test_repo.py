@@ -155,7 +155,8 @@ class TestLastCommit(unittest.TestCase):
         self.repo.get_changes = lambda _id: self._changes[_id]
         self._last_commits = [(None, set())]
         self.repo._get_last_commit = lambda i, p: self._last_commits.pop()
-        lcids = M.repository.RepositoryImplementation.last_commit_ids.__func__
+        lcids = M.repository.RepositoryImplementation.last_commit_ids
+        lcids = getattr(lcids, '__func__', lcids)
         self.repo.last_commit_ids = lambda *a, **k: lcids(self.repo, *a, **k)
         c.lcid_cache = {}
 
