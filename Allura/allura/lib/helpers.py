@@ -69,7 +69,6 @@ from webhelpers2 import date, text
 from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
-from allura.lib import AsciiDammit
 from allura.lib import utils
 
 # import to make available to templates, don't delete:
@@ -136,7 +135,7 @@ def make_safe_path_portion(ustr, relaxed=True):
     """Return an ascii representation of ``ustr`` that conforms to mount point
     naming :attr:`rules <re_tool_mount_point_fragment>`.
 
-    Will return an empty string if no char in ``ustr`` is latin1-encodable.
+    Will return an empty string if no char in ``ustr`` is ascii-encodable.
 
     :param relaxed: Use relaxed mount point naming rules (allows more
         characters. See :attr:`re_relaxed_tool_mount_point_fragment`.
@@ -146,8 +145,8 @@ def make_safe_path_portion(ustr, relaxed=True):
     regex = (re_relaxed_tool_mount_point_fragment if relaxed else
              re_tool_mount_point_fragment)
     ustr = really_unicode(ustr)
-    s = ustr.encode('latin1', 'ignore')
-    s = AsciiDammit.asciiDammit(s)
+    s = ustr.encode('ascii', 'ignore')
+    s = six.ensure_text(s)
     if not relaxed:
         s = s.lower()
     s = '-'.join(regex.findall(s))
@@ -203,7 +202,10 @@ def _attempt_encodings(s, encodings):
     for enc in encodings:
         try:
             if enc is None:
-                return six.text_type(s)  # try default encoding
+                if six.PY3 and isinstance(s, bytes):
+                    # special handling for bytes (avoid b'asdf' turning into "b'asfd'")
+                    return s.decode('utf-8')
+                return six.text_type(s)  # try default encoding, and handle other types like int, etc
             else:
                 return six.text_type(s, enc)
         except (UnicodeDecodeError, LookupError):
@@ -391,7 +393,7 @@ def encode_keys(d):
     '''Encodes the unicode keys of d, making the result
     a valid kwargs argument'''
     return dict(
-        (k.encode('utf-8'), v)
+        (six.ensure_str(k), v)
         for k, v in six.iteritems(d))
 
 
@@ -1257,14 +1259,10 @@ def slugify(name, allow_periods=False):
     """
     Returns a tuple with slug and lowered slug based on name
     """
-    dash_collapse_pattern = r'[^.\w]+' if allow_periods else r'[^\w]+'
-    slug = re.sub(r'(^-)|(-$)', '',  # leading - or trailing - gets removed
-                  six.text_type(
-                      re.sub(dash_collapse_pattern, '-',  # replace non ". alphanum_" sequences into single -
-                             re.sub(r"'", '',  # remove any apostrophes
-                                    unicodedata.normalize('NFKD', name)
-                                    .encode('ascii', 'ignore')))
-                  ))
+    RE_NON_ALPHA_ETC = re.compile(r'[^.\w]+' if allow_periods else r'[^\w]+')
+    slug = RE_NON_ALPHA_ETC.sub('-',  # replace non ". alphanum_" sequences into single -
+        unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().replace("'", '')  # asciify & strip apostophes.   https://stackoverflow.com/a/53261200
+    ).strip('-')  # leading - or trailing - gets removed
     return slug, slug.lower()
 
 

@@ -14,7 +14,6 @@
 .jscsrc
 .jshintrc
 Allura/allura/etc/mime.types
-Allura/allura/lib/AsciiDammit.py
 Allura/allura/lib/widgets/resources/css/autocomplete.css
 Allura/allura/lib/widgets/resources/css/colorPicker.css
 Allura/allura/lib/widgets/resources/css/jqfontselector.css
