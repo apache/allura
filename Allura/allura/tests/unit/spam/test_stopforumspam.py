@@ -37,7 +37,7 @@ class TestStopForumSpam(object):
         self.artifact.project_id = ObjectId()
         self.artifact.ref = None
 
-        with tempfile.NamedTemporaryFile() as f:
+        with tempfile.NamedTemporaryFile('w') as f:
             f.write('''"1.1.1.1","2","2018-01-22 10:56:29"
 "1.2.3.4","42","2017-09-24 18:33:00"
 "4.3.2.1","1","2017-09-28 14:03:53"''')
