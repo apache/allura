@@ -213,9 +213,6 @@ The file Allura/allura/etc/mime.types from the mime-support package,
 which is in the public domain.  For details, see
 http://ftp-master.metadata.debian.org/changelogs//main/m/mime-support/mime-support_3.54_copyright
 
-ASCII, Dammit, which is in the public domain.
-For details, see Allura/allura/lib/AsciiDammit.py
-
 jQuery, jQueryUI, and various related plugins, which are available
 under the MIT license.  For details, see the individual files:
     Allura/allura/public/nf/js/jquery-base.js

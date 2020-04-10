@@ -57,12 +57,12 @@ class TestMakeSafePathPortion(TestCase):
     def setUp(self):
         self.f = h.make_safe_path_portion
 
-    def test_no_latin1_chars(self):
+    def test_no_ascii_chars(self):
         s = self.f('Задачи', relaxed=False)
         self.assertEqual(s, '')
 
-    def test_some_latin1_chars(self):
-        s = self.f('åß∂ƒ', relaxed=False)
+    def test_some_ascii_chars(self):
+        s = self.f('aßbƒ', relaxed=False)
         self.assertEqual(s, 'ab')
 
     def test_strict_mount_point_names(self):
@@ -91,6 +91,8 @@ def test_escape_json():
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
+    s = h.really_unicode(b'asdf')
+    assert s.startswith('asdf'), repr(s)
     s = h.really_unicode(b'\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
     assert s.startswith('\ufeff'), repr(s)
     s = h.really_unicode(
@@ -103,6 +105,10 @@ def test_really_unicode():
     assert isinstance(s, six.text_type)
     # unicode stays the same
     assert_equals(h.really_unicode('¬∂•°‹'), '¬∂•°‹')
+    # other types are handled too
+    assert_equals(h.really_unicode(1234), '1234')
+    assert_equals(h.really_unicode(datetime(2020, 1, 1)), '2020-01-01 00:00:00')
+    assert_equals(h.really_unicode(None), '')
 
 
 def test_find_project():
@@ -187,7 +193,7 @@ def test_context_setters():
 
 def test_encode_keys():
     kw = h.encode_keys({'foo': 5})
-    assert not isinstance(list(kw.keys())[0], six.text_type)
+    assert isinstance(list(kw.keys())[0], str)
 
 
 def test_ago():
