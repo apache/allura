@@ -38,15 +38,15 @@ class AlluraImporter(ToolImporter):
         return user
 
     def annotate(self, text, user, username, label=''):
-        if  username != "" \
-            and username != None \
-            and user != None \
+        if  username is not None \
+            and user is not None \
             and user.is_anonymous() \
+            and username != "" \
             and username != 'nobody' \
             and username != '*anonymous':
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
 
-        if text == None:
+        if text is None:
             text = ""
 
         return text

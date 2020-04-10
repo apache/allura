@@ -205,7 +205,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                         parent_slug = slug[:pos]
 
                         for cp in created_posts:
-                            if cp.get(parent_slug, None) != None:
+                            if cp.get(parent_slug, None) is not None:
                                 parent_id = cp[parent_slug]._id
                                 break
 
@@ -221,7 +221,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                 )
 
                 if ("last_edited" in post_json) \
-                    and (post_json["last_edited"] != None):
+                    and (post_json["last_edited"] is not None):
                     p.last_edit_date = parse(post_json["last_edited"])
 
                 p.add_multiple_attachments(
@@ -230,5 +230,3 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                 if slug != '': 
                     created_posts.append({ slug: p })
-
-
