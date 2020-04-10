@@ -285,7 +285,8 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
         # using a tmp file and rename is atomic, and how PAM module does it
         # see `write_file_contents` in libpam/src/pam_google_authenticator.c
         # 377 umask gives 400 permissions, which matches how the PAM module does it (600 would be fine too)
-        with umask(0o377), tempfile.NamedTemporaryFile(dir=os.path.dirname(conf_file),
+        with umask(0o377), tempfile.NamedTemporaryFile('w',
+                                                       dir=os.path.dirname(conf_file),
                                                        prefix='tmp-allura-gauth-',
                                                        delete=False) as f:
             f.write(gaf.dump())

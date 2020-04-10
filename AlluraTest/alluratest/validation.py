@@ -90,7 +90,7 @@ def report_validation_error(val_name, filename, message):
 
 
 def dump_to_file(prefix, contents, suffix=''):
-    f = tempfile.NamedTemporaryFile(prefix=prefix, delete=False, suffix=suffix)
+    f = tempfile.NamedTemporaryFile('w', prefix=prefix, delete=False, suffix=suffix)
     f.write(contents)
     f.close()
     return f.name
@@ -137,10 +137,10 @@ def validate_html5(html_or_response):
             resp = requests.post('http://html5.validator.nu/nu/?out=text',  # could do out=json
                                  data=html,
                                  headers={'Content-Type': str('text/html; charset=utf-8')},
-                                 timeout=3)
+                                 timeout=5)
             resp = resp.text
             break
-        except Exception:
+        except IOError:
             resp = "Couldn't connect to validation service to check the HTML"
             count -= 1
             if count == 0:
