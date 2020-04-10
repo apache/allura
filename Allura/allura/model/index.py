@@ -99,7 +99,7 @@ class ArtifactReference(object):
         '''Look up the artifact referenced'''
         aref = self.artifact_reference
         try:
-            cls = loads(str(aref.cls))
+            cls = loads(six.binary_type(aref.cls))
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
         except:
