@@ -500,7 +500,7 @@ class Globals(object):
         p1 = Popen(['hostname', '-s'], stdout=PIPE)
         server_name = p1.communicate()[0].strip()
         p1.wait()
-        return server_name
+        return six.ensure_text(server_name)
 
     @property
     def tool_icon_css(self):

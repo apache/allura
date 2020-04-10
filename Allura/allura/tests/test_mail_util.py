@@ -218,19 +218,19 @@ class TestHeader(object):
     @raises(TypeError)
     def test_bytestring(self):
         our_header = Header(b'[asdf2:wiki] Discussion for Home page')
-        assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
+        assert_equal(our_header.encode(), '[asdf2:wiki] Discussion for Home page')
 
     def test_ascii(self):
         our_header = Header('[asdf2:wiki] Discussion for Home page')
-        assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
+        assert_equal(our_header.encode(), '[asdf2:wiki] Discussion for Home page')
 
     def test_utf8(self):
         our_header = Header('теснятся')
-        assert_equal(str(our_header), '=?utf-8?b?0YLQtdGB0L3Rj9GC0YHRjw==?=')
+        assert_equal(our_header.encode(), '=?utf-8?b?0YLQtdGB0L3Rj9GC0YHRjw==?=')
 
     def test_name_addr(self):
         our_header = Header('"теснятся"', '<dave@b.com>')
-        assert_equal(str(our_header),
+        assert_equal(our_header.encode(),
                      '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
 

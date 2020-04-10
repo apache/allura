@@ -725,11 +725,7 @@ class Application(object):
                 'Existing message_id %s found - saving this as text attachment' %
                 message_id)
 
-            try:
-                fp = BytesIO(message['payload'].encode('utf-8'))
-            except UnicodeDecodeError:
-                fp = BytesIO(message['payload'])
-
+            fp = BytesIO(six.ensure_binary(message['payload']))
             post.attach(
                 'alternate', fp,
                 content_type=message.get(

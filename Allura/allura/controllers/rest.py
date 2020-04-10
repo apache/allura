@@ -308,7 +308,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
 
     prefix = nbhd.shortname_prefix
     pname = unquote(name)
-    pname = pname.decode('utf-8')  # we don't support unicode names, but in case a url comes in with one
+    pname = six.ensure_text(pname)  # we don't support unicode names, but in case a url comes in with one
     provider = plugin.ProjectRegistrationProvider.get()
     try:
         provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=nbhd)
