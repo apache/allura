@@ -17,7 +17,6 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import shlex
 import logging
 
 from tg import config
@@ -25,6 +24,7 @@ from paste.deploy.converters import asbool
 import pysolr
 import six
 
+from allura.lib.helpers import shlex_split
 
 log = logging.getLogger(__name__)
 
@@ -155,15 +155,7 @@ class MockSOLR(object):
             q = ''  # shlex will hang on None
         # Parse query
         preds = []
-        if six.PY2:
-            # shlex can't handle unicode in py2
-            q_parts = [
-                _.decode('latin-1')
-                for _ in
-                shlex.split(q.encode('latin-1'))
-            ]
-        else:
-            q_parts = shlex.split(q)
+        q_parts = shlex_split(q)
         if fq:
             q_parts += fq
         for part in q_parts:

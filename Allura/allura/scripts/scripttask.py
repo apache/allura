@@ -48,11 +48,9 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import argparse
 import logging
-import shlex
-import sys
 
 from allura.lib.decorators import task
-import six
+from allura.lib.helpers import shlex_split
 
 
 log = logging.getLogger(__name__)
@@ -77,12 +75,7 @@ class ScriptTask(object):
     @classmethod
     def _execute_task(cls, arg_string):
         try:
-            if isinstance(arg_string, six.text_type):
-                # shlex doesn't support unicode fully, so encode it http://stackoverflow.com/a/14219159/79697
-                # decode has to happen in the arg parser (e.g. see delete_projects.py)
-                arg_string = arg_string.encode('utf8')
-            args_split = shlex.split(arg_string or '')
-            options = cls.parser().parse_args(args_split)
+            options = cls.parser().parse_args(shlex_split(arg_string or ''))
         except SystemExit:
             raise Exception("Error parsing args: '%s'" % arg_string)
         return cls.execute(options)

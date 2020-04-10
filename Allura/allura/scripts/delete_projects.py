@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import argparse
 import logging
 
+import six
 from webob import Request
 from ming.odm.odmsession import session
 
@@ -73,7 +74,7 @@ class DeleteProjects(ScriptTask):
         parser = argparse.ArgumentParser(description='Completely delete projects')
         parser.add_argument('projects', metavar='nbhd/project', type=str, nargs='+',
                             help='List of projects to delete in a form nbhd_prefix/shortname')
-        parser.add_argument('-r', '--reason', type=lambda s: s.decode('utf8'),
+        parser.add_argument('-r', '--reason', type=lambda s: six.ensure_text(s),
                             help='Reason why these projects are being deleted')
         parser.add_argument('--disable-users', action='store_true', default=False,
                             help='Disable all users belonging to groups Admin and Developer in these projects.')

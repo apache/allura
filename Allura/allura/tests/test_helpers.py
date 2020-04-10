@@ -339,6 +339,8 @@ def test_split_select_field_options():
                   ['test message', 'test2'])
     assert_equals(h.split_select_field_options('"test message test2'),
                   ['test', 'message', 'test2'])
+    assert_equals(h.split_select_field_options('abc ƒå∂ ººº'),
+                  ['abc', 'ƒå∂', 'ººº'])
 
 
 def test_notifications_disabled():

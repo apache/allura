@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import cgi
 import random
-import shlex
 import logging
 import traceback
 import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
@@ -65,8 +64,7 @@ class parse(object):
             if s.startswith('quote '):
                 return '[[' + s[len('quote '):] + ']]'
             try:
-                parts = [six.text_type(x, 'utf-8')
-                         for x in shlex.split(s.encode('utf-8'))]
+                parts = h.shlex_split(s)
                 if not parts:
                     return '[[' + s + ']]'
                 macro = self._lookup_macro(parts[0])
