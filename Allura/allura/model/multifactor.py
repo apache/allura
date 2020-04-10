@@ -40,7 +40,7 @@ class TotpKey(MappedClass):
 
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)
-    key = FieldProperty(str, required=True)
+    key = FieldProperty(S.Binary, required=True)  # S.Binary ok?  ming 0.5.x make_safe doesn't know about bytes/Binary
 
 
 class RecoveryCode(MappedClass):
