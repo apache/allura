@@ -200,7 +200,7 @@ class ProjectExtractor(object):
         if self.url in self._page_cache:
             self.page = self._page_cache[self.url]
         else:
-            if parser == None:
+            if parser is None:
                 parser = self.parse_page
             self.page = self._page_cache[self.url] = \
                 parser(self.urlopen(self.url))
@@ -350,7 +350,7 @@ class ToolImportControllerMeta(type):
         the appropriate App for this controller's importer.
 
         """
-        if hasattr(cls, 'create') and getattr(cls.create.decoration, 'validation', None) == None:
+        if hasattr(cls, 'create') and getattr(cls.create.decoration, 'validation', None) is None:
             cls.create = validate(cls.import_form(aslist(importer.target_app)[0]),
                     error_handler=cls.index.__func__)(cls.create)
         return type.__call__(cls, importer, *args, **kw)
@@ -481,7 +481,7 @@ class ToolImporter(six.with_metaclass(ToolImporterMeta, object)):
             update={'$inc': {pending_key: 1}},
             new=True,
         )
-        return modified_project != None
+        return modified_project is not None
 
     def clear_pending(self, project):
         """
@@ -562,7 +562,7 @@ class ToolsValidator(fev.Set):
         invalid = []
         for name in value:
             importer = ToolImporter.by_name(name)
-            if importer != None and importer.source == self.source:
+            if importer is not None and importer.source == self.source:
                 valid.append(name)
             else:
                 invalid.append(name)

@@ -106,7 +106,7 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
 def ep(name, source=None, importer=None, **kw):
     mep = mock.Mock(name='mock_ep', **kw)
     mep.name = name
-    if importer != None:
+    if importer is not None:
         mep.load.return_value = importer
     else:
         mep.load.return_value.source = source

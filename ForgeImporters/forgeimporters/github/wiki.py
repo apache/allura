@@ -407,7 +407,7 @@ class GitHubWikiImporter(ToolImporter):
             idx = [p.lower() for p in self.available_pages].index(page.lower())
         except ValueError:
             idx = None
-        if idx != None:
+        if idx is not None:
             page = self.available_pages[idx]
 
         if title:
