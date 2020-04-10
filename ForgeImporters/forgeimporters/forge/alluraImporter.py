@@ -7,7 +7,7 @@ class AlluraImporter(ToolImporter):
 
 
     def get_user(self, username):
-        if username is None:
+        if username == None:
             return M.User.anonymous()
         user = M.User.by_username(username)
         if not user:

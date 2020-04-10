@@ -187,7 +187,7 @@ class ForgeTrackerImporter(ToolImporter):
             M.session.artifact_orm_session._get().skip_mod_date = False
 
     def get_user(self, username):
-        if username is None:
+        if username == None:
             return M.User.anonymous()
         user = M.User.by_username(username)
         if not user:

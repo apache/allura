@@ -28,7 +28,7 @@ class GitHubMarkdownConverter(object):
         self.code_patterns = ['```', '~~~']
 
     def convert(self, text):
-        if text is None:
+        if text == None:
             return ''
         lines = self._parse_lines(text.split('\n'))
         return '\n'.join(lines)
