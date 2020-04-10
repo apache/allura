@@ -23,6 +23,7 @@ import os
 from unittest import TestCase
 from io import BytesIO
 
+import ming
 from tg import tmpl_context as c
 from ming.orm import session, Mapper
 from nose.tools import assert_equal
@@ -44,6 +45,11 @@ Mapper.compile_all()
 class TestFile(TestCase):
 
     def setUp(self):
+        config = {
+            'ming.main.uri': 'mim://allura',
+            'ming.project.uri': 'mim://project-data',
+        }
+        ming.configure(**config)
         setup_unit_test()
         self.session = session(File)
         self.conn = M.session.main_doc_session.db._connection
@@ -61,7 +67,7 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 1
         assert f.filename == 'test1.txt'
         assert f.content_type == 'text/plain'
-        self._assert_content(f, 'test1')
+        self._assert_content(f, b'test1')
 
     def test_from_data(self):
         f = File.from_data('test2.txt', b'test2')
@@ -71,7 +77,7 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 1
         assert f.filename == 'test2.txt'
         assert f.content_type == 'text/plain'
-        self._assert_content(f, 'test2')
+        self._assert_content(f, b'test2')
 
     def test_from_path(self):
         path = __file__.rstrip('c')
@@ -82,7 +88,7 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() >= 1
         assert f.filename == os.path.basename(path)
         text = f.rfile().read()
-        assert text.startswith('# -*-')
+        assert text.startswith(b'# -*-')
 
     def test_delete(self):
         f = File.from_data('test1.txt', b'test1')
@@ -115,14 +121,14 @@ class TestFile(TestCase):
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 1
         assert self.db.fs.chunks.count() == 1
-        self._assert_content(f, 'test1')
+        self._assert_content(f, b'test1')
         with f.wfile() as fp:
             fp.write(b'test2')
         self.session.flush()
         assert self.db.fs.count() == 1
         assert self.db.fs.files.count() == 2
         assert self.db.fs.chunks.count() == 2
-        self._assert_content(f, 'test2')
+        self._assert_content(f, b'test2')
 
     def test_serve_embed(self):
         f = File.from_data('te s\u0b6e1.txt', b'test1')
@@ -133,7 +139,7 @@ class TestFile(TestCase):
             response_body = list(f.serve())
             etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
-            assert_equal(['test1'], response_body)
+            assert_equal([b'test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert 'Content-Disposition' not in response.headers
 
@@ -146,7 +152,7 @@ class TestFile(TestCase):
             response_body = list(f.serve(embed=False))
             etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
-            assert_equal(['test1'], response_body)
+            assert_equal([b'test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert_equal(response.headers['Content-Disposition'],
                          'attachment;filename="te%20s%E0%AD%AE1.txt"')
@@ -208,7 +214,7 @@ class TestFile(TestCase):
         fp = open(path, 'rb')
         c.app.config._id = None
         attachment = M.BaseAttachment.save_attachment(
-            b'Strukturpr\xfcfung.dvi', fp,
+            'Strukturpr\xfcfung.dvi', fp,
             save_original=True)
         assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
         assert_equal(attachment.filename, 'Strukturpr\xfcfung.dvi')
