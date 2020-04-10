@@ -417,6 +417,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = 'Test'
         note.page_regex = None
         note.page_tool_type = None
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         projects = c.user.my_projects_by_role_name
 
@@ -446,6 +447,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = None
         note.page_tool_type = None
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         assert_is(ThemeProvider().get_site_notification(), note)
 
@@ -459,6 +461,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = 'test'
         note.page_tool_type = None
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
 
         search.return_value = True
@@ -476,6 +479,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = None
         note.page_tool_type.lower.return_value = 'test1'
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         c.app = Mock()
         c.app.config.tool_name.lower.return_value = 'test1'
@@ -496,6 +500,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = 'test'
         note.page_tool_type.lower.return_value = 'test1'
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         c.app = Mock()
 
@@ -526,6 +531,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = None
         note.page_tool_type = None
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         get_note = ThemeProvider()._get_site_notification()
 
@@ -541,16 +547,19 @@ class TestThemeProvider_notifications(object):
         note1.user_role = None
         note1.page_regex = 'this-will-not-match'
         note1.page_tool_type = None
+        note1.impressions = 10
         note2 = MagicMock(name='note2')
         note2._id = 'test2'
         note2.user_role = None
         note2.page_regex = None
         note2.page_tool_type = None
+        note2.impressions = 10
         note3 = MagicMock(name='note3')
         note3._id = 'test3'
         note3.user_role = None
         note3.page_regex = None
         note3.page_tool_type = None
+        note3.impressions = 10
         SiteNotification.actives.return_value = [note1, note2, note3]
         get_note = ThemeProvider()._get_site_notification()
 
@@ -576,6 +585,7 @@ class TestThemeProvider_notifications(object):
         note.user_role = None
         note.page_regex = None
         note.page_tool_type = None
+        note.impressions = 10
         SiteNotification.actives.return_value = [note]
         get_note = ThemeProvider()._get_site_notification(
             site_notification_cookie_value='testid-1-False'
