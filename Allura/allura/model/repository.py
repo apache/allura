@@ -758,7 +758,7 @@ class Repository(Artifact, ActivityObject):
 
         Updates to the repo status (or any Repository field) are considered
         project updates (because Repositories are Artifacts; see
-        `Artifact.__metaclass__.before_save`) and thus change `last_updated`
+        `Artifact.__mongometa__.before_save`) and thus change `last_updated`
         on `c.project`, which causes `c.project` to be flushed.
 
         Because repo status changes can come at the end or middle of a long
