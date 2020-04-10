@@ -1391,5 +1391,3 @@ class TestForgeDiscussionController(TestController, TestCase):
                           status=302).follow()
         self.assertIn('Please wait and try again', r)
         self.assertEqual(import_tool.post.call_count, 0)
-
-
