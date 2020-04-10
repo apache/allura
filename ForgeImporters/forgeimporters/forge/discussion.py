@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import absolute_import
 import json
 from dateutil.parser import parse
 
@@ -138,7 +139,7 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                     forum = utils.create_forum(app, new_forum=new_forum)
                     
-                    if "import_id" in forum_json.keys():
+                    if "import_id" in list(forum_json.keys()):
                         forum.import_id = forum_json["import_id"]
 
                     for thread_json in forum_json["threads"]:
@@ -197,7 +198,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                 # For nested posts
                 parent_id = None
                 slug = ''
-                if "slug" in post_json.keys():
+                if "slug" in list(post_json.keys()):
                     slug = post_json["slug"]
 
                     if slug.count('/') >= 1:
