@@ -30,6 +30,8 @@ from allura.tests.decorators import with_tracker
 from allura import model as M
 from forgeimporters.forge import tracker
 
+from forgeimporters.forge import alluraImporter
+
 
 class TestTrackerImporter(TestCase):
 
@@ -245,7 +247,7 @@ class TestTrackerImporter(TestCase):
         h.make_app_admin_only.assert_called_once_with(
             project.install_app.return_value)
 
-    @mock.patch.object(tracker, 'M')
+    @mock.patch.object(alluraImporter, 'M')
     def test_get_user(self, M):
         importer = tracker.ForgeTrackerImporter()
         M.User.anonymous.return_value = 'anon'

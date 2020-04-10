@@ -50,6 +50,7 @@ from forgeimporters.base import (
     get_importer_upload_path,
     save_importer_upload,
 )
+from forgeimporters.forge.alluraImporter import AlluraImporter
 from io import open
 
 
@@ -86,7 +87,7 @@ class ForgeTrackerImportController(ToolImportController):
         redirect(c.project.url() + 'admin/')
 
 
-class ForgeTrackerImporter(ToolImporter):
+class ForgeTrackerImporter(AlluraImporter):
     source = 'Allura'
     target_app_ep_names = 'tickets'
     controller = ForgeTrackerImportController
@@ -185,19 +186,6 @@ class ForgeTrackerImporter(ToolImporter):
             raise
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
-
-    def get_user(self, username):
-        if username == None:
-            return M.User.anonymous()
-        user = M.User.by_username(username)
-        if not user:
-            user = M.User.anonymous()
-        return user
-
-    def annotate(self, text, user, username, label=''):
-        if username and user.is_anonymous() and username != 'nobody':
-            return '*Originally%s by:* %s\n\n%s' % (label, username, text)
-        return text
 
     def process_comments(self, ticket, comments):
         for comment_json in comments:

@@ -51,7 +51,7 @@ from allura.lib.plugin import ImportIdConverter
 from forgediscussion import utils, import_support
 from forgediscussion import model as DM
 
-from alluraImporter import AlluraImporter
+from forgeimporters.forge.alluraImporter import AlluraImporter
 
 
 class ForgeDiscussionImportForm(ToolImportForm):
