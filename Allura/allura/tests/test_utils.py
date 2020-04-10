@@ -23,10 +23,12 @@ import json
 import time
 import unittest
 import datetime as dt
-from ming.odm import session
 from os import path
 from io import open
 
+import six
+import ming
+from ming.odm import session
 from bson import ObjectId
 from webob import Request
 from mock import Mock, patch
@@ -75,6 +77,10 @@ class TestChunkedIterator(unittest.TestCase):
 
     def setUp(self):
         setup_unit_test()
+        config = {
+            'ming.main.uri': 'mim://allura_test',
+        }
+        ming.configure(**config)
         for i in range(10):
             M.User.upsert('sample-user-%d' % i)
 
@@ -347,7 +353,8 @@ def test_DateJSONEncoder():
     data = {'message': 'Hi!',
             'date': dt.datetime(2015, 1, 30, 13, 13, 13)}
     result = json.dumps(data, cls=utils.DateJSONEncoder)
-    assert_equal(result, '{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}')
+    assert result in ['{"date": "2015-01-30T13:13:13Z", "message": "Hi!"}',
+                      '{"message": "Hi!", "date": "2015-01-30T13:13:13Z"}'], result
 
 
 def test_clean_phone_number():

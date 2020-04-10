@@ -34,7 +34,7 @@ import random
 import six.moves.cPickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import shlex
 import socket
 from functools import partial
@@ -1067,6 +1067,17 @@ def plain2markdown(txt, preserve_multiple_spaces=False, has_html_entities=False)
     return txt
 
 
+if six.PY2:
+    # https://stackoverflow.com/a/35968897
+    # in python 3.7 this can just be a defaultdict, probably
+    class OrderedDefaultDict(OrderedDict, defaultdict):
+        def __init__(self, default_factory=None, *args, **kwargs):
+            super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+            self.default_factory = default_factory
+else:
+    OrderedDefaultDict = defaultdict  # py3.7 dicts are always ordered
+
+
 def iter_entry_points(group, *a, **kw):
     """Yields entry points that have not been disabled in the config.
 
@@ -1088,7 +1099,7 @@ def iter_entry_points(group, *a, **kw):
                 if ep.name not in disabled]
 
     def unique_eps(entry_points):
-        by_name = defaultdict(list)
+        by_name = OrderedDefaultDict(list)
         for ep in entry_points:
             by_name[ep.name].append(ep)
         for name, eps in six.iteritems(by_name):
