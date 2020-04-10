@@ -115,8 +115,8 @@ class ForgeDiscussionImporter(AlluraImporter):
         mount_label = mount_label or 'Discussion'
 
         app = project.install_app('discussion', mount_point, mount_label, 
-			import_id={ 'source': self.source }
-		)
+            import_id={ 'source': self.source }
+        )
         ThreadLocalORMSession.flush_all()
 
         with h.push_config(c, app=app):
