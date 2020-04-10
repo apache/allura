@@ -34,8 +34,7 @@ class TestScriptTask(unittest.TestCase):
                 return cls._parser
         self.cls = TestScriptTask
 
-    @mock.patch('allura.scripts.scripttask.sys')
-    def test_arg_parsing(self, sys):
+    def test_arg_parsing(self):
         "Make sure string of args gets correctly tokenized."
         parser = self.cls.parser()
         self.cls._execute_task('--dir "My Dir"')

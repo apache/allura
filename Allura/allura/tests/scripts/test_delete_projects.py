@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -123,12 +124,12 @@ class TestDeleteProjects(TestController):
         p = M.Project.query.get(shortname=self.p_shortname)
         pid = p._id
         assert p is not None, 'Can not find project to delete'
-        self.run_script(['-r', 'The Reason', 'p/{}'.format(p.shortname)])
+        self.run_script(['-r', 'The Reason¢¢', 'p/{}'.format(p.shortname)])
         session(p).expunge(p)
         p = M.Project.query.get(shortname=p.shortname)
         assert p is None, 'Project is not deleted'
-        log.info.assert_called_once_with('Purging %s Reason: %s', '/p/test-delete/', 'The Reason')
-        post_event.assert_called_once_with('project_deleted', project_id=pid, reason='The Reason')
+        log.info.assert_called_once_with('Purging %s Reason: %s', '/p/test-delete/', 'The Reason¢¢')
+        post_event.assert_called_once_with('project_deleted', project_id=pid, reason='The Reason¢¢')
 
     def _disable_users(self, disable):
         dev = M.User.by_username('test-user')

@@ -940,13 +940,14 @@ def ming_config_from_ini(ini_path):
         yield
 
 
+def shlex_split(string):
+    # py2/3 compatibility
+    return [six.ensure_text(s) for s in shlex.split(six.ensure_str(string))]
+
+
 def split_select_field_options(field_options):
     try:
-        # shlex have problems with parsing unicode,
-        # it's better to pass properly encoded byte-string
-        field_options = shlex.split(field_options.encode('utf-8'))
-        # convert splitted string back to unicode
-        field_options = list(map(really_unicode, field_options))
+        field_options = shlex_split(field_options)
     except ValueError:
         field_options = field_options.split()
         # After regular split field_options might contain a " characters,

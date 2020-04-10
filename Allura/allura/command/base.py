@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 import logging
-import shlex
 
 import tg
 from paste.script import command
@@ -44,7 +43,7 @@ def run_command(command, args):
     mod = __import__(mod, fromlist=[str(cls)])
     command = getattr(mod, cls)
     command = command(command.__name__)
-    arg_list = shlex.split(args or '')
+    arg_list = h.shlex_split(args or '')
     try:
         command.parser.parse_args(arg_list)
     except SystemExit:
