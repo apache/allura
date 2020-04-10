@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import os
 import logging
 
+import six
 import tg
 from paste.script import command
 from paste.deploy import appconfig
@@ -55,17 +56,17 @@ class EmptyClass(object):
     pass
 
 
-class Command(command.Command):
+class MetaParserDocstring(type):
+    @property
+    def __doc__(cls):
+        return cls.parser.format_help()
+
+
+class Command(six.with_metaclass(MetaParserDocstring, command.Command)):
     min_args = 1
     max_args = 1
     usage = '[<ini file>]'
     group_name = 'Allura'
-
-    class __metaclass__(type):
-
-        @property
-        def __doc__(cls):
-            return cls.parser.format_help()
 
     @classmethod
     def post(cls, *args, **kw):

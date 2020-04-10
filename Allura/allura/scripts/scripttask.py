@@ -49,6 +49,8 @@ from __future__ import absolute_import
 import argparse
 import logging
 
+import six
+
 from allura.lib.decorators import task
 from allura.lib.helpers import shlex_split
 
@@ -56,18 +58,18 @@ from allura.lib.helpers import shlex_split
 log = logging.getLogger(__name__)
 
 
-class ScriptTask(object):
+class MetaParserDocstring(type):
+    @property
+    def __doc__(cls):
+        return cls.parser().format_help()
+
+    def __new__(meta, classname, bases, classDict):
+        return task(type.__new__(meta, classname, bases, classDict))
+
+
+class ScriptTask(six.with_metaclass(MetaParserDocstring, object)):
 
     """Base class for a command-line script that is also executable as a task."""
-
-    class __metaclass__(type):
-
-        @property
-        def __doc__(cls):
-            return cls.parser().format_help()
-
-        def __new__(meta, classname, bases, classDict):
-            return task(type.__new__(meta, classname, bases, classDict))
 
     def __new__(cls, arg_string=''):
         return cls._execute_task(arg_string)
