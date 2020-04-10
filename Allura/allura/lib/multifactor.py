@@ -108,7 +108,7 @@ class TotpService(object):
 
     def verify(self, totp, code, user):
         code = code.replace(' ', '')  # Google authenticator puts a space in their codes
-        code = bytes(code)  # can't be unicode
+        code = six.ensure_binary(code)  # can't be text
 
         self.enforce_rate_limit(user)
 
@@ -233,7 +233,7 @@ class GoogleAuthenticatorFile(object):
 
     def dump(self):
         lines = []
-        lines.append(b32encode(self.key).replace('=', ''))
+        lines.append(six.ensure_text(b32encode(self.key)).replace('=', ''))
         for opt, value in six.iteritems(self.options):
             parts = ['"', opt]
             if value is not None:

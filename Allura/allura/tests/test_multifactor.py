@@ -98,25 +98,25 @@ class TestTotpService(object):
         srv = GenericTotpService()
         totp = srv.Totp(key=self.sample_key)
         srv.verify(totp, '283 397', None)
-        srv.verify(totp, b'283397', None)
+        srv.verify(totp, '283397', None)
 
     @patch('allura.lib.multifactor.time')
     def test_verify_window(self, time):
         time.return_value = self.sample_time
         srv = GenericTotpService()
         totp = srv.Totp(key=self.sample_key)
-        srv.verify(totp, b'283397', None)
+        srv.verify(totp, '283397', None)
 
         time.return_value = self.sample_time + 30
-        srv.verify(totp, b'283397', None)
+        srv.verify(totp, '283397', None)
 
         time.return_value = self.sample_time + 60
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'283397', None)
+            srv.verify(totp, '283397', None)
 
         time.return_value = self.sample_time - 30
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'283397', None)
+            srv.verify(totp, '283397', None)
 
     def test_get_qr_code(self):
         srv = TotpService()
@@ -165,12 +165,12 @@ class TestAnyTotpServiceImplementation(object):
 
         # 4th attempt (good or bad) will trip over the default limit of 3 in 30s
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'34dfvdasf', user)
+            srv.verify(totp, '34dfvdasf', user)
         with assert_raises(InvalidToken):
-            srv.verify(totp, b'234asdfsadf', user)
-        srv.verify(totp, b'283397', user)
+            srv.verify(totp, '234asdfsadf', user)
+        srv.verify(totp, '283397', user)
         with assert_raises(MultifactorRateLimitError):
-            srv.verify(totp, b'283397', user)
+            srv.verify(totp, '283397', user)
 
 
 class TestMongodbTotpService(TestAnyTotpServiceImplementation):
