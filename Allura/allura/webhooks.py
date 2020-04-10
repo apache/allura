@@ -92,12 +92,12 @@ class WebhookControllerMeta(type):
         if hasattr(cls, 'create'):
             cls.create = validate(
                 cls.create_form(),
-                error_handler=cls.index.__func__,
+                error_handler=getattr(cls.index, '__func__', cls.index),
             )(cls.create)
         if hasattr(cls, 'edit'):
             cls.edit = validate(
                 cls.edit_form(sender, app),
-                error_handler=cls._default.__func__,
+                error_handler=getattr(cls._default, '__func__', cls._default),
             )(cls.edit)
         return type.__call__(cls, sender, app, *args, **kw)
 
