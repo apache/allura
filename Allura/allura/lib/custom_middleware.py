@@ -127,7 +127,7 @@ class CORSMiddleware(object):
         headers = [(str('Access-Control-Allow-Origin'), str('*'))]
         if preflight:
             ac_methods = ', '.join(self.allowed_methods)
-            ac_headers = ', '.join(self.allowed_headers)
+            ac_headers = ', '.join(sorted(self.allowed_headers))
             headers.extend([
                 (str('Access-Control-Allow-Methods'), str(ac_methods)),
                 (str('Access-Control-Allow-Headers'), str(ac_headers)),

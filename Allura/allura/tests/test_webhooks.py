@@ -385,7 +385,7 @@ class TestWebhookController(TestController):
         assert_in('<h1>repo-push</h1>', r)
         rows = r.html.find('table').findAll('tr')
         assert_equal(len(rows), 2)
-        rows = sorted([self._format_row(row) for row in rows])
+        rows = sorted([self._format_row(row) for row in rows], key=lambda rows: rows[0]['text'])
         expected_rows = sorted([
             [{'text': wh1.hook_url},
              {'text': wh1.secret},
@@ -399,7 +399,7 @@ class TestWebhookController(TestController):
               'text': 'Edit'},
              {'href': self.url + '/repo-push/delete',
               'data-id': str(wh2._id)}],
-        ])
+        ], key=lambda rows: rows[0]['text'])
         assert_equal(rows, expected_rows)
         # make sure webhooks for another app is not visible
         assert_not_in('http://another-app.org/', r)

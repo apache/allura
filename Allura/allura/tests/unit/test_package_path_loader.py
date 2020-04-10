@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+from collections import OrderedDict
 from unittest import TestCase
 
 import jinja2
@@ -45,16 +47,16 @@ class TestPackagePathLoader(TestCase):
 
         assert_equal(paths, [
             ['site-theme', None],
-            ['ep2', 'path:eps.ep2'],
             ['ep0', 'path:eps.ep0'],
             ['ep1', 'path:eps.ep1'],
+            ['ep2', 'path:eps.ep2'],
             ['allura', '/'],
         ])
         assert_equal(type(paths[0]), list)
         assert_equal(resource_filename.call_args_list, [
-            mock.call('eps.ep2', ''),
             mock.call('eps.ep0', ''),
             mock.call('eps.ep1', ''),
+            mock.call('eps.ep2', ''),
         ])
 
     @mock.patch('pkg_resources.iter_entry_points')
@@ -70,7 +72,7 @@ class TestPackagePathLoader(TestCase):
 
         order_rules, replacement_rules = PackagePathLoader()._load_rules()
 
-        assert_equal(order_rules, [('allura', 'ep2'), ('ep0', 'allura')])
+        assert_equal(order_rules, [('ep0', 'allura'), ('allura', 'ep2')])
         assert_equal(replacement_rules, {'allura': 'ep1'})
 
         eps = iter_entry_points.return_value.__iter__.return_value = [
@@ -91,12 +93,12 @@ class TestPackagePathLoader(TestCase):
             ['ep2', '/ep2'],
             ['allura', '/'],
         ]
-        rules = {
-            'allura': 'ep2',
-            'site-theme': 'ep1',
-            'foo': 'ep1',
-            'ep0': 'bar',
-        }
+        rules = OrderedDict([
+            ('allura', 'ep2'),
+            ('site-theme', 'ep1'),
+            ('foo', 'ep1'),
+            ('ep0', 'bar'),
+        ])
 
         ppl._replace_signposts(paths, rules)
 

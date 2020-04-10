@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import six
 from nose.tools import assert_raises, assert_in
 from testfixtures import OutputCapture
 
@@ -399,11 +401,16 @@ class TestShowModels(object):
         cmd = show_models.ShowModelsCommand('models')
         with OutputCapture() as output:
             cmd.run([test_config])
-        assert_in('''allura.model.notification.SiteNotification
+        if six.PY3:
+            assert_in('''allura.model.notification.SiteNotification
+         - <FieldProperty _id>
          - <FieldProperty content>
-         - <FieldProperty page_regex>
         ''', output.captured)
-
+        else:
+            # order of class fields are not preserved
+            assert_in('allura.model.notification.SiteNotification\n', output.captured)
+            assert_in('         - <FieldProperty _id>\n', output.captured)
+            assert_in('         - <FieldProperty content>\n', output.captured)
 
 class TestReindexAsTask(object):
 
