@@ -1858,7 +1858,7 @@ class GitLikeTree(object):
         '''Compute a recursive sha1 hash on the tree'''
         # dependent on __repr__ below
         if self._hex is None:
-            sha_obj = sha1(b'tree\n' + repr(self))
+            sha_obj = sha1(b'tree\n' + six.ensure_binary(repr(self)))
             self._hex = sha_obj.hexdigest()
         return self._hex
 
@@ -1868,7 +1868,7 @@ class GitLikeTree(object):
                  for name, t in six.iteritems(self.trees)]
         lines += ['b %s %s' % (oid, h.really_unicode(name))
                   for name, oid in six.iteritems(self.blobs)]
-        return h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
+        return six.ensure_str('\n'.join(sorted(lines)))
 
     def __unicode__(self):
         return self.pretty_tree(recurse=False)
