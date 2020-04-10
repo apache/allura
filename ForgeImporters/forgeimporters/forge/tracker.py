@@ -17,7 +17,6 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import os
 import json
 
 import dateutil.parser
@@ -47,7 +46,6 @@ from forgeimporters.base import (
     ToolImportForm,
     ToolImportController,
     File,
-    get_importer_upload_path,
     save_importer_upload,
 )
 from forgeimporters.forge.alluraImporter import AlluraImporter
@@ -98,10 +96,7 @@ class ForgeTrackerImporter(AlluraImporter):
         self.max_ticket_num = 0
 
     def _load_json(self, project):
-        upload_path = get_importer_upload_path(project)
-        full_path = os.path.join(upload_path, 'tickets.json')
-        with open(full_path) as fp:
-            return json.load(fp)
+        return self._load_json_by_filename(project, 'tickets.json')
 
     def import_tool(self, project, user, mount_point=None,
                     mount_label=None, **kw):

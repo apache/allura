@@ -15,7 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from forgeimporters.base import ToolImporter
+import os
+import json
+
+from forgeimporters.base import (
+    ToolImporter,
+    get_importer_upload_path,
+)
 
 from allura import model as M   
 
@@ -45,4 +51,8 @@ class AlluraImporter(ToolImporter):
 
         return text
 
-
+    def _load_json_by_filename(self, project, filename):
+        upload_path = get_importer_upload_path(project)
+        full_path = os.path.join(upload_path, filename)
+        with open(full_path) as fp:
+            return json.load(fp)

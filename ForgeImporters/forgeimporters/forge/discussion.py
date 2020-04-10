@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 import json
 from dateutil.parser import parse
 
@@ -38,7 +37,6 @@ from forgeimporters.base import (
     ToolImportForm,
     ToolImportController,
     File,
-    get_importer_upload_path,
     save_importer_upload
 )
 
@@ -102,10 +100,7 @@ class ForgeDiscussionImporter(AlluraImporter):
         super(ForgeDiscussionImporter, self).__init__(*args, **kwargs)
 
     def _load_json(self, project):
-        upload_path = get_importer_upload_path(project)
-        full_path = os.path.join(upload_path, 'discussions.json')
-        with open(full_path) as fp:
-            return json.load(fp)
+        return self._load_json_by_filename(project, 'discussions.json')
 
     def import_tool(self, project, user, mount_point=None,
                      mount_label=None, **kw):
