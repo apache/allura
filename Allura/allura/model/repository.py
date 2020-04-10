@@ -1899,7 +1899,7 @@ def topological_sort(graph):
     # Index children, identify roots
     children = defaultdict(list)
     roots = []
-    for nid, parents in graph.items():
+    for nid, parents in list(graph.items()):
         if not parents:
             graph.pop(nid)
             roots.append(nid)
