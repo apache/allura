@@ -193,8 +193,7 @@ class Page(VersionedArtifact, ActivityObject):
         return 'Discussion for %s page' % self.title
 
     def url(self):
-        s = self.app_config.url() + \
-            h.urlquote(self.title.encode('utf-8')) + '/'
+        s = self.app_config.url() + h.urlquote(self.title) + '/'
         if self.deleted:
             s += '?deleted=True'
         return s

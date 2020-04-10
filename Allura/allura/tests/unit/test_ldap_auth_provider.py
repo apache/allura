@@ -48,18 +48,18 @@ class TestLdapAuthenticationProvider(object):
         # Verify salt
         ep = self.provider._encode_password
         # Note: OSX uses a crypt library with a known issue relating the hashing algorithms.
-        if '$6$rounds=' not in ep('pwd') and platform.system() == 'Darwin':
+        if b'$6$rounds=' not in ep('pwd') and platform.system() == 'Darwin':
             raise SkipTest
         assert_not_equal(ep('test_pass'), ep('test_pass'))
         assert_equal(ep('test_pass', '0000'), ep('test_pass', '0000'))
         # Test password format
-        assert_true(ep('pwd').startswith('{CRYPT}$6$rounds=6000$'))
+        assert_true(ep('pwd').startswith(b'{CRYPT}$6$rounds=6000$'))
 
     @patch('allura.lib.plugin.ldap')
     def test_set_password(self, ldap):
         user = Mock(username='test-user')
         user.__ming__ = Mock()
-        self.provider._encode_password = Mock(return_value='new-pass-hash')
+        self.provider._encode_password = Mock(return_value=b'new-pass-hash')
         ldap.dn.escape_dn_chars = lambda x: x
 
         dn = 'uid=%s,ou=people,dc=localdomain' % user.username
@@ -118,7 +118,7 @@ class TestLdapAuthenticationProvider(object):
             'password': 'new-password',
         }
         ldap.dn.escape_dn_chars = lambda x: x
-        self.provider._encode_password = Mock(return_value='new-password-hash')
+        self.provider._encode_password = Mock(return_value=b'new-password-hash')
 
         assert_equal(M.User.query.get(username=user_doc['username']), None)
         with h.push_config(config, **{'auth.ldap.autoregister': 'false'}):

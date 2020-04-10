@@ -25,6 +25,7 @@ import unittest
 import datetime as dt
 from ming.odm import session
 from os import path
+from io import open
 
 from bson import ObjectId
 from webob import Request
@@ -228,12 +229,10 @@ class TestIsTextFile(unittest.TestCase):
 
     def test_is_text_file(self):
         here_dir = path.dirname(__file__)
-        assert utils.is_text_file(open(path.join(
-            here_dir,
-            'data/test_mime/text_file.txt')).read())
-        assert not utils.is_text_file(open(path.join(
-            here_dir,
-            'data/test_mime/bin_file')).read())
+        text_file = path.join(here_dir, 'data/test_mime/text_file.txt')
+        assert utils.is_text_file(open(text_file, 'rb').read())
+        bin_file = path.join(here_dir, 'data/test_mime/bin_file')
+        assert not utils.is_text_file(open(bin_file, 'rb').read())
 
 
 class TestCodeStats(unittest.TestCase):

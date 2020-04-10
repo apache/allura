@@ -20,6 +20,8 @@ from __future__ import absolute_import
 import re
 import logging
 from datetime import datetime, timedelta
+
+import six
 from six.moves.urllib.parse import unquote
 
 from bson import ObjectId
@@ -340,7 +342,7 @@ class ProjectController(FeedController):
     @expose()
     def _lookup(self, name, *remainder):
         name = unquote(name)
-        name = name.decode('utf-8')  # we don't support unicode names, but in case a url comes in with one
+        name = six.ensure_text(name)  # we don't support unicode names, but in case a url comes in with one
         if name == '_nav.json':
             return self, ['_nav']
 
