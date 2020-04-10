@@ -161,7 +161,7 @@ class Shortlink(object):
                                 for link in links)
             links_by_artifact = defaultdict(list)
             project_ids = set()
-            for link, d in parsed_links.items():
+            for link, d in list(parsed_links.items()):
                 if d:
                     project_ids.add(d['project_id'])
                     links_by_artifact[unquote(d['artifact'])].append(d)
