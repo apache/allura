@@ -41,14 +41,12 @@ from forgeimporters.base import (
     save_importer_upload
 )
 
-from allura import model as M   
+from allura import model as M
 from allura.lib.decorators import require_post
-from allura.lib import validators as v 
+from allura.lib import validators as v
 from allura.lib import helpers as h
-from allura.lib.plugin import ImportIdConverter
 
-from forgediscussion import utils, import_support
-from forgediscussion import model as DM
+from forgediscussion import utils
 
 from forgeimporters.forge.alluraImporter import AlluraImporter
 
@@ -74,22 +72,15 @@ class ForgeDiscussionImportController(ToolImportController):
                             c.project,
                             'discussions.json',
                             json.dumps(discussions_json)
-                           )
+                        )
             self.importer.post(mount_point=mount_point, mount_label=mount_label)
-            flash('Discussion import has begun. ' \
-                   + 'Your new discussion will be available ' \
-                   + 'when the import is complete'
-                 )
+            flash('Discussion import has begun. Your new discussion will be available when the import is complete')
         else:
-            flash('There are too many imports pending at this time. ' \
-                  + 'Please wait and try again.', 
-                  'error'
-                 )
+            flash('There are too many imports pending at this time. Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
 class ForgeDiscussionImporter(AlluraImporter):
-
 
     source = 'Allura'
     target_app_ep_names = 'discussion'
@@ -103,30 +94,27 @@ class ForgeDiscussionImporter(AlluraImporter):
     def _load_json(self, project):
         return self._load_json_by_filename(project, 'discussions.json')
 
-    def import_tool(self, project, user, mount_point=None,
-                     mount_label=None, **kw):
+    def import_tool(self, project, user, mount_point=None, mount_label=None, **kw):
         discussion_json = self._load_json(project)
 
         mount_point = mount_point or 'discussion'
         mount_label = mount_label or 'Discussion'
 
-        app = project.install_app('discussion', mount_point, mount_label, 
-            import_id={ 'source': self.source }
-        )
+        app = project.install_app('discussion', mount_point, mount_label, import_id={'source': self.source})
         ThreadLocalORMSession.flush_all()
 
         with h.push_config(c, app=app):
 
             # Deleting the forums that are created by default
             self._clear_forums(app)
-           
+
             try:
                 M.session.artifact_orm_session._get().skip_mod_date = True
 
                 for forum_json in discussion_json['forums']:
 
                     new_forum = dict(
-                                    app_config_id = app.config._id,
+                                    app_config_id=app.config._id,
                                     shortname=forum_json['shortname'],
                                     description=forum_json['description'],
                                     name=forum_json['name'],
@@ -138,16 +126,12 @@ class ForgeDiscussionImporter(AlluraImporter):
                     )
 
                     forum = utils.create_forum(app, new_forum=new_forum)
-                    
+
                     if "import_id" in list(forum_json.keys()):
                         forum.import_id = forum_json["import_id"]
 
                     for thread_json in forum_json["threads"]:
-                        thread = forum.get_discussion_thread(dict(
-                                            headers=dict(
-                                                Subject=thread_json['subject']
-                                            )
-                                        ))[0]
+                        thread = forum.get_discussion_thread(dict(headers=dict(Subject=thread_json['subject'])))[0]
 
                         if "import_id" in thread_json:
                             thread.import_id = thread_json["import_id"]
@@ -174,15 +158,15 @@ class ForgeDiscussionImporter(AlluraImporter):
                 raise
             finally:
                 M.session.artifact_orm_session._get().skip_mod_date = False
-                                     
+
     def _clear_forums(self, app):
-      forums = app.forums
-      for forum in forums:
-          forum.delete()
+        forums = app.forums
+        for forum in forums:
+            forum.delete()
 
     def annotate_text(self, text, user, username):
         label = " created"
-        
+
         return self.annotate(text, user, username, label)
 
     def add_posts(self, thread, posts, app):
@@ -212,22 +196,18 @@ class ForgeDiscussionImporter(AlluraImporter):
 
                 p = thread.add_post(
                         subject=post_json['subject'],
-                        text=self.annotate_text(post_json['text'],
-                                                user,
-                                                username
-                                               ),
+                        text=self.annotate_text(post_json['text'], user, username),
                         timestamp=timestamp,
                         ignore_security=True,
                         parent_id=parent_id
                 )
 
-                if ("last_edited" in post_json) \
-                    and (post_json["last_edited"] is not None):
+                if ("last_edited" in post_json) and (post_json["last_edited"] is not None):
                     p.last_edit_date = parse(post_json["last_edited"])
 
                 p.add_multiple_attachments(
                         [File(a["url"]) for a in post_json["attachments"]]
-                )
+                    )
 
-                if slug != '': 
-                    created_posts.append({ slug: p })
+                if slug != '':
+                    created_posts.append({slug: p})

@@ -24,11 +24,10 @@ from forgeimporters.base import (
     get_importer_upload_path,
 )
 
-from allura import model as M   
+from allura import model as M
 
 
 class AlluraImporter(ToolImporter):
-
 
     def get_user(self, username):
         if username is None:
@@ -39,12 +38,12 @@ class AlluraImporter(ToolImporter):
         return user
 
     def annotate(self, text, user, username, label=''):
-        if  username is not None \
-            and user is not None \
-            and user.is_anonymous() \
-            and username != "" \
-            and username != 'nobody' \
-            and username != '*anonymous':
+        if username is not None \
+           and user is not None \
+           and user.is_anonymous() \
+           and username != "" \
+           and username != 'nobody' \
+           and username != '*anonymous':
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
 
         if text is None:

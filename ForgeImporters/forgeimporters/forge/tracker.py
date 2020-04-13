@@ -42,14 +42,12 @@ from allura import model as M
 
 from forgetracker import model as TM
 from forgeimporters.base import (
-    ToolImporter,
     ToolImportForm,
     ToolImportController,
     File,
     save_importer_upload,
 )
 from forgeimporters.forge.alluraImporter import AlluraImporter
-from io import open
 
 
 class ForgeTrackerImportForm(ToolImportForm):
