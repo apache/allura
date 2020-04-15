@@ -43,7 +43,7 @@ ipaddress==1.0.22         # via cryptography
 ipython-genutils==0.2.0   # via traitlets
 ipython==5.8.0
 iso8601==0.1.12           # via colander
-jinja2==2.11.1
+jinja2==2.11.2
 markdown-checklist==0.4.1
 markdown==2.6.11
 markupsafe==1.1.1
