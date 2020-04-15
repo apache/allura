@@ -522,7 +522,9 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_webhook_payload(self):
         sender = RepoPushWebhookSender()
-        cids = list(self.repo.all_commit_ids())[:2]
+        all_commits = list(self.repo.all_commit_ids())
+        start = len(all_commits) - 6  # only get a few so test doesn't have to change after new testdata commits
+        cids = all_commits[start:start+2]
         payload = sender.get_payload(commit_ids=cids)
         expected_payload = {
             'size': 2,

@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,15 +19,17 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
+import re
 import shutil
 import os
 
+import six
 import tg
 import pkg_resources
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from mock import patch
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 from IPython.testing.decorators import onlyif
 
 from allura import model as M
@@ -101,13 +104,13 @@ class TestRootController(SVNTestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
         data = json.loads(resp.body)
-        assert_equal(data['max_row'], 5)
+        assert_equal(data['max_row'], 6)
         assert_equal(data['next_column'], 1)
         for val in data['built_tree'].values():
             if val['url'] == '/p/test/src/1/':
                 assert_equal(val['short_id'], '[r1]')
                 assert_equal(val['column'], 0)
-                assert_equal(val['row'], 5)
+                assert_equal(val['row'], 6)
                 assert_equal(val['message'], 'Create readme')
 
     def test_feed(self):
@@ -141,6 +144,36 @@ class TestRootController(SVNTestController):
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
         assert len(resp.html.findAll('tr')) == 3, resp.showbrowser()
+
+    def test_commit_unicode_and_special_chars(self):
+        resp = self.app.get('/src/6/')
+        file_url = resp.html.find("a", string="/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ")['href']
+        resp = self.app.get(file_url)
+        assert_in('This is readme',  # same content as the README file actually
+                  resp.html.select_one('.codebrowser').text)
+
+        resp = self.app.get('/src/7/')
+        print('file links on /src/7/ are:\n\t{}'.format(
+            '\n\t'.join(six.text_type(t) for t in resp.html.select('.inline-diff a'))))
+        file_url = resp.html.find("a", string="/with%2Furlquote-literal.txt")['href']
+        file_resp = self.app.get(file_url)
+        assert_in('%2F means /',
+                  file_resp.html.select_one('.codebrowser').text)
+
+        file_url = resp.html.find("a", string='/with-percent%.txt')['href']
+        file_resp = self.app.get(file_url)
+        assert_in('%%%',
+                  file_resp.html.select_one('.codebrowser').text)
+
+        file_url = resp.html.find("a", string="/with space.txt")['href']
+        file_resp = self.app.get(file_url)
+        assert_in('spaces',
+                  file_resp.html.select_one('.codebrowser').text)
+
+        file_url = resp.html.find("a", string='/with"&:specials.txt')['href']
+        file_resp = self.app.get(file_url)
+        assert_in('"&: encodes as %22%26%3A',
+                  file_resp.html.select_one('.codebrowser').text)
 
     def test_tree(self):
         resp = self.app.get('/src/1/tree/')
