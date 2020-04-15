@@ -1330,8 +1330,8 @@ class CreateTroveCategoriesCommand(base.Command):
             (87, 18, "internet", "Internet", "Topic :: Internet", True))
         self.create_trove_cat((118, 116, "cdripping", "CD Ripping",
                                "Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Ripping", True))
-        self.create_trove_cat((119, 113, "conversion", "Conversion",
-                               "Topic :: Multimedia :: Sound/Audio :: Conversion", True))
+        self.create_trove_cat((119, 113, "audio-conversion", "Audio Conversion",
+                               "Topic :: Multimedia :: Sound/Audio :: Audio Conversion", True))
         self.create_trove_cat(
             (120, 113, "editors", "Editors", "Topic :: Multimedia :: Sound/Audio :: Editors", True))
         self.create_trove_cat(
@@ -1429,7 +1429,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat(
             (596, 125, "codec", "Codec", "Topic :: Multimedia :: Video :: Codec", True))
         self.create_trove_cat(
-            (127, 125, "conversion", "Conversion", "Topic :: Multimedia :: Video :: Conversion", True))
+            (127, 125, "video-conversion", "Video Conversion", "Topic :: Multimedia :: Video :: Video Conversion", True))
         self.create_trove_cat(
             (128, 125, "display", "Display", "Topic :: Multimedia :: Video :: Display", True))
         self.create_trove_cat(
@@ -1532,7 +1532,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat(
             (656, 99, "htpc", "Home Theater PC", "Topic :: Multimedia :: Home Theater PC"))
         self.create_trove_cat(
-            (658, 22, "jabber", "Jabber", "Topic :: Communications :: Chat :: Jabber"))
+            (658, 22, "xmpp", "XMPP", "Topic :: Communications :: Chat :: XMPP"))
         self.create_trove_cat(
             (659, 576, "enterprisebpm", "Business Performance Management",
              "Topic :: Office/Business :: Enterprise :: Business Performance Management"))
