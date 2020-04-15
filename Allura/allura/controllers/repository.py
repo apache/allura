@@ -797,9 +797,7 @@ class TreeBrowser(BaseController, DispatchIndex):
         next = h.really_unicode(unquote(next))
         if not rest:
             # Might be a file rather than a dir
-            filename = h.really_unicode(
-                unquote(
-                    request.environ['PATH_INFO'].rsplit(str('/'))[-1]))
+            filename = h.really_unicode(request.environ['PATH_INFO'].rsplit(str('/'))[-1])
             if filename:
                 try:
                     obj = self._tree[filename]

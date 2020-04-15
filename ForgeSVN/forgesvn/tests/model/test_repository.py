@@ -82,23 +82,24 @@ class TestNewRepo(unittest.TestCase):
             assert row['last_commit']['author'] is not None
 
     def test_commit(self):
+        latest_rev = 7
         assert self.rev.primary() is self.rev
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
         self.rev.author_url
         self.rev.committer_url
-        assert self.rev.tree._id == self.rev.tree_id
-        assert self.rev.shorthand_id() == '[r6]'
-        assert self.rev.symbolic_ids == ([], [])
-        assert self.rev.url() == '/p/test/src/6/'
+        assert_equal(self.rev.tree._id, self.rev.tree_id)
+        assert_equal(self.rev.shorthand_id(), '[r{}]'.format(latest_rev))
+        assert_equal(self.rev.symbolic_ids, ([], []))
+        assert_equal(self.rev.url(), '/p/test/src/{}/'.format(latest_rev))
         all_cis = list(self.repo.log(self.rev._id, limit=25))
-        assert len(all_cis) == 6
+        assert_equal(len(all_cis), latest_rev)
         self.rev.tree.ls()
-        assert self.rev.tree.readme() == ('README', 'This is readme\nAnother Line\n')
-        assert self.rev.tree.path() == '/'
-        assert self.rev.tree.url() == '/p/test/src/6/tree/'
+        assert_equal(self.rev.tree.readme(), ('README', 'This is readme\nAnother Line\n'))
+        assert_equal(self.rev.tree.path(), '/')
+        assert_equal(self.rev.tree.url(), '/p/test/src/{}/tree/'.format(latest_rev))
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
-        assert self.rev.tree['a']['b']['c'].ls() == []
+        assert_equal(self.rev.tree['a']['b']['c'].ls(), [])
         self.assertRaises(KeyError, lambda: self.rev.tree['a']['b']['d'])
 
         assert_equal(self.rev.authored_user, None)
@@ -239,13 +240,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_log_id_only(self):
         entries = list(self.repo.log(id_only=True, limit=25))
-        assert_equal(entries, [6, 5, 4, 3, 2, 1])
+        assert_equal(entries, [7, 6, 5, 4, 3, 2, 1])
 
     def test_log(self):
         entries = list(self.repo.log(id_only=False, limit=25))
-        assert_equal(entries, [
+        assert_equal(entries[len(entries)-6:],  # only 6, so this test doesn't have to change when commits added
+                     [
             {'parents': [5],
-             'refs': ['HEAD'],
+             'refs': [],
              'committed': {
                  'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
                  'name': 'coldmind', 'email': ''},
@@ -522,7 +524,9 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_webhook_payload(self):
         sender = RepoPushWebhookSender()
-        cids = list(self.repo.all_commit_ids())[:2]
+        all_commits = list(self.repo.all_commit_ids())
+        start = len(all_commits) - 6  # only get a few so test doesn't have to change after new testdata commits
+        cids = all_commits[start:start+2]
         payload = sender.get_payload(commit_ids=cids)
         expected_payload = {
             'size': 2,
@@ -615,7 +619,7 @@ class TestSVNRev(unittest.TestCase):
     def test_log(self):
         # path only
         commits = list(self.repo.log(self.repo.head, id_only=True, limit=25))
-        assert_equal(commits, [6, 5, 4, 3, 2, 1])
+        assert_equal(commits, [7, 6, 5, 4, 3, 2, 1])
         commits = list(self.repo.log(self.repo.head, 'README', id_only=True, limit=25))
         assert_equal(commits, [3, 1])
         commits = list(self.repo.log(1, 'README', id_only=True, limit=25))
@@ -1080,7 +1084,8 @@ class TestDirectRepoAccess(object):
         ThreadLocalORMSession.close_all()
 
     def test_paged_diffs(self):
-        diffs = self.rev.diffs
+        _id = self.repo._impl._oid(6)
+        diffs = self.repo.commit(_id).diffs
         expected = {
             'added': ['/ЗРЯЧИЙ_ТА_ПОБАЧИТЬ'],
             'removed': [],

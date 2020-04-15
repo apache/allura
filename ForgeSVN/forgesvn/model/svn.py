@@ -576,7 +576,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def open_blob(self, blob):
         data = self._svn.cat(
-            self._url + blob.path(),
+            self._url + h.urlquote(blob.path()),
             revision=self._revision(blob.commit._id))
         return BytesIO(data)
 
