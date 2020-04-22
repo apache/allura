@@ -192,7 +192,11 @@ class CSRFMiddleware(object):
         if cookie is None:
             cookie = h.cryptographic_nonce()
         if req.method == 'POST':
-            param = req.POST.pop(self._param_name, None)
+            try:
+                param = req.POST.pop(self._param_name, None)
+            except KeyError:
+                log.debug('error getting %s from POST', self._param_name, exc_info=True)
+                param = None
             if cookie != param:
                 log.warning('CSRF attempt detected: cookie %r != param %r', cookie, param)
                 environ.pop('HTTP_COOKIE', None)  # effectively kill the existing session

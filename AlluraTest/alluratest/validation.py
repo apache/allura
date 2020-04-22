@@ -256,6 +256,9 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
     def _validate_params(self, params, method):
         if not params:
             return
+        # params can be raw data (json data post, for example)
+        if isinstance(params, six.binary_type):
+            return
         # params can be a list or a dict
         if hasattr(params, 'items'):
             params = list(params.items())
