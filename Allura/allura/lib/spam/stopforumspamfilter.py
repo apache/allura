@@ -47,10 +47,12 @@ class StopForumSpamSpamFilter(SpamFilter):
 
     def __init__(self, config):
         self.packed_ips = set()
+        threshold = int(config.get('spam.stopforumspam.threshold', 20))
+        threshold_strs = set(str(i) for i in range(threshold+1))  # make strs, so that in the loop no int cast needed
         with open(config['spam.stopforumspam.ip_addr_file']) as f:
             csv_file = csv.reader(f)
             for record in csv_file:
-                if int(record[1]) > int(config.get('spam.stopforumspam.threshold', 20)):
+                if record[1] not in threshold_strs:
                     ip = record[0]
                     # int is the smallest memory representation of an IP addr
                     ip_int = int(ipaddress.ip_address(six.text_type(ip)))
