@@ -25,15 +25,15 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {% if not revert_confirmation_dialog %}
 {%- macro revert_confirmation_dialog(version) %}
     <div class="confirmation_dialog_{{version}}" style="display:none">
-        {{ g.icons['close'].render(tag='b', extra_css='close') }}
+        {{ g.icons['close'].render(tag='a', extra_css='close') }}
         <h1>Confirm revert to version {{version}}</h1>
         <p>
         Do you really want to revert page to version {{version}}?
         You can undo it later by reverting changes made by this revert.
         </p>
         <p>
-        <button class="continue_confirm" href="./revert?version={{version}}">Yes</button>
-        <input type="button" value="Cancel" class="cancel_confirmation close">
+        <input type="submit" value="Yes" class="continue_confirm" data-href="revert?version={{version}}">
+        <input type="submit" value="Cancel" class="cancel_confirmation close">
         </p>
     </div>
 {%- endmacro %}

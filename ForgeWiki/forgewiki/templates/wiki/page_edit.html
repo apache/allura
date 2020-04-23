@@ -36,7 +36,7 @@
   {% if page_exists and h.has_access(page, 'delete')() %}
     {{ g.icons['delete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
-        {{ g.icons['close'].render(tag='b', extra_css='close') }}
+        {{ g.icons['close'].render(tag='a', extra_css='close') }}
 
         <h1>Confirm page deletion</h1>
         <p>
@@ -44,8 +44,8 @@
             You can undo it later.
         </p>
         <p>
-            <button class="continue_confirm" href="./delete">Yes</button>
-            <input type="button" value="Cancel" class="cancel_confirmation close">
+            <input type="submit" value="Yes" class="continue_confirm" data-href="delete">
+            <input type="submit" value="Cancel" class="cancel_confirmation close">
         </p>
     </div>
   {% endif %}

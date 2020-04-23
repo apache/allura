@@ -50,15 +50,15 @@
   {% elif h.has_access(page, 'delete')() %}
     {{ g.icons['undelete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
-        {{ g.icons['close'].render(tag='b', extra_css='close') }}
+        {{ g.icons['close'].render(tag='a', extra_css='close') }}
         <h1>Confirm page restoration</h1>
         <p>
             Do you really want to restore the page?
             You can undo it later.
         </p>
         <p>
-            <button class="continue_confirm" href="./undelete">Yes</button>
-            <input type="button" value="Cancel" class="cancel_confirmation close">
+            <input type="submit" value="Yes" class="continue_confirm" data-href="undelete">
+            <input type="submit" value="Cancel" class="cancel_confirmation close">
         </p>
     </div>
 

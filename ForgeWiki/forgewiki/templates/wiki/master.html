@@ -50,7 +50,9 @@
             modal.find('.continue_confirm').click(function (evt) {
                 var cval = $.cookie('_session_id');
                 evt.preventDefault();
-                $.post($(this).attr('href'), {_session_id: cval}, function (val) {
+                var _t = $(this);
+                var url = _t.data('href') || _t.attr('href');
+                $.post(url, {_session_id: cval}, function (val) {
                     window.location = val.location;
                 }, 'json');
             });
