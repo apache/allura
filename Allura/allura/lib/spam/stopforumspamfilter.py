@@ -28,6 +28,7 @@ from allura.lib import utils
 from allura.lib.spam import SpamFilter
 import six
 from io import open
+from six.moves import range
 
 log = logging.getLogger(__name__)
 
