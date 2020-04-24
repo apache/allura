@@ -1023,6 +1023,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
             for ace in old_acl:
                 if (ace.permission == perm) and (ace.access == model.ACE.DENY):
                     self.app.config.acl.append(ace)
+        g.post_event('project_menu_updated')  # since 'read' permission changes can affect what is visible in menu
         redirect(request.referer or '/')
 
 

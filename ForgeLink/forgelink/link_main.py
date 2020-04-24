@@ -24,12 +24,14 @@ import json
 # Non-stdlib imports
 from tg import expose, jsonify, redirect
 from tg import tmpl_context as c
+from tg import app_globals as g
 from tg import request
 from formencode import validators as fev
 
 # Pyforge-specific imports
-from allura.app import Application, ConfigOption, SitemapEntry
+from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 from allura import model as M
 from allura.controllers import BaseController
@@ -79,6 +81,7 @@ class ForgeLinkApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.api_root = RootRestController(self)
+        self.admin = AdminController(self)
 
     @property
     @h.exceptionless([], log)
@@ -153,3 +156,15 @@ class RootRestController(BaseController, AppRestControllerMixin):
             require_access(self.app, 'configure')
             self.app.config.options.url = url
         return self.link_json()
+
+
+class AdminController(DefaultAdminController):
+
+    @expose()
+    @require_post()
+    def configure(self, *args, **kwargs):
+        try:
+            return super(AdminController, self).configure(*args, **kwargs)
+        finally:
+            # since sitemap() uses the link URL which was changed
+            g.post_event('project_menu_updated')
