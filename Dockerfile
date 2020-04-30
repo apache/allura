@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
 
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
-    apt-get install --yes nodejs
+    apt-get install -y nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8
@@ -47,4 +47,4 @@ ENV USER root
 
 WORKDIR /allura
 ENV PYTHONUNBUFFERED 1
-CMD gunicorn --paste Allura/docker-dev.ini --reload
+CMD ["gunicorn", "--paste", "Allura/docker-dev.ini", "--reload"]
