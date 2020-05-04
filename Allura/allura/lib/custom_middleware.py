@@ -33,6 +33,7 @@ import pysolr
 import six
 
 from allura.lib import helpers as h
+from allura import model as M
 import allura.model.repository
 from six.moves import range
 
@@ -308,6 +309,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import activitystream
         import pygments
         import difflib
+        import requests
 
         timers = self.entry_point_timers() + [
             Timer(
@@ -320,6 +322,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('activitystream.activity_manager.{method_name}',
                   activitystream.managers.ActivityManager, '*'),
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
+            Timer('jinja.compile', jinja2.Environment, 'compile'),
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
                   debug_each_call=False),
@@ -351,10 +354,13 @@ class AlluraTimerMiddleware(TimerMiddleware):
                   'flush', debug_each_call=False),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
             Timer('urlopen', urlopen_pkg, 'urlopen'),
+            Timer('requests.get', requests, 'get'),
             Timer('base_repo_tool.{method_name}',
                   allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
             Timer('pygments', pygments, 'highlight'),  # often called from within a template so will overlap w/ jinja
             Timer('difflib', difflib, '_mdiff', 'unified_diff'),
+            Timer('logging', logging.Logger, '_log', debug_each_call=False),
+            Timer('navbar', M.Project, 'nav_data', 'grouped_navbar_entries'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
         try:
@@ -366,6 +372,13 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 Timer('ldap', ldap, 'initialize'),
                 Timer('ldap', ldap.ldapobject.LDAPObject,
                       'bind_s', 'unbind_s', 'add_s', 'modify_s', 'search_s'),
+            ]
+
+        if self.config.get('memcached_host'):
+            import pylibmc
+            timers += [
+                Timer('memcache.get', pylibmc.client.Client, 'get'),
+                Timer('memcache.set', pylibmc.client.Client, 'set'),
             ]
 
         return timers
