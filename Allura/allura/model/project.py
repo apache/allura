@@ -622,7 +622,14 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 i += 1
         return new_tools
 
-    def nav_data(self, admin_options=False):
+    def nav_data(self, admin_options=False, navbar_entries=None):
+        """
+        Return data about project nav entries
+
+        :param bool admin_options: include admin options?
+        :param navbar_entries: for performance, include this if you already have grouped_navbar_entries data
+        :return:
+        """
         from allura.ext.admin.admin_main import ProjectAdminRestController
 
         grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
@@ -646,7 +653,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 entry['admin_options'] = [dict(text='Subproject Admin', href=s.url + 'admin', className=None)]
             return entry
 
-        for s in self.grouped_navbar_entries():
+        if navbar_entries is None:
+            navbar_entries = self.grouped_navbar_entries()
+        for s in navbar_entries:
             entry = make_entry(s)
             if s.children:
                 entry['children'] = [make_entry(child) for child in s.children]

@@ -19,7 +19,8 @@
 {% if c.project %}
 <div id="top_nav_admin" class="row">
 <ul class="menu dropdown" data-dropdown-menu>
-  {% for s in c.project.grouped_navbar_entries() %}
+  {% set navbar_entries = c.project.grouped_navbar_entries() %}
+  {% for s in navbar_entries %}
     <li class="{% if s.matches_url(request) %}selected{% endif %}">
         <a href="{{s.url}}" class="tool-{{(s.tool_name or 'admin').lower()}}-32">
             {{s.label}}
@@ -52,7 +53,7 @@
     <script>
         'use strict';
         /*global ReactDOM, React, Main, ToggleAddNewTool */
-        var _data = {{ h.escape_json(c.project.nav_data(admin_options=True))|safe }};
+        var _data = {{ h.escape_json(c.project.nav_data(admin_options=True, navbar_entries=navbar_entries))|safe }};
         $(document).ready(function () {
             $('#toggle-admin-btn').click(function () {
                 if (typeof Main === 'undefined') {
