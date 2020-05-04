@@ -646,7 +646,7 @@ def pop_user_notifications(user=None):
     if user is None:
         user = c.user
     mbox = M.Mailbox.query.get(user_id=user._id, is_flash=True)
-    if mbox:
+    if mbox and mbox.queue:
         notifications = M.Notification.query.find(
             dict(_id={'$in': mbox.queue}))
         mbox.queue = []

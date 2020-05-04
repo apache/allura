@@ -625,6 +625,9 @@ class Mailbox(MappedClass):
         '''
         Send all notifications that this mailbox has enqueued.
         '''
+        if len(self.queue) == 0:
+            return
+
         notifications = Notification.query.find(dict(_id={'$in': self.queue}))
         notifications = notifications.all()
         if len(notifications) != len(self.queue):

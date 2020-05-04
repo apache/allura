@@ -164,7 +164,7 @@ class Neighborhood(MappedClass):
         return (self.neighborhood_project
                     .app_config_by_tool_type('home') is not None)
 
-    @property
+    @LazyProperty
     def icon(self):
         # New icon storage uses the neighborhood_project object, so Project.icon* methods can be shared
         if self.neighborhood_project.get_tool_data('allura', 'icon_original_size'):
