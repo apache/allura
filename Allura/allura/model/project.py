@@ -636,7 +636,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         anchored_tools = self.neighborhood.get_anchored_tools()
         children = []
 
-        def make_entry(s):
+        def make_entry(s, app_config):
             entry = dict(name=s.label,
                          url=s.url,
                          icon=s.ui_icon or 'tool-admin',
@@ -644,9 +644,9 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                          mount_point=s.mount_point,
                          is_anchored=s.tool_name in list(anchored_tools.keys()),
                          )
-            if admin_options and s.tool_name and s.mount_point:
+            if admin_options and app_config:
                 try:
-                    entry['admin_options'] = ProjectAdminRestController().admin_options(s.mount_point)['options']
+                    entry['admin_options'] = ProjectAdminRestController().admin_options(app_config)['options']
                 except exc.HTTPError:
                     log.debug('Could not get admin_options mount_point for tool: %s', s.url, exc_info=True)
             if admin_options and not s.tool_name:
@@ -655,10 +655,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
         if navbar_entries is None:
             navbar_entries = self.grouped_navbar_entries()
+        tools_by_mount = {ac.options.mount_point: ac for ac in self.app_configs if ac.options.mount_point}
         for s in navbar_entries:
-            entry = make_entry(s)
+            entry = make_entry(s, tools_by_mount.get(s.mount_point))
             if s.children:
-                entry['children'] = [make_entry(child) for child in s.children]
+                entry['children'] = [make_entry(child, tools_by_mount.get(child.mount_point))
+                                     for child in s.children]
             children.append(entry)
 
         response = dict(grouping_threshold=grouping_threshold, menu=children)

@@ -818,6 +818,8 @@ class ProjectAdminRestController(BaseController):
     def admin_options(self, mount_point=None, **kw):
         """
         Returns the admin options for a given mount_point
+
+        :type mount_point: str|allura.model.project.AppConfig
         """
 
         if not mount_point:
