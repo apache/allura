@@ -413,6 +413,8 @@ class Application(object):
 
     @classmethod
     def _installable(cls, tool_name, nbhd, project_tools):
+        if cls.installable is False:  # handle class level `installable = False` declarations
+            return False
         if tool_name.lower() in nbhd.get_prohibited_tools():
             return False
         tools_list = [tool.tool_name.lower() for tool in project_tools]

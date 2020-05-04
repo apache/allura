@@ -107,8 +107,7 @@ class AdminApp(Application):
         tools = []
         for name, App in six.iteritems(g.entry_points['tool']):
             cfg = M.AppConfig(project_id=project._id, tool_name=name)
-            app = App(project, cfg)
-            if app.installable:
+            if App._installable(name, project.neighborhood, project.app_configs):
                 tools.append(dict(name=name, app=App))
             # prevent from saving temporary config to db
             session(cfg).expunge(cfg)

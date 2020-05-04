@@ -28,6 +28,7 @@ from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c, request
 from formencode import validators
+from ming.utils import LazyProperty
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -71,9 +72,12 @@ class ForgeChatApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        self.channel = CM.ChatChannel.query.get(app_config_id=config._id)
         self.root = RootController()
         self.admin = AdminController(self)
+
+    @LazyProperty
+    def channel(self):
+        return CM.ChatChannel.query.get(app_config_id=self.config._id)
 
     def main_menu(self):
         return [SitemapEntry(self.config.options.mount_label, '.')]
