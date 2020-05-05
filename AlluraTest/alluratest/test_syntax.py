@@ -36,7 +36,7 @@ def run(cmd):
     return proc.returncode
 
 
-find_py = "find Allura Forge* -name '*.py'"
+find_py = r"find Allura Forge* -not -path '*/\.*' -name '*.py'"
 
 
 # a recipe from itertools doc
