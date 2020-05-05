@@ -48,7 +48,7 @@ class ProjectSummary(ew_core.Widget):
 
         if response['icon_url'] is None:
             if value.icon:
-                response['icon_url'] = value.url() + 'icon'
+                response['icon_url'] = value.icon_url()
         if response['accolades'] is None:
             response['accolades'] = value.accolades
 

@@ -215,7 +215,7 @@
  icon_url param is entirely optional; only pass it if you already have one for effeciency
 #}
 {%- macro project_icon_srcs(project, icon_url=None, base_size=48) %}
-    {% set icon_url = icon_url or project.url() + 'icon' %}
+    {% set icon_url = icon_url or project.icon_url() %}
     {% set proj_max_size = project.icon_max_size or 0 %}
     src="{{icon_url}}?{{project.icon_timestamp}}{% if base_size != 48 and proj_max_size >= base_size %}&amp;w={{base_size}}{% endif %}"
     {% if proj_max_size >= base_size*1.5 -%}

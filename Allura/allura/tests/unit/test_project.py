@@ -20,7 +20,10 @@ from __future__ import absolute_import
 import unittest
 from mock import Mock
 
+from tg import config
+
 from allura import model as M
+from allura.lib import helpers as h
 from allura.app import SitemapEntry
 
 
@@ -101,3 +104,13 @@ class TestProject(unittest.TestCase):
         old = {'last_updated': 1, 'a': 1}
         new = {'last_updated': 2, 'a': 2}
         self.assertTrue(p.should_update_index(old, new))
+
+    def test_icon_url(self):
+        p = M.Project(
+            shortname='myproj',
+            neighborhood = M.Neighborhood(url_prefix='/nbhd/'),
+        )
+        self.assertEqual(p.icon_url(), '/nbhd/myproj/icon')
+
+        with h.push_config(config, **{'static.icon_base': 'https://mycdn.com/mysite'}):
+            self.assertEqual(p.icon_url(), 'https://mycdn.com/mysite/nbhd/myproj/icon')

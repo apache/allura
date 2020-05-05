@@ -618,7 +618,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             private_project = None
         icon_source = None
         if private_project and private_project.icon:
-            icon_url = self.url() + 'user_icon'
+            icon_url = config.get('static.icon_base', '') + self.url() + 'user_icon'
             icon_source = 'local'
         elif self.preferences.email_address:
             gravatar_args = {}

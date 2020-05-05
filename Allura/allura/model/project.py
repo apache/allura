@@ -354,6 +354,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         else:
             return url
 
+    def icon_url(self):
+        icon_url = config.get('static.icon_base', '') + self.url() + 'icon'
+        return icon_url
+
     def best_download_url(self):
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.best_download_url(self)
@@ -484,7 +488,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': list(result.keys())},
                 category='icon')):
-            result[icon.project_id] = project_index[icon.project_id].url() + 'icon'
+            result[icon.project_id] = project_index[icon.project_id].icon_url()
         return result
 
     @classmethod
