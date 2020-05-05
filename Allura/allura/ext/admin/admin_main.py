@@ -61,7 +61,6 @@ log = logging.getLogger(__name__)
 
 
 class W:
-    markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
     group_card = aw.GroupCard()
     permission_card = aw.PermissionCard()
@@ -223,7 +222,6 @@ class ProjectAdminController(BaseController):
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_overview.html')
     def overview(self, **kw):
-        c.markdown_editor = W.markdown_editor
         c.metadata_admin = W.metadata_admin
         # need this because features field expects data in specific format
         metadata_admin_value = h.fixed_attrs_proxy(

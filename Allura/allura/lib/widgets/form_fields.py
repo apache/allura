@@ -291,6 +291,7 @@ class MarkdownEdit(ew.TextArea):
         yield ew.JSLink('js/usermentions-helper.js')
         yield onready('getProjectUsers(\'%s/users\')' % c.project.url())
 
+
 class PageList(ew_core.Widget):
     template = 'jinja:allura:templates/widgets/page_list.html'
     defaults = dict(

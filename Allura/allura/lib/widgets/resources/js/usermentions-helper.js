@@ -20,14 +20,16 @@
 var userMentionList;
 
 var getProjectUsers = function(users_url) {
-    $.get(users_url, function(data) {
-        userMentionList = data.options.map(function(item) {
-            return {
-                text: item.value,
-                displayText: item.label
-            };
+    if ($('.markdown_edit').length) {  // only do ajax call if really needed (the MarkdownEdit widget's resources can end up on many pages even if template doesn't expose edit forms)
+        $.get(users_url, function (data) {
+            userMentionList = data.options.map(function (item) {
+                return {
+                    text: item.value,
+                    displayText: item.label
+                };
+            });
         });
-    });
+    }
 }
 
 CodeMirror.registerHelper('hint', 'alluraUserMentions', function (editor) {
