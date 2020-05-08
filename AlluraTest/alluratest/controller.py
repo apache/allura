@@ -76,18 +76,6 @@ def get_config_file(config=None, current_pkg=None):
         return conf_file
 
 
-def setup_config_test(config_file=None, force=False):
-    '''
-    This may be necessary to use within test setup that needs the app config loaded
-    '''
-    if not config_file:
-        config_file = get_config_file()
-    already_loaded = tg.config.get('tg.app_globals')
-    if not already_loaded or force:
-        loadapp('config:' + config_file)
-setup_config_test.__test__ = False
-
-
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     '''
     Create clean environment for running tests, includes mongodb connection with "mim" (mongo-in-memory) and sample
