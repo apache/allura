@@ -31,6 +31,8 @@ Please read http://pythonpaste.org/webtest/ for more information.
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
+
+import six
 from six.moves.urllib.parse import quote
 
 from tg import tmpl_context as c
@@ -103,8 +105,9 @@ class TestRootController(TestController):
             self.app.get('/', headers=dict(Accept=str(hdr)), validate_skip=True)
 
     def test_encoded_urls(self):
-        # not valid unicode
-        self.app.get(b'/foo\xFF', status=400)
+        if six.PY2:
+            # not valid unicode
+            self.app.get(b'/foo\xFF', status=400)
         self.app.get('/foo%FF', status=400)
         # encoded
         self.app.get('/foo%C3%A9', status=404)
