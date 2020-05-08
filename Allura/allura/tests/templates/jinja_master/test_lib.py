@@ -21,8 +21,9 @@ from tg import config, app_globals as g
 from mock import Mock
 from nose.tools import assert_equal
 
+import ming
 from allura.config.app_cfg import ForgeConfig, AlluraJinjaRenderer
-from alluratest.controller import setup_config_test
+from alluratest.controller import setup_basic_test
 
 
 def strip_space(s):
@@ -31,7 +32,7 @@ def strip_space(s):
 
 class TemplateTest(object):
     def setUp(self):
-        setup_config_test()
+        setup_basic_test()
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
 
 

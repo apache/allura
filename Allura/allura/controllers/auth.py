@@ -113,6 +113,8 @@ class AuthController(BaseController):
             self.disable = DisableAccountController()
 
     def __getattr__(self, name):
+        if name == 'decoration':
+            raise AttributeError("TG decoratedcontroller calls this during import time, can't do anything complex")
         urls = plugin.UserPreferencesProvider.get().additional_urls()
         if name not in urls:
             raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
