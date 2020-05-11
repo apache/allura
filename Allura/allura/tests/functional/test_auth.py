@@ -861,9 +861,9 @@ class TestAuth(TestController):
         field_name = None
         for k, v in six.iteritems(form.fields):
             if subscribed:
-                check = c and v[0].value == 'on'
+                check = v and v[0].value == 'on'
             else:
-                check = c and v[0].value != 'on'
+                check = v and v[0].value != 'on'
             if k and k.endswith('.subscribed') and check:
                 field_name = k.replace('.subscribed', '')
         assert field_name, "Can't find unsubscribed tool for user"

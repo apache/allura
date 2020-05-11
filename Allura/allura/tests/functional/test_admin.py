@@ -20,8 +20,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
 from datetime import datetime
-
-import allura
 import pkg_resources
 from io import BytesIO
 import logging
@@ -34,7 +32,9 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from tg import tmpl_context as c, app_globals as g
 import mock
+import six
 
+import allura
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
@@ -59,12 +59,13 @@ class TestProjectAdmin(TestController):
                 'change summary to Milkshakes are for crazy monkeys',
                 'change project name to My Test Project',
                 'change short description to (\u00bf A Test Project \?){45}'):
-            self.app.post('/admin/update', status=302, params=dict(
+            r = self.app.post('/admin/update', params=dict(
                 name='My Test Project',
                 shortname='test',
                 summary='Milkshakes are for crazy monkeys',
                 short_description=('\u00bf A Test Project ?' * 45).encode('utf-8'),
                 labels='aaa,bbb'))
+            assert r.status_int == 302, (r.status, r.html.select('.error,.fielderror'))
         r = self.app.get('/admin/overview')
         assert b'A Test Project ?\xc2\xbf A' in r.body
         assert 'Test Subproject' not in r
@@ -168,7 +169,7 @@ class TestProjectAdmin(TestController):
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
-        with audits("change project features to \[u'One', u'Two'\]"):
+        with audits("change project features to \[{u}'One', {u}'Two'\]".format(u='u' if six.PY2 else '')):
             resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
                 'features-1.feature': '  ',
@@ -838,10 +839,10 @@ class TestProjectAdmin(TestController):
         dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
         mem_id = mem_holder['data-group']
-        # neither group has update permission
-        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
-        # add update permission to Member
+        # neither group has create permission
+        assert dev_holder.select_one('li[data-permission=create]')['class'] == ["no"]
+        assert mem_holder.select_one('li[data-permission=create]')['class'] == ["no"]
+        # add create permission to Member
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
             'permission': 'create',
@@ -849,10 +850,10 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/groups/')
         dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
-        # Member now has update permission
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["yes"]
-        # Developer has inherited update permission from Member
-        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["inherit"]
+        # Member now has create permission
+        assert mem_holder.select_one('li[data-permission=create]')['class'] == ["yes"]
+        # Developer has inherited create permission from Member
+        assert dev_holder.select_one('li[data-permission=create]')['class'] == ["inherit"]
         # remove update permission from Member
         r = self.app.post('/admin/groups/change_perm', params={
             'role_id': mem_id,
@@ -861,9 +862,9 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/groups/')
         dev_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[2]
         mem_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[3]
-        # neither group has update permission
-        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
-        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == ["no"]
+        # neither group has create permission
+        assert dev_holder.select_one('li[data-permission=create]')['class'] == ["no"]
+        assert mem_holder.select_one('li[data-permission=create]')['class'] == ["no"]
 
     def test_permission_inherit(self):
         r = self.app.get('/admin/groups/')
