@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import ew.jinja2_ew as ew
 
 from formencode import validators as fev
+from allura.lib import validators as v
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
@@ -61,13 +62,13 @@ class OptionsAdmin(ff.AdminForm):
             ffw.MarkdownEdit(
                 name='TicketHelpNew',
                 label='Help text to display on new ticket page',
-                validator=fev.String(),
+                validator=v.String(),
                 attrs={'style': 'width: 95%'}),
             ffw.MarkdownEdit(
                 name='TicketHelpSearch',
                 label='Help text to display on ticket list pages (index page,'
                       ' search results, milestone lists)',
-                validator=fev.String(),
+                validator=v.String(),
                 attrs={'style': 'width: 95%'}),
         ]
         return fields

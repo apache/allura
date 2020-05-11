@@ -24,14 +24,12 @@ from tempfile import mkdtemp
 from shutil import rmtree
 
 import six
-from paste.deploy.converters import aslist
 
 from bs4 import BeautifulSoup
 import git
 from tg import app_globals as g
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
-from formencode import validators as fev
 from tg import (
     expose,
     flash,
@@ -43,6 +41,7 @@ from tg.decorators import (
 )
 
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib import utils
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import (
@@ -71,8 +70,8 @@ log = logging.getLogger(__name__)
 
 class GitHubWikiImportForm(ToolImportForm):
     gh_project_name = GitHubProjectNameValidator()
-    gh_user_name = fev.UnicodeString(not_empty=True)
-    tool_option = fev.UnicodeString(if_missing='')
+    gh_user_name = v.UnicodeString(not_empty=True)
+    tool_option = v.UnicodeString(if_missing='')
 
 
 class GitHubWikiImportController(ToolImportController, GitHubOAuthMixin):

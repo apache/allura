@@ -106,7 +106,7 @@ class GenericTicketForm(ew.SimpleForm):
             ew.TextField(name='summary', label='Title',
                          attrs={'style': 'width: 425px', 'class':'memorable',
                                 'placeholder': 'Title'},
-                         validator=fev.UnicodeString(
+                         validator=v.UnicodeString(
                              not_empty=True, messages={
                                  'empty': "You must provide a Title"})),
             ffw.MarkdownEdit(label='Description', name='description',

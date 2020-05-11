@@ -25,7 +25,7 @@ from bson import ObjectId
 import ew.jinja2_ew as ew
 
 from allura.lib.widgets import forms as ff
-from allura.lib.widgets import form_fields as ffw
+from allura.lib import validators as v
 from allura.lib import helpers as h
 from forgediscussion import model as DM
 
@@ -66,7 +66,7 @@ class AddForum(ff.AdminForm):
         fields = [
             ew.HiddenField(name='app_id', label='App'),
             ew.TextField(name='name', label='Name',
-                         validator=fev.UnicodeString()),
+                         validator=v.UnicodeString()),
             ew.TextField(name='shortname', label='Short Name',
                          validator=All(
                              fev.Regex(r"^[^\s\/\.]*$", not_empty=True, messages={
@@ -75,7 +75,7 @@ class AddForum(ff.AdminForm):
                              UniqueForumShortnameValidator())),
             ew.TextField(name='parent', label='Parent Forum'),
             ew.TextField(name='description', label='Description',
-                         validator=fev.UnicodeString()),
+                         validator=v.UnicodeString()),
             ew.TextField(name='monitoring_email',
                          label='Monitoring Email', validator=fev.Email()),
             ew.Checkbox(name="members_only", label="Developer Only"),

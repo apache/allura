@@ -71,7 +71,7 @@ class ProjectImportForm(schema.Schema):
         self.allow_extra_fields = True
 
     neighborhood = fev.NotEmpty()
-    project_name = fev.UnicodeString(not_empty=True, max=40)
+    project_name = v.UnicodeString(not_empty=True, max=40)
 
 
 class ToolImportForm(schema.Schema):
@@ -79,7 +79,7 @@ class ToolImportForm(schema.Schema):
     def __init__(self, tool_class):
         super(ToolImportForm, self).__init__()
         self.add_field('mount_point', v.MountPointValidator(tool_class))
-    mount_label = fev.UnicodeString()
+    mount_label = v.UnicodeString()
 
 
 class ImportErrorHandler(object):

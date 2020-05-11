@@ -151,14 +151,14 @@ class PasswordChangeBase(ForgeForm):
                     required=True,
                     autocomplete='new-password',
                 ),
-                validator=fev.UnicodeString(
+                validator=V.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
                     max=asint(tg.config.get('auth.max_password_len', 30)))),
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
-                validator=fev.UnicodeString(not_empty=True),
+                validator=V.UnicodeString(not_empty=True),
                 attrs=dict(
                     required=True,
                     autocomplete='new-password',
@@ -185,7 +185,7 @@ class PasswordChangeForm(PasswordChangeBase):
             ew.PasswordField(
                 name='oldpw',
                 label='Old Password',
-                validator=fev.UnicodeString(not_empty=True),
+                validator=V.UnicodeString(not_empty=True),
                 attrs=dict(
                     required=True,
                     autocomplete='current-password',
@@ -200,14 +200,14 @@ class PasswordChangeForm(PasswordChangeBase):
                     required=True,
                     autocomplete='new-password',
                 ),
-                validator=fev.UnicodeString(
+                validator=V.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
                     max=asint(tg.config.get('auth.max_password_len', 30)))),
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
-                validator=fev.UnicodeString(not_empty=True),
+                validator=V.UnicodeString(not_empty=True),
                 attrs=dict(
                     required=True,
                     autocomplete='new-password',
@@ -257,7 +257,7 @@ class PersonalDataForm(ForgeForm):
                          for v in ['Male', 'Female', 'Unknown', 'Other']],
                 validator=formencode.All(
                     V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
-                    fev.UnicodeString(not_empty=True))),
+                    V.UnicodeString(not_empty=True))),
             ew.SingleSelectField(
                 name='country',
                 label='Country of residence',
@@ -271,7 +271,7 @@ class PersonalDataForm(ForgeForm):
                 name='city',
                 label='City of residence',
                 attrs=dict(value=None),
-                validator=fev.UnicodeString(not_empty=False)),
+                validator=V.UnicodeString(not_empty=False)),
             ew.SingleSelectField(
                 name='timezone',
                 label='Timezone',
@@ -364,7 +364,7 @@ class AddTelNumberForm(ForgeForm):
         newnumber = ew.TextField(
             label='New telephone number',
             attrs={'value': ''},
-            validator=fev.UnicodeString(not_empty=True))
+            validator=V.UnicodeString(not_empty=True))
 
     def display(self, **kw):
         initial_value = kw.get('initial_value', '')
@@ -394,7 +394,7 @@ class SkypeAccountForm(ForgeForm):
         skypeaccount = ew.TextField(
             label='Skype account',
             attrs={'value': ''},
-            validator=fev.UnicodeString(not_empty=False))
+            validator=V.UnicodeString(not_empty=False))
 
     def display(self, **kw):
         initial_value = kw.get('initial_value', '')
@@ -450,13 +450,13 @@ class AddSocialNetworkForm(ForgeForm):
             ew.SingleSelectField(
                 name='socialnetwork',
                 label='Social network',
-                validator=fev.UnicodeString(not_empty=True),
+                validator=V.UnicodeString(not_empty=True),
                 options=[ew.Option(py_value=name, label=name)
                          for name in socialnetworks]),
             ew.TextField(
                 name='accounturl',
                 label='Account url',
-                validator=fev.UnicodeString(not_empty=True))
+                validator=V.UnicodeString(not_empty=True))
         ]
 
 
@@ -501,12 +501,12 @@ class AddInactivePeriodForm(ForgeForm):
             label='Start date',
             validator=formencode.All(
                 V.DateValidator(),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
         enddate = ew.TextField(
             label='End date',
             validator=formencode.All(
                 V.DateValidator(),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
 
     @ew_core.core.validator
     def to_python(self, kw, state):
@@ -560,17 +560,17 @@ class AddTimeSlotForm(ForgeForm):
                      for wd in weekdays],
             validator=formencode.All(
                 V.OneOfValidator(weekdays),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
         starttime = ew.TextField(
             label='Start time',
             validator=formencode.All(
                 V.TimeValidator(),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
         endtime = ew.TextField(
             label='End time',
             validator=formencode.All(
                 V.TimeValidator(),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
 
     @ew_core.core.validator
     def to_python(self, kw, state):
@@ -667,10 +667,10 @@ class AddTroveCategoryForm(ForgeForm):
         categoryname = ew.TextField(
             label="Category name",
             attrs={},
-            validator=fev.UnicodeString(not_empty=True))
+            validator=V.UnicodeString(not_empty=True))
         shortname = ew.TextField(
             label="Short name",
-            validator=fev.UnicodeString(),
+            validator=V.UnicodeString(),
             attrs={'placeholder': 'optional; unique identifier'})
 
     def display(self, **kw):
@@ -693,7 +693,7 @@ class AddUserSkillForm(ForgeForm):
         selected_skill = ew.HiddenField(
             attrs={'value': ''},
             show_errors=False,
-            validator=fev.UnicodeString(not_empty=True))
+            validator=V.UnicodeString(not_empty=True))
         level = ew.SingleSelectField(
             label="Level of knowledge",
             options=[
@@ -702,10 +702,10 @@ class AddUserSkillForm(ForgeForm):
                 ew.Option(py_value="high", label="Advanced level")],
             validator=formencode.All(
                 V.OneOfValidator(['low', 'medium', 'high']),
-                fev.UnicodeString(not_empty=True)))
+                V.UnicodeString(not_empty=True)))
         comment = ew.TextArea(
             label="Additional comments",
-            validator=fev.UnicodeString(not_empty=False),
+            validator=V.UnicodeString(not_empty=False),
             attrs={'rows': 5, 'cols': 30})
 
     def display(self, **kw):
@@ -732,7 +732,7 @@ class SelectSubCategoryForm(ForgeForm):
         ]
         self.fields['selected_category'].validator = formencode.All(
             V.OneOfValidator(categories),
-            fev.UnicodeString(not_empty=True))
+            V.UnicodeString(not_empty=True))
         return super(ForgeForm, self).display(**kw)
 
 
@@ -790,7 +790,7 @@ class RegistrationForm(ForgeForm):
             ew.TextField(
                 name='display_name',
                 label='Displayed Name',
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=V.UnicodeString(not_empty=True)),
             username,
         ]
         if asbool(config.get('auth.require_email_addr', False)):
@@ -803,14 +803,14 @@ class RegistrationForm(ForgeForm):
                 name='pw',
                 label='New Password',
                 attrs=dict(minlength=asint(tg.config.get('auth.min_password_len', 6)), maxlength=asint(tg.config.get('auth.max_password_len', 30))),
-                validator=fev.UnicodeString(
+                validator=V.UnicodeString(
                     not_empty=True,
                     min=asint(tg.config.get('auth.min_password_len', 6)),
                     max=asint(tg.config.get('auth.max_password_len', 30)))),
             ew.PasswordField(
                 name='pw2',
                 label='New Password (again)',
-                validator=fev.UnicodeString(not_empty=True)),
+                validator=V.UnicodeString(not_empty=True)),
         ]
         return fields
 
@@ -995,7 +995,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.InputField(name='project_name', label='Project Name',
                           field_type='text',
                           validator=formencode.All(
-                              fev.UnicodeString(not_empty=True, max=40),
+                              V.UnicodeString(not_empty=True, max=40),
                               V.MaxBytesValidator(max=40)),
                           ),
             ew.InputField(name='project_unixname',
@@ -1175,7 +1175,7 @@ class AwardGrantForm(ForgeForm):
             ew.TextArea(
                 name='comment',
                 label='Comment',
-                validator=fev.UnicodeString(not_empty=False),
+                validator=V.UnicodeString(not_empty=False),
                 attrs={'rows': 5, 'cols': 30}),
         ]
 

@@ -312,7 +312,7 @@ class SiteAdminController(object):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_search.html')
-    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
+    @validate(validators=dict(q=v.UnicodeString(if_empty=None),
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_projects(self, q=None, f=None, page=0, limit=None, **kw):
@@ -327,7 +327,7 @@ class SiteAdminController(object):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/site_admin_search.html')
-    @validate(validators=dict(q=validators.UnicodeString(if_empty=None),
+    @validate(validators=dict(q=v.UnicodeString(if_empty=None),
                               limit=validators.Int(if_invalid=None),
                               page=validators.Int(if_empty=0, if_invalid=0)))
     def search_users(self, q=None, f=None, page=0, limit=None, **kw):
@@ -344,8 +344,8 @@ class SiteAdminController(object):
 
 class DeleteProjectsController(object):
     delete_form_validators = dict(
-        projects=validators.UnicodeString(if_empty=None),
-        reason=validators.UnicodeString(if_empty=None),
+        projects=v.UnicodeString(if_empty=None),
+        reason=v.UnicodeString(if_empty=None),
         disable_users=validators.StringBool(if_empty=False))
 
     def remove_comments(self, lines):

@@ -19,10 +19,9 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import ew
 from ew import jinja2_ew
-from allura.lib import validators as V
+from allura.lib import validators as v
 
 from forgetracker import model
-from formencode import validators as fev
 
 
 class BinForm(ew.SimpleForm):
@@ -33,12 +32,12 @@ class BinForm(ew.SimpleForm):
 
     class hidden_fields(ew.NameList):
         _id = jinja2_ew.HiddenField(
-            validator=V.Ming(model.Bin), if_missing=None)
+            validator=v.Ming(model.Bin), if_missing=None)
 
     class fields(ew.NameList):
         summary = jinja2_ew.TextField(
             label='Bin Name',
-            validator=fev.UnicodeString(not_empty=True))
+            validator=v.UnicodeString(not_empty=True))
         terms = jinja2_ew.TextField(
             label='Search Terms',
-            validator=fev.UnicodeString(not_empty=True))
+            validator=v.UnicodeString(not_empty=True))

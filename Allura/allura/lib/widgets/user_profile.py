@@ -25,11 +25,12 @@ import ew.jinja2_ew as ew
 from jinja2 import Markup
 from paste.deploy.converters import asbool
 import tg
-from formencode import validators as fev
 from tg import app_globals as g
 from tg import request
 from tg import tmpl_context as c
+
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.plugin import AuthenticationProvider
 from .forms import ForgeForm
 
@@ -42,7 +43,7 @@ class SendMessageForm(ForgeForm):
 
     class fields(ew_core.NameList):
         subject = ew.TextField(
-            validator=fev.UnicodeString(
+            validator=v.UnicodeString(
                 not_empty=True,
                 messages={'empty': "You must provide a Subject"}),
             attrs=dict(
@@ -52,7 +53,7 @@ class SendMessageForm(ForgeForm):
             label='Subject')
 
         message = ew.TextArea(
-            validator=fev.UnicodeString(
+            validator=v.UnicodeString(
                 not_empty=True,
                 messages={'empty': "You must provide a Message"}),
             attrs=dict(

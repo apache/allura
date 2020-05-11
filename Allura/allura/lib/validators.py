@@ -68,6 +68,22 @@ class NonHttpUrl(URL):
     ''', re.I | re.VERBOSE)
 
 
+class UnicodeString(fev.UnicodeString):
+    """
+    Override UnicodeString to fix bytes handling.
+    Specifically ran into problems with its 'tooLong' check is running on bytes incorrectly and getting wrong length
+
+    Fixed elsewhere like this too:
+        https://github.com/formencode/formencode/issues/2#issuecomment-378410047
+        https://github.com/sightmachine/formencode/commit/665c9d0141dacb2dc84fb7d20ad3f8c0a5fe5e2d
+    """
+    encoding = None
+
+
+# make UnicodeString fix above work through this String alias, just like formencode aliases String
+String = UnicodeString if str is str else fev.ByteString
+
+
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):
@@ -90,7 +106,7 @@ class Ming(fev.FancyValidator):
             return value._id
 
 
-class UniqueOAuthApplicationName(fev.UnicodeString):
+class UniqueOAuthApplicationName(UnicodeString):
 
     def _to_python(self, value, state):
         from allura import model as M
@@ -127,7 +143,7 @@ class MaxBytesValidator(fev.FancyValidator):
         return h.really_unicode(value or '')
 
 
-class MountPointValidator(fev.UnicodeString):
+class MountPointValidator(UnicodeString):
 
     def __init__(self, app_class,
                  reserved_mount_points=('feed', 'index', 'icon', '_nav.json'), **kw):
@@ -320,7 +336,7 @@ class CreateTaskSchema(fe.Schema):
 class CreateSiteNotificationSchema(fe.Schema):
     active = fev.StringBool(if_missing=False)
     impressions = fev.Int(not_empty=True)
-    content = fev.UnicodeString(not_empty=True)
+    content = UnicodeString(not_empty=True)
     user_role = fev.FancyValidator(not_empty=False, if_empty=None)
     page_regex = fev.FancyValidator(not_empty=False, if_empty=None)
     page_tool_type = fev.FancyValidator(not_empty=False, if_empty=None)

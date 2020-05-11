@@ -24,6 +24,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.search import search_app
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
@@ -156,7 +157,7 @@ class RootController(BaseController):
         }
 
     @expose('jinja:forgeshorturl:templates/search.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = W.search_results

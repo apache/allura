@@ -24,7 +24,6 @@ from six.moves.urllib.error import HTTPError
 import six
 from io import BytesIO
 
-from formencode import validators as fev
 from tg import (
     expose,
     flash,
@@ -37,6 +36,7 @@ from tg.decorators import (
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post
 from ming.orm import session, ThreadLocalORMSession
@@ -62,7 +62,7 @@ log = logging.getLogger(__name__)
 
 class GitHubTrackerImportForm(ToolImportForm):
     gh_project_name = GitHubProjectNameValidator()
-    gh_user_name = fev.UnicodeString(not_empty=True)
+    gh_user_name = v.UnicodeString(not_empty=True)
 
 
 class GitHubTrackerImportController(ToolImportController, GitHubOAuthMixin):

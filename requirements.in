@@ -11,7 +11,7 @@ emoji
 faulthandler ; python_version < "3.3"
 feedgenerator
 feedparser
-# FormEncode may need v2.0 to work past py3.3 or so?  https://github.com/formencode/formencode/issues/140
+# FormEncode is not currently maintained :(  Could go to 2.0.0a currently https://github.com/formencode/formencode/issues/140
 FormEncode
 GitPython==2.1.11
 html5lib==1.0.1

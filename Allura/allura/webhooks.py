@@ -40,6 +40,7 @@ from paste.deploy.converters import asint, aslist
 from allura.app import AdminControllerMixin
 from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
@@ -74,7 +75,7 @@ class WebhookValidator(fev.FancyValidator):
 
 class WebhookCreateForm(schema.Schema):
     url = fev.URL(not_empty=True)
-    secret = fev.UnicodeString()
+    secret = v.UnicodeString()
 
 
 class WebhookEditForm(WebhookCreateForm):
@@ -221,8 +222,8 @@ class WebhookRestController(BaseController):
         error = getattr(e, 'error_dict', None)
         if error:
             _error = {}
-            for k, v in six.iteritems(error):
-                _error[k] = six.text_type(v)
+            for k, val in six.iteritems(error):
+                _error[k] = six.text_type(val)
             return _error
         error = getattr(e, 'msg', None)
         if not error:
