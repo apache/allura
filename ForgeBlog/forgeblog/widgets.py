@@ -25,6 +25,7 @@ from formencode import validators as fev
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
 from allura import model as M
+from allura.lib import validators as v
 
 
 class BlogPager(ffw.PageList):
@@ -39,7 +40,7 @@ class BlogPostForm(forms.ForgeForm):
     def fields(self):
         return ew_core.NameList([
             ew.TextField(name='title',
-                         validator=fev.UnicodeString(not_empty=True,
+                         validator=v.UnicodeString(not_empty=True,
                                                      messages={'empty': "You must provide a Title"}),
                          attrs=dict(placeholder='Enter your title here',
                                     title='Enter your title here',

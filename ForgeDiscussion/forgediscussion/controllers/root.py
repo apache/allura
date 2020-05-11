@@ -36,6 +36,7 @@ import pymongo
 from allura.lib.security import require_access, has_access, require_authenticated
 from allura.lib.search import search_app
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post, memorable_forget
 from allura.controllers import BaseController, DispatchIndex
@@ -151,7 +152,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/search.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False),
                    limit=validators.Int(if_empty=None, if_invalid=None),

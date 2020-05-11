@@ -36,6 +36,7 @@ from ming.orm import session
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post, memorable_forget
@@ -402,7 +403,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/search.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    search_comments=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -424,7 +425,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')
-    @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
+    @validate(dict(sort=v.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False),
                    page=validators.Int(if_empty=0, if_invalid=0),
                    limit=validators.Int(if_empty=None, if_invalid=None)))
@@ -468,7 +469,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
-    @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
+    @validate(dict(sort=v.UnicodeString(if_empty='alpha'),
                    page=validators.Int(if_empty=0, if_invalid=0),
                    limit=validators.Int(if_empty=None, if_invalid=None)))
     def browse_tags(self, sort='alpha', page=0, limit=None, **kw):

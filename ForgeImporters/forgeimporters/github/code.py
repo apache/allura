@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from tg import tmpl_context as c
 from tg import app_globals as g
-from formencode import validators as fev
 from tg import (
     expose,
     flash,
@@ -32,6 +31,7 @@ from tg.decorators import (
 
 from allura.lib.decorators import require_post
 from allura import model as M
+from allura.lib import validators as v
 
 from forgeimporters.base import (
     ToolImporter,
@@ -46,7 +46,7 @@ from forgeimporters.github import (
 
 
 class GitHubRepoImportForm(ToolImportForm):
-    gh_user_name = fev.UnicodeString(not_empty=True)
+    gh_user_name = v.UnicodeString(not_empty=True)
     gh_project_name = GitHubProjectNameValidator()
 
 

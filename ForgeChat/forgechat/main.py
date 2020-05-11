@@ -33,6 +33,7 @@ from ming.utils import LazyProperty
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access
@@ -150,7 +151,7 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgechat:templates/chat/search.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = SearchResults()

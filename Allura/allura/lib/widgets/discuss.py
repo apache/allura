@@ -19,14 +19,11 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from formencode import validators as fev
 
-import json
 import ew as ew_core
 import ew.jinja2_ew as ew
-from tg import app_globals as g
-from  tg import config
 
 from allura.lib import utils
-from allura.lib import validators as V
+from allura.lib import validators as v
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M
@@ -169,7 +166,7 @@ class EditPost(ff.ForgeForm):
                     ew.TextField(name='subject', attrs=dict(style="width:97%")))
         else:
             # We are being validated
-            validator = fev.UnicodeString(not_empty=True, if_missing='')
+            validator = v.UnicodeString(not_empty=True, if_missing='')
             fields.append(ew.TextField(name='subject', validator=validator))
             fields.append(NullValidator(name=self.att_name))
         return fields
@@ -217,7 +214,7 @@ class _ThreadsTable(ew.TableField):
     template = 'jinja:allura:templates/widgets/threads_table.html'
 
     class fields(ew_core.NameList):
-        _id = ew.HiddenField(validator=V.Ming(M.Thread))
+        _id = ew.HiddenField(validator=v.Ming(M.Thread))
         subscription = ew.Checkbox(suppress_label=True)
         subject = ffw.DisplayOnlyField(label='Topic')
         url = ffw.DisplayOnlyField()

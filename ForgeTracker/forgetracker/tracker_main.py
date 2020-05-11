@@ -47,6 +47,7 @@ from ming.utils import LazyProperty
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib import utils
 from allura.tasks import notification_tasks
 from allura.app import (
@@ -89,12 +90,12 @@ from six.moves import map
 log = logging.getLogger(__name__)
 
 search_validators = dict(
-    q=validators.UnicodeString(if_empty=None),
+    q=v.UnicodeString(if_empty=None),
     history=validators.StringBool(if_empty=False),
     project=validators.StringBool(if_empty=False),
     limit=validators.Int(if_invalid=None),
     page=validators.Int(if_empty=0, if_invalid=0),
-    sort=validators.UnicodeString(if_empty=None),
+    sort=v.UnicodeString(if_empty=None),
     filter=V.JsonConverter(if_empty={}, if_invalid={}),
     deleted=validators.StringBool(if_empty=False))
 
@@ -949,11 +950,11 @@ class RootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/mass_edit.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    filter=V.JsonConverter(if_empty={}),
                    limit=validators.Int(if_empty=10, if_invalid=10),
                    page=validators.Int(if_empty=0, if_invalid=0),
-                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
+                   sort=v.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, filter=None, **kw):
         require_access(c.app, 'update')
         result = TM.Ticket.paged_search(c.app.config, c.user, q, filter=filter,
@@ -977,11 +978,11 @@ class RootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/mass_move.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    filter=V.JsonConverter(if_empty={}),
                    limit=validators.Int(if_empty=10, if_invalid=10),
                    page=validators.Int(if_empty=0, if_invalid=0),
-                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
+                   sort=v.UnicodeString(if_empty='ticket_num_i asc')))
     def move(self, q=None, limit=None, page=None, sort=None, filter=None, **kw):
         require_access(c.app, 'admin')
         result = TM.Ticket.paged_search(c.app.config, c.user, q, filter=filter,
@@ -1698,8 +1699,8 @@ class TrackerAdminController(DefaultAdminController):
     @validate(W.options_admin, error_handler=options)
     def set_options(self, **kw):
         require_access(self.app, 'configure')
-        for k, v in six.iteritems(kw):
-            self.app.config.options[k] = v
+        for k, val in six.iteritems(kw):
+            self.app.config.options[k] = val
         flash('Options updated')
         redirect(request.referer or '/')
 
@@ -1937,7 +1938,7 @@ class MilestoneController(BaseController):
     @validate(validators=dict(
         limit=validators.Int(if_invalid=None),
         page=validators.Int(if_empty=0, if_invalid=0),
-        sort=validators.UnicodeString(if_empty=''),
+        sort=v.UnicodeString(if_empty=''),
         filter=V.JsonConverter(if_empty={}),
         deleted=validators.StringBool(if_empty=False)))
     def index(self, q=None, columns=None, page=0, query=None, sort=None,

@@ -39,6 +39,7 @@ from ming.orm import session
 from allura.app import Application, SitemapEntry, ConfigOption
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
+from allura.lib import validators as v
 from allura.lib.utils import JSONForExport
 from allura.tasks import notification_tasks
 from allura.lib.search import search_app
@@ -271,7 +272,7 @@ class RootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgeblog:templates/blog/search.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
+    @validate(dict(q=v.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    search_comments=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
@@ -434,8 +435,8 @@ class PostController(BaseController, FeedController):
         old_text = self.post.text
         if attachment is not None:
             self.post.add_multiple_attachments(attachment)
-        for k, v in six.iteritems(kw):
-            setattr(self.post, k, v)
+        for k, val in six.iteritems(kw):
+            setattr(self.post, k, val)
         self.post.commit()
         notification_tasks.send_usermentions_notification.post(self.post.index_id(), kw['text'], old_text)
         redirect('.')

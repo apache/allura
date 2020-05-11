@@ -30,6 +30,9 @@ import ew.jinja2_ew as ew
 import six
 from six.moves import range
 
+from allura.lib import validators as v
+
+
 log = logging.getLogger(__name__)
 
 
@@ -37,7 +40,7 @@ def onready(text):
     return ew.JSScript('$(function () {%s});' % text)
 
 
-class LabelList(fev.UnicodeString):
+class LabelList(v.UnicodeString):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('if_empty', [])
@@ -268,7 +271,7 @@ class AutoResizeTextarea(ew.TextArea):
 
 class MarkdownEdit(ew.TextArea):
     template = 'jinja:allura:templates/widgets/markdown_edit.html'
-    validator = fev.UnicodeString()
+    validator = v.UnicodeString()
     defaults = dict(
         ew.TextArea.defaults,
         name=None,
@@ -332,9 +335,9 @@ class PageList(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k, v in six.iteritems(request.params):
+        for k, val in six.iteritems(request.params):
             if k not in ['limit', 'count', 'page']:
-                url_params[k] = v
+                url_params[k] = val
         return url_params
 
 
@@ -350,9 +353,9 @@ class PageSize(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k, v in six.iteritems(request.params):
+        for k, val in six.iteritems(request.params):
             if k not in ['limit', 'count', 'page']:
-                url_params[k] = v
+                url_params[k] = val
         return url_params
 
     def resources(self):
