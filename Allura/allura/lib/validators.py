@@ -117,8 +117,8 @@ class MaxBytesValidator(fev.FancyValidator):
     max = 255
 
     def _to_python(self, value, state):
-        value = h.really_unicode(value or '').encode('utf-8')
-        if len(value) > self.max:
+        value_bytes = h.really_unicode(value or '').encode('utf-8')
+        if len(value_bytes) > self.max:
             raise fe.Invalid("Please enter a value less than %s bytes long." %
                              self.max, value, state)
         return value

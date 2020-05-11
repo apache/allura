@@ -173,11 +173,17 @@ def audits(*messages, **kwargs):
         preamble = '(Done by user: {}\n)?IP Address: {}\nUser-Agent: {}\n'.format(actor, ip_addr, user_agent)
     else:
         preamble = ''
+
     for message in messages:
-        assert M.AuditLog.query.find(dict(message=re.compile(preamble + message))).count(), \
-            'Could not find "%s"%s' % (message,
-                                       '\nYou may need to escape the regex chars in the text you are matching'
-                                       if message != re.escape(message) else '')
+        found = M.AuditLog.query.find(dict(message=re.compile(preamble + message))).count()
+        if not found:
+            hints = ''
+            all = M.AuditLog.query.find().all()
+            if len(all) < 10:
+                hints += '\nin these AuditLog messages:\n\t' + '\n\t'.join(a.message for a in all)
+            if message != re.escape(message):
+                hints += '\nYou may need to escape the regex chars in the text you are matching'
+            raise AssertionError('Could not find "%s"%s' % (message, hints))
 
 
 @contextlib.contextmanager
