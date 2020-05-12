@@ -90,7 +90,7 @@ class LoginForm(ForgeForm):
                 None)
         except exc.HTTPBadRequest as e:
             raise Invalid(
-                e.message,
+                e.args[0],
                 dict(username=value['username'], rememberme=value.get('rememberme'),
                      return_to=value.get('return_to')),
                 None)

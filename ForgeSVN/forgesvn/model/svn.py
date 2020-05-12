@@ -509,7 +509,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     url, revision_start=rev, peg_revision=rev, limit=limit,
                     discover_changed_paths=True)
             except pysvn.ClientError as e:
-                if 'Unable to connect' in e.message:
+                if 'Unable to connect' in e.args[0]:
                     raise  # repo error
                 return  # no (more) history for this path
             for ci in logs:
