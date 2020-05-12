@@ -458,6 +458,12 @@ def convertTime(timestring):
 
 class IconValidator(fev.FancyValidator):
     regex = '(jpg|jpeg|gif|png|bmp)$'
+
+    # https://github.com/formencode/formencode/issues/101 local fix
+    # formencode is_empty doesn't handle empty bytestring by default
+    def is_empty(self, val):
+        return val == b'' or super(IconValidator, self).is_empty(val)
+
     def _to_python(self, value, state):
         p = re.compile(self.regex, flags=re.I)
         result = p.search(value.filename)

@@ -125,6 +125,20 @@ class ForgeForm(ew.SimpleForm):
                                                          ctx['errors'])
         return Markup(display)
 
+    # https://github.com/formencode/formencode/issues/101 local fix
+    def _make_schema(self):
+        schema = super(ForgeForm, self)._make_schema()
+
+        orig_val_is_iter = schema._value_is_iterator
+
+        def _value_is_iterator(val):
+            if isinstance(val, bytes):
+                return False
+            return orig_val_is_iter(val)
+        schema._value_is_iterator = _value_is_iterator
+
+        return schema
+
 
 class ForgeFormResponsive(ForgeForm):
     def __init__(self):
