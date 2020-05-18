@@ -24,6 +24,7 @@ import logging
 from datetime import date, time, datetime, timedelta
 
 # Non-stdlib imports
+import six
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c, request
@@ -127,7 +128,7 @@ class AdminController(DefaultAdminController):
 
     @with_trailing_slash
     def index(self, **kw):
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()

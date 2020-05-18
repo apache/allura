@@ -19,6 +19,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
+
+import six
 from tg import tmpl_context as c, request
 
 # Non-stdlib imports
@@ -184,7 +186,7 @@ class SVNImportController(BaseController, AdminControllerMixin):
             M.Notification.post_user(
                 c.user, self.app.repo, 'error',
                 text="Can't import into non empty repository.")
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class SVNCommitBrowserController(BaseController):

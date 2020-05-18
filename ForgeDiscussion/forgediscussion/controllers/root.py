@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
 import logging
+
+import six
 from six.moves.urllib.parse import unquote
 from datetime import date, datetime, timedelta, time
 import calendar
@@ -133,13 +135,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @validate(W.new_topic, error_handler=create_topic)
     @AntiSpam.validate('Spambot protection engaged', error_url='create_topic')
     def save_new_topic(self, subject=None, text=None, forum=None, subscribe=False, **kw):
-        self.rate_limit(model.ForumPost, 'Topic creation', request.referer)
+        self.rate_limit(model.ForumPost, 'Topic creation', six.ensure_text(request.referer or '/'))
         discussion = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
         if discussion.deleted and not has_access(c.app, 'configure')():
             flash('This forum has been removed.')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]

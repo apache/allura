@@ -137,10 +137,12 @@ class AuthController(BaseController):
         elif orig_request:
             return_to = orig_request.url
         else:
-            if request.referer is not None and request.referer.split('/')[-1] == 'neighborhood':
+            if request.referer is not None and six.ensure_text(request.referer).split('/')[-1] == 'neighborhood':
                 return_to = '/'
+            elif request.referer:
+                return_to = six.ensure_text(request.referer)
             else:
-                return_to = request.referer
+                return_to = None
         c.form = F.login_form
         return dict(return_to=return_to)
 
@@ -282,7 +284,7 @@ class AuthController(BaseController):
             flash('Verification link sent')
         else:
             flash('No such address', 'error')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     def _verify_addr(self, addr, do_auth_check=True):
         confirmed_by_other = M.EmailAddress.find(dict(email=addr.email, confirmed=True)).all() if addr else []
@@ -386,7 +388,7 @@ class AuthController(BaseController):
 
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
-            redirect('/auth/', return_to=kwargs.get('return_to', ''))
+            redirect('/auth/', {'return_to': kwargs.get('return_to', '')})
 
         user = M.User.by_username(session['multifactor-username'])
         try:
@@ -729,7 +731,7 @@ class PreferencesController(BaseController):
     @require_post()
     def user_message(self, allow_user_messages=False):
         c.user.set_pref('disable_user_messages', not allow_user_messages)
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose('jinja:allura:templates/user_totp.html')
     @without_trailing_slash
@@ -1252,7 +1254,7 @@ class SubscriptionsController(BaseController):
         if email_format:
             c.user.set_pref('email_format', email_format)
 
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -1263,7 +1265,7 @@ class SubscriptionsController(BaseController):
             h.auditlog_user('User mention notifications are enabled')
         else:
             h.auditlog_user('User mention notifications are disabled')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class OAuthController(BaseController):

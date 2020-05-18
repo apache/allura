@@ -513,7 +513,7 @@ class SiteNotificationController(object):
     def delete(self):
         self.note.delete()
         ThreadLocalORMSession().flush_all()
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class TaskManagerController(object):
@@ -696,7 +696,7 @@ class AdminUserDetailsController(object):
             flash('Comment added', 'ok')
         else:
             flash('Can not add comment "%s" for user %s' % (comment, user))
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -715,7 +715,7 @@ class AdminUserDetailsController(object):
             AuthenticationProvider.get(request).deactivate_user(user)
             AuthenticationProvider.get(request).enable_user(user, audit=False)
             flash('Set user status to pending')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -727,7 +727,7 @@ class AdminUserDetailsController(object):
         AuthenticationProvider.get(request).set_password(user, None, pwd)
         h.auditlog_user('Set random password', user=user)
         flash('Password is set', 'ok')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -740,7 +740,7 @@ class AdminUserDetailsController(object):
             allura.controllers.auth.AuthController().password_recovery_hash(email)
         except HTTPFound:
             pass  # catch redirect to '/'
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -759,7 +759,7 @@ class AdminUserDetailsController(object):
         if not user or user.is_anonymous():
             raise HTTPNotFound()
         allura.controllers.auth.PreferencesController()._update_emails(user, admin=True, form_params=kw)
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class StatsSiteAdminExtension(SiteAdminExtension):

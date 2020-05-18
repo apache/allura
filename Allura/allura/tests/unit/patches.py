@@ -17,7 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from tg import tmpl_context as c
 
 from allura.tests.unit.factories import (
@@ -60,4 +60,7 @@ def fake_redirect_patch(test_case):
 
 
 def fake_request_patch(test_case):
-    return patch('allura.controllers.discuss.request')
+    return patch('allura.controllers.discuss.request',
+                 MagicMock(
+                     referer='.'
+                 ))

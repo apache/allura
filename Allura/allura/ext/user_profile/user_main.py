@@ -22,6 +22,7 @@ import logging
 import pkg_resources
 from datetime import datetime
 
+import six
 from formencode import validators
 from tg import request
 from tg import tmpl_context as c, app_globals as g
@@ -128,21 +129,21 @@ class UserProfileController(BaseController, FeedController):
     def _check_can_message(self, from_user, to_user):
         if from_user is User.anonymous():
             flash('You must be logged in to send user messages.', 'info')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
 
         if not (from_user and from_user.get_pref('email_address')):
             flash('In order to send messages, you must have an email address '
                   'associated with your account.', 'info')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
 
         if not (to_user and to_user.get_pref('email_address')):
             flash('This user can not receive messages because they do not have '
                   'an email address associated with their account.', 'info')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
 
         if to_user.get_pref('disable_user_messages'):
             flash('This user has disabled direct email messages', 'info')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
 
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):

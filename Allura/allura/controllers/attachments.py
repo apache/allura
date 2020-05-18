@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import six
 from six.moves.urllib.parse import unquote
 from webob import exc
 
@@ -117,7 +119,7 @@ class AttachmentController(BaseController):
             self.handle_post(delete, **kw)
             if is_ajax(request):
                 return
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
         if self.artifact.deleted:
             raise exc.HTTPNotFound
         embed = False

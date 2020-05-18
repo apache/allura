@@ -918,7 +918,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         require_access(self.app, 'configure')
         self.app.config.options['mount_label'] = mount_label
         g.post_event('project_menu_updated')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose('jinja:allura:templates/app_admin_options.html')
     def options(self):
@@ -973,7 +973,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                          + self.app.config.options.mount_point
                          + '/')
             else:
-                redirect(request.referer or '/')
+                redirect(six.ensure_text(request.referer or '/'))
 
     @without_trailing_slash
     @expose()
@@ -1026,7 +1026,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 if (ace.permission == perm) and (ace.access == model.ACE.DENY):
                     self.app.config.acl.append(ace)
         g.post_event('project_menu_updated')  # since 'read' permission changes can affect what is visible in menu
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class WebhooksLookup(BaseController, AdminControllerMixin):

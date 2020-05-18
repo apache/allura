@@ -84,7 +84,7 @@ class TestDiscuss(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'], params=params,
-                          headers={str('Referer'): str(thread_link.encode("utf-8"))},
+                          headers={str('Referer'): str(thread_link)},
                           extra_environ=dict(username=str('root')))
         r = r.follow()
         return r
