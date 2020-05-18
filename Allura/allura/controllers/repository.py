@@ -116,7 +116,7 @@ class RepoRootController(BaseController, FeedController):
         allura.tasks.repo_tasks.refresh.post()
         if request.referer:
             flash('Repository is being refreshed')
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
         else:
             return '%r refresh queued.\n' % c.app.repo
 
@@ -157,7 +157,7 @@ class RepoRootController(BaseController, FeedController):
                     raise
                 except Exception as ex:
                     flash(str(ex), 'error')
-                    redirect(request.referer or '/')
+                    redirect(six.ensure_text(request.referer or '/'))
 
     @property
     def mr_widget(self):

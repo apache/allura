@@ -18,6 +18,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
+
+import six
 from six.moves.urllib.parse import quote
 
 from tg import tmpl_context as c, app_globals as g
@@ -269,14 +271,14 @@ class RepoAdminController(DefaultAdminController):
     @require_post()
     def set_extensions(self, **post_data):
         self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
-        redirect(request.referer)
+        redirect(six.ensure_text(request.referer or '/'))
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/default_branch.html')
     def set_default_branch_name(self, branch_name=None, **kw):
         if (request.method == 'POST') and branch_name:
             self.repo.set_default_branch(branch_name)
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
@@ -312,7 +314,7 @@ class RepoAdminController(DefaultAdminController):
             flash(message,
                   'error' if 'Invalid' in message else 'ok')
 
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class RepoAdminRestController(BaseController):

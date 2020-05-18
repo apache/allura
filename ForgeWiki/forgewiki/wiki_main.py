@@ -22,6 +22,8 @@ import json
 import logging
 import os
 from pprint import pformat
+
+import six
 from six.moves.urllib.parse import unquote
 
 # Non-stdlib imports
@@ -521,7 +523,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             M.Mailbox.subscribe(type='direct')
         elif unsubscribe:
             M.Mailbox.unsubscribe()
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class PageController(BaseController, FeedController):
@@ -793,7 +795,7 @@ class PageController(BaseController, FeedController):
         self.page.add_multiple_attachments(file_info)
         if is_ajax(request):
             return
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose('json:')
     @require_post()
@@ -940,4 +942,4 @@ class WikiAdminController(DefaultAdminController):
         self.app.show_right_bar = show_right_bar
         self.app.allow_email_posting = allow_email_posting
         flash('Wiki options updated')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))

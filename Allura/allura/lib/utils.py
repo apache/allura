@@ -383,7 +383,7 @@ class AntiSpam(object):
                 else:
                     # regular antispam failure handling
                     tg.flash(error_msg, 'error')
-                    redirect(error_url or tg.request.referer or '.')
+                    redirect(error_url or six.ensure_text(tg.request.referer or '.'))
         return before_validate(antispam_hook)
 
 

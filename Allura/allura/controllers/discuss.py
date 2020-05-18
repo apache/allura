@@ -100,7 +100,7 @@ class DiscussionController(BaseController, FeedController):
             self.moderate = ModerationController(self)
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @h.vardec
     @expose()
@@ -115,7 +115,7 @@ class DiscussionController(BaseController, FeedController):
                 thread.unsubscribe()
             session(self.M.Thread)._get().skip_mod_date = True
             session(self.M.Thread)._get().skip_last_updated = True
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -215,7 +215,7 @@ class ThreadController(six.with_metaclass(h.ProxiedAttrMeta, BaseController, Fee
                     show_moderate=kw.get('show_moderate'))
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @memorable_forget()
     @h.vardec
@@ -236,7 +236,7 @@ class ThreadController(six.with_metaclass(h.ProxiedAttrMeta, BaseController, Fee
         if self.thread.ref:
             require_access(self.thread.ref.artifact, 'post')
         self.thread.labels = labels.split(',')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     def flag_as_spam(self, **kw):
@@ -260,14 +260,14 @@ class ThreadController(six.with_metaclass(h.ProxiedAttrMeta, BaseController, Fee
 
 def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=None):
     require_access(thread, 'post')
-    rate_limit(M.Post, "Comment", redir=request.referrer)
+    rate_limit(M.Post, "Comment", redir=six.ensure_text(request.referer or '/'))
     if thread.ref:
         require_access(thread.ref.artifact, 'post')
     kw = edit_widget.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
     if not kw['text']:
         flash('Your post was not saved. You must provide content.',
               'error')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
     file_info = kw.get('file_info', None)
     p = thread.add_post(parent_id=parent_post_id, **kw)
     p.add_multiple_attachments(file_info)
@@ -275,7 +275,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
         thread.artifact.mod_date = datetime.utcnow()
     flash('Message posted')
     notification_tasks.send_usermentions_notification.post(p.index_id(), kw['text'])
-    redirect(request.referer or '/')
+    redirect(six.ensure_text(request.referer or '/'))
 
 
 class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
@@ -332,7 +332,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
                                        target=self.post.thread.artifact or self.post.thread,
                                        related_nodes=[self.post.app_config.project],
                                        tags=['comment'])
-            redirect(request.referer or '/')
+            redirect(six.ensure_text(request.referer or '/'))
         elif request.method == 'GET':
             if self.post.deleted:
                 raise exc.HTTPNotFound
@@ -406,7 +406,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
         return dict(status=status, counts=self.post.react_counts)
 
     def error_handler(self, *args, **kwargs):
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @memorable_forget()
     @h.vardec
@@ -450,7 +450,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
     def attach(self, file_info=None):
         require_access(self.post, 'moderate')
         self.post.add_multiple_attachments(file_info)
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     def _lookup(self, id, *remainder):
@@ -564,7 +564,7 @@ class ModerationController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)
                     posted.thread.post_to_feed(posted)
         flash('{} {}'.format(h.text.plural(count, 'post', 'posts'),
                               'deleted' if delete else 'marked as spam' if spam else 'approved'))
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()

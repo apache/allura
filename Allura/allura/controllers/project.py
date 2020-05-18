@@ -874,7 +874,7 @@ class NeighborhoodAwardsController(object):
                     icon.filename, icon.file, content_type=icon.type,
                     square=True, thumbnail_size=(48, 48),
                     thumbnail_meta=dict(award_id=award._id))
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
     @expose()
     @require_post()
@@ -895,7 +895,7 @@ class NeighborhoodAwardsController(object):
             award.comment = comment
             with h.push_context(recipient_q._id):
                 g.post_event('project_updated')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class AwardController(object):
@@ -963,7 +963,7 @@ class AwardController(object):
                     g.post_event('project_updated')
             M.AwardFile.query.remove(dict(award_id=self.award._id))
             self.award.delete()
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class GrantController(object):
@@ -1005,7 +1005,7 @@ class GrantController(object):
         self.grant.delete()
         with h.push_context(self.project._id):
             g.post_event('project_updated')
-        redirect(request.referer or '/')
+        redirect(six.ensure_text(request.referer or '/'))
 
 
 class ProjectImporterController(object):
