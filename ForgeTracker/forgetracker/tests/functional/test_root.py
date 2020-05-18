@@ -926,7 +926,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
-        self.app.post(f['action'].encode('utf-8'), params=params,
+        self.app.post(f['action'], params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
@@ -1522,7 +1522,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(post_content in r)
@@ -1538,7 +1538,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params['ticket_form.summary'] = new_summary
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(summary + ' --&gt; ' + new_summary in r)
@@ -1557,7 +1557,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='-1'))
         assert_true(summary in r)
@@ -1567,7 +1567,7 @@ class TestFunctionalController(TrackerTestController):
         assert_false('Page 1 of 1' in r)
         # add some more posts and check for pager
         for i in range(2):
-            r = self.app.post(f['action'].encode('utf-8'), params=params,
+            r = self.app.post(f['action'], params=params,
                               headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='1', limit='2'))
         assert_true('Page 2 of 2' in r)
@@ -1585,7 +1585,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
-        self.app.post(f['action'].encode('utf-8'), params=params,
+        self.app.post(f['action'], params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/feed.rss')
         post = M.Post.query.find().first()
@@ -2201,7 +2201,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
         r = self.app.get('/p/test2/bugs2/1/', dict(page='1'))
         assert_true(post_content in r)
@@ -2451,7 +2451,7 @@ class TestFunctionalController(TrackerTestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
-        self.app.post(f['action'].encode('utf-8'), params=params,
+        self.app.post(f['action'], params=params,
                       headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
