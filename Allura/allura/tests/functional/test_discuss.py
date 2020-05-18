@@ -83,7 +83,7 @@ class TestDiscuss(TestDiscussBase):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={str('Referer'): str(thread_link.encode("utf-8"))},
                           extra_environ=dict(username=str('root')))
         r = r.follow()
@@ -416,7 +416,7 @@ class TestAttachment(TestDiscussBase):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Test Post'
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
+        r = self.app.post(f['action'], params=params,
                           headers={str('Referer'): str(self.thread_link.encode('utf-8'))})
         r = r.follow()
         self.post_link = str(

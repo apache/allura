@@ -137,7 +137,7 @@ class TestBlogApi(TestRestApiBase):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='published')
         url = '/rest' + BM.BlogPost.query.find().first().url()
-        self.app.post(url.encode('utf-8'),
+        self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
                       extra_environ={'username': str('*anonymous')},
@@ -147,7 +147,7 @@ class TestBlogApi(TestRestApiBase):
         anon = M.ProjectRole.by_name('*anonymous')._id
         anon_write = M.ACE.allow(anon, 'write')
         acl.append(anon_write)
-        self.app.post(url.encode('utf-8'),
+        self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
                       extra_environ={'username': str('*anonymous')},
@@ -164,7 +164,7 @@ class TestBlogApi(TestRestApiBase):
                          extra_environ={'username': str('*anonymous')})
         assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
-        self.app.post(url.encode('utf-8'),
+        self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
                       extra_environ={'username': str('*anonymous')},
