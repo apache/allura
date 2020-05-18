@@ -31,7 +31,6 @@ from io import open
 from six.moves import range
 
 
-
 class TestDiscussBase(TestController):
 
     def _thread_link(self):
@@ -110,7 +109,7 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
                           params=params,
-                          headers={str('Referer'): str(thread_link.encode("utf-8"))})
+                          headers={str('Referer'): str(thread_link)})
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
@@ -124,10 +123,10 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
-                          headers={str('Referer'): str(post_link.encode("utf-8"))})
+                          headers={str('Referer'): str(post_link)})
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
-        permalinks = [post.find('form')['action'].encode('utf-8')
+        permalinks = [post.find('form')['action']
                       for post in r.html.findAll('div', {'class': 'edit_post_form reply'})]
         self.app.post(permalinks[1] + 'flag')
         self.app.post(permalinks[1] + 'moderate', params=dict(delete='delete'))
@@ -409,7 +408,7 @@ class TestAttachment(TestDiscussBase):
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
-        self.post_form_link = f['action'].encode('utf-8')
+        self.post_form_link = f['action']
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
@@ -417,7 +416,7 @@ class TestAttachment(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'], params=params,
-                          headers={str('Referer'): str(self.thread_link.encode('utf-8'))})
+                          headers={str('Referer'): str(self.thread_link)})
         r = r.follow()
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
