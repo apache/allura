@@ -292,7 +292,8 @@ class TestDiscuss(TestDiscussBase):
         r = self._make_post('Test post')
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
-        self.app.post(post_link + 'moderate', params=dict(spam='spam'))
+        r = self.app.post(post_link + 'moderate', params=dict(spam='spam'))
+        assert_equal(r.json, {"result": "success"})
         post = M.Post.query.find().first()
         post_username = post.author().username
         moderate_link = '/p/test/wiki/_discuss/moderate'
