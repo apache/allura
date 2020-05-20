@@ -674,8 +674,10 @@ class TestAuth(TestController):
         user = M.User.by_username('test-admin')
         assert_not_equal(old_pass, user.get_pref('password'))
 
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
     @td.with_user_project('test-admin')
-    def test_prefs(self):
+    def test_prefs(self, gen_message_id, sendsimplemail):
         r = self.app.get('/auth/preferences/',
                          extra_environ=dict(username=str('test-admin')))
         # check preconditions of test data
@@ -701,6 +703,11 @@ class TestAuth(TestController):
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
 
+        # assert 'email added' notification email sent
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
+        assert_equal(kwargs['subject'], 'New Email Address Added')
+
         # remove test-admin@users.localhost
         with td.audits('Email address deleted: test-admin@users.localhost', user=True):
             r = self.app.post('/auth/preferences/update_emails',
@@ -715,6 +722,12 @@ class TestAuth(TestController):
                                   'preferences.email_format': 'plain',
                                   '_session_id': self.app.cookies['_session_id'],
                               })
+
+        # assert 'remail removed' notification email sent
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
+        assert_equal(kwargs['subject'], 'Email Address Removed')
+
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified

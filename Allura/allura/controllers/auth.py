@@ -554,6 +554,7 @@ class PreferencesController(BaseController):
         addr = kw.pop('addr', None)
         new_addr = kw.pop('new_addr', None)
         primary_addr = kw.pop('primary_addr', None)
+        notify_addr = primary_addr
         provider = plugin.AuthenticationProvider.get(request)
         for i, (old_a, data) in enumerate(zip(user.email_addresses, addr or [])):
             obj = user.address_object(old_a)
@@ -572,6 +573,11 @@ class PreferencesController(BaseController):
                         primary_addr = None
                         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
+                email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md').render(dict(
+                    user=user,
+                    config=config,
+                ))
+                send_system_mail_to_user(notify_addr, 'Email Address Removed', email_body)
                 del user.email_addresses[i]
                 if obj:
                     obj.delete()
@@ -610,6 +616,11 @@ class PreferencesController(BaseController):
                         flash('A verification email has been sent.  Please check your email and click to confirm.')
 
                     h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
+                        user=user,
+                        config=config,
+                    ))
+                    send_system_mail_to_user(notify_addr, 'New Email Address Added', email_body)
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             else:
