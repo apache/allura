@@ -13,7 +13,7 @@ coverage==4.5.4
 docutils==0.15.2          # via sphinx
 idna==2.8                 # via requests
 imagesize==1.1.0          # via sphinx
-jinja2==2.10              # via sphinx
+jinja2==2.11.2            # via sphinx
 markupsafe==1.1.1         # via jinja2
 packaging==19.0           # via sphinx
 pip-tools==4.3.0
