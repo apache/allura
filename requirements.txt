@@ -36,7 +36,7 @@ gitdb2==2.0.4             # via gitpython
 gitpython==2.1.11
 gunicorn==19.5.0
 html5lib==1.0.1
-httplib2==0.13.1          # via oauth2
+httplib2==0.18.1          # via oauth2
 idna==2.8                 # via requests
 inflection==0.3.1         # via profanityfilter
 ipaddress==1.0.22         # via cryptography
