@@ -42,8 +42,8 @@
       <tr class="{{'deleted ' if page.deleted else ''}}{{loop.cycle('', 'even')}}">
         <td><a href="{{page.url|safe}}">{{page['title']}}</a></td>
       
-        {% if 'user_label' in page %}
-          <td>{{page['user_label']}} ({{page['user_name']}})</td>
+        {% if 'user_name' in page %}
+            <td><a href="/u/{{ page['user_name'] }}">{{page['user_name']}}</a></td>
         {% else %}
           <td></td>
         {% endif %}

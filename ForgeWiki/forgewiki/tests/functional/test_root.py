@@ -249,16 +249,16 @@ class TestRootController(TestController):
         response = self.app.get(h.urlquote('/wiki/tést/history'))
         assert 'tést' in response
         # two revisions are shown
-        assert '2 by Test Admin' in response
-        assert '1 by Test Admin' in response
+        assert '<td><a href="./?version=2">2</a> by <a href="/u/test-admin">test-admin</a></td>' in response
+        assert '1 by test-admin' in response.html.text
         # you can revert to an old revison, but not the current one
         assert response.html.find('a', {'data-dialog-id': '1'}), response.html
         assert not response.html.find('a', {'data-dialog-id': '2'})
         response = self.app.get(h.urlquote('/wiki/tést/history'),
                                 extra_environ=dict(username=str('*anonymous')))
         # two revisions are shown
-        assert '2 by Test Admin' in response
-        assert '1 by Test Admin' in response
+        assert '2 by test-admin' in response.html.text
+        assert '1 by test-admin' in response.html.text
         # you cannot revert to any revision
         assert not response.html.find('a', {'data-dialog-id': '1'})
         assert not response.html.find('a', {'data-dialog-id': '2'})
@@ -838,7 +838,7 @@ class TestRootController(TestController):
 
     def test_user_browse_page(self):
         r = self.app.get('/wiki/browse_pages/')
-        assert '<td>Test Admin (test-admin)</td>' in r
+        assert '<td><a href="/u/test-admin">test-admin</a></td>' in r
 
     def test_subscribe(self):
         user = M.User.query.get(username='test-user')
