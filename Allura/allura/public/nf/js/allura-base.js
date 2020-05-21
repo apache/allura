@@ -287,6 +287,9 @@ $(function(){
         content: 'Loading...',
         functionReady: function (instance, helper) {
             var userUrl = $(this).attr('href');
+            if($(this).data('user-url')){
+                userUrl = $(this).data('user-url');
+            }
             
             if(umProfileStore.hasOwnProperty(userUrl)){
                 displayUserCard(instance, umProfileStore[userUrl]);

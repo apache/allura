@@ -112,7 +112,7 @@
 {% macro user_link(user, avatar=False, size=16) -%}
     {% if user %}
         {% if not user.is_anonymous() %}
-            <a href="{{user.url()}}">
+            <a href="{{user.url()}}" class="user-mention">
                 {% if avatar %}
                     {{ gravatar_or_name(user, size) }}
                 {% else %}

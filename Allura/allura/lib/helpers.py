@@ -1284,3 +1284,14 @@ def emojize(text):
 def get_current_reaction(react_users_dict):
     """Return current selected reaction for given react_users dict"""
     return utils.get_key_from_value(react_users_dict, c.user.username)
+
+
+def user_project_url(username):
+    from allura.lib import plugin
+
+    class UserName:
+        def __init__(self, username):
+            self.username = username
+
+    auth_provider = plugin.AuthenticationProvider.get(request)
+    return auth_provider.user_project_url(UserName(username))
