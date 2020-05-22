@@ -19,7 +19,9 @@
 
 Hello {{ user.display_name }},
 
-A new email address has been added to your {{ config['site_name'] }} account "{{ user.username }}". This is a confirmation email, you are all set.
+A new email address was added to your {{ config['site_name'] }} account "{{ user.username }}":  
+
+* {{ addr }}
 
 {% block footer %}
 If you did not do this, please contact us immediately.

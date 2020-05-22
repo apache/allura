@@ -198,6 +198,11 @@ class AuthController(BaseController):
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
         user.set_tool_data('allura', pwd_reset_preserve_session=session.id)
         h.auditlog_user('Password changed (through recovery process)', user=user)
+        email_body = g.jinja2_env.get_template('allura:templates/mail/password_changed.md').render(dict(
+            user=user,
+            config=config
+        ))
+        send_system_mail_to_user(user, 'Password Changed', email_body)
         flash('Password changed')
         redirect('/auth/?return_to=/')  # otherwise the default return_to would be the forgotten_password referrer page
 
@@ -306,6 +311,12 @@ class AuthController(BaseController):
                 projectname = plugin.AuthenticationProvider.get(request).user_project_shortname(user)
                 n = M.Neighborhood.query.get(name='Users')
                 n.register_project(projectname, user=user, user_project=True)
+            email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
+                user=user,
+                config=config,
+                addr=addr.email
+            ))
+            send_system_mail_to_user(user, 'New Email Address Added', email_body)
         else:
             flash('Unknown verification link', 'error')
 
@@ -554,7 +565,7 @@ class PreferencesController(BaseController):
         addr = kw.pop('addr', None)
         new_addr = kw.pop('new_addr', None)
         primary_addr = kw.pop('primary_addr', None)
-        notify_addr = primary_addr
+        old_primary_addr = user.preferences.email_address
         provider = plugin.AuthenticationProvider.get(request)
         for i, (old_a, data) in enumerate(zip(user.email_addresses, addr or [])):
             obj = user.address_object(old_a)
@@ -576,8 +587,9 @@ class PreferencesController(BaseController):
                 email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md').render(dict(
                     user=user,
                     config=config,
+                    addr=user.email_addresses[i]
                 ))
-                send_system_mail_to_user(notify_addr, 'Email Address Removed', email_body)
+                send_system_mail_to_user(user, 'Email Address Removed', email_body)
                 del user.email_addresses[i]
                 if obj:
                     obj.delete()
@@ -616,11 +628,6 @@ class PreferencesController(BaseController):
                         flash('A verification email has been sent.  Please check your email and click to confirm.')
 
                     h.auditlog_user('New email address: %s', new_addr['addr'], user=user)
-                    email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
-                        user=user,
-                        config=config,
-                    ))
-                    send_system_mail_to_user(notify_addr, 'New Email Address Added', email_body)
                 else:
                     flash('Email address %s is invalid' % new_addr['addr'], 'error')
             else:
@@ -628,7 +635,7 @@ class PreferencesController(BaseController):
         if not primary_addr and not user.get_pref('email_address') and user.email_addresses:
             primary_addr = select_new_primary_addr(user)
         if primary_addr:
-            if user.get_pref('email_address') != primary_addr:
+            if old_primary_addr != primary_addr:
                 if not admin and (not kw.get('password') or not provider.validate_password(user, kw.get('password'))):
                     flash('You must provide your current password to change primary address', 'error')
                     return
@@ -637,6 +644,13 @@ class PreferencesController(BaseController):
                     user.get_pref('email_address'),
                     primary_addr,
                     user=user)
+                email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(dict(
+                    user=user,
+                    config=config,
+                    addr=primary_addr
+                ))
+                # send to previous primary addr
+                send_system_mail_to_user(old_primary_addr, 'Primary Email Address Changed', email_body)
             user.set_pref('email_address', primary_addr)
             user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
 

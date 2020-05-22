@@ -19,9 +19,9 @@
 
 Hello {{ user.display_name }},
 
-An email address was removed from your {{ config['site_name'] }} account "{{ user.username }}":  
+The primary email address on your {{ config['site_name'] }} account "{{ user.username }}" was changed to:  
 
-* {{ addr }} 
+* {{ addr }}
 
 {% block footer %}
 If you did not do this, please contact us immediately.

@@ -371,7 +371,6 @@ class TestAuth(TestController):
                                                           'Please check your email and click to confirm.'
 
         args, kwargs = sendsimplemail.post.call_args
-
         assert sendsimplemail.post.call_count == 1
         assert kwargs['toaddr'] == email_address
         assert kwargs['subject'] == '%s - Email address claim attempt' % config['site_name']
@@ -511,7 +510,9 @@ class TestAuth(TestController):
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
         assert not email.confirmed
 
-    def test_verify_addr_correct_session(self):
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_verify_addr_correct_session(self, gen_message_id, sendsimplemail):
         self.app.get('/').follow()  # establish session
         email_address = 'test_abcd@domain.net'
 
@@ -544,6 +545,11 @@ class TestAuth(TestController):
                          extra_environ=dict(username=str('test-user')))
         assert_in('confirmed', json.loads(self.webflash(r))['message'])
         assert_equal('ok', json.loads(self.webflash(r))['status'])
+
+        # assert 'email added' notification email sent
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(kwargs['toaddr'], user._id)
+        assert_equal(kwargs['subject'], 'New Email Address Added')
 
     @staticmethod
     def _create_password_reset_hash():
@@ -703,11 +709,6 @@ class TestAuth(TestController):
         user = M.User.query.get(username='test-admin')
         assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
 
-        # assert 'email added' notification email sent
-        args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
-        assert_equal(kwargs['subject'], 'New Email Address Added')
-
         # remove test-admin@users.localhost
         with td.audits('Email address deleted: test-admin@users.localhost', user=True):
             r = self.app.post('/auth/preferences/update_emails',
@@ -723,9 +724,9 @@ class TestAuth(TestController):
                                   '_session_id': self.app.cookies['_session_id'],
                               })
 
-        # assert 'remail removed' notification email sent
+        # assert 'email_removed' notification email sent
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
+        assert_equal(kwargs['toaddr'], user._id)
         assert_equal(kwargs['subject'], 'Email Address Removed')
 
         r = self.app.get('/auth/preferences/')
@@ -742,7 +743,9 @@ class TestAuth(TestController):
                               extra_environ=dict(username=str('test-admin')))
 
     @td.with_user_project('test-admin')
-    def test_email_prefs_change_requires_password(self):
+    @patch('allura.tasks.mail_tasks.sendsimplemail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_email_prefs_change_requires_password(self, gen_message_id, sendsimplemail):
         self.app.get('/').follow()  # establish session
         # Claim new email
         new_email_params = {
@@ -797,6 +800,11 @@ class TestAuth(TestController):
                           extra_environ=dict(username=str('test-admin')))
         assert_not_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test@example.com')
+
+        # assert 'email added' notification email sent using original primary addr
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
+        assert_equal(kwargs['subject'], 'Primary Email Address Changed')
 
         # Remove email
         remove_email_params = {
@@ -1601,7 +1609,7 @@ class TestPasswordReset(TestController):
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_password_reset(self, gen_message_id, sendmail):
+    def test_password_reset(self, gen_message_id, sendsimplemail):
         self.app.get('/').follow()  # establish session
         user = M.User.query.get(username='test-admin')
         email = M.EmailAddress.find({'claimed_by_user_id': user._id}).first()
@@ -1626,7 +1634,7 @@ class TestPasswordReset(TestController):
 To update your password on %s, please visit the following URL:
 
 %s/auth/forgotten_password/%s''' % (config['site_name'], config['base_url'], hash)
-        sendmail.post.assert_called_once_with(
+        sendsimplemail.post.assert_called_once_with(
             sender='noreply@localhost',
             toaddr=email.email,
             fromaddr='"{}" <{}>'.format(config['site_name'], config['forgemail.return_path']),
@@ -1645,6 +1653,11 @@ To update your password on %s, please visit the following URL:
         with td.audits('Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
+            
+        # verify 'Password Changed' email sent
+        args, kwargs = sendsimplemail.post.call_args
+        assert_equal(kwargs['toaddr'], user._id)
+        assert_equal(kwargs['subject'], 'Password Changed')
 
         # confirm password changed and works
         user = M.User.query.get(username='test-admin')
