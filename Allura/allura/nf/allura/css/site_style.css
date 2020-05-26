@@ -3274,6 +3274,11 @@ table thead tr th.narrow, table tr td.narrow {
   bottom: -5px;
   left: 45%;
 }
+/* allow long messages like SSH keys to wrap */
+.auditlog_message {
+    word-break: break-word;
+}
+
 ul.dropdown,
 ul.dropdown ul {
     list-style: none;
