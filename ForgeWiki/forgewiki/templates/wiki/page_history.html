@@ -48,7 +48,7 @@
         <tr data-version="{{ p.version }}" data-username="{{ p.author.username }}">
           <td>
               <a href="./?version={{ p.version }}">{{ p.version }}</a> by
-              <a href="{{ h.user_project_url(p.author.username) }}" class="user-mention">{{ p.author.username }}</a>
+              <a href="{{ h.username_project_url(p.author.username) }}" class="user-mention">{{ p.author.username }}</a>
           </td>
           <td>{{abbr_date(p.mod_date)}}</td>
           <td><input name="v1" type="radio" value="{{p.version}}"/></td>

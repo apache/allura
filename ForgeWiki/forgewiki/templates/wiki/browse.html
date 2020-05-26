@@ -43,7 +43,7 @@
         <td><a href="{{page.url|safe}}">{{page['title']}}</a></td>
       
         {% if 'user_name' in page %}
-            <td><a href="{{ h.user_project_url(page['user_name']) }}" class="user-mention">{{ page['user_name'] }}</a></td>
+            <td><a href="{{ h.username_project_url(page['user_name']) }}" class="user-mention">{{ page['user_name'] }}</a></td>
         {% else %}
           <td></td>
         {% endif %}

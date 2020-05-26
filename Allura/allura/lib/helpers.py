@@ -1286,12 +1286,28 @@ def get_current_reaction(react_users_dict):
     return utils.get_key_from_value(react_users_dict, c.user.username)
 
 
-def user_project_url(username):
+def username_project_url(user_or_username):
     from allura.lib import plugin
 
-    class UserName:
-        def __init__(self, username):
-            self.username = username
+    url = None
 
-    auth_provider = plugin.AuthenticationProvider.get(request)
-    return auth_provider.user_project_url(UserName(username))
+    if not user_or_username:
+        return url
+
+    if isinstance(user_or_username, six.string_types):
+        class UserName:
+            def __init__(self, username):
+                self.username = username
+        username = user_or_username
+        auth_provider = plugin.AuthenticationProvider.get(request)
+        try:
+            # in 99% of cases, we can get away without a DB lookup
+            url = auth_provider.user_project_url(UserName(username))
+        except AttributeError:
+            user = auth_provider.by_username(username)
+            url = user.url()
+    else:
+        user = user_or_username
+        url = user.url()
+
+    return url
