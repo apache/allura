@@ -301,6 +301,15 @@ class AuthController(BaseController):
                         return_to += '?' + request.environ['QUERY_STRING']
                     redirect(login_url, {'return_to': return_to})
 
+            if do_auth_check:
+                # don't send email when do_auth_check=False (e.g. admin panel move)
+                email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
+                    user=user,
+                    config=config,
+                    addr=addr.email
+                ))
+                send_system_mail_to_user(user, 'New Email Address Added', email_body)
+
             addr.confirmed = True
             flash('Email address confirmed')
             h.auditlog_user('Email address verified: %s',  addr.email, user=user)
@@ -311,12 +320,7 @@ class AuthController(BaseController):
                 projectname = plugin.AuthenticationProvider.get(request).user_project_shortname(user)
                 n = M.Neighborhood.query.get(name='Users')
                 n.register_project(projectname, user=user, user_project=True)
-            email_body = g.jinja2_env.get_template('allura:templates/mail/email_added.md').render(dict(
-                user=user,
-                config=config,
-                addr=addr.email
-            ))
-            send_system_mail_to_user(user, 'New Email Address Added', email_body)
+
         else:
             flash('Unknown verification link', 'error')
 
@@ -584,12 +588,13 @@ class PreferencesController(BaseController):
                         primary_addr = None
                         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 h.auditlog_user('Email address deleted: %s', user.email_addresses[i], user=user)
-                email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md').render(dict(
-                    user=user,
-                    config=config,
-                    addr=user.email_addresses[i]
-                ))
-                send_system_mail_to_user(user, 'Email Address Removed', email_body)
+                if not admin:
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/email_removed.md').render(dict(
+                        user=user,
+                        config=config,
+                        addr=user.email_addresses[i]
+                    ))
+                    send_system_mail_to_user(user, 'Email Address Removed', email_body)
                 del user.email_addresses[i]
                 if obj:
                     obj.delete()
@@ -644,13 +649,14 @@ class PreferencesController(BaseController):
                     user.get_pref('email_address'),
                     primary_addr,
                     user=user)
-                email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(dict(
-                    user=user,
-                    config=config,
-                    addr=primary_addr
-                ))
-                # send to previous primary addr
-                send_system_mail_to_user(old_primary_addr, 'Primary Email Address Changed', email_body)
+                if not admin:
+                    email_body = g.jinja2_env.get_template('allura:templates/mail/primary_email_changed.md').render(dict(
+                        user=user,
+                        config=config,
+                        addr=primary_addr
+                    ))
+                    # send to previous primary addr
+                    send_system_mail_to_user(old_primary_addr, 'Primary Email Address Changed', email_body)
             user.set_pref('email_address', primary_addr)
             user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
 
