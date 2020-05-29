@@ -261,7 +261,7 @@ class AuthenticationProvider(object):
         self.session.invalidate()
         self.session.save()
         response.delete_cookie('allura-loggedin')
-        response.set_cookie('memorable_forget', '/')
+        response.set_cookie('memorable_forget', '/', secure=request.environ['beaker.session'].secure)
 
     def validate_password(self, user, password):
         '''Check that provided password matches actual user password
@@ -1554,6 +1554,7 @@ class ThemeProvider(object):
         response.set_cookie(
             'site-notification',
             set_cookie,
+            secure=request.environ['beaker.session'].secure,
             max_age=timedelta(days=365))
         return note
 

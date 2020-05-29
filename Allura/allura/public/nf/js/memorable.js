@@ -264,7 +264,7 @@ Memorable.forget = function(key_prefix){
                 localStorage.removeItem(localStorage.key(i));
             }
         }
-        $.removeCookie('memorable_forget', { path: '/' });
+        $.removeCookie('memorable_forget', { path: '/', secure: top.location.protocol==='https:' ? true : false });
     }
 };
 

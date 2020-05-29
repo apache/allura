@@ -338,9 +338,11 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1-false'}
+        request.environ['beaker.session'].secure = False
+
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365))
+            'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365), secure=False)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -370,9 +372,11 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': '0ddba11-1000-true'}
+        request.environ['beaker.session'].secure = False
+
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -387,9 +391,10 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {}
+        request.environ['beaker.session'].secure = False
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -404,9 +409,11 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
+        request.environ['beaker.session'].secure = False
+
         assert_is(ThemeProvider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
-            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365))
+            'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
     @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
