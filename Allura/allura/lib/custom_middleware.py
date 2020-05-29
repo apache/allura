@@ -216,7 +216,7 @@ class CSRFMiddleware(object):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
                 headers.append(
                     (str('Set-cookie'),
-                     str('%s=%s; Path=/' % (self._cookie_name, cookie))))
+                     str('%s=%s; secure; Path=/' % (self._cookie_name, cookie))))
             return start_response(status, headers, exc_info)
 
         return self._app(environ, session_start_response)
