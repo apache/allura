@@ -180,7 +180,7 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
 
     def setUp(self):
         config = {
-            'ming.main.uri': 'mim://allura_test',
+            'ming.main.uri': 'mim://host/allura_test',
         }
         ming.configure(**config)
 
@@ -306,7 +306,7 @@ class TestMongodbRecoveryCodeService(TestAnyRecoveryCodeServiceImplementation):
 
     def setUp(self):
         config = {
-            'ming.main.uri': 'mim://allura_test',
+            'ming.main.uri': 'mim://host/allura_test',
         }
         ming.configure(**config)
 

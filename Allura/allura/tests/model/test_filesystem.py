@@ -46,8 +46,8 @@ class TestFile(TestCase):
 
     def setUp(self):
         config = {
-            'ming.main.uri': 'mim://allura',
-            'ming.project.uri': 'mim://project-data',
+            'ming.main.uri': 'mim://host/allura',
+            'ming.project.uri': 'mim://host/project-data',
         }
         ming.configure(**config)
         setup_unit_test()
