@@ -78,7 +78,7 @@ class TestChunkedIterator(unittest.TestCase):
     def setUp(self):
         setup_unit_test()
         config = {
-            'ming.main.uri': 'mim://allura_test',
+            'ming.main.uri': 'mim://host/allura_test',
         }
         ming.configure(**config)
         for i in range(10):
