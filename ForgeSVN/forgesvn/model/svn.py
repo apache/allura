@@ -392,7 +392,7 @@ class SVNImplementation(M.RepositoryImplementation):
         else:
             ci_doc = CommitDoc(dict(args, _id=oid))
             try:
-                ci_doc.m.insert(safe=True)
+                ci_doc.m.insert()
             except DuplicateKeyError:
                 if lazy:
                     return False
