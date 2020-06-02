@@ -6,7 +6,7 @@ chardet
 colander==1.7.0
 cryptography==2.6.1
 decorator
-EasyWidgets>=0.3.3
+EasyWidgets>=0.3.6
 emoji
 faulthandler ; python_version < "3.3"
 feedgenerator
