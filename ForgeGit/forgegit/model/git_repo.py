@@ -299,7 +299,7 @@ class GitImplementation(M.RepositoryImplementation):
         else:
             ci_doc = CommitDoc(dict(args, _id=ci.hexsha))
             try:
-                ci_doc.m.insert(safe=True)
+                ci_doc.m.insert()
             except DuplicateKeyError:
                 if lazy:
                     return False
@@ -330,7 +330,7 @@ class GitImplementation(M.RepositoryImplementation):
             else:
                 obj.type = o.type
                 doc.other_ids.append(obj)
-        doc.m.save(safe=False)
+        doc.m.save()
         return doc
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, limit=None, **kw):
