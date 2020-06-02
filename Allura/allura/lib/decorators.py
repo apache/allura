@@ -219,7 +219,7 @@ def memorable_forget():
         :param raised: any error (redirect or exception) raised by the controller action
         """
         if _ok_to_forget(response, controller_result, raised):
-            response.set_cookie('memorable_forget', request.path)
+            response.set_cookie('memorable_forget', request.path, secure=request.environ['beaker.session'].secure)
 
     @decorator
     def _inner(func, *args, **kwargs):

@@ -214,9 +214,10 @@ class CSRFMiddleware(object):
 
         def session_start_response(status, headers, exc_info=None):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
+                use_secure = 'secure; ' if environ['beaker.session'].secure else ''
                 headers.append(
                     (str('Set-cookie'),
-                     str('%s=%s; secure; Path=/' % (self._cookie_name, cookie))))
+                     str('%s=%s; %sPath=/' % (self._cookie_name, cookie, use_secure))))
             return start_response(status, headers, exc_info)
 
         return self._app(environ, session_start_response)

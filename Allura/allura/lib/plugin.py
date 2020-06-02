@@ -1554,6 +1554,7 @@ class ThemeProvider(object):
         response.set_cookie(
             'site-notification',
             set_cookie,
+            secure=request.environ['beaker.session'].secure,
             max_age=timedelta(days=365))
         return note
 
