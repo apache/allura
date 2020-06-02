@@ -344,7 +344,7 @@ class EnsureIndexCommand(base.Command):
     def _remove_dupes(self, collection, spec):
         iname = collection.create_index(spec)
         fields = [f[0] for f in spec]
-        q = collection.find({}, fields=fields).sort(spec)
+        q = collection.find({}, projection=fields).sort(spec)
 
         def keyfunc(doc):
             return tuple(doc.get(f, None) for f in fields)
