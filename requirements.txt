@@ -4,99 +4,99 @@
 #
 #    pip-compile
 #
-activitystream==0.3.0
+activitystream==0.3.0     # via -r requirements.in
 asn1crypto==0.24.0        # via cryptography
-backlash==0.1.4
+backlash==0.1.4           # via -r requirements.in
 backports.functools-lru-cache==1.5  # via soupsieve
 backports.shutil-get-terminal-size==1.0.0  # via ipython
-beaker==1.10.1
-beautifulsoup4==4.8.0
+beaker==1.10.1            # via -r requirements.in
+beautifulsoup4==4.8.0     # via -r requirements.in, webtest
 bleach==3.1.4             # via pypeline
 certifi==2019.6.16        # via requests
 cffi==1.12.2              # via cryptography
-chardet==3.0.4
-colander==1.7.0
+chardet==3.0.4            # via -r requirements.in, requests
+colander==1.7.0           # via -r requirements.in
 crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
-cryptography==2.6.1
-datadiff==2.0.0
-decorator==4.4.0
+cryptography==2.6.1       # via -r requirements.in
+datadiff==2.0.0           # via -r requirements.in
+decorator==4.4.0          # via -r requirements.in, ipython, traitlets
 docutils==0.15.2          # via pypeline
-easywidgets==0.3.5
-emoji==0.5.3
+easywidgets==0.3.6        # via -r requirements.in
+emoji==0.5.3              # via -r requirements.in
 enum34==1.1.6             # via colander, cryptography, traitlets
-faulthandler==3.1 ; python_version < "3.3"
-feedgenerator==1.9.1
-feedparser==5.2.1
-formencode==1.3.1
+faulthandler==3.1 ; python_version < "3.3"  # via -r requirements.in
+feedgenerator==1.9.1      # via -r requirements.in
+feedparser==5.2.1         # via -r requirements.in
+formencode==1.3.1         # via -r requirements.in, easywidgets, ming
 funcsigs==1.0.2           # via beaker, mock
 future==0.17.1            # via timermiddleware
 genshi==0.7.3             # via creoleparser
 gitdb2==2.0.4             # via gitpython
-gitpython==2.1.11
-gunicorn==19.5.0
-html5lib==1.0.1
+gitpython==2.1.11         # via -r requirements.in
+gunicorn==19.5.0          # via -r requirements.in
+html5lib==1.0.1           # via -r requirements.in, pypeline, textile
 httplib2==0.18.1          # via oauth2
 idna==2.8                 # via requests
 inflection==0.3.1         # via profanityfilter
 ipaddress==1.0.22         # via cryptography
 ipython-genutils==0.2.0   # via traitlets
-ipython==5.8.0
+ipython==5.8.0            # via -r requirements.in
 iso8601==0.1.12           # via colander
-jinja2==2.11.2
-markdown-checklist==0.4.1
-markdown==2.6.11
-markupsafe==1.1.1
-ming==0.5.7
-mock==3.0.5
-nose==1.3.7
-oauth2==1.9.0.post1
+jinja2==2.11.2            # via -r requirements.in
+markdown-checklist==0.4.1  # via -r requirements.in
+markdown==2.6.11          # via -r requirements.in, markdown-checklist, pypeline
+markupsafe==1.1.1         # via -r requirements.in, easywidgets, jinja2, turbogears2, webhelpers2
+ming==0.5.7               # via -r requirements.in
+mock==3.0.5               # via -r requirements.in
+nose==1.3.7               # via -r requirements.in
+oauth2==1.9.0.post1       # via -r requirements.in
 oauthlib==3.0.2           # via requests-oauthlib
-paginate==0.5.6
-paste==3.1.0
-pastedeploy==2.0.1
-pastescript==3.1.0
+paginate==0.5.6           # via -r requirements.in
+paste==3.1.0              # via -r requirements.in, easywidgets, pastescript
+pastedeploy==2.0.1        # via -r requirements.in, pastescript
+pastescript==3.1.0        # via -r requirements.in
 pathlib2==2.3.4           # via ipython, pickleshare
 pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pillow==6.2.2
-profanityfilter==2.0.6
+pillow==6.2.2             # via -r requirements.in
+profanityfilter==2.0.6    # via -r requirements.in
 prompt-toolkit==1.0.16    # via ipython
 ptyprocess==0.6.0         # via pexpect
 pycparser==2.19           # via cffi
-pyflakes==2.1.1
-pygments==2.4.2
-pymongo==2.8.1
-pypeline[creole,markdown,rst,textile]==0.5.2
-pysolr==3.6.0
-python-dateutil==2.8.0
-python-magic==0.4.15
-python-oembed==0.2.4
-pytz==2019.1
-qrcode==6.1
+pyflakes==2.1.1           # via -r requirements.in
+pygments==2.4.2           # via -r requirements.in, ipython
+pymongo==2.8.1            # via -r requirements.in, activitystream, ming
+pypeline[creole,markdown,rst,textile]==0.5.2  # via -r requirements.in
+pysolr==3.6.0             # via -r requirements.in
+python-dateutil==2.8.0    # via -r requirements.in, easywidgets
+python-magic==0.4.15      # via -r requirements.in
+python-oembed==0.2.4      # via -r requirements.in
+pytz==2019.1              # via -r requirements.in, feedgenerator, ming
+qrcode==6.1               # via -r requirements.in
 repoze.lru==0.7           # via turbogears2
-requests-oauthlib==1.2.0
-requests==2.22.0
+requests-oauthlib==1.2.0  # via -r requirements.in
+requests==2.22.0          # via -r requirements.in, pysolr, requests-oauthlib
 scandir==1.10.0           # via pathlib2
-setproctitle==1.1.9
+setproctitle==1.1.9       # via -r requirements.in
 simplegeneric==0.8.1      # via ipython
-six==1.12.0
+six==1.15.0               # via -r requirements.in, bleach, creoleparser, cryptography, easywidgets, feedgenerator, html5lib, ming, mock, paste, pastescript, pathlib2, prompt-toolkit, python-dateutil, qrcode, textile, traitlets, webhelpers2, webtest
 smmap2==2.0.4             # via gitdb2
 soupsieve==1.9.3          # via beautifulsoup4
-testfixtures==6.10.0
+testfixtures==6.10.0      # via -r requirements.in
 textile==3.0.4            # via pypeline
-timermiddleware==0.5.1
+timermiddleware==0.5.1    # via -r requirements.in
 traitlets==4.3.2          # via ipython
 translationstring==1.3    # via colander
-turbogears2==2.3.12
+turbogears2==2.3.12       # via -r requirements.in
 urllib3==1.25.8           # via requests
 waitress==1.4.3           # via webtest
 wcwidth==0.1.7            # via prompt-toolkit
 webencodings==0.5.1       # via bleach, html5lib
-webhelpers2==2.0
-webob==1.7.4
-webtest==2.0.33
-wrapt==1.11.2
+webhelpers2==2.0          # via -r requirements.in
+webob==1.7.4              # via -r requirements.in, backlash, easywidgets, timermiddleware, turbogears2, webtest
+webtest==2.0.33           # via -r requirements.in
+wrapt==1.11.2             # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
