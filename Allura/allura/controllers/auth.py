@@ -388,6 +388,7 @@ class AuthController(BaseController):
 
         if 'multifactor-username' not in session:
             tg.flash('Your multifactor login was disrupted, please start over.', 'error')
+            plugin.AuthenticationProvider.get(request).logout()  # clears all cookies that might be interfering
             redirect('/auth/', {'return_to': kwargs.get('return_to', '')})
 
         user = M.User.by_username(session['multifactor-username'])
