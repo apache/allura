@@ -218,7 +218,8 @@ $(function(){
         cookie = cookie.replace(new RegExp(note_id + '-([0-9]+)-False'), note_id + '-$1-True');
         $.cookie('site-notification', cookie, {
             expires: 365,
-            path: '/'
+            path: '/',
+            secure: top.location.protocol==='https:' ? true : false
         });
         e.preventDefault();
         return false;

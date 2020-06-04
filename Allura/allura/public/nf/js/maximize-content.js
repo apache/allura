@@ -25,7 +25,7 @@ $(document).ready(function () {
     $('#maximize-content, #restore-content').click(function (e) {
         $('body').toggleClass('content-maximized');
         var is_visible = $(".content-maximized").is(":visible") ? 'true' : 'false';
-        $.cookie('maximizeView', is_visible);
+        $.cookie('maximizeView', is_visible, {secure: true});
 
         e.preventDefault();
         return false;
