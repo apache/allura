@@ -152,7 +152,6 @@ class patch_middleware_config(object):
 
     def __exit__(self, exc_type, exc_val, exc_t):
         allura.config.middleware.make_app = self._make_app
-        return self
 
 
 @contextlib.contextmanager
