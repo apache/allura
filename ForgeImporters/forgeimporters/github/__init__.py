@@ -260,5 +260,7 @@ class GitHubOAuthMixin(object):
         if not token:
             return False
         r = access_token_details(token)
+        if r.status_code == 404:
+            return False
         scopes = r.json()['scopes']
         return scope in scopes

@@ -48,6 +48,7 @@ class TestGitHubOAuthMixin(TestController, TestCase):
     @patch('forgeimporters.github.requests')
     def test_oauth_has_access_no(self, req):
         c.user.get_tool_data.return_value = 'some-token'
+        req.post.return_value = Mock(status_code=404, json=Mock(return_value={}))
         self.assertFalse(self.mix.oauth_has_access('write:repo_hook'))
         call_args = req.post.call_args[0]
         self.assertEqual(call_args, ('https://api.github.com/applications/123456/token',))
