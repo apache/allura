@@ -82,7 +82,7 @@ def test_pull_rss_feeds(parsefeed):
         "foo bar\n"
         "</p>\n"
         "\n"
-        "<p>#foo bar <a href='baz'>\n"
+        "<p>#foo bar <a href='http://other.com/baz'>\n"
         "baz\n"
         "</a></p>\n"
     )
@@ -90,9 +90,10 @@ def test_pull_rss_feeds(parsefeed):
     rendered_html_content = "\n".join([
         r"1\. foo",
         "",
-        r"\#foo bar [baz](baz) foo bar ",
+        r"\#foo bar [baz](http://example.com/baz) foo bar",
         "",
-        r"\#foo bar [ baz ](baz)",
+        r"\#foo bar [ baz ](http://other.com/baz)",
+        "",
         " [link](http://example.com/)",
     ])
 

@@ -74,7 +74,7 @@ Export ticket data from a Trac instance''')
 class TracExport(object):
 
     PAGE_SIZE = 100
-    TICKET_URL = 'ticket/%d'
+    TICKET_URL = 'ticket/%s'
     QUERY_MAX_ID_URL = 'query?col=id&order=id&desc=1&max=2'
     QUERY_BY_PAGE_URL = 'query?col=id&col=time&col=changetime&order=id&max=' + \
         str(PAGE_SIZE) + '&page=%d'
@@ -171,6 +171,7 @@ class TracExport(object):
         ticket['description'] = html2text.html2text(
             desc.renderContents('utf8').decode('utf8')) if desc else ''
         comments = []
+        relative_base_url = six.moves.urllib.parse.urlparse(self.full_url(self.TICKET_URL % '')).path
         for comment in d.findAll('form', action='#comment'):
             c = {}
             c['submitter'] = re.sub(
@@ -180,6 +181,7 @@ class TracExport(object):
             changes = six.text_type(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
+            body = body.replace('href="{}'.format(relative_base_url), 'href="')  # crude way to rewrite ticket links
             c['comment'] = html2text.html2text(changes + body)
             c['class'] = 'COMMENT'
             comments.append(c)

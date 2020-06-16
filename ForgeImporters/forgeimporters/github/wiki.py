@@ -334,7 +334,7 @@ class GitHubWikiImporter(ToolImporter):
             if html2text:
                 text = html2text.html2text(text)
                 text = self.convert_gollum_tags(text)
-            text = text.replace('<notextile>', '').replace('</notextile>', '')
+            text = text.replace('<notextile>', '').replace('< notextile>', '').replace('</notextile>', '')
             text = text.replace('&#60;notextile&#62;', '').replace(
                 '&#60;/notextile&#62;', '')
             text = text.replace('&lt;notextile&gt;', '').replace(

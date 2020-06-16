@@ -426,6 +426,7 @@ Our website is [[http://domain.net]].
   * [Test2](/p/test/wiki/AgentSpring conventions)
   * [Test3](/p/test/wiki/AgentSpring Q&A)
   * [Test4](/p/test/wiki/Extensions)
+
 '''
 
         assert_equal(f(source, 'test.mediawiki'), result)
@@ -486,13 +487,14 @@ See [Page]'''
   1. Duplicate libraries regularly break builds
   2. Subtle bugs emerge with duplicate libraries, and to a lesser extent, duplicate tools
   3. We want you to try harder to make your formula work with what OS X comes with
+
 '''
 
         assert_equal(f(source, 'test.textile'), result)
 
         # textile-style links converts normal
         source = '*"Textile":Troubleshooting*'
-        result = '**[Textile](Troubleshooting)**\n'
+        result = '**[Textile](Troubleshooting)**\n\n'
         assert_equal(f(source, 'test2.textile'), result)
 
         # links with formatting converts normal in textile now
@@ -507,6 +509,7 @@ some text and *[[Tips n' Tricks]]*
 some text and **[Tips n\u2019 Tricks]**
 
 **[link](http://otherlink.com)**
+
 '''
         assert_equal(f(source, 'test3.textile'), result)
 

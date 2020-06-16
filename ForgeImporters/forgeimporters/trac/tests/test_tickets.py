@@ -269,7 +269,7 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
         csv_fp = open(os.path.dirname(__file__) + '/data/test-list.csv')
         html_fp = open(os.path.dirname(__file__) + '/data/test-list.html')
         with patch.object(TracExport, 'next_ticket_ids', return_value=[(390, {})]):
-            te = TracExport('url', do_attachments=False)
+            te = TracExport('http://somesite.com/apps/trac/open-ms/', do_attachments=False)
             te.exhausted = True
             te.csvopen = lambda s: csv_fp
         with patch('allura.scripts.trac_export.urlopen', return_value=html_fp):
@@ -284,6 +284,6 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
                                      ticket_num=390)
         self.assertIn('To reproduce:  \n\\- open an mzML file',
                       ticket.description)
-        self.assertIn('duplicate of:  \n\\- [#316](316)',
+        self.assertIn('duplicate of:  \n\\- [#316](316 "defect: SpectraViewWidget is',
                       ticket.discussion_thread.find_posts()[0].text)
         self.assertIn('will crash TOPPView.', ticket.description)
