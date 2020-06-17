@@ -65,8 +65,8 @@ def mediawiki2markdown(source):
         from mediawiki import wiki2html
     except ImportError:
         raise ImportError("""This operation requires GPL libraries:
-        "mediawiki" (https://github.com/zikzakmedia/python-mediawiki.git)
-        "html2text" (https://github.com/aaronsw/html2text.git)""")
+        "mediawiki" (https://pypi.org/project/mediawiki2html/)
+        "html2text" (https://pypi.org/project/html2text/)""")
 
     html2text.BODY_WIDTH = 0
 

@@ -5,8 +5,7 @@
 html2text==2019.8.11  # last to support py2
 
 # for ForgeWiki's mediawiki importer:
--e git://github.com/zikzakmedia/python-mediawiki.git#egg=python-mediawiki   # GPL
-MySQL-python  # GPL
+mediawiki2html  # GPL
 
 # for spam checking
 akismet==1.0.1
