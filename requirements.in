@@ -20,8 +20,10 @@ Markdown<3
 markdown-checklist==0.4.1
 MarkupSafe
 Ming==0.5.7
-# oauth2 doesn't have py3.6 support.  There's a fork with fixes but no pypi releases I can find.  https://github.com/joestump/python-oauth2/issues/223
-oauth2
+# TODO: move to "oauthlib" instead
+# oauth2 doesn't have a release with py3.6 support, but does have fixes on master:
+# archive/.../.zip URL is preferable over git+https://... since it supports pip hash generating+checking
+https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
 paginate
 Paste
 PasteDeploy
