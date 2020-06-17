@@ -16,7 +16,7 @@ imagesize==1.1.0          # via sphinx
 jinja2==2.11.2            # via sphinx
 markupsafe==1.1.1         # via jinja2
 packaging==19.0           # via sphinx
-pip-tools==4.3.0
+pip-tools==5.2.1
 pygments==2.4.2           # via sphinx
 pyparsing==2.4.0          # via packaging
 pytz==2019.1              # via babel
