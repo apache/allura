@@ -19,7 +19,7 @@ Jinja2
 Markdown<3
 markdown-checklist==0.4.1
 MarkupSafe
-Ming==0.5.7
+Ming==0.10.1
 # TODO: move to "oauthlib" instead
 # oauth2 doesn't have a release with py3.6 support, but does have fixes on master:
 # archive/.../.zip URL is preferable over git+https://... since it supports pip hash generating+checking
@@ -32,7 +32,7 @@ Pillow
 # profanity filter for feedback
 profanityfilter==2.0.6
 Pygments
-pymongo==2.8.1
+pymongo==3.10.1
 Pypeline[creole,markdown,textile,rst]
 pysolr==3.6.0
 python-dateutil
