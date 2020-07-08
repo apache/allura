@@ -645,6 +645,7 @@ class StatsController(object):
 class AdminUserDetailsController(object):
 
     @expose('jinja:allura:templates/site_admin_user_details.html')
+    @without_trailing_slash
     def _default(self, username, limit=25, page=0):
         user = M.User.by_username(username)
         if not user or user.is_anonymous():
