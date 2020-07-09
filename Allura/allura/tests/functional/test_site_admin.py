@@ -448,7 +448,7 @@ class TestUsersSearch(TestController):
 class TestUserDetails(TestController):
 
     def test_404(self):
-        self.app.get('/nf/admin/user/does-not-exist/', status=404)
+        self.app.get('/nf/admin/user/does-not-exist', status=404)
 
     def test_general_info(self):
         user = M.User.by_username('test-admin')
@@ -459,7 +459,7 @@ class TestUserDetails(TestController):
                             'session_date': dt.datetime(2014, 9, 12, 6, 6, 6),
                             'session_ua': 'browser of the future 1.1',
                             'session_ip': '7.7.7.7'}
-        r = self.app.get('/nf/admin/user/test-admin/')
+        r = self.app.get('/nf/admin/user/test-admin')
         # general info
         assert_in('Username: test-admin', r)
         assert_in('Full name: Test Admin', r)
