@@ -464,10 +464,18 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         '''
         If this is a user-project, return the User, else None
         '''
+        return self.get_userproject_user()
+
+    def get_userproject_user(self, include_disabled=False):
+        '''
+        If this is a user-project, return the User, else None
+        '''
         user = None
         if self.is_user_project:
-            user = plugin.AuthenticationProvider.get(
-                request).user_by_project_shortname(self.shortname[2:])
+            user = plugin.AuthenticationProvider.get(request).user_by_project_shortname(
+                self.shortname[2:],  # strip leading u/ prefix
+                include_disabled=include_disabled,
+            )
         return user
 
     @LazyProperty

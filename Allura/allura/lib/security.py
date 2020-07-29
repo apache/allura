@@ -498,7 +498,14 @@ def require_authenticated():
 
 
 def is_site_admin(user):
+    '''
+    :param allura.model.User user:
+    :rtype: bool
+    '''
     from allura.lib import helpers as h
+
+    if user.is_anonymous():
+        return False
 
     with h.push_context(tg.config.get('site_admin_project', 'allura'),
                         neighborhood=tg.config.get('site_admin_project_nbhd', 'Projects')):

@@ -331,8 +331,11 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
         return project, (pname,) + remainder  # include pname in new remainder, it is actually the nbhd tool path
     if project and prefix == 'u/':
         # make sure user-projects are associated with an enabled user
-        user = project.user_project_of
-        if not user or user.disabled or user.pending:
+        is_site_admin = h.is_site_admin(c.user)
+        user = project.get_userproject_user(include_disabled=is_site_admin)
+        if not user or user.pending:
+            raise exc.HTTPNotFound
+        if user.disabled and not is_site_admin:
             raise exc.HTTPNotFound
         if not api and user.url() != '/{}{}/'.format(prefix, pname):
             # might be different URL than the URL requested

@@ -938,8 +938,7 @@ class TestNeighborhood(TestController):
     def test_profile_tools(self):
         r = self.app.get('/u/test-user/',
                          extra_environ=dict(username=str('test-user'))).follow()
-        assert r.html.find('div', 'profile-section tools').find(
-            'a', href='/u/test-user/profile/'), r.html
+        assert r.html.select('div.profile-section.tools a[href="/u/test-user/profile/"]'), r.html
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)
@@ -951,7 +950,9 @@ class TestNeighborhood(TestController):
         self.app.get('/u/donald-duck/')  # assert it's there
         M.User.query.update(dict(username='donald-duck'),
                             {'$set': {'disabled': True}})
-        self.app.get('/u/donald-duck/', status=404)
+        self.app.get('/u/donald-duck/', status=404, extra_environ={'username': str('*anonymous')})
+        self.app.get('/u/donald-duck/', status=404, extra_environ={'username': str('test-user')})
+        self.app.get('/u/donald-duck/', status=302, extra_environ={'username': str('test-admin')})  # site admin user
 
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')

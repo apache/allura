@@ -58,9 +58,8 @@ class TestActivityController(TestController):
     def test_anon_read(self):
         r = self.app.get('/u/test-user-1',
                 extra_environ={'username': str('*anonymous')}).follow().follow()
-        assert r.html.find('div', 'profile-section tools').find('a',
-                dict(href='/u/test-user-1/activity/')), \
-                        'No Activity tool in top nav'
+        assert r.html.select('div.profile-section.tools a[href="/u/test-user-1/activity/"]'),\
+            'No Activity tool in top nav'
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')

@@ -44,7 +44,14 @@
         <form action='/nf/admin/user/set_status' method="POST">
           Account Status:<br>
             <label><input type="radio" name="status" value="enable"{% if status == 'enabled' %} checked="checked"{% endif %}>Enabled</label><br>
-            <label><input type="radio" name="status" value="disable"{% if status == 'disabled' %} checked="checked"{% endif %}>Disabled</label><br>
+            <label><input type="radio" name="status" value="disable"{% if status == 'disabled' %} checked="checked"{% endif %}>
+                {%- if status == 'disabled' -%}
+                    <strong>Disabled</strong>
+                    (see Audit Log below)
+                {%- else -%}
+                    Disabled
+                {%- endif -%}
+            </label><br>
             <label><input type="radio" name="status" value="pending"{% if status == 'pending' %} checked="checked"{% endif %}>Pending</label>
           <input type='hidden' name='username' value='{{ user.username }}'>
           {{lib.csrf_token()}}
@@ -152,6 +159,13 @@
             <li><a href="{{ p.url() }}">{{p.name}}</a>
                 <span class="spacer">&ndash;</span>
                 <a href="{{ p.url() }}admin/">Admin</a>
+                {% if not p.is_root %}
+                    (subproject)
+                {% elif p.is_user_project %}
+                    (user profile project)
+                {% elif p.is_nbhd_project %}
+                    (neighborhood)
+                {% endif %}
             </li>
           {% endfor %}
         </ul>
