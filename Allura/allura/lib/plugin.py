@@ -363,7 +363,7 @@ class AuthenticationProvider(object):
         # default implementation for any providers that haven't implemented this newer method yet
         return '/{}/'.format(self.user_project_shortname(user))
 
-    def user_by_project_shortname(self, shortname):
+    def user_by_project_shortname(self, shortname, include_disabled=False):
         '''
         :param str: shortname
         :rtype: user: a :class:`User <allura.model.auth.User>`
@@ -592,12 +592,17 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         # (nbhd_lookup_first_path will figure it out)
         return '/u/{}/'.format(user.username)
 
-    def user_by_project_shortname(self, shortname):
+    def user_by_project_shortname(self, shortname, include_disabled=False):
         from allura import model as M
-        user = M.User.query.get(username=shortname, disabled=False, pending=False)
+        filters = {
+            'pending': False,
+        }
+        if not include_disabled:
+            filters['disabled'] = False
+        user = M.User.query.get(username=shortname, **filters)
         if not user and '-' in shortname:
             # try alternate version in case username & user-project shortname differ - see user_project_shortname()
-            user = M.User.query.get(username=shortname.replace('-', '_'), disabled=False, pending=False)
+            user = M.User.query.get(username=shortname.replace('-', '_'), **filters)
         return user
 
     def update_notifications(self, user):
@@ -797,8 +802,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
     def user_project_shortname(self, user):
         return LocalAuthenticationProvider(None).user_project_shortname(user)
 
-    def user_by_project_shortname(self, shortname):
-        return LocalAuthenticationProvider(None).user_by_project_shortname(shortname)
+    def user_by_project_shortname(self, shortname, **kwargs):
+        return LocalAuthenticationProvider(None).user_by_project_shortname(shortname, **kwargs)
 
     def user_registration_date(self, user):
         # could read this from an LDAP field?

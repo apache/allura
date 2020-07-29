@@ -47,6 +47,20 @@
 {% block top_nav %}{# disabled #}{% endblock %}
 
 {% block content_base %}
+  {% if h.is_site_admin(c.user) %}
+    {# maybe could be a regular user profile "section" but would need a way to make it conditionally display #}
+    <div class="profile-section tools">
+        <h3 style="background: darkorange">Site Admin</h3>
+        <div class="section-body">
+            <ul>
+                <li><a href="/nf/admin/user/{{ user.username }}">Admin details page for {{ user.username }}</a></li>
+                {% if user.disabled %}
+                    <li>User is <strong>DISABLED</strong>. <span style="color:darkorange">This page is only visible because you are a site admin.  Everyone else gets a 404 error page.</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+  {% endif %}
   {% for section in sections %}
     {{ section.display() }}
   {% endfor %}

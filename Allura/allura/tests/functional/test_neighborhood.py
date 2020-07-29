@@ -951,7 +951,9 @@ class TestNeighborhood(TestController):
         self.app.get('/u/donald-duck/')  # assert it's there
         M.User.query.update(dict(username='donald-duck'),
                             {'$set': {'disabled': True}})
-        self.app.get('/u/donald-duck/', status=404)
+        self.app.get('/u/donald-duck/', status=404, extra_environ={'username': str('*anonymous')})
+        self.app.get('/u/donald-duck/', status=404, extra_environ={'username': str('test-user')})
+        self.app.get('/u/donald-duck/', status=302, extra_environ={'username': str('test-admin')})  # site admin user
 
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')

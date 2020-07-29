@@ -72,7 +72,7 @@ from allura.lib import exceptions as exc
 from allura.lib import utils
 
 # import to make available to templates, don't delete:
-from .security import has_access, is_allowed_by_role
+from .security import has_access, is_allowed_by_role, is_site_admin
 
 
 log = logging.getLogger(__name__)

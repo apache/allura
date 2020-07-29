@@ -272,6 +272,9 @@ class SiteAdminController(object):
         objects = []
         limit, page, start = g.handle_paging(limit, page, default=25)
         if q:
+            if f in ('username', 'shortname'):
+                # these are always lowercase, so search by lowercase
+                q = q.lower()
             match = search.site_admin_search(model, q, f, rows=limit, start=start)
             if match:
                 count = match.hits
