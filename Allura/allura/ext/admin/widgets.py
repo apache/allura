@@ -159,6 +159,7 @@ class FeaturesField(ew.CompoundField):
         yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
         yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
+
 class MetadataAdmin(ff.AdminForm):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/metadata_admin.html'
     defaults = dict(
@@ -206,8 +207,11 @@ class MetadataAdmin(ff.AdminForm):
         icon = ew.FileField(label='Icon', attrs={'accept': 'image/*'},
                             validator=V.IconValidator())
         external_homepage = ew.InputField(field_type="text", label='Homepage',
+                                          attrs={'type': 'url'},
                                           validator=fev.URL(add_http=True))
         video_url = ew.InputField(field_type="text", label="Video (YouTube)",
+                                  attrs={'type': 'url',
+                                         'title': 'Paste in a Youtube URL', 'class': 'tooltip'},
                                   validator=V.YouTubeConverter())
         support_page = ew.InputField(field_type="text", label='Support Page')
         support_page_url = ew.InputField(
