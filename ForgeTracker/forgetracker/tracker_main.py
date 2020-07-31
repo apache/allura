@@ -1184,7 +1184,7 @@ class BinController(BaseController, AdminControllerMixin):
             # Search threw an error.
             # Save the error on the bin object for displaying
             # in the template.
-            setattr(bin, 'error', str(e))
+            bin.error = str(e)
             # Expunge the bin object so we don't save the
             # errant search terms to mongo.
             M.session.artifact_orm_session.expunge(bin)
@@ -1248,7 +1248,7 @@ class BinController(BaseController, AdminControllerMixin):
                             # Search threw an error.
                             # Save the error on the bin object for displaying
                             # in the template.
-                            setattr(bin, 'error', str(e))
+                            bin.error = str(e)
                             errors = True
                             # Expunge the bin object so we don't save the
                             # errant search terms to mongo.

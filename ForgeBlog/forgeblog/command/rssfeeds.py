@@ -131,7 +131,7 @@ class RssFeedsCommand(base.BlogCommand):
         else:
             content = plain2markdown(getattr(e, 'summary',
                                              getattr(e, 'subtitle',
-                                                     getattr(e, 'title'))))
+                                                     e.title)))
 
         content += ' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(calendar.timegm(e.updated_parsed))
