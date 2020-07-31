@@ -207,11 +207,9 @@ class MetadataAdmin(ff.AdminForm):
         icon = ew.FileField(label='Icon', attrs={'accept': 'image/*'},
                             validator=V.IconValidator())
         external_homepage = ew.InputField(field_type="text", label='Homepage',
-                                          attrs={'type': 'url'},
                                           validator=fev.URL(add_http=True))
         video_url = ew.InputField(field_type="text", label="Video (YouTube)",
-                                  attrs={'type': 'url',
-                                         'title': 'Paste in a Youtube URL', 'class': 'tooltip'},
+                                  attrs={'title': 'Paste in a Youtube URL', 'class': 'tooltip'},
                                   validator=V.YouTubeConverter())
         support_page = ew.InputField(field_type="text", label='Support Page')
         support_page_url = ew.InputField(
