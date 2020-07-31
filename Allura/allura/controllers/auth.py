@@ -427,7 +427,7 @@ class AuthController(BaseController):
             return '%s does not include a repo mount point' % repo_path
         h.set_context(project.shortname,
                       rest[0], neighborhood=project.neighborhood)
-        if c.app is None or not getattr(c.app, 'repo'):
+        if c.app is None or not getattr(c.app, 'repo', None):
             return 'Cannot find repo at %s' % repo_path
         allura.tasks.repo_tasks.refresh.post()
         return '%r refresh queued.\n' % c.app.repo

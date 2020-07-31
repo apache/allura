@@ -47,7 +47,7 @@ class TestTracImportController(TestController):
         assert r.status_int == 302 and '/p/my-project' in r.location, \
             'Did not redirect as expected (status {} location {}).  Got a flash message: {} and inline errors: {}'.format(
                 r.status_int,
-                getattr(r, 'location'),
+                r.location,
                 self.webflash(r),
                 hasattr(r, 'html') and r.html.find('div', {'class': 'error'})
             )
