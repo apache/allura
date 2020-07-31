@@ -66,7 +66,7 @@ class WebhookValidator(fev.FancyValidator):
         else:
             try:
                 wh = M.Webhook.query.get(_id=ObjectId(value))
-            except:
+            except Exception:
                 pass
         if wh and wh.type == self.sender.type and wh.app_config_id == self.app.config._id:
             return wh

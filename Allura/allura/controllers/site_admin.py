@@ -164,7 +164,7 @@ class SiteAdminController(object):
 
             try:
                 ok = self.subscribe_artifact(url, user)
-            except:
+            except Exception:
                 log.warn("Can't subscribe to artifact", exc_info=True)
                 ok = False
 

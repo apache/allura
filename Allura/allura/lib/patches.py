@@ -43,7 +43,7 @@ def apply():
         '''Wrapper to handle totally borked-up HTTP-ACCEPT headers'''
         try:
             return old_lookup_template_engine(self, request)
-        except:
+        except Exception:
             pass
         environ = dict(request.environ, HTTP_ACCEPT='*/*')
         request = webob.Request(environ)

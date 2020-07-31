@@ -328,7 +328,7 @@ class PermissionCache(object):
         uname = self._uid_cache.get(uid)
         try:
             entry = self._api_lookup(uname, path)
-        except:
+        except Exception:
             entry = 0
             log.exception('Error checking access for %s', path)
         self._save_result(uid, path, entry)

@@ -51,7 +51,7 @@ def proctitle(title):
         setproctitle(title)
         yield
         setproctitle(orig_title)
-    except:
+    except Exception:
         setproctitle(orig_title)
         raise
 

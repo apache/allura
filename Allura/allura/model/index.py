@@ -102,7 +102,7 @@ class ArtifactReference(object):
             cls = loads(six.binary_type(aref.cls))
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
-        except:
+        except Exception:
             log.exception('Error loading artifact for %s: %r',
                           self._id, aref)
 

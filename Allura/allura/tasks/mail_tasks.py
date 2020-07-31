@@ -104,7 +104,7 @@ def route_email(
                             c.app.handle_message(userpart, msg)
             except exc.MailError as e:
                 log.error('Error routing email to %s: %s', addr, e)
-            except:
+            except Exception:
                 log.exception('Error routing mail to %s', addr)
 
 
@@ -173,7 +173,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
                 if not user:
                     log.warning('Cannot find user with ID: %s', addr)
                     continue
-            except:
+            except Exception:
                 log.exception('Error looking up user with ID: %r' % addr)
                 continue
             addr = user.email_address_header()

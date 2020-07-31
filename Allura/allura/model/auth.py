@@ -612,7 +612,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         icon_url = None
         try:
             private_project = self.private_project()
-        except:
+        except Exception:
             log.warn('Error getting/creating user-project for %s',
                      self.username, exc_info=True)
             private_project = None

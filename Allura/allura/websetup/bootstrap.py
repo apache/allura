@@ -81,7 +81,7 @@ def bootstrap(command, conf, vars):
     wipe_database()
     try:
         g.solr.delete(q='*:*')
-    except:  # pragma no cover
+    except Exception:  # pragma no cover
         log.error('SOLR server is %s', g.solr_server)
         log.error('Error clearing solr index')
 
@@ -296,7 +296,7 @@ def wipe_database():
                 log.info('Dropping collection %s:%s', database, coll)
                 try:
                     db.drop_collection(coll)
-                except:
+                except Exception:
                     pass
 
 

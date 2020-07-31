@@ -95,7 +95,7 @@ class IndexerSessionExtension(ManagedSessionExtension):
             try:
                 if arg:
                     task.post(arg)
-            except:
+            except Exception:
                 log.error('Error calling %s', task.__name__)
 
     def after_flush(self, obj=None):

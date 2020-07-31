@@ -122,7 +122,7 @@ class RefreshRepo(ScriptTask):
                         else:
                             c.app.repo.refresh(
                                 options.all, notify=options.notify, commits_are_new=options.commits_are_new)
-                    except:
+                    except Exception:
                         log.exception('Error refreshing %r', c.app.repo)
             ThreadLocalORMSession.flush_all()
 

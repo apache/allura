@@ -88,7 +88,7 @@ class ResettableStream(object):
     def seek(self, pos):
         self._read_header()
         if self.stream_pos > self.buf_len:
-            assert False, 'Started reading stream body, cannot reset pos'
+            raise AssertionError('Started reading stream body, cannot reset pos')
         self.buf.seek(pos)
         self.buf_pos = pos
 

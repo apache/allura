@@ -142,7 +142,7 @@ def tarball(revision, path):
         else:
             try:
                 repo.tarball(revision, path)
-            except:
+            except Exception:
                 log.error(
                     'Could not create snapshot for repository: %s:%s revision %s path %s' %
                     (c.project.shortname, c.app.config.options.mount_point, revision, path), exc_info=True)

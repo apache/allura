@@ -127,7 +127,7 @@ class RefreshLastCommits(ScriptTask):
                         new_commit_ids = app.repo.unknown_commit_ids()
                         if len(new_commit_ids) > 0:
                             refresh.post()
-                    except:
+                    except Exception:
                         log.exception('Error refreshing %r', c.app.repo)
                         raise
                     finally:

@@ -162,7 +162,7 @@ def create_user(json_username):
                 False)
             session(M.User).flush()
             break
-        except:
+        except Exception:
             raise
     return allura_username
 

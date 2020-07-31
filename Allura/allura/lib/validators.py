@@ -95,7 +95,7 @@ class Ming(fev.FancyValidator):
         if result is None:
             try:
                 result = self.cls.query.get(_id=ObjectId(value))
-            except:
+            except Exception:
                 pass
         return result
 
@@ -320,7 +320,7 @@ class UserMapJsonFile(JsonFile):
                 if not(isinstance(k, six.string_types) and isinstance(v, six.string_types)):
                     raise
             return json.dumps(value) if self.as_string else value
-        except:
+        except Exception:
             raise fe.Invalid(
                 'User map file must contain mapping of {str:str, ...}',
                 value, state)
@@ -439,7 +439,7 @@ def convertDate(datestring):
         try:
             date = datetime.strptime(datestring, f)
             return date
-        except:
+        except Exception:
             pass
     return None
 
@@ -451,7 +451,7 @@ def convertTime(timestring):
         try:
             time = datetime.strptime(timestring, f)
             return {'h': time.hour, 'm': time.minute}
-        except:
+        except Exception:
             pass
     return None
 
