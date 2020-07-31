@@ -83,7 +83,7 @@ class TestGitUserPermissions(TestController):
             username=username), **kw)
         try:
             return r.json
-        except:
+        except Exception:
             return r
 
     @with_git

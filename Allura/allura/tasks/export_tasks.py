@@ -109,7 +109,7 @@ class BulkExport(object):
                       app.project.shortname, exc_info=True)
             try:
                 os.remove(json_file)
-            except:
+            except Exception:
                 pass
             return None
         else:

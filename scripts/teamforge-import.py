@@ -124,7 +124,7 @@ def main():
             return
         try:
             nbhd = M.Neighborhood.query.get(name=options.neighborhood)
-        except:
+        except Exception:
             log.exception('error querying mongo')
             log.error(
                 'This should be run as "paster script production.ini ../scripts/teamforge-import.py -- ...options.."')
@@ -164,13 +164,13 @@ def main():
                     check_unsupported_tools(project)
                 with codecs.open(os.path.join(options.output_dir, 'users.json'), 'w', encoding='utf-8') as user_file:
                     json.dump(users, user_file, default=str)
-            except:
+            except Exception:
                 log.exception('Error extracting %s' % pid)
 
         if options.load:
             try:
                 project = create_project(pid, nbhd)
-            except:
+            except Exception:
                 log.exception('Error creating %s' % pid)
 
 

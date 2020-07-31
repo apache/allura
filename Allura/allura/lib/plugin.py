@@ -665,39 +665,36 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
         # full registration into LDAP
         uid = str(M.AuthGlobals.get_next_uid()).encode('utf-8')
+        con = ldap_conn()
+        uname = user_doc['username'].encode('utf-8')
+        display_name = user_doc['display_name'].encode('utf-8')
+        ldif_u = modlist.addModlist(dict(
+            uid=uname,
+            userPassword=self._encode_password(user_doc['password']),
+            objectClass=[b'account', b'posixAccount'],
+            cn=display_name,
+            uidNumber=uid,
+            gidNumber=b'10001',
+            homeDirectory=b'/home/' + uname,
+            loginShell=b'/bin/bash',
+            gecos=uname,
+            description=b'SCM user account'))
         try:
-            con = ldap_conn()
-            uname = user_doc['username'].encode('utf-8')
-            display_name = user_doc['display_name'].encode('utf-8')
-            ldif_u = modlist.addModlist(dict(
-                uid=uname,
-                userPassword=self._encode_password(user_doc['password']),
-                objectClass=[b'account', b'posixAccount'],
-                cn=display_name,
-                uidNumber=uid,
-                gidNumber=b'10001',
-                homeDirectory=b'/home/' + uname,
-                loginShell=b'/bin/bash',
-                gecos=uname,
-                description=b'SCM user account'))
-            try:
-                con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
-            except ldap.ALREADY_EXISTS:
-                log.exception('Trying to create existing user %s', uname)
-                raise
-            con.unbind_s()
-
-            if asbool(config.get('auth.ldap.use_schroot', True)):
-                argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
-                    config['auth.ldap.schroot_name'], user_doc['username'])).split()
-                p = subprocess.Popen(
-                    argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                rc = p.wait()
-                if rc != 0:
-                    log.error('Error creating home directory for %s',
-                              user_doc['username'])
-        except:
+            con.add_s(ldap_user_dn(user_doc['username']), ldif_u)
+        except ldap.ALREADY_EXISTS:
+            log.exception('Trying to create existing user %s', uname)
             raise
+        con.unbind_s()
+
+        if asbool(config.get('auth.ldap.use_schroot', True)):
+            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
+                config['auth.ldap.schroot_name'], user_doc['username'])).split()
+            p = subprocess.Popen(
+                argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            rc = p.wait()
+            if rc != 0:
+                log.error('Error creating home directory for %s',
+                          user_doc['username'])
         return result
 
     def upload_sshkey(self, username, pubkey):
@@ -713,7 +710,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             errmsg = p.stdout.read()
             log.exception('Error uploading public SSH key for %s: %s',
                           username, errmsg)
-            assert False, errmsg
+            raise AssertionError(errmsg)
 
     def _get_salt(self, length):
         def random_char():
@@ -948,7 +945,7 @@ class ProjectRegistrationProvider(object):
                 apps=[
                     ('Wiki', 'wiki', 'Wiki'),
                     ('admin', 'admin', 'Admin')])
-        except:
+        except Exception:
             ThreadLocalORMSession.close_all()
             log.exception('Error registering project %s' % p)
             raise

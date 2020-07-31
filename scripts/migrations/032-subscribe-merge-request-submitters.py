@@ -35,7 +35,7 @@ def main():
                 print('Processing {0}'.format(mr.url()))
                 mr.subscribe(user=mr.creator)
                 ThreadLocalORMSession.flush_all()
-            except:
+            except Exception:
                 log.exception('Error on %s', mr)
 
 

@@ -123,7 +123,7 @@ def setup_unit_test():
     try:
         while True:
             REGISTRY.cleanup()
-    except:
+    except Exception:
         pass
     REGISTRY.prepare()
     REGISTRY.register(ew.widget_context,

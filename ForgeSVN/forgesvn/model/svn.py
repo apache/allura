@@ -431,7 +431,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     id=self._tree_oid(commit._id, path),
                     name=path))
             else:
-                assert False
+                raise AssertionError()
             lcd_entries.append(dict(
                 name=path,
                 commit_id=self._oid(info.last_changed_rev.number),

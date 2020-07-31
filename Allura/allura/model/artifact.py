@@ -579,7 +579,7 @@ class VersionedArtifact(Artifact):
         '''Save off a snapshot of the artifact and increment the version #'''
         try:
             ip_address = utils.ip_address(request)
-        except:
+        except Exception:
             ip_address = '0.0.0.0'
         data = dict(
             artifact_id=self._id,

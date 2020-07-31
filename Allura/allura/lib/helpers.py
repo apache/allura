@@ -685,7 +685,7 @@ def twophase_transaction(*engines):
             to_rollback.append(txn)
         for txn in txns:
             txn.commit()
-    except:
+    except Exception:
         for txn in to_rollback:
             txn.rollback()
         raise

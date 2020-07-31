@@ -284,7 +284,7 @@ class ForgeTrackerApp(Application):
             ticket = TM.Ticket.query.get(
                 app_config_id=self.config._id,
                 ticket_num=int(topic))
-        except:
+        except Exception:
             log.exception('Error getting ticket %s', topic)
             return
         if not ticket:

@@ -1182,7 +1182,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     kwargs['posts_limit'] = posts_limit
                 try:
                     parents_json.update(parent.__json__(self, is_export=is_export, **kwargs))
-                except:
+                except Exception:
                     parents_json.update(parent.__json__(self, **kwargs))
 
         return dict(parents_json,

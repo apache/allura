@@ -295,7 +295,7 @@ class SMTPClient(object):
                 config.return_path,
                 smtp_addrs,
                 content)
-        except:
+        except Exception:
             self._connect()
             self._client.sendmail(
                 config.return_path,

@@ -29,7 +29,7 @@ def event(event_type, *args, **kwargs):
     for t in event_handler.listeners[event_type]:
         try:
             t(event_type, *args, **kwargs)
-        except:
+        except Exception:
             exceptions.append(sys.exc_info())
     if exceptions:
         if len(exceptions) == 1:

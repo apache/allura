@@ -66,7 +66,7 @@ def main():
             else:
                 print("Error posting {0} to {1}: {2} (project may not exist)".format(page_json['title'], to_url, resp[0]['status']))
                 break
-        except:
+        except Exception:
             print("Error processing " + p)
             raise
 

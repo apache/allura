@@ -131,7 +131,7 @@ class ReindexCommand(base.Command):
                             try:
                                 M.ArtifactReference.from_artifact(a)
                                 M.Shortlink.from_artifact(a)
-                            except:
+                            except Exception:
                                 base.log.exception(
                                     'Making ArtifactReference/Shortlink from %s', a)
                                 continue

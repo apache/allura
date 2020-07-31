@@ -218,7 +218,7 @@ class GitImplementation(M.RepositoryImplementation):
                     bare=True)
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
-        except:
+        except Exception:
             self._repo.set_status('ready')
             raise
 
@@ -236,7 +236,7 @@ class GitImplementation(M.RepositoryImplementation):
                 try:
                     from tg import request
                     url = ' at ' + request.url
-                except:
+                except Exception:
                     pass
                 log.exception('Error with rev_parse(%s)%s' %
                               (str(rev) + '^0', url))

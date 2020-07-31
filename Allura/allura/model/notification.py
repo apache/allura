@@ -231,7 +231,7 @@ class Notification(MappedClass):
                                          config=config, data=artifact, post=post, h=h))
         except jinja2.TemplateNotFound:
             pass
-        except:
+        except Exception:
             ''' Catch any errors loading or rendering the template,
             but the notification still gets sent if there is an error
             '''
@@ -559,7 +559,7 @@ class Mailbox(MappedClass):
                      })
                 # Make sure the mbox doesn't stick around to be flush()ed
                 session(mbox).expunge(mbox)
-            except:
+            except Exception:
                 # log error but try to keep processing, lest all the other eligible
                 # mboxes for this notification get skipped and lost forever
                 log.exception(
@@ -596,7 +596,7 @@ class Mailbox(MappedClass):
         for mbox in take_while_true(find_and_modify_direct_mbox):
             try:
                 mbox.fire(now)
-            except:
+            except Exception:
                 log.exception(
                     'Error firing mbox: %s with queue: [%s]', str(mbox._id), ', '.join(mbox.queue))
                 # re-raise so we don't keep (destructively) trying to process
@@ -648,7 +648,7 @@ class Mailbox(MappedClass):
                         key = (n.subject, n.from_address,
                                n.reply_to_address, n.author_id)
                         ngroups[key].append(n)
-                except:
+                except Exception:
                     # log error but keep trying to deliver other notifications,
                     # lest the other notifications (which have already been removed
                     # from the mobx's queue in mongo) be lost
@@ -663,7 +663,7 @@ class Mailbox(MappedClass):
                     else:
                         Notification.send_digest(
                             self.user_id, from_address, subject, ns, reply_to_address)
-                except:
+                except Exception:
                     # log error but keep trying to deliver other notifications,
                     # lest the other notifications (which have already been removed
                     # from the mobx's queue in mongo) be lost

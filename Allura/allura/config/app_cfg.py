@@ -93,7 +93,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
                 bcc = FileSystemBytecodeCache(pattern='__jinja2_{}_%s.cache'.format(jinja2.__version__))
-        except:
+        except Exception:
             log.exception("Error encountered while setting up a" +
                           " %s-backed bytecode cache for Jinja" % cache_type)
         return bcc

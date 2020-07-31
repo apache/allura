@@ -198,7 +198,7 @@ class ForgeDiscussionApp(Application):
             l.append(
                 SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax'))
             return l
-        except:  # pragma no cover
+        except Exception:  # pragma no cover
             log.exception('sidebar_menu')
             return []
 
