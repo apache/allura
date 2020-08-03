@@ -938,8 +938,7 @@ class TestNeighborhood(TestController):
     def test_profile_tools(self):
         r = self.app.get('/u/test-user/',
                          extra_environ=dict(username=str('test-user'))).follow()
-        assert r.html.find('div', 'profile-section tools').find(
-            'a', href='/u/test-user/profile/'), r.html
+        assert r.html.select('div.profile-section.tools a[href="/u/test-user/profile/"]'), r.html
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)
