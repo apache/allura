@@ -539,6 +539,7 @@ I'm not here'''
                 message)
             assert_equal(hm.call_count, 0)
 
+
 class TestUserNotificationTasks(TestController):
     def setUp(self):
         super(TestUserNotificationTasks, self).setUp()
@@ -568,6 +569,7 @@ class TestUserNotificationTasks(TestController):
         assert_in('Your name was mentioned at [foo]', text)
         assert_in('by Test Admin', text)
         assert_in('auth/subscriptions#notifications', text)
+
 
 class TestNotificationTasks(unittest.TestCase):
 

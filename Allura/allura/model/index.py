@@ -167,10 +167,14 @@ class Shortlink(object):
                     links_by_artifact[unquote(d['artifact'])].append(d)
                 else:
                     result[link] = parsed_links.pop(link)
-            q = cls.query.find(dict(
-                link={'$in': list(links_by_artifact.keys())},
-                project_id={'$in': list(project_ids)}
-            ), validate=False)
+            q = cls.query.find(
+                dict(
+                    link={'$in': list(links_by_artifact.keys())},
+                    project_id={'$in': list(project_ids)}
+                ),
+                validate=False,
+                sort=[('_id', pymongo.DESCENDING)],  # if happen to be multiple (ticket move?) have newest first
+            )
             matches_by_artifact = dict(
                 (link, list(matches))
                 for link, matches in groupby(q, key=lambda s: unquote(s.link)))
