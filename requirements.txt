@@ -47,7 +47,7 @@ jinja2==2.11.2            # via -r requirements.in
 markdown-checklist==0.4.1  # via -r requirements.in
 markdown==2.6.11          # via -r requirements.in, markdown-checklist, pypeline
 markupsafe==1.1.1         # via -r requirements.in, easywidgets, jinja2, turbogears2, webhelpers2
-ming==0.10.1              # via -r requirements.in
+ming==0.10.2              # via -r requirements.in
 mock==3.0.5               # via -r requirements.in
 nose==1.3.7               # via -r requirements.in
 https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2  # via -r requirements.in

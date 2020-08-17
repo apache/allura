@@ -19,7 +19,7 @@ Jinja2
 Markdown<3
 markdown-checklist==0.4.1
 MarkupSafe
-Ming==0.10.1
+Ming==0.10.2
 # TODO: move to "oauthlib" instead
 # oauth2 doesn't have a release with py3.6 support, but does have fixes on master:
 # archive/.../.zip URL is preferable over git+https://... since it supports pip hash generating+checking
