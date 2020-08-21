@@ -20,6 +20,7 @@ Administration
 **************
 
 .. contents::
+   :depth: 2
    :local:
 
 .. _site-admin-interface:
@@ -183,6 +184,13 @@ taskd
 .. program-output:: paster taskd development.ini --help
 
 
+task
+-----
+
+.. program-output:: paster task development.ini --help | fmt -s -w 95
+   :shell:
+
+
 taskd_cleanup
 -------------
 
@@ -273,6 +281,16 @@ create_sitemap_files.py
     :func: get_parser
     :prog: paster script development.ini allura/scripts/create_sitemap_files.py --
 
+
+clear_old_notifications.py
+--------------------------
+
+*Can be run as a background task using task name:* :code:`allura.scripts.clear_old_notifications.ClearOldNotifications`
+
+.. argparse::
+    :module: allura.scripts.clear_old_notifications
+    :func: get_parser
+    :prog: paster script development.ini allura/scripts/clear_old_notifications.py --
 
 publicize-neighborhood.py
 -------------------------
@@ -423,9 +441,3 @@ Illustrates creating a new ticket, using the simple OAuth Bearer token.
     :func: get_parser
     :prog: python scripts/new_ticket.py
 
-
-wiki-post.py
-------------
-
-.. program-output:: python ../../scripts/wiki-post.py --help | sed 's/Usage: /Usage: python scripts\//'
-    :shell:
