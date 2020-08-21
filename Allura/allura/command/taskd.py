@@ -18,6 +18,8 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
+
+import re
 import logging
 import os
 import time
@@ -168,12 +170,25 @@ class TaskCommand(base.Command):
     summary = 'Task command'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-s', '--state', dest='state', default='ready',
-                      help='state of processes to examine')
+                      help='state of processes for "list" subcommand.  * means all')
     parser.add_option('-t', '--timeout', dest='timeout', type=int, default=60,
                       help='timeout (in seconds) for busy tasks')
+    parser.add_option('--filter-name-prefix', dest='filter_name_prefix', default=None,
+                      help='limit to task names starting with this.  Example allura.tasks.index_tasks.')
+    parser.add_option('--filter-result-regex', dest='filter_result_regex', default=None,
+                      help='limit to tasks with result matching this regex.  Example "pysolr"')
     min_args = 2
     max_args = None
-    usage = '<ini file> [list|retry|purge|timeout|commit]'
+    usage = '''<ini file> [list|retry|purge|timeout|commit]
+
+    list: list tasks with given --state value
+    retry: re-run tasks with error state
+    purge: remove all "complete" tasks with result_type "forget" (which is the default)
+    timeout: retry all busy tasks older than --timeout seconds (does not stop existing task)
+    commit: run a solr 'commit' as a background task
+
+    All subcommands except 'commit' can use the --filter-... options.
+    '''
 
     def command(self):
         self.basic_setup()
@@ -186,6 +201,15 @@ class TaskCommand(base.Command):
             commit=self._commit)
         tab[cmd]()
 
+    def _add_filters(self, q):
+        if self.options.filter_name_prefix:
+            q['task_name'] = {'$regex': r'^{}.*'.format(re.escape(self.options.filter_name_prefix))}
+        if self.options.filter_result_regex:
+            q['result'] = {'$regex': self.options.filter_result_regex}
+        if self.verbose:
+            print(q)
+        return q
+
     def _list(self):
         '''List tasks'''
         from allura import model as M
@@ -194,6 +218,7 @@ class TaskCommand(base.Command):
             q = dict()
         else:
             q = dict(state=self.options.state)
+        q = self._add_filters(q)
         for t in M.MonQTask.query.find(q):
             print(t)
 
@@ -201,8 +226,10 @@ class TaskCommand(base.Command):
         '''Retry tasks in an error state'''
         from allura import model as M
         base.log.info('Retry tasks in error state')
+        q = dict(state='error')
+        q = self._add_filters(q)
         M.MonQTask.query.update(
-            dict(state='error'),
+            q,
             {'$set': dict(state='ready')},
             multi=True)
 
@@ -210,8 +237,9 @@ class TaskCommand(base.Command):
         '''Purge completed tasks'''
         from allura import model as M
         base.log.info('Purge complete/forget tasks')
-        M.MonQTask.query.remove(
-            dict(state='complete', result_type='forget'))
+        q = dict(state='complete', result_type='forget')
+        q = self._add_filters(q)
+        M.MonQTask.query.remove(q)
 
     def _timeout(self):
         '''Reset tasks that have been busy too long to 'ready' state'''
@@ -219,7 +247,15 @@ class TaskCommand(base.Command):
         base.log.info('Reset tasks stuck for %ss or more',
                       self.options.timeout)
         cutoff = datetime.utcnow() - timedelta(seconds=self.options.timeout)
-        M.MonQTask.timeout_tasks(cutoff)
+        q = dict(
+            state='busy',
+            time_start={'$lt': cutoff},
+        )
+        q = self._add_filters(q)
+        M.MonQTask.query.update(
+            q,
+            {'$set': dict(state='ready')},
+            multi=True)
 
     def _commit(self):
         '''Schedule a SOLR commit'''

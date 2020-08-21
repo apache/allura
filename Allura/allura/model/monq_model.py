@@ -217,20 +217,6 @@ class MonQTask(MappedClass):
                 return None
 
     @classmethod
-    def timeout_tasks(cls, older_than):
-        '''Mark all busy tasks older than a certain datetime as 'ready' again.
-        Used to retry 'stuck' tasks.'''
-        spec = dict(state='busy')
-        spec['time_start'] = {'$lt': older_than}
-        cls.query.update(spec, {'$set': dict(state='ready')}, multi=True)
-
-    @classmethod
-    def clear_complete(cls):
-        '''Delete the task objects for complete tasks'''
-        spec = dict(state='complete')
-        cls.query.remove(spec)
-
-    @classmethod
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
         i = 0

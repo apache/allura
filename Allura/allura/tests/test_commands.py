@@ -280,6 +280,14 @@ class TestTaskCommand(object):
         exit_code = taskd.TaskCommand('task').run([test_config, 'list'])
         assert_equal(exit_code, 0)
 
+    def test_retry(self):
+        exit_code = taskd.TaskCommand('task').run([
+            test_config, 'retry',
+            '--filter-name-prefix', 'allura.tasks.index_tasks.',
+            '--filter-result-regex', 'pysolr',
+        ])
+        assert_equal(exit_code, 0)
+
 
 class TestTaskdCleanupCommand(object):
 
