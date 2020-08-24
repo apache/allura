@@ -51,12 +51,14 @@ class TestFeedback(TestController):
 
     def test_create_feedback(self):
         resp = post_feedback(self)
+        resp = resp.follow()
         assert_in('Good tool', resp)
 
     def test_edit_feedback(self):
         post_feedback(self)
         data = {'rating': '2', 'description': 'Not useful'}
         resp = self.app.post('/p/test/feedback/edit_user_review', data)
+        resp = resp.follow()
         assert_in('Not useful', resp)
 
     def test_delete_feedback(self):
