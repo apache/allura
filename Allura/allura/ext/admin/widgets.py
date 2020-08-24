@@ -186,10 +186,7 @@ class MetadataAdmin(ff.AdminForm):
                                        'class': 'tooltip',
                                        })
         short_description = ew.TextArea(label='Full Description',
-                                        validator=formencode.All(
-                                            V.UnicodeString(max=1000),
-                                            V.MaxBytesValidator(max=1000),
-                                            ),
+                                        validator=V.UnicodeString(max=1000),
                                         attrs={
                                             'title': 'Describe the full functionality of your project using related keywords. The first sentence has the most impact on search. Provide unique content that calls out keywords and describes the merits of your project.',
                                             'class': 'tooltip'
