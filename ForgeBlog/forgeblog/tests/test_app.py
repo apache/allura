@@ -82,7 +82,7 @@ class TestBulkExport(object):
             post2.make_slug()
             post2.commit()
 
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         blog.bulk_export(f)
         f.seek(0)
         blog = json.loads(f.read())
@@ -116,7 +116,7 @@ class TestBulkExport(object):
             p = post.discussion_thread.add_post(text='test comment')
             p.add_multiple_attachments(test_file1)
             ThreadLocalORMSession.flush_all()
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         temp_dir = tempfile.mkdtemp()
         blog.bulk_export(f, temp_dir, True)
         f.seek(0)

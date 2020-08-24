@@ -64,7 +64,7 @@ class TestBulkExport(TestDiscussionApiBase):
 
         project = M.Project.query.get(shortname='test')
         discussion = project.app_instance('discussion')
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         discussion.bulk_export(f)
         f.seek(0)
         discussion = json.loads(f.read())
@@ -100,7 +100,7 @@ class TestBulkExport(TestDiscussionApiBase):
         post.add_attachment(test_file1)
         ThreadLocalORMSession.flush_all()
 
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         temp_dir = tempfile.mkdtemp()
         discussion.bulk_export(f, temp_dir, True)
         f.seek(0)

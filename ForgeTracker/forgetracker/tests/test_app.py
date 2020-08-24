@@ -111,7 +111,7 @@ class TestBulkExport(TrackerTestController):
         # Besides, core functionality shouldn't need the c context vars
         c.app = c.project = None
 
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         self.tracker.bulk_export(f)
         f.seek(0)
         tracker = json.loads(f.read())
@@ -141,7 +141,7 @@ class TestBulkExport(TrackerTestController):
 
     def test_export_with_attachments(self):
 
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         temp_dir = tempfile.mkdtemp()
         self.tracker.bulk_export(f, temp_dir, True)
         f.seek(0)

@@ -69,7 +69,7 @@ class TestBulkExport(object):
         # Besides, it's better not to need c context vars
         c.app = c.project = None
 
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         self.wiki.bulk_export(f)
         f.seek(0)
         wiki = json.loads(f.read())
@@ -102,7 +102,7 @@ class TestBulkExport(object):
     def test_bulk_export_with_attachmetns(self):
         self.add_page_with_attachmetns()
         temp_dir = tempfile.mkdtemp()
-        f = tempfile.TemporaryFile(dir=temp_dir)
+        f = tempfile.TemporaryFile('w+', dir=temp_dir)
         self.wiki.bulk_export(f, temp_dir, True)
         f.seek(0)
         wiki = json.loads(f.read())
@@ -116,7 +116,7 @@ class TestBulkExport(object):
     def test_bulk_export_without_attachments(self):
         self.add_page_with_attachmetns()
         temp_dir = tempfile.mkdtemp()
-        f = tempfile.TemporaryFile(dir=temp_dir)
+        f = tempfile.TemporaryFile('w+', dir=temp_dir)
         self.wiki.bulk_export(f, temp_dir)
         f.seek(0)
         wiki = json.loads(f.read())

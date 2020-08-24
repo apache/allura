@@ -42,7 +42,7 @@ class TestBulkExport(object):
         project = M.Project.query.get(shortname='test')
         link = project.app_instance('link')
         link.config.options['url'] = 'http://domain.net'
-        f = tempfile.TemporaryFile()
+        f = tempfile.TemporaryFile('w+')
         link.bulk_export(f)
         f.seek(0)
         assert_equal(json.loads(f.read())['url'], 'http://domain.net')
