@@ -23,6 +23,8 @@ import operator
 import shutil
 import sys
 import unittest
+
+import six
 from base64 import b64encode
 import logging
 import pkg_resources
@@ -143,9 +145,6 @@ class TestEventTasks(unittest.TestCase):
         assert M.MonQTask.query.get(task_name='allura.tasks.event_tasks.event', args=['my_event4'])
 
     def test_compound_error(self):
-        '''test_compound_exception -- make sure our multi-exception return works
-        OK
-        '''
         t = raise_exc.post()
         with LogCapture(level=logging.ERROR) as l, \
                 mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
@@ -153,8 +152,8 @@ class TestEventTasks(unittest.TestCase):
         # l.check() would be nice, but string is too detailed to check
         assert_equal(l.records[0].name, 'allura.model.monq_model')
         msg = l.records[0].getMessage()
-        assert_in("AssertionError('assert 0',)", msg)
-        assert_in("AssertionError('assert 5',)", msg)
+        assert_in("AssertionError('assert 0'", msg)
+        assert_in("AssertionError('assert 5'", msg)
         assert_in(' on job <MonQTask ', msg)
         assert_in(' (error) P:10 allura.tests.test_tasks.raise_exc ', msg)
         for x in range(10):
@@ -297,16 +296,16 @@ class TestMailTasks(unittest.TestCase):
             assert_in('Reply-To: %s' % g.noreply, body)
 
             # The address portion must not be encoded, only the name portion can be.
-            # Also it is apparently not necessary to have the double-quote separators present
-            # when the name portion is encoded.  That is, the encoding below is
-            # just По and not "По"
-            assert_in('From: =?utf-8?b?0J/Qvg==?= <foo@bar.com>', body)
+            # Also py2 and py3 vary in handling of double-quote separators when the name portion is encoded
+            unquoted_cyrillic_No = '=?utf-8?b?0J/Qvg==?='  # По
+            quoted_cyrillic_No = '=?utf-8?b?ItCf0L4i?='  # "По"
+            assert ('From: {} <foo@bar.com>'.format(quoted_cyrillic_No) in body or
+                    'From: {} <foo@bar.com>'.format(unquoted_cyrillic_No) in body), body
             assert_in(
                 'Subject: =?utf-8?b?0J/QviDQvtC20LjQstC70ZHQvdC90YvQvCDQsdC10YDQtdCz0LDQvA==?=', body)
             assert_in('Content-Type: text/plain; charset="utf-8"', body)
             assert_in('Content-Transfer-Encoding: base64', body)
-            assert_in(
-                b64encode('Громады стройные теснятся'.encode('utf-8')), body)
+            assert_in(six.ensure_text(b64encode('Громады стройные теснятся'.encode('utf-8'))), body)
 
     def test_send_email_with_disabled_user(self):
         c.user = M.User.by_username('test-admin')

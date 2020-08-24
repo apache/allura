@@ -115,7 +115,7 @@ class TestUserProfile(TestController):
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
         assert 'you currently have user messages disabled' not in response
-        assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
+        response.mustcontain('<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;')
 
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',

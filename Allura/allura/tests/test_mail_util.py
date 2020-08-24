@@ -210,7 +210,7 @@ Content-Type: text/html; charset="utf-8"
         for part in msg2['parts']:
             if part['payload'] is None:
                 continue
-            assert isinstance(part['payload'], six.text_type)
+            assert isinstance(part['payload'], six.text_type), type(part['payload'])
 
 
 class TestHeader(object):

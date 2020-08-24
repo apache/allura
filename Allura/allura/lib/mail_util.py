@@ -201,7 +201,7 @@ def encode_email_part(content, content_type):
             # switch to Quoted-Printable encoding to avoid too-long lines
             # we could always Quoted-Printabl, but it makes the output a little messier and less human-readable
             # the particular order of all these operations seems to be very important for everything to end up right
-            msg = MIMEText(None, content_type)
+            msg = MIMEText('', content_type)
             msg.replace_header('content-transfer-encoding', 'quoted-printable')
             cs = email.charset.Charset('utf-8')
             cs.header_encoding = email.charset.QP

@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import logging
 import calendar
 
+import six
 from markupsafe import Markup
 from six.moves.urllib.parse import urlparse
 from email import header
@@ -791,7 +792,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append('"%s" ' % self.get_pref('display_name'))
+        h.append('"%s"%s' % (self.get_pref('display_name'),
+                             ' ' if six.PY2 else ''))  # py2 needs explicit space for unicode/text_type cast of Header
         h.append('<%s>' % self.get_pref('email_address'))
         return h
 
