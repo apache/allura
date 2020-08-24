@@ -332,7 +332,7 @@ class RootController(BaseController, FeedController):
     def _lookup(self, year=None, month=None, name=None, *rest):
         if year is None or month is None or name is None:
             raise exc.HTTPNotFound()
-        slug = '/'.join((year, month, six.moves.urllib.parse.unquote(name).decode('utf-8')))
+        slug = '/'.join((year, month, six.ensure_text(six.moves.urllib.parse.unquote(name))))
         post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
         if post is None:
             raise exc.HTTPNotFound()
