@@ -98,7 +98,7 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     # setup our app without depending on gearbox (we still depend on Paste anyway)
     # uses [paste.app_install] entry point which call our setup_app()
     cmd = SetupCommand('setup-app')
-    cmd.run([test_file])
+    cmd.run([test_file, '--quiet'])
 
     ew.TemplateEngine.initialize({})
 
