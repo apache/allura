@@ -212,11 +212,9 @@ class NeighborhoodController(object):
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
 
-        project_description = h.really_unicode(
-            project_description or '').encode('utf-8')
-        project_name = h.really_unicode(project_name or '').encode('utf-8')
-        project_unixname = h.really_unicode(
-            project_unixname or '').encode('utf-8').lower()
+        project_description = h.really_unicode(project_description or '')
+        project_name = h.really_unicode(project_name or '')
+        project_unixname = h.really_unicode(project_unixname or '').lower()
         try:
             c.project = neighborhood.register_project(project_unixname,
                                                       project_name=project_name, private_project=private_project)

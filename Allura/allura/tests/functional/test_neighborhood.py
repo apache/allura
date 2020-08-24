@@ -864,6 +864,7 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username=str('root')))
         assert r.status_int == 302, r.html.find(
             'div', {'class': 'error'}).string
+        assert not r.location.endswith('/add_project'), self.webflash(r)
         r = self.app.get('/adobe/test/wiki/').follow(status=200)
 
     def test_neighborhood_awards(self):
