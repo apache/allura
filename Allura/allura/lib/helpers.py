@@ -1271,7 +1271,11 @@ email_re = re.compile(r'(([a-z0-9_]|\-|\.)+)@([\w\.-]+)', re.IGNORECASE)
 
 def hide_private_info(message):
     if asbool(tg.config.get('hide_private_info', 'true')) and message:
-        return email_re.sub(r'\1@...', message)
+        hidden = email_re.sub(r'\1@...', message)
+        if type(message) not in six.string_types:
+            # custom subclass like markupsafe.Markup, convert to that type again
+            hidden = type(message)(hidden)
+        return hidden
     else:
         return message
 
