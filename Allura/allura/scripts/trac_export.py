@@ -293,6 +293,7 @@ class TracExport(object):
             if id >= self.start_id:
                 break
         return self.get_ticket(id, extra)
+    __next__ = next
 
     def clean_missing_wiki_links(self, doc):
         for link in doc.findAll('a', 'missing wiki'):

@@ -637,6 +637,7 @@ class EmptyCursor(ODMCursor):
 
     def next(self):
         raise StopIteration
+    __next__ = next
 
     def options(self, **kw):
         return self
