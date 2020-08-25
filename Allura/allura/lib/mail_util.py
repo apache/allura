@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import re
 import logging
 import smtplib
-import email.feedparser
+import email.parser
 from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
 from email import header
@@ -127,9 +127,19 @@ def parse_address(addr):
 
 def parse_message(data):
     # Parse the email to its constituent parts
-    parser = email.feedparser.FeedParser()
-    parser.feed(data)
-    msg = parser.close()
+
+    # https://bugs.python.org/issue25545 says
+    # > A unicode string has no RFC defintion as an email, so things do not work right...
+    # > You do have to conditionalize your 2/3 code to use the bytes parser and generator if you are dealing with 8-bit
+    # > messages. There's just no way around that.
+    if six.PY2:
+        parser = email.feedparser.FeedParser()
+        parser.feed(data)
+        msg = parser.close()
+    else:
+        # works the same as BytesFeedParser, and better than non-"Bytes" parsers for some messages
+        parser = email.parser.BytesParser()
+        msg = parser.parsebytes(data.encode('utf-8'))
     # Extract relevant data
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
@@ -152,17 +162,15 @@ def parse_message(data):
                 content_type=part.get_content_type(),
                 filename=part.get_filename(None),
                 payload=part.get_payload(decode=True))
-            charset = part.get_content_charset()
             # payload is sometimes already unicode (due to being saved in mongo?)
-            if isinstance(dpart['payload'], six.binary_type) and charset:
-                dpart['payload'] = dpart['payload'].decode(charset)
+            if part.get_content_maintype() == 'text':
+                dpart['payload'] = six.ensure_text(dpart['payload'])
             result['parts'].append(dpart)
     else:
         result['payload'] = msg.get_payload(decode=True)
-        charset = msg.get_content_charset()
         # payload is sometimes already unicode (due to being saved in mongo?)
-        if isinstance(result['payload'], six.binary_type) and charset:
-            result['payload'] = result['payload'].decode(charset)
+        if msg.get_content_maintype() == 'text':
+            result['payload'] = six.ensure_text(result['payload'])
 
     return result
 
