@@ -150,8 +150,8 @@ class TestTrackerImporter(TestCase):
             attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
         self.assertEqual(
             attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
-        self.assertEqual(attachments[0].file.read(), 'data')
-        self.assertEqual(attachments[1].file.read(), 'data')
+        self.assertEqual(attachments[0].file.read(), b'data')
+        self.assertEqual(attachments[1].file.read(), b'data')
 
     def test_get_attachments_404(self):
         importer = tracker.GitHubTrackerImporter()

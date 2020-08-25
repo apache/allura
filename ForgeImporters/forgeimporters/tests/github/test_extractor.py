@@ -63,24 +63,24 @@ class TestGitHubProjectExtractor(TestCase):
     def mocked_urlopen(self, url):
         headers = {}
         if url.endswith('/test_project'):
-            response = BytesIO(json.dumps(self.PROJECT_INFO))
+            response = BytesIO(json.dumps(self.PROJECT_INFO).encode('utf-8'))
         elif url.endswith('/issues?state=closed'):
-            response = BytesIO(json.dumps(self.CLOSED_ISSUES_LIST))
+            response = BytesIO(json.dumps(self.CLOSED_ISSUES_LIST).encode('utf-8'))
         elif url.endswith('/issues?state=open'):
-            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST))
+            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST).encode('utf-8'))
             headers = {'Link': '</issues?state=open&page=2>; rel="next"'}
         elif url.endswith('/issues?state=open&page=2'):
-            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2))
+            response = BytesIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2).encode('utf-8'))
         elif url.endswith('/comments'):
-            response = BytesIO(json.dumps(self.ISSUE_COMMENTS))
+            response = BytesIO(json.dumps(self.ISSUE_COMMENTS).encode('utf-8'))
             headers = {'Link': '</comments?page=2>; rel="next"'}
         elif url.endswith('/comments?page=2'):
-            response = BytesIO(json.dumps(self.ISSUE_COMMENTS_PAGE2))
+            response = BytesIO(json.dumps(self.ISSUE_COMMENTS_PAGE2).encode('utf-8'))
         elif url.endswith('/events'):
-            response = BytesIO(json.dumps(self.ISSUE_EVENTS))
+            response = BytesIO(json.dumps(self.ISSUE_EVENTS).encode('utf-8'))
             headers = {'Link': '</events?page=2>; rel="next"'}
         elif url.endswith('/events?page=2'):
-            response = BytesIO(json.dumps(self.ISSUE_EVENTS_PAGE2))
+            response = BytesIO(json.dumps(self.ISSUE_EVENTS_PAGE2).encode('utf-8'))
 
         response.info = lambda: headers
         return response
@@ -167,7 +167,7 @@ class TestGitHubProjectExtractor(TestCase):
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_limit_exceeded, response_ok]
         e = github.GitHubProjectExtractor('test_project')
-        e.get_page('fake')
+        e.get_page('http://example.com/')
         self.assertEqual(sleep.call_count, 1)
         self.assertEqual(urlopen.call_count, 2)
         log.warn.assert_called_once_with(
@@ -180,7 +180,7 @@ class TestGitHubProjectExtractor(TestCase):
         response_ok = BytesIO(b'{}')
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_ok]
-        e.get_page('fake 2')
+        e.get_page('http://example.com/2')
         self.assertEqual(sleep.call_count, 0)
         self.assertEqual(urlopen.call_count, 1)
         self.assertEqual(log.warn.call_count, 0)
@@ -204,7 +204,7 @@ class TestGitHubProjectExtractor(TestCase):
                 'url', 403, 'msg', limit_exceeded_headers, BytesIO(b'{}'))
         urlopen.side_effect = urlopen_side_effect
         e = github.GitHubProjectExtractor('test_project')
-        e.get_page('fake')
+        e.get_page('http://example.com/')
         self.assertEqual(sleep.call_count, 1)
         self.assertEqual(urlopen.call_count, 2)
         log.warn.assert_called_once_with(

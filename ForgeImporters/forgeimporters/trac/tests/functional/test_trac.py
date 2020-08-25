@@ -25,7 +25,6 @@ from allura.lib import helpers as h
 from allura.tests import TestController
 
 
-
 class TestTracImportController(TestController):
 
     def test_index(self):
@@ -49,9 +48,8 @@ class TestTracImportController(TestController):
                 r.status_int,
                 r.location,
                 self.webflash(r),
-                hasattr(r, 'html') and r.html.find('div', {'class': 'error'})
+                hasattr(r, 'html') and r.html.find_all('div', {'class': 'error'})
             )
-
 
     def test_import_with_phone_validation(self):
         self.app.extra_environ = {'username': str('test-user')}
