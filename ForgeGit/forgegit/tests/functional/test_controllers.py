@@ -302,13 +302,13 @@ class TestRootController(_TestCase):
         url = ci + 'tree/' + h.urlquote('with%2Furlquote-literal.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in('%2F means /', resp.body.decode('utf-8'))
-        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
+        assert_equal(resp.headers.get('Content-Disposition'),
                      'attachment;filename="with%252Furlquote-literal.txt"')
 
         url = ci + 'tree/' + h.urlquote('with"&:specials.txt') + '?format=raw'
         resp = self.app.get(url)
         assert_in('"&: encodes as %22%26%3A', resp.body.decode('utf-8'))
-        assert_equal(resp.headers.get('Content-Disposition').decode('utf-8'),
+        assert_equal(resp.headers.get('Content-Disposition'),
                      'attachment;filename="with%22%26%3Aspecials.txt"')
 
     def test_invalid_file(self):

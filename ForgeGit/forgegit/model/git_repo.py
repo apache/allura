@@ -353,7 +353,7 @@ class GitImplementation(M.RepositoryImplementation):
         If id_only is True, returns only the commit ID, otherwise it returns
         detailed information about each commit.
         """
-        path = path.strip('/').encode("utf-8") if path else None
+        path = path.strip('/') if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
         args = ['--follow', '--name-status', revs, '--', path or '.']
@@ -634,7 +634,7 @@ class GitImplementation(M.RepositoryImplementation):
         skip = 0
         while commit_id and not files:
             output = self._git.git.log(
-                commit_id, '--', *[p.encode('utf-8') for p in paths],
+                commit_id, '--', *[p for p in paths],
                 pretty='format:%H',
                 name_only=True,
                 max_count=1,

@@ -797,7 +797,7 @@ class TreeBrowser(BaseController, DispatchIndex):
         next = h.really_unicode(unquote(next))
         if not rest:
             # Might be a file rather than a dir
-            filename = h.really_unicode(request.environ['PATH_INFO'].rsplit(str('/'))[-1])
+            filename = h.really_unicode(request.path_info.rsplit(str('/'))[-1])
             if filename:
                 try:
                     obj = self._tree[filename]
@@ -809,7 +809,7 @@ class TreeBrowser(BaseController, DispatchIndex):
                         self._tree,
                         filename), rest
         elif rest == ('index', ):
-            rest = (request.environ['PATH_INFO'].rsplit(str('/'))[-1],)
+            rest = (request.path_info.rsplit(str('/'))[-1],)
         try:
             tree = self._tree[next]
         except KeyError:
@@ -899,10 +899,11 @@ class FileBrowser(BaseController):
             diff = "Cannot display: file marked as a binary type."
             return dict(a=a, b=b, diff=diff)
 
-        la = list(a)
-        lb = list(b)
-        adesc = ('a' + h.really_unicode(apath)).encode('utf-8')
-        bdesc = ('b' + h.really_unicode(b.path())).encode('utf-8')
+        # could consider making Blob.__iter__ do unicode conversion?
+        la = [h.really_unicode(line) for line in a]
+        lb = [h.really_unicode(line) for line in b]
+        adesc = 'a' + h.really_unicode(apath)
+        bdesc = 'b' + h.really_unicode(b.path())
 
         if not fmt:
             fmt = web_session.get('diformat', '')
