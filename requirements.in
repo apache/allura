@@ -8,6 +8,8 @@ cryptography==2.6.1
 decorator
 EasyWidgets>=0.3.6
 emoji
+# only needed < py3.4 and causes problems >=3.6 https://stackoverflow.com/a/45716067/
+enum34 ; python_version < "3.4"
 faulthandler ; python_version < "3.3"
 feedgenerator
 feedparser
