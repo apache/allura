@@ -40,6 +40,11 @@ class NullValidator(fev.FancyValidator):
     def _from_python(self, value, state):
         return value
 
+    # https://github.com/formencode/formencode/issues/101 local fix
+    def is_empty(self, value):
+        return value == b'' or super(NullValidator, self).is_empty(value)
+
+
 # Discussion forms
 
 
@@ -206,7 +211,7 @@ class NewTopicPost(EditPost):
         fields = super(NewTopicPost, self).fields
         fields.append(ew.InputField(name='attachment', label='Attachment', field_type='file',
                                     attrs={'multiple': 'True'},
-                                    validator=fev.FieldStorageUploadConverter(if_missing=None)))
+                                    validator=v.FieldStorageUploadConverter(if_missing=None)))
         return fields
 
 

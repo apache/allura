@@ -84,6 +84,12 @@ class UnicodeString(fev.UnicodeString):
 String = UnicodeString if str is str else fev.ByteString
 
 
+class FieldStorageUploadConverter(fev.FieldStorageUploadConverter):
+    # https://github.com/formencode/formencode/issues/101 local fix
+    def is_empty(self, value):
+        return value == b'' or super(FieldStorageUploadConverter, self).is_empty(value)
+
+
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):
@@ -290,7 +296,7 @@ class JsonConverter(fev.FancyValidator):
         return obj
 
 
-class JsonFile(fev.FieldStorageUploadConverter):
+class JsonFile(FieldStorageUploadConverter):
 
     """Validates that a file is JSON and returns the deserialized Python object
 
