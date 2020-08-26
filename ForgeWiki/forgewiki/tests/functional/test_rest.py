@@ -119,7 +119,7 @@ class TestWikiApi(TestRestApiBase):
 
     def test_json_encoding_directly(self):
         # used in @expose('json'), monkey-patched in our patches.py
-        assert_equal(tg.jsonify.encode('<'), '"\u003C"')
+        assert_equal(tg.jsonify.encode('<'), r'"\u003C"')
         # make sure these are unchanged
         assert_equal(json.dumps('<'), '"<"')
 

@@ -99,18 +99,10 @@ def apply():
     # This is to avoid IE9 and earlier, which don't know the json content type
     # and may attempt to render JSON data as HTML if the URL ends in .html
     original_tg_jsonify_JSONEncoder_encode = tg.jsonify.JSONEncoder.encode
-    escape_pattern_with_lt = re.compile(
-        json.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
 
     @h.monkeypatch(tg.jsonify.JSONEncoder)
     def encode(self, o):
-        # ensure_ascii=False forces encode_basestring() to be called instead of
-        # encode_basestring_ascii() and encode_basestring_ascii may likely be c-compiled
-        # and thus not monkeypatchable
-        with h.push_config(self, ensure_ascii=False), \
-                h.push_config(json.encoder, ESCAPE=escape_pattern_with_lt), \
-                mock.patch.dict(json.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
-            return original_tg_jsonify_JSONEncoder_encode(self, o)
+        return original_tg_jsonify_JSONEncoder_encode(self, o).replace('<', r'\u003C')
 
 
 old_controller_call = tg.controllers.DecoratedController._call
