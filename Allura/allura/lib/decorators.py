@@ -178,7 +178,7 @@ def memoize_cleanup(obj):
     """
     Remove any _memoize_dic_* keys (if obj is a dict/obj hybrid) that were created by @memoize on methods
     """
-    for k in obj.keys():
+    for k in list(obj.keys()):
         if k.startswith('_memoize_dic'):
             del obj[k]
 

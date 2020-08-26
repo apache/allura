@@ -1707,7 +1707,7 @@ class TrackerAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def allow_default_field(self, **post_data):
-        for column in self.app.globals['show_in_search'].keys():
+        for column in list(self.app.globals['show_in_search'].keys()):
             if post_data.get(column) == 'on':
                 self.app.globals['show_in_search'][column] = True
             else:

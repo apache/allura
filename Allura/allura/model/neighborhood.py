@@ -241,7 +241,7 @@ class Neighborhood(MappedClass):
     @staticmethod
     def compile_css_for_picker(css_form_dict):
         # Check css values
-        for key in css_form_dict.keys():
+        for key in list(css_form_dict.keys()):
             if ';' in css_form_dict[key] or '}' in css_form_dict[key]:
                 css_form_dict[key] = ''
 
