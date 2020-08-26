@@ -135,7 +135,7 @@ class RootController(BaseController):
         if url:
             # h.urlquote is better than utf8 encoding for Location headers, but in this case the url can be a full
             # http://... url and we don't want to urlquote/urlencode that part
-            redirect(url + h.really_unicode(path).encode('utf-8'))
+            redirect(url + h.really_unicode(path))
         return dict()
 
 

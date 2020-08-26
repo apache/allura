@@ -37,20 +37,20 @@ class TestLinkApi(TestRestApiBase):
         h.set_context('test', 'link', neighborhood='Projects')
 
     def test_rest_link(self):
-        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link')
         assert_equal(r.json['url'], None)
 
-        r = self.api_post('/rest/p/test/link'.encode('utf-8'),
+        r = self.api_post('/rest/p/test/link',
                           url='http://google.com')
         assert_equal(r.json['url'], 'http://google.com')
 
-        self.api_post('/rest/p/test/link'.encode('utf-8'),
+        self.api_post('/rest/p/test/link',
                       url='http://yahoo.com')
-        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link')
         assert_equal(r.json['url'], 'http://yahoo.com')
 
-        self.api_post('/rest/p/test/link'.encode('utf-8'))
-        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
+        self.api_post('/rest/p/test/link')
+        r = self.api_get('/rest/p/test/link')
         assert_equal(r.json['url'], 'http://yahoo.com')
 
     def test_rest_link_get_permissions(self):
@@ -78,7 +78,7 @@ class TestLinkApi(TestRestApiBase):
                       params={'url': 'http://yahoo.com'},
                       extra_environ={'username': str('*anonymous')},
                       status=200)
-        r = self.api_get('/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get('/rest/p/test/link')
         assert_equal(r.json['url'], 'http://yahoo.com')
 
 

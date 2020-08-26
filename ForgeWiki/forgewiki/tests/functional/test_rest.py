@@ -85,9 +85,9 @@ class TestWikiApi(TestRestApiBase):
             'text': 'Embrace the Dark Side',
             'labels': 'head hunting,dark side'
         }
-        r = self.api_post('/rest/p/test/wiki/tést/'.encode('utf-8'), **data)
+        r = self.api_post(h.urlquote('/rest/p/test/wiki/tést/'), **data)
         assert_equal(r.status_int, 200)
-        r = self.api_get('/rest/p/test/wiki/tést/'.encode('utf-8'))
+        r = self.api_get(h.urlquote('/rest/p/test/wiki/tést/'))
         assert_equal(r.json['text'], data['text'])
         assert_equal(r.json['labels'], data['labels'].split(','))
 

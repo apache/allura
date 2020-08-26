@@ -1,3 +1,4 @@
+# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -22,6 +23,7 @@ import json
 from nose.tools import assert_equal, assert_in
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -61,8 +63,8 @@ class TestRootController(TestController):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.de/search?q='
         response.form.submit()
-        redir = self.app.get('/link/help', status=302)
-        assert_equal(redir.location, 'http://www.google.de/search?q=help')
+        redir = self.app.get(h.urlquote('/link/helpåß'), status=302)
+        assert_equal(redir.location, 'http://www.google.de/search?q=help%C3%A5%C3%9F')
 
 
 class TestConfigOptions(TestController):
