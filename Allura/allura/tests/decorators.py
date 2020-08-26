@@ -21,7 +21,9 @@ import sys
 import re
 from functools import wraps
 import contextlib
+from six.moves.urllib.parse import parse_qs
 
+from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import tmpl_context as c
 from mock import patch
@@ -220,3 +222,12 @@ def assert_logmsg_and_no_warnings_or_errors(logs, msg):
         if r.levelno > logging.INFO:
             raise AssertionError('unexpected log {} {}'.format(r.levelname, r.getMessage()))
     assert found_msg, 'Did not find {} in logs: {}'.format(msg, '\n'.join([r.getMessage() for r in logs.records]))
+
+
+def assert_equivalent_urls(url1, url2):
+    base1, _, qs1 = url1.partition('?')
+    base2, _, qs2 = url2.partition('?')
+    assert_equal(
+        (base1, parse_qs(qs1)),
+        (base2, parse_qs(qs2)),
+    )

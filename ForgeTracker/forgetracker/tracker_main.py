@@ -864,7 +864,7 @@ class RootController(BaseController, FeedController):
         else:
             feed = FG.Rss201rev2Feed(**d)
         for t in result['tickets']:
-            url = h.absurl(t.url().encode('utf-8'))
+            url = h.absurl(t.url())
             feed_kwargs = dict(title=t.summary,
                                link=url,
                                pubdate=t.mod_date,
@@ -1920,7 +1920,7 @@ class MilestoneController(BaseController):
         else:
             raise exc.HTTPNotFound()
         for m in fld.milestones:
-            if m.name == unquote(milestone).decode('utf-8'):
+            if m.name == six.ensure_text(unquote(milestone)):
                 break
         else:
             raise exc.HTTPNotFound()

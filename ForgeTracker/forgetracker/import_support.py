@@ -73,11 +73,11 @@ class ResettableStream(object):
 
     def read(self, size=-1):
         self._read_header()
-        data = ''
+        data = b''
         if self.buf_pos < self.stream_pos:
             data = self.buf.read(size)
             self.buf_pos += len(data)
-            if len(data) == size:
+            if len(data) == size or size == -1:
                 return data
             size -= len(data)
 

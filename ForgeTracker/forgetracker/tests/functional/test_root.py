@@ -45,6 +45,7 @@ from tg import tmpl_context as c
 from tg import app_globals as g
 from tg import config
 
+from allura.tests.decorators import assert_equivalent_urls
 from allura.tests.test_globals import squish_spaces
 from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
@@ -1623,7 +1624,7 @@ class TestFunctionalController(TrackerTestController):
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed"\
                         "&sort=snippet_s+asc&limit=25&filter=&page=0"
-        assert_equal(expected_link, edit_link['href'])
+        assert_equivalent_urls(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
         assert_in('test first ticket', ticket_rows.text)
@@ -1646,7 +1647,7 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test third ticket', ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=_milestone%3A1.0&sort=ticket_num_i+asc&limit=25&filter=&page=0"
-        assert_equal(expected_link, edit_link['href'])
+        assert_equivalent_urls(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
         assert_in('test first ticket', ticket_rows.text)
@@ -1667,7 +1668,7 @@ class TestFunctionalController(TrackerTestController):
         assert_false('test third ticket' in ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
         expected_link = "/p/test/bugs/edit/?q=status%3Aopen&limit=25&filter=%7B%7D&page=0"
-        assert_equal(expected_link, edit_link['href'])
+        assert_equivalent_urls(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
         ticket_rows = response.html.find('tbody', {'class': 'ticket-list'})
         assert_in('test first ticket', ticket_rows.text)
@@ -1983,19 +1984,19 @@ class TestFunctionalController(TrackerTestController):
         # invalid vote
         r = self.app.post('/bugs/1/vote', dict(vote='invalid'))
         expected_resp = json.dumps(dict(status='error', votes_up=0, votes_down=0, votes_percent=0))
-        assert r.response.content == expected_resp
+        assert_equal(r.response.text, expected_resp)
 
         # vote up
         r = self.app.post('/bugs/1/vote', dict(vote='u'))
         expected_resp = json.dumps(dict(status='ok', votes_up=1, votes_down=0, votes_percent=100))
-        assert r.response.content == expected_resp
+        assert_equal(r.response.text, expected_resp)
 
         # vote down by another user
         r = self.app.post('/bugs/1/vote', dict(vote='d'),
                           extra_environ=dict(username=str('test-user-0')))
 
         expected_resp = json.dumps(dict(status='ok', votes_up=1, votes_down=1, votes_percent=50))
-        assert r.response.content == expected_resp
+        assert_equal(r.response.text, expected_resp)
 
         # make sure that on the page we see the same result
         r = self.app.get('/bugs/1/')
@@ -2949,7 +2950,8 @@ class TestHelpTextOptions(TrackerTestController):
         assert len(r.html.findAll(attrs=dict(id='new-ticket-help-msg'))) == 0
 
 
-class test_show_default_fields(TrackerTestController):
+class TestShowDefaultFields(TrackerTestController):
+
     def test_show_default_fields(self):
         r = self.app.get('/admin/bugs/fields')
         assert '<td>Ticket Number</td> <td><input type="checkbox" name="ticket_num" checked ></td>' in r

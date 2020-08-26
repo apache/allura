@@ -390,8 +390,7 @@ class Globals(MappedClass):
         for ticket in tickets:
             message = ''
             if labels:
-                values['labels'] = self.append_new_labels(
-                    ticket.labels, labels.split(','))
+                values['labels'] = self.append_new_labels(ticket.labels, labels.split(','))
             for k, v in sorted(six.iteritems(values)):
                 if k == 'deleted':
                     if v:
@@ -533,9 +532,13 @@ class Globals(MappedClass):
         return filtered
 
     def append_new_labels(self, old_labels, new_labels):
-        old_labels = set(old_labels)
-        new_labels = set(l.strip() for l in new_labels)
-        return list(old_labels | new_labels)
+        # append without duplicating any.  preserve order
+        labels = old_labels[:]  # make copy to ensure no edits to possible underlying model field
+        for l in new_labels:
+            l = l.strip()
+            if l not in old_labels:
+                labels.append(l)
+        return labels
 
 
 class TicketHistory(Snapshot):
@@ -850,7 +853,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             role_developer = ProjectRole.by_name('Developer')
             role_creator = ProjectRole.by_user(self.reported_by, upsert=True) if self.reported_by else None
             def _allow_all(role, perms):
-                return [ACE.allow(role._id, perm) for perm in perms]
+                return [ACE.allow(role._id, perm) for perm in sorted(perms)]  # sorted just for consistency (for tests)
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else
             acl = _allow_all(role_developer, security.all_allowed(self, role_developer))
