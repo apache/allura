@@ -32,6 +32,7 @@ from datetime import datetime
 import tempfile
 from shutil import rmtree
 
+import six
 import tg
 import pysvn
 from paste.deploy.converters import asbool, asint
@@ -218,12 +219,12 @@ class SVNImplementation(M.RepositoryImplementation):
         # check for svn version 1.7 or later
         stdout, stderr, returncode = self.check_call(['svn', '--version'])
         pattern = r'version (?P<maj>\d+)\.(?P<min>\d+)'
-        m = re.search(pattern, stdout)
+        m = re.search(pattern, six.ensure_text(stdout))
         return m and (int(m.group('maj')) * 10 + int(m.group('min'))) >= 17
 
     def check_call(self, cmd, fail_on_error=True):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate(input='p\n')
+        stdout, stderr = p.communicate(input=b'p\n')
         if p.returncode != 0 and fail_on_error:
             self._repo.set_status('ready')
             raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
@@ -236,7 +237,7 @@ class SVNImplementation(M.RepositoryImplementation):
         def set_hook(hook_name):
             fn = os.path.join(self._repo.fs_path, self._repo.name,
                               'hooks', hook_name)
-            with open(fn, 'wb') as fp:
+            with open(fn, 'w') as fp:
                 fp.write('#!/bin/sh\n')
             os.chmod(fn, 0o755)
 
@@ -611,7 +612,7 @@ class SVNImplementation(M.RepositoryImplementation):
             url=self._repo.refresh_url())
         fn = os.path.join(self._repo.fs_path, self._repo.name,
                           'hooks', 'post-commit')
-        with open(fn, 'wb') as fp:
+        with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0o755)
 

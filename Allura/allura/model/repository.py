@@ -19,6 +19,7 @@ from __future__ import absolute_import
 import json
 import os
 import stat
+from operator import itemgetter
 import mimetypes
 import logging
 import string
@@ -1207,7 +1208,7 @@ class Commit(RepoObject, ActivityObject):
             added=sorted(diffs['added']),
             removed=sorted(diffs['removed']),
             changed=sorted(diffs['changed']),
-            copied=sorted(diffs['copied']),
+            copied=sorted(diffs['copied'], key=itemgetter('new', 'old')),  # this is a list of dicts
             renamed=sorted(diffs['renamed']),
             total=diffs['total'])
 
