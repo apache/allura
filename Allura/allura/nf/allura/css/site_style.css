@@ -1896,10 +1896,6 @@ a.sidebar-disabled:focus {
   width: 935px;
 }
 .pad h2.dark {
-  background-color: #555555;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
-  background-image: -moz-linear-gradient(top, #666666 0%, #555555 100%);
-  background-image: linear-gradient(top, #666666 0%, #555555 100%);
   border: 1px solid #333333;
   color: #fff;
   font-size: 14px;
@@ -1920,6 +1916,7 @@ a.sidebar-disabled:focus {
   -ms-border-top-right-radius: 3px;
   -khtml-border-top-right-radius: 3px;
   border-top-right-radius: 3px;
+  overflow: auto;
 }
 .pad h2.dark hr {
   border: 1px solid #000;
@@ -1928,15 +1925,8 @@ a.sidebar-disabled:focus {
 }
 .pad h2.dark small {
   text-transform: none;
-  position: absolute;
-  right: 0px;
-  top: 5px;
-  padding-right: 5px;
   text-align: center;
-  background-color: #555555;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
-  background-image: -moz-linear-gradient(top, #666666 0%, #555555 100%);
-  background-image: linear-gradient(top, #666666 0%, #555555 100%);
+  float: right;
 }
 .pad h2.dark small a {
   margin: 0 10px;
@@ -2011,7 +2001,7 @@ a.sidebar-disabled:focus {
 .pad h2.title {
   font-weight: normal;
   margin-bottom: 1.5em;
-  white-space: nowrap;
+  overflow: auto;
 }
 .pad .paginate {
   margin: 0 0 0 20px;
