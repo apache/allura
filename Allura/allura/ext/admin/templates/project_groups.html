@@ -26,14 +26,18 @@
 
 {% block header %}User Permissions{% endblock %}
 
+{% set private_projects = c.project.neighborhood.features.get('private_projects') %}
+
 {% macro show_perms_for_role(role) %}
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
+    {% if private_projects or (not private_projects and perm['name'] != 'read') %}
     <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
       {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
         {{perm['name']}}
       </a> {# close tag, opened by render #}
     </li>
+    {% endif %}
     {% endfor %}
   </ul>
 {% endmacro %}
