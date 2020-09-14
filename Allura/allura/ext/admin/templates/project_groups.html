@@ -26,14 +26,18 @@
 
 {% block header %}User Permissions{% endblock %}
 
+{% set private_projects = c.project.neighborhood.features.get('private_projects') %}
+
 {% macro show_perms_for_role(role) %}
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
+    {% if private_projects or (not private_projects and perm['name'] != 'read') or (not private_projects and perm['name'] == 'read') and perm['has'] == 'no' %}
     <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
       {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
         {{perm['name']}}
       </a> {# close tag, opened by render #}
     </li>
+    {% endif %}
     {% endfor %}
   </ul>
 {% endmacro %}
@@ -114,6 +118,8 @@
 
 {% block extra_js %}
 <script type="text/javascript">
+  privateProjectsAllowed = {{ 'true' if private_projects else 'false' }};
+
   // these icons are used in the js, so set them up now
   var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
   {% set perm_delete_ico = g.icons['perm_delete'].render(title='', extra_css='deleter') %}
