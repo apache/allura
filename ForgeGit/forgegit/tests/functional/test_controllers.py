@@ -590,7 +590,7 @@ class TestFork(_TestCase):
                 f.write('Very useful README')
             cloned.index.add(['README'])
             cloned.index.commit('Improve documentation')
-            cloned.remotes[0].push()
+            cloned.remotes[0].push('master')
             c.app.repo.refresh()
             self.forked_repo = c.app.repo
             shutil.rmtree(clone_path, ignore_errors=True)
