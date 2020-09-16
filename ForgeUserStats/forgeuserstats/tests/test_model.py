@@ -463,12 +463,11 @@ class TestUserStats(unittest.TestCase):
         )
         unified_diff.return_value = ['+++', '---', '+line']
         newcommit.tree.get_blob_by_path.return_value = mock.MagicMock()
-        newcommit.tree.get_blob_by_path.return_value.__iter__.return_value = [
-            'one']
-        newcommit.repo.commit(
-        ).tree.get_blob_by_path.return_value = mock.MagicMock()
-        newcommit.repo.commit().tree.get_blob_by_path.return_value.__iter__.return_value = [
-            'two']
+        newcommit.tree.get_blob_by_path.return_value.__iter__.return_value = ['one']
+        newcommit.tree.get_blob_by_path.return_value.path.return_value = 'onepath'
+        newcommit.repo.commit().tree.get_blob_by_path.return_value = mock.MagicMock()
+        newcommit.repo.commit().tree.get_blob_by_path.return_value.__iter__.return_value = ['two']
+        newcommit.repo.commit().tree.get_blob_by_path.return_value.path.return_value = 'twopath'
         commit_datetime = datetime.utcnow()
         project = mock.Mock(
             trove_topic=[],

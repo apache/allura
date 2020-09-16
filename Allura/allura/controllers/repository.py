@@ -919,7 +919,7 @@ class FileBrowser(BaseController):
                 hd = HtmlSideBySideDiff()
                 diff = hd.make_table(la, lb, adesc, bdesc)
         else:
-            diff = str('').join(difflib.unified_diff(la, lb, adesc, bdesc))
+            diff = str('').join(difflib.unified_diff(la, lb, six.ensure_str(adesc), six.ensure_str(bdesc)))
         return dict(a=a, b=b, diff=diff)
 
 

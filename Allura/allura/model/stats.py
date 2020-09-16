@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import six
 from datetime import datetime
 from tg import config
 from paste.deploy.converters import asbool
@@ -29,6 +31,7 @@ from datetime import timedelta
 import difflib
 
 from allura.model.session import main_orm_session
+from allura.lib import helpers as h
 from six.moves import range
 from functools import reduce
 
@@ -369,9 +372,10 @@ class Stats(MappedClass):
                 lines = len(listnew)
             elif newblob and newblob.has_html_view:
                 diff = difflib.unified_diff(
-                    listold, listnew,
-                    ('old' + oldblob.path()).encode('utf-8'),
-                    ('new' + newblob.path()).encode('utf-8'))
+                    [h.really_unicode(line) for line in listold],
+                    [h.really_unicode(line) for line in listnew],
+                    six.ensure_str('old' + oldblob.path()),
+                    six.ensure_str('new' + newblob.path()))
                 lines = len(
                     [l for l in diff if len(l) > 0 and l[0] == '+']) - 1
             else:
