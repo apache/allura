@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 */
+/*global SF, $ */
 
 $(function() {
   var cval = $.cookie('_session_id');
@@ -89,9 +90,15 @@ $(function() {
           perm_link.attr('title',item.text);
           if(item.has=="yes"){
             perm_icon.attr('class','fa fa-check');
+            if (!SF.privateProjectsAllowed) {
+              perm_holder.hide();
+            }
           }
           else if(item.has=="inherit"){
             perm_icon.attr('class','fa fa-check-circle');
+            if(!SF.privateProjectsAllowed){
+              perm_holder.hide();
+            }
           }
           else{
             perm_icon.attr('class','fa fa-ban');

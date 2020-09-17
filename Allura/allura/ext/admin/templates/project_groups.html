@@ -31,7 +31,7 @@
 {% macro show_perms_for_role(role) %}
   <ul class="permissions">
     {% for perm in permissions_by_role[role._id.__str__()] %}
-    {% if private_projects or (not private_projects and perm['name'] != 'read') %}
+    {% if private_projects or (not private_projects and perm['name'] != 'read') or (not private_projects and perm['name'] == 'read') and perm['has'] == 'no' %}
     <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
       {{ g.icons['perm_has_%s'%perm['has']].render(title=perm['text'], closing_tag=False) }}
         {{perm['name']}}
@@ -118,6 +118,8 @@
 
 {% block extra_js %}
 <script type="text/javascript">
+  window.SF.privateProjectsAllowed = {{ 'true' if private_projects else 'false' }};
+
   // these icons are used in the js, so set them up now
   var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
   {% set perm_delete_ico = g.icons['perm_delete'].render(title='', extra_css='deleter') %}
