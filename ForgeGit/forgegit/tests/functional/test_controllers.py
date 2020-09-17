@@ -25,6 +25,7 @@ import re
 import os
 import shutil
 import tempfile
+import textwrap
 
 from datadiff.tools import assert_equal as dd_assert_equal
 from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
@@ -320,6 +321,45 @@ class TestRootController(_TestCase):
         resp = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
+
+    def test_diff_weirdchars(self):
+        self._setup_weird_chars_repo()
+        ci = self._get_ci(repo='/p/test/weird-chars/')
+        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7')
+        diffhtml = six.text_type(resp.html.select_one('.diffbrowser'))
+        assert_in(textwrap.dedent('''\
+                    <span class="gd">--- a/привіт.txt</span>
+                    <span class="gi">+++ b/привіт.txt</span>
+                    <span class="gu">@@ -1 +1,2 @@</span>
+                     Привіт!
+                    <span class="gi">+Which means Hello!</span>'''),
+                  diffhtml)
+
+        resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
+        diffhtml = six.text_type(resp.html.select_one('.diffbrowser'))
+        assert_in(textwrap.dedent('''\
+                    <thead>
+                    <th class="lineno"></th>
+                    <th>a/привіт.txt</th>
+                    <th class="lineno"></th>
+                    <th>b/привіт.txt</th>
+                    </thead>
+                    <tr>
+                    <td class="lineno">1</td>
+                    <td><pre>Привіт!
+                    </pre></td>
+                    <td class="lineno">1</td>
+                    <td><pre>Привіт!
+                    </pre></td>
+                    </tr>
+                    <tr>
+                    <td class="lineno"></td>
+                    <td><pre>
+                    </pre></td>
+                    <td class="lineno">2</td>
+                    <td class="diff-add"><pre>Which means Hello!
+                    </pre></td>'''),
+                  diffhtml)
 
     def test_diff_view_mode(self):
         ci = self._get_ci()

@@ -371,9 +371,10 @@ class Stats(MappedClass):
             if oldblob is None:
                 lines = len(listnew)
             elif newblob and newblob.has_html_view:
+                # py2 unified_diff can handle some unicode but not consistently, so best to do ensure_str (can drop it on py3)
                 diff = difflib.unified_diff(
-                    [h.really_unicode(line) for line in listold],
-                    [h.really_unicode(line) for line in listnew],
+                    [six.ensure_str(h.really_unicode(line)) for line in listold],
+                    [six.ensure_str(h.really_unicode(line)) for line in listnew],
                     six.ensure_str('old' + oldblob.path()),
                     six.ensure_str('new' + newblob.path()))
                 lines = len(
