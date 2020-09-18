@@ -118,7 +118,7 @@
 
 {% block extra_js %}
 <script type="text/javascript">
-  window.SF.privateProjectsAllowed = {{ 'true' if private_projects else 'false' }};
+  privateProjectsAllowed = {{ 'true' if private_projects else 'false' }};
 
   // these icons are used in the js, so set them up now
   var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
