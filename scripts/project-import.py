@@ -21,7 +21,6 @@ import bson
 import datetime
 import json
 import logging
-import multiprocessing
 import re
 import string
 import sys
@@ -216,7 +215,6 @@ def trove_ids(orig, new_):
 
 
 def create_project(p, nbhd, options):
-    worker_name = multiprocessing.current_process().name
     M.session.artifact_orm_session._get().skip_mod_date = True
     shortname = p.shortname or p.name.shortname
     project = M.Project.query.get(shortname=shortname,
@@ -224,23 +222,23 @@ def create_project(p, nbhd, options):
     project_template = nbhd.get_project_template()
 
     if project and not (options.update and p.shortname):
-        log.warning('[%s] Skipping existing project "%s". To update an existing '
+        log.warning('Skipping existing project "%s". To update an existing '
                     'project you must provide the project shortname and run '
-                    'this script with --update.' % (worker_name, shortname))
+                    'this script with --update.' % (shortname))
         return 0
 
     if not project:
-        log.info('[%s] Creating project "%s".' % (worker_name, shortname))
+        log.info('Creating project "%s".' % (shortname))
         try:
             project = nbhd.register_project(shortname,
                                             p.admin,
                                             project_name=p.name.name,
                                             private_project=p.private)
         except Exception as e:
-            log.exception('[%s] %s' % (worker_name, str(e)))
+            log.exception('%s' % (str(e)))
             return 0
     else:
-        log.info('[%s] Updating project "%s".' % (worker_name, shortname))
+        log.info('Updating project "%s".' % (shortname))
 
     project.notifications_disabled = True
 
@@ -338,18 +336,8 @@ def main(options):
     if options.validate_only:
         return
 
-    chunks = [projects[i::options.nprocs] for i in range(options.nprocs)]
-    jobs = []
-    for i in range(options.nprocs):
-        p = multiprocessing.Process(target=create_projects,
-                                    args=(chunks[i], nbhd, options), name='worker-' + str(i + 1))
-        jobs.append(p)
-        p.start()
+    create_projects(projects, nbhd, options)
 
-    for j in jobs:
-        j.join()
-        if j.exitcode != 0:
-            return j.exitcode
     return 0
 
 
@@ -371,10 +359,6 @@ def parse_options():
                         action='store_true',
                         help='Check nbhd project template for default tools, and install '
                         'them on the project(s) if not already installed.')
-    parser.add_argument(
-        '--nprocs', '-n', action='store', dest='nprocs', type=int,
-        help='Number of processes to divide the work among.',
-        default=multiprocessing.cpu_count())
     parser.add_argument('--validate-only', '-v', action='store_true', dest='validate_only',
                         help='Validate ALL records, make no changes')
     return parser.parse_args()
