@@ -23,6 +23,7 @@ import sys
 from io import open
 
 from ming.orm import session
+import colander
 
 from allura import model as M
 from allura.lib.project_create_helpers import create_project_with_attrs, make_newproject_schema, deserialize_project
@@ -43,6 +44,9 @@ def main(options):
     data = json.load(open(options.file, 'r'))
 
     projectSchema = make_newproject_schema(nbhd, options.update)
+    # allow 'icon' as a local filesystem path via this script only
+    projectSchema.add(colander.SchemaNode(colander.Str(), name='icon', missing=None))
+
     projects = []
     for datum in data:
         try:

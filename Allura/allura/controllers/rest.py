@@ -20,25 +20,27 @@
 """REST Controller"""
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import json
 import logging
 from six.moves.urllib.parse import unquote
 
 import oauth2 as oauth
 from paste.util.converters import asbool
 from webob import exc
+import tg
 from tg import expose, flash, redirect, config
 from tg import tmpl_context as c, app_globals as g
 from tg import request, response
-
+import colander
 from ming.orm import session
-from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
-from allura.lib.exceptions import Invalid
+from allura.lib.exceptions import Invalid, ForgeError
 from allura.lib.decorators import require_post
+from allura.lib.project_create_helpers import make_newproject_schema, deserialize_project, create_project_with_attrs
 from allura.lib.security import has_access
 import six
 
@@ -361,6 +363,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
 class NeighborhoodRestController(object):
 
     def __init__(self, neighborhood):
+        # type: (M.Neighborhood) -> None
         self._neighborhood = neighborhood
 
     @expose('json:')
@@ -373,6 +376,42 @@ class NeighborhoodRestController(object):
             raise exc.HTTPNotFound
         c.project, remainder = nbhd_lookup_first_path(self._neighborhood, name, c.user, remainder, api=True)
         return ProjectRestController(), remainder
+
+    @expose('json:')
+    @require_post()
+    def add_project(self, **kw):
+        # TODO: currently limited to 'admin' permissions instead of 'register' since not enough validation is in place.
+        # There is sanity checks and validation that the user may create a project, but not on project fields
+        #   for example: tool_data, admins, awards, etc can be set arbitrarily right now
+        #   and normal fields like description, summary, external_homepage, troves etc don't have validation on length,
+        #   quantity, value etc. which match the HTML web form validations
+        # if/when this is handled better, the following line can be updated.  Also update api.raml docs
+        # security.require_access(self._neighborhood, 'register')
+        security.require_access(self._neighborhood, 'admin')
+
+        project_reg = plugin.ProjectRegistrationProvider.get()
+
+        jsondata = json.loads(request.body)
+        projectSchema = make_newproject_schema(self._neighborhood)
+        try:
+            pdata = deserialize_project(jsondata, projectSchema)
+            shortname = pdata.shortname or pdata.name.shortname
+            project_reg.validate_project(self._neighborhood, shortname, pdata.name.name, c.user,
+                                         user_project=False, private_project=pdata.private)
+        except (colander.Invalid, ForgeError) as e:
+            response.status_int = 400
+            return {
+                'error': six.text_type(e) or repr(e),
+            }
+
+        project = create_project_with_attrs(pdata, self._neighborhood)
+        response.status_int = 201
+        response.location = str(h.absurl('/rest' + project.url()))
+        return {
+            "status": "success",
+            "html_url": h.absurl(project.url()),
+            "url": h.absurl('/rest' + project.url()),
+        }
 
 
 class ProjectRestController(object):

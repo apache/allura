@@ -257,7 +257,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         if not params:
             return
         # params can be raw data (json data post, for example)
-        if isinstance(params, six.binary_type):
+        if isinstance(params, (six.binary_type, six.string_types)):
             return
         # params can be a list or a dict
         if hasattr(params, 'items'):

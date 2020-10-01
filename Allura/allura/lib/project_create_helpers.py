@@ -18,13 +18,17 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import re
+from io import BytesIO
+
 import datetime
 import string
 import logging
 
 import colander as col
 import bson
+import requests
 import six
+from six.moves.urllib.parse import urlparse
 
 from allura.model import Neighborhood
 from ming.base import Object
@@ -170,6 +174,9 @@ class Labels(col.SequenceSchema):
 
 
 class NewProjectSchema(col.MappingSchema):
+    def schema_type(self, **kw):
+        return col.Mapping(unknown='raise')
+
     name = col.SchemaNode(ProjectNameType())
     summary = col.SchemaNode(col.Str(), missing='')
     description = col.SchemaNode(col.Str(), missing='')
@@ -188,8 +195,8 @@ class NewProjectSchema(col.MappingSchema):
     trove_natlanguages = TroveTranslations(missing=None)
     trove_environments = TroveUIs(missing=None)
     tool_data = col.SchemaNode(col.Mapping(unknown='preserve'), missing={})
-    icon = col.SchemaNode(col.Str(), missing=None)
-    # more fields are added dynamically to the schema in main()
+    icon_url = col.SchemaNode(col.Str(), missing=None, validator=col.url)
+    # more fields are added dynamically to the schema in make_newproject_schema()
 
 
 def trove_ids(orig, new_):
@@ -201,7 +208,7 @@ def trove_ids(orig, new_):
 def make_newproject_schema(nbhd, update=False):
     # type: (Neighborhood, bool) -> NewProjectSchema
     # dynamically add to the schema (e.g. if needs nbhd)
-    projectSchema = NewProjectSchema()
+    projectSchema = NewProjectSchema(unknown='raise')
     projectSchema.add(col.SchemaNode(col.Sequence(),
                                      col.SchemaNode(Award(nbhd)),
                                      name='awards', missing=[]))
@@ -232,11 +239,13 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
         return False
 
     if not project:
+        creating = True
         project = nbhd.register_project(shortname,
                                         p.admin,
                                         project_name=p.name.name,
                                         private_project=p.private)
     else:
+        creating = False
         log.info('Updating project "%s".' % (shortname))
 
     project.notifications_disabled = True
@@ -282,12 +291,21 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
                      granted_to_project_id=project._id,
                      granted_by_neighborhood_id=nbhd._id)
 
-    if p.icon:
+    if p.icon_url:
+        req = requests.get(p.icon_url)
+        req.raise_for_status()
+        project.save_icon(urlparse(p.icon_url).path,
+                          BytesIO(req.content),
+                          content_type=req.headers.get('Content-Type'))
+    elif getattr(p, 'icon', None):
         with open(p.icon, 'rb') as icon_file:
             project.save_icon(p.icon, icon_file)
 
     project.notifications_disabled = False
     with h.push_config(c, project=project, user=p.admin):
         ThreadLocalORMSession.flush_all()
-        g.post_event('project_updated')
+        if creating:
+            g.post_event('project_created')
+        else:
+            g.post_event('project_updated')
     return project

@@ -19,6 +19,11 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import json
+
+import tg
+from bson import ObjectId
 from tg import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
@@ -407,6 +412,130 @@ class TestRestHome(TestRestApiBase):
         r = self.app.get('/rest/notification')
         assert r.json == {}
 
+
+class TestRestNbhdAddProject(TestRestApiBase):
+
+    def setUp(self):
+        super(TestRestNbhdAddProject, self).setUp()
+        # create some troves we'll need
+        M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)
+        M.TroveCategory(fullname="License", trove_cat_id=2, trove_parent_id=1)
+        M.TroveCategory(fullname="Apache License V2.0", fullpath="License :: Apache License V2.0",
+                                     trove_cat_id=4, trove_parent_id=2)
+        M.TroveCategory(fullname="Public Domain", fullpath="License :: Public Domain",
+                                      trove_cat_id=5, trove_parent_id=2)
+        p_nbhd = M.Neighborhood.query.get(url_prefix='/p/')
+        p_nbhd.features['private_projects'] = False
+
+    def test_add_project_disallowed(self):
+        self.api_post('/rest/p/add_project', user='*anonymous', status=401)
+        self.api_post('/rest/adobe/add_project', user='test-user', status=403)
+        self.api_post('/rest/p/add_project', user='test-admin', status=403)  # not a nbhd admin
+
+    def test_add_project_missing_data(self):
+        project_data = {
+            "shortname": "my-new-proj",
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_in('Required', r.json['error'])
+
+    def test_add_project_bad_data(self):
+        project_data = {
+            "shortname": "my-new-proj",
+            "admin": 'test-admin',
+            "name": "asdf",
+            "trove_licenses": ["asdfasdf"]
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_in('is not a valid trove category', r.json['error'])
+
+        # local icon paths are not allowed through web (have to use icon_url)
+        project_data = {
+            "shortname": "my-new-proj",
+            "admin": 'test-admin',
+            "name": "asdf",
+            "icon": "/local/file/path.png"
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_in('Unrecognized keys in mapping', r.json['error'])
+
+    def test_add_project_name_error(self):
+        project_data = {
+            "shortname": "test",
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_equal('This project name is taken.', r.json['error'])
+
+        project_data = {
+            "shortname": "/?xyz",
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_in('Please use', r.json['error'])
+
+    def test_add_project_create_error(self):
+        project_data = {
+            "shortname": "private-project",
+            "name": "private-project",
+            "admin": 'test-admin',
+            "private": True
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=400)
+        assert_equal("You can't create private projects in the Projects neighborhood", r.json['error'])
+
+    def test_add_project(self):
+        project_data = {
+            "shortname": "my-new-proj",
+            "admin": "test-admin",
+            "name": "My New Project",
+            "summary": "My summary.",
+            "description": "My description.",
+            "external_homepage": "http://wwww.example.com/test",
+            "labels": ["label1", "label2"],
+            "trove_licenses": [
+                "Apache License V2.0",
+                "Public Domain"],
+            "awards": [],
+            "tool_data": {
+                "allura": {
+                    "grouping_threshold": 5
+                }
+            },
+            "icon_url": "https://via.placeholder.com/140x100",
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=201)
+        assert_equal(r.json, {
+            'status': 'success',
+            'html_url': 'http://localhost/p/my-new-proj/',
+            'url': 'http://localhost/rest/p/my-new-proj/',
+        })
+        p = M.Project.query.get(shortname='my-new-proj')
+        assert_equal(p.name, 'My New Project')
+        assert_equal(len(p.trove_license), 2)
+        assert isinstance(p.trove_license[0], ObjectId), p.trove_license[0]
+        # these are sensitive fields only admins should be able to set:
+        assert_equal(p.get_tool_data('allura', 'grouping_threshold'), 5)
+        assert_equal(p.admins()[0].username, 'test-admin')
 
 
 class TestDoap(TestRestApiBase):

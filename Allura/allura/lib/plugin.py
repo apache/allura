@@ -972,8 +972,8 @@ class ProjectRegistrationProvider(object):
 
         # Check for private project rights
         if neighborhood.features['private_projects'] is False and private_project:
-            raise ValueError(
-                "You can't create private projects for %s neighborhood" %
+            raise forge_exc.ForgeError(
+                "You can't create private projects in the %s neighborhood" %
                 neighborhood.name)
 
         # Check for project limit creation

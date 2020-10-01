@@ -15,6 +15,9 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+#
+#
+# http://apiworkbench.com/ is a useful tool to edit this file
 ---
 title: Apache Allura
 version: 1
@@ -58,6 +61,36 @@ documentation:
             default: read
             enum: [read, admin, create, update, register]
 
+    /add_project:
+      description: |
+        Create a new project and set its admins, tools and various fields.  Limited to admins. currently
+      post:
+        body:
+          application/json:
+            example: |
+              {
+                  "name": "Template Test 1",
+                  "shortname": "template-test-1",
+                  "summary": "My summary.",
+                  "description": "My description.",
+                  "admin": "admin1",
+                  "external_homepage": "http://wwww.example.com/test",
+                  "labels": ["label1", "label2"],
+                  "trove_audiences": [
+                      "Information Technology",
+                      "Developers"],
+                  "trove_licenses": [
+                      "Apache License V2.0",
+                      "GNU General Public License version 2.0 (GPLv2)",
+                      "Public Domain"],
+                  "awards": [],
+                  "tool_data": {
+                      "allura": {
+                          "grouping_threshold": 5
+                      }
+                  },
+                  "icon": "https://via.placeholder.com/140x100"
+               }
 
     /{project}:
       description: |
@@ -66,7 +99,7 @@ documentation:
         project:
           description: The Project short name.
           example: "allura"
-          pattern: ([a-zA-Z]+)
+          pattern: ([a-zA-Z0-9-]+)
 
       type: {
         project: {
@@ -285,13 +318,13 @@ documentation:
                   ticket_form.labels:
                     type: string
                     required: false
-                    description:  comma-separated list of ticket labels
+                    description: comma-separated list of ticket labels
                   ticket_form.attachment:
                     type: file
-                    description:  (optional) attachment
+                    description: (optional) attachment
                     required: false
-                  ticket_form.custom field name:
-                    description:  custom field value
+                  ticket_form.custom_field_name:
+                    description: custom field value
                     type: string
                     required: false
 

@@ -18,5 +18,6 @@
         "allura": {
             "grouping_threshold": 5
         }
-    }
+    },
+    "icon": "../Allura/allura/public/nf/images/up.png"
 }]

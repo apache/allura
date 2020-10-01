@@ -192,7 +192,8 @@ class CSRFMiddleware(object):
         cookie = req.cookies.get(self._cookie_name, None)
         if cookie is None:
             cookie = h.cryptographic_nonce()
-        if req.method == 'POST':
+        # protect application/x-www-form-urlencoded or multipart/form-data (or maybe blank) from browser forms
+        if req.method == 'POST' and req.content_type != 'application/json':
             try:
                 param = req.POST.pop(self._param_name, None)
             except KeyError:
