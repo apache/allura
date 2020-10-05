@@ -13,8 +13,7 @@ enum34 ; python_version < "3.4"
 faulthandler ; python_version < "3.3"
 feedgenerator
 feedparser
-# FormEncode is not currently maintained :(  Could go to 2.0.0a currently https://github.com/formencode/formencode/issues/140
-FormEncode
+FormEncode>=2
 GitPython==2.1.11
 html5lib==1.0.1
 Jinja2
