@@ -124,7 +124,7 @@ class GenericTicketForm(ew.SimpleForm):
                         validator=fev.StringBool(),
                         attrs={'class': 'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={
-                          'multiple': 'True'}, validator=v.FieldStorageUploadConverter(if_missing=None)),
+                          'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ffw.MarkdownEdit(name='comment', label='Comment',
                              attrs={'style': 'min-height:7em; width:97%'}),
             ew.SubmitButton(label=self.submit_text, name='submit',

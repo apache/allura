@@ -72,6 +72,7 @@ class UnicodeString(fev.UnicodeString):
     """
     Override UnicodeString to fix bytes handling.
     Specifically ran into problems with its 'tooLong' check is running on bytes incorrectly and getting wrong length
+    And sometimes would return b'foo' when we wanted 'foo'
 
     Fixed elsewhere like this too:
         https://github.com/formencode/formencode/issues/2#issuecomment-378410047
@@ -81,13 +82,7 @@ class UnicodeString(fev.UnicodeString):
 
 
 # make UnicodeString fix above work through this String alias, just like formencode aliases String
-String = UnicodeString if str is str else fev.ByteString
-
-
-class FieldStorageUploadConverter(fev.FieldStorageUploadConverter):
-    # https://github.com/formencode/formencode/issues/101 local fix
-    def is_empty(self, value):
-        return value == b'' or super(FieldStorageUploadConverter, self).is_empty(value)
+String = UnicodeString if str is six.text_type else fev.ByteString
 
 
 class Ming(fev.FancyValidator):
@@ -296,7 +291,7 @@ class JsonConverter(fev.FancyValidator):
         return obj
 
 
-class JsonFile(FieldStorageUploadConverter):
+class JsonFile(fev.FieldStorageUploadConverter):
 
     """Validates that a file is JSON and returns the deserialized Python object
 
@@ -464,12 +459,6 @@ def convertTime(timestring):
 
 class IconValidator(fev.FancyValidator):
     regex = '(jpg|jpeg|gif|png|bmp)$'
-
-    # https://github.com/formencode/formencode/issues/101 local fix
-    # formencode is_empty doesn't handle empty bytestring by default
-    def is_empty(self, val):
-        return val == b'' or super(IconValidator, self).is_empty(val)
-
     def _to_python(self, value, state):
         p = re.compile(self.regex, flags=re.I)
         result = p.search(value.filename)
