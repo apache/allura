@@ -50,7 +50,9 @@ def main(options):
     projects = []
     for datum in data:
         try:
-            projects.append(deserialize_project(datum, projectSchema))
+            if options.update and not datum.get('shortname'):
+                log.warning('Shortname not provided with --update; this will create new projects instead of updating')
+            projects.append(deserialize_project(datum, projectSchema, nbhd))
         except Exception:
             keep_going = options.validate_only
             log.error('Error on %s\n%s', datum['shortname'], datum, exc_info=keep_going)
@@ -63,8 +65,7 @@ def main(options):
         return
 
     for p in projects:
-        shortname = p.shortname or p.name.shortname
-        log.info('Creating%s project "%s".' % ('/updating' if options.update else '', shortname))
+        log.info('Creating%s project "%s".' % ('/updating' if options.update else '', p.shortname))
         try:
             project = create_project_with_attrs(p, nbhd, update=options.update, ensure_tools=options.ensure_tools)
         except Exception as e:

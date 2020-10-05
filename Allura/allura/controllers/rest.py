@@ -394,9 +394,9 @@ class NeighborhoodRestController(object):
         jsondata = json.loads(request.body)
         projectSchema = make_newproject_schema(self._neighborhood)
         try:
-            pdata = deserialize_project(jsondata, projectSchema)
-            shortname = pdata.shortname or pdata.name.shortname
-            project_reg.validate_project(self._neighborhood, shortname, pdata.name.name, c.user,
+            pdata = deserialize_project(jsondata, projectSchema, self._neighborhood)
+            shortname = pdata.shortname
+            project_reg.validate_project(self._neighborhood, shortname, pdata.name, c.user,
                                          user_project=False, private_project=pdata.private)
         except (colander.Invalid, ForgeError) as e:
             response.status_int = 400

@@ -17,7 +17,6 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import re
 from io import BytesIO
 
 import datetime
@@ -27,9 +26,11 @@ import logging
 import colander as col
 import bson
 import requests
+import formencode
 import six
 from six.moves.urllib.parse import urlparse
 
+from allura.lib.helpers import slugify
 from allura.model import Neighborhood
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession
@@ -79,24 +80,6 @@ class User():
             raise col.Invalid(node,
                               'Invalid username "%s".' % cstruct)
         return user
-
-
-class ProjectName(object):
-
-    def __init__(self, name, shortname):
-        self.name = name
-        self.shortname = shortname
-
-
-class ProjectNameType():
-
-    def deserialize(self, node, cstruct):
-        if cstruct is col.null:
-            return col.null
-        name = cstruct
-        shortname = re.sub("[^A-Za-z0-9 ]", "", name).lower()
-        shortname = re.sub(" ", "-", shortname)
-        return ProjectName(name, shortname)
 
 
 class ProjectShortnameType():
@@ -177,7 +160,7 @@ class NewProjectSchema(col.MappingSchema):
     def schema_type(self, **kw):
         return col.Mapping(unknown='raise')
 
-    name = col.SchemaNode(ProjectNameType())
+    name = col.SchemaNode(col.Str())
     summary = col.SchemaNode(col.Str(), missing='')
     description = col.SchemaNode(col.Str(), missing='')
     admin = col.SchemaNode(User())
@@ -207,8 +190,8 @@ def trove_ids(orig, new_):
 
 def make_newproject_schema(nbhd, update=False):
     # type: (Neighborhood, bool) -> NewProjectSchema
-    # dynamically add to the schema (e.g. if needs nbhd)
     projectSchema = NewProjectSchema(unknown='raise')
+    # dynamically add to the schema fields that depend on `nbhd`
     projectSchema.add(col.SchemaNode(col.Sequence(),
                                      col.SchemaNode(Award(nbhd)),
                                      name='awards', missing=[]))
@@ -217,32 +200,62 @@ def make_newproject_schema(nbhd, update=False):
     return projectSchema
 
 
-def deserialize_project(datum, projectSchema):
-    # type: (dict, NewProjectSchema) -> object
+def deserialize_project(datum, projectSchema, nbhd):
+    # type: (dict, NewProjectSchema, Neighborhood) -> object
     p = projectSchema.deserialize(datum)
     p = Object(p)  # convert from dict to something with attr-access
+
+    # generate a shortname, and try to make it unique
+    if not p.shortname:
+        max_shortname_len = 15  # maybe more depending on NeighborhoodProjectShortNameValidator impl, but this is safe
+        shortname = orig_shortname = make_shortname(p.name, max_shortname_len)
+        for i in range(1, 10):
+            try:
+                ProjectRegistrationProvider.get().shortname_validator.to_python(shortname, neighborhood=nbhd)
+            except formencode.api.Invalid:
+                if len(orig_shortname) == max_shortname_len - 1:
+                    shortname = orig_shortname + str(i)
+                else:
+                    shortname = orig_shortname[:max_shortname_len - 1] + str(i)
+            else:
+                # we're good!
+                break
+        p.shortname = shortname
+
     return p
+
+
+def make_shortname(name, max_len):
+    # lowercase, drop periods and underscores
+    shortname = slugify(name)[1].replace('_', '-')
+    # must start with a letter
+    if not shortname[0].isalpha():
+        shortname = 'a-' + shortname
+    # truncate length, avoid trailing dash
+    shortname = shortname[:max_len].rstrip('-')
+    # too short
+    if len(shortname) < 3:
+        shortname += '-z'
+    return shortname
 
 
 def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
     # type: (object, M.Neighborhood, bool, bool) -> Union[M.Project|bool]
     M.session.artifact_orm_session._get().skip_mod_date = True
-    shortname = p.shortname or p.name.shortname
+    shortname = p.shortname
     project = M.Project.query.get(shortname=shortname,
                                   neighborhood_id=nbhd._id)
     project_template = nbhd.get_project_template()
 
-    if project and not (update and p.shortname):
-        log.warning('Skipping existing project "%s". To update an existing '
-                    'project you must provide the project shortname and run '
-                    'this script with --update.' % (shortname))
+    if project and not update:
+        log.warning('Skipping existing project "%s"' % (shortname))
         return False
 
     if not project:
         creating = True
         project = nbhd.register_project(shortname,
                                         p.admin,
-                                        project_name=p.name.name,
+                                        project_name=p.name,
                                         private_project=p.private)
     else:
         creating = False

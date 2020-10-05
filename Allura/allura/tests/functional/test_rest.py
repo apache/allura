@@ -537,6 +537,22 @@ class TestRestNbhdAddProject(TestRestApiBase):
         assert_equal(p.get_tool_data('allura', 'grouping_threshold'), 5)
         assert_equal(p.admins()[0].username, 'test-admin')
 
+    def test_add_project_automatic_shortname(self):
+        # no shortname given, and name "Test" would conflict with existing "test" project
+        project_data = {
+            "admin": "test-admin",
+            "name": "Test",
+        }
+        r = self.api_post('/rest/p/add_project',
+                          params=json.dumps(project_data),
+                          user='root',
+                          status=201)
+        assert_equal(r.json, {
+            'status': 'success',
+            'html_url': 'http://localhost/p/test1/',
+            'url': 'http://localhost/rest/p/test1/',
+        })
+
 
 class TestDoap(TestRestApiBase):
     validate_skip = True
