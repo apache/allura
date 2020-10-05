@@ -73,12 +73,6 @@ class ProjectImportForm(schema.Schema):
     neighborhood = fev.NotEmpty()
     project_name = v.UnicodeString(not_empty=True, max=40)
 
-    # https://github.com/formencode/formencode/issues/101 local fix
-    def _value_is_iterator(self, value):
-        if isinstance(value, bytes):
-            return False
-        return super(ProjectImportForm, self)._value_is_iterator(value)
-
 
 class ToolImportForm(schema.Schema):
 
@@ -86,12 +80,6 @@ class ToolImportForm(schema.Schema):
         super(ToolImportForm, self).__init__()
         self.add_field('mount_point', v.MountPointValidator(tool_class))
     mount_label = v.UnicodeString()
-
-    # https://github.com/formencode/formencode/issues/101 local fix
-    def _value_is_iterator(self, value):
-        if isinstance(value, bytes):
-            return False
-        return super(ToolImportForm, self)._value_is_iterator(value)
 
 
 class ImportErrorHandler(object):
