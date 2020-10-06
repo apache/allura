@@ -17,9 +17,11 @@
 
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git-core \
     python2.7-dev \
+    gcc \
+    libmagic1 \
     libssl-dev \
     libldap2-dev \
     libsasl2-dev \
@@ -31,11 +33,12 @@ RUN apt-get update && apt-get install -y \
     python-svn \
     curl \
     locales \
-    sudo
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
-    apt-get install --yes nodejs
+    apt-get install --yes --no-install-recommends nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8

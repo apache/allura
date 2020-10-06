@@ -22,12 +22,13 @@
 # match main allura Dockerfile, for shared base
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2 \
     libapache2-mod-python \
     git \
     curl \
-    sudo
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
 
 ENV APACHE_RUN_USER www-data
