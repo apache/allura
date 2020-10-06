@@ -122,8 +122,7 @@ changes.
 
 Python environment:
 
-- :file:`/allura-data/env-docker/python`
-- :file:`/allura-data/env-docker/bin`
+- :file:`/allura-data/virtualenv/bin/python`
 
 Services data:
 
@@ -222,7 +221,8 @@ Change default configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :file:`development.ini` file is geared towards development, so you will want to review
-carefully and make changes for production use.
+carefully and make changes for production use.  See also :file:`production-docker-example.ini` which sets a variety
+of settings better for production (you will always need to customize some values like keys and domains).
 
 Change `[handler_console]` section, so that logs go to a file and will include background tasks info.
 
@@ -269,7 +269,7 @@ If you'd like to use another webserver, here are a few options:
 .. code-block:: bash
 
     ~$ pip install mod_wsgi  # requires httpd2 devel libraries installed in the system
-    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python2.7/site-packages/
+    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python3.6/site-packages/
 
 For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need a wsgi callable set up like this:
 
@@ -297,7 +297,8 @@ Enabling inbound email
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Allura can listen for email messages and update tools and artifacts.  For example, every ticket has an email address, and
-emails sent to that address will be added as comments on the ticket.  To set up the SMTP listener, run:
+emails sent to that address will be added as comments on the ticket.  With Docker, this is already running on port 8825.
+If you are not running docker, run:
 
 .. code-block:: bash
 
@@ -306,6 +307,15 @@ emails sent to that address will be added as comments on the ticket.  To set up 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.
 To change the port number, edit :file:`development.ini` and change :samp:`forgemail.port` to the appropriate port number for your environment.
+
+You will need to customize your mail server to route mail for Allura to this service.  For example with postfix you can
+use :samp:`transport_maps` with::
+
+    mydomain.com smtp:127.0.0.1:8825
+    .mydomain.com smtp:127.0.0.1:8825
+    *.mydomain.com smtp:127.0.0.1:8825
+
+Various other settings may be necessary depending on your environment.
 
 SMTP in development
 ^^^^^^^^^^^^^^^^^^^
