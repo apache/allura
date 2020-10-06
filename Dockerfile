@@ -17,7 +17,7 @@
 
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     git-core \
     python2.7-dev \
     gcc \
@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
-    apt-get install --yes --no-install-recommends nodejs
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends nodejs
 
 # Snapshot generation for SVN (and maybe other SCMs) might fail without this
 RUN locale-gen en_US.UTF-8
