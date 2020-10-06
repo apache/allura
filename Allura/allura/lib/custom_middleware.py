@@ -307,7 +307,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         if six.PY2:
             import urllib2 as urlopen_pkg
         else:
-            import urllib.requests as urlopen_pkg
+            import urllib.request as urlopen_pkg
         import activitystream
         import pygments
         import difflib
@@ -350,9 +350,9 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('repo.LastCommit.{method_name}',
                   allura.model.repository.LastCommit, '*'),
             Timer('repo.Tree.{method_name}', allura.model.repository.Tree, '*'),
-            Timer('socket_read', socket._fileobject, 'read', 'readline',
+            Timer('socket_read', socket._fileobject if six.PY2 else socket.SocketIO, 'read', 'readline',
                   'readlines', debug_each_call=False),
-            Timer('socket_write', socket._fileobject, 'write', 'writelines',
+            Timer('socket_write', socket._fileobject if six.PY2 else socket.SocketIO, 'write', 'writelines',
                   'flush', debug_each_call=False),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
             Timer('urlopen', urlopen_pkg, 'urlopen'),
