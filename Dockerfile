@@ -19,7 +19,7 @@ FROM ubuntu:18.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     git-core \
-    python2.7-dev \
+    python3-dev \
     gcc \
     libmagic1 \
     libssl-dev \
@@ -27,10 +27,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libsasl2-dev \
     libjpeg8-dev \
     zlib1g-dev \
-    python-pip \
+    python3-venv \
     zip \
     subversion \
-    python-svn \
+    python3-svn \
     curl \
     locales \
     sudo \

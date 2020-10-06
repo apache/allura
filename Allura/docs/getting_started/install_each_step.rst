@@ -47,11 +47,11 @@ In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and 
 System Packages
 ^^^^^^^^^^^^^^^
 
-Before we begin, you'll need to install some system packages.
+Before we begin, you'll need to install some system packages.  Allura currently supports Python 2.7, 3.6 and 3.7.  Python 3.7 is recommended, support for Python 2.7 will likely be removed soon.
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install git-core python2.7-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
+    ~$ sudo apt-get install git-core python3-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
@@ -59,30 +59,29 @@ Optional, for SVN support:
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install subversion python-svn
+    ~$ sudo apt-get install subversion python3-svn
 
-Setting up a virtual python environment
+Setting up a python virtual environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The first step to installing the Allura platform is installing a virtual environment via `virtualenv <https://virtualenv.pypa.io/en/latest/>`_.  This helps keep our distribution python installation clean.
+The first step to installing the Allura platform is installing a virtual environment via :code:`venv`.  This helps keep our distribution python installation clean.
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install python-pip
-    ~$ sudo pip install virtualenv
+    ~$ sudo apt-get install python3-venv
 
-Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'env-allura'.
+Then create a virtual environment.  We'll call our Allura environment 'env-allura'.
 
 .. code-block:: bash
 
-    ~$ virtualenv env-allura
+    ~$ python3 -m venv env-allura
 
 This gives us a nice, clean environment into which we can install all the allura dependencies.
 In order to use the virtual environment, you'll need to activate it:
 
 .. code-block:: bash
 
-    ~$ . env-allura/bin/activate
+    ~$ source env-allura/bin/activate
 
 You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your :file:`~/.bashrc` file.
 
@@ -107,20 +106,21 @@ Now we can get down to actually getting the Allura code and dependencies downloa
 
 If you already reading this file from an Allura release or checkout, you're ready to continue.
 
-Although the application :file:`setup.py` files define a number of dependencies, the :file:`requirements.txt` files are currently the authoritative source, so we'll use those with `pip <https://pip.pypa.io/en/stable/>`_ to make sure the correct versions are installed.
+We'll upgrade `pip <https://pip.pypa.io/en/stable/>`_ to make sure its a current version, and then install all Allura python dependencies with it.
 
 .. code-block:: bash
 
     (env-allura)~/src$ cd allura
+    (env-allura)~/src/allura$ pip install -U pip
     (env-allura)~/src/allura$ pip install -r requirements.txt
 
-This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
+This may take a little while.
 
 Optional, for SVN support: symlink the system pysvn package into our virtual environment
 
 .. code-block:: bash
 
-    (env-allura)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/env-allura/lib/python2.7/site-packages/
+    (env-allura)~/src/allura$ ln -s /usr/lib/python3/dist-packages/pysvn ~/env-allura/lib/python3.*/site-packages/
 
 Next, run this to set up all the Allura tools:
 
