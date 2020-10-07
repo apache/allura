@@ -255,9 +255,7 @@ class PersonalDataForm(ForgeForm):
                 label='Gender',
                 options=[ew.Option(py_value=v, label=v, selected=False)
                          for v in ['Male', 'Female', 'Unknown', 'Other']],
-                validator=formencode.All(
-                    V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
-                    V.UnicodeString(not_empty=True))),
+                validator=V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other'])),
             ew.SingleSelectField(
                 name='country',
                 label='Country of residence',
@@ -450,7 +448,7 @@ class AddSocialNetworkForm(ForgeForm):
             ew.SingleSelectField(
                 name='socialnetwork',
                 label='Social network',
-                validator=V.UnicodeString(not_empty=True),
+                validator=V.OneOfValidator(socialnetworks),
                 options=[ew.Option(py_value=name, label=name)
                          for name in socialnetworks]),
             ew.TextField(
@@ -499,14 +497,10 @@ class AddInactivePeriodForm(ForgeForm):
     class fields(ew_core.NameList):
         startdate = ew.TextField(
             label='Start date',
-            validator=formencode.All(
-                V.DateValidator(),
-                V.UnicodeString(not_empty=True)))
+            validator=V.DateValidator())
         enddate = ew.TextField(
             label='End date',
-            validator=formencode.All(
-                V.DateValidator(),
-                V.UnicodeString(not_empty=True)))
+            validator=V.DateValidator())
 
     @ew_core.core.validator
     def to_python(self, kw, state):
@@ -558,19 +552,13 @@ class AddTimeSlotForm(ForgeForm):
             label='Weekday',
             options=[ew.Option(py_value=wd, label=wd)
                      for wd in weekdays],
-            validator=formencode.All(
-                V.OneOfValidator(weekdays),
-                V.UnicodeString(not_empty=True)))
+            validator=V.OneOfValidator(weekdays))
         starttime = ew.TextField(
             label='Start time',
-            validator=formencode.All(
-                V.TimeValidator(),
-                V.UnicodeString(not_empty=True)))
+            validator=V.TimeValidator())
         endtime = ew.TextField(
             label='End time',
-            validator=formencode.All(
-                V.TimeValidator(),
-                V.UnicodeString(not_empty=True)))
+            validator=V.TimeValidator())
 
     @ew_core.core.validator
     def to_python(self, kw, state):
@@ -700,9 +688,7 @@ class AddUserSkillForm(ForgeForm):
                 ew.Option(py_value="low", label="Low level"),
                 ew.Option(py_value="medium", label="Medium level"),
                 ew.Option(py_value="high", label="Advanced level")],
-            validator=formencode.All(
-                V.OneOfValidator(['low', 'medium', 'high']),
-                V.UnicodeString(not_empty=True)))
+            validator=V.OneOfValidator(['low', 'medium', 'high']))
         comment = ew.TextArea(
             label="Additional comments",
             validator=V.UnicodeString(not_empty=False),
@@ -730,9 +716,7 @@ class SelectSubCategoryForm(ForgeForm):
         self.fields['selected_category'].options = [
             ew.Option(py_value=el.trove_cat_id, label=el.fullname) for el in categories
         ]
-        self.fields['selected_category'].validator = formencode.All(
-            V.OneOfValidator(categories),
-            V.UnicodeString(not_empty=True))
+        self.fields['selected_category'].validator = V.OneOfValidator(categories)
         return super(ForgeForm, self).display(**kw)
 
 

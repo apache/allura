@@ -1333,10 +1333,8 @@ class TestPreferences(TestController):
                               _session_id=self.app.cookies['_session_id'],
                           ))
         user = M.User.query.get(username='test-admin')
-        timeslot1dict = dict(
-            week_day=weekday, start_time=starttime, end_time=endtime)
-        assert len(
-            user.availability) == 1 and timeslot1dict in user.get_availability_timeslots()
+        timeslot1dict = dict(week_day=weekday, start_time=starttime, end_time=endtime)
+        assert len(user.availability) == 1 and timeslot1dict in user.get_availability_timeslots()
 
         weekday2 = 'Tuesday'
         starttime2 = time(14, 0, 0)
@@ -1351,8 +1349,7 @@ class TestPreferences(TestController):
                               _session_id=self.app.cookies['_session_id'],
                           ))
         user = M.User.query.get(username='test-admin')
-        timeslot2dict = dict(week_day=weekday2,
-                             start_time=starttime2, end_time=endtime2)
+        timeslot2dict = dict(week_day=weekday2, start_time=starttime2, end_time=endtime2)
         assert len(user.availability) == 2
         assert_in(timeslot1dict, user.get_availability_timeslots())
         assert_in(timeslot2dict, user.get_availability_timeslots())
@@ -1378,8 +1375,7 @@ class TestPreferences(TestController):
                           ))
         assert 'Invalid period:' in str(r)
         user = M.User.query.get(username='test-admin')
-        timeslot2dict = dict(week_day=weekday2,
-                             start_time=starttime2, end_time=endtime2)
+        timeslot2dict = dict(week_day=weekday2, start_time=starttime2, end_time=endtime2)
         assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
 
     @td.with_user_project('test-admin')
