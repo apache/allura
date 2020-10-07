@@ -1628,7 +1628,7 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test first ticket', ticket_rows.text)
         assert_in('test second ticket', ticket_rows.text)
         edit_link = response.html.find('a', {'title': 'Bulk Edit'})
-        expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed"\
+        expected_link = "/p/test/bugs/edit/?q=%21status%3Aclosed+%26%26+%21status%3Awont-fix"\
                         "&sort=snippet_s+asc&limit=25&filter=&page=0"
         assert_equivalent_urls(expected_link, edit_link['href'])
         response = self.app.get(edit_link['href'])
@@ -2526,7 +2526,7 @@ class TestFunctionalController(TrackerTestController):
         query_filter_choices.return_value = {'status': [('open', 2)], }
         r = self.app.get('/bugs/')
         assert '<option value="open">open (2)</option>' in r
-        query_filter_choices.assert_called_once_with('!status_s:wont-fix && !status_s:closed', fq=['deleted_b:False'])
+        query_filter_choices.assert_called_once_with('!status_s:closed && !status_s:wont-fix', fq=['deleted_b:False'])
 
     def test_rate_limit_new(self):
         self.new_ticket(summary='First ticket')
