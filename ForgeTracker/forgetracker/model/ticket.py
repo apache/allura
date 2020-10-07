@@ -155,16 +155,16 @@ class Globals(MappedClass):
 
     @property
     def not_closed_query(self):
-        return ' && '.join(['!status:' + name for name in self.set_of_closed_status_names])
+        return ' && '.join(['!status:' + name for name in sorted(self.set_of_closed_status_names)])
 
     @property
     def not_closed_mongo_query(self):
         return dict(
-            status={'$nin': list(self.set_of_closed_status_names)})
+            status={'$nin': sorted(self.set_of_closed_status_names)})
 
     @property
     def closed_query(self):
-        return ' OR '.join(['status:' + name for name in self.set_of_closed_status_names])
+        return ' OR '.join(['status:' + name for name in sorted(self.set_of_closed_status_names)])
 
     @property
     def milestone_fields(self):
