@@ -261,7 +261,9 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
         project = nbhd.register_project(shortname,
                                         p.admin,
                                         project_name=p.name,
-                                        private_project=p.private)
+                                        private_project=p.private,
+                                        omit_event=True,  # because we'll fire it later after setting other fields
+                                        )
     else:
         creating = False
         log.info('Updating project "%s".' % (shortname))

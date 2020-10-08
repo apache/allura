@@ -956,13 +956,15 @@ class ProjectRegistrationProvider(object):
             state(p).soil()
         return p
 
-    def register_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps=None):
+    def register_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps=None,
+                         omit_event=False, **kwargs):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.
         '''
         self.validate_project(neighborhood, shortname,
                               project_name, user, user_project, private_project)
-        return self._create_project(neighborhood, shortname, project_name, user, user_project, private_project, apps)
+        return self._create_project(neighborhood, shortname, project_name, user, user_project, private_project, apps,
+                                    omit_event=omit_event)
 
     def validate_project(self, neighborhood, shortname, project_name, user, user_project, private_project):
         '''
@@ -1010,7 +1012,8 @@ class ProjectRegistrationProvider(object):
         """
         return dict()
 
-    def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
+    def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps,
+                        omit_event=False):
         '''
         Actually create the project, no validation.  This should not be called directly
         under normal circumstances.
@@ -1121,7 +1124,8 @@ class ProjectRegistrationProvider(object):
             ThreadLocalORMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
             # for user-project reg, and c.user isn't set yet
-            g.post_event('project_created')
+            if not omit_event:
+                g.post_event('project_created')
         return p
 
     def register_subproject(self, project, name, user, install_apps, project_name=None):
