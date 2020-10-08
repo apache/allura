@@ -29,6 +29,7 @@ import requests
 import formencode
 import six
 from six.moves.urllib.parse import urlparse
+from six.moves import range
 
 from allura.lib.helpers import slugify
 from allura.model import Neighborhood
