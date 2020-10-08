@@ -22,6 +22,10 @@ from io import BytesIO
 import datetime
 import string
 import logging
+try:
+    from typing import Union
+except ImportError:  # py2 doesn't have typing yet
+    pass
 
 import colander as col
 import bson
