@@ -650,7 +650,7 @@ class TestExportTasks(unittest.TestCase):
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'
         zipdir.assert_called_with(temp, zipfn)
-        shutil.rmtree.assert_called_once_with(temp)
+        shutil.rmtree.assert_called_once_with(six.ensure_binary(temp))
         # check notification
         tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
