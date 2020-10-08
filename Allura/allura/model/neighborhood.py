@@ -144,15 +144,16 @@ class Neighborhood(MappedClass):
 
         return total
 
-    def register_project(self, shortname, user=None, project_name=None, user_project=False, private_project=False, apps=None):
+    def register_project(self, shortname, user=None, project_name=None, user_project=False, private_project=False,
+                         apps=None, omit_event=False, **kwargs):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.  If no user is specified, c.user is used.
         '''
         provider = plugin.ProjectRegistrationProvider.get()
         if project_name is None:
             project_name = shortname
-        return provider.register_project(
-            self, shortname, project_name, user or getattr(c, 'user', None), user_project, private_project, apps)
+        return provider.register_project(self, shortname, project_name, user or getattr(c, 'user', None), user_project,
+                                         private_project, apps, omit_event=omit_event, **kwargs)
 
     def get_custom_css(self):
         if self.allow_custom_css:
