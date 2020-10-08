@@ -22,9 +22,13 @@
 # match main allura Dockerfile, for shared base
 FROM ubuntu:18.04
 
+# libapache2-mod-python is for py2 (both ubuntu:18.04 and ubuntu:20.04)
+# to match that, python-requests is also py2 on ubuntu:18.04 (probably python2-requests on ubuntu:20.04)
+# https://forge-allura.apache.org/p/allura/tickets/8352/ is to switch to mod_wsgi & py3 instead
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apache2 \
     libapache2-mod-python \
+    python-requests \
     git \
     curl \
     sudo \
