@@ -52,7 +52,7 @@ class SMTPServerCommand(base.Command):
 
 class MailServer(smtpd.SMTPServer):
 
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         try:
             base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
             base.log.info(' (%d bytes)', len(data))

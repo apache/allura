@@ -25,6 +25,6 @@ from smtpd import DebuggingServer
 
 class BetterDebuggingServer(DebuggingServer, object):
 
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         print('TO: ' + ', '.join(rcpttos))
         super(BetterDebuggingServer, self).process_message(peer, mailfrom, rcpttos, data)
