@@ -326,7 +326,7 @@
         </tr>
         <tr>
           <td>
-            {% if tottickets.averagesolvingtime > 0 %}
+            {% if tottickets.averagesolvingtime %}
               <a href="{{c.project.url()}}userstats/tickets/">Average tickets solving time</a>
             {% else %}
               Average tickets solving time
