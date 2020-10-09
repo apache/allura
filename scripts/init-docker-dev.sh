@@ -34,6 +34,7 @@ chmod 777 /allura-data/solr
 
 mkdir -p /allura-data/www-misc
 echo "# No robots.txt rules here" > /allura-data/www-misc/robots.txt
+cp /allura/Allura/allura/public/nf/favicon.ico /allura-data/www-misc/favicon.ico
 
 # share venv to allow update and sharing across containers
 if [ ! -e /allura-data/virtualenv ]; then
