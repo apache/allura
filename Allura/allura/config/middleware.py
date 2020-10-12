@@ -24,7 +24,8 @@ from __future__ import absolute_import
 import ast
 import importlib
 import mimetypes
-
+import pickle
+import six
 import tg
 import tg.error
 import pkg_resources
@@ -33,6 +34,7 @@ from paste.deploy.converters import asbool, aslist, asint
 from tg.support.registry import RegistryManager
 from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
+from beaker.util import PickleSerializer
 from paste.exceptions.errormiddleware import ErrorMiddleware
 
 import activitystream
@@ -79,6 +81,12 @@ def make_app(global_conf, full_stack=True, **app_conf):
     else:
         root = None  # will default to RootController in root.py
     return _make_core_app(root, global_conf, full_stack, **app_conf)
+
+
+class BeakerPickleSerializerWithLatin1(PickleSerializer):
+    def loads(self, data_string):
+        # need latin1 to decode py2 timestamps in py  https://docs.python.org/3/library/pickle.html#pickle.Unpickler
+        return pickle.loads(data_string, **{'encoding': 'latin1'} if six.PY3 else {})
 
 
 def _make_core_app(root, global_conf, full_stack=True, **app_conf):
@@ -137,7 +145,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
             app = Middleware(app, config)
 
     # Required for sessions
-    app = SessionMiddleware(app, config)
+    app = SessionMiddleware(app, config, data_serializer=BeakerPickleSerializerWithLatin1())
     # Handle "Remember me" functionality
     app = RememberLoginMiddleware(app, config)
     # Redirect 401 to the login page
