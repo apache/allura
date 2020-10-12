@@ -110,7 +110,7 @@ class AdminApp(Application):
                 tools.append(dict(name=name, app=App))
             # prevent from saving temporary config to db
             session(cfg).expunge(cfg)
-        tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
+        tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal or 0))
         return [t for t in tools
                 if t['app'].status in project.allowed_tool_status]
 

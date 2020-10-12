@@ -421,18 +421,3 @@ def test_close_ipv4_addrs():
     assert utils.close_ipv4_addrs('1.2.3.4', '1.2.3.255')
     assert not utils.close_ipv4_addrs('1.2.3.4', '1.2.4.4')
 
-
-def test_lsub_utf8():
-    assert_equal(b'asdf',
-                 utils.lsub_utf8(h.really_unicode('asdf').encode('utf-8'), 40))
-    assert_equal(b'as\xf0\x9f\x98\x84\xc2\xb6\xc2\xba\xc2\xb6',
-                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 40))
-    assert_equal(b'as\xf0\x9f\x98\x84',
-                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 6))
-    # these would truncate the smiley:
-    assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 5))
-    assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 4))
-    assert_equal(b'as',
-                 utils.lsub_utf8(h.really_unicode('as😄¶º¶').encode('utf-8'), 3))

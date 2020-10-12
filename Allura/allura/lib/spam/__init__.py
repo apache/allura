@@ -83,7 +83,7 @@ class ChainedSpamFilter(SpamFilter):
         methods = aslist(methods_string)
         self.filters = []
         for m in methods:
-            config = copy(config)
+            config = dict(config).copy()
             config['spam.method'] = m
             spam_filter = SpamFilter.get(config=config, entry_points=entry_points)
             self.filters.append(spam_filter)

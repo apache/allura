@@ -83,7 +83,7 @@ class AkismetSpamFilter(SpamFilter):
         if user:
             kw['comment_author'] = user.display_name or user.username
             kw['comment_author_email'] = user.email_addresses[0] if user.email_addresses else ''
-        if request:
+        if request is not None:
             kw['user_ip'] = utils.ip_address(request)
             kw['user_agent'] = request.headers.get('USER_AGENT')
             kw['referrer'] = request.headers.get('REFERER')
