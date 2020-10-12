@@ -31,6 +31,7 @@ import re
 from optparse import OptionParser
 from itertools import islice
 import codecs
+from io import TextIOWrapper
 
 from bs4 import BeautifulSoup, NavigableString
 import dateutil.parser
@@ -137,8 +138,11 @@ class TracExport(object):
     @staticmethod
     def match_pattern(regexp, string):
         m = re.match(regexp, string)
-        assert m
-        return m.group(1)
+        assert m, "'{}' didn't match '{}'".format(regexp, string)
+        for grp in m.groups():
+            if grp is not None:
+                return grp
+        return None
 
     def csvopen(self, url):
         self.log_url(url)
@@ -149,7 +153,7 @@ class TracExport(object):
         if not f.info()['Content-Type'].startswith('text/csv'):
             raise six.moves.urllib.error.HTTPError(
                 url, 403, 'Forbidden - emulated', f.info(), f)
-        return f
+        return TextIOWrapper(f)
 
     def parse_ticket(self, id):
         # Use CSV export to get ticket fields
@@ -177,7 +181,7 @@ class TracExport(object):
             c['submitter'] = re.sub(
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
             c['date'] = self.trac2z_date(
-                comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
+                comment.find('a', 'timeline')['title'].replace(' in Timeline', '').replace('See timeline at '))
             changes = six.text_type(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
@@ -190,7 +194,7 @@ class TracExport(object):
 
     def parse_ticket_attachments(self, id):
         SIZE_PATTERN = r'(\d+) bytes'
-        TIMESTAMP_PATTERN = r'(.+) in Timeline'
+        TIMESTAMP_PATTERN = r'(?:(.+) in Timeline|See timeline at (.+))'
         # Scrape HTML to get ticket attachments
         url = self.full_url(self.ATTACHMENT_LIST_URL % id)
         self.log_url(url)
@@ -208,10 +212,8 @@ class TracExport(object):
             size_s = attach.span['title']
             d['size'] = int(self.match_pattern(SIZE_PATTERN, size_s))
             timestamp_s = attach.find('a', {'class': 'timeline'})['title']
-            d['date'] = self.trac2z_date(
-                self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
-            d['by'] = attach.find(
-                text=re.compile('added by')).nextSibling.renderContents()
+            d['date'] = self.trac2z_date(self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
+            d['by'] = attach.find(text=re.compile('added by')).nextSibling.text
             d['description'] = ''
             # Skip whitespace
             while attach.nextSibling and isinstance(attach.nextSibling, NavigableString):
