@@ -744,7 +744,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con = ldap_conn(ldap_ident, ldap_pass)
             new_password = self._encode_password(new_password)
             con.modify_s(
-                dn, [(ldap.MOD_REPLACE, b'userPassword', new_password)])
+                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password)])
             con.unbind_s()
             user.last_password_updated = datetime.utcnow()
             session(user).flush(user)
@@ -1740,7 +1740,7 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
             con = ldap_conn()
             ldap_attr = self.fields[pref_name]
             con.modify_s(ldap_user_dn(user.username),
-                         [(ldap.MOD_REPLACE, ldap_attr.encode('utf-8'), pref_value.encode('utf-8'))])
+                         [(ldap.MOD_REPLACE, ldap_attr, pref_value.encode('utf-8'))])
             con.unbind_s()
         else:
             return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)
