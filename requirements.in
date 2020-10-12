@@ -26,7 +26,7 @@ Ming==0.10.2
 # archive/.../.zip URL is preferable over git+https://... since it supports pip hash generating+checking
 https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
 paginate
-Paste
+Paste>=3.5
 PasteDeploy
 PasteScript
 Pillow
