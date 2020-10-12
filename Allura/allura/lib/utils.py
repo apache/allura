@@ -137,7 +137,7 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
 
         """
         title = getproctitle()
-        if title.startswith(b'taskd:'):
+        if title.startswith('taskd:'):
             record.name = "{0}:{1}".format(title, record.name)
         return super(CustomWatchedFileHandler, self).format(record)
 
@@ -171,17 +171,6 @@ def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
             max_id = results[-1][sort_key]
         yield results
         page += 1
-
-
-def lsub_utf8(s, n):
-    '''Useful for returning n bytes of a UTF-8 string, rather than characters'''
-    byte2int = ord if six.PY2 else int
-    while len(s) > n:
-        k = n
-        while (byte2int(s[k]) & 0xc0) == 0x80:
-            k -= 1
-        return s[:k]
-    return s
 
 
 def chunked_list(l, n):
