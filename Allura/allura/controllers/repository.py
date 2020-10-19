@@ -845,7 +845,12 @@ class FileBrowser(BaseController):
     @expose('jinja:allura:templates/repo/file.html')
     def index(self, **kw):
         if kw.pop('format', 'html') == 'raw':
-            return self.raw()
+            if self._blob.size > asint(tg.config.get('scm.download.max_file_bytes', 30*1000*1000)):
+                large_size = self._blob.size
+                flash('File is {}.  Too large to download.'.format(h.do_filesizeformat(large_size)), 'warning')
+                raise exc.HTTPForbidden
+            else:
+                return self.raw()
         elif 'diff' in kw:
             tg.decorators.override_template(
                 self.index, 'jinja:allura:templates/repo/diff.html')
@@ -856,11 +861,17 @@ class FileBrowser(BaseController):
             return self.diff(kw['barediff'], kw.pop('diformat', None), kw.pop('prev_file', None))
         else:
             force_display = 'force' in kw
-            stats = utils.generate_code_stats(self._blob)
+            if self._blob.size > asint(tg.config.get('scm.view.max_file_bytes', 5*1000*1000)):
+                large_size = self._blob.size
+                stats = None
+            else:
+                large_size = False
+                stats = utils.generate_code_stats(self._blob)
             return dict(
                 blob=self._blob,
                 stats=stats,
-                force_display=force_display
+                force_display=force_display,
+                large_size=large_size,
             )
 
     def raw(self, **kw):

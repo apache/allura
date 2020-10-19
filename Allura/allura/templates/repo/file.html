@@ -73,7 +73,10 @@
 </script>
 {% endblock %}
 {% block content %}
-  {% if blob.has_image_view %}
+  {% if large_size %}
+    <p><em>File is {{ large_size|filesizeformat}}.  Too large to display.</em></p>
+    <p><a rel="nofollow" href="?format=raw">Download this file</a></p>
+  {% elif blob.has_image_view %}
     <p><a rel="nofollow" href="?format=raw">Download this file</a></p>
     <img src="?format=raw" alt=""/>
   {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}

@@ -32,6 +32,7 @@ from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import pkg_resources
 from nose.tools import assert_regexp_matches
 from tg import tmpl_context as c
+import tg
 from ming.orm import ThreadLocalORMSession
 from mock import patch, PropertyMock
 
@@ -311,6 +312,17 @@ class TestRootController(_TestCase):
         assert_in('"&: encodes as %22%26%3A', resp.body.decode('utf-8'))
         assert_equal(resp.headers.get('Content-Disposition'),
                      'attachment;filename="with%22%26%3Aspecials.txt"')
+
+    def test_file_too_large(self):
+        ci = self._get_ci()
+        with h.push_config(tg.config, **{'scm.view.max_file_bytes': '3'}):
+            resp = self.app.get(ci + 'tree/README')
+        resp.mustcontain('Too large')
+        resp.mustcontain(' 28 Bytes')
+        resp.mustcontain(no='This is readme')
+
+        with h.push_config(tg.config, **{'scm.download.max_file_bytes': '3'}):
+            resp = self.app.get(ci + 'tree/README?format=raw', status=403)
 
     def test_invalid_file(self):
         ci = self._get_ci()
