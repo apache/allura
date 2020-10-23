@@ -20,6 +20,8 @@ from __future__ import absolute_import
 import os
 import logging
 import difflib
+
+from allura.lib.utils import permanent_redirect
 from datetime import datetime
 from six.moves.urllib.parse import quote, unquote
 from collections import defaultdict, OrderedDict
@@ -94,7 +96,7 @@ class RepoRootController(BaseController, FeedController):
     def index(self, offset=0, branch=None, **kw):
         if branch is None:
             branch = c.app.default_branch_name
-        redirect(c.app.repo.url_for_commit(branch, url_type='ref'))
+        permanent_redirect(c.app.repo.url_for_commit(branch, url_type='ref'))
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/forks.html')

@@ -29,7 +29,7 @@ from mock import patch
 from tg import config
 from nose.tools import assert_equal, assert_in, assert_not_equal
 from ming.orm.ormsession import ThreadLocalORMSession, session
-from paste.httpexceptions import HTTPFound
+from paste.httpexceptions import HTTPFound, HTTPMovedPermanently
 from tg import app_globals as g, tmpl_context as c
 
 import allura
@@ -44,7 +44,7 @@ from six.moves import map
 
 class TestNeighborhood(TestController):
     def test_home_project(self):
-        r = self.app.get('/adobe/wiki/', status=302)
+        r = self.app.get('/adobe/wiki/', status=301)
         assert r.location.endswith('/adobe/wiki/Home/')
         r = r.follow()
         assert 'This is the "Adobe" neighborhood' in str(r), str(r)
@@ -332,7 +332,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'picker'
         r = self.app.get('/adobe/')
-        while isinstance(r.response, HTTPFound):
+        while isinstance(r.response, HTTPFound) or isinstance(r.response, HTTPMovedPermanently):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',
@@ -342,7 +342,7 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'custom'
         r = self.app.get('/adobe/')
-        while isinstance(r.response, HTTPFound):
+        while isinstance(r.response, HTTPFound) or isinstance(r.response, HTTPMovedPermanently):
             r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview',

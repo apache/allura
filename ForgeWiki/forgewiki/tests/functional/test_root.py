@@ -673,7 +673,7 @@ class TestRootController(TestController):
         assert_equal(homepage_admin.form['new_home'].value, 'Home')
         homepage_admin.form['new_home'].value = 'our_néw_home'
         homepage_admin.form.submit()
-        root_path = self.app.get('/wiki/', status=302)
+        root_path = self.app.get('/wiki/', status=301)
         assert root_path.location.endswith('/wiki/our_n%C3%A9w_home/'), root_path.location
 
     def test_edit_mount_label(self):
@@ -753,13 +753,13 @@ class TestRootController(TestController):
         assert found_links == 10, 'Wrong number of links found'
 
     def test_home_rename(self):
-        assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get(
+        assert 'The resource has been moved to http://localhost/p/test/wiki/Home/;' in self.app.get(
             '/p/test/wiki/')
         req = self.app.get('/p/test/wiki/Home/edit')
         form = self._find_edit_form(req)
         form['title'].value = 'new_title'
         form.submit()
-        assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get(
+        assert 'The resource has been moved to http://localhost/p/test/wiki/new_title/;' in self.app.get(
             '/p/test/wiki/')
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')

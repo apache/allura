@@ -648,10 +648,10 @@ class TestFork(_TestCase):
             shutil.rmtree(clone_path, ignore_errors=True)
 
     def _follow(self, r, **kw):
-        if r.status_int == 302:
+        if r.status_int == 301 or r.status_int == 302:
             print(r.request.url)
-        while r.status_int == 302:
-            print(' ==> 302 ==> %s' % r.location)
+        while r.status_int == 301 or r.status_int == 302:
+            print(' ==> 302/301 ==> %s' % r.location)
             r = r.follow(**kw)
         return r
 

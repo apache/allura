@@ -137,7 +137,7 @@ class TestProjectHome(TestController):
 
     @td.with_wiki
     def test_neighborhood_home(self):
-        self.app.get('/p/test/wiki/', status=302)
+        self.app.get('/p/test/wiki/', status=301)
         self.app.get('/adobe/test/wiki/', status=404)
         self.app.get('/adobe/no_such_project/wiki/', status=404)
 

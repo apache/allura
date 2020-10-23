@@ -43,7 +43,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController, Config
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post, memorable_forget
 from allura.lib.security import require_access, has_access
-from allura.lib.utils import is_ajax, JSONForExport
+from allura.lib.utils import is_ajax, JSONForExport, permanent_redirect
 from allura.tasks import notification_tasks
 from allura.lib import exceptions as forge_exc
 from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
@@ -392,7 +392,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        redirect(h.urlquote(h.really_unicode(c.app.root_page_name)+ '/'))
+        permanent_redirect(h.urlquote(h.really_unicode(c.app.root_page_name)+ '/'))
 
     @expose()
     def _lookup(self, pname, *remainder):
