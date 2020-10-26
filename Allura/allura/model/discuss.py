@@ -331,11 +331,14 @@ class Thread(Artifact, ActivityObject):
             kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
 
+        if ignore_security or is_meta:
+            spammy = False
+        else:
+            spammy = self.is_spam(post)
         # unmoderated post -> autoapprove
         # unmoderated post but is spammy -> don't approve it, it goes into moderation
         # moderated post -> moderation
         # moderated post but is spammy -> mark as spam
-        spammy = self.is_spam(post)
         if ignore_security or (not spammy and has_access(self, 'unmoderated_post')):
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
