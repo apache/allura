@@ -58,7 +58,7 @@ class _HTMLExplanation(ew.InputField):
 
 class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
 
-    def _validate_shortname(self, shortname, neighborhood, state):
+    def _validate_shortname(self, shortname, neighborhood, state, permit_legacy=False):
         if not h.re_project_name.match(shortname):
             raise forge_exc.ProjectShortnameInvalid(
                 'Please use 3-15 small letters, numbers, and dashes.',
@@ -72,7 +72,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
                 'This project name is taken.',
                 shortname, state)
 
-    def to_python(self, value, state=None, check_allowed=True, neighborhood=None):
+    def to_python(self, value, state=None, check_allowed=True, neighborhood=None, permit_legacy=False):
         """
         Validate a project shortname.
 
@@ -83,7 +83,7 @@ class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
         if neighborhood is None:
             neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
         value = h.really_unicode(value or '')
-        self._validate_shortname(value, neighborhood, state)
+        self._validate_shortname(value, neighborhood, state, permit_legacy=permit_legacy)
         if check_allowed:
             self._validate_allowed(value, neighborhood, state)
         return value
