@@ -317,7 +317,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
         raise exc.HTTPNotFound
     provider = plugin.ProjectRegistrationProvider.get()
     try:
-        provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=nbhd)
+        provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=nbhd, permit_legacy=True)
     except Invalid:
         project = None
     else:
