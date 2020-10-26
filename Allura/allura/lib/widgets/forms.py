@@ -1066,7 +1066,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     }
                 });
                 var suggest_name = function(project_name) {
-                    return project_name.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase();
+                    return project_name.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase().replace(/^-+|-+$/g, '');
                 };
                 var check_names = function() {
                     var data = {
