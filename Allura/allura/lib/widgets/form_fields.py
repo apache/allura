@@ -285,10 +285,10 @@ class MarkdownEdit(ew.TextArea):
         for r in super(MarkdownEdit, self).resources():
             yield r
         yield ew.JSLink('js/jquery.lightbox_me.js')
-        yield ew.CSSLink('css/simplemde.min.css', compress=False)
+        yield ew.CSSLink('css/easymde.min.css', compress=False)
         yield ew.CSSLink('css/markitup_sf.css')
         yield ew.CSSLink('css/show-hint.css')
-        yield ew.JSLink('js/simplemde.min.js')
+        yield ew.JSLink('js/easymde.min.js')
         yield ew.JSLink('js/sf_markitup.js')
         yield ew.JSLink('js/show-hint.js')
         yield ew.JSLink('js/usermentions-helper.js')

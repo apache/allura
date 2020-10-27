@@ -51,7 +51,7 @@ $(window).load(function() {
               }
             ];
 
-            var editor = new SimpleMDE({
+            var editor = new EasyMDE({
               element: $textarea[0],
               autoDownloadFontAwesome: false,
               autofocus: false,
