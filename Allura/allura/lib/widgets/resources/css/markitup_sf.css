@@ -35,10 +35,12 @@
   border-bottom: none;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  overflow: hidden;
 }
 .markdown_edit .CodeMirror-scroll {
   min-height: 60px;
   max-height: 500px;
+  overflow: auto !important;
 }
 .markdown_edit .CodeMirror-fullscreen .CodeMirror-scroll {
   max-height: none;
@@ -59,6 +61,9 @@
 .editor-toolbar.disabled-for-preview a:not(.fa-eye):not(.fa-arrows-alt):not(.fa-columns)::before {
   color: #BBB;
 }
+.editor-toolbar button {
+  float: none;
+}
 
 .CodeMirror .CodeMirror-code .cm-comment {
   font-family: monospace;
@@ -75,9 +80,9 @@
     color: #999;
 }
 /* move these buttons to the right, they are a different type of button */
-.editor-toolbar .fa-eye,
-.editor-toolbar .fa-arrows-alt,
-.editor-toolbar .fa-question-circle {
+.editor-toolbar button.preview,
+.editor-toolbar button.fullscreen,
+.editor-toolbar button.guide {
   float: right;
 }
 .editor-toolbar.fullscreen {
