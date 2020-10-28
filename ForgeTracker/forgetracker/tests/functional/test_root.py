@@ -63,6 +63,12 @@ import six
 from six.moves import range
 
 
+def find(d, pred):
+    for n, v in d.items():
+        if pred(v):
+            return n, v
+
+
 class TrackerTestController(TestController):
     def setUp(self):
         super(TrackerTestController, self).setUp()
@@ -2746,11 +2752,11 @@ class TestEmailMonitoring(TrackerTestController):
     @patch('allura.model.discuss.Thread.is_spam')
     def test_notifications_moderators(self, is_spam, send_direct):
         is_spam.return_value = False
-        self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
-        self.app.post('/doc-bugs/1/update_ticket', {
-            'summary': 'test moderation',
-            'comment': 'test unmoderated post'
-        }, extra_environ=dict(username=str('*anonymous')))
+        ticket_view = self.new_ticket(summary='test moderation', mount_point='/doc-bugs/').follow()
+        _, form = find(ticket_view.forms, lambda f: f.action.endswith('/post'))
+        field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
+        form.set(field, 'this is an anonymous comment')
+        form.submit(extra_environ=dict(username=str('*anonymous')))
         send_direct.assert_called_with(
             str(M.User.query.get(username='test-admin')._id))
 
@@ -2760,11 +2766,11 @@ class TestEmailMonitoring(TrackerTestController):
     def test_notifications_off_spam(self, is_spam, send_direct):
         # like test_notifications_moderators but no notification because it goes straight to spam status
         is_spam.return_value = True
-        self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
-        self.app.post('/doc-bugs/1/update_ticket', {
-            'summary': 'test moderation',
-            'comment': 'test unmoderated post'
-        }, extra_environ=dict(username=str('*anonymous')))
+        ticket_view = self.new_ticket(summary='test moderation', mount_point='/doc-bugs/').follow()
+        _, form = find(ticket_view.forms, lambda f: f.action.endswith('/post'))
+        field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
+        form.set(field, 'this is an anonymous comment')
+        form.submit(extra_environ=dict(username=str('*anonymous')))
         assert not send_direct.called
 
     @patch('forgetracker.model.ticket.Notification.send_simple')
@@ -3289,11 +3295,6 @@ class TestNotificationEmailGrouping(TrackerTestController):
         assert_equal(email.kwargs.references, [])
 
     def test_comments(self):
-        def find(d, pred):
-            for n, v in d.items():
-                if pred(v):
-                    return (n, v)
-
         ticket_view = self.new_ticket(summary='Test Ticket').follow()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.query.remove()
