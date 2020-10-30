@@ -30,7 +30,6 @@
 }
 .markdown_edit .CodeMirror {
   color: rgb(85, 85, 85);
-  min-height: 60px;
   height: auto;
   border-bottom: none;
   border-bottom-left-radius: 0;
@@ -38,7 +37,6 @@
   overflow: hidden;
 }
 .markdown_edit .CodeMirror-scroll {
-  min-height: 60px;
   max-height: 500px;
   overflow: auto !important;
 }

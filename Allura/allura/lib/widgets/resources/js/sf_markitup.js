@@ -53,6 +53,7 @@ $(window).load(function() {
 
             var editor = new EasyMDE({
               element: $textarea[0],
+              minHeight: "60px",
               autoDownloadFontAwesome: false,
               autofocus: false,
               spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
