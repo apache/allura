@@ -96,35 +96,6 @@ $(window).load(function() {
 
             editor.render();
 
-            // shared at https://github.com/codemirror/CodeMirror/issues/2143#issuecomment-140100969
-            function updateSectionHeaderStyles(cm, change) {
-              var lines = cm.lineCount();
-              for (var i = Math.max(0, change.from.line-1); i <= Math.min(change.to.line+1, lines-1); i++) {
-                var line = cm.getLineHandle(i);
-                cm.removeLineClass(line, 'text', 'cm-header');
-                cm.removeLineClass(line, 'text', 'cm-header-1');
-                cm.removeLineClass(line, 'text', 'cm-header-2');
-                var lineTokens = cm.getLineTokens(i);
-                var tok = lineTokens[0];
-                if (!tok || !tok.type || tok.type.indexOf('header') === -1) {
-                  // first token could be some spaces, try 2nd
-                  tok = lineTokens[1];
-                }
-                if (tok && tok.type && tok.type.indexOf('header') !== -1
-                  && tok.string !== '#') { // not ATX header style, which starts with #
-                  var classes = tok.type.
-                    split(' ').
-                    filter(function(cls) { return cls.indexOf('header') === 0; }).
-                    map(function (cls) { return 'cm-' + cls; }).
-                    join(' ');
-                  var prev_line = cm.getLineHandle(i-1);
-                  cm.addLineClass(prev_line, 'text', classes);
-                }
-              }
-            }
-            editor.codemirror.on("change", updateSectionHeaderStyles);
-            updateSectionHeaderStyles(editor.codemirror, {from: {line: 0}, to: {line: editor.codemirror.lineCount()}});
-
             function drawTable(editor) {
               var cm = editor.codemirror;
               cm.replaceSelection(
