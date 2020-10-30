@@ -58,7 +58,9 @@ $(window).load(function() {
               autofocus: false,
               spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
               indentWithTabs: false,
-              inputStyle: 'contenteditable',
+              // contenteditable allows native spellcheck and works fine for desktop browsers and ios (14)
+              // but its buggy on android and textarea works better https://github.com/codemirror/CodeMirror/issues/6349 https://github.com/codemirror/CodeMirror/issues/6145
+              inputStyle: navigator.userAgent.match(/Android/i) ? 'textarea' : 'contenteditable',
               tabSize: 4,
               toolbar: toolbar,
               previewRender: previewRender,
