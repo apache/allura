@@ -192,17 +192,17 @@ Memorable.InputBasic = (function() {
 
 
 /**
- * Class describing a field backed by SimpleMDE, as identified by the passed instance of `SimpleMDE` provided, with specific methods for
+ * Class describing a field backed by EasyMDE, as identified by the passed instance of `EasyMDE` provided, with specific methods for
  * getting & setting the value, and finding it's parent form
  *
- * @property obj: the SimpleMDE object describing the field to be tracked
+ * @property obj: the EasyMDE object describing the field to be tracked
  * @property watchEvent: the name of the event to watch to detect when changes have been made
  * @property watchObj: the object instance to watch for events on; editor.codemirror per their docs
  * @property $el: the jquery object representing the actual input field on the page
  */
 Memorable.InputMDE = (function() {
     /**
-     * @param obj: A SimpleMDE object representing the input field
+     * @param obj: A EasyMDE object representing the input field
      * @constructor
      */
     function InputMDE(obj) {

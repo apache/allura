@@ -19,13 +19,13 @@ Allura/allura/lib/widgets/resources/css/colorPicker.css
 Allura/allura/lib/widgets/resources/css/jqfontselector.css
 Allura/allura/lib/widgets/resources/css/jquery.tagsinput.css
 Allura/allura/lib/widgets/resources/css/show-hint.css
-Allura/allura/lib/widgets/resources/css/simplemde.min.css
+Allura/allura/lib/widgets/resources/css/easymde.min.css
 Allura/allura/lib/widgets/resources/js/jqfontselector.js
 Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
 Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
 Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
 Allura/allura/lib/widgets/resources/js/show-hint.js
-Allura/allura/lib/widgets/resources/js/simplemde.min.js
+Allura/allura/lib/widgets/resources/js/easymde.min.js
 Allura/allura/nf/responsive/scss/_settings.scss
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/css/chosen.min.css

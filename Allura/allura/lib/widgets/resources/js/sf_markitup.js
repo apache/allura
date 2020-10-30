@@ -81,7 +81,7 @@ $(window).load(function() {
             });
             Memorable.add(editor);
             // https://github.com/codemirror/CodeMirror/issues/1576#issuecomment-19146595
-            // can't use simplemde's shortcuts settings, since those only hook into bindings set up for each button
+            // can't use easymde's shortcuts settings, since those only hook into bindings set up for each button
             editor.codemirror.options.extraKeys.Home = "goLineLeft";
             editor.codemirror.options.extraKeys.End = "goLineRight";
 
