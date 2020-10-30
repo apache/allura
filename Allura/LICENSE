@@ -270,10 +270,10 @@ For details, see:
     allura/public/nf/css/font-awesome.min.css
     allura/public/nf/fonts/
 
-SimpleMDE markdown editor (https://github.com/NextStepWebs/simplemde-markdown-editor/) is available under the MIT
+EasyMDE markdown editor (https://github.com/Ionaru/easy-markdown-editor) is available under the MIT
 license. For details, see:
-    allura/lib/widgets/resources/js/simplemde.min.js
-    allura/lib/widgets/resources/css/simplemde.min.css
+    allura/lib/widgets/resources/js/easymde.min.js
+    allura/lib/widgets/resources/css/easymde.min.css
 
 Python markdown extension for checklists (https://github.com/FND/markdown-checklist) is available under the MIT
 license. For details, see:

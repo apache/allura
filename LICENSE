@@ -280,10 +280,10 @@ Source code available at https://github.com/twitter/twemoji
 For details, see:
     Allura/allura/public/nf/js/twemoji.min.js
 
-SimpleMDE markdown editor (https://github.com/NextStepWebs/simplemde-markdown-editor/) is available under the MIT
+EasyMDE markdown editor (https://github.com/Ionaru/easy-markdown-editor) is available under the MIT
 license. For details, see:
-    Allura/allura/lib/widgets/resources/js/simplemde.min.js
-    Allura/allura/lib/widgets/resources/css/simplemde.min.css
+    Allura/allura/lib/widgets/resources/js/easymde.min.js
+    Allura/allura/lib/widgets/resources/css/easymde.min.css
 
 Build scripts from Sphinx (http://sphinx-doc.org/):
     Allura/docs/make.bat
