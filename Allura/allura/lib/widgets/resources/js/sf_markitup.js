@@ -58,6 +58,7 @@ $(window).load(function() {
               autofocus: false,
               spellChecker: false, // https://forge-allura.apache.org/p/allura/tickets/7954/
               indentWithTabs: false,
+              inputStyle: 'contenteditable',
               tabSize: 4,
               toolbar: toolbar,
               previewRender: previewRender,
