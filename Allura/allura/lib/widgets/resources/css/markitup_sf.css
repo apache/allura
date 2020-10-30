@@ -83,6 +83,14 @@
 .editor-toolbar button.guide {
   float: right;
 }
+.editor-toolbar button.preview {
+  width: 70px;  /* for "Preview" extra text */
+}
+.editor-toolbar button.preview::after {
+  content: ' Preview';
+  font-size: 12px;
+  font-family: inherit;
+}
 .editor-toolbar.fullscreen {
   /* for some reason the "nowrap" setting causes our floated elements to be offset in Firefox, when fullscreen */
   white-space: inherit;
