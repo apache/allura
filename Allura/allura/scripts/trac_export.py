@@ -181,7 +181,7 @@ class TracExport(object):
             c['submitter'] = re.sub(
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
             c['date'] = self.trac2z_date(
-                comment.find('a', 'timeline')['title'].replace(' in Timeline', '').replace('See timeline at '))
+                comment.find('a', 'timeline')['title'].replace(' in Timeline', '').replace('See timeline at ', ''))
             changes = six.text_type(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
