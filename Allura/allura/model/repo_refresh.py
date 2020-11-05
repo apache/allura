@@ -137,7 +137,7 @@ def refresh_commit_repos(all_commit_ids, repo):
             ref = ArtifactReferenceDoc(dict(
                 _id=index_id,
                 artifact_reference=dict(
-                    cls=bson.Binary(dumps(Commit)),
+                    cls=bson.Binary(dumps(Commit, protocol=2)),
                     project_id=repo.app.config.project_id,
                     app_config_id=repo.app.config._id,
                     artifact_id=oid),
