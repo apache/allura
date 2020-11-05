@@ -84,7 +84,7 @@ class ArtifactReference(object):
             obj = cls(
                 _id=artifact.index_id(),
                 artifact_reference=dict(
-                    cls=bson.Binary(dumps(artifact.__class__)),
+                    cls=bson.Binary(dumps(artifact.__class__, protocol=2)),
                     project_id=artifact.app_config.project_id,
                     app_config_id=artifact.app_config._id,
                     artifact_id=artifact._id))
