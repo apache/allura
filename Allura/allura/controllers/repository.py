@@ -779,10 +779,10 @@ class TreeBrowser(BaseController, DispatchIndex):
         tool_subscribed = M.Mailbox.subscribed()
         tarball_url = None
         if asbool(tg.config.get('scm.repos.tarball.enable', False)):
-            cutout = len(b'tree' + self._path.encode('utf8'))
+            cutout = len('tree' + self._path)
             if request.path.endswith('/') and not self._path.endswith('/'):
                 cutout += 1
-            tarball_url = h.urlquote('%starball' % unquote(request.path)[:-cutout])
+            tarball_url = h.urlquote(request.path_info[:-cutout] + 'tarball')
         return dict(
             repo=c.app.repo,
             commit=self._commit,
