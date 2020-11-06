@@ -5,7 +5,6 @@
 #    pip-compile
 #
 activitystream==0.3.0     # via -r requirements.in
-asn1crypto==0.24.0        # via cryptography
 backlash==0.1.4           # via -r requirements.in
 backports.functools-lru-cache==1.5  # via soupsieve
 backports.shutil-get-terminal-size==1.0.0  # via ipython
@@ -18,7 +17,7 @@ chardet==3.0.4            # via -r requirements.in, requests
 colander==1.7.0           # via -r requirements.in
 crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
-cryptography==2.6.1       # via -r requirements.in
+cryptography==3.2.1       # via -r requirements.in
 datadiff==2.0.0           # via -r requirements.in
 decorator==4.4.0          # via -r requirements.in, ipython, traitlets
 docutils==0.15.2          # via pypeline
