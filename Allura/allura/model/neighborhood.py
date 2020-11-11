@@ -48,7 +48,7 @@ class NeighborhoodFile(File):
     neighborhood_id = FieldProperty(S.ObjectId)
 
 
-re_picker_css_type = re.compile(r'^/*(.+)*/')
+re_picker_css_type = re.compile(r'^/\*(.+)\*/')
 re_font_project_title = re.compile(r'font-family:(.+);}')
 re_color_project_title = re.compile(r'color:(.+);}')
 re_bgcolor_barontop = re.compile(r'background-color:([^;}]+);')
