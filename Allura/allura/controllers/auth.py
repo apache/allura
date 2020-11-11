@@ -21,6 +21,7 @@ import logging
 import os
 from datetime import datetime
 import re
+import warnings
 from six.moves.urllib.parse import urlparse, urljoin
 
 import bson
@@ -31,7 +32,9 @@ from tg import tmpl_context as c, app_globals as g
 from tg import request, response
 from webob import exc as wexc
 from paste.deploy.converters import asbool
-from cryptography.hazmat.primitives.twofactor import InvalidToken
+with warnings.catch_warnings():  # ignore py2 CryptographyDeprecationWarning
+    warnings.filterwarnings('ignore')
+    from cryptography.hazmat.primitives.twofactor import InvalidToken
 from beaker.session import _session_id
 
 import allura.tasks.repo_tasks
