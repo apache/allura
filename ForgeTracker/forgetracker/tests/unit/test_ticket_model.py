@@ -19,7 +19,9 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from tg import tmpl_context as c
 from datetime import datetime
-import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import six.moves.urllib.parse
+import six.moves.urllib.request
+import six.moves.urllib.error
 
 import mock
 from ming.orm.ormsession import ThreadLocalORMSession

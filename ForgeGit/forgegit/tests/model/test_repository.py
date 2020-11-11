@@ -98,7 +98,7 @@ class TestNewGit(unittest.TestCase):
             '1e146e67985dcd71c74de79613719bef7bddca4a/'
             'tree/')
         self.rev.tree.by_name['README']
-        assert self.rev.tree.is_blob('README') == True
+        assert self.rev.tree.is_blob('README') is True
         ThreadLocalORMSession.close_all()
         c.app = None
         converted = g.markdown.convert('[1e146e]')

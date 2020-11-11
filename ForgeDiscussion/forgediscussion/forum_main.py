@@ -19,7 +19,9 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 import json
 import os
 

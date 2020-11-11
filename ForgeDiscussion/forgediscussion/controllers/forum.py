@@ -46,9 +46,10 @@ log = logging.getLogger(__name__)
 
 
 class pass_validator(object):
-
     def validate(self, v, s):
         return v
+
+
 pass_validator = pass_validator()
 
 

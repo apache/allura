@@ -28,8 +28,9 @@ from time import mktime
 import time
 import json
 from six.moves.urllib.parse import urlparse
-import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 from six.moves.http_cookiejar import CookieJar
 from datetime import datetime
 from six.moves.configparser import ConfigParser

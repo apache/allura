@@ -54,9 +54,10 @@ log = logging.getLogger(__name__)
 
 
 class pass_validator(object):
-
     def validate(self, v, s):
         return v
+
+
 pass_validator = pass_validator()
 
 
@@ -314,7 +315,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
         if request.method == 'POST':
             old_text = self.post.text
             require_access(self.post, 'moderate')
-            post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it ever does
+            post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it does
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
             for k, v in six.iteritems(post_fields):
@@ -374,15 +375,15 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
             self.post.last_edit_by_id = c.user._id
             self.post.commit()
             g.director.create_activity(c.user, 'modified', self.post,
-                            target=self.post.thread.artifact or self.post.thread,
-                            related_nodes=[self.post.app_config.project],
-                            tags=['comment'])
+                                       target=self.post.thread.artifact or self.post.thread,
+                                       related_nodes=[self.post.app_config.project],
+                                       tags=['comment'])
             return {
-                'status' : 'success'
+                'status': 'success'
             }
         else:
             return {
-                'status' : 'no_permission'
+                'status': 'no_permission'
             }
 
     @expose()
@@ -396,7 +397,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
     def post_reaction(self, r, **kw):
         if c.user.is_anonymous():
             return {
-                'error' : 'no_permission'
+                'error': 'no_permission'
             }
         status = 'ok'
         if r in utils.get_reaction_emoji_list():
@@ -563,7 +564,7 @@ class ModerationController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)
                     g.spam_checker.submit_ham(posted.text, artifact=posted, user=posted.author())
                     posted.thread.post_to_feed(posted)
         flash('{} {}'.format(h.text.plural(count, 'post', 'posts'),
-                              'deleted' if delete else 'marked as spam' if spam else 'approved'))
+                             'deleted' if delete else 'marked as spam' if spam else 'approved'))
         redirect(six.ensure_text(request.referer or '/'))
 
     @expose()

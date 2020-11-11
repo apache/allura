@@ -36,7 +36,9 @@ from itertools import groupby
 import operator as op
 import collections
 from six.moves.urllib.parse import urlparse
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 import types
 import socket
 

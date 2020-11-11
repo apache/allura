@@ -768,7 +768,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 log.debug('LdapAuth: authorized user {} needs a mongo record registered.  '
                           'Creating...'.format(username))
                 user = M.User.register({'username': username,
-                                        'display_name': LdapUserPreferencesProvider()._get_pref(username, 'display_name'),
+                                        'display_name': LdapUserPreferencesProvider()._get_pref(username,
+                                                                                                'display_name'),
                                         })
             else:
                 log.debug('LdapAuth: no user {} found in local mongo'.format(username))
@@ -933,10 +934,9 @@ class ProjectRegistrationProvider(object):
                       shortname=shortname,
                       name=name,
                       short_description='',
-                      description=(
-                          'You can edit this description in the admin page'),
-                      homepage_title = '# ' + name,
-                      last_updated = datetime.utcnow(),
+                      description='You can edit this description in the admin page',
+                      homepage_title='# ' + name,
+                      last_updated=datetime.utcnow(),
                       is_nbhd_project=True,
                       is_root=True)
         try:
@@ -1025,10 +1025,9 @@ class ProjectRegistrationProvider(object):
                       shortname=shortname,
                       name=project_name,
                       short_description='',
-                      description=(
-                          'You can edit this description in the admin page'),
+                      description='You can edit this description in the admin page',
                       homepage_title=shortname,
-                      last_updated = datetime.utcnow(),
+                      last_updated=datetime.utcnow(),
                       is_nbhd_project=False,
                       is_root=True)
         p.configure_project(

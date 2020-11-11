@@ -23,7 +23,9 @@ from calendar import timegm
 from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 import re
 from xml.etree import ElementTree as ET
 

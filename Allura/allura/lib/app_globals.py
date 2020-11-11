@@ -477,7 +477,7 @@ class Globals(object):
 
     @property
     def production_mode(self):
-        return asbool(config.get('debug')) == False
+        return asbool(config.get('debug')) is False
 
     @LazyProperty
     def user_message_time_interval(self):

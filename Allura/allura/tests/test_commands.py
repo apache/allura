@@ -173,14 +173,14 @@ def test_update_neighborhood():
     # make sure the app_configs get freshly queried
     ThreadLocalORMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
-    assert nb.has_home_tool == True
+    assert nb.has_home_tool is True
 
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'False'])
     # make sure the app_configs get freshly queried
     ThreadLocalORMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
-    assert nb.has_home_tool == False
+    assert nb.has_home_tool is False
 
 
 class TestEnsureIndexCommand(object):

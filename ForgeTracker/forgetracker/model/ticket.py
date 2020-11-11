@@ -18,7 +18,9 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 import json
 import difflib
 from datetime import datetime, timedelta
@@ -87,6 +89,7 @@ SOLR_TYPE_DEFAULTS = dict(_b=False, _d=0)
 
 def get_default_for_solr_type(solr_type):
     return SOLR_TYPE_DEFAULTS.get(solr_type, '')
+
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
@@ -534,10 +537,10 @@ class Globals(MappedClass):
     def append_new_labels(self, old_labels, new_labels):
         # append without duplicating any.  preserve order
         labels = old_labels[:]  # make copy to ensure no edits to possible underlying model field
-        for l in new_labels:
-            l = l.strip()
-            if l not in old_labels:
-                labels.append(l)
+        for label in new_labels:
+            label = label.strip()
+            if label not in old_labels:
+                labels.append(label)
         return labels
 
 
@@ -834,9 +837,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if not fld:
             raise KeyError('Custom field "%s" does not exist.' % custom_user_field_name)
         if fld.type != 'user':
-            raise TypeError('Custom field "%s" is of type "%s"; expected ' \
-                             'type "user".' % (
-                                 custom_user_field_name, fld.type))
+            raise TypeError('Custom field "%s" is of type "%s"; expected type "user".' % (
+                custom_user_field_name, fld.type))
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
             return None
@@ -852,6 +854,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if bool_flag:
             role_developer = ProjectRole.by_name('Developer')
             role_creator = ProjectRole.by_user(self.reported_by, upsert=True) if self.reported_by else None
+
             def _allow_all(role, perms):
                 return [ACE.allow(role._id, perm) for perm in sorted(perms)]  # sorted just for consistency (for tests)
             # maintain existing access for developers and the ticket creator,
@@ -1306,7 +1309,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         ticket_by_id[t_id], 'delete', user, app_config.project.root_project)
                     if (security.has_access(ticket_by_id[t_id], 'read', user,
                                             app_config.project.root_project if app_config else None) and
-                            (show_deleted or ticket_by_id[t_id].deleted == False)):
+                            (show_deleted or ticket_by_id[t_id].deleted is False)):
                         tickets.append(ticket_by_id[t_id])
                     else:
                         count = count - 1
@@ -1390,5 +1393,6 @@ class MovedTicket(MovedArtifact):
 
     def url(self):
         return self.moved_to_url
+
 
 Mapper.compile_all()

@@ -80,7 +80,7 @@ class TestRestNewTicket(TestTrackerApiBase):
         assert json['reported_by'] == 'test-admin'
         assert json['labels'] == ['foo', 'bar'], json
         assert json['description'] == 'descr', json
-        assert json['private'] == False, json
+        assert json['private'] is False, json
 
     def test_invalid_ticket(self):
         self.app.get('/rest/p/test/bugs/2', status=404)

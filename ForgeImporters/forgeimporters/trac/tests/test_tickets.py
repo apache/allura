@@ -117,8 +117,7 @@ class TestTracTicketImportController(TestController, TestCase):
         """Mount Trac import controller on the Tracker admin controller"""
         super(TestTracTicketImportController, self).setUp()
         from forgetracker.tracker_main import TrackerAdminController
-        self.importer = TrackerAdminController._importer = \
-                TracTicketImportController(TracTicketImporter())
+        self.importer = TrackerAdminController._importer = TracTicketImportController(TracTicketImporter())
 
     @with_tracker
     def test_index(self):
@@ -194,7 +193,7 @@ class TestTracImportSupport(TestCase):
         import_support.get_slug_by_id = lambda ticket, comment: '123'
         cases = {
             'test link [[2496]](http://testlink.com)':
-            "test link [\[2496\]](http://testlink.com)",
+            r"test link [\[2496\]](http://testlink.com)",
 
             'test ticket ([#201](http://site.net/apps/trac/project/ticket/201))':
             'test ticket ([#201](201))',
@@ -209,7 +208,7 @@ class TestTracImportSupport(TestCase):
             'Fixed in [r1000](r1000)',
 
             '[[Double brackets]](1) the [[whole way]](2).':
-            '[\[Double brackets\]](1) the [\[whole way\]](2).',
+            r'[\[Double brackets\]](1) the [\[whole way\]](2).',
 
             '#200 unchanged':
             '#200 unchanged',
@@ -238,7 +237,7 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
             status={'$in': ['ok', 'pending']})).sort('timestamp').all()[0].slug
 
         assert '[test comment](204/#%s)' % slug in r
-        assert 'test link [\[2496\]](http://testlink.com)' in r
+        assert r'test link [\[2496\]](http://testlink.com)' in r
         assert 'test ticket ([#201](201))' in r
 
     @with_tracker

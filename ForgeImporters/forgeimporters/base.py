@@ -22,8 +22,9 @@ import errno
 import logging
 from io import BytesIO
 
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
-import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 from collections import defaultdict
 import traceback
 from six.moves.urllib.parse import urlparse
@@ -337,7 +338,7 @@ class ProjectImporter(BaseController):
         tool imports happen.
 
         :param project: The newly created project.
-        :param \*\*kw: The keyword arguments that were posted to the controller
+        :param **kw: The keyword arguments that were posted to the controller
             method that created the project.
 
         """
@@ -379,8 +380,7 @@ class ToolImporterMeta(type):
     def __init__(cls, name, bases, attrs):
         if not (hasattr(cls, 'target_app_ep_names')
                 or hasattr(cls, 'target_app')):
-            raise AttributeError("{0} must define either "
-                    "`target_app` or `target_app_ep_names`".format(name))
+            raise AttributeError("{0} must define either `target_app` or `target_app_ep_names`".format(name))
         return type.__init__(cls, name, bases, attrs)
 
     def __call__(cls, *args, **kw):
@@ -392,8 +392,8 @@ class ToolImporterMeta(type):
         """
         if not getattr(cls, 'target_app', None):
             cls.target_app = [g.entry_points['tool'][ep_name]
-                    for ep_name in aslist(cls.target_app_ep_names)
-                    if ep_name in g.entry_points['tool']]
+                              for ep_name in aslist(cls.target_app_ep_names)
+                              if ep_name in g.entry_points['tool']]
         return type.__call__(cls, *args, **kw)
 
 
