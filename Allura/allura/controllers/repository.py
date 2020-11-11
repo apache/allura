@@ -849,7 +849,8 @@ class FileBrowser(BaseController):
         if kw.pop('format', 'html') == 'raw':
             if self._blob.size > asint(tg.config.get('scm.download.max_file_bytes', 30*1000*1000)):
                 large_size = self._blob.size
-                flash('File is {}.  Too large to download.'.format(h.do_filesizeformat(large_size)), 'warning')
+                flash('File is {}.  Too large to download.'.format(h.do_filesizeformat(large_size)),
+                      'warning', sticky=True)
                 raise exc.HTTPForbidden
             else:
                 return self.raw()
