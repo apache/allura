@@ -173,15 +173,15 @@ def test_context_setters():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
-    assert c.project == c.app == None
+    assert c.project == c.app and c.app is None
     with h.push_context('test', app_config_id=cfg_id, neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
-    assert c.project == c.app == None
+    assert c.project == c.app and c.app is None
     with h.push_context('test', app_config_id=str(cfg_id), neighborhood='Projects'):
         assert c.project is not None
         assert c.app is not None
-    assert c.project == c.app == None
+    assert c.project == c.app and c.app is None
     del c.project
     del c.app
     with h.push_context('test', app_config_id=str(cfg_id), neighborhood='Projects'):
@@ -337,7 +337,7 @@ def test_datetimeformat():
 
 def test_nl2br_jinja_filter():
     assert_equals(h.nl2br_jinja_filter('foo<script>alert(1)</script>\nbar\nbaz'),
-            Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
+                  Markup('foo&lt;script&gt;alert(1)&lt;/script&gt;<br>\nbar<br>\nbaz'))
 
 
 def test_split_select_field_options():
@@ -371,7 +371,7 @@ M & Ms - doesn't get escaped
 http://blah.com/?x=y&a=b - not escaped either
 '''
 
-    expected = '''paragraph
+    expected = r'''paragraph
 
 4 spaces before this
 
@@ -393,12 +393,12 @@ http://blah.com/?x=y&a=b - not escaped either
     dd.assert_equal(
         h.plain2markdown('\ttab before (stuff)',
                          preserve_multiple_spaces=True),
-        '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
 
     dd.assert_equal(
         h.plain2markdown('\ttab before (stuff)',
                          preserve_multiple_spaces=False),
-        'tab before \(stuff\)')
+        r'tab before \(stuff\)')
 
 
 @td.without_module('html2text')
@@ -421,7 +421,7 @@ http://blah.com/?x=y&a=b - not escaped either
 back\\-slash escaped
 '''
 
-    expected = '''paragraph
+    expected = r'''paragraph
 
 4 spaces before this
 
@@ -431,7 +431,7 @@ here's a &lt;tag&gt; that should be &lt;b&gt;preserved&lt;/b&gt;
 Literal &amp;gt; &amp;Ograve; &amp;frac14; &amp;amp; &amp;\#38; &amp;\#x123F;
 M & Ms \- amp doesn't get escaped
 http://blah\.com/?x=y&a=b \- not escaped either
-back\\\\\-slash escaped
+back\\\-slash escaped
 '''
 
     dd.assert_equal(h.plain2markdown(text), expected)
@@ -444,12 +444,12 @@ back\\\\\-slash escaped
     dd.assert_equal(
         h.plain2markdown('\ttab before (stuff)',
                          preserve_multiple_spaces=True),
-        '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+        r'&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
 
     dd.assert_equal(
         h.plain2markdown('\ttab before (stuff)',
                          preserve_multiple_spaces=False),
-        'tab before \(stuff\)')
+        r'tab before \(stuff\)')
 
 
 class TestUrlOpen(TestCase):
@@ -572,7 +572,7 @@ class TestIterEntryPoints(TestCase):
             self._make_ep('myapp', BestApp)]
 
         self.assertRaisesRegexp(ImportError,
-                                'Ambiguous \[allura\] entry points detected. '
+                                r'Ambiguous \[allura\] entry points detected. '
                                 'Multiple entry points with name "myapp".',
                                 list, h.iter_entry_points('allura'))
 

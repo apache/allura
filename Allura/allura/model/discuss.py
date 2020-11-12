@@ -747,7 +747,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
                 self.acl, author_role._id, 'moderate')
         self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
-                and author._id != None):
+                and author._id is not None):
             security.simple_grant(
                 self.acl, author_role._id, 'unmoderated_post')
         if notify:

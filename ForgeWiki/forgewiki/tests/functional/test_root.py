@@ -424,7 +424,6 @@ class TestRootController(TestController):
         response = self.app.get(h.urlquote('/wiki/tést/get_markdown'))
         assert '- [ ] checkbox' in response
 
-
     def test_page_update_markdown(self):
         self.app.post(
             h.urlquote('/wiki/tést/update'),

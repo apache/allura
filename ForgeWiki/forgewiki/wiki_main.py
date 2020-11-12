@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-#-*- python -*-
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import json
@@ -392,7 +391,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        permanent_redirect(h.urlquote(h.really_unicode(c.app.root_page_name)+ '/'))
+        permanent_redirect(h.urlquote(h.really_unicode(c.app.root_page_name) + '/'))
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -764,25 +763,23 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def update_markdown(self, text=None, **kw):  
+    def update_markdown(self, text=None, **kw):
         if has_access(self.page, 'edit'):
             self.page.text = text
             self.page.commit()
-            g.spam_checker.check(text, artifact=self.page,
-                user=c.user, content_type='wiki')
-            g.director.create_activity(c.user, 'modified', self.page,
-                related_nodes=[c.project], tags=['wiki'])
+            g.spam_checker.check(text, artifact=self.page, user=c.user, content_type='wiki')
+            g.director.create_activity(c.user, 'modified', self.page, related_nodes=[c.project], tags=['wiki'])
             return {
-                'status' : 'success'
+                'status': 'success'
             }
         else:
             return {
-                'status' : 'no_permission'
+                'status': 'no_permission'
             }
 
     @without_trailing_slash
     @expose()
-    def get_markdown(self):  
+    def get_markdown(self):
         return self.page.text
 
     @without_trailing_slash
@@ -822,6 +819,7 @@ class WikiAttachmentController(ac.AttachmentController):
 
 class WikiAttachmentsController(ac.AttachmentsController):
     AttachmentControllerClass = WikiAttachmentController
+
 
 MARKDOWN_EXAMPLE = '''
 # First-level heading

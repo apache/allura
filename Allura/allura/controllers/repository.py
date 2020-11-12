@@ -511,11 +511,11 @@ class MergeRequestController(object):
             g.director.create_activity(c.user, 'updated', self.req,
                                        related_nodes=[c.project], tags=['merge-request'])
             return {
-                'status' : 'success'
+                'status': 'success'
             }
         else:
             return {
-                'status' : 'no_permission'
+                'status': 'no_permission'
             }
 
     @expose()

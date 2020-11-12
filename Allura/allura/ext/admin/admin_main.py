@@ -481,7 +481,7 @@ class ProjectAdminController(BaseController):
                     # If both filename(without ext.) equals and exiting file ext. is png and given file ext is bmp, there will be two similar png files.
 
                 if screen.filename == screenshot.filename or future_bmp:
-                    screenshot.filename = re.sub('(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
+                    screenshot.filename = re.sub(r'(.*)\.(.*)', r'\1-' + str(randint(1000,9999)) + r'.\2', screenshot.filename)
                     # if filename already exists append a random number
                     break
             M.AuditLog.log('add screenshot')

@@ -77,7 +77,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
     {% if req.merge_allowed(c.user) %}
     <div class='grid-19 merge-help'>
-        <div class="merge-help-text can-merge-in-progress" {% if can_merge == None %}style="display: block;"{% endif %}>
+        <div class="merge-help-text can-merge-in-progress" {% if can_merge is none %}style="display: block;"{% endif %}>
             Checking if merge is possible...
         </div>
         <div class="merge-help-text merge-ok" {% if can_merge == True %}style="display: block;"{% endif %}>

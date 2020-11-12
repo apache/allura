@@ -1437,8 +1437,7 @@ class TicketController(BaseController, FeedController):
     def undelete(self, **kw):
         require_access(self.ticket, 'delete')
         self.ticket.deleted = False
-        self.ticket.summary = re.sub(
-            ' \d+:\d+:\d+ \d+-\d+-\d+$', '', self.ticket.summary)
+        self.ticket.summary = re.sub(r' \d+:\d+:\d+ \d+-\d+-\d+$', '', self.ticket.summary)
         M.Shortlink.from_artifact(self.ticket)
         flash('Ticket successfully restored')
         c.app.globals.invalidate_bin_counts()
@@ -1538,20 +1537,18 @@ class TicketController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     @require_post()
-    def update_markdown(self, text=None, **kw):  
+    def update_markdown(self, text=None, **kw):
         if has_access(self.ticket, 'update'):
             self.ticket.description = text
             self.ticket.commit()
-            g.director.create_activity(c.user, 'modified', self.ticket,
-                            related_nodes=[c.project], tags=['ticket'])
-            g.spam_checker.check(text, artifact=self.ticket,
-                user=c.user, content_type='ticket')
+            g.director.create_activity(c.user, 'modified', self.ticket, related_nodes=[c.project], tags=['ticket'])
+            g.spam_checker.check(text, artifact=self.ticket, user=c.user, content_type='ticket')
             return {
-                'status' : 'success'
+                'status': 'success'
             }
         else:
             return {
-                'status' : 'no_permission'
+                'status': 'no_permission'
             }
 
     @expose()
@@ -1653,6 +1650,7 @@ class AttachmentController(att.AttachmentController):
 
 class AttachmentsController(att.AttachmentsController):
     AttachmentControllerClass = AttachmentController
+
 
 NONALNUM_RE = re.compile(r'\W+')
 

@@ -74,7 +74,7 @@ def test_set_neighborhood_max_projects():
     # none is also valid
     cmd.run([test_config, str(n_id), 'max_projects', 'None'])
     neighborhood = M.Neighborhood.query.get(_id=n_id)
-    assert neighborhood.features['max_projects'] == None
+    assert neighborhood.features['max_projects'] is None
 
     # check validation
     assert_raises(InvalidNBFeatureValueError, cmd.run,

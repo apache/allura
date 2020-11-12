@@ -378,7 +378,7 @@ class OneOfValidator(fev.FancyValidator):
                 raise fe.Invalid("This field can't be empty.", value, state)
             else:
                 return None
-        if not value in self.validvalues:
+        if value not in self.validvalues:
             allowed = ''
             for v in self.validvalues:
                 if allowed != '':
@@ -418,9 +418,9 @@ class YouTubeConverter(fev.FancyValidator):
     REGEX: http://stackoverflow.com/a/10315969/25690
     """
 
-    REGEX = ('^(?:https?:\/\/)?(?:www\.)?'+
-             '(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))'+
-             '((\w|-){11})(?:\S+)?$')
+    REGEX = (r'^(?:https?:\/\/)?(?:www\.)?' +
+             r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))' +
+             r'((\w|-){11})(?:\S+)?$')
 
     def _to_python(self, value, state):
         match = re.match(YouTubeConverter.REGEX, value)
@@ -432,9 +432,10 @@ class YouTubeConverter(fev.FancyValidator):
                 "The URL does not appear to be a valid YouTube video.",
                 value, state)
 
+
 def convertDate(datestring):
-    formats = ['%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d', '%Y\%m\%d', '%Y %m %d',
-               '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%Y', '%d\%m\%Y', '%d %m %Y']
+    formats = ['%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d', r'%Y\%m\%d', '%Y %m %d',
+               '%d-%m-%Y', '%d.%m.%Y', '%d/%m/%Y', r'%d\%m\%Y', '%d %m %Y']
 
     for f in formats:
         try:
@@ -459,6 +460,7 @@ def convertTime(timestring):
 
 class IconValidator(fev.FancyValidator):
     regex = '(jpg|jpeg|gif|png|bmp)$'
+
     def _to_python(self, value, state):
         p = re.compile(self.regex, flags=re.I)
         result = p.search(value.filename)

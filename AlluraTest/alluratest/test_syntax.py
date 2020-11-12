@@ -47,9 +47,9 @@ def grouper(n, iterable, fillvalue=None):
 
 
 def test_no_local_tz_functions():
-    if run(find_py + " | xargs grep '\.now(' ") not in [1, 123]:
+    if run(find_py + r" | xargs grep '\.now(' ") not in [1, 123]:
         raise Exception("These should use .utcnow()")
-    if run(find_py + " | xargs grep '\.fromtimestamp(' ") not in [1, 123]:
+    if run(find_py + r" | xargs grep '\.fromtimestamp(' ") not in [1, 123]:
         raise Exception("These should use .utcfromtimestamp()")
     if run(find_py + " | xargs grep 'mktime(' ") not in [1, 123]:
         raise Exception("These should use calendar.timegm()")

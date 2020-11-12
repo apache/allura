@@ -67,7 +67,7 @@ def test_discussion_methods():
     ThreadLocalORMSession.flush_all()
     d.update_stats()
     ThreadLocalORMSession.flush_all()
-    assert d.last_post == None
+    assert d.last_post is None
     assert d.url().endswith('wiki/_discuss/')
     assert d.index()['name_s'] == 'test'
     assert d.find_posts().count() == 0

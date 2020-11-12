@@ -244,7 +244,7 @@ class TestProjectHome(TestController):
         assert r.location.endswith('admin/'), r.location
 
         pr = M.Project.query.get(shortname='test/test-mount')
-        assert pr != None
+        assert pr is not None
         c.user = M.User.query.get(username='test-admin')
 
         # Install and Verify a Tool in the subproject.

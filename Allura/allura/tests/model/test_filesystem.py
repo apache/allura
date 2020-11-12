@@ -184,8 +184,8 @@ class TestFile(TestCase):
             thumbnail_size=(16, 16),
             square=True,
             save_original=True)
-        assert f == None
-        assert t == None
+        assert f is None
+        assert t is None
 
     def test_invalid_image(self):
         f, t = File.save_image(
@@ -194,8 +194,8 @@ class TestFile(TestCase):
             thumbnail_size=(16, 16),
             square=True,
             save_original=True)
-        assert f == None
-        assert t == None
+        assert f is None
+        assert t is None
 
     def test_partial_image_as_attachment(self):
         path = os.path.join(os.path.dirname(__file__),

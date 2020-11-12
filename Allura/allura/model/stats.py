@@ -147,7 +147,7 @@ class Stats(MappedClass):
                 n, lines = 0, 0
             else:
                 n, lines = entry.commits[i].number, entry.commits[i].lines
-            if cat != None:
+            if cat is not None:
                 cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
@@ -158,7 +158,7 @@ class Stats(MappedClass):
         by_cat = {}
         for entry in self.general:
             cat = entry.category
-            if cat != None:
+            if cat is not None:
                 cat = TroveCategory.query.get(_id=cat)
             if detailed:
                 by_cat[cat] = entry.messages
@@ -186,7 +186,7 @@ class Stats(MappedClass):
         by_cat = {}
         for entry in self.general:
             cat = entry.category
-            if cat != None:
+            if cat is not None:
                 cat = TroveCategory.query.get(_id=cat)
             a, s = entry.tickets.assigned, entry.tickets.solved
             r, time = entry.tickets.solved, entry.tickets.totsolvingtime
@@ -221,7 +221,7 @@ class Stats(MappedClass):
                          if cat in el.categories + [None]]
             n = len(lineslist)
             lines = sum(lineslist)
-            if cat != None:
+            if cat is not None:
                 cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
@@ -269,7 +269,7 @@ class Stats(MappedClass):
              for el in self.lastmonth.solvedtickets
              if category in el.categories + [None]],
             (0, 0))
-        if category != None:
+        if category is not None:
             category = TroveCategory.query.get(_id=category)
         if s > 0:
             time = time / s
@@ -297,7 +297,7 @@ class Stats(MappedClass):
             s, time = reduce(addtuple, [(1, el.solvingtime)
                                         for el in self.lastmonth.solvedtickets
                                         if cat in el.categories + [None]], (0, 0))
-            if cat != None:
+            if cat is not None:
                 cat = TroveCategory.query.get(_id=cat)
             if s > 0:
                 time = time / s
@@ -531,5 +531,6 @@ def _convertTimeDiff(int_seconds):
         hours=hours,
         minutes=minutes,
         seconds=seconds)
+
 
 Mapper.compile_all()

@@ -687,8 +687,8 @@ def get_project_names(r):
     """
     # projects short names are in h2 elements without any attributes
     # there is one more h2 element, but it has `class` attribute
-    # re_proj_names = re.compile('<h2><a[^>]>(.+)<\/a><\/h2>')
-    re_proj_names = re.compile('<h2><a[^>]+>(.+)<\/a><\/h2>')
+    # re_proj_names = re.compile(r'<h2><a[^>]>(.+)</a></h2>')
+    re_proj_names = re.compile(r'<h2><a[^>]+>(.+)</a></h2>')
     return [e for e in re_proj_names.findall(r)]
 
 
@@ -801,7 +801,7 @@ class TestEmojis(unittest.TestCase):
         assert '<p>\U0001F44D</p>' in output
         output = g.markdown.convert(':Bosnia_&_Herzegovina:')
         assert '<p>\U0001F1E7\U0001F1E6</p>' in output
-        output = g.markdown.convert(':Åland_Islands:') # emoji code with non-asciii charactor
+        output = g.markdown.convert(':Åland_Islands:')  # emoji code with non-asciii charactor
         assert '<p>\U0001F1E6\U0001F1FD</p>' in output
 
     def test_markdown_emoji_with_text(self):
@@ -825,6 +825,7 @@ class TestEmojis(unittest.TestCase):
         assert 'Thumbs up emoji \U0001F44D wow!' in output
         output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
         assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
+
 
 class TestUserMentions(unittest.TestCase):
 

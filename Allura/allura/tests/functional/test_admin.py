@@ -58,7 +58,7 @@ class TestProjectAdmin(TestController):
         with audits(
                 'change summary to Milkshakes are for crazy monkeys',
                 'change project name to My Test Project',
-                'change short description to (\u00bf A Test Project \?){45}'):
+                r'change short description to (\u00bf A Test Project \?){45}'):
             r = self.app.post('/admin/update', params=dict(
                 name='My Test Project',
                 shortname='test',
@@ -169,7 +169,7 @@ class TestProjectAdmin(TestController):
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
-        with audits("change project features to \[{u}'One', {u}'Two'\]".format(u='u' if six.PY2 else '')):
+        with audits(r"change project features to \[{u}'One', {u}'Two'\]".format(u='u' if six.PY2 else '')):
             resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
                 'features-1.feature': '  ',
@@ -420,20 +420,20 @@ class TestProjectAdmin(TestController):
         assert thumb.size == (150, 150)
         # FIX: home pages don't currently support screenshots (now that they're a wiki);
         # reinstate this code (or appropriate) when we have a macro for that
-        #r = self.app.get('/p/test/home/')
-        #assert '/p/test/screenshot/'+filename in r
-        #assert 'test me' in r
+        # r = self.app.get('/p/test/home/')
+        # assert '/p/test/screenshot/'+filename in r
+        # assert 'test me' in r
         # test edit
         req = self.app.get('/admin/screenshots')
         req.forms[0]['caption'].value = 'aaa'
         req.forms[0].submit()
-        #r = self.app.get('/p/test/home/')
-        #assert 'aaa' in r
+        # r = self.app.get('/p/test/home/')
+        # assert 'aaa' in r
         # test delete
         req = self.app.get('/admin/screenshots')
         req.forms[1].submit()
-        #r = self.app.get('/p/test/home/')
-        #assert 'aaa' not in r
+        # r = self.app.get('/p/test/home/')
+        # assert 'aaa' not in r
 
     def test_sort_screenshots(self):
         for file_name in ('admin_24.png', 'admin_32.png'):

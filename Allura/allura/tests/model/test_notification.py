@@ -280,7 +280,7 @@ class TestPostNotifications(unittest.TestCase):
             ThreadLocalORMSession.flush_all()
             # ...but in this case it doesn't create a mail task since we
             # forced the perm check to fail
-            assert M.MonQTask.get() == None
+            assert M.MonQTask.get() is None
         finally:
             security.has_access = orig
 

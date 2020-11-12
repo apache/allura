@@ -20,8 +20,6 @@ from __future__ import absolute_import
 import json
 import re
 
-from formencode import validators as fev
-
 from ming.orm import session
 from tg import tmpl_context as c
 from tg import app_globals as g
@@ -50,7 +48,6 @@ from forgeimporters.base import (
     ToolImportController,
 )
 from forgeimporters.trac import TracURLValidator
-from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.import_support import ImportSupport
 from forgetracker import model as TM
 
@@ -193,7 +190,7 @@ class TracImportSupport(ImportSupport):
 
     def brackets_escaping(self, m):
         """Escape double brackets."""
-        return '[\[%s\]]' % m.groups()[0]
+        return r'[\[%s\]]' % m.groups()[0]
 
     def link_processing(self, text):
         """Fix up links in text imported from Trac::
@@ -205,11 +202,11 @@ class TracImportSupport(ImportSupport):
 
         """
         comment_pattern = re.compile(
-            '\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
-        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)(?:\?[^)]*)?\)')
+            r'\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
+        ticket_pattern = re.compile(r'(?<=\])\(\S*ticket/(\d+)(?:\?[^)]*)?\)')
         changeset_pattern = re.compile(
             r'(?<=\])\(\S*/changeset/(\d+)(?:\?[^]]*)?\)')
-        brackets_pattern = re.compile('\[\[([^]]*)\]\]')
+        brackets_pattern = re.compile(r'\[\[([^]]*)\]\]')
 
         text = comment_pattern.sub(self.comment_link, text)
         text = ticket_pattern.sub(self.ticket_link, text)

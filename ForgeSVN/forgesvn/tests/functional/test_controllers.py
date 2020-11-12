@@ -80,7 +80,7 @@ class TestRootController(SVNTestController):
     def test_status_html(self):
         resp = self.app.get('/src/').follow()
         # repo status not displayed if 'ready'
-        assert None == resp.html.find('div', dict(id='repo_status'))
+        assert resp.html.find('div', dict(id='repo_status')) is None
         h.set_context('test', 'src', neighborhood='Projects')
         c.app.repo.status = 'analyzing'
         ThreadLocalORMSession.flush_all()
@@ -329,23 +329,23 @@ class TestImportController(SVNTestController):
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_validator(self, tasks):
         r = self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://fake.svn/'})
+                          {'checkout_url': 'http://fake.svn/'})
         assert 'That is not a valid URL' not in r
 
         r = self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://1.1.1.1'})
+                          {'checkout_url': 'http://1.1.1.1'})
         assert 'That is not a valid URL' not in r
 
         r = self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://1.1.1'})
+                          {'checkout_url': 'http://1.1.1'})
         assert 'That is not a valid URL' in r
 
         r = self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://256.200.200.200'})
+                          {'checkout_url': 'http://256.200.200.200'})
         assert 'That is not a valid URL' in r
 
         r = self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://fak#e.svn/'})
+                          {'checkout_url': 'http://fak#e.svn/'})
         assert 'That is not a valid URL' in r
 
 
