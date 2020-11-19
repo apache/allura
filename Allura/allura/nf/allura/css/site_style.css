@@ -4082,3 +4082,12 @@ Nav bar styles moved out of navbar.css since they are more stylistic than layout
 .user-card .card-right .subitem a{
   color: #00b3ff;
 }
+
+/* Download button style for Files plugin*/
+#download_button{
+  float:right !important;
+  cursor: pointer !important;
+  height: 3em !important;
+  color:#0077aa !important;
+  display: none;
+}

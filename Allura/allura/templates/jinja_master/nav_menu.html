@@ -40,6 +40,9 @@
                 {%- endif -%}
             </a>
         </h1>
+        <a href="/p/{{c.project.shortname}}/files/download_file?app_url={{c.app.url}}" >
+          <button class="btn-home btn-danger" id="download_button" >Download</button>
+        </a> 
     {% set status = c.project.troves_by_type('developmentstatus')|sort(attribute='fullname') %}
     {% set status = status[-1] %}
     {% if status and status.shortname not in ['production', 'mature'] %}
