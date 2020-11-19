@@ -1,0 +1,78 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+<script type="text/javascript" src="{{g.app_static('js/edit.js')}}"></script>
+
+    <h1 class="title" >
+        <span> Edit {% if folder_object %} Folder {% elif file_object %} File {% endif %} Name </span>
+    </h1>
+
+<!-- popup for edit folder-->
+<div id="edit_folder_popup" >
+ <form id ='edit_folder_form' method="post"
+    {% if folder_object %}
+        action="{{c.app.url}}edit_folder"
+    {% elif file_object %}
+        action="{{c.app.url}}edit_file"
+    {% endif %}
+    onsubmit="return validateEditFolderForm();" >
+ <div class="modal-dialog">
+     <!-- Modal content-->
+     <div class="modal-content">
+     <div class="modal-header">
+         <a class="icon close" href="#" title="Close" data-dismiss="modal"><i class="fa fa-close"></i></a>
+     </div>
+
+    {% if folder_object %}
+     <div class="modal-body grid-13">
+         <p>
+             <label for="folder_name">Folder Name:</label>
+             <input type="text" id="obj_id" name="folder_name" maxlength="260" value="{{folder_object.folder_name}}" />
+             <input type="hidden" id="obj_type" value="folder" />
+             <span id="error_message" class="modal-form-error"></span>
+         </p>
+     </div>
+     <input type="hidden" name="folder_id" id='edit_folder_id' value="{{folder_object._id}}" />
+    {% elif file_object %}
+     <div class="modal-body grid-13">
+         <p>
+             <label for="file_name">File Name:</label>
+             <input type="text" id="obj_id" name="file_name" maxlength="260" value="{{file_object.filename}}" />
+             <input type="hidden" id="obj_type" value="file" />
+             <span id="error_message" class="modal-form-error"></span>
+         </p>
+     </div>
+     <input type="hidden" name="file_id" id='edit_file_id' value="{{file_object._id}}" />
+    {% endif %}
+
+     <div class="modal-footer grid-13">
+         <p>
+                 <input type="submit" id="submit_btn" value="Save"/>
+                 <a href="#" class="close">Cancel</a>
+         </p>
+     </div>
+     </div>
+ </div>
+ {{lib.csrf_token()}}
+ </form>
+</div>
+
+

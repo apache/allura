@@ -1,0 +1,193 @@
+{#-
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-#}
+
+{% extends g.theme.master %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import 'forgeactivity:templates/macros.html' as am with context %}
+
+{% do g.register_app_css('css/files.css', compress=False) %}
+
+{% block title %}
+{{c.project.name}} / {{c.app.config.options.mount_label}} / File Upload
+{% endblock %}
+
+{% macro path_links(parts, urls) %}
+  {% if parts != [''] %}
+      <a href="{{c.app.url}}"><b class="fa fa-folder-open-o" title="Root directory"></b></a> /
+  {% endif %}
+  {% for part in parts %}
+    {% if part != '...' and not loop.last %}
+        <a href="{{ urls[part] }}"> 
+                {{part}} 
+        </a> /
+    {% else %}
+        {{ part }} {% if not loop.last %} / {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% block header %}
+Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% endif %}
+{% endblock %}
+
+{% block actions %}
+{% if c.user and c.user != c.user.anonymous() %}
+{{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}} 
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+
+{% if not c.user.is_anonymous() %}
+
+<div class="main_div">
+
+     {% if h.has_access(c.project, 'admin')() %}
+         <div class="upload_buttons" >
+            <a {% if folder_object %} href="{{c.app.url}}get_parent_for_create_folder?folder_id={{folder_object._id}}" {% else %} href="{{c.app.url}}get_parent_for_create_folder" {% endif %} class="admin_modal">
+             <button id="create_folder" type= "button" class="btn btn-info btn-lg" {% if folder_object.disabled %} disabled {% endif %} >Create Folder</button>
+            </a>
+            <a {% if folder_object %} href="{{c.app.url}}get_parent_for_upload_file?folder_id={{folder_object._id}}" {% else %} href="{{c.app.url}}get_parent_for_upload_file" {% endif %} class="admin_modal">
+             <button id="add_files" type= "button" class="btn btn-info btn-lg" {% if folder_object.disabled %} disabled {% endif %} >Add File</button>
+            </a>
+         </div>
+     {% endif %}
+
+
+             {% if file_objects or folder_objects %}
+             <table>
+             <colgroup>
+                <col class="name_col">
+                <col class="date_col">
+                <col class="size_col">
+                <col class="author_col">
+                {% if h.has_access(c.project, 'admin')() %}
+                <col class="actions_col">
+                {% endif %}
+             </colgroup>
+                 <thead>
+                     <tr>
+                         <th>File</th>
+                         <th>Date</th>
+                         <th>Size</th>
+                         <th>Author</th>
+                         {% if h.has_access(c.project, 'admin')() %}
+                             <th>Actions</th>
+                         {% endif %}
+
+                     </tr>
+                 </thead>
+                 <tbody>
+                 {% for folder in folder_objects %}
+                 <tr {% if not folder.disabled %} title="{{folder.folder_name}}" {% else %} class="{{folder.folder_name}}"
+                 title="{{folder.folder_name}} is disabled" {% endif %} >
+                 <td {% if folder.disabled %} class="folder_dis" {% endif %} title="Click to enter {{folder.folder_name}}">
+                     {% set icon_name = 'folder' %}
+
+                    <a class="icon" href="{{folder.url()}}" title="Click to enter {{folder.folder_name}}">
+                        <i class="fa fa-folder"></i>&nbsp;{{folder.folder_name|truncate(30)}}
+                    </a>
+
+                 </td>
+                 <td>{{lib.abbr_date(folder.created_date)}}</td>
+                 <td></td>
+                 <td title="{{folder.created_by().display_name}}">{{folder.created_by().display_name|truncate(30)}}</td>
+                 {% if h.has_access(c.project, 'admin')() %}
+                 <td>
+                     <div class="folder_actions">
+                        <a data-toggle="tooltip" {% if not folder.disabled %} title="Publish" class="admin_modal" href= "{{c.app.url}}get_publishable_folder?folder_id={{folder._id}}" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-share" {% if folder.disabled %} onClick="return false"{% endif %} ></i></a>
+
+                        <a data-toggle="tooltip " {% if not folder.disabled %} class="edit_icon admin_modal" href="{{c.app.url}}get_editable_object?object_id={{folder._id}}" title="Edit" {% else %} class="disable_object" {% endif %}><i class="fa fa-edit" data-toggle='modal'></i></a>
+                         <a data-toggle="tooltip " {% if not folder.disabled %} class="delete_icon admin_modal" href="{{c.app.url}}get_deletable_object?object_id={{folder._id}}" title="Delete" {% else %} class="disable_object" {% endif %}><i class="fa fa-trash-o" data-toggle='modal'></i></a>
+
+
+                         <a href="#" data-toggle="tooltip" {% if folder.disabled %} title="Enable" {% else %} title="Disable" {% endif %} onclick="ConfirmDisableFolder('{{ folder._id }}', '{{folder.disabled}}', '{{folder.parent_folder.disabled}}','{{c.app.url}}disable_folder')" ><i {% if folder.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
+
+
+                     </div>
+                 </td>
+                 {% endif%}
+
+                 </tr>
+                 {% endfor %}
+
+                 {% for file in file_objects %}
+                 <tr {% if not file.disabled %} title="{{file.filename}}" {% set url = file.url() %} {% else %} 
+                 title="{{file.filename}} is disabled" {% set url = '#' %} {% endif %} >
+                 <td {% if file.disabled %} class="file_dis" {% endif %} >
+                     {% set icon_name = 'file' %}
+                     <a class="icon" {% if not file.disabled %} href="{{file.url()}}" title="Click to download {{file.filename}}" {% else %} href="#" {% endif %} >
+                        <i class="fa fa-file-o"></i>&nbsp;{{file.filename|truncate(30)}}
+                    </a>
+
+
+                 </td>
+                 <td>{{lib.abbr_date(file.created_date)}}</td>
+                 <td>{{file.file_size}}</td>
+                 <td title="{{file.uploaded_by().display_name}}">{{file.uploaded_by().display_name|truncate(30)}}</td>
+                {% if h.has_access(c.project, 'admin')() %}
+                 <td>
+                     <div class="file_actions">
+                         <a data-toggle="tooltip" {% if not file.disabled  %}  href= "#" {% if not file.linked_to_download%} title="Link" {% else %} title="Unlink" {% endif %} class="link_icon" onclick="ConfirmLinkFile('{{ file._id }}', '{{ file.linked_to_download }}', '{{c.app.url}}link_file')" {% else %} class="disable_object" {% endif %} ><i class= "fa fa-link" {% if file.linked_to_download %} id="disable_link" {% endif %}></i></a>
+                         <a data-toggle="tooltip " {% if not file.disabled %} class="edit_icon admin_modal" href="{{c.app.url}}get_editable_object?object_id={{file._id}}" title="Edit" {% else %} class="disable_object" {% endif %}><i class="fa fa-edit" data-toggle='modal' ></i></a>
+
+                         <a data-toggle="tooltip " {% if not file.disabled %} class="delete_icon admin_modal" href="{{c.app.url}}get_deletable_object?object_id={{file._id}}" title="Delete" {% else %} class="disable_object" {% endif %}><i class="fa fa-trash-o" data-toggle='modal' {% if not file.disabled %} {% endif %} ></i></a>
+
+                         <a href="#" data-toggle="tooltip" {% if file.disabled %} title="Enable" {% else %} title="Disable" {% endif %} onclick="ConfirmDisableFile('{{ file._id }}', '{{file.disabled}}', '{{file.parent_folder.disabled}}','{{c.app.url}}disable_file')" ><i {% if file.disabled %} class="fa fa-undo" {% else %} class="fa fa-ban" {% endif %}></i></a>
+
+                     </div>
+                 </td>
+                 {% endif %}
+                 </tr>
+                 {% endfor %}
+                 </tbody>
+             </table>
+             {% else %}
+             <div class="no_objects" >
+                 <i>No file or folder has been uploaded yet.</i>
+             </div>
+             {% endif %}
+
+             {% for file in file_objects %}
+                {% if not file.disabled  %}
+                    {% set name, text = file.readme() %}
+                    {% if name %}
+                        <h1 id="readme"> Read Me </h1>
+                        {{h.render_any_markup(name, text)}}
+                    {% endif %}
+                {% endif %}
+             {% endfor %}
+
+     
+</div>
+
+{% else %}
+ <p> Please login to upload a project file </p>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script type="text/javascript" src="{{g.app_static('js/files.js')}}"></script>
+
+{% endblock %}
+
