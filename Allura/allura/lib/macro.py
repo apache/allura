@@ -466,6 +466,9 @@ def embed(url=None):
             html = consumer.embed(url)['html']
         except oembed.OEmbedNoEndpoint:
             html = None
+        except oembed.OEmbedError:
+            log.exception('Could not embed: {}'.format(url))
+            return 'Could not embed: {}'.format(url)
         except six.moves.urllib.error.HTTPError as e:
             if e.code == 404:
                 return 'Video not available'

@@ -25,13 +25,13 @@ import os
 import allura
 import unittest
 import hashlib
-import datetime as dt
 from mock import patch, Mock
 
 from bson import ObjectId
 from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
 from tg import tmpl_context as c, app_globals as g
 import tg
+from oembed import OEmbedError
 
 from ming.orm import ThreadLocalORMSession
 from alluratest.controller import (
@@ -351,6 +351,14 @@ def test_macro_embed(oembed_fetch):
 def test_macro_embed_video_gone():
     r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')
     assert_equal(r, '<div class="markdown_content"><p>Video not available</p></div>')
+
+
+@patch('oembed.OEmbedEndpoint.fetch')
+def test_macro_embed_video_error(oembed_fetch):
+    oembed_fetch.side_effect = OEmbedError('Invalid mime-type in response...')
+    r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]')
+    assert_equal(r, '<div class="markdown_content"><p>Could not embed: '
+                    'http://www.youtube.com/watch?v=6YbBmqUnoQM</p></div>')
 
 
 def test_macro_embed_notsupported():
