@@ -160,6 +160,15 @@ def escape_json(data):
     return json.dumps(data).replace('<', '\\u003C')
 
 
+def strip_bad_unicode(s):
+    """
+    xml doesn't like some control characters: https://www.w3.org/TR/REC-xml/#charsets
+    :param s:
+    :return:
+    """
+    return re.sub('[\x00-\x08\x0B\x0C\x0E-\x1F]', '', s)
+
+
 def monkeypatch(*objs):
     def patchem(func):
         for obj in objs:
