@@ -89,6 +89,13 @@ def test_escape_json():
     assert_equals(outputdata, outputsample)
 
 
+def test_strip_bad_unicode():
+    inputdata = 'Hello\x08World'
+    outputsample = 'HelloWorld'
+    outputdata = h.strip_bad_unicode(inputdata)
+    assert_equals(outputdata, outputsample)
+
+
 def test_really_unicode():
     here_dir = path.dirname(__file__)
     s = h.really_unicode(b'asdf')

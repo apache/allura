@@ -178,7 +178,7 @@ class ForgeActivityController(BaseController):
             ),
                 link=url,
                 pubdate=t.published,
-                description=t.obj.activity_extras.get('summary'),
+                description=h.strip_bad_unicode(t.obj.activity_extras.get('summary', '')),
                 unique_id=url_id,
                 author_name=t.actor.activity_name,
                 author_link=h.absurl(t.actor.activity_url))
