@@ -349,8 +349,10 @@ def test_macro_embed(oembed_fetch):
 
 
 def test_macro_embed_video_gone():
+    # this does a real fetch
     r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')
-    assert_equal(r, '<div class="markdown_content"><p>Video not available</p></div>')
+    assert_equal(r, '<div class="markdown_content"><p>Could not embed: '
+                    'https://www.youtube.com/watch?v=OWsFqPZ3v-0</p></div>')
 
 
 @patch('oembed.OEmbedEndpoint.fetch')

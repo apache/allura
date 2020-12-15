@@ -453,7 +453,7 @@ def members(limit=20):
 @macro()
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
-    endpoint = oembed.OEmbedEndpoint('http://www.youtube.com/oembed',
+    endpoint = oembed.OEmbedEndpoint('https://www.youtube.com/oembed',
                                      [str('http://*.youtube.com/*'), str('https://*.youtube.com/*'),
                                       str('http://*.youtube-nocookie.com/*'), str('https://*.youtube-nocookie.com/*'),
                                       ])
@@ -473,7 +473,8 @@ def embed(url=None):
             if e.code == 404:
                 return 'Video not available'
             else:
-                raise
+                log.exception('Could not embed: {}'.format(url))
+                return 'Could not embed: {}'.format(url)
 
     if html:
         # youtube has a trailing ")" at the moment
