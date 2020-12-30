@@ -910,6 +910,7 @@ class ProjectRegistrationProvider(object):
         if not allow_reuse and M.User.query.find({'tool_data.phone_verification.number_hash': number_hash}).count():
             return {'status': 'error',
                     'error': 'That phone number has already been used.'}
+        log.info('PhoneService going to send a verification for: %s', user.username)
         return g.phone_service.verify(number)
 
     def check_phone_verification(self, user, request_id, pin, number_hash):

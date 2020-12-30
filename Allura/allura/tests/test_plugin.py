@@ -144,6 +144,7 @@ class UserMock(object):
     def __init__(self):
         self.tool_data = {}
         self._projects = []
+        self.username = 'usermock'
 
     def get_tool_data(self, tool, key):
         return self.tool_data.get(tool, {}).get(key, None)
