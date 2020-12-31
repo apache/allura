@@ -387,8 +387,12 @@ class AlluraTimerMiddleware(TimerMiddleware):
         return timers
 
     def before_logging(self, stat_record):
-        if hasattr(c, "app") and hasattr(c.app, "config"):
-            stat_record.add('request_category', c.app.config.tool_name.lower())
+        try:
+            app_config = c.app.config
+        except (TypeError, AttributeError):
+            pass
+        else:
+            stat_record.add('request_category', app_config.tool_name.lower())
         return stat_record
 
     @classmethod
