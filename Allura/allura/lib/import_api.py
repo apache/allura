@@ -20,11 +20,10 @@ from __future__ import absolute_import
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
-import hmac
-import hashlib
 import json
 import logging
-from datetime import datetime
+
+from allura.lib.utils import urlencode
 
 log = logging.getLogger(__name__)
 
@@ -50,14 +49,14 @@ class AlluraImportApiClient(object):
 
         while True:
             try:
-                result = six.moves.urllib.request.urlopen(url, six.moves.urllib.parse.urlencode(params))
+                result = six.moves.urllib.request.urlopen(url, six.ensure_binary(urlencode(params)))
                 resp = result.read()
                 return json.loads(resp)
             except six.moves.urllib.error.HTTPError as e:
                 e.msg += ' ({0})'.format(url)
                 if self.verbose:
                     error_content = e.read()
-                    e.msg += '. Error response:\n' + error_content
+                    e.msg += '. Error response:\n' + six.ensure_text(error_content)
                 raise e
             except (six.moves.urllib.error.URLError, IOError):
                 if self.retry:
