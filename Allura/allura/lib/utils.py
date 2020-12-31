@@ -783,38 +783,22 @@ def is_nofollow_url(url):
     return url_domain and url_domain not in ok_domains
 
 
-def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
-    """
-    Returns a bytestring version of 's', encoded as specified in 'encoding'.
-
-    If strings_only is True, don't convert (some) non-string-like objects.
-
-    This function was borrowed from Django
-    """
-    if strings_only and isinstance(s, (type(None), int)):
+def smart_str(s):
+    '''
+    Returns a bytestring version of 's' from any type
+    '''
+    if isinstance(s, six.binary_type):
         return s
-    elif not isinstance(s, six.string_types):
-        try:
-            return str(s)
-        except UnicodeEncodeError:
-            if isinstance(s, Exception):
-                # An Exception subclass containing non-ASCII data that doesn't
-                # know how to print itself properly. We shouldn't raise a
-                # further exception.
-                return ' '.join([smart_str(arg, encoding, strings_only,
-                                           errors) for arg in s])
-            return six.text_type(s).encode(encoding, errors)
-    elif isinstance(s, six.text_type):
-        r = s.encode(encoding, errors)
-        return r
-    elif s and encoding != 'utf-8':
-        return s.decode('utf-8', errors).encode(encoding, errors)
     else:
-        return s
+        return six.text_type(s).encode('utf-8')
 
 
 def generate_smart_str(params):
-    for (key, value) in six.iteritems(params):
+    if isinstance(params, collections.Mapping):
+        params_list = six.iteritems(params)
+    else:
+        params_list = params
+    for key, value in params_list:
         yield smart_str(key), smart_str(value)
 
 

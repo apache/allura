@@ -421,3 +421,11 @@ def test_close_ipv4_addrs():
     assert utils.close_ipv4_addrs('1.2.3.4', '1.2.3.255')
     assert not utils.close_ipv4_addrs('1.2.3.4', '1.2.4.4')
 
+
+def test_urlencode():
+    # dict - a simple one so arbitrary ordering doesn't cause problems on py2
+    assert_equal(utils.urlencode({'a': 'hello'}),
+                 'a=hello')
+    # list of pairs - including unicode and bytes
+    assert_equal(utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode('utf8'))]),
+                 'a=1&b=%C6%92&c=%C6%92')
