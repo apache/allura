@@ -65,6 +65,7 @@ from allura.lib.custom_middleware import CORSMiddleware
 from allura.lib.custom_middleware import LoginRedirectMiddleware
 from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib.custom_middleware import SetRequestHostFromConfig
+from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware
 from allura.lib import helpers as h
 
 __all__ = ['make_app']
@@ -191,6 +192,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Handle static files (by tool)
     app = StaticFilesMiddleware(app, app_conf.get('static.script_name'))
     # Handle setup and flushing of Ming ORM sessions
+    app = MingTaskSessionSetupMiddleware(app)
     app = MingMiddleware(app)
     # Set up the registry for stacked object proxies (SOPs).
     #    streaming=true ensures they won't be cleaned up till

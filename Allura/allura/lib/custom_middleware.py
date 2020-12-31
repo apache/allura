@@ -31,6 +31,7 @@ from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
 import six
+from ming.odm import session
 
 from allura.lib import helpers as h
 from allura import model as M
@@ -434,3 +435,28 @@ class RememberLoginMiddleware(object):
             return start_response(status, headers, exc_info)
 
         return self.app(environ, remember_login_start_response)
+
+
+class MingTaskSessionSetupMiddleware(object):
+    '''
+    This middleware ensures there is a "task" session always established.  This avoids:
+
+          File ".../ming/odm/middleware.py", line 31, in __call__
+            self._cleanup_request()
+          File ".../ming/odm/middleware.py", line 45, in _cleanup_request
+            ThreadLocalODMSession.flush_all()
+          File ".../ming/odm/odmsession.py", line 414, in flush_all
+            for sess in cls._session_registry.values():
+        RuntimeError: dictionary changed size during iteration
+
+    Which would happen when IndexerSessionExtension establishes the first "task" session during a flush of a
+    different session
+    '''
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        # this is sufficient to ensure an ODM session is always established
+        session(M.MonQTask).impl
+        return self.app(environ, start_response)
