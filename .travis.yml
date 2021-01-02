@@ -16,12 +16,24 @@
 #       under the License.
 
 language: python
-python:
-  - "2.7"
-before_install:
-  - sudo apt-get install -qq python-svn libjpeg8-dev zlib1g-dev
-install: "pip install -r requirements.txt --use-mirrors"
-before_script:
-  - ln -s /usr/lib/python2.7/dist-packages/pysvn $VIRTUAL_ENV/lib/python2.7/site-packages/
+jobs:
+  include:
+    - python: "2.7"
+      dist: bionic  # Ubuntu 18.04
+      before_install:
+        - sudo apt-get install -qq python-svn
+      virtualenv:  # only works on stock python
+        system_site_packages: true
+    - python: "3.7"
+      dist: focal  # Ubuntu 20.04
+      before_install:
+        - sudo apt-get install -qq python3-cxx-dev libsvn-dev # for building pysvn
+      before_script:
+        - pip install https://sourceforge.net/projects/pysvn/files/pysvn/V1.9.12/pysvn-1.9.12.tar.gz
+install:
+  - sudo apt-get install -qq libjpeg8-dev zlib1g-dev
+  - pip install -r requirements.txt
+  - npm install
+script:
   - ./rebuild-all.bash
-script: ./run_tests
+  - ./run_tests
