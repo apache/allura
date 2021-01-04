@@ -17,7 +17,7 @@ chardet==3.0.4            # via -r requirements.in, requests
 colander==1.7.0           # via -r requirements.in
 crank==0.8.1              # via turbogears2
 creoleparser==0.7.5       # via pypeline
-cryptography==3.2.1       # via -r requirements.in
+cryptography==3.3.1       # via -r requirements.in
 datadiff==2.0.0           # via -r requirements.in
 decorator==4.4.0          # via -r requirements.in, ipython, traitlets
 docutils==0.15.2          # via pypeline
