@@ -25,6 +25,7 @@ import os
 import allura
 import unittest
 import hashlib
+import six
 from mock import patch, Mock
 
 from bson import ObjectId
@@ -351,8 +352,12 @@ def test_macro_embed(oembed_fetch):
 def test_macro_embed_video_gone():
     # this does a real fetch
     r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')
-    assert_equal(r, '<div class="markdown_content"><p>Could not embed: '
-                    'https://www.youtube.com/watch?v=OWsFqPZ3v-0</p></div>')
+    r = six.text_type(r)  # convert away from Markup, to get better assertion diff output
+    # either of these could happen depending on the mood of youtube's oembed API:
+    assert_in(r, [
+        '<div class="markdown_content"><p>Video not available</p></div>',
+        '<div class="markdown_content"><p>Could not embed: https://www.youtube.com/watch?v=OWsFqPZ3v-0</p></div>',
+    ])
 
 
 @patch('oembed.OEmbedEndpoint.fetch')
