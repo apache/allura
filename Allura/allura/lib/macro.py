@@ -470,7 +470,7 @@ def embed(url=None):
             log.exception('Could not embed: {}'.format(url))
             return 'Could not embed: {}'.format(url)
         except six.moves.urllib.error.HTTPError as e:
-            if e.code == 404:
+            if e.code in (403, 404):
                 return 'Video not available'
             else:
                 log.exception('Could not embed: {}'.format(url))
