@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import six
 import time
 import logging
 import socket
@@ -79,7 +81,7 @@ class IRCBot(asynchat.async_chat):
         sock = socket.socket()
         sock.connect((host, port))
         asynchat.async_chat.__init__(self, sock)
-        self.set_terminator('\r\n')
+        self.set_terminator(b'\r\n')
         self.data = []
         self.channels = {}
         self.set_nick('000')
@@ -95,7 +97,7 @@ class IRCBot(asynchat.async_chat):
         self.say('NICK ' + nick)
 
     def collect_incoming_data(self, data):
-        self.data.append(data)
+        self.data.append(six.ensure_text(data))
 
     def found_terminator(self):
         request = ''.join(self.data)
@@ -129,7 +131,7 @@ class IRCBot(asynchat.async_chat):
     def say(self, s):
         s = s.encode('utf-8')
         self.logger.debug('SAYING %s', s)
-        self.push(s + '\r\n')
+        self.push(s + b'\r\n')
 
     def notice(self, out, message):
         self.say('NOTICE %s :%s' % (out, message))
