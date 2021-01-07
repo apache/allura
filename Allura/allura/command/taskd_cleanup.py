@@ -23,6 +23,7 @@ import signal
 import socket
 import subprocess
 from ming.orm.ormsession import ThreadLocalORMSession
+import six
 
 from allura import model as M
 from . import base
@@ -138,7 +139,7 @@ class TaskdCleanupCommand(base.Command):
         stdout, stderr = p.communicate()
         tasks = []
         if p.returncode == 0:
-            tasks = [pid for pid in stdout.split('\n') if pid != '']
+            tasks = [pid for pid in six.ensure_text(stdout).split('\n') if pid != '']
         return tasks
 
     def _taskd_status(self, pid, retry=False):
@@ -152,7 +153,7 @@ class TaskdCleanupCommand(base.Command):
             base.log.error('Can\'t read taskd status log %s' %
                            self.taskd_status_log)
             exit(1)
-        return stdout
+        return six.ensure_text(stdout)
 
     def _check_taskd_status(self, pid):
         for i in range(self.options.num_retry):
