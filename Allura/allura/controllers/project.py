@@ -673,7 +673,7 @@ class NeighborhoodAdminController(object):
             h.log_if_changed(nbhd, 'anchored_tools', anchored_tools,
                              'update neighborhood anchored tools')
 
-        if icon is not None and icon != '':
+        if icon is not None and icon != b'':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
                 M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
