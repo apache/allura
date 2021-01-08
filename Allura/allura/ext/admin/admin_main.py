@@ -402,7 +402,7 @@ class ProjectAdminController(BaseController):
             M.AuditLog.log('change project features to %s', features)
             c.project.features = features
 
-        if icon is not None and icon != '':
+        if icon is not None and icon != b'':
             if c.project.icon:
                 M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
             M.AuditLog.log('update project icon')
