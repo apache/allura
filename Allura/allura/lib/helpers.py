@@ -763,7 +763,7 @@ TABLE = 'table'
 
 def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
     """
-    renders markdown using allura enhacements if file is in markdown format
+    renders markdown using allura enhancements if file is in markdown format
     renders any other markup format using the pypeline
     Returns jinja-safe text
     """
@@ -771,8 +771,9 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
         txt = '<p><em>Empty File</em></p>'
     else:
         fmt = g.pypeline_markup.can_render(name)
+        txt = really_unicode(txt)
         if fmt == 'markdown':
-            txt = g.markdown.convert(really_unicode(txt))
+            txt = g.markdown.convert(txt)
         else:
             txt = g.pypeline_markup.render(name, txt)
         if not fmt:
