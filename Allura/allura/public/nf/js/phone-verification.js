@@ -143,8 +143,11 @@ var FormStepMixin = {
       } else {
         set_state({error: resp.error});
       }
-    }.bind(this)).fail(function() {
+    }.bind(this)).fail(function(xhr) {
       var error = 'Request to API failed, please try again';
+      if (xhr.status === 401) {
+        error = 'Authentication issue.  Please <a href="/p/add_project" target=_top>reload the page</a> and make sure you are logged in.';
+      }
       set_state({error: error});
     }).always(function() {
       set_state({in_progress: false});
