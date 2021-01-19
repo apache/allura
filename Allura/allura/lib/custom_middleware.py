@@ -34,6 +34,7 @@ import six
 from ming.odm import session
 
 from allura.lib import helpers as h
+from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
 from six.moves import range
@@ -157,7 +158,7 @@ class LoginRedirectMiddleware(object):
     def __call__(self, environ, start_response):
         status, headers, app_iter, exc_info = call_wsgi_application(self.app, environ)
         is_api_request = environ.get('PATH_INFO', '').startswith(str('/rest/'))
-        if status[:3] == '401' and not is_api_request:
+        if status[:3] == '401' and not is_api_request and not is_ajax(Request(environ)):
             login_url = tg.config.get('auth.login_url', '/auth/')
             if environ['REQUEST_METHOD'] == 'GET':
                 return_to = environ['PATH_INFO']

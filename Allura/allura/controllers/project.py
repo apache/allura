@@ -166,10 +166,12 @@ class NeighborhoodController(object):
 
     @expose('jinja:allura:templates/phone_verification_fragment.html')
     def phone_verification_fragment(self, *args, **kw):
+        require_access(self.neighborhood, 'register')
         return {}
 
     @expose('json:')
     def verify_phone(self, number, **kw):
+        require_access(self.neighborhood, 'register')
         p = plugin.ProjectRegistrationProvider.get()
         result = p.verify_phone(c.user, number)
         request_id = result.pop('request_id', None)
@@ -185,6 +187,7 @@ class NeighborhoodController(object):
 
     @expose('json:')
     def check_phone_verification(self, pin, **kw):
+        require_access(self.neighborhood, 'register')
         p = plugin.ProjectRegistrationProvider.get()
         request_id = session.get('phone_verification.request_id')
         number_hash = session.get('phone_verification.number_hash')
@@ -197,6 +200,7 @@ class NeighborhoodController(object):
     @expose('json:')
     @validate(W.add_project)
     def check_names(self, **raw_data):
+        require_access(self.neighborhood, 'register')
         return c.form_errors
 
     @h.vardec
