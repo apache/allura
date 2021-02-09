@@ -35,7 +35,7 @@ gitdb2==2.0.4             # via gitpython
 gitpython==2.1.11         # via -r requirements.in
 gunicorn==19.5.0          # via -r requirements.in
 html5lib==1.0.1           # via -r requirements.in, pypeline, textile
-httplib2==0.18.1          # via oauth2
+httplib2==0.19.0          # via oauth2
 idna==2.8                 # via requests
 inflection==0.3.1         # via profanityfilter
 ipaddress==1.0.22         # via cryptography
@@ -67,7 +67,7 @@ pycparser==2.19           # via cffi
 pyflakes==2.1.1           # via -r requirements.in
 pygments==2.4.2           # via -r requirements.in, ipython
 pymongo==3.10.1           # via -r requirements.in, activitystream, ming
-pyparsing==2.4.7          # via packaging
+pyparsing==2.4.7          # via httplib2, packaging
 pypeline[creole,markdown,rst,textile]==0.5.2  # via -r requirements.in
 pysolr==3.6.0             # via -r requirements.in
 python-dateutil==2.8.0    # via -r requirements.in, easywidgets
