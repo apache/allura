@@ -833,7 +833,7 @@ class TestEmojis(unittest.TestCase):
         output = g.markdown.convert('```html\n<p>:camel:</p>\n```')
         assert_in(':camel:', output)
         output = g.markdown.convert('~~~\n:camel:\n~~~')
-        assert_in('<span class="p">:</span><span class="n">camel</span><span class="p">:</span>', output)
+        assert_in('<span></span><span class="err">:camel:</span>', output)
 
     def test_markdown_commit_with_emojis(self):
         output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')
