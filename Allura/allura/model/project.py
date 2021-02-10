@@ -21,6 +21,8 @@ from __future__ import absolute_import
 import logging
 from calendar import timegm
 from collections import Counter, OrderedDict
+from hashlib import sha256
+
 from datetime import datetime
 from copy import deepcopy
 import six.moves.urllib.request
@@ -380,7 +382,17 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         )
         # store the dimensions so we don't have to read the whole image each time we need to know
         icon_orig_img = PIL.Image.open(icon_orig.rfile())
+
         self.set_tool_data('allura', icon_original_size=icon_orig_img.size)
+
+        try:
+            # calc and save icon file hash, for better cache busting purposes
+            file_input.seek(0)
+            file_bytes = file_input.read()
+            file_sha256 = sha256(file_bytes).hexdigest()
+            self.set_tool_data('allura', icon_sha256=file_sha256)
+        except Exception as ex:
+            log.exception('Failed to calculate sha256 for icon file for {}'.format(self.shortname))
 
     @property
     def icon(self):

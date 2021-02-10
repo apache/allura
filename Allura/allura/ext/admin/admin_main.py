@@ -335,7 +335,7 @@ class ProjectAdminController(BaseController):
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
-            c.project.set_tool_data('allura', icon_original_size=None)
+            c.project.set_tool_data('allura', icon_original_size=None, icon_sha256=None)
             M.AuditLog.log('remove project icon')
             g.post_event('project_updated')
             redirect('overview')
