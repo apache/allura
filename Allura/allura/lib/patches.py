@@ -74,6 +74,7 @@ def apply():
     @decorator
     def without_trailing_slash(func, *args, **kwargs):
         '''Monkey-patched to use 301 redirects for SEO, and handle query strings'''
+        __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         response_type = getattr(request, 'response_type', None)
         if (request.method == 'GET' and request.path.endswith('/') and not response_type):
             location = request.path_url[:-1]
@@ -86,6 +87,7 @@ def apply():
     @decorator
     def with_trailing_slash(func, *args, **kwargs):
         '''Monkey-patched to use 301 redirects for SEO, and handle query strings'''
+        __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         response_type = getattr(request, 'response_type', None)
         if (request.method == 'GET' and not request.path.endswith('/') and not response_type):
             location = request.path_url + '/'
@@ -113,6 +115,7 @@ def newrelic():
                    tg.controllers.decoratedcontroller.DecoratedController)
     def _call(self, controller, *args, **kwargs):
         '''Set NewRelic transaction name to actual controller name'''
+        __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         import newrelic.agent
         newrelic.agent.set_transaction_name(
             newrelic.agent.callable_name(controller))
