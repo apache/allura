@@ -5,7 +5,6 @@
 #    pip-compile
 #
 activitystream==0.3.0     # via -r requirements.in
-backlash==0.1.4           # via -r requirements.in
 backports.functools-lru-cache==1.5  # via soupsieve
 backports.shutil-get-terminal-size==1.0.0  # via ipython
 beaker==1.10.1            # via -r requirements.in
@@ -95,8 +94,9 @@ waitress==1.4.3           # via webtest
 wcwidth==0.1.7            # via prompt-toolkit
 webencodings==0.5.1       # via bleach, html5lib
 webhelpers2==2.0          # via -r requirements.in
-webob==1.7.4              # via -r requirements.in, backlash, easywidgets, timermiddleware, turbogears2, webtest
+webob==1.7.4              # via -r requirements.in, easywidgets, timermiddleware, turbogears2, webtest
 webtest==2.0.33           # via -r requirements.in
+werkzeug==1.0.1           # via -r requirements.in
 wrapt==1.11.2             # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
