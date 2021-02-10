@@ -1,7 +1,6 @@
 ActivityStream==0.3.0
 beautifulsoup4
 Beaker
-backlash==0.1.4
 chardet
 colander==1.7.0
 cryptography
@@ -50,6 +49,7 @@ TimerMiddleware==0.5.1
 TurboGears2==2.3.12
 WebHelpers2
 WebOb==1.7.4
+werkzeug
 wrapt==1.11.2
 
 # testing

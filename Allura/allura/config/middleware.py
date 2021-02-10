@@ -36,6 +36,7 @@ from tg.support.middlewares import StatusCodeRedirect
 from beaker.middleware import SessionMiddleware
 from beaker.util import PickleSerializer
 from paste.exceptions.errormiddleware import ErrorMiddleware
+from werkzeug.debug import DebuggedApplication
 
 import activitystream
 import ew
@@ -203,9 +204,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     if config.get('override_root') not in ('task', 'basetest_project_root'):
         if asbool(config['debug']):
             # Converts exceptions to HTTP errors, shows traceback in debug mode
-            # don't use TG footer with extra CSS & images that take time to load
-            tg.error.footer_html = '<!-- %s %s -->'
-            app = tg.error.ErrorHandler(app, global_conf, **config['tg.errorware'])
+            app = DebuggedApplication(app, evalex=True)
         else:
             app = ErrorMiddleware(app, config, **config['tg.errorware'])
 
