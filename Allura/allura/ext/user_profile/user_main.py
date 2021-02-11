@@ -153,10 +153,18 @@ class UserProfileController(BaseController, FeedController):
         provider = AuthenticationProvider.get(request)
         sections = [section(user, c.project)
                     for section in c.app.profile_sections]
+
+        noindex = True
+        for s in sections:
+            s.setup_context()
+            if s.context.get('projects') or s.context.get('timeline'):
+                noindex = False
         return dict(
             user=user,
             reg_date=provider.user_registration_date(user),
-            sections=sections)
+            sections=sections,
+            noindex=noindex,
+        )
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing

@@ -93,6 +93,7 @@ class SectionBase(object):
         the same name.
         """
         self.user = user
+        self.context = None
 
     def check_display(self):
         """
@@ -107,6 +108,16 @@ class SectionBase(object):
         """
         return context
 
+    def setup_context(self):
+        self.context = self.prepare_context({
+            'h': h,
+            'c': c,
+            'g': g,
+            'user': self.user,
+            'config': tg.config,
+            'auth': AuthenticationProvider.get(request),
+        })
+
     def display(self, *a, **kw):
         """
         Renders the section using the context from :meth:`prepare_context`
@@ -120,15 +131,9 @@ class SectionBase(object):
             return ''
         try:
             tmpl = g.jinja2_env.get_template(self.template)
-            context = self.prepare_context({
-                'h': h,
-                'c': c,
-                'g': g,
-                'user': self.user,
-                'config': tg.config,
-                'auth': AuthenticationProvider.get(request),
-            })
-            return Markup(tmpl.render(context))
+            if not self.context:
+                self.setup_context()
+            return Markup(tmpl.render(self.context))
         except Exception as e:
             log.exception('Error rendering section %s: %s', type(self).__name__, e)
             if asbool(tg.config.get('debug')):

@@ -536,3 +536,6 @@ class TestAttachment(TestDiscussBase):
         # ... but moderator can
         self.app.get(alink, status=200, extra_environ=moderator)
         self.app.get(thumblink, status=200, extra_environ=moderator)
+
+
+

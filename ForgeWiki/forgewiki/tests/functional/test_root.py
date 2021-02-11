@@ -954,3 +954,7 @@ class TestRootController(TestController):
             assert_equal(menu, None)
         assert_invisible_for('*anonymous')
         assert_invisible_for('test-user')
+
+    def test_no_index_tag_on_empty_wiki(self):
+        r = self.app.get('/u/test-user/wiki/Home/')
+        assert_in('content="noindex, follow"', r.text)

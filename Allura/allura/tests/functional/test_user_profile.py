@@ -232,6 +232,17 @@ class TestUserProfile(TestController):
         assert_in('Section d', r.text)
         assert_not_in('Section f', r.text)
 
+    def test_no_index_tag_in_empty_profile(self):
+        r = self.app.get('/u/test-user/profile/')
+        assert_in('content="noindex, follow"', r.text)
+
+    def test_remove_no_index_tag_profile(self):
+        r = self.app.get('/u/test-admin/profile/')
+        assert 'content="noindex, follow"' not in r.text
+
+
+
+
 
 class TestUserProfileHasAccessAPI(TestRestApiBase):
 

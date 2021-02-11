@@ -24,6 +24,9 @@
 {% block header %}{{ user.display_name|default(user.username) }}{% endblock %}
 
 {% block head %}
+    {%  if noindex %}
+    <meta name="robots" content="noindex, follow">
+    {%  endif %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
 {% endblock %}
@@ -37,6 +40,7 @@
     {{ g.icons['mail'].render(
         title='Send Message',
         show_title=True,
+        rel="nofollow",
         href=c.app.url + 'send_message',
         extra_css='btn',
         id='user-message') }}

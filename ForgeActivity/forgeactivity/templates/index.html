@@ -20,6 +20,12 @@
 {% extends g.theme.master %}
 {% import 'forgeactivity:templates/macros.html' as am with context %}
 
+{% block head %}
+    {% if noindex %}
+        <meta name="robots" content="noindex, follow">
+    {%  endif %}
+{% endblock %}
+
 {% block title %}{{c.project.name}} Activity{% endblock %}
 
 {% block header %}

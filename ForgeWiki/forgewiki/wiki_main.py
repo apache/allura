@@ -603,7 +603,8 @@ class PageController(BaseController, FeedController):
             cur=cur, prev=prev, next=next,
             page_subscribed=subscribed_to_page,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
-            pagenum=pagenum, limit=limit, count=post_count)
+            pagenum=pagenum, limit=limit, count=post_count,
+            noindex=True if page['title'] == 'Home' and page['version'] == 1 else False)
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
