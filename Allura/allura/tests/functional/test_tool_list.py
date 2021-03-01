@@ -44,3 +44,6 @@ class TestToolListController(TestController):
         content = r.html.find('div', id='content_base')
         assert not content.find('a', dict(href='/p/test/wiki/')), r
         assert content.find('a', dict(href='/p/test/wiki2/')), r
+
+    def test_missing_path(self):
+        self.app.get('/p/test/_list/', status=404)

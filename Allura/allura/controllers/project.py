@@ -314,7 +314,9 @@ class ToolListController(object):
     """Renders a list of all tools of a given type in the current project."""
 
     @expose('jinja:allura:templates/tool_list.html')
-    def _default(self, tool_name, page=0, limit=200, **kw):
+    def _default(self, tool_name=None, page=0, limit=200, **kw):
+        if tool_name is None:
+            raise exc.HTTPNotFound
         c.page_list = W.page_list
         tool_name = tool_name.lower()
         entries = c.project.sitemap(included_tools=[tool_name],
