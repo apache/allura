@@ -35,6 +35,7 @@ from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 from allura.lib.helpers import exceptionless
 from allura.lib.helpers import plain2markdown
+from allura.lib.utils import socket_default_timeout
 
 # Everything in this file depends on html2text,
 # so import attempt is placed in global scope.
@@ -75,10 +76,11 @@ class RssFeedsCommand(base.BlogCommand):
         user = M.User.query.get(username=self.options.username)
         c.user = user
 
-        self.prepare_feeds()
-        for appid in self.feed_dict:
-            for feed_url in self.feed_dict[appid]:
-                self.process_feed(appid, feed_url)
+        with socket_default_timeout(20):
+            self.prepare_feeds()
+            for appid in self.feed_dict:
+                for feed_url in self.feed_dict[appid]:
+                    self.process_feed(appid, feed_url)
 
     def prepare_feeds(self):
         feed_dict = {}
@@ -105,10 +107,10 @@ class RssFeedsCommand(base.BlogCommand):
         app = ForgeBlogApp(c.project, appconf)
         c.app = app
 
-        allura_base.log.info("Get feed: %s" % feed_url)
+        allura_base.log.info("Getting {} feed {}".format(app.url, feed_url))
         f = feedparser.parse(feed_url)
         if f.bozo:
-            allura_base.log.exception("%s: %s" % (feed_url, f.bozo_exception))
+            allura_base.log.warn("{} feed {} errored: {}".format(app.url, feed_url, f.bozo_exception))
             return
         for e in f.entries:
             self.process_entry(e, appid)
