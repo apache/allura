@@ -602,7 +602,9 @@ class RefsController(object):
         self.BranchBrowserClass = BranchBrowserClass
 
     @expose()
-    def _lookup(self, ref, *remainder):
+    def _lookup(self, ref=None, *remainder):
+        if ref is None:
+            raise exc.HTTPNotFound
         EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:
             i = remainder.index(EOR)
@@ -614,7 +616,9 @@ class RefsController(object):
 class CommitsController(object):
 
     @expose()
-    def _lookup(self, ci, *remainder):
+    def _lookup(self, ci=None, *remainder):
+        if ci is None:
+            raise exc.HTTPNotFound
         ci = unquote(ci)
         EOR = c.app.END_OF_REF_ESCAPE
         if EOR in remainder:

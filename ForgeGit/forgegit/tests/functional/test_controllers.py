@@ -209,6 +209,9 @@ class TestRootController(_TestCase):
         assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' not in r
         assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' not in r
 
+    def test_ci_missing(self):
+        r = self.app.get('/src-git/ci/', status=404)
+
     def test_tags(self):
         self.app.get('/src-git/ref/master~/tags/')
 
@@ -1096,6 +1099,9 @@ class TestGitBranch(TestController):
         r = tags_page.click('releases/v1.1.1', index=1)  # link in body
         assert r.request.url.endswith('src-git/ci/releases/v1.1.1/~/tree/'), r.request.url
         r.mustcontain('on a branch')  # commit for this tag
+
+    def test_ref_url_missing(self):
+        self.app.get('/src-git/ref/', status=404)
 
 
 class TestIncludeMacro(_TestCase):

@@ -158,6 +158,12 @@ class OAuthNegotiator(object):
             parameters=dict(request.params),
             query_string=request.query_string
         )
+        if 'oauth_consumer_key' not in req:
+            log.error('Missing consumer token')
+            return None
+        if 'oauth_token' not in req:
+            log.error('Missing access token')
+            raise exc.HTTPUnauthorized
         consumer_token = M.OAuthConsumerToken.query.get(api_key=req['oauth_consumer_key'])
         access_token = M.OAuthAccessToken.query.get(api_key=req['oauth_token'])
         if consumer_token is None:
@@ -183,8 +189,7 @@ class OAuthNegotiator(object):
             parameters=dict(request.params),
             query_string=request.query_string
         )
-        consumer_token = M.OAuthConsumerToken.query.get(
-            api_key=req['oauth_consumer_key'])
+        consumer_token = M.OAuthConsumerToken.query.get(api_key=req.get('oauth_consumer_key'))
         if consumer_token is None:
             log.error('Invalid consumer token')
             raise exc.HTTPUnauthorized

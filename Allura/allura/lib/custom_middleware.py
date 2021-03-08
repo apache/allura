@@ -289,11 +289,10 @@ class SetRequestHostFromConfig(object):
         #   'HTTP_X_FORWARDED_PROTO' == 'https'
         req = Request(environ)
         try:
-            req.params  # check for malformed unicode, this is the first middleware that might trip over it.
+            req.params  # check for malformed unicode or POSTs, this is the first middleware that might trip over it.
             resp = self.app
-        except UnicodeError:
+        except (UnicodeError, ValueError):
             resp = exc.HTTPBadRequest()
-
 
         return resp(environ, start_response)
 

@@ -1892,11 +1892,16 @@ class TestOAuth(TestController):
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
-    def test_request_token_no_consumer_token(self, Request, Server):
-        Request.from_request.return_value = {
-            'oauth_consumer_key': 'api_key'}
+    def test_request_token_no_consumer_token_matching(self, Request, Server):
+        Request.from_request.return_value = {'oauth_consumer_key': 'api_key'}
         self.app.post('/rest/oauth/request_token',
                       params={'key': 'value'}, status=401)
+
+    @mock.patch('allura.controllers.rest.oauth.Server')
+    @mock.patch('allura.controllers.rest.oauth.Request')
+    def test_request_token_no_consumer_token_given(self, Request, Server):
+        Request.from_request.return_value = {}
+        self.app.post('/rest/oauth/request_token', params={'key': 'value'}, status=401)
 
     @mock.patch('allura.controllers.rest.oauth.Server')
     @mock.patch('allura.controllers.rest.oauth.Request')
