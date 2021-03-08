@@ -531,7 +531,7 @@ class Repository(Artifact, ActivityObject):
     def set_default_branch(self, name):
         return self._impl.set_default_branch(name)
 
-    def paged_diffs(self, commit_id, start=0, end=None,  onlyChangedFiles=False):
+    def paged_diffs(self, commit_id, start=0, end=None, onlyChangedFiles=False):
         return self._impl.paged_diffs(commit_id, start, end, onlyChangedFiles)
 
     def init_as_clone(self, source_path, source_name, source_url):
@@ -1201,7 +1201,7 @@ class Commit(RepoObject, ActivityObject):
     def diffs(self):
         return self.paged_diffs()
 
-    def paged_diffs(self, start=0, end=None,  onlyChangedFiles=False):
+    def paged_diffs(self, start=0, end=None, onlyChangedFiles=False):
         diffs = self.repo.paged_diffs(self._id, start, end, onlyChangedFiles)
 
         return Object(
@@ -1209,7 +1209,7 @@ class Commit(RepoObject, ActivityObject):
             removed=sorted(diffs['removed']),
             changed=sorted(diffs['changed']),
             copied=sorted(diffs['copied'], key=itemgetter('new', 'old')),  # this is a list of dicts
-            renamed=sorted(diffs['renamed']),
+            renamed=sorted(diffs['renamed'], key=itemgetter('new', 'old')),  # this is a list of dicts
             total=diffs['total'])
 
     def get_path(self, path, create=True):
