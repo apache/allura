@@ -133,13 +133,17 @@ class TestSiteAdmin(TestController):
         assert 'math.ceil' in r, r
 
     def test_task_view(self):
-        import math
-        task = M.MonQTask.post(math.ceil, (12.5,))
+        import re
+        task = M.MonQTask.post(re.search, ('pattern', 'string'), {'flags': re.I})
         url = '/nf/admin/task_manager/view/%s' % task._id
         r = self.app.get(
             url, extra_environ=dict(username=str('*anonymous')), status=302)
         r = self.app.get(url)
-        assert 'math.ceil' in r, r
+        assert 're.search' in r, r
+        assert '<td>pattern</td>' in r, r
+        assert '<td>string</td>' in r, r
+        assert '<th class="second-column-headers side-header">flags</th>' in r, r
+        assert '<td>{}</td>'.format(re.I) in r, r
         assert 'ready' in r, r
 
         # test resubmit too

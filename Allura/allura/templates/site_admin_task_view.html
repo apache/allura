@@ -152,7 +152,7 @@
         {% else %}
             {% set indexes = range(task.kwargs|length) %}
         {% endif %}
-        {% set kwargs = task.kwargs.items() %}
+        {% set kwargs = task.kwargs.items()|list %}
         {% for i in indexes %}
         <tr>
             <td class="first-column-headers"></td>
