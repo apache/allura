@@ -103,12 +103,12 @@
   </div>
 
   <div class="grid-10">
-    <label>Project Logo:</label>
+    <label>{% if c.project.is_user_project %}Profile Image{% else %}Project Logo{% endif %}:</label>
     <br>
     <div id="project-icon" class="viewing">
-      {% if value.icon %}
+      {% if c.project.icon %}
         <div class="viewer" style="overflow: auto">
-          <img {{ lib.project_icon_srcs(value) }} style="float:left; margin-right: 1em;" alt="">
+          <img {{ lib.project_icon_srcs(c.project) }} style="float:left; margin-right: 1em;" alt="">
           {{ g.icons['edit'].render(id='edit-icon', style='display:inline-block;margin-top:15px') }}
           {{ g.icons['delete'].render(id='delete-icon', style='display:inline-block;margin-top:15px') }}
         </div>
