@@ -1019,7 +1019,10 @@ class ProjectImporterController(object):
         self.neighborhood = neighborhood
 
     @expose()
-    def _lookup(self, source, *rest):
+    def _lookup(self, source=None, *rest):
+        if source is None:
+            raise exc.HTTPNotFound
+
         # iter_entry_points is a generator with 0 or 1 items, so a loop is the easiest way to handle
         for ep in iter_entry_points('allura.project_importers', source):
             return ep.load()(self.neighborhood), rest

@@ -1107,5 +1107,6 @@ class TestProjectImport(TestController):
 
     def test_not_found(self):
         self.app.get('/p/import_project/asdf/', status=404)
+        self.app.get('/p/import_project/', status=404)
 
     # positive tests exist within ForgeImporter package
