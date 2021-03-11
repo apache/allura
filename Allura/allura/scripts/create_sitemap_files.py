@@ -116,7 +116,7 @@ class CreateSitemapFiles(ScriptTask):
             for p in chunk:
                 c.project = p
                 try:
-                    for s in p.sitemap(excluded_tools=options.exclude_tools):
+                    for s in p.sitemap(excluded_tools=options.exclude_tools, xml=True):
                         url = config['base_url'] + s.url if s.url[0] == '/' else s.url
                         locs.append({'url': url,
                                      'date': p.last_updated.strftime("%Y-%m-%d")})

@@ -595,6 +595,15 @@ class Application(object):
             sitemap_without_children.append(sm_copy)
         return sitemap_without_children
 
+    def sitemap_xml(self):
+        """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        to add to the sitemap.xml for this Application.
+
+        Default implementation returns the contents of :attr:`main_menu`
+        :return:
+        """
+        return self.main_menu()
+
     def sidebar_menu(self):
         """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         to render in the left sidebar for this Application.
