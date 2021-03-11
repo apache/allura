@@ -524,7 +524,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         return result
 
     def sitemap(self, excluded_tools=None, included_tools=None,
-            tools_only=False, per_tool_limit=SITEMAP_PER_TOOL_LIMIT):
+            tools_only=False, per_tool_limit=SITEMAP_PER_TOOL_LIMIT, xml=False):
         """
         Return the project sitemap.
 
@@ -541,6 +541,10 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         :param int per_tool_limit:
             Max number of entries included in the sitemap for a single tool
             type. Use `None` to include all.
+
+        :param bool xml:
+            If True, return sitemap entries for use in the sitemap.xml
+            instead of site navigation.
 
         """
         from allura.app import SitemapEntry
@@ -596,7 +600,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             else:
                 app = App(self, ac)
             if app.is_visible_to(c.user):
-                for sm in app.main_menu():
+                if xml:
+                    sms = app.sitemap_xml()
+                else:
+                    sms = app.main_menu()
+                for sm in sms:
                     entry = sm.bind_app(app)
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
