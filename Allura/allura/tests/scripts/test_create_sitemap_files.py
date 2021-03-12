@@ -22,7 +22,7 @@ from shutil import rmtree
 import xml.etree.ElementTree as ET
 
 from tg import tmpl_context as c
-from nose.tools import assert_in
+from nose.tools import assert_in, assert_not_in
 from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test
@@ -56,5 +56,5 @@ class TestCreateSitemapFiles(object):
 
             xml_0 = ET.parse(os.path.join(tmpdir.path, 'sitemap-0.xml'))
             urls = [loc.text for loc in xml_0.findall('ns0:url/ns0:loc', ns)]
-            assert_in('http://localhost/p/wiki/', urls)
+            assert_not_in('http://localhost/p/wiki/', urls)  # blank wiki pages omitted from sitemap
             assert_in('http://localhost/p/test/sub1/', urls)

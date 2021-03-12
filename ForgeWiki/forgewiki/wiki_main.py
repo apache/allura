@@ -208,12 +208,24 @@ The wiki uses [Markdown](%s) syntax.
         self.config.options['AllowEmailPosting'] = bool(show)
 
     def main_menu(self):
-        '''Apps should provide their entries to be added to the main nav
+        """Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
-        '''
+        """
         return [SitemapEntry(
             self.config.options.mount_label,
             '.')]
+
+    def sitemap_xml(self):
+        """
+        Used for generating sitemap.xml.
+        If the root page has default content, omit it from the sitemap.xml.
+        Assumes :attr:`main_menu` will return an entry pointing to the root page.
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
+        root_page = WM.Page.query.get(app_config_id=self.config._id, title=self.root_page_name)
+        if self.should_noindex_page(root_page):
+            return []
+        return self.main_menu()
 
     @property
     @h.exceptionless([], log)
@@ -227,6 +239,11 @@ The wiki uses [Markdown](%s) syntax.
                     deleted=False))]
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]]]
+
+    def should_noindex_page(self, page):
+        """Checks whether a page should not be indexed."""
+        # If page has default name (i.e. 'Home') and has not been edited, noindex.
+        return page and page['title'] == self.default_root_page_name and page['version'] == 1
 
     def create_common_wiki_menu(self, has_create_access, admin_menu=False):
         links = []
@@ -604,7 +621,7 @@ class PageController(BaseController, FeedController):
             page_subscribed=subscribed_to_page,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
             pagenum=pagenum, limit=limit, count=post_count,
-            noindex=True if page['title'] == 'Home' and page['version'] == 1 else False)
+            noindex=c.app.should_noindex_page(self.page))
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
