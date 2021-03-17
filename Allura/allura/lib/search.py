@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import ast
 import re
 import socket
 from logging import getLogger
@@ -172,6 +174,8 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         fq.append('project_id_s:%s' % c.project._id)
 
     fq += kw.pop('fq', [])
+    if isinstance(filter, six.string_types):  # may be stringified after a ticket filter, then bulk edit
+        filter = ast.literal_eval(filter)
     for name, values in six.iteritems((filter or {})):
         field_name = name + '_s'
         parts = []

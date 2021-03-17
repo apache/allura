@@ -1683,6 +1683,13 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test second ticket', ticket_rows.text)
         assert_false('test third ticket' in ticket_rows.text)
 
+    def test_bulk_edit_after_filtering(self):
+        self.new_ticket(summary='test first ticket', status='open')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        self.app.get("/p/test/bugs/edit/?q=test&limit=25&sort=&page=0&filter={'status'%3A+['open']}")
+
     def test_new_ticket_notification_contains_attachments(self):
         file_name = 'tést_root.py'.encode('utf-8')
         file_data = open(__file__, 'rb').read()
