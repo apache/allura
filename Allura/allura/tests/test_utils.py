@@ -228,7 +228,12 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
         hl_code = highlight(code, lexer, formatter)
         assert '<div class="codehilite">' in hl_code
         assert '<div id="l1" class="code_block">' in hl_code
-        assert_in('<span class="lineno">1 </span>', hl_code)
+        try:
+            # older pygments
+            assert_in('<span class="lineno">1 </span>', hl_code)
+        except AssertionError:
+            # newer pygments
+            assert_in('<span class="linenos">1</span>', hl_code)
 
 
 class TestIsTextFile(unittest.TestCase):
