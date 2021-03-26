@@ -36,7 +36,7 @@
 {% endblock %}
 
 {% block nav_menu %}
-    {% if user != c.user %}
+    {% if user != c.user and not c.user.is_anonymous() %}
     {{ g.icons['mail'].render(
         title='Send Message',
         show_title=True,
