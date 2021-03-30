@@ -518,7 +518,8 @@ class TestRestNbhdAddProject(TestRestApiBase):
                     "grouping_threshold": 5
                 }
             },
-            "icon_url": "https://via.placeholder.com/140x100",
+            # any image url can work here, just don't want to rely on any other websites:
+            "icon_url": "https://allura.apache.org/theme/img/logo_white.png",
         }
         r = self.api_post('/rest/p/add_project',
                           params=json.dumps(project_data),
