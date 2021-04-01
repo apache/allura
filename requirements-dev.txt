@@ -13,12 +13,12 @@ coverage==4.5.4
 docutils==0.15.2          # via sphinx
 idna==2.8                 # via requests
 imagesize==1.1.0          # via sphinx
-jinja2==2.11.2            # via sphinx
+jinja2==2.11.3            # via sphinx
 markupsafe==1.1.1         # via jinja2
-packaging==19.0           # via sphinx
+packaging==20.9           # via sphinx
 pip-tools==5.2.1
-pygments==2.4.2           # via sphinx
-pyparsing==2.4.0          # via packaging
+pygments==2.5.2           # via sphinx
+pyparsing==2.4.7          # via packaging
 pytz==2019.1              # via babel
 q==2.3
 requests==2.22.0          # via sphinx
@@ -30,7 +30,7 @@ sphinx==1.8.5             # via sphinx-argparse, sphinx-rtd-theme, sphinxcontrib
 sphinxcontrib-programoutput==0.8
 sphinxcontrib-websupport==1.1.2  # via sphinx
 typing==3.7.4             # via sphinx
-urllib3==1.25.3           # via requests
+urllib3==1.25.10          # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools==44.0.0        # via sphinx
