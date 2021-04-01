@@ -63,4 +63,4 @@ testfixtures
 WebTest==2.0.33
 
 # deployment
-gunicorn==19.5.0
+gunicorn
