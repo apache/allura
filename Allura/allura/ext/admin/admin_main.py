@@ -43,7 +43,7 @@ from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
-from allura.lib.security import has_access, require_access
+from allura.lib.security import has_access, require_access, is_site_admin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
@@ -967,6 +967,13 @@ class ProjectAdminRestController(BaseController):
 
 class PermissionsController(BaseController):
     def _check_security(self):
+        # Do not allow access to 'permissions' page for root projects.
+        # Users should use 'groups' instead. This is to prevent creating 'private' projects
+        #  - subprojects are still allowed.
+        #  - site admins are still allowed.
+        #  - tools pages are also still allowed, but are in a different controller
+        if c.project.is_root and not is_site_admin(c.user):
+            redirect('../groups')
         require_access(c.project, 'admin')
 
     @with_trailing_slash
