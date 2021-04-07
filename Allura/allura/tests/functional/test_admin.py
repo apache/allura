@@ -608,24 +608,8 @@ class TestProjectAdmin(TestController):
                 'card-0.id': 'admin'})
 
     def test_project_permissions(self):
-        r = self.app.get('/admin/permissions/')
-        assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 1
-        select = r.html.find('select', {'name': 'card-0.new'})
-        opt_admin = select.find(text='Admin').parent
-        opt_developer = select.find(text='Developer').parent
-        assert opt_admin.name == 'option'
-        assert opt_developer.name == 'option'
-        with audits('updated "admin" permissions: "Admin" => "Admin,Developer"'):
-            r = self.app.post('/admin/permissions/update', params={
-                'card-0.new': opt_developer['value'],
-                'card-0.value': opt_admin['value'],
-                'card-0.id': 'admin'})
-        r = self.app.get('/admin/permissions/')
-        assigned_ids = [t['value']
-                        for t in r.html.findAll('input', {'name': 'card-0.value'})]
-        assert len(assigned_ids) == 2
-        assert opt_developer['value'] in assigned_ids
-        assert opt_admin['value'] in assigned_ids
+        r = self.app.get('/admin/permissions/', status=302)
+        assert_in('/admin/groups', r.location)
 
     def test_subproject_permissions(self):
         with audits('create subproject test-subproject'):
