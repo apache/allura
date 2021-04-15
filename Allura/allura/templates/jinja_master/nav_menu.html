@@ -19,6 +19,11 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% import g.theme.jinja_macros as theme_macros with context %}
 {% set n = c.project.neighborhood %}
+
+{% if c.project %}
+{% set files_appconfig = c.project.app_config_by_tool_type('files') %}
+{% endif %}
+
 {% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
   <div id="nav_menu_missing"></div>
 {% else %}
@@ -40,9 +45,11 @@
                 {%- endif -%}
             </a>
         </h1>
-        <a href="/p/{{c.project.shortname}}/files/download_file?app_url={{c.app.url}}" >
+    {% if files_appconfig %}
+        <a href="{{ files_appconfig.url() }}download_file" >
           <button class="btn-home btn-danger" id="download_button" >Download</button>
         </a> 
+    {% endif %}
     {% set status = c.project.troves_by_type('developmentstatus')|sort(attribute='fullname') %}
     {% set status = status[-1] %}
     {% if status and status.shortname not in ['production', 'mature'] %}

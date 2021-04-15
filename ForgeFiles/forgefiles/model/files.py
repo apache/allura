@@ -1,5 +1,4 @@
-''' This is the Collection module for the Files plugin. Upload, UploadFolder & UploadFile are the collections'''
-# 	  Licensed to the Apache Software Foundation (ASF) under one
+#       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
 #       regarding copyright ownership.  The ASF licenses this file
@@ -16,6 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+''' This is the Collection module for the Files plugin.
+Upload, UploadFolder & UploadFile are the collections'''
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -47,6 +48,7 @@ class Upload(VersionedArtifact, ActivityObject):
     class __mongometa__:
         name = 'upload'
         session = project_orm_session
+
     type_s = 'Upload'
     _id = FieldProperty(S.ObjectId)
     filename = FieldProperty(str)
@@ -83,7 +85,7 @@ class UploadFolder(VersionedArtifact, ActivityObject):
     project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
     parent_folder_id = ForeignIdProperty('UploadFolder')
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    author = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    author_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
     parent_folder = RelationProperty('UploadFolder', via='parent_folder_id')
     project = RelationProperty('Project', via='project_id')
     path = FieldProperty(str)
@@ -92,13 +94,7 @@ class UploadFolder(VersionedArtifact, ActivityObject):
     disabled = FieldProperty(bool, if_missing=False)
     folder_ids = FieldProperty([str])
     file_ids = FieldProperty([str])
-
-    def created_by(self):
-
-        '''Returns the user object of the admin who creaated the folder '''
-
-        user_obj = User.query.find({'_id': self.author}).first()
-        return user_obj
+    author = RelationProperty(User, via='author_id')
 
     def url(self):
         parent_folder = self.parent_folder
@@ -140,10 +136,15 @@ class UploadFiles(File):
     thumbnail_size = (255, 255)
     ArtifactType = Upload
 
+
     class __mongometa__:
         name = 'upload_files'
         session = project_orm_session
-        indexes = ['artifact_id', 'app_config_id']
+        indexes = [
+            ('app_config_id', 'parent_folder_id', 'filename'),
+            ('app_config_id', 'linked_to_download', 'disabled'),
+            ('app_config_id', 'filename', 'path'),
+        ]
 
         def before_save(data):
             _session = artifact_orm_session._get()
@@ -159,29 +160,12 @@ class UploadFiles(File):
     parent_folder_id = ForeignIdProperty('UploadFolder')
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    author = AlluraUserProperty(if_missing=lambda: c.user._id)
+    author_id = AlluraUserProperty(if_missing=lambda: c.user._id)
     parent_folder = RelationProperty('UploadFolder', via='parent_folder_id')
     linked_to_download = FieldProperty(bool, if_missing=False)
     path = FieldProperty(str)
     disabled = FieldProperty(bool, if_missing=False)
-
-    @property
-    def file_size(self):
-
-        '''Returns the size of the file'''
-
-        size = self.length
-        one_gb = 1000000000
-        one_mb = 1000000
-        one_kb = 1000
-        if size > one_gb:
-            return "{0:.2f} GB".format(float(size)/one_gb)
-        elif size > one_mb:
-            return "{0:.2f} MB".format(float(size)/one_mb)
-        elif size > one_kb:
-            return "{0:.2f} KB".format(float(size)/one_kb)
-        else:
-            return "{} B".format(size)
+    author = RelationProperty(User, via='author_id')
 
     @property
     def artifact(self):
@@ -189,13 +173,6 @@ class UploadFiles(File):
         '''Returns the Artifact object'''
 
         return self.ArtifactType.query.get(_id=self.artifact_id)
-
-    def uploaded_by(self):
-
-        '''Returns the user object of the admin who uploads the file'''
-
-        user_obj = User.query.find({'_id': self.author}).first()
-        return user_obj
 
     def url(self):
 
@@ -224,16 +201,6 @@ class UploadFiles(File):
             obj_content = self.rfile().read(self.rfile().length)
             return (self.filename, h.really_unicode(obj_content))
         return None, None
-
-    def is_embedded(self):
-        from tg import request
-        return self.filename in request.environ.get('allura.macro.att_embedded', [])
-
-    @classmethod
-    def metadata_for(cls, artifact):
-        return dict(
-            artifact_id=artifact._id,
-            app_config_id=artifact.app_config_id)
 
     @classmethod
     def save_attachment(cls, filename, fp, content_type=None, **kwargs):
