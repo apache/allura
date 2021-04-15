@@ -55,7 +55,6 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
 {% block content %}
 
 
-{% if not c.user.is_anonymous() %}
 
 <div class="main_div">
 
@@ -108,7 +107,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                  </td>
                  <td>{{lib.abbr_date(folder.created_date)}}</td>
                  <td></td>
-                 <td title="{{folder.created_by().display_name}}">{{folder.created_by().display_name|truncate(30)}}</td>
+                 <td title="{{folder.author.display_name}}">{{folder.author.display_name|truncate(30)}}</td>
                  {% if h.has_access(c.project, 'admin')() %}
                  <td>
                      <div class="folder_actions">
@@ -140,8 +139,8 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
 
                  </td>
                  <td>{{lib.abbr_date(file.created_date)}}</td>
-                 <td>{{file.file_size}}</td>
-                 <td title="{{file.uploaded_by().display_name}}">{{file.uploaded_by().display_name|truncate(30)}}</td>
+                 <td>{{h.do_filesizeformat(file.length)}}</td>
+                 <td title="{{file.author.display_name}}">{{file.author.display_name|truncate(30)}}</td>
                 {% if h.has_access(c.project, 'admin')() %}
                  <td>
                      <div class="file_actions">
@@ -157,6 +156,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                  {% endif %}
                  </tr>
                  {% endfor %}
+                 {{ lib.csrf_token() }}
                  </tbody>
              </table>
              {% else %}
@@ -178,9 +178,6 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
      
 </div>
 
-{% else %}
- <p> Please login to upload a project file </p>
-{% endif %}
 
 {% endblock %}
 

@@ -16,7 +16,6 @@
 #       under the License.
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from __future__ import print_function
 from tg import tmpl_context as c
 from nose.tools import assert_true,assert_not_equal,assert_equals
 
@@ -81,7 +80,6 @@ class TestFiles(TestController):
         data1 = {'folder_id': str(folder_object._id), 'remarks': 'Publishing new Version'}
         self.app.post('/p/test/files/publish_folder', data1)
         resp = self.app.get('/files/')
-        print((folder_object.published))
         assert_equals(folder_object.published, True)
 
     def test_link_file(self):

@@ -1,5 +1,3 @@
-'''This is the main controller module for the Files Plugin.'''
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,8 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-
-#       !/bin/python
+'''This is the main controller module for the Files Plugin.'''
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -35,6 +32,7 @@ from allura.app import Application
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.lib.widgets.subscriptions import SubscribeForm
+from allura.lib.security import require_access
 from allura import model as M
 from allura.controllers import attachments as att
 from allura import version
@@ -104,19 +102,23 @@ def get_parent_folders(linked_file_object=None):
 class FilesController(BaseController):
     """Root controller for the Files Application"""
 
+    def _check_security(self):
+        require_access(c.app, 'read')
+
     @expose('jinja:forgefiles:templates/files.html')
     def index(self):
 
         '''Index method for the Root controller'''
 
+        require_access(c.app, 'read')
         folder_object = None
         file_object = None
 
-        upload_object = Upload.query.get(project_id=c.project._id)
+        upload_object = Upload.query.get(app_config_id=c.app.config._id)
         self.attachment = AttachmentsController(upload_object)
-        file_objects = UploadFiles.query.find({'project_id': c.project._id, 'parent_folder_id': None})
+        file_objects = UploadFiles.query.find({'app_config_id': c.app.config._id, 'parent_folder_id': None})
         file_objects = file_objects.sort([('created_date', -1)]).all()
-        folder_objects = UploadFolder.query.find({'project_id': c.project._id, 'parent_folder_id': None})
+        folder_objects = UploadFolder.query.find({'app_config_id': c.app.config._id, 'parent_folder_id': None})
         folder_objects = folder_objects.sort([('created_date', -1)]).all()
         if c.user in c.project.admins():
             M.Mailbox.subscribe(type='direct')
@@ -126,9 +128,8 @@ class FilesController(BaseController):
             subscribed = M.Mailbox.subscribed()
         else:
             subscribed = False
-        file_object = UploadFiles.query.get(project_id=c.project._id, linked_to_download=True)
+        file_object = UploadFiles.query.get(app_config_id=c.app.config._id, linked_to_download=True)
         parents = get_parent_folders(linked_file_object=file_object)
-
         return dict(file_objects=file_objects,
                     folder_objects=folder_objects, folder_object=folder_object, file_object=file_object,
                     subscribed=subscribed, parents=parents)
@@ -153,10 +154,11 @@ class FilesController(BaseController):
 
         '''Controller method for creating a folder. The folder is stored in UploadFolder collection'''
 
+        require_access(c.app, 'create')
         parent_folder_id, parent_folder, url = self.get_parent_folder_url(parent_folder_id)
         if folder_name:
             folder_object = UploadFolder.query.find({
-                'project_id': c.project._id, 'folder_name': folder_name,
+                'app_config_id': c.app.config._id, 'folder_name': folder_name,
                 'parent_folder_id': parent_folder_id}).first()
             if folder_object:
                 flash('Folder with the same name already exists!')
@@ -179,16 +181,17 @@ class FilesController(BaseController):
 
         '''Controller method for creating a folder. The folder is stored in UploadFolder collection'''
 
+        require_access(c.app, 'create')
         parent_folder_id, parent_folder, url = self.get_parent_folder_url(parent_folder_id)
         if file_upload is not None:
             file_object = UploadFiles.query.find({
-                'project_id': c.project._id, 'filename': filename,
+                'app_config_id': c.app.config._id, 'filename': filename,
                 'parent_folder_id': parent_folder_id}).first()
             if file_object:
                 flash('File with the same name already exists!')
             else:
                 upload_object = Upload(
-                    project_id=c.project._id, filename=filename, filetype=file_upload.type)
+                    app_config_id=c.app.config._id, filename=filename, filetype=file_upload.type)
                 attach_object = upload_object.attach(
                     filename, file_upload.file, parent_folder_id=parent_folder_id)
                 if attach_object.parent_folder:
@@ -212,10 +215,12 @@ class FilesController(BaseController):
         '''Controller method to delete a file'''
 
         file_object = UploadFiles.query.get(_id=ObjectId(file_id))
+        upload_object = Upload.query.get(_id=file_object.artifact_id)
         file_name = file_object.filename
         transient_actor = TransientActor(activity_name=file_name)
         url = c.app.url
         if file_id is not None:
+            require_access(upload_object, 'delete')
             self.delete_file_from_db(file_id=file_id)
             parent_folder = file_object.parent_folder
             if parent_folder:
@@ -225,7 +230,6 @@ class FilesController(BaseController):
             flash('File is not deleted')
         g.director.create_activity(
             c.user, 'deleted the file', transient_actor, related_nodes=[c.project])
-        M.main_orm_session.flush()
         return redirect(url)
 
     def delete_file_from_db(self, file_id=None):
@@ -241,11 +245,11 @@ class FilesController(BaseController):
         '''This method is called recursively to delete folder in a hierarchy'''
 
         sub_file_objects = UploadFiles.query.find(dict({
-            'project_id': c.project._id, 'parent_folder_id': ObjectId(folder_id)})).all()
+            'app_config_id': c.app.config._id, 'parent_folder_id': ObjectId(folder_id)})).all()
         for file_object in sub_file_objects:
             self.delete_file_from_db(file_id=file_object._id)
         sub_folder_objects = UploadFolder.query.find({
-            'project_id': c.project._id, 'parent_folder_id': ObjectId(folder_id)}).all()
+            'app_config_id': c.app.config._id, 'parent_folder_id': ObjectId(folder_id)}).all()
         for folder_object in sub_folder_objects:
             self.delete_folder_recursively(folder_object._id)
         UploadFolder.query.remove(dict({'_id': ObjectId(folder_id)}))
@@ -262,6 +266,7 @@ class FilesController(BaseController):
         transient_actor = TransientActor(activity_name=folder_name)
         url = c.app.url
         if folder_id is not None:
+            require_access(folder_object, 'delete')
             self.delete_folder_recursively(folder_id)
             if folder_object.parent_folder:
                 url = folder_object.parent_folder.url()
@@ -270,28 +275,29 @@ class FilesController(BaseController):
             flash('Folder is not deleted')
         g.director.create_activity(
             c.user, 'deleted the folder', transient_actor, related_nodes=[c.project])
-        M.main_orm_session.flush()
         return redirect(url)
 
+    @without_trailing_slash
+    @require_post()
     @expose()
     def link_file(self, file_id=None, status=None):
 
         '''Controller method to link a file to the download button'''
+
+        linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id))
+        upload_object = Upload.query.get(_id=linkable_file_object.artifact_id)
+        require_access(upload_object, 'link')
         if status == 'False':
-            linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id))
             linkable_file_object.linked_to_download = False
-            M.main_orm_session.flush()
         else:
-            file_objects = UploadFiles.query.find({'project_id': c.project._id}).all()
+            file_objects = UploadFiles.query.find({'app_config_id': c.app.config._id}).all()
             for file_object in file_objects:
                 if file_object.linked_to_download:
                     file_object.linked_to_download = False
-            linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id))
             linkable_file_object.linked_to_download = True
-            M.main_orm_session.flush()
 
     @expose()
-    def download_file(self, filename=None, app_url=None):
+    def download_file(self, filename=None):
 
         '''Controller method to download a file'''
 
@@ -299,11 +305,11 @@ class FilesController(BaseController):
             request_path = request.path.split(c.app.url)[-1].rstrip('/')
             request_path = unquote(request_path)
             linked_file_object = UploadFiles.query.find({
-                'project_id': c.project._id, 'filename': filename, 'path': request_path}).first()
+                'app_config_id': c.app.config._id, 'filename': filename, 'path': request_path}).first()
             upload_object = Upload.query.find({'_id': linked_file_object.artifact_id}).first()
         else:
             linked_file_object = UploadFiles.query.find({
-                'project_id': c.project._id, 'linked_to_download': True}).first()
+                'app_config_id': c.app.config._id, 'linked_to_download': True}).first()
             if linked_file_object:
                 upload_object = Upload.query.find({'_id': linked_file_object.artifact_id}).first()
             else:
@@ -311,21 +317,15 @@ class FilesController(BaseController):
         if linked_file_object:
             try:
                 wrapper = upload_object.attachments[::-1]
-                data = wrapper
-                response.headers['Content-Type'] = 'application/octet'
-                response.headers['Content-Length'] = len(data)
-                response.headers['Pragma'] = 'public'
-                response.headers['Cache-Control'] = 'max-age=0'
-                requested_filename = linked_file_object.filename
-                response.headers['Content-Disposition'] = 'attachment; filename="%s"' % (requested_filename)
+                from allura.lib.utils import serve_file
                 M.Mailbox.subscribe(type='direct')
-                return linked_file_object.serve(embed=True)
+                return linked_file_object.serve(embed=False)
             except Exception as e:
                 log.exception('%s error to download the file', e)
         else:
             data = 'No artifact available'
             flash('No artifact available')
-        return redirect(app_url)
+        return redirect(c.app.url)
 
     @require_post()
     @expose()
@@ -336,13 +336,13 @@ class FilesController(BaseController):
         url = c.app.url
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
         if folder_object:
+            require_access(folder_object, 'update')
             folder_object.folder_name = folder_name
             flash("Folder name edited successfully")
             if folder_object.parent_folder:
                 url = folder_object.parent_folder.url()
         else:
             flash("Folder name not edited")
-        M.main_orm_session.flush()
         redirect(url)
 
     @require_post()
@@ -355,6 +355,7 @@ class FilesController(BaseController):
         file_object = UploadFiles.query.get(_id=ObjectId(file_id))
         upload_object = Upload.query.get(_id=file_object.artifact_id)
         if file_object:
+            require_access(upload_object, 'update')
             upload_object.filename = file_name
             file_object.filename = file_name
             flash("File name edited successfully")
@@ -362,7 +363,6 @@ class FilesController(BaseController):
                 url = file_object.parent_folder.url()
         else:
             flash("File not edited")
-        M.main_orm_session.flush()
         return redirect(url)
 
     @require_post()
@@ -374,10 +374,11 @@ class FilesController(BaseController):
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
         url = c.app.url
         if folder_object:
+            require_access(folder_object, 'publish')
             folder_object.published = True
             folder_object.remarks = remarks
             mailbox_object = M.Mailbox.query.find({
-                'project_id': c.project._id, 'app_config_id': c.app.config._id}).all()
+                'app_config_id': c.app.config._id, 'app_config_id': c.app.config._id}).all()
             user_ids = [i.user_id for i in mailbox_object]
             admins = [i._id for i in c.project.admins()]
             user_ids += admins
@@ -419,7 +420,6 @@ class FilesController(BaseController):
         '''Controller method to disable the folder.'''
 
         folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
-
         if status == 'True':
             disable_status = True
             text = 'disabled'
@@ -427,6 +427,7 @@ class FilesController(BaseController):
             disable_status = False
             text = 'enabled'
         if folder_object:
+            require_access(folder_object, 'disable')
             folder_object.disabled = disable_status
             '''Disabling Child folders & files of the current folder '''
 
@@ -438,7 +439,6 @@ class FilesController(BaseController):
                 child_file_object = UploadFiles.query.get(_id=ObjectId(child_file_id))
                 if child_file_object:
                     child_file_object.disabled = disable_status
-            M.main_orm_session.flush()
             flash('Folder %s successfully' % (text))
         else:
             flash('No folder exists')
@@ -450,6 +450,7 @@ class FilesController(BaseController):
         '''Controller method to disable the file.'''
 
         file_object = UploadFiles.query.get(_id=ObjectId(file_id))
+        upload_object = Upload.query.get(_id=file_object.artifact_id)
         if status == 'True':
             disable_status = True
             text = 'disabled'
@@ -457,6 +458,7 @@ class FilesController(BaseController):
             disable_status = False
             text = 'enabled'
         if file_object:
+            require_access(upload_object, 'disable')
             file_object.disabled = disable_status
             flash('File %s successfully' % (text))
         else:
@@ -465,7 +467,7 @@ class FilesController(BaseController):
     @expose()
     def project_file(self):
         files_count = UploadFiles.query.find({
-            'project_id': c.project._id, 'linked_to_download': True, 'disabled': False}).count()
+            'app_config_id': c.app.config._id, 'linked_to_download': True, 'disabled': False}).count()
         return str(files_count)
 
     @expose('json:')
@@ -521,7 +523,7 @@ class FilesController(BaseController):
     @expose('jinja:forgefiles:templates/publish_folder.html')
     def get_publishable_folder(self, folder_id=None):
         '''Returns the status and folder object if the folder can be published or not'''
-        linked_file_object = UploadFiles.query.get(project_id=c.project._id, linked_to_download=True, disabled=False)
+        linked_file_object = UploadFiles.query.get(app_config_id=c.app.config._id, linked_to_download=True, disabled=False)
         parent_folders = get_parent_folders(linked_file_object=linked_file_object)
         if folder_id:
             folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
@@ -575,9 +577,9 @@ class IndividualFilesController(BaseController):
         path = unquote(path)
         arg = unquote(arg)
         self.folder_object = UploadFolder.query.find({
-            'project_id': ObjectId(c.project._id), 'folder_name': arg, 'path': path}).first()
+            'app_config_id': ObjectId(c.app.config._id), 'folder_name': arg, 'path': path}).first()
         self.file_object = UploadFiles.query.find({
-            'project_id': ObjectId(c.project._id), 'filename': arg, 'path': path}).first()
+            'app_config_id': ObjectId(c.app.config._id), 'filename': arg, 'path': path}).first()
         methods = ('create_folder', 'upload_file', 'delete_file', 'delete_folder', 'subscribe')
         if (not self.folder_object) and (not self.file_object) and (arg not in methods):
             log.exception('No Folder/File object found')
@@ -585,19 +587,23 @@ class IndividualFilesController(BaseController):
         else:
             pass
 
+    def _check_security(self):
+        require_access(c.app, 'read')
+
     @expose('jinja:forgefiles:templates/files.html')
     @with_trailing_slash
     def index(self):
         ''' Index method of individual folder/file objects'''
+        require_access(c.app, 'read')
         folder_objects = None
         file_objects = None
         folder_path, urls = '', ''
         if self.folder_object:
             folder_objects = UploadFolder.query.find({
-                'project_id': c.project._id, 'parent_folder_id': self.folder_object._id})
+                'app_config_id': c.app.config._id, 'parent_folder_id': self.folder_object._id})
             folder_objects = folder_objects.sort([('created_date', -1)]).all()
             file_objects = UploadFiles.query.find({
-                'project_id': c.project._id, 'parent_folder_id': self.folder_object._id})
+                'app_config_id': c.app.config._id, 'parent_folder_id': self.folder_object._id})
             file_objects = file_objects.sort([('created_date', -1)]).all()
             folder_path, urls = folder_breadcrumbs(folder_object=self.folder_object)
         elif self.file_object:
@@ -610,7 +616,7 @@ class IndividualFilesController(BaseController):
             subscribed = M.Mailbox.subscribed()
         else:
             subscribed = False
-        file_object = UploadFiles.query.get(project_id=c.project._id, linked_to_download=True)
+        file_object = UploadFiles.query.get(app_config_id=c.app.config._id, linked_to_download=True)
         parents = get_parent_folders(linked_file_object=file_object)
 
         return dict(folder_objects=folder_objects,
