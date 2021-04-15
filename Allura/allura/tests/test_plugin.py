@@ -167,6 +167,7 @@ class TestProjectRegistrationProviderPhoneVerification(object):
         self.user = UserMock()
         self.nbhd = MagicMock()
 
+
     def test_phone_verified_disabled(self):
         with h.push_config(tg.config, **{'project.verify_phone': 'false'}):
             assert_true(self.p.phone_verified(self.user, self.nbhd))
@@ -251,6 +252,30 @@ class TestProjectRegistrationProviderPhoneVerification(object):
             audit.assert_called_once_with(
                 'Phone verification succeeded. Hash: hash', user=self.user)
 
+    @patch.object(plugin, 'g')
+    def test_verify_phone_max_limit_not_reached(self, g):
+        g.phone_service = Mock(spec=phone.PhoneService)
+        user = UserMock()
+        user.is_anonymous = lambda: True
+        with h.push_config(tg.config, **{'project.verify_phone': 'true', 'phone.attempts_limit': '5'}):
+            for i in range(1, 3):
+                result = self.p.verify_phone(user, '123 45 45')
+                assert_equal(result, g.phone_service.verify.return_value)
+            assert_equal(2, g.phone_service.verify.call_count)
+
+    @patch.object(plugin, 'g')
+    def test_verify_phone_max_limit_reached(self, g):
+        g.phone_service = Mock(spec=phone.PhoneService)
+        user = UserMock()
+        user.is_anonymous = lambda: True
+        with h.push_config(tg.config, **{'project.verify_phone': 'true', 'phone.attempts_limit': '5'}):
+            for i in range(1, 7):
+                result = self.p.verify_phone(user, '123 45 45')
+                if i > 5:
+                    assert_equal(result, {'status': 'error', 'error': 'Maximum phone verification attempts reached.'})
+                else:
+                    assert_equal(result, g.phone_service.verify.return_value)
+            assert_equal(5, g.phone_service.verify.call_count)
 
 class TestThemeProvider(object):
 

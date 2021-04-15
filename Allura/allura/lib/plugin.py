@@ -910,6 +910,15 @@ class ProjectRegistrationProvider(object):
         if not allow_reuse and M.User.query.find({'tool_data.phone_verification.number_hash': number_hash}).count():
             return {'status': 'error',
                     'error': 'That phone number has already been used.'}
+        count = user.get_tool_data('phone_verification', 'count') or 0
+        attempt_limit = config.get('phone.attempts_limit', '5')
+        if count == int(attempt_limit):
+            msg = 'Maximum phone verification attempts reached.'
+            h.auditlog_user(msg, user=user)
+            return {'status': 'error',
+                    'error': msg
+                    }
+        user.set_tool_data('phone_verification', count=count + 1)
         log.info('PhoneService going to send a verification for: %s', user.username)
         return g.phone_service.verify(number)
 
