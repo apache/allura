@@ -16,6 +16,8 @@
 #       under the License.
 
 #       !/bin/python
+from __future__ import unicode_literals
+from __future__ import absolute_import
 from setuptools import setup
 
 setup(name='ForgeFiles',

@@ -15,4 +15,5 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from files import UploadFolder, UploadFiles
+from __future__ import absolute_import
+from .files import UploadFolder, UploadFiles
