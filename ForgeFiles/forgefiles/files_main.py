@@ -20,8 +20,10 @@
 
 #       !/bin/python
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
 import logging
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 from tg import config, redirect, expose, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -44,6 +46,7 @@ from webob import exc
 
 # local imports ##
 from forgefiles.model.files import UploadFolder, UploadFiles, Upload
+from six.moves import range
 
 log = logging.getLogger(__name__)
 
