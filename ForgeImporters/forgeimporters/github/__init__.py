@@ -89,7 +89,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         now = datetime.utcnow()
         log.warn('Rate limit exceeded (%s requests/hour). '
                  'Sleeping until %s UTC' % (limit, reset))
-        time.sleep((reset - now).total_seconds())
+        time.sleep((reset - now).total_seconds() + 2)
 
     def urlopen(self, url, headers=None, **kw):
         if headers is None:
