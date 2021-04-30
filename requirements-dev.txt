@@ -4,33 +4,64 @@
 #
 #    pip-compile requirements-dev.in
 #
-alabaster==0.7.12         # via sphinx
-babel==2.7.0              # via sphinx
-certifi==2019.6.16        # via requests
-chardet==3.0.4            # via requests
-click==7.0                # via pip-tools
+alabaster==0.7.12
+    # via sphinx
+babel==2.7.0
+    # via sphinx
+certifi==2019.6.16
+    # via requests
+chardet==3.0.4
+    # via requests
+click==7.0
+    # via pip-tools
 coverage==4.5.4
-docutils==0.15.2          # via sphinx
-idna==2.8                 # via requests
-imagesize==1.1.0          # via sphinx
-jinja2==2.11.3            # via sphinx
-markupsafe==1.1.1         # via jinja2
-packaging==20.9           # via sphinx
-pip-tools==5.2.1
-pygments==2.5.2           # via sphinx
-pyparsing==2.4.7          # via packaging
-pytz==2019.1              # via babel
+    # via -r requirements-dev.in
+docutils==0.15.2
+    # via sphinx
+idna==2.8
+    # via requests
+imagesize==1.1.0
+    # via sphinx
+jinja2==2.11.3
+    # via sphinx
+markupsafe==1.1.1
+    # via jinja2
+packaging==20.9
+    # via sphinx
+pip-tools==5.5.0
+    # via -r requirements-dev.in
+pygments==2.5.2
+    # via sphinx
+pyparsing==2.4.7
+    # via packaging
+pytz==2019.1
+    # via babel
 q==2.3
-requests==2.22.0          # via sphinx
-six==1.15.0               # via packaging, pip-tools, sphinx
-snowballstemmer==1.9.0    # via sphinx
+    # via -r requirements-dev.in
+requests==2.22.0
+    # via sphinx
+six==1.15.0
+    # via sphinx
+snowballstemmer==1.9.0
+    # via sphinx
 sphinx-argparse==0.2.5
+    # via -r requirements-dev.in
 sphinx-rtd-theme==0.1.6
-sphinx==1.8.5             # via sphinx-argparse, sphinx-rtd-theme, sphinxcontrib-programoutput
+    # via -r requirements-dev.in
+sphinx==1.8.5
+    # via
+    #   sphinx-argparse
+    #   sphinx-rtd-theme
+    #   sphinxcontrib-programoutput
 sphinxcontrib-programoutput==0.8
-sphinxcontrib-websupport==1.1.2  # via sphinx
-typing==3.7.4             # via sphinx
-urllib3==1.25.10          # via requests
+    # via -r requirements-dev.in
+sphinxcontrib-websupport==1.1.2
+    # via sphinx
+typing==3.7.4
+    # via sphinx
+urllib3==1.25.10
+    # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==44.0.0        # via sphinx
+# pip
+# setuptools
