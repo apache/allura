@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import json
 from mock import patch
 from datadiff.tools import assert_equal
-from nose.tools import assert_in, assert_not_in
+from alluratest.tools import assert_in, assert_not_in
 
 from allura.lib.phone.nexmo import NexmoPhoneService
 

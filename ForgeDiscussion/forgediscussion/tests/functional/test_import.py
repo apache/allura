@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import os
 import json
 from datetime import datetime, timedelta
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 import ming
 from tg import config

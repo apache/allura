@@ -26,7 +26,7 @@ from operator import attrgetter
 from cgi import FieldStorage
 from io import BytesIO
 
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 
 from forgediscussion.site_stats import posts_24hr

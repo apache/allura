@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from six.moves.urllib.parse import urlparse, parse_qs
 
 import tg
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from mock import patch
 
 from allura.tests import TestController

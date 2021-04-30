@@ -27,7 +27,7 @@ import time
 import PIL
 from mock import Mock, patch
 from tg import tmpl_context as c
-from nose.tools import eq_, assert_equals, assert_raises
+from alluratest.tools import assert_equals, assert_raises
 from IPython.testing.decorators import skipif, module_not_available
 from datadiff import tools as dd
 from webob import Request

@@ -33,7 +33,7 @@ from tg import tmpl_context as c, app_globals as g
 import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
-from nose.tools import assert_equal, assert_in, assert_less
+from alluratest.tools import assert_equal, assert_in, assert_less
 from testfixtures import TempDirectory
 from datadiff.tools import assert_equals
 

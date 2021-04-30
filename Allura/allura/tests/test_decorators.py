@@ -22,7 +22,7 @@ from mock import patch
 import random
 import gc
 
-from nose.tools import assert_equal, assert_not_equal
+from alluratest.tools import assert_equal, assert_not_equal
 
 from allura.lib.decorators import task, memoize
 

@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta
 
 import mock
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 

@@ -23,7 +23,7 @@ from functools import wraps
 import contextlib
 from six.moves.urllib.parse import parse_qs
 
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import tmpl_context as c
 from mock import patch

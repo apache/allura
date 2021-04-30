@@ -38,7 +38,6 @@ import six
 
 import webtest
 from webtest import TestApp
-from nose.tools import ok_
 from ming.utils import LazyProperty
 import requests
 
@@ -88,7 +87,7 @@ class Config(object):
 
 def report_validation_error(val_name, filename, message):
     message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
-    ok_(False, message)
+    raise AssertionError(message)
 
 
 def dump_to_file(prefix, contents, suffix=''):
@@ -121,7 +120,7 @@ def validate_json(json_or_response):
     try:
         obj = json.loads(j)
     except Exception as e:
-        ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
+        raise AssertionError("Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
 
     return obj
 

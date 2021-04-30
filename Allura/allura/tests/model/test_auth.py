@@ -26,7 +26,7 @@ from __future__ import absolute_import
 import textwrap
 from datetime import datetime, timedelta
 
-from nose.tools import (
+from alluratest.tools import (
     with_setup,
     assert_equal,
     assert_not_equal,
@@ -131,8 +131,8 @@ def test_email_address_send_verification_link():
     assert_equal(rcpts, ['test_admin@domain.net'])
 
 
-@td.with_user_project('test-admin')
 @with_setup(setUp)
+@td.with_user_project('test-admin')
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
@@ -278,8 +278,8 @@ def test_email_address_claimed_by_user():
     assert addr.claimed_by_user() is None
 
 
-@td.with_user_project('test-admin')
 @with_setup(setUp)
+@td.with_user_project('test-admin')
 def test_user_projects_by_role():
     assert_equal(set(p.shortname for p in c.user.my_projects()),
                  set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))

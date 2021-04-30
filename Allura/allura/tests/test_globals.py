@@ -29,7 +29,7 @@ import six
 from mock import patch, Mock
 
 from bson import ObjectId
-from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
+from alluratest.tools import with_setup, assert_equal, assert_in, assert_not_in
 from tg import tmpl_context as c, app_globals as g
 import tg
 from oembed import OEmbedError

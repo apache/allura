@@ -28,9 +28,9 @@ import tempfile
 import textwrap
 
 from datadiff.tools import assert_equal as dd_assert_equal
-from nose.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
+from alluratest.tools import assert_equal, assert_in, assert_not_in, assert_not_equal
 import pkg_resources
-from nose.tools import assert_regexp_matches
+from alluratest.tools import assert_regexp_matches
 from tg import tmpl_context as c
 import tg
 from ming.orm import ThreadLocalORMSession

@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from nose.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td

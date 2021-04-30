@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import mock
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from forgetracker.search import get_facets, query_filter_choices
 
 

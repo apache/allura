@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from datetime import date
 
 import tg
-from nose.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td

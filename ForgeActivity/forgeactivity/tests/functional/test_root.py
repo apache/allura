@@ -24,7 +24,7 @@ from mock import patch
 from tg import config
 from bson import ObjectId
 import dateutil.parser
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from tg import app_globals as g
 from activitystream.storage.mingstorage import Activity
 from ming.odm import ThreadLocalODMSession

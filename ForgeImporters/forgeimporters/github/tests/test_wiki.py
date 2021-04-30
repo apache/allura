@@ -20,7 +20,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from unittest import TestCase
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
 import git

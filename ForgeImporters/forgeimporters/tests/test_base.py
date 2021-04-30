@@ -23,7 +23,7 @@ import errno
 from formencode import Invalid
 import mock
 from tg import expose, config
-from nose.tools import assert_equal, assert_raises
+from alluratest.tools import assert_equal, assert_raises
 from webob.exc import HTTPUnauthorized
 
 from alluratest.controller import TestController, setup_basic_test

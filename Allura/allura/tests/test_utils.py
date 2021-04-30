@@ -32,7 +32,7 @@ from ming.odm import session
 from bson import ObjectId
 from webob import Request
 from mock import Mock, patch
-from nose.tools import (
+from alluratest.tools import (
     assert_equal,
     assert_not_equal,
     assert_raises,

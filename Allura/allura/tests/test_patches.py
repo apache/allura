@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import webob
 from mock import patch
-from nose.tools import (
+from alluratest.tools import (
     assert_equal,
     assert_raises,
 )

@@ -23,7 +23,7 @@ import operator
 import os
 from io import BytesIO
 
-from nose.tools import assert_equal, assert_true
+from alluratest.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 from cgi import FieldStorage
 

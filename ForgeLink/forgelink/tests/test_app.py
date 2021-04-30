@@ -20,7 +20,7 @@ from __future__ import absolute_import
 import tempfile
 import json
 
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from tg import tmpl_context as c
 
 from allura.tests import decorators as td

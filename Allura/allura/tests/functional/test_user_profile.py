@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import mock
 import tg
-from nose.tools import assert_equal, assert_in, assert_not_in
+from alluratest.tools import assert_equal, assert_in, assert_not_in
 
 from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
