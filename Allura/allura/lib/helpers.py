@@ -48,10 +48,7 @@ import tg
 import six
 from six.moves import range
 from six.moves import map
-try:
-    import cchardet as chardet
-except ImportError:
-    import chardet
+import cchardet as chardet
 import pkg_resources
 from formencode.validators import FancyValidator
 from dateutil.parser import parse

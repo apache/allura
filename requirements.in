@@ -1,7 +1,7 @@
 ActivityStream==0.3.0
 beautifulsoup4
 Beaker
-chardet
+cchardet
 colander==1.7.0
 cryptography
 decorator
