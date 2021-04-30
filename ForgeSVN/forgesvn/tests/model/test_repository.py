@@ -31,7 +31,7 @@ from collections import defaultdict
 
 from tg import tmpl_context as c, app_globals as g
 import mock
-from nose.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, assert_in
 from datadiff.tools import assert_equals
 import tg
 import ming

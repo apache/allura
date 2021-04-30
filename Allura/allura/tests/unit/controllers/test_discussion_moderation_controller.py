@@ -17,7 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from mock import Mock, patch
 from ming.orm import ThreadLocalORMSession, session
 

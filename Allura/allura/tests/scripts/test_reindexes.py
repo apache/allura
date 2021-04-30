@@ -16,7 +16,7 @@
 #       under the License.
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from nose.tools import assert_in, assert_equal
+from alluratest.tools import assert_in, assert_equal
 from testfixtures import LogCapture
 
 from allura.scripts.reindex_projects import ReindexProjects

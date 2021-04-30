@@ -34,7 +34,7 @@ from ming.odm import ThreadLocalORMSession
 from tg import tmpl_context as c
 from tg import config
 
-from nose.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false, assert_raises
+from alluratest.tools import assert_equal, assert_in, assert_not_in, assert_true, assert_false, assert_raises
 import feedparser
 
 from allura import model as M

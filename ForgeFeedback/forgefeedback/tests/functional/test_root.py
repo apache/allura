@@ -19,8 +19,8 @@ from __future__ import absolute_import
 from tg import tmpl_context as c
 from tg import config
 
-from nose.tools import assert_equal, assert_in, assert_not_in
-from nose.tools import assert_true, assert_false, assert_raises
+from alluratest.tools import assert_equal, assert_in, assert_not_in
+from alluratest.tools import assert_true, assert_false, assert_raises
 
 from allura import model as M
 from alluratest.controller import TestController

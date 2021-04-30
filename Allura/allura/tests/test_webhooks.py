@@ -23,7 +23,7 @@ import hashlib
 import datetime as dt
 
 from mock import Mock, MagicMock, patch, call
-from nose.tools import (
+from alluratest.tools import (
     assert_raises,
     assert_equal,
     assert_not_in,

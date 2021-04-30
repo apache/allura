@@ -31,7 +31,7 @@ from ming.orm.ormsession import ThreadLocalORMSession, session
 from tg import config, expose
 from mock import patch, Mock
 import mock
-from nose.tools import (
+from alluratest.tools import (
     assert_equal,
     assert_not_equal,
     assert_is_none,

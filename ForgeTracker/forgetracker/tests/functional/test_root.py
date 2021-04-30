@@ -33,7 +33,7 @@ from io import open
 import PIL
 from bs4 import BeautifulSoup
 from mock import patch
-from nose.tools import (
+from alluratest.tools import (
     assert_true,
     assert_false,
     assert_equal,

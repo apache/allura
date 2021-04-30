@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import datetime
 
-from nose.tools import assert_in, assert_not_in
+from alluratest.tools import assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import tmpl_context as c
 

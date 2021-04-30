@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from ming.odm import session, Mapper, ThreadLocalODMSession
 from mock import patch
 from tg import app_globals as g
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from alluratest.controller import TestController
 from allura.tests.decorators import audits, out_audits, with_user_project

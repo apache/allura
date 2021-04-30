@@ -27,7 +27,7 @@ import tg
 import mock
 from tg import tmpl_context as c
 from paste.deploy.converters import asbool
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from alluratest.controller import setup_basic_test
 

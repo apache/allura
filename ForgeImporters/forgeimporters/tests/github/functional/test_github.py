@@ -19,7 +19,7 @@ from __future__ import absolute_import
 import requests
 import tg
 from mock import patch, call, Mock
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 from unittest import TestCase
 
 from allura.tests import TestController

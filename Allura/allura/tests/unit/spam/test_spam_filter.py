@@ -23,7 +23,7 @@ import mock
 import unittest
 
 from ming.odm import ThreadLocalORMSession
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from allura.lib.spam import SpamFilter, ChainedSpamFilter
 from allura import model as M

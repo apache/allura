@@ -24,7 +24,7 @@ from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
 
 import mock
-from nose.tools import raises, assert_equal, assert_false, assert_true, assert_in
+from alluratest.tools import raises, assert_equal, assert_false, assert_true, assert_in
 from ming.orm import ThreadLocalORMSession
 from tg import config as tg_config
 

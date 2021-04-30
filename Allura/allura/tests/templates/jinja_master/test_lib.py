@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from tg import config, app_globals as g
 from mock import Mock
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 import ming
 from allura.config.app_cfg import ForgeConfig, AlluraJinjaRenderer

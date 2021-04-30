@@ -21,7 +21,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from mock import Mock
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from allura.lib import helpers as h
 from tg import tmpl_context as c

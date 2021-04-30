@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import six
-from nose.tools import assert_raises, assert_in
+from alluratest.tools import assert_raises, assert_in
 from testfixtures import OutputCapture
 
 from datadiff.tools import assert_equal

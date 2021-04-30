@@ -27,7 +27,7 @@ import json
 from io import open
 
 import PIL
-from nose.tools import assert_true, assert_equal, assert_in, assert_not_equal, assert_not_in
+from alluratest.tools import assert_true, assert_equal, assert_in, assert_not_equal, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 from tg import config

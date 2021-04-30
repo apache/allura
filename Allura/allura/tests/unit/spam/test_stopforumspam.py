@@ -23,7 +23,7 @@ import tempfile
 import mock
 
 from bson import ObjectId
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
 

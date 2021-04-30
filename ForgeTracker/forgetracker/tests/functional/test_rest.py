@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from tg import tmpl_context as c
 
 from datadiff.tools import assert_equal
-from nose.tools import assert_not_equal
+from alluratest.tools import assert_not_equal
 from mock import patch
 from tg import config
 

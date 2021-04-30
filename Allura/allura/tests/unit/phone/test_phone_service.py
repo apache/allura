@@ -17,7 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from nose.tools import assert_true
+from alluratest.tools import assert_true
 from datadiff.tools import assert_equal
 
 from allura.lib.phone import PhoneService

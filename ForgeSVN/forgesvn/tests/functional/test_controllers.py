@@ -30,7 +30,7 @@ import pkg_resources
 from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from mock import patch
-from nose.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, assert_in
 from IPython.testing.decorators import onlyif
 
 from allura import model as M

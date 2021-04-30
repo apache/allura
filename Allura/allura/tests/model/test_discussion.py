@@ -28,10 +28,10 @@ from datetime import datetime, timedelta
 from cgi import FieldStorage
 
 from tg import tmpl_context as c
-from nose.tools import assert_equals, with_setup
+from alluratest.tools import assert_equals, with_setup
 import mock
 from mock import patch
-from nose.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, assert_in
 
 from ming.orm import session, ThreadLocalORMSession
 from webob import exc

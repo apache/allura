@@ -25,7 +25,7 @@ from tg import tmpl_context as c
 from webob import Request, exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
-from nose.tools import (
+from alluratest.tools import (
     assert_equals,
     assert_equal,
     assert_raises,

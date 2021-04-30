@@ -27,7 +27,7 @@ import mock
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 from ming import schema
-from nose.tools import (
+from alluratest.tools import (
     raises,
     assert_equal,
     assert_in,

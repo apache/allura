@@ -22,7 +22,7 @@ from __future__ import absolute_import
 from tg import tmpl_context as c
 import mock
 from ming.base import Object
-from nose.tools import assert_equal, assert_raises
+from alluratest.tools import assert_equal, assert_raises
 from formencode import validators as fev
 
 from alluratest.controller import setup_unit_test

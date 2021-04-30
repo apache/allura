@@ -25,7 +25,7 @@ from paste.deploy.converters import asint
 import ming
 from cryptography.hazmat.primitives.twofactor import InvalidToken
 from mock import patch, Mock
-from nose.tools import assert_equal, assert_raises
+from alluratest.tools import assert_equal, assert_raises
 from tg import config
 
 from allura import model as M

@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import pprint
-from nose.tools import with_setup
+from alluratest.tools import with_setup
 
 from ming.orm import ThreadLocalORMSession
 

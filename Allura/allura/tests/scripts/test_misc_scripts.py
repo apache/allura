@@ -18,7 +18,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 from bson import ObjectId
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from allura.scripts.clear_old_notifications import ClearOldNotifications
 from alluratest.controller import setup_basic_test

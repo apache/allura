@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from datetime import datetime
-from nose.tools import assert_equal, assert_true
+from alluratest.tools import assert_equal, assert_true
 from tg import tmpl_context as c
 
 from forgeblog import model as M

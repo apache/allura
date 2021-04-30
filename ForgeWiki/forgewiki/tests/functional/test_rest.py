@@ -22,7 +22,7 @@ from __future__ import absolute_import
 import json
 from io import open
 
-from nose.tools import assert_equal, assert_in, assert_not_equal
+from alluratest.tools import assert_equal, assert_in, assert_not_equal
 import tg
 
 from allura.lib import helpers as h

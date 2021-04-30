@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 from mock import patch
-from nose.tools import assert_equal
+from alluratest.tools import assert_equal
 
 from allura.lib import helpers
 
