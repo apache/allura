@@ -9,6 +9,3 @@ mediawiki2html  # GPL
 
 # for spam checking
 akismet==1.0.1
-
-# faster charset detection
-cchardet==2.1.1  # GPL
