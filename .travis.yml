@@ -32,7 +32,8 @@ jobs:
         - pip install https://sourceforge.net/projects/pysvn/files/pysvn/V1.9.12/pysvn-1.9.12.tar.gz
 install:
   - sudo apt-get install -qq libjpeg8-dev zlib1g-dev
-  - pip install -r requirements.txt
+  - pip install nose
+  - pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
   - npm install
 script:
   - ./rebuild-all.bash

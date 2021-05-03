@@ -43,6 +43,21 @@ from functools import partial
 from io import BytesIO
 import cgi
 
+# https://forge-allura.apache.org/p/allura/tickets/8386/
+# we don't want to depend on LGPL'd chardet, but the requests library needs it
+# so if we can't import it, we'll make it exist as a copy of cchardet
+# this spot in the codebase is best, since it is imported by many things and is before 'requests' is imported
+# if https://github.com/psf/requests/pull/5797 is resolved, this hack could be removed
+try:
+    import chardet
+except ImportError:
+    import sys
+    import cchardet
+    sys.modules['chardet'] = sys.modules['cchardet']
+    import chardet
+    chardet.__version__ += '.cchardet'
+
+
 import emoji
 import tg
 import six

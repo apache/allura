@@ -16,7 +16,6 @@
 #       under the License.
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import requests
 import tg
 from mock import patch, call, Mock
 from alluratest.tools import assert_equal
@@ -24,6 +23,7 @@ from unittest import TestCase
 
 from allura.tests import TestController
 from allura import model as M
+import requests
 
 
 class TestGitHubImportController(TestController, TestCase):

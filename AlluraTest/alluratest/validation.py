@@ -39,9 +39,10 @@ import six
 import webtest
 from webtest import TestApp
 from ming.utils import LazyProperty
-import requests
 
 from allura.lib import utils
+from allura.lib import helpers as h  # to get requests/chardet patched
+import requests
 
 log = logging.getLogger(__name__)
 

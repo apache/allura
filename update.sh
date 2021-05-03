@@ -25,12 +25,12 @@ fi
 echo 'Getting latest code with `git pull` ...'
 git pull
 
-echo 'Updating python packages with `pip install -r requirements.txt` ...'
-pip install -r requirements.txt
+echo 'Updating python packages with pip install ...'
+pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
 if [ "$?" -gt 0 ]; then
 	echo
 	echo
-	echo 'Command `pip install -r requirements.txt` failed.  Sometimes this is a random download error.  If so, just try again.'
+	echo 'Command `pip install ...` failed.  Sometimes this is a random download error.  If so, just try again.'
 	exit;
 fi
 
