@@ -24,8 +24,6 @@ certifi==2019.6.16
     # via requests
 cffi==1.12.2
     # via cryptography
-chardet==3.0.4
-    # via requests
 colander==1.7.0
     # via -r requirements.in
 crank==0.8.1
