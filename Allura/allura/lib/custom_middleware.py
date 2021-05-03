@@ -29,11 +29,11 @@ from tg import tmpl_context as c
 from tg.support.middlewares import _call_wsgi_application as call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
-import pysolr
 import six
 from ming.odm import session
 
 from allura.lib import helpers as h
+import pysolr  # after 'h' import to get requests/chardet patched
 from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
