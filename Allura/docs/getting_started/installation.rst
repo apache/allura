@@ -171,7 +171,8 @@ Update requirements and reinstall apps:
 You may want to restart at least "taskd" container after that in order for it to
 pick up changes.  Run :code:`docker-compose restart taskd`
 
-Running all tests:
+Running all tests.  First, install :code:`nose` (not bundled installed by default, since it is LGPL and deprecated)
+:code:`docker-compose run web pip install nose` then:
 
 .. code-block:: bash
 

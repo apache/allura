@@ -206,6 +206,9 @@ as ``pudb`` are also available.
 
 Testing
 -------
+First, install :code:`nose` (not bundled installed by default, since it is LGPL and deprecated)
+:code:`docker-compose run web pip install nose`
+
 To run all the tests, execute ``./run_tests`` in the repo root. To run tests
 for a single package, for example ``forgetracker``::
 
