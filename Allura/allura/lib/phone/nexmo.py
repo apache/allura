@@ -22,6 +22,7 @@ from six.moves.urllib.parse import urljoin
 import cgi
 import json
 
+from allura.lib import helpers as h  # to get requests/chardet patched
 import requests
 import jinja2
 

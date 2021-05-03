@@ -29,7 +29,6 @@ except ImportError:  # py2 doesn't have typing yet
 
 import colander as col
 import bson
-import requests
 import formencode
 import six
 from six.moves.urllib.parse import urlparse
@@ -43,6 +42,7 @@ from tg import tmpl_context as c, app_globals as g
 
 from allura import model as M
 from allura.lib import helpers as h
+import requests
 from allura.lib.plugin import ProjectRegistrationProvider
 
 
