@@ -194,8 +194,14 @@ def oauth_app_basic_auth(config):
     return requests.auth.HTTPBasicAuth(client_id, secret)
 
 
-def valid_access_token(access_token):
-    return access_token_details(access_token).status_code == 200
+def valid_access_token(access_token, scopes_required=None):
+    tok_details = access_token_details(access_token)
+    if not tok_details.status_code == 200:
+        return False
+    if scopes_required and not all(scope_req in tok_details.json()['scopes']
+                                   for scope_req in scopes_required):
+        return False
+    return True
 
 
 def access_token_details(access_token):
@@ -212,14 +218,14 @@ class GitHubOAuthMixin(object):
     Support for github oauth web application flow.  This is an "OAuth App" not a "GitHub App"
     '''
 
-    def oauth_begin(self, scope=None):
+    def oauth_begin(self, scope=None):  # type: (list[str]) -> None
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
             log.warn('github_importer.* not set up in .ini file; cannot use OAuth for GitHub')
             return  # GitHub app is not configured
         access_token = c.user.get_tool_data('GitHubProjectImport', 'token')
-        if access_token and valid_access_token(access_token):
+        if access_token and valid_access_token(access_token, scopes_required=scope):
             return
         redirect_uri = request.url.rstrip('/') + '/oauth_callback'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
