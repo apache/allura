@@ -207,7 +207,7 @@ class ImportSupport(object):
                 remapped[f] = v
             elif callable(transform):
                 transform(remapped, f, v)
-            elif transform is ():
+            elif transform == ():
                 self.custom(remapped, f, v, ticket_dict.get('status'))
             else:
                 new_f, conv = transform

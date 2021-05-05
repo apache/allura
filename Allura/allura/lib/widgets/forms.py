@@ -871,7 +871,6 @@ class NeighborhoodOverviewForm(ForgeForm):
                            '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">' \
                            '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" ' \
                            'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {
-                               'ctx_id': ctx['id'],
                                'ctx_name': ctx['name'],
                                'inp_name': inp['name'],
                                'inp_value': inp['value'],
