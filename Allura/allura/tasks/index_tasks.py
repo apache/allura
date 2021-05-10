@@ -49,11 +49,26 @@ def __del_objects(object_solr_ids):
     solr_instance.delete(q=solr_query)
 
 
+def check_for_dirty_ming_records(msg_prefix, ming_sessions=None):
+    """
+    A debugging helper to diagnose issues with code that unintentionally modifies records, causing them to be written
+    back to mongo (potentially clobbering values written by a parallel task/request)
+    """
+    if ming_sessions is None:
+        from allura.model import main_orm_session, artifact_orm_session, project_orm_session
+        ming_sessions = [main_orm_session, artifact_orm_session, project_orm_session]
+    for sess in ming_sessions:
+        dirty_objects = list(sess.uow.dirty)
+        if dirty_objects:
+            log.warning(msg_prefix + ' changed objects, causing writes back to mongo: %s',
+                        dirty_objects)
+
 @task
 def add_projects(project_ids):
     from allura.model.project import Project
     projects = Project.query.find(dict(_id={'$in': project_ids})).all()
     __add_objects(projects)
+    check_for_dirty_ming_records('add_projects task')
 
 
 @task
@@ -116,6 +131,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
         six.reraise(exceptions[0][0], exceptions[0][1], exceptions[0][2])
     if exceptions:
         raise CompoundError(*exceptions)
+    check_for_dirty_ming_records('add_artifacts task')
 
 
 @task
