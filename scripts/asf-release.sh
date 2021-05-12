@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+set -e -o pipefail
 
 echo "This will prep a release, it'll make a local commit and tag but not push them.  You should have PGP keys set up and ready"
 
