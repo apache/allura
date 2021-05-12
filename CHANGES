@@ -1,3 +1,160 @@
+Version 1.13.0  (May 2021)
+
+This release supports Python 2.7, 3.6, and 3.7.
+It is the last release planned to support Python 2.
+
+Upgrade Instructions
+
+  To install updated dependencies, run:
+    pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+  Run `./rebuild-all.bash` to get new ForgeFeedback app available
+
+  If switching from Python 2 to Python 3, we recommend upgrading to Allura 1.13.0 first
+  and then switch Python versions as a separate step.  When switching Python versions, you
+  will need to make a completely new python virtual environment using Python 3, and run
+  `pip install ...` in it, and then use it to run Allura.
+
+  When running on Python 3, newer versions of Pygments and Pillow can be installed which
+  include security fixes within those packages.  The versions specified in requirements.txt
+  are older versions so that Python 2 can still be supported.
+
+  If you have customizations or extensions for Allura, you will need to port that code to
+  Python 3.
+
+.ini file changes:
+  If you have customized development.ini or docker-dev.ini for your own site, you will
+  need to remove all the stats references after the "Logging configuration" section.
+  Remove it from 2 `keys =` lists, and 1 `handlers =` list, and the whole [handler_stats]
+  subsection.
+
+  All `%` will need to be escaped as `%%`, for example in bulk_export_filename.
+  `%` in logging configurations at the bottom of the file is ok.
+
+  For python 3, comments on the same line like `foo = 123; comments` are no longer
+  allowed.  For example, `override_root = task` needs to be its own line only.
+
+  New configuration options are available.  If you have an existing .ini file, defaults
+  will be used automatically, or you can set your own values for: phone.attempts_limit,
+  scm.view.max_file_bytes, and scm.download.max_file_bytes
+
+Major New Features
+ * Added ForgeFeedback app
+ * [#8260] textarea inputs work better on mobile devices, and use browser spellchecker
+ * [#7935] Forum importer for allura's own export format
+ * [#8339] Allow multiple site-wide notices to be active
+
+Security
+ * email on primary changed, password recover, email verified
+ * email added/removed mail notifications
+ * [#8362] Fix cookie lacking secure attribute
+ * Publicize information disclosure security bugfix in 1.12.0 changes
+
+General
+ * [#8337] Show more helpful errors when username is wrong format
+ * [#8383] avoid control chars in rss feeds
+ * Help fix messed up multifactor auth sessions
+ * Sort by shortlink newest first, in case there are multiple matches the first one will be used
+ * Strip leading or trailing dashes when suggesting project shortnames
+ * Handle [[embed]] errors specifically, instead of whole markdown text erroring
+ * Handle better invalid URLs like /_list/ with no path after
+ * added noindex tag to profiles with no activity and no projects
+ * Small tweaks to controls around user messaging
+
+Tickets
+ * [#7712] Bulk edit with filter on errors
+ * fix truncated ticket titles by allowing overflow wrapping
+
+Wiki
+ * remove displayname from wiki history/browse
+ * show user cards for wiki usernames
+ * canonical on wiki pages
+ * wiki pages with noindex are omitted from sitemap.xml
+ * confirm_btn_align fixed misaligned wiki confirm modal
+
+Code Repositories
+ * Don't move the page around when selecting a specific line in a repo page
+ * Repo sidebar: no Browse Commits if repo is empty; add Browse Files for SVN
+ * improve repo navbar SEO by 302->301
+ * [#8357] SVN: fixes for %s in filenames
+ * [#8350] non-unicode filenames in hg
+
+Admin
+ * [#8372] Misc site admin improvements
+ * [#4069] Restrict ACLs that make projects private
+ * [#8370] User admin page should drop trailing slash
+ * Avoid error if a user blocked by permissions no longer exists
+ * Refactor some trove admin bits, add some test coverage
+ * Nicer formatting of user audit log details (make message bold)
+ * Site admin: only show pwd reset related buttons if user is enabled
+ * Allow long audit log messages to wrap
+ * Add more functionality to the add_user_to_group.py script
+ * Tooltip for youtube url, set type=url
+ * allow incomplete URLs without http:// to be entered in browser
+ * Remove byte size validator on project description (just validate string length)
+ * Add permit_legacy flag to NeighborhoodProjectShortNameValidator in case a site has older names to allow during URL checks
+ * Prevent private projects by disallowing access to 'permissions' page
+
+Performance:
+ * [#8381] Max file sizes for displaying/downloading from repo
+ * [#8360] Misc performance improvements, icon CDN support
+ * [#8359] stopforumspam performance improvement
+ * [#8343] Improve image thumbnail compression
+ * [#8341] Fix slowness on large diffs
+ * [#8342] LastCommit & git log follow improvements
+ * Github import rate-limit retry improvement
+ * Put a general network socket timeout around RSS feed fetching (default otherwise is no timeout)
+
+Deployment & Configuration:
+ * [#8348] Support mongo 3.6 - 4.2.  To upgrade Mongo, you must follow mongo upgrade instructions (see ticket for links)
+ * Add better gunicorn cmd example to docker-compose-prod.yml
+ * [#8384] Enforce login throughout phone verification process
+ * Set a limit for phone verification attempts
+ * Update favicon.ico and use it in docker; avoids 404 which disrupts session esp. multifactor login
+ * Skip spam checks on metadata comments (ticket diff) and imported comments (often ip/ua/referrer/author info is not available)
+ * Work around virtualenv 20 issue causing our entry points to not be found
+ * renamed topic/categories jabber,audio/conversion,video/conversion
+
+For Developers
+ * Update copyright year
+ * [#8347] Get all dependencies py3-compatible
+ * [#8354] Replace dependencies that aren't py3 compatible
+ * Many python package upgrades
+ * [#8363] Upgrade ming & pymongo
+ * [#8333] support newer mercurial if Forgehg is used
+ * Many python 3 related changes
+ * [#8340] Increase test coverage
+ * upgraded SimpleMDE to EasyMDE
+ * [#8380] API to create projects
+ * [#8386] review licenses of python dependencies
+ * [#8373] Misc code style fixes
+ * [#8345] event tasks can start too soon
+ * [#3938] Stats logging should not go to the "console" handler; remove it
+ * Make my_projects_by_role_name always return a list, even when logged out
+ * Misc: avoid errors when invalid page param
+ * Misc: avoid errors when sort param doesn't have a direction part
+ * misc: avoid filter=foo erroring
+ * Misc: check apache config file as part of docker build
+ * Handle json (raw data not form encoded) posts better
+ * Reformatted code so it matches pep8 guidelines
+ * ago_in_past helpers.ago returns 'in ...' if date is in future
+ * Send project_menu_updated events from a few other places that can change the menu
+ * Handle oauth scope checks better when no access granted at all yet
+ * Fix patch_middleware_config context manager error handling
+ * Avoid test error if git config from user/system has push.default set to 'nothing'
+ * remove old Makefile
+ * travis: fix pip cmd; enable py3 testing
+ * A bit more logging before phone validation
+ * Youtube oembed via https now; handle more status codes and errors better
+ * pep8/pycodestyle cleanup
+ * store project icon file hash
+ * shorter tracebacks on error debug pages
+ * Switch web debugger from Backlash (fork of werkzeug) to current werkzeug
+ * added new app.sitemap_xml() that is used when generating sitemap.xml
+ * Add logging if an index task unexpectedly has "dirty" objects to save back to mongo
+ * Fix latest pyflakes violations
+ * oauth_begin() to check scopes on an existing token
+
+
 Version 1.12.0  (October 2019)
 
 Upgrade Instructions
