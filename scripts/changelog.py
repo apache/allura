@@ -26,6 +26,7 @@ import git
 import requests
 from datetime import datetime
 
+import six
 
 CHANGELOG = 'CHANGES'
 API_URL = 'https://forge-allura.apache.org/rest/p/allura/tickets/search?limit=1000&q=ticket_num:({0})'
@@ -72,9 +73,9 @@ def print_changelog(version, summaries, changes_without_tickets):
         'date': datetime.utcnow().strftime('%B %Y'),
     }))
     for ticket in sorted(summaries.keys()):
-        print(" * [#{0}] {1}".format(ticket, summaries[ticket].encode('utf-8')))
+        print(" * [#{0}] {1}".format(ticket, six.ensure_text(summaries[ticket])))
     for change in changes_without_tickets:
-        print(" * {}".format(change.encode('utf-8')))
+        print(" * {}".format(six.ensure_text(change)))
 
 if __name__ == '__main__':
     main()
