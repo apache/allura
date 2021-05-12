@@ -49,17 +49,16 @@ CLOSE_DATE=`date -d '+72 hours' -R --utc | sed -e 's/+0000/UTC/'`
 YEAR=`date +%Y`
 
 sed -i -e "s/2012-[0-9]\{4\} /2012-$YEAR /" NOTICE */NOTICE */docs/conf.py
-git commit -m "Update copyright year" NOTICE */NOTICE */docs/conf.py
+git commit -m "Update copyright year" NOTICE */NOTICE */docs/conf.py || echo "no copyright year changes to commit"
 
 scripts/changelog.py rel/$PREV_VERSION HEAD $VERSION > .changelog.tmp
 echo >> .changelog.tmp
 cat CHANGES >> .changelog.tmp
 mv -f .changelog.tmp CHANGES
 prompt DUMMY "CHANGES file populated, please edit it to summarize, write upgrade notes etc.  Press enter when ready to commit" "enter"
-git add CHANGES
-git commit -m "CHANGES updated for ASF release $VERSION"
+git commit -m "CHANGES updated for ASF release $VERSION" CHANGES
 
-DEFAULT_KEY=`grep ^default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
+DEFAULT_KEY=`grep ^default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'` || true  # ok if doesn't exit ok
 if [[ -z "$DEFAULT_KEY" ]]; then
     DEFAULT_KEY=`gpg --list-secret-keys | egrep '[0-9A-F]{8}' | head -1 | sed -e 's/\W//g'`
 fi
