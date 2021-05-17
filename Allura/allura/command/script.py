@@ -60,14 +60,15 @@ class ScriptCommand(base.Command):
             if self.options.pdb:
                 base.log.info('Installing exception hook')
                 sys.excepthook = utils.postmortem_hook
-            with open(self.args[1]) as fp:
+            filename = self.args[1]
+            with open(filename) as fp:
                 ns = dict(__name__='__main__')
                 sys.argv = self.args[1:]
                 if self.options.profile:
-                    cProfile.run(fp, '%s.profile' %
-                                 os.path.basename(self.args[1]))
+                    cProfile.run(fp.read(), '%s.profile' %
+                                 os.path.basename(filename))
                 else:
-                    exec(fp.read(), ns)
+                    exec(compile(fp.read(), filename, 'exec'), ns)
 
 
 class SetToolAccessCommand(base.Command):
