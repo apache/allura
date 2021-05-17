@@ -177,6 +177,8 @@ class TaskCommand(base.Command):
                       help='limit to task names starting with this.  Example allura.tasks.index_tasks.')
     parser.add_option('--filter-result-regex', dest='filter_result_regex', default=None,
                       help='limit to tasks with result matching this regex.  Example "pysolr"')
+    parser.add_option('--filter-queued-days-ago', dest='days_ago', type=int, default=None,
+                      help='limit to tasks queued NUM days ago.  Example "180"')
     min_args = 2
     max_args = None
     usage = '''<ini file> [list|retry|purge|timeout|commit]
@@ -206,6 +208,8 @@ class TaskCommand(base.Command):
             q['task_name'] = {'$regex': r'^{}.*'.format(re.escape(self.options.filter_name_prefix))}
         if self.options.filter_result_regex:
             q['result'] = {'$regex': self.options.filter_result_regex}
+        if self.options.days_ago:
+            q['time_queue'] = {'$lt': datetime.utcnow() - timedelta(days=self.options.days_ago)}
         if self.verbose:
             print(q)
         return q

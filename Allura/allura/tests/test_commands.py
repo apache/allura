@@ -18,6 +18,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import datetime
+
 import six
 from alluratest.tools import assert_raises, assert_in
 from testfixtures import OutputCapture
@@ -271,6 +273,9 @@ class TestEnsureIndexCommand(object):
 
 class TestTaskCommand(object):
 
+    def tearDown(self):
+        M.MonQTask.query.remove({})
+
     def test_commit(self):
         exit_code = taskd.TaskCommand('task').run([test_config, 'commit'])
         assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.commit'}).count(), 1)
@@ -281,12 +286,51 @@ class TestTaskCommand(object):
         assert_equal(exit_code, 0)
 
     def test_retry(self):
+        # self.test_commit()
         exit_code = taskd.TaskCommand('task').run([
             test_config, 'retry',
             '--filter-name-prefix', 'allura.tasks.index_tasks.',
             '--filter-result-regex', 'pysolr',
         ])
         assert_equal(exit_code, 0)
+
+    def test_purge(self):
+        # create task
+        self.test_commit()
+        assert_equal(M.MonQTask.query.find().count(), 1)
+        M.MonQTask.query.update({'task_name': 'allura.tasks.index_tasks.commit'}, {'$set': {'state': 'complete'}})
+        # run purge; verify 0 records
+        exit_code = taskd.TaskCommand('task').run([
+            test_config, 'purge',
+        ])
+        assert_equal(exit_code, 0)
+        assert_equal(M.MonQTask.query.find().count(), 0)
+
+    def test_purge_old_only(self):
+        # create task
+        self.test_commit()
+        assert_equal(M.MonQTask.query.find().count(), 1)
+
+        # force task to be in complete state
+        M.MonQTask.query.update({'task_name': 'allura.tasks.index_tasks.commit'}, {'$set': {'state': 'complete'}})
+        # run purge; verify no records deleted
+        exit_code = taskd.TaskCommand('task').run([
+            test_config, 'purge', '--filter-queued-days-ago', '180',
+        ])
+        assert_equal(exit_code, 0)
+        assert_equal(M.MonQTask.query.find().count(), 1)
+
+        # modify task to be old
+        then = datetime.datetime.utcnow() - datetime.timedelta(days=200)
+        M.MonQTask.query.update({'task_name': 'allura.tasks.index_tasks.commit'},
+                                {'$set': {'time_queue': then, 'time_start': then, 'time_stop': then}})
+
+        # run purge; verify old tasks deleted
+        exit_code = taskd.TaskCommand('task').run([
+            test_config, 'purge', '--filter-queued-days-ago', '180',
+        ])
+        assert_equal(exit_code, 0)
+        assert_equal(M.MonQTask.query.find().count(), 0)
 
 
 class TestTaskdCleanupCommand(object):
