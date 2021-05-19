@@ -798,10 +798,6 @@ class TestFunctionalController(TrackerTestController):
         create_button = r.html.find('a', attrs={'href': '/p/test/bugs/new/'})
         assert_equal(create_button['class'], ['icon', 'sidebar-disabled'])
 
-    def test_render_markdown_syntax(self):
-        r = self.app.get('/bugs/markdown_syntax')
-        assert_true('Markdown Syntax' in r)
-
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_cached_convert(self):
         from allura.model.session import artifact_orm_session

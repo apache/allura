@@ -379,10 +379,6 @@ class TestForum(TestController):
         self.app.get('/discussion/search')
         self.app.get('/discussion/search', params=dict(q='foo'))
 
-    def test_render_markdown_syntax(self):
-        r = self.app.get('/discussion/markdown_syntax')
-        assert 'Markdown Syntax' in r
-
     def test_forum_index(self):
         self.app.get('/discussion/testforum/')
         self.app.get('/discussion/testforum/childforum/')
@@ -927,7 +923,7 @@ class TestForum(TestController):
         assert_in("/p/test/discussion/create_topic/", sidebar_links)
         assert_in("/p/test/discussion/new_forum", sidebar_links)
         assert_in('<h3 class="">Help</h3>', sidebar_menu)
-        assert_in("/p/test/discussion/markdown_syntax", sidebar_links)
+        assert_in("/nf/markdown_syntax", sidebar_links)
         assert_not_in("flag_as_spam", sidebar_links)
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
@@ -951,7 +947,7 @@ class TestForum(TestController):
         assert_in("/p/test/discussion/create_topic/", sidebar_links)
         assert_in("/p/test/discussion/new_forum", sidebar_links)
         assert_in('<h3 class="">Help</h3>', sidebar_menu)
-        assert_in("/p/test/discussion/markdown_syntax", sidebar_links)
+        assert_in("/nf/markdown_syntax", sidebar_links)
         assert_not_in("flag_as_spam", sidebar_menu)
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})

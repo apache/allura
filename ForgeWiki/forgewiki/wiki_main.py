@@ -278,7 +278,7 @@ The wiki uses [Markdown](%s) syntax.
             links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail']))
         if not admin_menu:
             links += [SitemapEntry(''),
-                      SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
+                      SitemapEntry('Formatting Help', '/nf/markdown_syntax', extra_html_attrs={'target': '_blank'})]
         return links
 
     def admin_menu(self, skip_common_menu=False):
@@ -519,17 +519,9 @@ class RootController(BaseController, DispatchIndex, FeedController):
     def create_wiki_page(self, **kw):
         return {}
 
-    @with_trailing_slash
-    @expose('jinja:allura:templates/markdown_syntax.html')
+    @expose()
     def markdown_syntax(self, **kw):
-        'Display a page about how to use markdown.'
-        return dict(example=MARKDOWN_EXAMPLE)
-
-    @with_trailing_slash
-    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self, **kw):
-        'Display a page about how to use markdown.'
-        return dict(example=MARKDOWN_EXAMPLE)
+        permanent_redirect('/nf/markdown_syntax')
 
     @expose()
     @require_post()
@@ -837,16 +829,6 @@ class WikiAttachmentController(ac.AttachmentController):
 
 class WikiAttachmentsController(ac.AttachmentsController):
     AttachmentControllerClass = WikiAttachmentController
-
-
-MARKDOWN_EXAMPLE = '''
-# First-level heading
-
-Some *emphasized* and **strong** text
-
-#### Fourth-level heading
-
-'''
 
 
 class RootRestController(BaseController, AppRestControllerMixin):

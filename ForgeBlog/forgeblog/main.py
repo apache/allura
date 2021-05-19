@@ -324,12 +324,6 @@ class RootController(BaseController, FeedController):
         notification_tasks.send_usermentions_notification.post(post.index_id(), kw['text'])
         redirect(h.urlquote(h.really_unicode(post.url())))
 
-    @with_trailing_slash
-    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self, **kw):
-        'Static dialog page about how to use markdown.'
-        return dict()
-
     @expose()
     def _lookup(self, year=None, month=None, name=None, *rest):
         if year is None or month is None or name is None:

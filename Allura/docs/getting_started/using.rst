@@ -160,4 +160,4 @@ Using markdown syntax
 
 Everything in Allura uses Markdown formatting, with several customizations and macros
 specifically for Allura.  There are "Formatting Help" buttons throughout Allura for
-easy reference to the Markdown syntax.  One such page is https://forge-allura.apache.org/p/allura/wiki/markdown_syntax/
+easy reference to the Markdown syntax.  One such page is https://forge-allura.apache.org/nf/markdown_syntax
