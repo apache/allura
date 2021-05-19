@@ -547,10 +547,6 @@ class TestRootController(_TestCase):
         assert_equal(app_config.options['external_checkout_url'], 'http://foo.bar/baz')
         assert_equal(app_config.options['merge_disabled'], True)
 
-    def test_markdown_syntax_dialog(self):
-        r = self.app.get('/p/test/src-git/markdown_syntax_dialog')
-        assert_in('<h1>Markdown Syntax Guide</h1>', r)
-
     def test_refresh(self):
         r = self.app.get('/p/test/src-git/refresh')
         assert_in('refresh queued', r)

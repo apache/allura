@@ -20,14 +20,12 @@ from __future__ import absolute_import
 import logging
 import re
 from datetime import datetime, timedelta
-from functools import partial
 from six.moves.urllib.parse import urlencode, unquote
 from webob import exc
 import json
 import os
 
 # Non-stdlib imports
-import pkg_resources
 from tg import expose, validate, redirect, flash, url, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import aslist
@@ -64,6 +62,7 @@ from allura.lib.security import (require_access, has_access, require,
                                  require_authenticated)
 from allura.lib import widgets as w
 from allura.lib import validators as V
+from allura.lib.utils import permanent_redirect
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.plugin import ImportIdConverter
@@ -380,7 +379,7 @@ class ForgeTrackerApp(Application):
             links = links + search_bins
         links.append(SitemapEntry('Help'))
         links.append(
-            SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax'))
+            SitemapEntry('Formatting Help', '/nf/markdown_syntax', extra_html_attrs={'target': '_blank'}))
         return links
 
     def sidebar_menu_js(self):
@@ -905,15 +904,9 @@ class RootController(BaseController, FeedController):
                     subscribed_to_tool=M.Mailbox.subscribed(),
                     )
 
-    @expose('jinja:allura:templates/markdown_syntax.html')
+    @expose()
     def markdown_syntax(self, **kw):
-        """Static page explaining markdown."""
-        return dict()
-
-    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self, **kw):
-        """Static page explaining markdown."""
-        return dict()
+        permanent_redirect('/nf/markdown_syntax')
 
     @memorable_forget()
     @expose()

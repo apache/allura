@@ -33,7 +33,6 @@ from __future__ import absolute_import
 import os
 
 import six
-from six.moves.urllib.parse import quote
 
 from tg import tmpl_context as c
 from alluratest.tools import assert_equal, assert_in
@@ -173,20 +172,6 @@ class TestRootController(TestController):
             response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 0
         assert len(
             response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
-
-    @td.with_wiki
-    def test_markdown_to_html(self):
-        n = M.Neighborhood.query.get(name='Projects')
-        r = self.app.get(
-            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
-        assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
-
-        # this happens to trigger an error
-        bad_markdown = '<foo {bar}>'
-        r = self.app.get('/nf/markdown_to_html?markdown=%s&project=test&app=bugs&neighborhood=%s' %
-                         (quote(bad_markdown), n._id))
-        r.mustcontain('The markdown supplied could not be parsed correctly.')
-        r.mustcontain('<pre>&lt;foo {bar}&gt;</pre>')
 
     def test_slash_redirect(self):
         self.app.get('/p', status=301)

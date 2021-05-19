@@ -21,7 +21,7 @@ from io import BytesIO
 
 import six
 from tg import expose
-from tg.decorators import without_trailing_slash
+from tg.decorators import without_trailing_slash, with_trailing_slash
 from webob import exc
 
 from tg import app_globals as g
@@ -57,3 +57,13 @@ class NewForgeController(object):
         css, md5 = g.tool_icon_css
         return utils.serve_file(
             BytesIO(six.ensure_binary(css)), 'tool_icon_css', 'text/css', etag=md5)
+
+    @expose('jinja:allura:templates/markdown_syntax.html')
+    def markdown_syntax(self, **kw):
+        'Static page explaining markdown.'
+        return dict()
+
+    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
+    def markdown_syntax_dialog(self, **kw):
+        'Static dialog page about how to use markdown.'
+        return dict()

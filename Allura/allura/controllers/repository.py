@@ -86,11 +86,6 @@ class RepoRootController(BaseController, FeedController):
     def _check_security(self):
         require_access(c.app, 'read')
 
-    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self, **kw):
-        """Static page explaining markdown."""
-        return dict()
-
     @with_trailing_slash
     @expose()
     def index(self, offset=0, branch=None, **kw):

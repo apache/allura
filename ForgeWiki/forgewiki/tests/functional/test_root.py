@@ -73,8 +73,8 @@ class TestRootController(TestController):
         assert 'Create page' in r.text
 
     def test_root_markdown_syntax(self):
-        response = self.app.get('/wiki/markdown_syntax/')
-        assert 'Markdown Syntax' in response
+        response = self.app.get('/wiki/markdown_syntax/', status=301)
+        assert response.location.endswith('/nf/markdown_syntax')
 
     def test_root_browse_tags(self):
         response = self.app.get('/wiki/browse_tags/')

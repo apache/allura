@@ -197,7 +197,7 @@ class ForgeDiscussionApp(Application):
                 l = l + forum_links
             l.append(SitemapEntry('Help'))
             l.append(
-                SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax'))
+                SitemapEntry('Formatting Help', '/nf/markdown_syntax', extra_html_attrs={'target': '_blank'}))
             return l
         except Exception:  # pragma no cover
             log.exception('sidebar_menu')

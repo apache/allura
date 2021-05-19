@@ -39,7 +39,7 @@ from allura.lib.security import require_access, has_access, require_authenticate
 from allura.lib.search import search_app
 from allura.lib import helpers as h
 from allura.lib import validators as v
-from allura.lib.utils import AntiSpam
+from allura.lib.utils import AntiSpam, permanent_redirect
 from allura.lib.decorators import require_post, memorable_forget
 from allura.controllers import BaseController, DispatchIndex
 from allura.controllers.rest import AppRestControllerMixin
@@ -175,16 +175,9 @@ class RootController(BaseController, DispatchIndex, FeedController):
         d['search_comments_disable'] = True
         return d
 
-    @expose('jinja:allura:templates/markdown_syntax.html')
+    @expose()
     def markdown_syntax(self, **kw):
-        'Static page explaining markdown.'
-        return dict()
-
-    @with_trailing_slash
-    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self, **kw):
-        'Static dialog page about how to use markdown.'
-        return dict()
+        permanent_redirect('/nf/markdown_syntax')
 
     @expose()
     def _lookup(self, id=None, *remainder):

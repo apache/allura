@@ -18,9 +18,11 @@
 -#}
 {% extends g.theme.master %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Markdown Syntax{% endblock %}
+{% block title %}{{config['site_name']}} Markdown Syntax{% endblock %}
 
-{% block header %}Markdown Syntax{% endblock %}
+{% block header %}Markdown Syntax Guide{% endblock %}
+
+{% set hide_left_bar = True %}
 
 {% block content %}
 {{lib.markdown_syntax()}}
