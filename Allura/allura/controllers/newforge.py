@@ -31,6 +31,9 @@ from allura.lib import utils
 
 class NewForgeController(object):
 
+    # /nf/_static_/... (or whatever static.script_name is set to) is handled by StaticFilesMiddleware
+    # /nf/admin/... is handled by SiteAdminController
+
     @expose()
     @without_trailing_slash
     def markdown_to_html(self, markdown, neighborhood=None, project=None, app=None):

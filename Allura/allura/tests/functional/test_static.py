@@ -17,10 +17,15 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
 from allura.tests import TestController
 
 
-class TestStatic(TestController):
+class TestStaticFilesMiddleware(TestController):
+
+    # this tests StaticFilesMiddleware
+    # the URLs are /nf/_static_/... because test.ini has:
+    #   static.script_name = /nf/_static_/
 
     def test_static_controller(self):
         # package directory
