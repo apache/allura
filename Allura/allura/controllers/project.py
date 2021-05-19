@@ -37,12 +37,10 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.app import SitemapEntry
-from allura.lib.base import WsgiDispatchController
 from allura.lib import helpers as h
 from allura.lib.helpers import iter_entry_points
 from allura.lib import utils
 from allura.lib.decorators import require_post
-from allura.controllers.error import ErrorController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.controllers.rest import nbhd_lookup_first_path
 from allura.lib.security import require_access
@@ -51,9 +49,7 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin, exceptions
-from .auth import AuthController
-from .search import SearchController, ProjectBrowseController
-from .static import NewForgeController
+from .search import ProjectBrowseController
 
 log = logging.getLogger(__name__)
 

@@ -41,7 +41,7 @@ from allura.ext.personal_dashboard.dashboard_main import DashboardController
 from .auth import AuthController
 from .trovecategories import TroveCategoryController
 from .search import SearchController, ProjectBrowseController
-from .static import NewForgeController
+from .newforge import NewForgeController
 from .site_admin import SiteAdminController
 from .rest import RestController
 
