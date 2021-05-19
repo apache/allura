@@ -445,7 +445,7 @@ paragraph.""")}}
 Markdown doing anything to it, just indent every line by at least 4
 spaces (or 1 tab).  As an alternative to indenting, you can make a code block use 3 or
 more tildes (~) or backticks (`) on a line before and after the text
-(<a href="https://pythonhosted.org/Markdown/extensions/fenced_code_blocks.html">syntax details</a>). See examples in the
+(<a href="https://python-markdown.github.io/extensions/fenced_code_blocks/">syntax details</a>). See examples in the
 <a href="#md_ex_code">Code Highlighting section</a>.
 </p>
 <div class="codehilite"><pre>
@@ -620,41 +620,43 @@ you will get a header
 <h2 id="md_ex_img{{id}}">Images</h2>
 <p>To include an image, just put a "!" in front of a text link:</p>
 <div class="codehilite"><pre>
-![alternate text](https://{{config.domain}}/images/icon_linux.gif)
+![alternate text]({{g.forge_static('images/up.png')}})
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''![alternate text](http://'''+config.domain+'''/images/icon_linux.gif)''')}}
+{{g.markdown.convert('''![alternate text]('''+g.forge_static('images/up.png') + ''')''')}}
 
 <p>The "alternate text" will show up if the browser can't load the
 image.</p>
 <p>You can also use a title if you want, like this:</p>
 <div class="codehilite"><pre>
-![tiny arrow](https://{{config.domain}}/images/icon_linux.gif "tiny arrow")
+![small up arrow]({{g.forge_static('images/up.png')}} "small up arrow")
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''![tiny arrow](http://'''+config.domain+'''/images/icon_linux.gif "tiny arrow")''')}}
+{{g.markdown.convert('''![small up arrow]('''+g.forge_static('images/up.png')+''' "small up arrow")''')}}
 
 <p>To reference an attached image, just use the img macro.  You can add more attributes:</p>
 <div class="codehilite"><pre>
 [[img src=attached-image.jpg alt=foobar]]
 </pre></div>
 
+{#  no output, since this standalone example page doesn't have attachments
 <p>Output:</p>
 {{g.markdown.convert('''[[img src=attached-image.jpg alt=foobar]]''')}}
+ #}
 </div>
 
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_video{{id}}">
 <h2 id="md_ex_video{{id}}">Videos</h2>
-<p>To embed a YouTube video, use the `embed` macro (only YouTube is supported at this time):</p>
+<p>To embed a YouTube video, use the <code>embed</code> macro (only YouTube is supported at this time):</p>
 <div class="codehilite"><pre>
-[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]
+[[embed url=https://www.youtube.com/watch?v=6YbBmqUnoQM]]
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]''')}}
+{{g.markdown.convert('''[[embed url=https://www.youtube.com/watch?v=6YbBmqUnoQM]]''')}}
 </div>
 
 
@@ -739,7 +741,7 @@ allowed, permitting basic styling and layout: &lt;div markdown style="float:left
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_code{{id}}">
 <h2 id="md_ex_code{{id}}">Code Highlighting</h2>
-<p>The code highlighting syntax uses <a href="http://pythonhosted.org/Markdown/extensions/code_hilite.html">CodeHilite</a> and is colored with <a href="http://pygments.org/">Pygments</a>. It follows the same syntax as regular Markdown <a href="#md_ex_pre">code blocks</a>, with ways to tell the highlighter what language to use for the code block.</p>
+<p>The code highlighting syntax uses <a href="https://python-markdown.github.io/extensions/code_hilite/">CodeHilite</a> and is colored with <a href="https://pygments.org/">Pygments</a>. It follows the same syntax as regular Markdown <a href="#md_ex_pre">code blocks</a>, with ways to tell the highlighter what language to use for the code block.</p>
 
 <p>The language will be detected automatically, if possible.  Or you can specify it on the first line with 3 colons and the language name.</p>
 
@@ -788,7 +790,7 @@ then that shebang line will be omitted from output.
 <a href="#">My code</a>
 ```''')}}
 
-<p>Many languages are supported.  See all the "short names" listed in the <a href="http://pygments.org/docs/lexers/">Pygments docs</a>.</p>
+<p>Many languages are supported.  See all the "short names" listed in the <a href="https://pygments.org/docs/lexers/">Pygments docs</a>.</p>
 </div>
 
 
