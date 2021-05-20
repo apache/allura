@@ -22,8 +22,7 @@
 {% do g.register_app_css('css/tracker.css') %}
 
 {% block head %}
-  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
-  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+  <meta name="robots" content="noindex">
 {% endblock %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search help{% endblock %}
@@ -49,13 +48,11 @@
     <li>Votes up/down of the ticket - votes_up/votes_down (if enabled in tool options)</li>
     <li>Votes total of the ticket - votes_total</li>
     <li>Imported legacy id - import_id</li>
-    {% if c.app.globals.custom_fields %}
+    {% if custom_fields %}
     <li>Custom fields:
         <ul>
-        {% for field in c.app.globals.custom_fields or [] %}
-            {% if field.name != '_milestone' %}
-                <li>{{field.name}}</li>
-            {% endif %}
+        {% for field in custom_fields %}
+            <li>{{field.name}}</li>
         {% endfor %}
         </ul>
     </li>
@@ -92,18 +89,16 @@
     <li>Title of the ticket - snippet_s</li>
     <li>Private ticket - private_b</li>
     <li>Discussion disabled ticket - discussion_disabled_b</li>
-    {% if c.app.globals.custom_fields %}
+    {% if custom_fields %}
     <li>Custom fields:
         <ul>
-        {% for field in c.app.globals.custom_fields or [] %}
-            {% if field.name != '_milestone' %}
-                <li>{{field.name}}</li>
-            {% endif %}
+        {% for field in custom_fields %}
+            <li>{{field.name}}</li>
         {% endfor %}
         </ul>
     </li>
     {% endif %}
     </ul>
     <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
-    <div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&amp;sort=snippet_s+asc</pre></div></div>
+    <div class="codehilite"><pre>{{ h.absurl(c.app.url) }}search/?q=_milestone:1.0&amp;sort=snippet_s+asc</pre></div></div>
 {% endblock %}

@@ -889,7 +889,9 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/search_help.html')
     def search_help(self, **kw):
         'Static page with search help'
-        return dict()
+        return dict(
+            custom_fields=[fld for fld in (c.app.globals.custom_fields or []) if fld.name != '_milestone'],
+        )
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
