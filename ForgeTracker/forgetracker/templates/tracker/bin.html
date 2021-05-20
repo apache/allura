@@ -55,6 +55,7 @@
                       show_title=True,
                       target='_blank',
                       href=tg.url(app.url + 'search_help/'),
+                      rel='nofollow',
                       extra_css='btn search_help_modal') }}
                 {% if bin.error %}<br/><span style="color:red">{{bin.error}}</span>{% endif %}
             </td>
@@ -80,6 +81,7 @@
                   show_title=True,
                   target='_blank',
                   href=tg.url(app.url + 'search_help/'),
+                  rel='nofollow',
                   extra_css='btn search_help_modal') }}
             {% if new_bin and new_bin.error %}<br/><span class="err" style="color:red">{{new_bin.error}}</span>{% endif %}
           </td>
