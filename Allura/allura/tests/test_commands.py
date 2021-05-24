@@ -285,6 +285,10 @@ class TestTaskCommand(object):
         exit_code = taskd.TaskCommand('task').run([test_config, 'list'])
         assert_equal(exit_code, 0)
 
+    def test_count(self):
+        exit_code = taskd.TaskCommand('task').run([test_config, 'count'])
+        assert_equal(exit_code, 0)
+
     def test_retry(self):
         # self.test_commit()
         exit_code = taskd.TaskCommand('task').run([
