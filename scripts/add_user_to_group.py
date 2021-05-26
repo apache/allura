@@ -43,6 +43,7 @@ import logging
 
 from allura import model as M
 from allura.lib.utils import chunked_find
+from allura.model import main_orm_session
 from ming.orm import ThreadLocalORMSession
 
 
@@ -72,6 +73,8 @@ def main(options):
         )):
             for p in chunk:
                 update_project(options, user, p, replace_user=replace_user)
+                # clears User, Project, ProjectRole... so they're not taking up memory and making flush_all() be slow
+                main_orm_session.clear()
     else:
         project = M.Project.query.get(neighborhood_id=nbhd._id,
                                       shortname=options.project)
