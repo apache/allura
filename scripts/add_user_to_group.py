@@ -34,6 +34,9 @@ Example:
     # Add admin1 to Admin group for entire berlios neighborhood:
     $ paster script production.ini ../scripts/add_user_to_group.py -- admin1 Admin --nbhd=/berlios/
 
+    # Replace admin1 with admin2 in all individual projects in berlios neighborhood:
+    $ paster script production.ini ../scripts/add_user_to_group.py -- admin2 Admin ALLPROJECTS --nbhd=/berlios/ --replace-users admin1
+
 """
 
 from __future__ import unicode_literals
@@ -59,12 +62,13 @@ def main(options):
     if not user:
         return "Couldn't find user with username '%s'" % options.user
 
-    if options.replace_user:
-        replace_user = M.User.by_username(options.replace_user)
-        if not replace_user:
-            return "Couldn't find user with username '%s'" % options.replace_user
-    else:
-        replace_user = None
+    replace_users = []
+    for replace_username in options.replace_users:
+        u = M.User.by_username(replace_username)
+        if not u:
+            return "Couldn't find user with username '%s'" % replace_username
+        else:
+            replace_users.append(u)
 
     if options.project == 'ALLPROJECTS':
         for chunk in chunked_find(M.Project, dict(
@@ -72,7 +76,7 @@ def main(options):
                 shortname={'$ne': '--init--'},
         )):
             for p in chunk:
-                update_project(options, user, p, replace_user=replace_user)
+                update_project(options, user, p, replace_users=replace_users)
                 # clears User, Project, ProjectRole... so they're not taking up memory and making flush_all() be slow
                 main_orm_session.clear()
     else:
@@ -80,24 +84,29 @@ def main(options):
                                       shortname=options.project)
         if not project:
             return "Couldn't find project with shortname '%s'" % options.project
-        update_project(options, user, project, replace_user=replace_user)
+        update_project(options, user, project, replace_users=replace_users)
 
 
-def update_project(options, user, project, replace_user=None):
+def update_project(options, user, project, replace_users=None):
     project_role = M.ProjectRole.by_name(options.group, project=project)
     if not project_role:
         return "Couldn't find group (ProjectRole) with name '%s' in %s" % (options.group, project.url())
 
-    if replace_user:
+    found_any_replace_users = False
+    for replace_user in replace_users:
         replace_user_roles = M.ProjectRole.by_user(replace_user, project=project, upsert=True).roles
         if project_role._id not in replace_user_roles:
             log.info('Cannot replace %s they are not %s of %s', replace_user.username, options.group, project.url())
-            return
+            continue
+        found_any_replace_users = True
         if options.dry_run:
             log.info('Would remove %s as %s of %s', replace_user.username, options.group, project.url())
         else:
             replace_user_roles.remove(project_role._id)
             ThreadLocalORMSession.flush_all()
+    if replace_users and not found_any_replace_users:
+        log.info('Not adding %s since no replace-users found on %s', user.username, project.url())
+        return
 
     user_roles = M.ProjectRole.by_user(user, project=project, upsert=True).roles
     if project_role._id in user_roles:
@@ -119,12 +128,13 @@ def parse_options():
     parser.add_argument('group', help='Group (ProjectRole) name, e.g. Admin, '
                         'Member, Developer, etc.')
     parser.add_argument('project', nargs='?', default='--init--',
-                        help='Project shortname. Default is --init-- (the neighborhood itself).'
+                        help='Project shortname. Default is --init-- (the neighborhood itself). '
                              'Use "ALLPROJECTS" for all projects within a neighborhood')
     parser.add_argument('--nbhd', default='/p/', help='Neighborhood '
                         'url_prefix. Default is /p/.')
-    parser.add_argument('--replace-user', help='If this is specified, remove this user and only add the new user if '
-                                               'this user was found and removed from the project(s)')
+    parser.add_argument('--replace-users', nargs='*',
+                        help='If specified, remove these username(s) and only add the new user if one of the replace '
+                             'user(s) was found and removed from each project')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry-run actions logged to log file')
     return parser.parse_args()
