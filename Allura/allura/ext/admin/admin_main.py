@@ -1167,6 +1167,9 @@ class GroupsController(BaseController):
             return dict(error='%s (%s) is not in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('remove user %s from %s', username, group.name)
         user_role.roles.remove(group._id)
+        if len(user_role.roles) == 0:
+            # user has no roles in this project any more, so don't leave a useless doc around
+            user_role.delete()
         g.post_event('project_updated')
         return dict()
 
