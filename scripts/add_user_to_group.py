@@ -94,15 +94,18 @@ def update_project(options, user, project, replace_users=None):
 
     found_any_replace_users = False
     for replace_user in replace_users:
-        replace_user_roles = M.ProjectRole.by_user(replace_user, project=project, upsert=True).roles
-        if project_role._id not in replace_user_roles:
+        replace_user_perm = M.ProjectRole.by_user(replace_user, project=project)
+        if not replace_user_perm or project_role._id not in replace_user_perm.roles:
             log.info('Cannot replace %s they are not %s of %s', replace_user.username, options.group, project.url())
             continue
         found_any_replace_users = True
         if options.dry_run:
             log.info('Would remove %s as %s of %s', replace_user.username, options.group, project.url())
         else:
-            replace_user_roles.remove(project_role._id)
+            replace_user_perm.roles.remove(project_role._id)
+            if len(replace_user_perm.roles) == 0:
+                # user has no roles in this project any more, so don't leave a useless doc around
+                replace_user_perm.delete()
             ThreadLocalORMSession.flush_all()
     if replace_users and not found_any_replace_users:
         log.info('Not adding %s since no replace-users found on %s', user.username, project.url())

@@ -829,14 +829,13 @@ class OldProjectRole(MappedClass):
 
 class ProjectRole(MappedClass):
     """
-    Per-project roles, called "Groups" in the UI.
-    This can be a proxy for a single user.  It can also inherit roles.
+    The roles that a single user holds in a project.
+    Also the named roles (called "Groups" in the UI) are in this model (and can include other named roles)
 
-    :var user_id: used if this role is for a single user
-    :var project_id:
-    :var name:
-    :var roles: a list of other :class:`ProjectRole` ``ObjectId`` values.  These roles are delegated through the
-                current role.
+    :var user_id: used if this role is for a single user.  Empty for named roles
+    :var project_id: the project id
+    :var name: named roles (like Admin, Developer, custom-names-too)
+    :var roles: a list of other :class:`ProjectRole` ``ObjectId`` values which this user/group has access to
     """
 
     class __mongometa__:
