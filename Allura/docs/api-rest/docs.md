@@ -92,7 +92,7 @@ If you want your application to be able to use the API on behalf of another user
     
     import oauth2 as oauth  # misleading package name, oauth2 implements OAuth 1.0 spec
     import certifi
-    from urllib2 import urlparse
+    from urllib.parse import parse_qsl
     import webbrowser
     
     consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
@@ -107,51 +107,49 @@ If you want your application to be able to use the API on behalf of another user
     if resp['status'] != '200':
         raise Exception("Invalid response %s." % resp['status'])
     
-    request_token = dict(urlparse.parse_qsl(content))
+    request_token = dict(parse_qsl(content))
     
     # these are intermediate tokens and not needed later
-    #print "Request Token:"
-    #print "    - oauth_token        = %s" % request_token['oauth_token']
-    #print "    - oauth_token_secret = %s" % request_token['oauth_token_secret']
-    #print 
+    # print("Request Token:")
+    # print("    - oauth_token        = %s" % request_token[b'oauth_token'].decode())
+    # print("    - oauth_token_secret = %s" % request_token[b'oauth_token_secret'].decode())
+    # print()
     
     # Step 2: Redirect to the provider. Since this is a CLI script we do not 
     # redirect. In a web application you would redirect the user to the URL
     # below, specifying the additional parameter oauth_callback=<your callback URL>.
     
-    webbrowser.open("%s?oauth_token=%s" % (
-            AUTHORIZE_URL, request_token['oauth_token']))
+    webbrowser.open("%s?oauth_token=%s" % (AUTHORIZE_URL, request_token[b'oauth_token'].decode()))
     
     # Since we didn't specify a callback, the user must now enter the PIN displayed in 
     # their browser.  If you had specified a callback URL, it would have been called with 
     # oauth_token and oauth_verifier parameters, used below in obtaining an access token.
-    oauth_verifier = raw_input('What is the PIN? ')
+    oauth_verifier = input('What is the PIN? ')
     
     # Step 3: Once the consumer has redirected the user back to the oauth_callback
     # URL you can request the access token the user has approved. You use the 
     # request token to sign this request. After this is done you throw away the
     # request token and use the access token returned. You should store this 
     # access token somewhere safe, like a database, for future use.
-    token = oauth.Token(request_token['oauth_token'],
-        request_token['oauth_token_secret'])
+    token = oauth.Token(request_token[b'oauth_token'].decode(), request_token[b'oauth_token_secret'].decode())
     token.set_verifier(oauth_verifier)
     client = oauth.Client(consumer, token)
     client.ca_certs = certifi.where()
     
     resp, content = client.request(ACCESS_TOKEN_URL, "GET")
-    access_token = dict(urlparse.parse_qsl(content))
+    access_token = dict(parse_qsl(content))
     
-    print "Access Token:"
-    print "    - oauth_token        = %s" % access_token['oauth_token']
-    print "    - oauth_token_secret = %s" % access_token['oauth_token_secret']
-    print
-    print "You may now access protected resources using the access tokens above." 
-    print
+    print("Access Token:")
+    print("    - oauth_token        = %s" % access_token[b'oauth_token'].decode())
+    print("    - oauth_token_secret = %s" % access_token[b'oauth_token_secret'].decode())
+    print()
+    print("You may now access protected resources using the access tokens above.") 
+    print()
 
 
 You can then use your access token with the REST API.  For instance script to create a wiki page might look like this:
 
-    from urllib import urlencode
+    urllib.parse import urlencode
     import oauth2 as oauth
     import certifi
     
@@ -174,8 +172,8 @@ You can then use your access token with the REST API.  For instance script to cr
         URL_BASE + 'p/' + PROJECT + '/wiki/TestPage', 'POST',
         body=urlencode(dict(
                 text='This is a test page')))
-    print "Done.  Response was:"
-    print response
+    print("Done.  Response was:")
+    print(response)
 
 
 # Permission checks

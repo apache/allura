@@ -247,7 +247,7 @@ You can use the following command to generate a good key:
 
 .. code-block:: bash
 
-    ~$ python -c 'import os; l = 20; print "%.2x" * l % tuple(map(ord, os.urandom(l)))'
+    ~$ python -c 'import secrets; print(secrets.token_hex(20));'
 
 Production-quality web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
