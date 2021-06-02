@@ -38,7 +38,7 @@ pytz==2019.1
     # via babel
 q==2.3
     # via -r requirements-dev.in
-requests==2.22.0
+requests==2.25.1
     # via sphinx
 six==1.15.0
     # via sphinx
@@ -59,7 +59,7 @@ sphinxcontrib-websupport==1.1.2
     # via sphinx
 typing==3.7.4
     # via sphinx
-urllib3==1.25.10
+urllib3==1.26.5
     # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
