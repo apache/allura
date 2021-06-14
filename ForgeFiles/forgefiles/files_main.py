@@ -147,7 +147,7 @@ class FilesController(BaseController):
             parent_folder = None
             url = c.app.url
         else:
-            parent_folder = UploadFolder.query.get(_id=ObjectId(parent_folder_id))
+            parent_folder = UploadFolder.query.get(_id=ObjectId(parent_folder_id), app_config_id=c.app.config._id)
             parent_folder_id = ObjectId(parent_folder._id)
             url = parent_folder.url()
         return parent_folder_id, parent_folder, url
@@ -218,8 +218,8 @@ class FilesController(BaseController):
 
         '''Controller method to delete a file'''
 
-        file_object = UploadFiles.query.get(_id=ObjectId(file_id))
-        upload_object = Upload.query.get(_id=file_object.artifact_id)
+        file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
+        upload_object = Upload.query.get(_id=file_object.artifact_id, app_config_id=c.app.config._id)
         file_name = file_object.filename
         transient_actor = TransientActor(activity_name=file_name)
         url = c.app.url
@@ -230,18 +230,17 @@ class FilesController(BaseController):
             if parent_folder:
                 url = parent_folder.url()
             flash('File is successfully deleted')
+            g.director.create_activity(c.user, 'deleted the file', transient_actor, related_nodes=[c.project])
         else:
             flash('File is not deleted')
-        g.director.create_activity(
-            c.user, 'deleted the file', transient_actor, related_nodes=[c.project])
         return redirect(url)
 
     def delete_file_from_db(self, file_id=None):
 
         '''Method to delete a file from db'''
 
-        file_object = UploadFiles.query.get(_id=ObjectId(file_id))
-        Upload.query.remove({'_id': file_object.artifact_id})
+        file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
+        Upload.query.remove({'_id': file_object.artifact_id, 'app_config_id': c.app.config._id})
         file_object.delete()
 
     def delete_folder_recursively(self, folder_id):
@@ -256,7 +255,7 @@ class FilesController(BaseController):
             'app_config_id': c.app.config._id, 'parent_folder_id': ObjectId(folder_id)}).all()
         for folder_object in sub_folder_objects:
             self.delete_folder_recursively(folder_object._id)
-        UploadFolder.query.remove(dict({'_id': ObjectId(folder_id)}))
+        UploadFolder.query.remove({'_id': ObjectId(folder_id), 'app_config_id': c.app.config._id})
 
     @without_trailing_slash
     @require_post()
@@ -265,7 +264,7 @@ class FilesController(BaseController):
 
         '''Controller method to delete a folder'''
 
-        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         folder_name = folder_object.folder_name
         transient_actor = TransientActor(activity_name=folder_name)
         url = c.app.url
@@ -275,10 +274,9 @@ class FilesController(BaseController):
             if folder_object.parent_folder:
                 url = folder_object.parent_folder.url()
             flash('Folder is deleted Successfully')
+            g.director.create_activity(c.user, 'deleted the folder', transient_actor, related_nodes=[c.project])
         else:
             flash('Folder is not deleted')
-        g.director.create_activity(
-            c.user, 'deleted the folder', transient_actor, related_nodes=[c.project])
         return redirect(url)
 
     @without_trailing_slash
@@ -288,8 +286,8 @@ class FilesController(BaseController):
 
         '''Controller method to link a file to the download button'''
 
-        linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id))
-        upload_object = Upload.query.get(_id=linkable_file_object.artifact_id)
+        linkable_file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
+        upload_object = Upload.query.get(_id=linkable_file_object.artifact_id, app_config_id=c.app.config._id)
         require_access(upload_object, 'link')
         if status == 'False':
             linkable_file_object.linked_to_download = False
@@ -309,13 +307,19 @@ class FilesController(BaseController):
             request_path = request.path.split(c.app.url)[-1].rstrip('/')
             request_path = unquote(request_path)
             linked_file_object = UploadFiles.query.find({
-                'app_config_id': c.app.config._id, 'filename': filename, 'path': request_path}).first()
-            upload_object = Upload.query.find({'_id': linked_file_object.artifact_id}).first()
+                'app_config_id': c.app.config._id, 'filename': filename, 'path': request_path, 'disabled': False,
+            }).first()
+            upload_object = Upload.query.find({
+                '_id': linked_file_object.artifact_id, 'app_config_id': c.app.config._id,
+            }).first()
         else:
             linked_file_object = UploadFiles.query.find({
-                'app_config_id': c.app.config._id, 'linked_to_download': True}).first()
+                'app_config_id': c.app.config._id, 'linked_to_download': True, 'disabled': False,
+            }).first()
             if linked_file_object:
-                upload_object = Upload.query.find({'_id': linked_file_object.artifact_id}).first()
+                upload_object = Upload.query.find({
+                    '_id': linked_file_object.artifact_id, 'app_config_id': c.app.config._id,
+                }).first()
             else:
                 upload_object = None
         if linked_file_object:
@@ -327,7 +331,6 @@ class FilesController(BaseController):
             except Exception as e:
                 log.exception('%s error to download the file', e)
         else:
-            data = 'No artifact available'
             flash('No artifact available')
         return redirect(c.app.url)
 
@@ -338,7 +341,7 @@ class FilesController(BaseController):
         '''Controller method to edit the folder name'''
 
         url = c.app.url
-        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         if folder_object:
             require_access(folder_object, 'update')
             folder_object.folder_name = folder_name
@@ -356,8 +359,8 @@ class FilesController(BaseController):
         '''Controller method to edit the file name'''
 
         url = c.app.url
-        file_object = UploadFiles.query.get(_id=ObjectId(file_id))
-        upload_object = Upload.query.get(_id=file_object.artifact_id)
+        file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
+        upload_object = Upload.query.get(_id=file_object.artifact_id, app_config_id=c.app.config._id)
         if file_object:
             require_access(upload_object, 'update')
             upload_object.filename = file_name
@@ -375,7 +378,7 @@ class FilesController(BaseController):
 
         '''Controller which publishes the folder. It send update about the publishing of the folder.'''
 
-        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         url = c.app.url
         if folder_object:
             require_access(folder_object, 'publish')
@@ -422,7 +425,7 @@ class FilesController(BaseController):
 
         '''Controller method to disable the folder.'''
 
-        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         if status == 'True':
             disable_status = True
             text = 'disabled'
@@ -435,11 +438,12 @@ class FilesController(BaseController):
             '''Disabling Child folders & files of the current folder '''
 
             for child_folder_id in folder_object.folder_ids:
-                child_folder_object = UploadFolder.query.get(_id=ObjectId(child_folder_id))
+                child_folder_object = UploadFolder.query.get(
+                    _id=ObjectId(child_folder_id), app_config_id=c.app.config._id)
                 if child_folder_object:
                     child_folder_object.disabled = disable_status
             for child_file_id in folder_object.file_ids:
-                child_file_object = UploadFiles.query.get(_id=ObjectId(child_file_id))
+                child_file_object = UploadFiles.query.get(_id=ObjectId(child_file_id), app_config_id=c.app.config._id)
                 if child_file_object:
                     child_file_object.disabled = disable_status
             flash('Folder %s successfully' % (text))
@@ -452,8 +456,8 @@ class FilesController(BaseController):
 
         '''Controller method to disable the file.'''
 
-        file_object = UploadFiles.query.get(_id=ObjectId(file_id))
-        upload_object = Upload.query.get(_id=file_object.artifact_id)
+        file_object = UploadFiles.query.get(_id=ObjectId(file_id), app_config_id=c.app.config._id)
+        upload_object = Upload.query.get(_id=file_object.artifact_id, app_config_id=c.app.config._id)
         if status == 'True':
             disable_status = True
             text = 'disabled'
@@ -484,7 +488,7 @@ class FilesController(BaseController):
 
     def get_folder_object(self, folder_id=None):
         '''Returns the folder object for input folder id'''
-        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
         return folder_object
 
     @expose('jinja:forgefiles:templates/create_folder.html')
@@ -501,8 +505,8 @@ class FilesController(BaseController):
 
     def get_folder_file_object(self, object_id=None):
         '''Returns corresponding file or folder object for the input id '''
-        folder_object = UploadFolder.query.get(_id=ObjectId(object_id))
-        file_object = UploadFiles.query.get(_id=ObjectId(object_id))
+        folder_object = UploadFolder.query.get(_id=ObjectId(object_id), app_config_id=c.app.config._id)
+        file_object = UploadFiles.query.get(_id=ObjectId(object_id), app_config_id=c.app.config._id)
         return dict(folder_object=folder_object, file_object=file_object)
 
     @expose('jinja:forgefiles:templates/edit.html')
@@ -520,10 +524,11 @@ class FilesController(BaseController):
     @expose('jinja:forgefiles:templates/publish_folder.html')
     def get_publishable_folder(self, folder_id=None):
         '''Returns the status and folder object if the folder can be published or not'''
-        linked_file_object = UploadFiles.query.get(app_config_id=c.app.config._id, linked_to_download=True, disabled=False)
+        linked_file_object = UploadFiles.query.get(
+            app_config_id=c.app.config._id, linked_to_download=True, disabled=False)
         parent_folders = get_parent_folders(linked_file_object=linked_file_object)
         if folder_id:
-            folder_object = UploadFolder.query.get(_id=ObjectId(folder_id))
+            folder_object = UploadFolder.query.get(_id=ObjectId(folder_id), app_config_id=c.app.config._id)
             status = str(folder_object._id) in parent_folders
         else:
             folder_object = None
