@@ -45,7 +45,7 @@
                 {%- endif -%}
             </a>
         </h1>
-    {% if files_appconfig %}
+    {% if files_appconfig and c.project.app_instance(files_appconfig).has_linked_download() %}
         <a href="{{ files_appconfig.url() }}download_file" >
           <button class="btn-home btn-danger" id="download_button" >Download</button>
         </a> 

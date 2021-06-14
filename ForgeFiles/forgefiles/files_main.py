@@ -85,6 +85,10 @@ class FilesApp(Application):
             file_object.delete()
         super(FilesApp, self).uninstall(project)
 
+    def has_linked_download(self):
+        return UploadFiles.query.find({
+            'app_config_id': c.app.config._id, 'linked_to_download': True, 'disabled': False}).count()
+
 
 def get_parent_folders(linked_file_object=None):
 
@@ -463,12 +467,6 @@ class FilesController(BaseController):
             flash('File %s successfully' % (text))
         else:
             flash('No file exists')
-
-    @expose()
-    def project_file(self):
-        files_count = UploadFiles.query.find({
-            'app_config_id': c.app.config._id, 'linked_to_download': True, 'disabled': False}).count()
-        return str(files_count)
 
     @expose('json:')
     @require_post()
