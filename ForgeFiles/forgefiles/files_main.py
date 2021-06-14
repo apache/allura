@@ -309,24 +309,14 @@ class FilesController(BaseController):
             linked_file_object = UploadFiles.query.find({
                 'app_config_id': c.app.config._id, 'filename': filename, 'path': request_path, 'disabled': False,
             }).first()
-            upload_object = Upload.query.find({
-                '_id': linked_file_object.artifact_id, 'app_config_id': c.app.config._id,
-            }).first()
         else:
             linked_file_object = UploadFiles.query.find({
                 'app_config_id': c.app.config._id, 'linked_to_download': True, 'disabled': False,
             }).first()
-            if linked_file_object:
-                upload_object = Upload.query.find({
-                    '_id': linked_file_object.artifact_id, 'app_config_id': c.app.config._id,
-                }).first()
-            else:
-                upload_object = None
         if linked_file_object:
             try:
-                wrapper = upload_object.attachments[::-1]
-                from allura.lib.utils import serve_file
-                M.Mailbox.subscribe(type='direct')
+                if not c.user.is_anonymous():
+                    M.Mailbox.subscribe(type='direct')
                 return linked_file_object.serve(embed=False)
             except Exception as e:
                 log.exception('%s error to download the file', e)
@@ -401,12 +391,12 @@ class FilesController(BaseController):
                         remarks=remarks, folder_object=folder_object, project_owner=c.user,
                         domain=config.get('domain')
                     ))
-                    email_object = M.EmailAddress.get(claimed_by_user_id=i)
-                    if email_object:
+                    email_addr = user_object.get_pref('email_address')
+                    if email_addr:
                         mail_tasks.sendsimplemail.post(
                             fromaddr=g.noreply,
                             reply_to=g.noreply,
-                            toaddr=email_object.email,
+                            toaddr=email_addr,
                             subject='%s - %s Release Update' % (config.get('site_name'), c.project.name),
                             message_id=h.gen_message_id(),
                             text=text)
