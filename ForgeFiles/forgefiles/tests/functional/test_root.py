@@ -53,7 +53,7 @@ class TestFiles(TestController):
         path = dir.write('myfile.txt', b'Testing Upload')
         with open(path, 'rb') as f:
             file_upload = [('file_upload', 'myfile.txt', f.read())]
-            filename_dict = {'filename':'myfile.txt'}
+            filename_dict = {'filename': 'myfile.txt'}
             file_object = self.app.post('/p/test/files/upload_file', filename_dict, upload_files=file_upload)
         dir.cleanup()
         assert file_object is not None

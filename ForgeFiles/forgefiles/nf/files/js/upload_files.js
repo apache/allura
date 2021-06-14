@@ -19,18 +19,17 @@
 
 $('#admin_modal_title').hide();
 
- function validateFileForm(){
-     var file_input = document.getElementById('file_input');
-     var file_path = file_input.value.split('\\').pop();
-     var filename = $('#filename');
-     var file_val = $(file_input).val();
-     var error = $('#error_message');
-     if (file_val.length === 0){
-         $(error).text('Please upload a file');
-         return false;
-         }
-     else{
-         $(filename).val(file_path);
-         return true;
-         }
- }
+function validateFileForm() {
+    var file_input = document.getElementById('file_input');
+    var file_path = file_input.value.split('\\').pop();
+    var filename = $('#filename');
+    var file_val = $(file_input).val();
+    var error = $('#error_message');
+    if (file_val.length === 0) {
+        $(error).text('Please upload a file');
+        return false;
+    } else {
+        $(filename).val(file_path);
+        return true;
+    }
+}

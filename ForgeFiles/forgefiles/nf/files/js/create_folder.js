@@ -39,25 +39,24 @@ function validateFolderForm(){
  }
 
 function validateName(folder_name){
-
     var error = $('#error_message');
     var regular_exp = new RegExp("^[a-zA-Z0-9_ +.,=#~@!()\\[\\]-]+$");
     var validation_msg;
-    if(folder_name.length===0){validation_msg="Please enter folder name."}
-    else{
-        if(folder_name.slice(0,1)==="."){
-            validation_msg='Folder name cannot start with ".".'}
-        else{
-            if(folder_name.slice(0,1)===" "){
-                validation_msg="Folder name cannot start with a space."}
-            else{
-                if(folder_name.slice(-1)===" "){
-                    validation_msg="Folder name cannot end with a space."}
-                else{if(!regular_exp.test(folder_name)){validation_msg='Folder name cannot contain characters like ($/\"%^&*`|?<>:;).'}
-                else{validation_msg=true}}}}}
-    
-    return validation_msg;
+    if (folder_name.length === 0) {
+        validation_msg = "Please enter folder name.";
+    } else if (folder_name.slice(0, 1) === ".") {
+        validation_msg = 'Folder name cannot start with ".".';
+    } else if (folder_name.slice(0, 1) === " ") {
+        validation_msg = "Folder name cannot start with a space.";
+    } else if (folder_name.slice(-1) === " ") {
+        validation_msg = "Folder name cannot end with a space.";
+    } else if (!regular_exp.test(folder_name)) {
+        validation_msg = 'Folder name cannot contain characters like ($/\"%^&*`|?<>:;).';
+    } else {
+        validation_msg = true;
     }
+    return validation_msg;
+}
 
 $('#folder_id').keyup(function(){
     var folder_name = $('#folder_id').val();

@@ -19,15 +19,14 @@
 
 $('#admin_modal_title').hide();
 
- function ConfirmDeleteFolder(){
-      var obj_id = document.getElementById('delete_id');
-      var confirm_delete = $(obj_id).val();
-      var error = $('#error_message');
-      if((confirm_delete === "DELETE")){
+function ConfirmDeleteFolder() {
+    var obj_id = document.getElementById('delete_id');
+    var confirm_delete = $(obj_id).val();
+    var error = $('#error_message');
+    if (confirm_delete === "DELETE") {
         return true;
-        }
-      else{
+    } else {
         $(error).text('You must confirm with the word DELETE');
         return false;
-      }
-     }
+    }
+}
