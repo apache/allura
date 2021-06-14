@@ -26,12 +26,11 @@ from forgefiles.model.files import UploadFolder
 from forgefiles.model.files import UploadFiles
 
 
-
 class TestUpload(FilesTestWithModel):
     ''' Test class for UploadFolder & uploadFiles model'''
 
     def test_upload_folder(self):
-        '''Creates an object of the UploadFolder Collction and tests its fields'''
+        '''Creates an object of the UploadFolder Collection and tests its fields'''
         upload_folder = UploadFolder
         upload_folder.folder_name = 'testFolder'
         upload_folder.published = True
@@ -43,7 +42,7 @@ class TestUpload(FilesTestWithModel):
         assert_false(upload_folder.disabled)
 
     def test_upload_file(self):
-        '''Creates an object of the UploadFiles Collction and tests its fields'''
+        '''Creates an object of the UploadFiles Collection and tests its fields'''
 
         upload_file = UploadFiles
         upload_file.filename = 'testFile'

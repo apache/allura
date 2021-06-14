@@ -381,8 +381,7 @@ class FilesController(BaseController):
             require_access(folder_object, 'publish')
             folder_object.published = True
             folder_object.remarks = remarks
-            mailbox_object = M.Mailbox.query.find({
-                'app_config_id': c.app.config._id, 'app_config_id': c.app.config._id}).all()
+            mailbox_object = M.Mailbox.query.find({'app_config_id': c.app.config._id}).all()
             user_ids = [i.user_id for i in mailbox_object]
             admins = [i._id for i in c.project.admins()]
             user_ids += admins
