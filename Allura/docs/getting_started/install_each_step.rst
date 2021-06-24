@@ -47,7 +47,7 @@ In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and 
 System Packages
 ^^^^^^^^^^^^^^^
 
-Before we begin, you'll need to install some system packages.  Allura currently supports Python 2.7, 3.6 and 3.7.  Python 3.7 is recommended, support for Python 2.7 will likely be removed soon.
+Before we begin, you'll need to install some system packages.  Allura currently supports Python 3.6 and 3.7.
 
 .. code-block:: bash
 

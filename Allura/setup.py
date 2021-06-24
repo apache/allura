@@ -46,7 +46,6 @@ setup(
         'Environment :: Web Environment',
         'Framework :: TurboGears',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 2.7',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         'License :: OSI Approved :: Apache Software License',
     ],
