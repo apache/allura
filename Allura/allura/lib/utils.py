@@ -560,7 +560,10 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                           (ns_html, 'select'),
                           (ns_html, 'textarea'),
                           }
-        self.allowed_elements = set(html5lib.filters.sanitizer.allowed_elements) - _form_elements
+        _extra_allowed_elements = set([
+            (ns_html, 'summary'),
+        ])
+        self.allowed_elements = set(html5lib.filters.sanitizer.allowed_elements) | _extra_allowed_elements - _form_elements
 
         # srcset is used in our own project_list/project_summary widgets
         # which are used as macros so go through markdown
