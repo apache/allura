@@ -310,6 +310,11 @@ class TestHTMLSanitizer(unittest.TestCase):
         p = utils.ForgeHTMLSanitizerFilter(walker)
         assert_equal(self.simple_tag_list(p), ['p', 'input', 'input', 'p'])
 
+    def test_html_sanitizer_summary(self):
+        walker = self.walker_from_text('<details open="open"><summary>An Summary</summary><ul><li>Bullet Item</li></ul></details>')
+        p = utils.ForgeHTMLSanitizerFilter(walker)
+        assert_equal(self.simple_tag_list(p), ['details', 'summary', 'summary', 'ul', 'li', 'li', 'ul', 'details'])
+
 
 def test_ip_address():
     req = Mock()
