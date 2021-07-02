@@ -144,7 +144,7 @@ pyparsing==2.4.7
     # via
     #   httplib2
     #   packaging
-pypeline[creole,markdown,rst,textile]==0.5.2
+pypeline[creole,markdown,rst,textile]==0.5.3
     # via -r requirements.in
 pysolr==3.6.0
     # via -r requirements.in
