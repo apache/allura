@@ -307,6 +307,9 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError('set_password')
 
+    def resend_verification_link(em):
+        em.send_verification_link()
+
     def upload_sshkey(self, username, pubkey):
         '''
         Upload an SSH Key.  Providers do not necessarily need to implement this.
@@ -510,7 +513,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         u = M.User(**user_doc)
         if 'password' in user_doc:
             u.set_password(user_doc['password'])
-        return u
+        return u44
 
     def _login(self):
         user = self.by_username(self.request.params['username'])
@@ -825,6 +828,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def get_last_password_updated(self, user):
         return LocalAuthenticationProvider(None).get_last_password_updated(user)
+
+    def recover_password(self, user):
+        return super().recover_password(user)
 
 
 class ProjectRegistrationProvider(object):
