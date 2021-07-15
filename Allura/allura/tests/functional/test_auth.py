@@ -1532,10 +1532,13 @@ class TestPasswordReset(TestController):
         # so test-admin isn't automatically logged in for all requests
         self.app.extra_environ = {'disable_auth_magic': str('True')}
 
+    @patch('allura.model.User.send_password_reset_email')
+    @patch('allura.lib.plugin.LocalAuthenticationProvider.resend_verification_link')
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_email_unconfirmed(self, gen_message_id, sendmail):
+    def test_email_unconfirmed(self, gen_message_id, sendmail, p_sendlink, p_sendpwd):
         user = M.User.query.get(username='test-admin')
+        user.pending = True
         email = M.EmailAddress.find(
             {'claimed_by_user_id': user._id}).first()
         email.confirmed = False
@@ -1546,6 +1549,8 @@ class TestPasswordReset(TestController):
                                                        })
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
+        p_sendlink.assert_called_once()
+        p_sendpwd.assert_not_called()
 
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -1649,7 +1654,7 @@ To update your password on %s, please visit the following URL:
         with td.audits('Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
-            
+
         # verify 'Password Changed' email sent
         args, kwargs = sendsimplemail.post.call_args
         assert_equal(kwargs['toaddr'], user._id)

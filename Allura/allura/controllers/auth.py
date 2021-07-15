@@ -222,14 +222,21 @@ class AuthController(BaseController):
         if not email:
             redirect('/')
 
-        user_record = M.User.by_email_address(email)
+        user_record = M.User.by_email_address(email, only_confirmed=False)
         allow_non_primary_email_reset = asbool(config.get('auth.allow_non_primary_email_password_reset', True))
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash('Enter email in correct format!', 'error')
             redirect('/auth/forgotten_password')
 
-        if not allow_non_primary_email_reset:
+        if user_record and user_record.pending:
+            message = 'If the given email address is on record, '\
+                      'an email has been sent to the account\'s primary email address.'
+            email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
+                                              confirmed=False)
+            provider.resend_verification_link(user_record.get_tool_data('sfx', 'userid'))
+
+        elif not allow_non_primary_email_reset:
             message = 'If the given email address is on record, '\
                       'a password reset email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),

@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import calendar
+from typing import ClassVar
 
 import six
 from markupsafe import Markup
@@ -650,9 +651,12 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return u
 
     @classmethod
-    def by_email_address(cls, addr):
-        addrs = EmailAddress.find(dict(email=addr, confirmed=True))
-        users = [ea.claimed_by_user() for ea in addrs]
+    def by_email_address(cls, addr, only_confirmed=True):
+        q = dict(email=addr)
+        if only_confirmed:
+            q['confirmed'] = True
+        addrs = EmailAddress.find(q)
+        users = [ea.claimed_by_user(not only_confirmed) for ea in addrs]
         users = [u for u in users if u is not None]
         if len(users) > 1:
             log.warn('Multiple active users matching confirmed email %s %s. '
