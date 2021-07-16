@@ -311,13 +311,15 @@ class TestThemeProvider(object):
 
 class TestThemeProvider_notifications(object):
 
+    Provider = ThemeProvider
+
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
     @patch('tg.response')
     @patch('tg.request')
     def test_get_site_notification_no_note(self, request, response, SiteNotification):
         SiteNotification.actives.return_value = []
-        assert_is_none(ThemeProvider().get_site_notification())
+        assert_is_none(self.Provider().get_site_notification())
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -332,7 +334,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1-true'}
-        assert_is_none(ThemeProvider().get_site_notification())
+        assert_is_none(self.Provider().get_site_notification())
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -348,7 +350,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-3-false'}
-        assert_is_none(ThemeProvider().get_site_notification())
+        assert_is_none(self.Provider().get_site_notification())
         assert not response.set_cookie.called
 
     @patch('allura.lib.plugin.c', MagicMock())
@@ -366,7 +368,7 @@ class TestThemeProvider_notifications(object):
         request.cookies = {'site-notification': 'deadbeef-1-false'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-2-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -383,7 +385,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         SiteNotification.actives.return_value = [note]
         request.cookies = {'site-notification': 'deadbeef-1000-false'}
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -400,7 +402,7 @@ class TestThemeProvider_notifications(object):
         request.cookies = {'site-notification': '0ddba11-1000-true'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -418,7 +420,7 @@ class TestThemeProvider_notifications(object):
         SiteNotification.actives.return_value = [note]
         request.cookies = {}
         request.environ['beaker.session'].secure = False
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -437,7 +439,7 @@ class TestThemeProvider_notifications(object):
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
         request.environ['beaker.session'].secure = False
 
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
         response.set_cookie.assert_called_once_with(
             'site-notification', 'deadbeef-1-False', max_age=dt.timedelta(days=365), secure=False)
 
@@ -455,21 +457,21 @@ class TestThemeProvider_notifications(object):
         projects = c.user.my_projects_by_role_name
 
         c.user.is_anonymous.return_value = True
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         c.user.is_anonymous.return_value = False
         projects.return_value = []
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         projects.return_value = [Mock()]
         projects.return_value[0].is_user_project = True
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         projects.return_value[0].is_user_project = False
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
         projects.projects.return_value = [Mock(), Mock()]
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('allura.model.notification.SiteNotification')
@@ -482,7 +484,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         note.impressions = 10
         SiteNotification.actives.return_value = [note]
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
     @patch('allura.lib.plugin.c', MagicMock())
     @patch('re.search')
@@ -498,10 +500,10 @@ class TestThemeProvider_notifications(object):
         SiteNotification.actives.return_value = [note]
 
         search.return_value = True
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
         search.return_value = None
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
     @patch('allura.lib.plugin.c')
     @patch('allura.model.notification.SiteNotification')
@@ -516,13 +518,13 @@ class TestThemeProvider_notifications(object):
         SiteNotification.actives.return_value = [note]
         c.app = Mock()
         c.app.config.tool_name.lower.return_value = 'test1'
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
         c.app.config.tool_name.lower.return_value = 'test2'
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         c.app = None
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
     @patch('allura.lib.plugin.c')
     @patch('tg.request')
@@ -539,23 +541,23 @@ class TestThemeProvider_notifications(object):
 
         request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test2'
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         request.path_qs = 'test'
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         request.path_qs = 'ttt'
         c.app.config.tool_name.lower.return_value = 'test1'
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         request.path_qs = 'test'
-        assert_is(ThemeProvider().get_site_notification(), note)
+        assert_is(self.Provider().get_site_notification(), note)
 
         c.app = None
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
         request.path_qs = 'ttt'
-        assert_is(ThemeProvider().get_site_notification(), None)
+        assert_is(self.Provider().get_site_notification(), None)
 
     @patch('allura.model.notification.SiteNotification')
     def test_get__site_notification(self, SiteNotification):
@@ -566,7 +568,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         note.impressions = 10
         SiteNotification.actives.return_value = [note]
-        get_note = ThemeProvider()._get_site_notification()
+        get_note = self.Provider()._get_site_notification()
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
@@ -594,7 +596,7 @@ class TestThemeProvider_notifications(object):
         note3.page_tool_type = None
         note3.impressions = 10
         SiteNotification.actives.return_value = [note1, note2, note3]
-        get_note = ThemeProvider()._get_site_notification()
+        get_note = self.Provider()._get_site_notification()
 
         assert isinstance(get_note, tuple)
         assert len(get_note) == 2
@@ -602,7 +604,7 @@ class TestThemeProvider_notifications(object):
         assert_equal(get_note[1], 'test2-1-False')
 
         # and with a cookie set
-        get_note = ThemeProvider()._get_site_notification(
+        get_note = self.Provider()._get_site_notification(
             site_notification_cookie_value='test2-3-True_test3-0-False'
         )
 
@@ -620,7 +622,7 @@ class TestThemeProvider_notifications(object):
         note.page_tool_type = None
         note.impressions = 10
         SiteNotification.actives.return_value = [note]
-        get_note = ThemeProvider()._get_site_notification(
+        get_note = self.Provider()._get_site_notification(
             site_notification_cookie_value='testid-1-False'
         )
 
