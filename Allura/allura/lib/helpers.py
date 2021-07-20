@@ -23,6 +23,7 @@ import sys
 import os
 import os.path
 import difflib
+import jinja2
 
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -797,6 +798,11 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
                 txt = '<pre>%s</pre>' % txt
     return Markup(txt)
 
+@contextfilter
+def subrender_jinja_filter(context, value):
+    _template = context.eval_ctx.environment.from_string(value)
+    result = _template.render(**context)
+    return result
 
 def nl2br_jinja_filter(value):
     result = '<br>\n'.join(escape(line) for line in value.split('\n'))
