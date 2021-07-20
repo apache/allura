@@ -115,6 +115,7 @@ class AlluraJinjaRenderer(JinjaRenderer):
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
         jinja2_env.filters['filter'] = lambda s, t=None: list(filter(t and jinja2_env.tests[t], s))
         jinja2_env.filters['nl2br'] = helpers.nl2br_jinja_filter
+        jinja2_env.filters['subrender'] = helpers.subrender_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
         config['tg.app_globals'].jinja2_env = jinja2_env  # TG doesn't need this, but we use g.jinja2_env a lot
         return {'jinja': cls(jinja2_env)}
