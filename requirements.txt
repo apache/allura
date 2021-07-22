@@ -51,7 +51,7 @@ pastedeploy==2.0.1        # via -r requirements.in, pastescript
 pastescript==3.1.0        # via -r requirements.in
 pexpect==4.7.0            # via ipython
 pickleshare==0.7.5        # via ipython
-pillow==8.2.0             # via -r requirements.in
+pillow==8.3.1             # via -r requirements.in
 profanityfilter==2.0.6    # via -r requirements.in
 prompt-toolkit==1.0.16    # via ipython
 ptyprocess==0.6.0         # via pexpect
