@@ -176,6 +176,7 @@ class SitemapEntry(object):
                             tool_name=self.tool_name,
                             matching_urls=self.matching_urls,
                             mount_point=app.config.options.mount_point,
+                            extra_html_attrs=self.extra_html_attrs,
                             )
 
     def extend(self, sitemap_entries):

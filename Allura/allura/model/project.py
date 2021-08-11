@@ -609,7 +609,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
                     if is_nofollow_url(entry.url):
-                        entry.extra_html_attrs = {'rel': 'nofollow'}
+                        entry.extra_html_attrs.update({'rel': 'nofollow'})
                     if not self.is_nbhd_project and (entry.tool_name.lower() in list(anchored_tools.keys())):
                         ordinal = list(anchored_tools.keys()).index(
                             entry.tool_name.lower())
