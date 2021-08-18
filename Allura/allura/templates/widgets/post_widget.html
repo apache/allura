@@ -17,11 +17,11 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-
-{% if page == 0 %}
-  {% set params = '' %}
-{% else %}
-  {% set params = '?page={}&limit={}'.format(page, limit) %}
+{% set page = request.params.get('page','0') %}
+{% set limit = request.params.get('limit','0') %}
+{% set params = '' %}
+{% if page != '0' %}
+    {% set params = '?page={}&limit={}'.format(page, limit) %}
 {% endif %}
 {% set shortlink_url = h.absurl(request.path + params + '#' + value.slug) %}
 
@@ -68,7 +68,7 @@
             {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or moderator %}
                 <a class="icon reply_post btn" href="#" style="" title="Reply" role="button"><span class="ui-button-text"><i class="fa fa-reply"></i></span></a>
             {% endif %}
-            <a href="{{shortlink_url}}" title="Shortlink" class="little_link shortlink icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+            <a href="{{shortlink_url}}" title="Link" class="little_link shortlink icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
               <span><i class="fa fa-link" aria-hidden="true"></i></span></a>
 
             {% if h.has_access(value, 'moderate')()%}
