@@ -298,7 +298,7 @@ class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
 
 class UserMentionExtension(markdown.Extension):
 
-    UM_RE = r'\B(@(?![0-9]+$)(?!-)[a-z0-9-]{2,14}[a-z0-9])'
+    UM_RE = r'\B(@(?![0-9]+$)(?!-)[a-z0-9_-]{2,14}[a-z0-9_])'
 
     def __init__(self, **kwargs):
         markdown.Extension.__init__(self)
