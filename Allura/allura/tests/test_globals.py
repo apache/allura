@@ -878,6 +878,15 @@ class TestUserMentions(unittest.TestCase):
         assert '<div class="codehilite">' in output
         assert ('href="%s"' % u1.url()) not in output
 
+    @patch('allura.lib.widgets.forms.NeighborhoodProjectShortNameValidator')
+    def test_markdown_user_mention_underscores(self, NeighborhoodProjectShortNameValidator):
+        username = 'r_808__'
+        NeighborhoodProjectShortNameValidator.to_python.return_value = username
+        u1 = M.User.register(dict(username=username), make_project=True)
+        ThreadLocalORMSession.flush_all()
+        output = g.markdown.convert(f'Hello.. @{username}, how are you?')
+        assert 'class="user-mention"' in output
+
 
 class TestHandlePaging(unittest.TestCase):
 
