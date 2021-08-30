@@ -44,6 +44,7 @@ from functools import partial
 from io import BytesIO
 import cgi
 
+
 # https://forge-allura.apache.org/p/allura/tickets/8386/
 # we don't want to depend on LGPL'd chardet, but the requests library needs it
 # so if we can't import it, we'll make it exist as a copy of cchardet
