@@ -307,8 +307,13 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError('set_password')
 
-    def resend_verification_link(em):
-        em.send_verification_link()
+    def resend_verification_link(self, user, email):
+        '''
+        :type user: :class:`allura.model.auth.User`
+        :type email: :class:`allura.model.auth.EmailAddress`
+        :rtype: None
+        '''
+        email.send_verification_link()
 
     def upload_sshkey(self, username, pubkey):
         '''

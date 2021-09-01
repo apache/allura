@@ -232,7 +232,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     class __mongometa__:
         name = str('user')
         session = main_orm_session
-        indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
+        indexes = ['tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
         custom_indexes = [
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),

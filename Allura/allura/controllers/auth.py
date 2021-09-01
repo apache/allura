@@ -234,7 +234,7 @@ class AuthController(BaseController):
                       'an email has been sent to the account\'s primary email address.'
             email_record = M.EmailAddress.get(email=provider.get_primary_email_address(user_record=user_record),
                                               confirmed=False)
-            provider.resend_verification_link(user_record.get_tool_data('sfx', 'userid'))
+            provider.resend_verification_link(user_record, email_record)
 
         elif not allow_non_primary_email_reset:
             message = 'If the given email address is on record, '\
