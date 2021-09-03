@@ -83,7 +83,8 @@ class EmailAddress(MappedClass):
     claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool, if_missing=False)
     nonce = FieldProperty(str)
-
+    valid_address = FieldProperty(bool, if_missing=None)
+    address_details = FieldProperty(S.Anything, if_missing=None)
     @classmethod
     def get(cls, **kw):
         '''Equivalent to Ming's query.get but calls self.canonical on address
