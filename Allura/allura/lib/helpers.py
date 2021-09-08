@@ -240,6 +240,9 @@ def _attempt_encodings(s, encodings):
 
 
 def really_unicode(s):
+    if isinstance(s, str):
+        # default case.  Also lets Markup() instances be preserved
+        return s
     # Try to guess the encoding
     def encodings():
         yield None

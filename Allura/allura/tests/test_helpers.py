@@ -116,6 +116,11 @@ def test_really_unicode():
     assert_equals(h.really_unicode(1234), '1234')
     assert_equals(h.really_unicode(datetime(2020, 1, 1)), '2020-01-01 00:00:00')
     assert_equals(h.really_unicode(None), '')
+    # markup stays markup
+    s = h.really_unicode(Markup('<b>test</b>'))
+    assert isinstance(s, six.text_type)
+    assert isinstance(s, Markup)
+    assert_equals(s, '<b>test</b>')
 
 
 def test_find_project():
