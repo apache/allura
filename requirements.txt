@@ -20,7 +20,7 @@ certifi==2019.6.16
     # via requests
 cffi==1.12.2
     # via cryptography
-chardet==3.0.4
+charset-normalizer==2.0.4
     # via requests
 colander==1.7.0
     # via -r requirements.in
@@ -167,7 +167,7 @@ qrcode==6.1
     # via -r requirements.in
 repoze.lru==0.7
     # via turbogears2
-requests==2.25.1
+requests==2.26.0
     # via
     #   -r requirements.in
     #   pysolr
