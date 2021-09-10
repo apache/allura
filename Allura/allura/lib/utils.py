@@ -440,23 +440,9 @@ def postmortem_hook(etype, value, tb):  # pragma no cover
     import sys
     import pdb
     import traceback
-    try:
-        from IPython.ipapi import make_session
-        make_session()
-        from IPython.Debugger import Pdb
-        sys.stderr.write('Entering post-mortem IPDB shell\n')
-        p = Pdb(color_scheme='Linux')
-        p.reset()
-        p.setup(None, tb)
-        p.print_stack_trace()
-        sys.stderr.write('%s: %s\n' % (etype, value))
-        p.cmdloop()
-        p.forget()
-        # p.interaction(None, tb)
-    except ImportError:
-        sys.stderr.write('Entering post-mortem PDB shell\n')
-        traceback.print_exception(etype, value, tb)
-        pdb.post_mortem(tb)
+    sys.stderr.write('Entering post-mortem PDB shell\n')
+    traceback.print_exception(etype, value, tb)
+    pdb.post_mortem(tb)
 
 
 class LineAnchorCodeHtmlFormatter(HtmlFormatter):

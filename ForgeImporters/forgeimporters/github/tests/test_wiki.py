@@ -19,17 +19,17 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from alluratest.tools import assert_equal
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
 import git
 
-from IPython.testing.decorators import module_not_available, skipif
 from allura import model as M
 from allura.tests import TestController
 from allura.tests.decorators import with_tool, without_module
 from alluratest.controller import setup_basic_test
+from alluratest.tools import module_not_available
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
@@ -187,7 +187,7 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(render.call_args_list,
                      [call('Home.rst', '# test message')])
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.mediawiki2markdown')
     def test_with_history_mediawiki(self, md2mkm, upsert):
@@ -300,7 +300,7 @@ Our website is <http://domain.net>.
 
         assert_equal(f(source), result)
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_markup(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -403,7 +403,7 @@ Our website is [[http://domain.net]].
               prefix, new),
             '<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_markup_with_mediawiki2markdown(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -431,7 +431,7 @@ Our website is [[http://domain.net]].
 
         assert_equal(f(source, 'test.mediawiki'), result)
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_textile_no_leading_tabs(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -455,7 +455,7 @@ Some text 1.
 See [Page]'''
         assert_equal(f(source, 'test.textile').strip(), result)
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_markup_with_amp_in_links(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -467,7 +467,7 @@ See [Page]'''
         # markdown should be untouched
         assert_equal(f(source, 'test.rst').strip(), result)
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_markup_textile(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -513,7 +513,7 @@ some text and **[Tips n\u2019 Tricks]**
 '''
         assert_equal(f(source, 'test3.textile'), result)
 
-    @skipif(module_not_available('html2text'))
+    @skipIf(module_not_available('html2text'), 'html2text required')
     def test_convert_textile_special_tag(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'

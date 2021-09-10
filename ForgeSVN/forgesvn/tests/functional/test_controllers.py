@@ -23,6 +23,7 @@ import json
 import re
 import shutil
 import os
+from unittest import skipUnless
 
 import six
 import tg
@@ -31,7 +32,6 @@ from tg import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from mock import patch
 from alluratest.tools import assert_equal, assert_in
-from IPython.testing.decorators import onlyif
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -230,7 +230,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/2/log/?path=does/not/exist/')
         assert 'No (more) commits' in r
 
-    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
         r = self.app.get('/src/3/tree/')
         assert 'Download Snapshot' in r
@@ -245,7 +245,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tarball')
         assert 'Your download will begin shortly' in r
 
-    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_cyrillic(self):
         r = self.app.get('/src/6/tree/')
         assert 'Download Snapshot' in r
@@ -260,7 +260,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/6/tarball')
         assert 'Your download will begin shortly' in r
 
-    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_path(self):
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
