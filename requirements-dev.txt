@@ -8,7 +8,7 @@ alabaster==0.7.12
     # via sphinx
 babel==2.7.0
     # via sphinx
-certifi==2019.6.16
+certifi==2021.5.30
     # via requests
 charset-normalizer==2.0.4
     # via requests
@@ -18,7 +18,7 @@ coverage==4.5.4
     # via -r requirements-dev.in
 docutils==0.15.2
     # via sphinx
-idna==2.8
+idna==3.2
     # via requests
 imagesize==1.1.0
     # via sphinx
@@ -67,7 +67,7 @@ tomli==1.2.1
     # via pep517
 typing-extensions==3.10.0.2
     # via importlib-metadata
-urllib3==1.26.5
+urllib3==1.26.6
     # via requests
 wheel==0.37.0
     # via pip-tools
