@@ -25,6 +25,7 @@ import time
 import socket
 import ssl
 
+import requests
 from bson import ObjectId
 from tg import expose, validate, redirect, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -39,7 +40,6 @@ from paste.deploy.converters import asint, aslist
 from allura.app import AdminControllerMixin
 from allura.controllers import BaseController
 from allura.lib import helpers as h
-import requests
 from allura.lib import validators as v
 from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder

@@ -18,7 +18,6 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from formencode import validators as fev
-from allura.lib import helpers as h  # to get requests/chardet patched
 import requests
 
 from allura.lib import validators

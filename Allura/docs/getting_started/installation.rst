@@ -165,7 +165,7 @@ Update requirements and reinstall apps:
 
 .. code-block:: bash
 
-    docker-compose run web pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+    docker-compose run web pip install -r requirements.txt
     docker-compose run web ./rebuild-all.bash
 
 You may want to restart at least "taskd" container after that in order for it to

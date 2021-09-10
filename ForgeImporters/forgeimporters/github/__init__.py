@@ -29,7 +29,6 @@ from datetime import datetime
 from tg import config, session, redirect, request, expose
 from tg.decorators import without_trailing_slash
 from tg import tmpl_context as c
-from allura.lib import helpers as h  # to get requests/chardet patched
 from requests_oauthlib import OAuth2Session
 import requests
 from formencode import validators as fev
