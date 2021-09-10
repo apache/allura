@@ -137,7 +137,7 @@ python-dateutil==2.8.0
     # via
     #   -r requirements.in
     #   easywidgets
-python-magic==0.4.15
+python-magic==0.4.24
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
