@@ -105,6 +105,20 @@ class SearchIndexable(object):
         # To do so, we convert markdown into html, and then strip all html tags.
         text = g.markdown.convert(text)
         doc['text'] = jinja2.Markup.escape(text).striptags()
+
+        # convert some date/time field types to str
+        # from https://github.com/django-haystack/pysolr/blob/1a8887cb2ce1c30ef9d6570704254b4520f8a959/pysolr.py#L692
+        for k, value in doc.items():
+            if hasattr(value, "strftime"):
+                if hasattr(value, "hour"):
+                    offset = value.utcoffset()
+                    if offset:
+                        value = value - offset
+                    value = value.replace(tzinfo=None).isoformat() + "Z"
+                else:
+                    value = "%sT00:00:00Z" % value.isoformat()
+                doc[k] = value
+
         return doc
 
     @classmethod
