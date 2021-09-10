@@ -43,7 +43,7 @@ qrcode
 requests
 requests-oauthlib
 # for taskd proc name switching
-setproctitle==1.1.9
+setproctitle
 six
 TimerMiddleware==0.5.1
 TurboGears2==2.3.12

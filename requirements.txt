@@ -157,7 +157,7 @@ requests==2.26.0
     #   requests-oauthlib
 requests-oauthlib==1.2.0
     # via -r requirements.in
-setproctitle==1.1.9
+setproctitle==1.2.2
     # via -r requirements.in
 sgmllib3k==1.0.0
     # via feedparser
