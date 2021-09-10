@@ -31,14 +31,14 @@ Please read http://pythonpaste.org/webtest/ for more information.
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import os
+from unittest import skipIf
 
 import six
 
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal, assert_in
+from alluratest.tools import assert_equal, module_not_available
 from ming.orm.ormsession import ThreadLocalORMSession
 import mock
-from IPython.testing.decorators import module_not_available, skipif
 
 from allura.tests import decorators as td
 from allura.tests import TestController
@@ -177,7 +177,7 @@ class TestRootController(TestController):
         self.app.get('/p', status=301)
         self.app.get('/p/', status=302)
 
-    @skipif(module_not_available('newrelic'))
+    @skipIf(module_not_available('newrelic'), 'requires newrelic')
     def test_newrelic_set_transaction_name(self):
         from allura.controllers.project import NeighborhoodController
         with mock.patch('newrelic.agent.callable_name') as callable_name,\

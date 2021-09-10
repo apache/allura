@@ -17,12 +17,15 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from IPython.testing.decorators import module_not_available, skipif
+
+from unittest import skipIf
+
+from alluratest.tools import module_not_available
 
 from forgewiki import converters
 
 
-@skipif(module_not_available('mediawiki'))
+@skipIf(module_not_available('mediawiki'), 'mediawiki required')
 def test_mediawiki2markdown():
     mediawiki_text = """
 '''bold''' ''italics''

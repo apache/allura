@@ -20,7 +20,7 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta
 from tg import app_globals as g
 from datadiff.tools import assert_equal
-from IPython.testing.decorators import module_not_available, skipif
+from unittest import skipIf
 import pkg_resources
 import mock
 import feedparser
@@ -28,6 +28,7 @@ import feedparser
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.tools import module_not_available
 from allura import model as M
 from forgeblog import model as BM
 
@@ -71,7 +72,7 @@ def _mock_feed(*entries):
 _mock_feed.i = 0
 
 
-@skipif(module_not_available('html2text'))
+@skipIf(module_not_available('html2text'), 'requires html2text')
 @mock.patch.object(feedparser, 'parse')
 def test_pull_rss_feeds(parsefeed):
     html_content = (

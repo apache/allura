@@ -19,7 +19,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from os import path
 from datetime import datetime, timedelta
 import time
@@ -27,8 +27,7 @@ import time
 import PIL
 from mock import Mock, patch
 from tg import tmpl_context as c
-from alluratest.tools import assert_equals, assert_raises
-from IPython.testing.decorators import skipif, module_not_available
+from alluratest.tools import assert_equals, assert_raises, module_not_available
 from datadiff import tools as dd
 from webob import Request
 from webob.exc import HTTPUnauthorized
@@ -368,7 +367,7 @@ def test_notifications_disabled():
     assert_equals(project.notifications_disabled, False)
 
 
-@skipif(module_not_available('html2text'))
+@skipIf(module_not_available('html2text'), 'html2text required')
 def test_plain2markdown_with_html2text():
     """Test plain2markdown using html2text to escape markdown, if available."""
     text = '''paragraph

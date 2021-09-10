@@ -22,6 +22,8 @@ from __future__ import absolute_import
 import os
 import shutil
 import unittest
+from unittest import skipUnless
+
 import pkg_resources
 from itertools import count, product
 from datetime import datetime
@@ -38,7 +40,6 @@ import ming
 from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
 from testfixtures import TempDirectory
-from IPython.testing.decorators import onlyif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
@@ -434,7 +435,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 revision=pysvn.Revision.return_value,
                 recurse=False)
 
-    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         assert_equal(self.repo.tarball_path,
@@ -451,7 +452,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         shutil.rmtree(self.repo.tarball_path.encode('utf-8'),
                       ignore_errors=True)
 
-    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    @skipUnless(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_paths(self):
         rev = '19'
         h.set_context('test', 'svn-tags', neighborhood='Projects')
