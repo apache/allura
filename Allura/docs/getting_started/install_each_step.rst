@@ -112,7 +112,7 @@ We'll upgrade `pip <https://pip.pypa.io/en/stable/>`_ to make sure its a current
 
     (env-allura)~/src$ cd allura
     (env-allura)~/src/allura$ pip install -U pip
-    (env-allura)~/src/allura$ pip install -r requirements.txt --no-deps --upgrade --upgrade-strategy=only-if-needed
+    (env-allura)~/src/allura$ pip install -r requirements.txt
 
 This may take a little while.
 

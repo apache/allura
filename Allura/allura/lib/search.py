@@ -30,9 +30,9 @@ import jinja2
 from tg import redirect, url
 from tg import tmpl_context as c, app_globals as g
 from tg import request
+from pysolr import SolrError
 
 from allura.lib import helpers as h
-from pysolr import SolrError  # after 'h' import to get requests/chardet patched
 from allura.lib.solr import escape_solr_arg
 from allura.lib.utils import urlencode
 import six

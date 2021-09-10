@@ -21,10 +21,10 @@ import logging
 
 from tg import config
 from paste.deploy.converters import asbool
+import pysolr
 import six
 
 from allura.lib.helpers import shlex_split
-import pysolr  # after helpers import to get requests/chardet patched
 
 log = logging.getLogger(__name__)
 

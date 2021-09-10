@@ -25,6 +25,7 @@ import sys
 import logging
 from collections import defaultdict
 import hashlib
+import requests
 
 from tg import tmpl_context as c
 from tg import request
@@ -562,7 +563,6 @@ class HIBPClient(object):
         Raises a named HIBPCompromisedCredentials exception if any found
         :param password: user-supplied password
         """
-        import requests
         result = 0
         try:
             # sha1 it
