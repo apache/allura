@@ -131,7 +131,7 @@ pyparsing==2.4.7
     #   packaging
 pypeline[creole,markdown,rst,textile]==0.5.3
     # via -r requirements.in
-pysolr==3.6.0
+pysolr==3.9.0
     # via -r requirements.in
 python-dateutil==2.8.0
     # via

@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+import json
 import logging
 
 from tg import config
@@ -145,6 +147,7 @@ class MockSOLR(object):
     def add(self, objects):
         for o in objects:
             o['text'] = ''.join(o['text'])
+            json.dumps(o)  # ensure no errors (since pysolr 3.9+ uses json API to solr)
             self.db[o['id']] = o
 
     def commit(self):
