@@ -10,7 +10,7 @@ babel==2.7.0
     # via sphinx
 certifi==2019.6.16
     # via requests
-chardet==3.0.4
+charset-normalizer==2.0.4
     # via requests
 click==7.0
     # via pip-tools
@@ -44,7 +44,7 @@ pytz==2019.1
     # via babel
 q==2.3
     # via -r requirements-dev.in
-requests==2.25.1
+requests==2.26.0
     # via sphinx
 six==1.15.0
     # via sphinx
