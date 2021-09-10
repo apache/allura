@@ -2,7 +2,7 @@ ActivityStream==0.3.0
 beautifulsoup4
 Beaker
 cchardet
-colander==1.7.0
+colander
 cryptography
 decorator
 EasyWidgets>=0.3.6

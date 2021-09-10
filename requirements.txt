@@ -22,7 +22,7 @@ cffi==1.12.2
     # via cryptography
 charset-normalizer==2.0.4
     # via requests
-colander==1.7.0
+colander==1.8.3
     # via -r requirements.in
 crank==0.8.1
     # via turbogears2
@@ -69,7 +69,7 @@ idna==3.2
     # via requests
 inflection==0.5.1
     # via profanityfilter
-iso8601==0.1.12
+iso8601==0.1.16
     # via colander
 jinja2==2.11.3
     # via -r requirements.in
@@ -190,7 +190,7 @@ textile==3.0.4
     # via pypeline
 timermiddleware==0.5.1
     # via -r requirements.in
-translationstring==1.3
+translationstring==1.4
     # via colander
 turbogears2==2.3.12
     # via -r requirements.in
