@@ -32,7 +32,7 @@ cryptography==3.3.2
     # via -r requirements.in
 datadiff==2.0.0
     # via -r requirements.in
-decorator==4.4.0
+decorator==5.1.0
     # via -r requirements.in
 docutils==0.15.2
     # via pypeline
