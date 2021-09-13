@@ -179,7 +179,6 @@ six==1.15.0
     #   qrcode
     #   textile
     #   webhelpers2
-    #   webtest
 smmap==4.0.0
     # via gitdb
 soupsieve==2.2.1
@@ -198,7 +197,7 @@ typing-extensions==3.10.0.2
     # via gitpython
 urllib3==1.26.6
     # via requests
-waitress==1.4.3
+waitress==2.0.0
     # via webtest
 webencodings==0.5.1
     # via
@@ -213,7 +212,7 @@ webob==1.7.4
     #   timermiddleware
     #   turbogears2
     #   webtest
-webtest==2.0.33
+webtest==3.0.0
     # via -r requirements.in
 werkzeug==1.0.1
     # via -r requirements.in
