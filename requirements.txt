@@ -52,9 +52,9 @@ future==0.17.1
     # via timermiddleware
 genshi==0.7.3
     # via creoleparser
-gitdb2==2.0.4
+gitdb==4.0.7
     # via gitpython
-gitpython==2.1.11
+gitpython==3.1.18
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
@@ -180,8 +180,8 @@ six==1.15.0
     #   textile
     #   webhelpers2
     #   webtest
-smmap2==2.0.4
-    # via gitdb2
+smmap==4.0.0
+    # via gitdb
 soupsieve==1.9.3
     # via beautifulsoup4
 testfixtures==6.10.0
@@ -194,6 +194,8 @@ translationstring==1.4
     # via colander
 turbogears2==2.3.12
     # via -r requirements.in
+typing-extensions==3.10.0.2
+    # via gitpython
 urllib3==1.26.6
     # via requests
 waitress==1.4.3
