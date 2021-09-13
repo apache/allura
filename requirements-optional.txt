@@ -8,4 +8,4 @@ html2text==2019.8.11  # last to support py2
 mediawiki2html  # GPL
 
 # for spam checking
-akismet==1.0.1
+akismet>=1.0.1
