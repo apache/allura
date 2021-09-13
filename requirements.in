@@ -12,7 +12,7 @@ feedparser
 FormEncode>=2
 # 3.1.23 drops py36 support
 GitPython<=3.1.23
-html5lib==1.0.1
+html5lib
 Jinja2
 Markdown<3
 markdown-checklist==0.4.1
