@@ -80,7 +80,7 @@ markdown==2.6.11
     #   pypeline
 markdown-checklist==0.4.1
     # via -r requirements.in
-markupsafe==1.1.1
+markupsafe==2.0.1
     # via
     #   -r requirements.in
     #   easywidgets
