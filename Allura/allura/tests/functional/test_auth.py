@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 import calendar
+from base64 import b32encode
 from datetime import datetime, time, timedelta
 from time import time as time_time
 import json
@@ -2389,6 +2390,7 @@ class TestCSRFProtection(TestController):
 class TestTwoFactor(TestController):
 
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
+    sample_b32 = 'ABF5VP3WYJBKUGV6UWLGFMVALI5MTT4K'
 
     def _init_totp(self, username='test-admin'):
         user = M.User.query.get(username=username)
@@ -2468,7 +2470,8 @@ class TestTwoFactor(TestController):
         with audits('Visited multifactor new TOTP page', user=True):
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_in('Scan this barcode', r)
+            assert_in('Scan this', r)
+            assert_in('Or enter setup key: ', r)
 
         first_key_shown = r.session['totp_new_key']
 
@@ -2477,6 +2480,7 @@ class TestTwoFactor(TestController):
             form['code'] = ''
             r = form.submit()
             assert_in('Invalid', r)
+            assert_in(f'Or enter setup key: {b32encode(first_key_shown).decode()}', r)
             assert_equal(first_key_shown, r.session['totp_new_key'])  # different keys on each pageload would be bad!
 
         new_totp = TotpService().Totp(r.session['totp_new_key'])
@@ -2513,7 +2517,8 @@ class TestTwoFactor(TestController):
         r = r.form.submit()
 
         # confirm warning message, and key is not changed yet
-        assert_in('Scan this barcode', r)
+        assert_in('Scan this', r)
+        assert_in('Or enter setup key: ', r)
         assert_in('this will invalidate your previous', r)
         current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
         assert_equal(self.sample_key, current_key)
@@ -2760,7 +2765,8 @@ class TestTwoFactor(TestController):
         with audits('Viewed multifactor TOTP config page', user=True):
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_in('Scan this barcode', r)
+            assert_in('Scan this', r)
+            assert_in(f'Or enter setup key: {self.sample_b32}', r)
 
     def test_view_recovery_codes_and_regen(self):
         self._init_totp()

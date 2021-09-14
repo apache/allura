@@ -45,18 +45,21 @@
         </form>
     {% endif %}
 
-    <h2>Scan this barcode with your app</h2>
+    <h2>Scan this with your app:</h2>
     <img class="qrcode" src="{{ h.base64uri(qr) }}"/>
+    <p style="margin-left:1rem">
+        Or enter setup key: {{ key_b32 }}
+    </p>
 
     {% if setup %}
         <h2>Enter the code</h2>
         <form method="POST" action="totp_set" id="totp_set">
         <p>
-            Enter the {{ config['auth.multifactor.totp.length'] }}-digit code to confirm it is set up correctly:<br>
+            Enter the {{ config['auth.multifactor.totp.length'] }}-digit code from the app, to confirm it is set up correctly:<br>
             {% if c.form_errors['code'] %}
                 <span class="fielderror">{{ c.form_errors['code'] }}</span><br>
             {% endif %}
-            <input type="text" name="code" autofocus autocomplete="off"/>
+            <input type="text" name="code" autofocus autocomplete="off" maxlength="{{ config['auth.multifactor.totp.length']|int + 1 }}"/>
             {{ lib.csrf_token() }}
             <br>
             <input type="submit" value="Submit">

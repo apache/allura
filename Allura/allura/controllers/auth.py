@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import os
+from base64 import b32encode
 from datetime import datetime
 import re
 import warnings
@@ -765,12 +766,14 @@ class PreferencesController(BaseController):
             totp = totp_service.Totp(key)
 
         qr = totp_service.get_qr_code(totp, c.user)
+        key_b32 = b32encode(totp.key).decode('ascii')
         h.auditlog_user('Visited multifactor new TOTP page')
         provider = plugin.AuthenticationProvider.get(request)
 
         return dict(
             menu=provider.account_navigation(),
             qr=qr,
+            key_b32=key_b32,
             setup=True,
         )
 
@@ -784,11 +787,13 @@ class PreferencesController(BaseController):
         totp_service = TotpService.get()
         totp = totp_service.get_totp(c.user)
         qr = totp_service.get_qr_code(totp, c.user)
+        key_b32 = b32encode(totp.key).decode('ascii')
         h.auditlog_user('Viewed multifactor TOTP config page')
         provider = plugin.AuthenticationProvider.get(request)
 
         return dict(
             qr=qr,
+            key_b32=key_b32,
             setup=False,
             menu=provider.account_navigation(),
         )
