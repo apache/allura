@@ -212,10 +212,6 @@ input[type="checkbox"] {
   *vertical-align: baseline;
 }
 
-.ie6 input {
-  vertical-align: text-bottom;
-}
-
 input[type=button], input[type=submit], button, .link {
   cursor: pointer;
 }
@@ -759,10 +755,6 @@ input.validate_input:invalid[type='text'] {
 }
 .modal .hidden_in_modal {
     display: none;
-}
-
-.ie7 .modal, .ie8 .modal {
-  border: 1px solid black;
 }
 
 .modal.markdown_help .codehilitetable {
