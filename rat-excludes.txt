@@ -48,7 +48,6 @@ Allura/allura/public/nf/js/jquery.maxlength.min.js
 Allura/allura/public/nf/js/jquery.tablesorter.js
 Allura/allura/public/nf/js/jquery.tooltipster.js
 Allura/allura/public/nf/js/jquery.viewport.js
-Allura/allura/public/nf/js/pb.transformie.min.js
 Allura/allura/public/nf/js/prop-types.min.js
 Allura/allura/public/nf/js/react.development.js
 Allura/allura/public/nf/js/react.production.min.js

@@ -234,9 +234,6 @@ under the MIT license.  For details, see the individual files:
     allura/public/nf/css/forge/tooltipster.css
     allura/public/nf/js/jquery.tooltipster.js
 
-Transformie (https://github.com/pbakaus/transformie/), which is available under the MIT license.
-For details, see allura/public/nf/js/pb.transformie.min.js
-
 Blueprint, which is available under the MIT license.
 For details, see allura/public/nf/css/blueprint/
 
