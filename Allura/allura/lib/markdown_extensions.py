@@ -258,7 +258,7 @@ class ForgeExtension(markdown.Extension):
                               '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.REFERENCE_RE, md, ext=self)
         # macro must be processed before links
         md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
@@ -287,10 +287,10 @@ class EmojiExtension(markdown.Extension):
 
 
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
-    
+
     def __init__(self, pattern):
         markdown.inlinepatterns.Pattern.__init__(self, pattern)
-        
+
     def handleMatch(self, m):
         emoji_code = m.group(2)
         return emoji.emojize(emoji_code, use_aliases=True)
@@ -327,15 +327,15 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
         return result
 
 
-class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
+class ForgeLinkPattern(markdown.inlinepatterns.LinkInlineProcessor):
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
-        markdown.inlinepatterns.LinkPattern.__init__(self, *args, **kwargs)
+        markdown.inlinepatterns.LinkInlineProcessor.__init__(self, *args, **kwargs)
 
-    def handleMatch(self, m):
+    def handleMatch(self, m, data):
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
         is_link_with_brackets = False
