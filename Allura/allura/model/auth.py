@@ -827,13 +827,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         return d
 
 
-class OldProjectRole(MappedClass):
-    class __mongometa__:
-        session = project_orm_session
-        name = str('user')
-        unique_indexes = [('user_id', 'project_id', 'name')]
-
-
 class ProjectRole(MappedClass):
     """
     The roles that a single user holds in a project.
