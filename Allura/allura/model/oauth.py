@@ -29,6 +29,7 @@ import pymongo
 from ming import schema as S
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, session
 from ming.orm.declarative import MappedClass
+from bson import ObjectId
 
 from allura.lib import helpers as h
 from .session import main_orm_session
@@ -75,7 +76,7 @@ class OAuthConsumerToken(OAuthToken):
     query: 'Query[OAuthConsumerToken]'
 
     type = FieldProperty(str, if_missing='consumer')
-    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
@@ -121,7 +122,7 @@ class OAuthRequestToken(OAuthToken):
 
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
-    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     callback = FieldProperty(str)
     validation_pin = FieldProperty(str)
 
@@ -138,7 +139,7 @@ class OAuthAccessToken(OAuthToken):
     type = FieldProperty(str, if_missing='access')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     request_token_id = ForeignIdProperty('OAuthToken')
-    user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    user_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     is_bearer = FieldProperty(bool, if_missing=False)
 
     user = RelationProperty('User')

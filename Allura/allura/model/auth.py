@@ -33,6 +33,7 @@ import re
 from pytz import timezone
 import pymongo
 from pymongo.errors import DuplicateKeyError
+from bson import ObjectId
 from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
@@ -277,7 +278,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     ))
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(
-    display_name = FieldPropertyDisplayName(str)
+    display_name: str = FieldPropertyDisplayName(str)
     # Personal data
     sex = FieldProperty(
         S.OneOf('Male', 'Female', 'Other', 'Unknown',
@@ -861,7 +862,7 @@ class ProjectRole(MappedClass):
     query: 'Query[ProjectRole]'
 
     _id = FieldProperty(S.ObjectId)
-    user_id = AlluraUserProperty(if_missing=None)
+    user_id: ObjectId = AlluraUserProperty(if_missing=None)
     project_id = ForeignIdProperty('Project', if_missing=None)
     name = FieldProperty(str)
     roles = FieldProperty([S.ObjectId])
@@ -1079,7 +1080,7 @@ class UserLoginDetails(MappedClass):
     query: 'Query[UserLoginDetails]'
 
     _id = FieldProperty(S.ObjectId)
-    user_id = AlluraUserProperty(required=True)
+    user_id: ObjectId = AlluraUserProperty(required=True)
     ip = FieldProperty(str)
     ua = FieldProperty(str)
     extra = FieldProperty({

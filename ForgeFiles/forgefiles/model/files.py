@@ -29,6 +29,7 @@ import typing
 from ming import schema as S
 from ming.orm import Mapper
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
+from bson import ObjectId
 
 from tg import tmpl_context as c
 
@@ -173,7 +174,7 @@ class UploadFiles(File):
     parent_folder_id = ForeignIdProperty('UploadFolder')
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    author_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    author_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     parent_folder = RelationProperty('UploadFolder', via='parent_folder_id')
     linked_to_download = FieldProperty(bool, if_missing=False)
     path = FieldProperty(str)

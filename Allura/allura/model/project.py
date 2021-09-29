@@ -229,7 +229,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
     neighborhood_id = ForeignIdProperty(Neighborhood)
     shortname = FieldProperty(str)
-    name = ProjectNameFieldProperty(str)
+    name: str = ProjectNameFieldProperty(str)
     show_download_button = FieldProperty(S.Deprecated)
     short_description = FieldProperty(str, if_missing='')
     summary = FieldProperty(str, if_missing='')

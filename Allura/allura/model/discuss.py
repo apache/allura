@@ -33,6 +33,7 @@ from ming.orm.base import session
 from ming.orm.property import (FieldProperty, RelationProperty,
                                ForeignIdProperty)
 from ming.utils import LazyProperty
+from bson import ObjectId
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -529,7 +530,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
     status = FieldProperty(schema.OneOf('ok', 'pending', 'spam',
                                         if_missing='pending'))
     last_edit_date = FieldProperty(datetime, if_missing=None)
-    last_edit_by_id = AlluraUserProperty()
+    last_edit_by_id: ObjectId = AlluraUserProperty()
     edit_count = FieldProperty(int, if_missing=0)
     spam_check_id = FieldProperty(str, if_missing='')
     text_cache = FieldProperty(MarkdownCache)

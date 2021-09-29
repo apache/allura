@@ -60,7 +60,7 @@ class Feedback(VersionedArtifact, ActivityObject):
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     rating = FieldProperty(str, if_missing='')
     description = FieldProperty(str, if_missing='')
-    reported_by_id = AlluraUserProperty(if_missing=lambda: c.user._id)
+    reported_by_id: ObjectId = AlluraUserProperty(if_missing=lambda: c.user._id)
     project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
     reported_by = RelationProperty(User, via='reported_by_id')
 
