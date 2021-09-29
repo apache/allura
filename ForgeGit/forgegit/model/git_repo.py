@@ -25,6 +25,7 @@ import tempfile
 from datetime import datetime
 from contextlib import contextmanager
 from time import time
+import typing
 
 import tg
 import git
@@ -43,6 +44,10 @@ from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
 from io import open
 from six.moves import zip
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +74,8 @@ class Repository(M.Repository):
 
     class __mongometa__:
         name = str('git-repository')
+
+    query: 'Query[Repository]'
 
     @LazyProperty
     def _impl(self):

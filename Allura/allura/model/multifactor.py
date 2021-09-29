@@ -18,12 +18,16 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
+import typing
 
 from ming import schema as S
 from ming.odm import FieldProperty
 from ming.odm.declarative import MappedClass
 
 from .session import main_orm_session
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +41,8 @@ class TotpKey(MappedClass):
         session = main_orm_session
         name = str('multifactor_totp')
         unique_indexes = ['user_id']
+
+    query: 'Query[TotpKey]'
 
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)
@@ -52,6 +58,8 @@ class RecoveryCode(MappedClass):
         session = main_orm_session
         name = str('multifactor_recovery_code')
         indexes = ['user_id']
+
+    query: 'Query[RecoveryCode]'
 
     _id = FieldProperty(S.ObjectId)
     user_id = FieldProperty(S.ObjectId, required=True)

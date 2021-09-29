@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from datetime import datetime
 import difflib
 import os
+import typing
 
 # g is a namespace for globally accessable app helpers
 from tg import app_globals as g
@@ -49,6 +50,10 @@ from allura.model.types import MarkdownCache
 from allura.lib import helpers as h
 from allura.lib import utils
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
 
@@ -60,7 +65,10 @@ class Globals(MappedClass):
         session = project_orm_session
         indexes = ['app_config_id']
 
+    query: 'Query[Globals]'
+
     type_s = 'WikiGlobals'
+
     _id = FieldProperty(schema.ObjectId)
     app_config_id = ForeignIdProperty(
         'AppConfig', if_missing=lambda: context.app.config._id)
@@ -71,6 +79,8 @@ class PageHistory(Snapshot):
 
     class __mongometa__:
         name = str('page_history')
+
+    query: 'Query[PageHistory]'
 
     def original(self):
         return Page.query.get(_id=self.artifact_id)
@@ -109,6 +119,8 @@ class Page(VersionedArtifact, ActivityObject):
         name = str('page')
         history_class = PageHistory
         unique_indexes = [('app_config_id', 'title')]
+
+    query: 'Query[Page]'
 
     title = FieldProperty(str)
     text = FieldProperty(schema.String, if_missing='')
@@ -283,6 +295,9 @@ class WikiAttachment(BaseAttachment):
 
     class __mongometa__:
         polymorphic_identity = str('WikiAttachment')
+
+    query: 'Query[WikiAttachment]'
+
     attachment_type = FieldProperty(str, if_missing='WikiAttachment')
 
 Mapper.compile_all()

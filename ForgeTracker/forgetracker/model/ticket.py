@@ -25,6 +25,7 @@ import json
 import difflib
 from datetime import datetime, timedelta
 import os
+import typing
 
 from bson import ObjectId
 import six
@@ -80,6 +81,9 @@ from allura.lib.security import require_access
 from allura.tasks import mail_tasks
 from forgetracker import search as tsearch
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
@@ -103,7 +107,10 @@ class Globals(MappedClass):
         session = project_orm_session
         indexes = ['app_config_id']
 
+    query: 'Query[Globals]'
+
     type_s = 'Globals'
+
     _id = FieldProperty(schema.ObjectId)
     app_config_id = ForeignIdProperty(
         AppConfig, if_missing=lambda: c.app.config._id)
@@ -549,6 +556,8 @@ class TicketHistory(Snapshot):
     class __mongometa__:
         name = str('ticket_history')
 
+    query: 'Query[TicketHistory]'
+
     def original(self):
         return Ticket.query.get(_id=self.artifact_id)
 
@@ -595,7 +604,10 @@ class Bin(Artifact, ActivityObject):
     class __mongometa__:
         name = str('bin')
 
+    query: 'Query[Bin]'
+
     type_s = 'Bin'
+
     _id = FieldProperty(schema.ObjectId)
     summary = FieldProperty(str, required=True, allow_none=False)
     terms = FieldProperty(str, if_missing='')
@@ -646,7 +658,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             ('app_config_id', 'ticket_num'),
         ]
 
+    query: 'Query[Ticket]'
+
     type_s = 'Ticket'
+
     _id = FieldProperty(schema.ObjectId)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
@@ -1377,6 +1392,9 @@ class TicketAttachment(BaseAttachment):
 
     class __mongometa__:
         polymorphic_identity = str('TicketAttachment')
+
+    query: 'Query[TicketAttachment]'
+
     attachment_type = FieldProperty(str, if_missing='TicketAttachment')
 
 
@@ -1388,6 +1406,8 @@ class MovedTicket(MovedArtifact):
         indexes = [
             ('app_config_id', 'ticket_num'),
         ]
+
+    query: 'Query[MovedTicket]'
 
     ticket_num = FieldProperty(int, required=True, allow_none=False)
 

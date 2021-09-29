@@ -24,6 +24,7 @@ from datetime import datetime
 
 from six.moves.urllib.parse import quote
 import re
+import typing
 
 from ming import schema as S
 from ming.orm import Mapper
@@ -38,6 +39,10 @@ from allura.model.filesystem import File
 from allura.model.timeline import ActivityObject
 from allura.lib import helpers as h
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 README_RE = re.compile(r'^README(\.[^.]*)?$', re.IGNORECASE)
 
 
@@ -49,7 +54,10 @@ class Upload(VersionedArtifact, ActivityObject):
         name = 'upload'
         session = project_orm_session
 
+    query: 'Query[Upload]'
+
     type_s = 'Upload'
+
     _id = FieldProperty(S.ObjectId)
     filename = FieldProperty(str)
     filetype = FieldProperty(str)
@@ -79,7 +87,10 @@ class UploadFolder(VersionedArtifact, ActivityObject):
         name = 'upload_folder'
         session = project_orm_session
 
+    query: 'Query[UploadFolder]'
+
     type_s = 'UploadFolder'
+
     _id = FieldProperty(S.ObjectId)
     folder_name = FieldProperty(str)
     project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
@@ -152,6 +163,8 @@ class UploadFiles(File):
             data['mod_date'] = datetime.utcnow()
             if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
+
+    query: 'Query[UploadFiles]'
 
     artifact_id = FieldProperty(S.ObjectId)
     app_config_id = FieldProperty(S.ObjectId)

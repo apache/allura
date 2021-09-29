@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import os
 import logging
 from datetime import datetime
+import typing
 
 import jinja2
 import pymongo
@@ -46,6 +47,9 @@ from .types import MarkdownCache
 from six.moves import range
 from six.moves import map
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 log = logging.getLogger(__name__)
 
 
@@ -53,6 +57,9 @@ class Discussion(Artifact, ActivityObject):
 
     class __mongometa__:
         name = str('discussion')
+
+    query: 'Query[Discussion]'
+
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.Deprecated)
@@ -146,6 +153,9 @@ class Thread(Artifact, ActivityObject):
              ('mod_date', pymongo.DESCENDING)),
             ('discussion_id',),
         ]
+
+    query: 'Query[Thread]'
+
     type_s = 'Thread'
 
     _id = FieldProperty(str, if_missing=lambda: h.nonce(10))
@@ -466,6 +476,8 @@ class PostHistory(Snapshot):
     class __mongometa__:
         name = str('post_history')
 
+    query: 'Query[PostHistory]'
+
     artifact_id = ForeignIdProperty('Post')
 
     @classmethod
@@ -506,6 +518,9 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
             ('discussion_id', 'status', 'timestamp'),
             'thread_id'
         ]
+
+    query: 'Query[Post]'
+
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)
@@ -826,6 +841,8 @@ class DiscussionAttachment(BaseAttachment):
     class __mongometa__:
         polymorphic_identity = str('DiscussionAttachment')
         indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
+
+    query: 'Query[DiscussionAttachment]'
 
     discussion_id = FieldProperty(schema.ObjectId)
     thread_id = FieldProperty(str)

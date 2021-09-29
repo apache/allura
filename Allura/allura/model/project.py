@@ -22,7 +22,7 @@ import logging
 from calendar import timegm
 from collections import Counter, OrderedDict
 from hashlib import sha256
-
+import typing
 from datetime import datetime
 from copy import deepcopy
 import six.moves.urllib.request
@@ -69,6 +69,10 @@ from .filesystem import File
 import six
 from six.moves import map
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 log = logging.getLogger(__name__)
 
 # max sitemap entries per tool type
@@ -83,6 +87,8 @@ class ProjectFile(File):
         session = main_orm_session
         indexes = [('project_id', 'category')]
 
+    query: 'Query[ProjectFile]'
+
     project_id = FieldProperty(S.ObjectId)
     category = FieldProperty(str)
     caption = FieldProperty(str)
@@ -94,6 +100,8 @@ class ProjectCategory(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = str('project_category')
+
+    query: 'Query[ProjectCategory]'
 
     _id = FieldProperty(S.ObjectId)
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
@@ -129,6 +137,8 @@ class TroveCategory(MappedClass):
         name = str('trove_category')
         extensions = [TroveCategoryMapperExtension]
         indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
+
+    query: 'Query[TroveCategory]'
 
     _id = FieldProperty(S.ObjectId)
     trove_cat_id = FieldProperty(int, if_missing=None)
@@ -209,6 +219,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             ('deleted', 'shortname', 'neighborhood_id'),
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         unique_indexes = [('neighborhood_id', 'shortname')]
+
+    query: 'Query[Project]'
 
     type_s = 'Project'
 
@@ -1360,6 +1372,8 @@ class AppConfig(MappedClass, ActivityObject):
             'project_id',
             'options.import_id',
             ('options.mount_point', 'project_id')]
+
+    query: 'Query[AppConfig]'
 
     # AppConfig schema
     _id = FieldProperty(S.ObjectId)

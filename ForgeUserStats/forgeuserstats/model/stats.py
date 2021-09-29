@@ -20,12 +20,16 @@ from __future__ import absolute_import
 from ming.orm import FieldProperty
 from ming import schema as S
 from datetime import datetime, timedelta
+import typing
 from ming.orm import Mapper
 from tg import request
 
 from allura.lib import plugin
 from allura.model.session import main_orm_session
 from allura.model import Stats
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 
 class UserStats(Stats):
@@ -34,6 +38,8 @@ class UserStats(Stats):
         name = str('userstats')
         session = main_orm_session
         unique_indexes = ['_id', 'user_id']
+
+    query: 'Query[UserStats]'
 
     tot_logins_count = FieldProperty(int, if_missing=0)
     last_login = FieldProperty(datetime)

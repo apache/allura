@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import calendar
-from typing import ClassVar
+import typing
 
 import six
 from markupsafe import Markup
@@ -55,6 +55,10 @@ from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
 
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 log = logging.getLogger(__name__)
 
 
@@ -77,6 +81,8 @@ class EmailAddress(MappedClass):
         session = main_orm_session
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
+
+    query: 'Query[EmailAddress]'
 
     _id = FieldProperty(S.ObjectId)
     email = FieldProperty(str)
@@ -187,6 +193,8 @@ class AuthGlobals(MappedClass):
         name = str('auth_globals')
         session = main_orm_session
 
+    query: 'Query[AuthGlobals]'
+
     _id = FieldProperty(int)
     next_uid = FieldProperty(int, if_missing=10000)
 
@@ -240,6 +248,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         custom_indexes = [
             dict(fields=('tool_data.phone_verification.number_hash',), sparse=True),
         ]
+
+    query: 'Query[User]'
 
     type_s = 'User'
 
@@ -848,6 +858,8 @@ class ProjectRole(MappedClass):
             ('roles',),
         ]
 
+    query: 'Query[ProjectRole]'
+
     _id = FieldProperty(S.ObjectId)
     user_id = AlluraUserProperty(if_missing=None)
     project_id = ForeignIdProperty('Project', if_missing=None)
@@ -1063,6 +1075,8 @@ class UserLoginDetails(MappedClass):
         indexes = ['user_id']
         unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail
                           ]
+
+    query: 'Query[UserLoginDetails]'
 
     _id = FieldProperty(S.ObjectId)
     user_id = AlluraUserProperty(required=True)

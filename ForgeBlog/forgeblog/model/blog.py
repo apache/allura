@@ -22,6 +22,7 @@ import functools
 import re
 from datetime import datetime
 from random import randint
+import typing
 
 from tg import tmpl_context as c, app_globals as g
 from tg import config as tg_config
@@ -38,6 +39,10 @@ from allura.lib import helpers as h
 from allura.lib import utils
 import six
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
 
@@ -48,6 +53,8 @@ class Globals(MappedClass):
         name = str('blog-globals')
         session = M.project_orm_session
         indexes = ['app_config_id']
+
+    query: 'Query[Globals]'
 
     type_s = 'BlogGlobals'
     _id = FieldProperty(schema.ObjectId)
@@ -60,6 +67,9 @@ class BlogPostSnapshot(M.Snapshot):
 
     class __mongometa__:
         name = str('blog_post_snapshot')
+
+    query: 'Query[BlogPostSnapshot]'
+
     type_s = 'Blog Post Snapshot'
 
     def original(self):
@@ -113,6 +123,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             # for [[neighborhood_blog_posts]] macro
             ('neighborhood_id', 'state', 'timestamp'),
         ]
+
+    query: 'Query[BlogPost]'
 
     type_s = 'Blog Post'
 
@@ -337,6 +349,9 @@ class BlogAttachment(M.BaseAttachment):
 
     class __mongometa__:
         polymorphic_identity = str('BlogAttachment')
+
+    query: 'Query[BlogAttachment]'
+
     attachment_type = FieldProperty(str, if_missing='BlogAttachment')
 
 

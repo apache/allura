@@ -21,6 +21,7 @@ import os
 import re
 from io import BytesIO
 import logging
+import typing
 
 import PIL
 from gridfs import GridFS
@@ -32,6 +33,10 @@ from ming.orm.declarative import MappedClass
 from .session import project_orm_session
 from allura.lib import utils
 from io import open
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +56,8 @@ class File(MappedClass):
         session = project_orm_session
         name = str('fs')
         indexes = ['filename']
+
+    query: 'Query[File]'
 
     _id = FieldProperty(schema.ObjectId)
     file_id = FieldProperty(schema.ObjectId)

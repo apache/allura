@@ -21,9 +21,9 @@ import logging
 import six.moves.urllib.request
 import six.moves.urllib.parse
 import six.moves.urllib.error
-# Non-stdlib imports
-
+import typing
 from datetime import datetime
+
 from bson import ObjectId
 from tg import tmpl_context as c
 from ming import schema
@@ -38,6 +38,9 @@ from allura.model.project import ProjectRole
 from allura.model.timeline import ActivityObject
 from allura.lib import helpers as h
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 log = logging.getLogger(__name__)
 
 
@@ -49,7 +52,10 @@ class Feedback(VersionedArtifact, ActivityObject):
             ('project_id', 'reported_by_id'),
         ]
 
+    query: 'Query[Feedback]'
+
     type_s = 'Feedback'
+
     _id = FieldProperty(schema.ObjectId)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     rating = FieldProperty(str, if_missing='')

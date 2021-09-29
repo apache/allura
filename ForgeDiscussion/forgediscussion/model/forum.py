@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import re
 import logging
 from itertools import chain
+import typing
 
 import pymongo
 from tg import tmpl_context as c
@@ -34,6 +35,10 @@ from allura.model.notification import MailFooter
 from allura.lib import utils
 from allura.lib import helpers as h
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
 
@@ -44,6 +49,9 @@ class Forum(M.Discussion):
 
     class __mongometa__:
         name = str('forum')
+
+    query: 'Query[Forum]'
+
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
@@ -145,6 +153,9 @@ class ForumThread(M.Thread):
             'discussion_id',
             'import_id',  # may be used by external legacy systems
         ]
+
+    query: 'Query[ForumThread]'
+
     type_s = 'Thread'
 
     discussion_id = ForeignIdProperty(Forum)
@@ -212,6 +223,8 @@ class ForumPostHistory(M.PostHistory):
     class __mongometa__:
         name = str('post_history')
 
+    query: 'Query[ForumPostHistory]'
+
     artifact_id = ForeignIdProperty('ForumPost')
 
 
@@ -228,6 +241,9 @@ class ForumPost(M.Post):
                 ('timestamp', pymongo.DESCENDING),
             ),
         ]
+
+    query: 'Query[ForumPost]'
+
     type_s = 'Post'
 
     discussion_id = ForeignIdProperty(Forum)
@@ -255,6 +271,9 @@ class ForumAttachment(M.DiscussionAttachment):
 
     class __mongometa__:
         polymorphic_identity = str('ForumAttachment')
+
+    query: 'Query[ForumAttachment]'
+
     attachment_type = FieldProperty(str, if_missing='ForumAttachment')
 
 

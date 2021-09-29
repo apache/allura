@@ -31,6 +31,7 @@ from io import BytesIO
 from datetime import datetime
 import tempfile
 from shutil import rmtree
+import typing
 
 import six
 import tg
@@ -52,6 +53,10 @@ from io import open
 from six.moves import range
 from six.moves import map
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 log = logging.getLogger(__name__)
 
 
@@ -62,6 +67,9 @@ class Repository(M.Repository):
 
     class __mongometa__:
         name = str('svn-repository')
+
+    query: 'Query[Repository]'
+
     branches = FieldProperty([dict(name=str, object_id=str)])
     _refresh_precompute = False
 

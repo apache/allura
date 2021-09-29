@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import logging
 from collections import defaultdict
 from datetime import datetime
+import typing
 
 import pymongo
 from tg import tmpl_context as c, app_globals as g
@@ -48,6 +49,9 @@ from .notification import MailFooter
 
 from .filesystem import File
 import six
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +86,8 @@ class Artifact(MappedClass, SearchIndexable):
                 log.debug('Not updating mod_date')
             if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
+
+    query: 'Query[Artifact]'
 
     type_s = 'Generic Artifact'
 
@@ -500,6 +506,8 @@ class Snapshot(Artifact):
                    'author.id',
                    ]
 
+    query: 'Query[Snapshot]'
+
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)
     artifact_class = FieldProperty(str)
@@ -572,6 +580,8 @@ class VersionedArtifact(Artifact):
         session = artifact_orm_session
         name = str('versioned_artifact')
         history_class = Snapshot
+
+    query: 'Query[VersionedArtifact]'
 
     version = FieldProperty(S.Int, if_missing=0)
 
@@ -678,7 +688,6 @@ class VersionedArtifact(Artifact):
 
 
 class Message(Artifact):
-
     """
     A message
 
@@ -690,6 +699,9 @@ class Message(Artifact):
     class __mongometa__:
         session = artifact_orm_session
         name = str('message')
+
+    query: 'Query[Message]'
+
     type_s = 'Generic Message'
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
@@ -738,6 +750,9 @@ class AwardFile(File):
     class __mongometa__:
         session = main_orm_session
         name = str('award_file')
+
+    query: 'Query[AwardFile]'
+
     award_id = FieldProperty(S.ObjectId)
 
 
@@ -747,6 +762,9 @@ class Award(Artifact):
         session = main_orm_session
         name = str('award')
         indexes = ['short']
+
+    query: 'Query[Award]'
+
     type_s = 'Generic Award'
 
     from .project import Neighborhood
@@ -790,6 +808,9 @@ class AwardGrant(Artifact):
         session = main_orm_session
         name = str('grant')
         indexes = ['short']
+
+    query: 'Query[AwardGrant]'
+
     type_s = 'Generic Award Grant'
 
     _id = FieldProperty(S.ObjectId)
@@ -875,6 +896,8 @@ class Feed(MappedClass):
             (('project_id', pymongo.ASCENDING),
              ('pubdate', pymongo.DESCENDING)),
         ]
+
+    query: 'Query[Feed]'
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')
@@ -1000,6 +1023,8 @@ class VotableArtifact(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = str('vote')
+
+    query: 'Query[VotableArtifact]'
 
     votes = FieldProperty(int, if_missing=0)
     votes_up = FieldProperty(int, if_missing=0)
@@ -1129,6 +1154,8 @@ class MovedArtifact(Artifact):
         session = artifact_orm_session
         name = str('moved_artifact')
 
+    query: 'Query[MovedArtifact]'
+
     _id = FieldProperty(S.ObjectId)
     app_config_id = ForeignIdProperty(
         'AppConfig', if_missing=lambda: c.app.config._id)
@@ -1144,6 +1171,8 @@ class SpamCheckResult(MappedClass):
             ('project_id', 'result'),
             ('user_id', 'result'),
         ]
+
+    query: 'Query[SpamCheckResult]'
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')

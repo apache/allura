@@ -40,6 +40,7 @@ import logging
 from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
+import typing
 
 from tg import tmpl_context as c, app_globals as g
 from tg import config
@@ -61,6 +62,9 @@ from .auth import User, AlluraUserProperty
 import six
 from six.moves import filter
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +72,6 @@ MAILBOX_QUIESCENT = None  # Re-enable with [#1384]: timedelta(minutes=10)
 
 
 class Notification(MappedClass):
-
     '''
     Temporarily store notifications that will be emailed or displayed as a web flash.
     This does not contain any recipient information.
@@ -78,6 +81,8 @@ class Notification(MappedClass):
         session = main_orm_session
         name = str('notification')
         indexes = ['project_id']
+
+    query: 'Query[Notification]'
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 
@@ -382,7 +387,6 @@ class Notification(MappedClass):
 
 
 class Mailbox(MappedClass):
-
     '''
     Holds a queue of notifications for an artifact, or a user (webflash messages)
     for a subscriber.
@@ -404,6 +408,8 @@ class Mailbox(MappedClass):
             # for deliver()
             ('project_id', 'app_config_id', 'artifact_index_id', 'topic'),
         ]
+
+    query: 'Query[Mailbox]'
 
     _id = FieldProperty(S.ObjectId)
     user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
@@ -709,7 +715,6 @@ class MailFooter(object):
 
 
 class SiteNotification(MappedClass):
-
     """
     Storage for site-wide notification.
     """
@@ -720,6 +725,8 @@ class SiteNotification(MappedClass):
         indexes = [
             ('active', '_id'),
         ]
+
+    query: 'Query[SiteNotification]'
 
     _id = FieldProperty(S.ObjectId)
     content = FieldProperty(str, if_missing='')

@@ -17,6 +17,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import typing
+
 from tg import tmpl_context as c
 from ming.orm import FieldProperty
 from ming import schema as S
@@ -25,6 +27,9 @@ from allura.lib import helpers as h
 
 from .session import project_orm_session
 from .filesystem import File
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 
 class BaseAttachment(File):
@@ -37,6 +42,8 @@ class BaseAttachment(File):
         polymorphic_identity = None
         session = project_orm_session
         indexes = ['artifact_id', 'app_config_id']
+
+    query: 'Query[BaseAttachment]'
 
     artifact_id = FieldProperty(S.ObjectId)
     app_config_id = FieldProperty(S.ObjectId)

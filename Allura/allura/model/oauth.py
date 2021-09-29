@@ -18,6 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
+import typing
 
 import oauth2 as oauth
 from tg import tmpl_context as c, app_globals as g
@@ -34,6 +35,10 @@ from .session import main_orm_session
 from .types import MarkdownCache
 from .auth import AlluraUserProperty
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 log = logging.getLogger(__name__)
 
 
@@ -45,6 +50,8 @@ class OAuthToken(MappedClass):
         indexes = ['api_key']
         polymorphic_on = 'type'
         polymorphic_identity = None
+
+    query: 'Query[OAuthToken]'
 
     _id = FieldProperty(S.ObjectId)
     type = FieldProperty(str)
@@ -64,6 +71,8 @@ class OAuthConsumerToken(OAuthToken):
         polymorphic_identity = str('consumer')
         name = str('oauth_consumer_token')
         unique_indexes = [('name', 'user_id')]
+
+    query: 'Query[OAuthConsumerToken]'
 
     type = FieldProperty(str, if_missing='consumer')
     user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
@@ -108,6 +117,8 @@ class OAuthRequestToken(OAuthToken):
     class __mongometa__:
         polymorphic_identity = str('request')
 
+    query: 'Query[OAuthRequestToken]'
+
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     user_id = AlluraUserProperty(if_missing=lambda: c.user._id)
@@ -121,6 +132,8 @@ class OAuthAccessToken(OAuthToken):
 
     class __mongometa__:
         polymorphic_identity = str('access')
+
+    query: 'Query[OAuthAccessToken]'
 
     type = FieldProperty(str, if_missing='access')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')

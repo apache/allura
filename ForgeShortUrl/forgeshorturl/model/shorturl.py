@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import typing
 import pymongo
 from tg import config
 from tg import tmpl_context as c
@@ -25,12 +26,17 @@ from datetime import datetime
 from allura.model.auth import User
 from allura import model as M
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 class ShortUrl(M.Artifact):
 
     class __mongometa__:
         name = str('short_urls')
         unique_indexes = [('short_name', 'app_config_id')]
+
+    query: 'Query[ShortUrl]'
 
     type_s = 'ShortUrl'
     full_url = FieldProperty(str)

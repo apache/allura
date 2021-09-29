@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import datetime as dt
 import json
+import typing
 
 from ming.odm import FieldProperty, session
 from paste.deploy.converters import asint
@@ -28,11 +29,16 @@ from allura.model import Artifact
 from allura.lib import helpers as h
 import six
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 class Webhook(Artifact):
     class __mongometa__:
         name = str('webhook')
         unique_indexes = [('app_config_id', 'type', 'hook_url')]
+
+    query: 'Query[Webhook]'
 
     type = FieldProperty(str)
     hook_url = FieldProperty(str)

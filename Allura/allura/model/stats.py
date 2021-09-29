@@ -20,6 +20,7 @@ from __future__ import absolute_import
 
 import six
 from datetime import datetime
+import typing
 from tg import config
 from paste.deploy.converters import asbool
 
@@ -35,6 +36,9 @@ from allura.lib import helpers as h
 from six.moves import range
 from functools import reduce
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 class Stats(MappedClass):
 
@@ -42,6 +46,8 @@ class Stats(MappedClass):
         name = str('basestats')
         session = main_orm_session
         unique_indexes = ['_id']
+
+    query: 'Query[Stats]'
 
     _id = FieldProperty(S.ObjectId)
 

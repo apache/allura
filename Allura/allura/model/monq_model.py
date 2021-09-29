@@ -22,6 +22,7 @@ import time
 import traceback
 import logging
 from datetime import datetime, timedelta
+import typing
 
 import pymongo
 from tg import tmpl_context as c, app_globals as g
@@ -36,6 +37,10 @@ from ming.orm.declarative import MappedClass
 
 from allura.lib.helpers import log_output, null_contextmanager
 from .session import task_orm_session
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +85,8 @@ class MonQTask(MappedClass):
                 'state', 'task_name', 'time_queue'
             ],
         ]
+
+    query: 'Query[MonQTask]'
 
     _id = FieldProperty(S.ObjectId)
     state = FieldProperty(S.OneOf(*states))

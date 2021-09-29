@@ -18,6 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from datetime import datetime
+import typing
 
 from ming import schema as S
 from ming.orm import FieldProperty, Mapper
@@ -25,6 +26,9 @@ from ming.orm.declarative import MappedClass
 
 from allura import model as M
 from allura.model.types import MarkdownCache
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 
 class ChatChannel(MappedClass):
@@ -34,6 +38,8 @@ class ChatChannel(MappedClass):
         session = M.main_orm_session
         indexes = ['project_id']
         unique_indexes = ['channel']
+
+    query: 'Query[ChatChannel]'
 
     _id = FieldProperty(S.ObjectId)
     project_id = FieldProperty(S.ObjectId)
@@ -46,6 +52,9 @@ class ChatMessage(M.Artifact):
     class __mongometa__:
         name = str('chat_message')
         indexes = ['timestamp']
+
+    query: 'Query[ChatMessage]'
+
     type_s = 'Chat Message'
 
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)

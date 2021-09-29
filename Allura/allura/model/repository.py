@@ -34,6 +34,7 @@ from threading import Thread
 from six.moves.queue import Queue
 from itertools import chain, islice
 from difflib import SequenceMatcher
+import typing
 
 import tg
 from paste.deploy.converters import asint, asbool
@@ -63,6 +64,9 @@ from .session import main_doc_session
 from .session import repository_orm_session
 from io import open
 from six.moves import range
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
 
 
 log = logging.getLogger(__name__)
@@ -351,6 +355,9 @@ class Repository(Artifact, ActivityObject):
     class __mongometa__:
         name = str('generic-repository')
         indexes = ['upstream_repo.name']
+
+    query: 'Query[Repository]'
+
     _impl = None
     repo_id = 'repo'
     type_s = 'Repository'
@@ -801,6 +808,9 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         name = str('merge-request')
         indexes = ['commit_id', 'creator_id']
         unique_indexes = [('app_config_id', 'request_number')]
+
+    query: 'Query[MergeRequest]'
+
     type_s = 'MergeRequest'
 
     request_number = FieldProperty(int)

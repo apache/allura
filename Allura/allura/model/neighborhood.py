@@ -21,6 +21,7 @@ import re
 import json
 import logging
 from collections import OrderedDict
+import typing
 
 from ming import schema as S
 from ming.orm import FieldProperty, RelationProperty
@@ -36,6 +37,10 @@ from .session import main_orm_session
 from .filesystem import File
 from .types import MarkdownCache
 
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
+
 log = logging.getLogger(__name__)
 
 
@@ -44,6 +49,8 @@ class NeighborhoodFile(File):
     class __mongometa__:
         session = main_orm_session
         indexes = ['neighborhood_id']
+
+    query: 'Query[NeighborhoodFile]'
 
     neighborhood_id = FieldProperty(S.ObjectId)
 
@@ -67,6 +74,8 @@ class Neighborhood(MappedClass):
         session = main_orm_session
         name = str('neighborhood')
         unique_indexes = ['url_prefix']
+
+    query: 'Query[Neighborhood]'
 
     _id = FieldProperty(S.ObjectId)
     name = FieldProperty(str)
