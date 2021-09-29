@@ -31,12 +31,12 @@ from tg import tmpl_context as c, app_globals as g
 
 from ming.base import Object
 from ming.orm import mapper, session, ThreadLocalORMSession
+from ming.odm.base import ObjectState, state
 
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.model.repository import CommitDoc
-from allura.model.repository import Commit, Tree, LastCommit, ModelCache
-from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
+from allura.model.repository import Commit, CommitDoc
+from allura.model.index import ArtifactReference, Shortlink
 from allura.model.auth import User
 from allura.model.timeline import TransientActor
 import six
@@ -134,33 +134,46 @@ def refresh_commit_repos(all_commit_ids, repo):
             oid = ci._id
             ci.repo_ids.append(repo._id)
             index_id = 'allura.model.repository.Commit#' + oid
-            ref = ArtifactReferenceDoc(dict(
+            # TODO: use ArtifactReference.from_artifact?
+            # print(f'ref {index_id}')
+            # if '5c472' in index_id: 0/0
+            ref = ArtifactReference(
+            # ref = ArtifactReferenceDoc(dict(
                 _id=index_id,
                 artifact_reference=dict(
                     cls=bson.Binary(dumps(Commit, protocol=2)),
                     project_id=repo.app.config.project_id,
                     app_config_id=repo.app.config._id,
                     artifact_id=oid),
-                references=[]))
-            link0 = ShortlinkDoc(dict(
+                references=[])
+            # )
+            # TODO: use Shortlink.from_artifact?
+            link0 = Shortlink(
                 _id=bson.ObjectId(),
                 ref_id=index_id,
                 project_id=repo.app.config.project_id,
                 app_config_id=repo.app.config._id,
                 link=repo.shorthand_for_commit(oid)[1:-1],
-                url=repo.url_for_commit(oid)))
+                url=repo.url_for_commit(oid))
             # Always create a link for the full commit ID
-            link1 = ShortlinkDoc(dict(
+            link1 = Shortlink(
                 _id=bson.ObjectId(),
                 ref_id=index_id,
                 project_id=repo.app.config.project_id,
                 app_config_id=repo.app.config._id,
                 link=oid,
-                url=repo.url_for_commit(oid)))
+                url=repo.url_for_commit(oid))
             ci.m.save(validate=False)
-            ref.m.save(validate=False)
-            link0.m.save(validate=False)
-            link1.m.save(validate=False)
+            # set to 'dirty' to force save() to be used instead of insert() (which errors if doc exists in db already)
+            state(ref).status = ObjectState.dirty
+            session(ref).flush(ref)
+            session(ref).expunge(ref)
+            state(link0).status = ObjectState.dirty
+            session(link0).flush(link0)
+            session(link0).expunge(link0)
+            state(link0).status = ObjectState.dirty
+            session(link1).flush(link0)
+            session(link1).expunge(link1)
 
 
 def refresh_children(ci):

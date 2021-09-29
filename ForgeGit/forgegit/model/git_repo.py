@@ -36,7 +36,8 @@ from paste.deploy.converters import asbool
 import six
 
 from ming.base import Object
-from ming.orm import Mapper, session
+from ming.odm import state, Mapper, session
+from ming.odm.base import ObjectState
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
@@ -314,15 +315,15 @@ class GitImplementation(M.RepositoryImplementation):
         return True
 
     def refresh_tree_info(self, tree, seen, lazy=True):
-        from allura.model.repository import TreeDoc
+        from allura.model.repository import Tree
         if lazy and tree.binsha in seen:
             return
         seen.add(tree.binsha)
-        doc = TreeDoc(dict(
+        doc = Tree(
             _id=tree.hexsha,
             tree_ids=[],
             blob_ids=[],
-            other_ids=[]))
+            other_ids=[])
         for o in tree:
             if o.type == 'submodule':
                 continue
@@ -337,7 +338,10 @@ class GitImplementation(M.RepositoryImplementation):
             else:
                 obj.type = o.type
                 doc.other_ids.append(obj)
-        doc.m.save()
+        # set to 'dirty' to force save() to be used instead of insert() (which errors if doc exists in db already)
+        state(doc).status = ObjectState.dirty
+        session(doc).flush(doc)
+        session(doc).expunge(doc)
         return doc
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, limit=None, **kw):

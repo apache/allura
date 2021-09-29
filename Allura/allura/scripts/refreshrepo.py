@@ -90,10 +90,6 @@ class RefreshRepo(ScriptTask):
                                 M.repository.CommitDoc.m.remove(
                                     {"_id": {"$in": ci_ids_chunk}})
 
-                        # we used to have a TreesDoc (plural) collection to provide a mapping of commit_id to tree_id
-                        # so that we could clear the relevant TreeDoc records
-                        # its ok though, since they are created in refresh_tree_info() and overwrite existing records
-
                         for ci_ids_chunk in chunked_list(ci_ids, 3000):
                             # delete LastCommitDocs
                             i = M.repository.LastCommitDoc.m.find(

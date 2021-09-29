@@ -900,7 +900,7 @@ class Feed(MappedClass):
     query: 'Query[Feed]'
 
     _id = FieldProperty(S.ObjectId)
-    ref_id = ForeignIdProperty('ArtifactReference')
+    ref_id: str = ForeignIdProperty('ArtifactReference')
     neighborhood_id = ForeignIdProperty('Neighborhood')
     project_id = ForeignIdProperty('Project')
     app_config_id = ForeignIdProperty('AppConfig')
@@ -1175,7 +1175,7 @@ class SpamCheckResult(MappedClass):
     query: 'Query[SpamCheckResult]'
 
     _id = FieldProperty(S.ObjectId)
-    ref_id = ForeignIdProperty('ArtifactReference')
+    ref_id: str = ForeignIdProperty('ArtifactReference')
     ref = RelationProperty('ArtifactReference', via='ref_id')
     project_id = ForeignIdProperty('Project')
     project = RelationProperty('Project', via='project_id')

@@ -48,7 +48,7 @@ import six
 from ming import schema as S
 from ming import Field, collection, Index
 from ming.utils import LazyProperty
-from ming.orm import FieldProperty, session, Mapper, mapper
+from ming.odm import FieldProperty, session, Mapper, mapper, MappedClass
 from ming.base import Object
 
 from allura.lib import helpers as h
@@ -998,41 +998,6 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         self.discussion_thread.add_post(text=message, is_meta=True, ignore_security=True)
 
 
-
-# Basic commit information
-# One of these for each commit in the physical repo on disk. The _id is the
-# hexsha of the commit (for Git and Hg).
-CommitDoc = collection(
-    str('repo_ci'), main_doc_session,
-    Field('_id', str),
-    Field('tree_id', str),
-    Field('committed', SUser),
-    Field('authored', SUser),
-    Field('message', str),
-    Field('parent_ids', [str], index=True),
-    Field('child_ids', [str], index=True),
-    Field('repo_ids', [S.ObjectId()], index=True))
-
-# Basic tree information
-TreeDoc = collection(
-    str('repo_tree'), main_doc_session,
-    Field('_id', str),
-    Field('tree_ids', [dict(name=str, id=str)]),
-    Field('blob_ids', [dict(name=str, id=str)]),
-    Field('other_ids', [dict(name=str, id=str, type=SObjType)]))
-
-# Information about the last commit to touch a tree
-LastCommitDoc = collection(
-    str('repo_last_commit'), main_doc_session,
-    Field('_id', S.ObjectId()),
-    Field('commit_id', str),
-    Field('path', str),
-    Index('commit_id', 'path'),
-    Field('entries', [dict(
-        name=str,
-        commit_id=str)]))
-
-
 class RepoObject(object):
 
     def __repr__(self):  # pragma no cover
@@ -1068,7 +1033,44 @@ class RepoObject(object):
         return r, isnew
 
 
-class Commit(RepoObject, ActivityObject):
+# this is duplicative with the Commit model
+# would be nice to get rid of this "doc" based view, but it is used a lot
+CommitDoc = collection(
+    str('repo_ci'), main_doc_session,
+    Field('_id', str),
+    Field('tree_id', str),
+    Field('committed', SUser),
+    Field('authored', SUser),
+    Field('message', str),
+    Field('parent_ids', [str], index=True),
+    Field('child_ids', [str], index=True),
+    Field('repo_ids', [S.ObjectId()], index=True))
+
+
+class Commit(MappedClass, RepoObject, ActivityObject):
+    # Basic commit information
+    # One of these for each commit in the physical repo on disk
+
+    class __mongometa__:
+        session = repository_orm_session
+        name = str('repo_ci')
+        indexes = [
+            'parent_ids',
+            'child_ids',
+            'repo_ids',
+        ]
+
+    query: 'Query[Commit]'
+
+    _id = FieldProperty(str)  # hexsha of the commit (for Git and Hg)
+    tree_id = FieldProperty(str)
+    committed = FieldProperty(SUser)
+    authored = FieldProperty(SUser)
+    message = FieldProperty(str)
+    parent_ids = FieldProperty([str])
+    child_ids = FieldProperty([str])
+    repo_ids = FieldProperty([S.ObjectId()])
+
     type_s = 'Commit'
     # Ephemeral attrs
     repo = None
@@ -1317,7 +1319,21 @@ class Commit(RepoObject, ActivityObject):
         }
 
 
-class Tree(RepoObject):
+class Tree(MappedClass, RepoObject):
+    # Basic tree information
+    class __mongometa__:
+        session = repository_orm_session
+        name = str('repo_tree')
+        indexes = [
+        ]
+
+    query: 'Query[Tree]'
+
+    _id = FieldProperty(str)
+    tree_ids = FieldProperty([dict(name=str, id=str)])
+    blob_ids = FieldProperty([dict(name=str, id=str)])
+    other_ids = FieldProperty([dict(name=str, id=str, type=SObjType)])
+
     # Ephemeral attrs
     repo = None
     commit = None
@@ -1559,7 +1575,37 @@ class EmptyBlob(Blob):
         return False
 
 
-class LastCommit(RepoObject):
+# this is duplicative with the LastCommit model
+# would be nice to get rid of this "doc" based view, but it is used a lot
+LastCommitDoc = collection(
+    str('repo_last_commit'), main_doc_session,
+    Field('_id', S.ObjectId()),
+    Field('commit_id', str),
+    Field('path', str),
+    Index('commit_id', 'path'),
+    Field('entries', [dict(
+        name=str,
+        commit_id=str)]))
+
+
+class LastCommit(MappedClass, RepoObject):
+    # Information about the last commit to touch a tree
+    class __mongometa__:
+        session = repository_orm_session
+        name = str('repo_last_commit')
+        indexes = [
+            ('commit_id', 'path'),
+        ]
+
+    query: 'Query[LastCommit]'
+
+    _id = FieldProperty(S.ObjectId)
+    commit_id = FieldProperty(str)
+    path = FieldProperty(str)
+    entries = FieldProperty([dict(
+        name=str,
+        commit_id=str,
+    )])
 
     def __repr__(self):
         return '<LastCommit /%r %s>' % (self.path, self.commit_id)
@@ -1963,7 +2009,4 @@ def zipdir(source, zipfile, exclude=None):
             "STDERR: {3}".format(command, p.returncode, stdout, stderr))
 
 
-mapper(Commit, CommitDoc, repository_orm_session)
-mapper(Tree, TreeDoc, repository_orm_session)
-mapper(LastCommit, LastCommitDoc, repository_orm_session)
 Mapper.compile_all()

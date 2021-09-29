@@ -38,7 +38,7 @@ from tg import config
 from tg import tmpl_context as c, app_globals as g
 from tg import request
 from ming import schema as S
-from ming import Field, collection
+from ming import Field
 from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
@@ -51,7 +51,7 @@ from allura.lib import plugin
 from allura.lib import utils
 from allura.lib.decorators import memoize
 from allura.lib.search import SearchIndexable
-from .session import main_orm_session, main_doc_session, main_explicitflush_orm_session
+from .session import main_orm_session, main_explicitflush_orm_session
 from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
 
@@ -984,18 +984,26 @@ class ProjectRole(MappedClass):
                                     user_id={'$ne': None}, roles=self._id)).all()
 
 
-audit_log = collection(
-    str('audit_log'), main_doc_session,
-    Field('_id', S.ObjectId()),
-    Field('project_id', S.ObjectId, if_missing=None,
-          index=True),  # main view of audit log queries by project_id
-    Field('user_id', S.ObjectId, if_missing=None, index=True),
-    Field('timestamp', datetime, if_missing=datetime.utcnow),
-    Field('url', str),
-    Field('message', str))
+class AuditLog(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = str('audit_log')
+        indexes = [
+            'project_id',
+            'user_id',
+        ]
 
+    query: 'Query[AuditLog]'
 
-class AuditLog(object):
+    _id = FieldProperty(S.ObjectId)
+    project_id = ForeignIdProperty('Project', if_missing=None)
+    project = RelationProperty('Project')
+    user_id: ObjectId = AlluraUserProperty()
+    user = RelationProperty('User')
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
+    url = FieldProperty(str)
+    message = FieldProperty(str)
+
     @property
     def timestamp_str(self):
         return self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1054,13 +1062,6 @@ class AuditLog(object):
     def comment_user(cls, by, message, *args, **kwargs):
         message = 'Comment by %s: %s' % (by.username, message)
         return cls.log_user(message, *args, **kwargs)
-
-
-main_orm_session.mapper(AuditLog, audit_log, properties=dict(
-    project_id=ForeignIdProperty('Project'),
-    project=RelationProperty('Project'),
-    user_id=AlluraUserProperty(),
-    user=RelationProperty('User')))
 
 
 class UserLoginDetails(MappedClass):

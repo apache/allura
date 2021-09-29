@@ -20,6 +20,8 @@ from __future__ import absolute_import
 import re
 import logging
 from itertools import groupby
+
+from ming.odm.property import FieldProperty
 from six.moves.cPickle import dumps, loads
 from collections import defaultdict
 from six.moves.urllib.parse import unquote
@@ -28,51 +30,39 @@ import bson
 import pymongo
 from tg import tmpl_context as c
 
-from ming import collection, Field, Index
 from ming import schema as S
 from ming.utils import LazyProperty
-from ming.orm import session, mapper
-from ming.orm import ForeignIdProperty, RelationProperty
+from ming.odm import session, MappedClass
+from ming.odm import ForeignIdProperty, RelationProperty
 
 from allura.lib import helpers as h
 
-from .session import main_doc_session, main_orm_session
+from .session import main_orm_session
 from .project import Project
 import six
 
 log = logging.getLogger(__name__)
 
-# Collection definitions
-ArtifactReferenceDoc = collection(
-    str('artifact_reference'), main_doc_session,
-    Field('_id', str),
-    Field('artifact_reference', dict(
+
+class ArtifactReference(MappedClass):
+    class __mongometa__:
+        session = main_orm_session
+        name = str('artifact_reference')
+        indexes = [
+            'references',
+            'artifact_reference.project_id',  # used in ReindexCommand
+        ]
+
+    query: 'Query[ArtifactReference]'
+
+    _id = FieldProperty(str)
+    artifact_reference = FieldProperty(dict(
         cls=S.Binary(),
         project_id=S.ObjectId(),
         app_config_id=S.ObjectId(),
-        artifact_id=S.Anything(if_missing=None))),
-    Field('references', [str], index=True),
-    Index('artifact_reference.project_id'),  # used in ReindexCommand
-)
-
-ShortlinkDoc = collection(
-    str('shortlink'), main_doc_session,
-    Field('_id', S.ObjectId()),
-    # index needed for from_artifact() and index_tasks.py:del_artifacts
-    Field('ref_id', str, index=True),
-    Field('project_id', S.ObjectId()),
-    Field('app_config_id', S.ObjectId()),
-    Field('link', str),
-    Field('url', str),
-    # used by from_links()  More helpful to have project_id first, for other
-    # queries
-    Index('project_id', 'link'),
-)
-
-# Class definitions
-
-
-class ArtifactReference(object):
+        artifact_id=S.Anything(if_missing=None),
+    ))
+    references = FieldProperty([str])
 
     @classmethod
     def from_artifact(cls, artifact):
@@ -107,9 +97,28 @@ class ArtifactReference(object):
                           self._id, aref)
 
 
-class Shortlink(object):
-
+class Shortlink(MappedClass):
     '''Collection mapping shorthand_ids for artifacts to ArtifactReferences'''
+
+    class __mongometa__:
+        session = main_orm_session
+        name = str('shortlink')
+        indexes = [
+            'ref_id',  # for from_artifact() and index_tasks.py:del_artifacts
+            'project_id', 'link',  # used by from_links()  More helpful to have project_id first, for other queries
+        ]
+
+    query: 'Query[Shortlink]'
+
+    _id = FieldProperty(S.ObjectId())
+    ref_id: str = ForeignIdProperty(ArtifactReference)
+    ref = RelationProperty(ArtifactReference)
+    project_id = ForeignIdProperty('Project')
+    project = RelationProperty('Project')
+    app_config_id = ForeignIdProperty('AppConfig')
+    app_config = RelationProperty('AppConfig')
+    link = FieldProperty(str)
+    url = FieldProperty(str)
 
     # Regexes used to find shortlinks
     _core_re = r'''(\[
@@ -262,13 +271,3 @@ class Shortlink(object):
                 artifact=parts[0])
         else:
             return None
-
-# Mapper definitions
-mapper(ArtifactReference, ArtifactReferenceDoc, main_orm_session)
-mapper(Shortlink, ShortlinkDoc, main_orm_session, properties=dict(
-    ref_id=ForeignIdProperty(ArtifactReference),
-    project_id=ForeignIdProperty('Project'),
-    app_config_id=ForeignIdProperty('AppConfig'),
-    project=RelationProperty('Project'),
-    app_config=RelationProperty('AppConfig'),
-    ref=RelationProperty(ArtifactReference)))

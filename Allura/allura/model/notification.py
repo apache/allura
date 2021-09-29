@@ -93,7 +93,7 @@ class Notification(MappedClass):
     app_config_id = ForeignIdProperty(
         'AppConfig', if_missing=lambda: c.app.config._id)
     tool_name = FieldProperty(str, if_missing=lambda: c.app.config.tool_name)
-    ref_id = ForeignIdProperty('ArtifactReference')
+    ref_id: str = ForeignIdProperty('ArtifactReference')
     topic = FieldProperty(str)
 
     # Notification Content
