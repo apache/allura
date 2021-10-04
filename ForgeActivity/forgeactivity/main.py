@@ -47,7 +47,7 @@ from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
 from six.moves import filter
-
+import re
 log = logging.getLogger(__name__)
 
 
@@ -124,8 +124,15 @@ class ForgeActivityController(BaseController):
         timeline = g.director.get_timeline(followee, page,
                                            limit=extra_limit,
                                            actor_only=actor_only)
+
         filtered_timeline = list(islice(filter(perm_check(c.user), timeline),
                                         0, limit))
+        for t in filtered_timeline:
+            if hasattr(t.actor.activity_extras, 'icon_url') and config.get("default_avatar_image"):
+                t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*', r'\1d={}'.format(config["default_avatar_image"]),
+                                                          t.actor.activity_extras.icon_url)
+                session(t).expunge(t)  # don't save back this change
+
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for
             has_more = len(timeline) == limit
