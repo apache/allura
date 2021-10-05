@@ -18,7 +18,7 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from tg import tmpl_context as c
-from alluratest.tools import assert_equal
+from alluratest.tools import assert_equal, assert_raises
 
 from ming.odm import ThreadLocalODMSession
 from allura.tests import decorators as td
@@ -27,7 +27,9 @@ from allura.tests import TestController
 from allura.lib.security import Credentials, all_allowed, has_access
 from allura import model as M
 from forgewiki import model as WM
-
+from allura.lib.security import HIBPClientError, HIBPClient
+from mock import Mock, patch
+from requests.exceptions import Timeout
 
 def _allow(obj, role, perm):
     obj.acl.insert(0, M.ACE.allow(role._id, perm))
@@ -45,6 +47,12 @@ def _add_to_group(user, role):
     M.ProjectRole.by_user(user, upsert=True).roles.append(role._id)
     ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
+
+
+@patch('allura.lib.security.requests.get', side_effect=Timeout())
+def test_check_breached_password(r_get):
+    with assert_raises(HIBPClientError):
+        HIBPClient.check_breached_password('qwerty')
 
 
 class TestSecurity(TestController):

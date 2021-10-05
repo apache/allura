@@ -579,7 +579,7 @@ class HIBPClient(object):
             result = cls.scan_response(resp, sha_1)
 
         except Exception as ex:
-            six.reraise(HIBPClientError, ex, sys.exc_info()[2])
+            raise HIBPClientError from ex
 
         if result:
             raise HIBPCompromisedCredentials(result, sha_1_first_5)
