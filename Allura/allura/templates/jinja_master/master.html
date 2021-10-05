@@ -176,20 +176,24 @@
 {% endif %}
 <script>
     $(document).ready(function () {
-        $(".tooltip, .m-tooltip").tooltipster({
-            animation: 'fade',
-            delay: 200,
-            theme: 'tooltipster-light',
-            trigger: 'hover',
-            position: 'right',
-            iconCloning: false,
-            maxWidth: 300
-        }).focus(function () {
-            $(this).tooltipster('show');
-        }).blur(function () {
-            $(this).tooltipster('hide');
+        $(".tooltip, .m-tooltip").each(function(){
+            let $el = $(this);
+            $el.tooltipster({
+                animation: 'fade',
+                delay: 200,
+                theme: 'tooltipster-light',
+                trigger: 'hover',
+                position: $el.data('position') || 'right',
+                iconCloning: false,
+                maxWidth: 300,
+                contentAsHTML: true,
+                interactive: true
+            }).focus(function () {
+                $(this).tooltipster('show');
+            }).blur(function () {
+                $(this).tooltipster('hide');
+            });
         });
-
     });
 </script>
 </body>
