@@ -44,7 +44,7 @@ feedgenerator==2.0.0
     # via -r requirements.in
 feedparser==6.0.8
     # via -r requirements.in
-formencode==2.0.0
+formencode==2.0.1
     # via
     #   -r requirements.in
     #   easywidgets
