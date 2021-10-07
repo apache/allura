@@ -40,7 +40,7 @@ easywidgets==0.3.6
     # via -r requirements.in
 emoji==1.5.0
     # via -r requirements.in
-feedgenerator==1.9.1
+feedgenerator==2.0.0
     # via -r requirements.in
 feedparser==6.0.8
     # via -r requirements.in
@@ -141,7 +141,7 @@ python-magic==0.4.24
     # via -r requirements.in
 python-oembed==0.2.4
     # via -r requirements.in
-pytz==2019.1
+pytz==2021.3
     # via
     #   -r requirements.in
     #   feedgenerator
@@ -167,7 +167,6 @@ six==1.16.0
     #   bleach
     #   creoleparser
     #   easywidgets
-    #   feedgenerator
     #   formencode
     #   html5lib
     #   ming
