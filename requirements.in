@@ -1,54 +1,54 @@
-ActivityStream==0.3.0
+ActivityStream
 beautifulsoup4
 Beaker
 cchardet
 colander
 cryptography
 decorator
-EasyWidgets>=0.3.6
+EasyWidgets
 emoji
 feedgenerator
 feedparser
-FormEncode>=2
+FormEncode
 # 3.1.23 drops py36 support
 GitPython<=3.1.23
 html5lib
 Jinja2
 Markdown<3
-markdown-checklist==0.4.1
+markdown-checklist
 MarkupSafe
-Ming==0.11.1
+Ming
 # TODO: move to "oauthlib" instead
 # oauth2 doesn't have a release with py3.6 support, but does have fixes on master:
 # archive/.../.zip URL is preferable over git+https://... since it supports pip hash generating+checking
 https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
 paginate
-Paste>=3.5
+Paste
 PasteDeploy
 PasteScript
 Pillow
 # profanity filter for feedback
-profanityfilter==2.0.6
+profanityfilter
 Pygments
-pymongo==3.10.1
+pymongo
 Pypeline[creole,markdown,textile,rst]
 pysolr
 python-dateutil
 python-magic
 python-oembed
-pytz==2019.1
+pytz
 qrcode
 requests
 requests-oauthlib
 # for taskd proc name switching
 setproctitle
 six
-TimerMiddleware==0.5.1
+TimerMiddleware
 TurboGears2==2.3.12
 WebHelpers2
-WebOb==1.7.4
+WebOb
 werkzeug
-wrapt==1.11.2
+wrapt
 
 # testing
 datadiff
