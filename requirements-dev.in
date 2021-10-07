@@ -2,9 +2,9 @@
 # nothing needed at runtime or for tests
 
 pip-tools
-q==2.3
-sphinx-argparse==0.2.5
-sphinx-rtd-theme==0.1.6
-sphinxcontrib-programoutput==0.8
+q
+sphinx-argparse
+sphinx-rtd-theme
+sphinxcontrib-programoutput
 coverage
 nose
