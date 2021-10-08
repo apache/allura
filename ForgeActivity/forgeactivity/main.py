@@ -127,10 +127,14 @@ class ForgeActivityController(BaseController):
 
         filtered_timeline = list(islice(filter(perm_check(c.user), timeline),
                                         0, limit))
-        for t in filtered_timeline:
-            if hasattr(t.actor.activity_extras, 'icon_url') and config.get("default_avatar_image"):
-                t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*', r'\1d={}'.format(config["default_avatar_image"]),
-                                                          t.actor.activity_extras.icon_url)
+        if config.get("default_avatar_image"):
+            for t in filtered_timeline:
+                if not t.actor.activity_extras.get('icon_url'):
+                    t.actor.activity_extras.icon_url = config['default_avatar_image']
+                else:
+                    t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
+                                                              r'\1d={}'.format(config["default_avatar_image"]),
+                                                              t.actor.activity_extras.icon_url)
                 session(t).expunge(t)  # don't save back this change
 
         if extra_limit == limit:
