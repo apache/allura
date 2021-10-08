@@ -63,7 +63,8 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
-from jinja2.filters import contextfilter, escape, do_filesizeformat
+from jinja2.filters import escape, do_filesizeformat
+from jinja2.utils import pass_context
 from paste.deploy.converters import asbool, aslist, asint
 from webhelpers2 import date, text
 from webob.exc import HTTPUnauthorized
@@ -786,7 +787,7 @@ def render_any_markup(name, txt, code_mode=False, linenumbers_style=TABLE):
                 txt = '<pre>%s</pre>' % txt
     return Markup(txt)
 
-@contextfilter
+@pass_context
 def subrender_jinja_filter(context, value):
     _template = context.eval_ctx.environment.from_string(value)
     result = _template.render(**context)
