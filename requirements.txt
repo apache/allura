@@ -71,7 +71,7 @@ inflection==0.5.1
     # via profanityfilter
 iso8601==0.1.16
     # via colander
-jinja2==2.11.3
+jinja2==3.0.2
     # via -r requirements.in
 markdown==2.6.11
     # via
