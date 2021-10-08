@@ -135,10 +135,7 @@ def refresh_commit_repos(all_commit_ids, repo):
             ci.repo_ids.append(repo._id)
             index_id = 'allura.model.repository.Commit#' + oid
             # TODO: use ArtifactReference.from_artifact?
-            # print(f'ref {index_id}')
-            # if '5c472' in index_id: 0/0
             ref = ArtifactReference(
-            # ref = ArtifactReferenceDoc(dict(
                 _id=index_id,
                 artifact_reference=dict(
                     cls=bson.Binary(dumps(Commit, protocol=2)),
@@ -146,7 +143,6 @@ def refresh_commit_repos(all_commit_ids, repo):
                     app_config_id=repo.app.config._id,
                     artifact_id=oid),
                 references=[])
-            # )
             # TODO: use Shortlink.from_artifact?
             link0 = Shortlink(
                 _id=bson.ObjectId(),
@@ -171,8 +167,8 @@ def refresh_commit_repos(all_commit_ids, repo):
             state(link0).status = ObjectState.dirty
             session(link0).flush(link0)
             session(link0).expunge(link0)
-            state(link0).status = ObjectState.dirty
-            session(link1).flush(link0)
+            state(link1).status = ObjectState.dirty
+            session(link1).flush(link1)
             session(link1).expunge(link1)
 
 

@@ -20,6 +20,7 @@ from __future__ import absolute_import
 import re
 import logging
 from itertools import groupby
+import typing
 
 from ming.odm.property import FieldProperty
 from six.moves.cPickle import dumps, loads
@@ -40,6 +41,10 @@ from allura.lib import helpers as h
 from .session import main_orm_session
 from .project import Project
 import six
+
+if typing.TYPE_CHECKING:
+    from ming.odm.mapper import Query
+
 
 log = logging.getLogger(__name__)
 
