@@ -248,7 +248,7 @@ class AuthController(BaseController):
 
         if user_record and email_record and email_record.confirmed:
             user_record.send_password_reset_email(email_record.email)
-            h.auditlog_user('Password recovery link sent to: %s', email, user=user_record)
+            h.auditlog_user('Password recovery link sent to: %s', email_record.email, user=user_record)
         elif is_site_admin(c.user):
             # this can be accessed via a site admin page, and sometimes email records are inconsistent
             # only site admins may be told if accounts exist or not
