@@ -328,6 +328,8 @@ class ProjectAdminController(BaseController):
                features=None,
                **kw):
         require_access(c.project, 'update')
+        flash_status = 'success'
+        flash_message = 'Form values saved'
 
         if removal != c.project.removal:
             M.AuditLog.log('change project removal status to %s', removal)
@@ -405,10 +407,16 @@ class ProjectAdminController(BaseController):
         if icon is not None and icon != b'':
             if c.project.icon:
                 M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
-            M.AuditLog.log('update project icon')
-            c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
+            save_icon = c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
+            if not save_icon:
+                M.AuditLog.log('could not update project icon')
+                flash_message = f'{flash_message}, but image upload failed'
+                flash_status = 'warning'
+            else:
+                M.AuditLog.log('update project icon')
+
         g.post_event('project_updated')
-        flash('Saved', 'success')
+        flash(flash_message, flash_status)
         redirect('overview')
 
     def _add_trove(self, type, new_trove):

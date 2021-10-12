@@ -679,8 +679,12 @@ class NeighborhoodAdminController(object):
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
                 M.ProjectFile.query.remove(dict(project_id=c.project._id, category=re.compile(r'^icon')))
-            M.AuditLog.log('update neighborhood icon')
-            c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
+            save_icon = c.project.save_icon(icon.filename, icon.file, content_type=icon.type)
+            if save_icon:
+                M.AuditLog.log('update neighborhood icon')
+            else:
+                M.AuditLog.log('could not update neighborhood icon')
+                flash("There's a problem with the uploaded image", 'error')
         redirect('overview')
 
     @expose('jinja:allura:templates/neighborhood_help.html')

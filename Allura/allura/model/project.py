@@ -392,19 +392,22 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             original_meta=dict(project_id=self._id, category='icon_original'),
             convert_bmp=True,
         )
-        # store the dimensions so we don't have to read the whole image each time we need to know
-        icon_orig_img = PIL.Image.open(icon_orig.rfile())
+        if icon_orig:
+            # store the dimensions so we don't have to read the whole image each time we need to know
+            icon_orig_img = PIL.Image.open(icon_orig.rfile())
 
-        self.set_tool_data('allura', icon_original_size=icon_orig_img.size)
+            self.set_tool_data('allura', icon_original_size=icon_orig_img.size)
 
-        try:
-            # calc and save icon file hash, for better cache busting purposes
-            file_input.seek(0)
-            file_bytes = file_input.read()
-            file_sha256 = sha256(file_bytes).hexdigest()
-            self.set_tool_data('allura', icon_sha256=file_sha256)
-        except Exception as ex:
-            log.exception('Failed to calculate sha256 for icon file for {}'.format(self.shortname))
+            try:
+                # calc and save icon file hash, for better cache busting purposes
+                file_input.seek(0)
+                file_bytes = file_input.read()
+                file_sha256 = sha256(file_bytes).hexdigest()
+                self.set_tool_data('allura', icon_sha256=file_sha256)
+            except Exception as ex:
+                log.exception('Failed to calculate sha256 for icon file for {}'.format(self.shortname))
+            return True
+        return False
 
     @property
     def icon(self):
