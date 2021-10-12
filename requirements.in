@@ -6,7 +6,8 @@ colander
 cryptography
 decorator
 EasyWidgets
-emoji
+# https://github.com/carpedm20/emoji/issues/191
+emoji!=1.6.0
 feedgenerator
 feedparser
 FormEncode

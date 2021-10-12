@@ -812,20 +812,22 @@ class TestCachedMarkdown(unittest.TestCase):
 class TestEmojis(unittest.TestCase):
 
     def test_markdown_emoji_atomic(self):
+        output = g.markdown.convert(':smile:')
+        assert_in('<p>\U0001F604</p>', output)
         output = g.markdown.convert(':+1:')
-        assert '<p>\U0001F44D</p>' in output
+        assert_in('<p>\U0001F44D</p>', output)
         output = g.markdown.convert(':Bosnia_&_Herzegovina:')
-        assert '<p>\U0001F1E7\U0001F1E6</p>' in output
-        output = g.markdown.convert(':Åland_Islands:')  # emoji code with non-asciii charactor
-        assert '<p>\U0001F1E6\U0001F1FD</p>' in output
+        assert_in('<p>\U0001F1E7\U0001F1E6</p>', output)
+        output = g.markdown.convert(':Åland_Islands:')  # emoji code with non-ascii character
+        assert_in('<p>\U0001F1E6\U0001F1FD</p>', output)
 
     def test_markdown_emoji_with_text(self):
         output = g.markdown.convert('Thumbs up emoji :+1: wow!')
-        assert '<p>Thumbs up emoji \U0001F44D wow!</p>' in output
+        assert_in('<p>Thumbs up emoji \U0001F44D wow!</p>', output)
         output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
-        assert '<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>' in output
+        assert_in('<p>More emojis \U0001F44D\U0001F42B\U0001F552 wow!</p>', output)
         output = g.markdown.convert(':man_bouncing_ball_medium-light_skin_tone:emoji:+1:')
-        assert '<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>' in output
+        assert_in('<p>\U000026F9\U0001F3FC\U0000200D\U00002642\U0000FE0Femoji\U0001F44D</p>', output)
 
     def test_markdown_emoji_in_code(self):
         output = g.markdown.convert('This will not become an emoji `:+1:`')
@@ -842,9 +844,9 @@ class TestEmojis(unittest.TestCase):
 
     def test_markdown_commit_with_emojis(self):
         output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')
-        assert 'Thumbs up emoji \U0001F44D wow!' in output
+        assert_in('Thumbs up emoji \U0001F44D wow!', output)
         output = g.markdown.convert('More emojis :+1::camel::three_o’clock: wow!')
-        assert 'More emojis \U0001F44D\U0001F42B\U0001F552 wow!' in output
+        assert_in('More emojis \U0001F44D\U0001F42B\U0001F552 wow!', output)
 
 
 class TestUserMentions(unittest.TestCase):
