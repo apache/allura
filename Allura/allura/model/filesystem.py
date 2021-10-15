@@ -218,7 +218,7 @@ class File(MappedClass):
                     image.save(fp_w, format, save_all=save_anim, optimize=True, **save_kwargs)
                 except Exception as e:
                     session(original).expunge(original)
-                    log.error('Error saving image %s %s', filename, e)
+                    log.exception('Error saving image %s %s %s', filename, content_type, format)
                     return None, None
         else:
             original = None
