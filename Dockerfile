@@ -50,4 +50,4 @@ ENV USER root
 
 WORKDIR /allura
 ENV PYTHONUNBUFFERED 1
-CMD gunicorn --paste Allura/docker-dev.ini --reload
+CMD gunicorn --paste Allura/docker-dev.ini -b :8088 --reload
