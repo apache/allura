@@ -26,8 +26,8 @@ services:
       - "8088:8088"
     volumes: &volumes
       - .:/allura  # Allura source code from local host
-      - /allura-data:/allura-data  # for virtualenv, scm repos, etc
-      - /allura-data/root/home:/root  # for persistent home dir, mainly for pudb
+      - ${LOCAL_SHARED_DATA_ROOT}:/allura-data  # for virtualenv, scm repos, etc
+      - ${LOCAL_SHARED_DATA_ROOT}/root/home:/root  # for persistent home dir, mainly for pudb
     links:
       - mongo
       - solr
@@ -49,14 +49,14 @@ services:
       - "8983:8983"
     volumes:
       - ./solr_config/allura:/opt/solr/server/solr/allura
-      - /allura-data/solr:/opt/solr/server/solr/allura/data
+      - ${LOCAL_SHARED_DATA_ROOT}/solr:/opt/solr/server/solr/allura/data
 
   mongo:
     image: mongo:4.2
     ports:
       - "27017:27017"
     volumes:
-      - /allura-data/mongo:/data/db
+      - ${LOCAL_SHARED_DATA_ROOT}/mongo:/data/db
     command: mongod --storageEngine wiredTiger
 
   outmail:

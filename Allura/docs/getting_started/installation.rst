@@ -35,8 +35,7 @@ First run
 `Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
 
 Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
-On Linux, you may need to `create a docker group <https://docs.docker.com/engine/installation/linux/ubuntulinux/#create-a-docker-group>`_.  On Mac, make sure
-you're in a directory that Virtual Box shares through to the VM (by default, anywhere in your home directory works).
+On Linux, you may need to `create a docker group <https://docs.docker.com/engine/installation/linux/ubuntulinux/#create-a-docker-group>`_.
 
 .. note::
 
@@ -64,7 +63,6 @@ Build/fetch all required images:
 
 .. code-block:: bash
 
-    export COMPOSE_PROJECT_NAME=allura
     docker-compose build
 
 Python and JS package setup (and first containers started):
@@ -122,14 +120,19 @@ changes.
 
 Python environment:
 
-- :file:`/allura-data/virtualenv/bin/python`
+- :file:`./allura-data/virtualenv/bin/python`
 
 Services data:
 
-- :file:`/allura-data/mongo` - mongo data
-- :file:`/allura-data/solr` - SOLR index
-- :code:`/allura-data/scm/{git,hg,svn}` - code repositories
-- :file:`/allura-data/scm/snapshots` - generated code snapshots
+- :file:`./allura-data/mongo` - mongo data
+- :file:`./allura-data/solr` - SOLR index
+- :code:`./allura-data/scm/{git,hg,svn}` - code repositories
+- :file:`./allura-data/scm/snapshots` - generated code snapshots
+
+
+.. note::
+    
+    The :code:`./allura-data/` path can be overriden by setting the LOCAL_SHARED_DATA_ROOT environment variable
 
 Ports, exposed to host system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

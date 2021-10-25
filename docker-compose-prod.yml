@@ -46,7 +46,7 @@ services:
       - "8080"
     volumes: &volumes
       - .:/allura  # Allura source code from local host
-      - /allura-data:/allura-data  # for virtualenv, scm repos, etc
+      - ${LOCAL_SHARED_DATA_ROOT}:/allura-data  # for virtualenv, scm repos, etc
     links:
       - mongo
       - solr
@@ -82,7 +82,7 @@ services:
       - "8983"
     volumes:
       - ./solr_config/allura:/opt/solr/server/solr/allura
-      - /allura-data/solr:/opt/solr/server/solr/allura/data
+      - ${LOCAL_SHARED_DATA_ROOT}/solr:/opt/solr/server/solr/allura/data
     restart: always
 
   mongo:
@@ -90,7 +90,7 @@ services:
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
-      - /allura-data/mongo:/data/db
+      - ${LOCAL_SHARED_DATA_ROOT}/mongo:/data/db
     command: mongod --storageEngine wiredTiger
     restart: always
 
