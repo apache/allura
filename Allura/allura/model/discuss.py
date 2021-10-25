@@ -517,7 +517,9 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         indexes = [
             # used in general lookups, last_post, etc
             ('discussion_id', 'status', 'timestamp'),
-            'thread_id'
+            'thread_id',
+            # for find_posts/query_posts, including full_slug sort which is useful on super big threads
+            ('deleted', 'discussion_id', 'thread_id', 'full_slug'),
         ]
 
     query: 'Query[Post]'
