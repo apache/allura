@@ -1,3 +1,15 @@
+Unreleased
+
+Breaking Changes
+ * [#8399] In an effort to update the Docker startup steps to make them as 
+   easy as possible and compatible across as many OS's as possible, the default
+   allura-data location has been moved from `/allura-data` to `./allura-data`.
+   This will likely break existing Docker deployments. To fix your deployment,
+   Either set the LOCAL_SHARED_DATA_ROOT env variable to /allura-data or change
+   the value in the local `.env` file (or move your /allura-data to
+   ./allura-data).
+
+
 Version 1.13.0  (May 2021)
 
 This release supports Python 2.7, 3.6, and 3.7.
