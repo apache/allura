@@ -57,7 +57,7 @@
         $(document).ready(function () {
             $('#toggle-admin-btn').click(function () {
                 if (typeof Main === 'undefined') {
-                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                    alert('Compiled JS is missing.  Need to run `npm ci; npm run build;` on the server.');
                     return;
                 }
                 ReactDOM.render(React.createElement(Main, {
@@ -67,7 +67,7 @@
 
             if (typeof ToggleAddNewTool === 'undefined') {
                 $('#add-tool-container').click(function(){
-                    alert('Compiled JS is missing.  Need to run `npm install; npm run build;` on the server.');
+                    alert('Compiled JS is missing.  Need to run `npm ci; npm run build;` on the server.');
                 });
             } else {
                 ReactDOM.render(React.createElement(ToggleAddNewTool, {

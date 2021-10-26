@@ -200,7 +200,7 @@ For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/
     (env-allura)~$ curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash -
     (env-allura)~$ sudo apt-get install nodejs
     (env-allura)~$ cd ~/src/allura
-    (env-allura)~$ npm install
+    (env-allura)~$ npm ci
     (env-allura)~$ npm run build
     (env-allura)~$ npm run css
 

@@ -76,7 +76,7 @@ git archive -o $RELEASE_FILE --prefix $RELEASE_BASE/ $RELEASE_TAG
 cd $RELEASE_DIR
 tar xzf $RELEASE_FILE
 cd $RELEASE_FILE_EXTRACTED
-npm install >/dev/null
+npm ci >/dev/null
 NODE_ENV=production npm run build
 NODE_ENV=production npm run css
 rm -rf node_modules
