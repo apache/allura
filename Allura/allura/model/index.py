@@ -110,7 +110,7 @@ class Shortlink(MappedClass):
         name = str('shortlink')
         indexes = [
             'ref_id',  # for from_artifact() and index_tasks.py:del_artifacts
-            'project_id', 'link',  # used by from_links()  More helpful to have project_id first, for other queries
+            ('project_id', 'link',)  # used by from_links()  More helpful to have project_id first, for other queries
         ]
 
     query: 'Query[Shortlink]'
