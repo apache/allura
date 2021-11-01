@@ -115,7 +115,7 @@ class TestUserProfile(TestController):
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
         assert 'you currently have user messages disabled' not in response
-        response.mustcontain('<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;')
+        response.mustcontain('<b>From:</b> Test Admin')
 
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
@@ -148,6 +148,35 @@ class TestUserProfile(TestController):
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
         assert 'Sorry, messaging is rate-limited' in response
+
+    @td.with_user_project('test-admin')
+    @td.with_user_project('test-user')
+    @mock.patch('allura.tasks.mail_tasks.sendsimplemail')
+    @mock.patch('allura.lib.helpers.gen_message_id')
+    @mock.patch('allura.model.User.can_send_user_message')
+    def test_send_message_with_real_address_reply(self, check, gen_message_id, sendsimplemail):
+        check.return_value = True
+        gen_message_id.return_value = 'id'
+        test_user = User.by_username('test-user')
+        test_user.set_pref('email_address', 'test-user@example.com')
+        response = self.app.get(
+            '/u/test-user/profile/send_message', status=200)
+        assert 'you currently have user messages disabled' not in response
+        response.mustcontain('<b>From:</b> Test Admin')
+        self.app.post('/u/test-user/profile/send_user_message',
+                      params={'subject': 'test subject',
+                              'message': 'test message',
+                              'cc': 'on',
+                              'reply_to_real_address': 'on'})
+        real_address = test_user.preferences.email_address
+        sendsimplemail.post.assert_called_once_with(
+            cc=User.by_username('test-admin').get_pref('email_address'),
+            text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
+            toaddr=User.by_username('test-user').get_pref('email_address'),
+            fromaddr=User.by_username('test-admin').get_pref('email_address'),
+            reply_to=real_address,
+            message_id='id',
+            subject='test subject')
 
     @td.with_user_project('test-user')
     def test_send_message_for_anonymous(self):
