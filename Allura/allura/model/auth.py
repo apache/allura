@@ -455,7 +455,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                 timedelta(seconds=g.user_message_time_interval) -
                 datetime.utcnow())
 
-    def send_user_message(self, user, subject, message, cc):
+    def send_user_message(self, user, subject, message, cc, reply_to_real_address):
         """Send a user message (email) to ``user``.
 
         """
@@ -467,10 +467,12 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             'base_url': config['base_url'],
             'user': c.user,
         }
+        real_address = user.preferences.email_address
+        reply_to = real_address if reply_to_real_address and real_address else self.get_pref('email_address')
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=user.get_pref('email_address'),
             fromaddr=self.get_pref('email_address'),
-            reply_to=self.get_pref('email_address'),
+            reply_to=reply_to,
             message_id=h.gen_message_id(),
             subject=subject,
             text=tmpl.render(tmpl_context),
@@ -810,9 +812,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append('"%s"%s' % (self.get_pref('display_name'),
+        h.append('%s %s' % (self.get_pref('display_name'),
                              ' ' if six.PY2 else ''))  # py2 needs explicit space for unicode/text_type cast of Header
-        h.append('<%s>' % self.get_pref('email_address'))
         return h
 
     def update_notifications(self):

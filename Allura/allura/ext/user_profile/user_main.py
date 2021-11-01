@@ -195,7 +195,7 @@ class UserProfileController(BaseController, FeedController):
     @expose()
     @validate(dict(subject=validators.NotEmpty,
                    message=validators.NotEmpty))
-    def send_user_message(self, subject='', message='', cc=None):
+    def send_user_message(self, subject='', message='', cc=None, reply_to_real_address=None):
         """Handle POST for sending a message to another user.
 
         """
@@ -205,7 +205,7 @@ class UserProfileController(BaseController, FeedController):
             cc = c.user.get_pref('email_address')
         if c.user.can_send_user_message():
             c.user.send_user_message(
-                c.project.user_project_of, subject, message, cc)
+                c.project.user_project_of, subject, message, cc, reply_to_real_address)
             flash("Message sent.")
         else:
             flash("You can't send more than %i messages per %i seconds" % (
