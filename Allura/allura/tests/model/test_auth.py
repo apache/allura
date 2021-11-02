@@ -147,6 +147,7 @@ def test_user():
     u = M.User.register(dict(
         username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
+    assert u.reg_date
     assert_equal(u.private_project().shortname, 'u/nosetest-user')
     roles = g.credentials.user_roles(
         u._id, project_id=u.private_project().root_project._id)

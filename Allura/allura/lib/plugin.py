@@ -518,6 +518,8 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         u = M.User(**user_doc)
         if 'password' in user_doc:
             u.set_password(user_doc['password'])
+        if 'reg_date' not in user_doc:
+            u.reg_date = datetime.utcnow()
         return u
 
     def _login(self):
@@ -618,22 +620,19 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return ''
 
     def user_registration_date(self, user):
+        if user.reg_date:
+            return user.reg_date
         if user._id:
-            return user._id.generation_time
+            d = user._id.generation_time
+            # generation_time returns tz-aware datetime (in UTC) but we're using naive UTC time everywhere
+            return datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
         return datetime.utcnow()
 
     def get_last_password_updated(self, user):
         d = user.last_password_updated
         if d is None:
             d = self.user_registration_date(user)
-            # _id.generation_time returns aware datetime (in UTC)
-            # but we're using naive UTC time everywhere
-            d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
         return d
-
-    def index_user(self, user):
-        fields = super(LocalAuthenticationProvider, self).index_user(user)
-        return dict(user_registration_date_dt=self.user_registration_date(user), **fields)
 
 
 def ldap_conn(who=None, cred=None):

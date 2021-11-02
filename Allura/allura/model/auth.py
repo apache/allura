@@ -259,7 +259,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     username = FieldProperty(str)
     email_addresses = FieldProperty([str])
     password = FieldProperty(str)
-    last_password_updated = FieldProperty(datetime)
+    last_password_updated = FieldProperty(datetime)  # to access, use AuthProvider's get_last_password_updated
+    reg_date = FieldProperty(datetime)  # to access, use user.registration_date()
     projects = FieldProperty(S.Deprecated)
     # full mount point: prefs dict
     tool_preferences = FieldProperty(S.Deprecated)
@@ -360,6 +361,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             last_access_session_date_dt=self.last_access['session_date'],
             last_access_session_ip_s=self.last_access['session_ip'],
             last_access_session_ua_t=self.last_access['session_ua'],
+            user_registration_date_dt=self.registration_date(),
         )
         return dict(provider.index_user(self), **fields)
 
@@ -831,11 +833,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def registration_date(self):
         p = plugin.AuthenticationProvider.get(request)
-        d = p.user_registration_date(self)
-        # provider's user_registration_date returns aware datetime (in UTC)
-        # but we're using naive UTC time everywhere
-        d = datetime.utcfromtimestamp(calendar.timegm(d.utctimetuple()))
-        return d
+        return p.user_registration_date(self)
 
 
 class ProjectRole(MappedClass):

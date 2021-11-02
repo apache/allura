@@ -148,6 +148,7 @@ class TestLdapAuthenticationProvider(object):
         user = Mock()
         user._id = ObjectId()
         user.last_password_updated = None
+        user.reg_date = None
         upd = self.provider.get_last_password_updated(user)
         gen_time = datetime.utcfromtimestamp(
             calendar.timegm(user._id.generation_time.utctimetuple()))
