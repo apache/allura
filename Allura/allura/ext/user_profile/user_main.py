@@ -189,6 +189,8 @@ class UserProfileController(BaseController, FeedController):
         delay = c.user.time_to_next_user_message()
         expire_time = str(delay) if delay else None
         c.form = F.send_message
+        if c.user.get_pref('message_reply_real_address'):
+            c.form.fields.reply_to_real_address.attrs = {'checked': 'checked'}
         return dict(user=c.project.user_project_of, expire_time=expire_time)
 
     @require_post()
@@ -203,9 +205,12 @@ class UserProfileController(BaseController, FeedController):
 
         if cc:
             cc = c.user.get_pref('email_address')
+
         if c.user.can_send_user_message():
+            if reply_to_real_address:
+                c.user.set_pref('message_reply_real_address', True)
             c.user.send_user_message(
-                c.project.user_project_of, subject, message, cc, reply_to_real_address)
+                c.project.user_project_of, subject, message, cc, reply_to_real_address, c.user.preferences.email_address)
             flash("Message sent.")
         else:
             flash("You can't send more than %i messages per %i seconds" % (

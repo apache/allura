@@ -276,6 +276,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         disable_user_messages=bool,
         mention_notifications=bool,
         multifactor=bool,
+        message_reply_real_address=bool,
     ))
     # Additional top-level fields can/should be accessed with get/set_pref also
     # Not sure why we didn't put them within the 'preferences' dictionary :(
@@ -457,7 +458,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                 timedelta(seconds=g.user_message_time_interval) -
                 datetime.utcnow())
 
-    def send_user_message(self, user, subject, message, cc, reply_to_real_address):
+    def send_user_message(self, user, subject, message, cc, reply_to_real_address, sender_email_address):
         """Send a user message (email) to ``user``.
 
         """
@@ -470,7 +471,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             'user': c.user,
         }
         real_address = user.preferences.email_address
-        reply_to = real_address if reply_to_real_address and real_address else self.get_pref('email_address')
+        reply_to = self.get_pref('email_address')
+        if reply_to_real_address:
+            reply_to = sender_email_address
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=user.get_pref('email_address'),
             fromaddr=self.get_pref('email_address'),
@@ -814,8 +817,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append('%s %s' % (self.get_pref('display_name'),
+        h.append('"%s"%s' % (self.get_pref('display_name'),
                              ' ' if six.PY2 else ''))  # py2 needs explicit space for unicode/text_type cast of Header
+        h.append('<%s>' % self.get_pref('email_address'))
         return h
 
     def update_notifications(self):

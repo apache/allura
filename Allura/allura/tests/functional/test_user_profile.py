@@ -115,7 +115,7 @@ class TestUserProfile(TestController):
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
         assert 'you currently have user messages disabled' not in response
-        response.mustcontain('<b>From:</b> Test Admin')
+        response.mustcontain('<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;')
 
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
@@ -158,23 +158,24 @@ class TestUserProfile(TestController):
         check.return_value = True
         gen_message_id.return_value = 'id'
         test_user = User.by_username('test-user')
+        test_admin = User.by_username('test-admin')
         test_user.set_pref('email_address', 'test-user@example.com')
         response = self.app.get(
             '/u/test-user/profile/send_message', status=200)
         assert 'you currently have user messages disabled' not in response
-        response.mustcontain('<b>From:</b> Test Admin')
+        response.mustcontain('<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;')
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
                               'message': 'test message',
                               'cc': 'on',
                               'reply_to_real_address': 'on'})
-        real_address = test_user.preferences.email_address
+        sender_address = test_admin.preferences.email_address
         sendsimplemail.post.assert_called_once_with(
             cc=User.by_username('test-admin').get_pref('email_address'),
             text='test message\n\n---\n\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or send a message to Test Admin at http://localhost/u/test-admin/profile/send_message\n',
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
-            reply_to=real_address,
+            reply_to=sender_address,
             message_id='id',
             subject='test subject')
 
