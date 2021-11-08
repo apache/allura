@@ -63,7 +63,7 @@ class SendMessageForm(ForgeForm):
             label='Message')
 
         cc = ew.Checkbox(label='Send me a copy')
-        reply_to_real_address = ew.Checkbox(label='Include my active email address in the reply field for this message')
+        reply_to_real_address = ew.Checkbox(label='Include my email address in the reply field for this message')
 
 
 class SectionsUtil(object):
