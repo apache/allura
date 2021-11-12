@@ -176,7 +176,8 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
             except Exception:
                 log.exception('Error looking up user with ID: %r' % addr)
                 continue
-            addr = user.email_address_header()
+            # retrieve active email address
+            addr = user.preferences.email_address
             if not addr and user.email_addresses:
                 addr = user.email_addresses[0]
                 log.warning(
