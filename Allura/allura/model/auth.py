@@ -819,7 +819,6 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         h = header.Header()
         h.append('"%s"%s' % (self.get_pref('display_name'),
                              ' ' if six.PY2 else ''))  # py2 needs explicit space for unicode/text_type cast of Header
-        h.append('<%s>' % self.get_pref('email_address'))
         return h
 
     def update_notifications(self):
