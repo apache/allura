@@ -35,6 +35,7 @@ import magic
 from itertools import groupby
 import operator as op
 import collections
+import ming
 from six.moves.urllib.parse import urlparse
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -67,6 +68,21 @@ from six.moves import zip
 from six.moves import map
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
+
+
+def clean_ming_config(config):
+    # delete replicaSet=''
+    for key in list(config.keys()):
+        if '.replicaSet' in key and not config[key]:
+            del config[key]
+        elif 'mongo_host' in key and 'replicaSet=&' in config[key]:
+            config[key] = config[key].replace('replicaSet=&', '')
+    return config
+
+
+def configure_ming(conf):
+    conf = clean_ming_config(conf)
+    ming.configure(**conf)
 
 
 def permanent_redirect(url):

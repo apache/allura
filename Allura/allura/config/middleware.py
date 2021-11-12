@@ -68,6 +68,7 @@ from allura.lib.custom_middleware import RememberLoginMiddleware
 from allura.lib.custom_middleware import SetRequestHostFromConfig
 from allura.lib.custom_middleware import MingTaskSessionSetupMiddleware
 from allura.lib import helpers as h
+from allura.lib.utils import configure_ming
 
 __all__ = ['make_app']
 
@@ -116,7 +117,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     mimetypes.init([pkg_resources.resource_filename('allura', 'etc/mime.types')] + mimetypes.knownfiles)
 
     # Configure MongoDB
-    ming.configure(**app_conf)
+    configure_ming(app_conf)
 
     # Configure ActivityStream
     if asbool(app_conf.get('activitystream.recording.enabled', False)):
