@@ -87,11 +87,11 @@ markupsafe==2.0.1
     #   jinja2
     #   turbogears2
     #   webhelpers2
-ming==0.11.1
+ming==0.11.2
     # via -r requirements.in
 mock==3.0.5
     # via -r requirements.in
-oauth2 @ https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip
+https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
     # via -r requirements.in
 oauthlib==3.0.2
     # via requests-oauthlib
@@ -120,7 +120,7 @@ pyflakes==2.1.1
     # via -r requirements.in
 pygments==2.9.0
     # via -r requirements.in
-pymongo==3.10.1
+pymongo==3.11.4
     # via
     #   -r requirements.in
     #   activitystream

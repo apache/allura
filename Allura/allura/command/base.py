@@ -33,6 +33,7 @@ import ming
 from allura.config.environment import load_environment
 from allura.lib.decorators import task
 from allura.lib import helpers as h
+from allura.lib.utils import configure_ming
 
 log = None
 
@@ -104,7 +105,7 @@ class Command(six.with_metaclass(MetaParserDocstring, command.Command)):
             self.setup_globals()
             from allura import model
             M = model
-            ming.configure(**conf)
+            configure_ming(conf)
             if asbool(conf.get('activitystream.recording.enabled', False)):
                 activitystream.configure(**h.convert_bools(conf, prefix='activitystream.'))
             tg.tmpl_context.user = M.User.anonymous()

@@ -31,6 +31,7 @@ from tg.support.registry import Registry
 from tg.wsgiapp import RequestLocals
 
 from allura.lib import helpers as h
+from allura.lib.utils import configure_ming
 
 log = logging.getLogger(__name__)
 REGISTRY = Registry()
@@ -50,7 +51,7 @@ def setup_schema(command, conf, vars):
     REGISTRY.prepare()
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
 
-    ming.configure(**conf)
+    configure_ming(conf)
     if asbool(conf.get('activitystream.recording.enabled', False)):
         activitystream.configure(**h.convert_bools(conf, prefix='activitystream.'))
     # Nothing to do

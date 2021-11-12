@@ -938,7 +938,7 @@ def ming_config(**conf):
     from ming.session import Session
     datastores = Session._datastores
     try:
-        ming.configure(**conf)
+        utils.configure_ming(conf)
         yield
     finally:
         Session._datastores = datastores
