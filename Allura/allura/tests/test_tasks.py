@@ -34,7 +34,7 @@ import mock
 from tg import tmpl_context as c, app_globals as g
 
 from datadiff.tools import assert_equal
-from alluratest.tools import assert_in, assert_less
+from nose.tools import assert_in, assert_less
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
@@ -271,7 +271,7 @@ class TestMailTasks(unittest.TestCase):
 
             assert_equal(rcpts, [c.user.get_pref('email_address')])
             assert_in('Reply-To: %s' % g.noreply, body)
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Subject: Test subject', body)
             # plain
             assert_in('This is a test', body)
@@ -355,7 +355,7 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
 
             c.user.disabled = True
             ThreadLocalORMSession.flush_all()
@@ -385,7 +385,7 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Sender: tickets@test.p.domain.net', body)
             assert_in('To: test@mail.com', body)
 
@@ -401,7 +401,7 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Sender: tickets@test.p.domain.net', body)
             assert_in('To: 123@tickets.test.p.domain.net', body)
 
@@ -419,7 +419,7 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('References: <a> <b> <c>', body)
 
             _client.reset_mock()
@@ -434,7 +434,7 @@ class TestMailTasks(unittest.TestCase):
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('References: <ref>', body)
 
     def test_cc(self):
@@ -465,7 +465,7 @@ class TestMailTasks(unittest.TestCase):
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
-            assert_in('From: "Test Admin"', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
 
     def test_send_email_long_lines_use_quoted_printable(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:

@@ -209,6 +209,8 @@ class UserProfileController(BaseController, FeedController):
         if c.user.can_send_user_message():
             if reply_to_real_address:
                 c.user.set_pref('message_reply_real_address', True)
+            else:
+                c.user.set_pref('message_reply_real_address', False)
             c.user.send_user_message(
                 c.project.user_project_of, subject, message, cc, reply_to_real_address, c.user.preferences.email_address)
             flash("Message sent.")
@@ -217,7 +219,7 @@ class UserProfileController(BaseController, FeedController):
                 g.user_message_max_messages,
                 g.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
-        
+
     @without_trailing_slash
     @expose('jinja:allura.ext.user_profile:templates/user_card.html')
     def user_card(self):

@@ -31,7 +31,7 @@
         <b>To:</b> <a href="{{user.url()}}">{{user.display_name|default(user.username)}}</a>
     </div>
     <div class="grid-19">
-        <b>From:</b> {{c.user.email_address_header()}}
+        <b>From:</b> {{c.user.display_name}}
     </div>
     <div class="grid-19">&nbsp;</div>
     <form method="{{method}}" action="{{action}}">
