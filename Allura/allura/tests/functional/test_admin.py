@@ -390,7 +390,7 @@ class TestProjectAdmin(TestController):
         assert image.size == (48, 48)
 
         r = self.app.get('/p/test/icon?foo=bar')
-        r = self.app.get('/p/test/icon?w=96')
+        r = self.app.get('/p/test/icon?w=96&w=100&w=10')
         image = PIL.Image.open(BytesIO(r.body))
         assert image.size == (96, 96)
         r = self.app.get('/p/test/icon?w=12345', status=404)
