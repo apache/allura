@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 from allura.tests import TestController
+from tg import config
+from allura.lib import helpers as h
 
 
 class TestStaticFilesMiddleware(TestController):

@@ -250,6 +250,8 @@ class NeighborhoodController(object):
     @expose()
     def icon(self, w=None, **kw):
         try:
+            if isinstance(w, list):
+               w = w[0]
             icon = c.project.icon_sized(w=int(w or 48))
         except ValueError as e:
             log.info('Invalid project icon size: %s on %s', e, request.url)
@@ -422,6 +424,8 @@ class ProjectController(FeedController):
     @expose()
     def icon(self, w=48, **kw):
         try:
+            if isinstance(w, list):
+               w = w[0]
             icon = c.project.icon_sized(w=int(w))
         except ValueError as e:
             log.info('Invalid project icon size: %s on %s', e, request.url)
