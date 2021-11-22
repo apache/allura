@@ -34,7 +34,7 @@
     <input type="submit" value="{{submit_text}}" />
     {% if primary_artifact and c.user and c.user != c.user.anonymous() and not primary_artifact.subscribed() %}
       <label class="subscribe">
-        <input type="checkbox" checked name="subscribe" class="subscribe-checkbox">Subscribe to this {{ primary_artifact.type_name }}
+        <input type="checkbox" {% if primary_artifact.type_name not in ['wiki page','topic'] or subscribe_checked %}checked{% endif %} name="subscribe" class="subscribe-checkbox">Subscribe to this {{ primary_artifact.type_name }}
       </label>
     {% endif %}
     <a href="#" class="ui-button btn link cancel_edit_post">Cancel</a>

@@ -19,7 +19,12 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import mock
 import tg
-from alluratest.tools import assert_equal, assert_in, assert_not_in
+from alluratest.tools import (
+    assert_equal,
+    assert_in,
+    assert_not_in,
+    assert_true
+)
 
 from alluratest.controller import TestRestApiBase
 from allura.model import Project, User
@@ -269,6 +274,15 @@ class TestUserProfile(TestController):
     def test_remove_no_index_tag_profile(self):
         r = self.app.get('/u/test-admin/profile/')
         assert 'content="noindex, follow"' not in r.text
+
+    @td.with_user_project('test-user')
+    @td.with_wiki
+    def test_no_subscribe(self):
+        home = self.app.get('/u/test-user/wiki/Home/')
+        subscribe_checkbox = home.html.find('input', {'type': 'checkbox'})
+        assert_true(subscribe_checkbox, home.html)
+        is_subscribed = subscribe_checkbox.get('checked')
+        assert_equal(is_subscribed, None)
 
 
 

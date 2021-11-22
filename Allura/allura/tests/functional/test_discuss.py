@@ -29,6 +29,7 @@ from allura.lib import helpers as h
 from tg import config
 from io import open
 from six.moves import range
+from allura.tests import decorators as td
 
 
 class TestDiscussBase(TestController):
@@ -44,6 +45,47 @@ class TestDiscussBase(TestController):
         new_post = home.html.find('div', {'id': 'new_post_holder'})
         thread_link = new_post.find('form', {'id': 'edit_post'}).get('action')
         return thread_link.split('/')[-2]
+
+
+
+class TestTopic(TestController):
+
+    @td.with_user_project('test-user')
+    @td.with_discussion
+    def test_no_subscribe_topic(self):
+        topic = self.app.get('/p/test/discussion/create_topic/general/')
+        subscribe_checkbox = topic.html.find('input', {'type': 'checkbox'})
+        assert_true(subscribe_checkbox, topic.html)
+        is_subscribed = subscribe_checkbox.get('checked')
+        assert_equal(is_subscribed, None)
+
+    @td.with_user_project('test-admin')
+    @td.with_discussion
+    def test_subscribe_topic(self):
+        t = self.app.get('/discussion/')
+        ul = t.html.findAll('ul', {'class': 'sidebarmenu'})[1]
+        li = ul.findAll('li')
+        topic = self.app.get(li[0].find('a').get('href'))
+        form = topic.html.find('form', {'id': 'create_new_topic'})
+        action = form.get('action')
+        inputs = form.findAll('input')
+        params = dict()
+        for field in inputs:
+            if field.has_attr('name'):
+                params[field['name']] = field.get('value') or ''
+        params[form.find('textarea')['name']] = 'This is a *test thread*'
+        params[form.find('select')['name']] = 'general'
+        params[form.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
+        r = self.app.post(action, params=params)
+        topic_posted = r.follow()
+        assert 'Message posted' in topic_posted
+        assert 'This is a *test thread*' in topic_posted
+        edit_reply_form = topic_posted.html.find('form', {'id': 'edit_eply'})
+        reply_is_subscribed = edit_reply_form.find('input', {'class': 'subscribe-checkbox'})
+        assert_equal(reply_is_subscribed.get('checked'),'')
+        edit_post_form = topic_posted.html.find('form', {'id': 'edit_post'})
+        edit_no_subscribed = edit_post_form.find('input', {'class': 'subscribe-checkbox'})
+        assert_equal(edit_no_subscribed.get('checked'),None)
 
 
 class TestDiscuss(TestDiscussBase):

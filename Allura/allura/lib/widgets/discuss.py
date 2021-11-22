@@ -149,6 +149,7 @@ class EditPost(ff.ForgeForm):
     antispam = True
     defaults = dict(
         ff.ForgeForm.defaults,
+        subscribe_checked=False,
         show_subject=False,
         value=None,
         att_name='file_info')
