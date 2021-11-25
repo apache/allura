@@ -25,7 +25,6 @@ from tg import config
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import SitemapEntry
-import requests
 
 
 class TestProject(unittest.TestCase):
@@ -115,10 +114,3 @@ class TestProject(unittest.TestCase):
 
         with h.push_config(config, **{'static.icon_base': 'https://mycdn.com/mysite'}):
             self.assertEqual(p.icon_url(), 'https://mycdn.com/mysite/nbhd/myproj/icon')
-
-    def test_project_icon(self):
-        urls = ['http://localhost/s/contractsafe/icon?w=180&w=200',
-                'http://localhost/s/sproutloud/icon?w=180&&w=200&w=100']
-        for url in urls:
-            r = requests.get(url)
-            self.assertEqual(r.status_code, 200)
