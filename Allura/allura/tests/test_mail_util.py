@@ -341,4 +341,4 @@ class TestMailServer(object):
         mailserver.process_message('127.0.0.1', 'foo@bar.com', ['1234@tickets.test.p.localhost'],
                                    'this is the email body with headers and everything ÎÅ¸'.encode('utf-8'))
         assert_equal([], log.exception.call_args_list)
-        log.info.assert_called_with('Msg passed along')
+        assert log.info.call_args[0][0].startswith('Msg passed along as task '), log.info.call_args
