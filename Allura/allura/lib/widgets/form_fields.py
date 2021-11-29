@@ -17,6 +17,9 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+from urllib.parse import urlparse
+
 from tg import tmpl_context as c
 from tg import request, url
 import json
@@ -314,7 +317,9 @@ class PageList(ew_core.Widget):
         def page_url(page):
             params = request.GET.copy()
             params['page'] = page - page_offset
-            return url(request.path, params)
+            # REQUEST_URI keeps double-slashes, but not available in all environments (like tests)
+            curr_path = urlparse(request.environ.get('REQUEST_URI')).path or request.path
+            return url(curr_path, params)
         return paginate.Page(list(range(count)), page + page_offset, int(limit),
                              url_maker=page_url,
                              )
