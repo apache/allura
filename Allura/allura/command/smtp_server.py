@@ -56,9 +56,9 @@ class MailServer(smtpd.SMTPServer):
         try:
             base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
             base.log.info(' (%d bytes)', len(data))
-            allura.tasks.mail_tasks.route_email.post(
+            task = allura.tasks.mail_tasks.route_email.post(
                 peer=peer, mailfrom=mailfrom, rcpttos=rcpttos,
                 data=h.really_unicode(data))
-            base.log.info('Msg passed along')
+            base.log.info(f'Msg passed along as task {task._id}')
         except Exception:
             base.log.exception('Error handling msg')
