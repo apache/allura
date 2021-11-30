@@ -1735,14 +1735,14 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
     def fields(self):
         return h.config_with_prefix(config, 'user_prefs_storage.ldap.fields.')
 
-    def get_pref(self, user, pref_name):
+    def get_pref(self, user, pref_name, multi=False):
         from allura import model as M
         if pref_name in self.fields and user != M.User.anonymous():
-            self._get_pref(user.username, pref_name)
+            return self._get_pref(user.username, pref_name, multi=multi)
         else:
             return LocalUserPreferencesProvider().get_pref(user, pref_name)
 
-    def _get_pref(self, username, pref_name):
+    def _get_pref(self, username, pref_name, multi=False):
         con = ldap_conn()
         try:
             rs = con.search_s(ldap_user_dn(username), ldap.SCOPE_BASE)
@@ -1755,15 +1755,24 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
             return ''
         user_dn, user_attrs = rs[0]
         ldap_attr = self.fields[pref_name]
-        # assume single-valued list
-        return user_attrs[ldap_attr][0].decode('utf-8')
+        attr_list = user_attrs.get(ldap_attr, [])
+        if multi:
+            return [attr.decode('utf-8', errors='replace') for attr in attr_list]
+        elif attr_list:
+            return attr_list[0].decode('utf-8', errors='replace')
+        else:
+            return ''
 
     def set_pref(self, user, pref_name, pref_value):
         if pref_name in self.fields:
-            con = ldap_conn()
             ldap_attr = self.fields[pref_name]
+            if isinstance(pref_value, list):
+                ldap_val = [v.encode('utf-8', errors='replace') for v in pref_value]
+            else:
+                ldap_val = pref_value.encode('utf-8', errors='replace')
+            con = ldap_conn()
             con.modify_s(ldap_user_dn(user.username),
-                         [(ldap.MOD_REPLACE, ldap_attr, pref_value.encode('utf-8'))])
+                         [(ldap.MOD_REPLACE, ldap_attr, ldap_val)])
             con.unbind_s()
         else:
             return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)
