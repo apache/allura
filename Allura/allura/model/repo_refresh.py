@@ -21,6 +21,7 @@ from six.moves.cPickle import dumps
 from collections import OrderedDict
 
 import bson
+import re
 
 import tg
 import jinja2
@@ -33,10 +34,12 @@ from ming.odm.base import ObjectState, state
 
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.search import find_shortlinks
 from allura.model.repository import Commit, CommitDoc
 from allura.model.index import ArtifactReference, Shortlink
 from allura.model.auth import User
 from allura.model.timeline import TransientActor
+from allura.model.project import AppConfig
 import six
 
 log = logging.getLogger(__name__)
@@ -122,6 +125,15 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         send_notifications(repo, reversed(commit_ids))
 
 
+def update_artifact_refs(commit, commit_ref, project_id):
+    shortlinks = find_shortlinks(commit.message)
+    for link in shortlinks:
+        artifact_ref = ArtifactReference.query.get(_id=link.ref_id)
+        if (artifact_ref) and (commit_ref._id not in artifact_ref.references):
+            artifact_ref.references.append(commit_ref._id)
+            log.info('Artifact references updated successfully')
+
+
 def refresh_commit_repos(all_commit_ids, repo):
     '''Refresh the list of repositories within which a set of commits are
     contained'''
@@ -158,6 +170,10 @@ def refresh_commit_repos(all_commit_ids, repo):
                 link=oid,
                 url=repo.url_for_commit(oid))
             ci.m.save(validate=False)
+
+            project_id = repo.app.config.project_id
+            update_artifact_refs(ci, ref, project_id)
+
             # set to 'dirty' to force save() to be used instead of insert() (which errors if doc exists in db already)
             state(ref).status = ObjectState.dirty
             session(ref).flush(ref)
