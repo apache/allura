@@ -641,8 +641,8 @@ def ldap_conn(who=None, cred=None):
     specified. Remember to unbind the connection when done.
     '''
     con = ldap.initialize(config['auth.ldap.server'])
-    con.bind_s(who or config['auth.ldap.admin_dn'],
-               cred or config['auth.ldap.admin_password'])
+    con.simple_bind_s(who or config['auth.ldap.admin_dn'],
+                      cred or config['auth.ldap.admin_password'])
     return con
 
 
