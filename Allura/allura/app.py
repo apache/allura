@@ -519,6 +519,17 @@ class Application:
                 project_id=self.project._id,
                 app_config_id=self.config._id)
 
+    def unsubscribe(self, user):
+        """Unsubscribe :class:`user <allura.model.auth.User>` to the
+        :class:`allura.model.notification.Mailbox` for this Application.
+
+        """
+        if user and user != model.User.anonymous():
+            model.Mailbox.unsubscribe(
+                user_id=user._id,
+                project_id=self.project._id,
+                app_config_id=self.config._id)
+
     @classmethod
     def default_options(cls):
         """Return a ``(name, default value)`` mapping of this Application's

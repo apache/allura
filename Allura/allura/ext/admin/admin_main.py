@@ -1175,6 +1175,9 @@ class GroupsController(BaseController):
         if len(user_role.roles) == 0:
             # user has no roles in this project any more, so don't leave a useless doc around
             user_role.delete()
+        if group.name == 'Admin':
+            for ac in c.project.app_configs:
+                c.project.app_instance(ac).unsubscribe(user)
         g.post_event('project_updated')
         return dict()
 
