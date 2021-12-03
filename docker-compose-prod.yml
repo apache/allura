@@ -129,6 +129,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      # you can add configuration to nginx/vhost.d/default like "client_max_body_size 100m;" to avoid 413 Request Entity Too Large on large git pushes
       - "./nginx/vhost.d:/etc/nginx/vhost.d"
       - "./nginx/html:/usr/share/nginx/html"
       - "./nginx/certs:/etc/nginx/certs"
