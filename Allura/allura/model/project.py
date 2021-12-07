@@ -175,6 +175,10 @@ class TroveCategory(MappedClass):
         'remove first section of full path, and use nicer separator'
         return ' » '.join(self.fullpath.split(' :: ')[1:])
 
+    @classmethod
+    def by_trove_cat_ids(cls, *ids):
+        return cls.query.find({'trove_cat_id': {'$in': ids}}).all()
+
     def __json__(self):
         return dict(
             id=self.trove_cat_id,
