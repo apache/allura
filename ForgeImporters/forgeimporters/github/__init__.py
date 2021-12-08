@@ -21,6 +21,7 @@ import re
 import logging
 import json
 import time
+import requests
 import six.moves.urllib.parse
 import six.moves.urllib.request
 import six.moves.urllib.error
@@ -30,13 +31,23 @@ from tg import config, session, redirect, request, expose
 from tg.decorators import without_trailing_slash
 from tg import tmpl_context as c
 from requests_oauthlib import OAuth2Session
-import requests
 from formencode import validators as fev
 
 from forgeimporters import base
+from urllib.parse import urlparse
 
 log = logging.getLogger(__name__)
 
+
+class GitHubURLValidator(fev.FancyValidator):
+    regex = r'https?:\/\/github\.com'
+    def _to_python(self, value, state):
+        valid_url = urlparse(value.strip())
+        if not bool(valid_url.scheme):
+            raise fev.Invalid('Invalid URL', value, state)
+        if not re.match(self.regex, value):
+            raise fev.Invalid('Invalid Github URL', value, state)
+        return value
 
 class GitHubProjectNameValidator(fev.FancyValidator):
     not_empty = True
