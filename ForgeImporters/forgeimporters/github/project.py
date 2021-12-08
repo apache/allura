@@ -29,6 +29,7 @@ from forgeimporters.github import (
     tasks,
     GitHubOAuthMixin,
     GitHubProjectNameValidator,
+    GitHubURLValidator,
 )
 
 
@@ -37,6 +38,7 @@ log = logging.getLogger(__name__)
 
 class GitHubProjectForm(base.ProjectImportForm):
     project_name = GitHubProjectNameValidator()
+    project_url = GitHubURLValidator()
 
 
 class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):

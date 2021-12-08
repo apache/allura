@@ -16,11 +16,29 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{%- import '/var/local/sftheme/allura/sftheme/templates/sftheme/shared_svgs_macro.html' as shared_svgs_macro -%}
 {% extends 'forgeimporters:templates/project_base.html' %}
 
+
 {% block project_fields %}
-    <div class="grid-6">
-        <label>GitHub User Name</label>
+
+     <div class="grid-6" style="clear:left">
+        <label>GitHub Project URL
+            <span class="tooltip" title="Paste a Github project url to automatically set the user name and project name">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        </label>
+    </div>
+     <div class="grid-10">
+        <input id="project_url" name="project_url" value="{{c.form_values['project_url']}}" />
+        <div id="project_url_error" class="error{% if not c.form_errors['project_url'] %} hidden{% endif %}">
+            {{c.form_errors['project_url']}}
+        </div>
+    </div>
+
+    <div class="grid-6" style="clear:left">
+        <label>
+            GitHub User Name
+            <span class="tooltip" title="Your Github user name can be found in the dropdown menu when you click on your avatar">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        </label>
     </div>
      <div class="grid-10">
         <input id="user_name" name="user_name" value="{{c.form_values['user_name']}}" autofocus/>
@@ -29,8 +47,15 @@
         </div>
     </div>
 
+
+
+
     <div class="grid-6" style="clear:left">
-        <label>GitHub Project Name</label>
+        <label>
+            GitHub Project Name
+            <span class="tooltip" title="You can select any name from your repositories section">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        </label>
+
     </div>
      <div class="grid-10">
         <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}" />
@@ -51,4 +76,43 @@
             http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
         </div>
     </div>
+    <script>
+    $(window).load(function() {
+
+        function name(str) {
+            return str ? str.replace(/^\W+|\.git$/g, '') : null;
+        }
+
+        function owner(str) {
+            if (!str) return null;
+            var idx = str.indexOf(':');
+            if (idx > -1) {
+                return str.slice(idx + 1);
+            }
+            return str;
+        }
+
+        $('#project_url').on('keyup', function (evt) {
+            $('#project_url_error').toggleClass('hidden', true);
+            if (!$(this).val()) {
+                $('#project_name').val('');
+                $('#user_name').val('');
+                return;
+            }
+            try {
+                var url = new window.URL($(this).val());
+            }catch(e){
+                $('#project_url_error').empty().append('<p>Not a valid URL</p>');
+                $('#project_url_error').toggleClass('hidden', false);
+                return
+            }
+            var pieces = url.pathname.split('/').filter(Boolean);
+            var _owner = owner(pieces[0]);
+            var _name = name(pieces[1]);
+            $('#project_name').val(_name);
+            $('#user_name').val(_owner);
+            $('#project_name').trigger('change');
+        })
+    })
+    </script>
 {% endblock %}
