@@ -93,34 +93,26 @@
         }
 
         $('#project_url').on('keyup', function (evt) {
-            $('#project_url_error').toggleClass('hidden', true)
+            $('#project_url_error').toggleClass('hidden', true);
             if (!$(this).val()) {
                 $('#project_name').val('');
                 $('#user_name').val('');
                 return;
             }
-            console.log($(this).val())
             try {
                 var url = new window.URL($(this).val());
             }catch(e){
-                $('#project_url_error').empty().append('<p>Not a valid URL</p>')
-                $('#project_url_error').toggleClass('hidden', false)
+                $('#project_url_error').empty().append('<p>Not a valid URL</p>');
+                $('#project_url_error').toggleClass('hidden', false);
                 return
             }
-
-
-
             var pieces = url.pathname.split('/').filter(Boolean);
-            console.log("pieces", pieces)
-            let _owner = owner(pieces[0]);
-            let _name = name(pieces[1]);
+            var _owner = owner(pieces[0]);
+            var _name = name(pieces[1]);
             $('#project_name').val(_name);
             $('#user_name').val(_owner);
-            $('#project_name').trigger('change')
+            $('#project_name').trigger('change');
         })
-
-
-
     })
     </script>
 {% endblock %}
