@@ -21,10 +21,11 @@
 
 
 {% block project_fields %}
-
+    <div class="grid-16" style="clear: left">
+        <p>Paste your Github URL to autocomplete the required fields</p>
+    </div>
      <div class="grid-6" style="clear:left">
         <label>GitHub Project URL
-            <span class="tooltip" title="Paste a Github project url to automatically set the user name and project name">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -33,11 +34,16 @@
             {{c.form_errors['project_url']}}
         </div>
     </div>
-
+    <div class="grid-10" style="clear: left">
+        <label>OR</label>
+    </div>
+    <div class="grid-16" style="clear: left">
+        <p>Manually capture the required information</p>
+    </div>
     <div class="grid-6" style="clear:left">
         <label>
             GitHub User Name
-            <span class="tooltip" title="Your Github user name can be found in the dropdown menu when you click on your avatar">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="Your Github User or Organization Name can be found in the dropdown menu when you click on your avatar">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -65,7 +71,9 @@
     </div>
 
     <div class="grid-6" style="clear:left">
-        <label>{{config.site_name}} URL Name</label>
+        <label>{{config.site_name}} URL Name
+        <span class="tooltip" title="Set the project name to be used in the url of your project page">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        </label>
     </div>
     <div class="grid-10">
         <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>

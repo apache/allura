@@ -67,7 +67,6 @@
         $(function() {
             $('#project_name').bind('change keyup', suggest_name);
             $('#project_shortname').bind('change keyup', function(event) {
-                console.log("EVEN FIRED!!!")
                 if (event.type == 'keyup') {
                     manual = true;
                 }

@@ -54,7 +54,7 @@ class GitHubProjectNameValidator(fev.FancyValidator):
     messages = {
         'invalid': 'Valid symbols are: letters, numbers, dashes, '
                    'underscores and periods',
-        'unavailable': 'This project is unavailable for import',
+        'unavailable': 'This is not a valid Github project that can be used for import',
     }
 
     def _to_python(self, value, state=None):
