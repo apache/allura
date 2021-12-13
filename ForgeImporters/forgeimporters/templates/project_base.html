@@ -74,6 +74,9 @@
             });
             $('#project_name').bind('blur', check_names);
             $('#project_shortname').bind('blur', check_names);
+            if($('#project_url').length === 1) {
+                $('#project_url').bind('blur', check_names);
+            }
         });
     </script>
 {% endblock %}

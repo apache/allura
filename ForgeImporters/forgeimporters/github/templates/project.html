@@ -34,7 +34,7 @@
             {{c.form_errors['project_url']}}
         </div>
     </div>
-    <div class="grid-10" style="clear: left">
+    <div class="grid-10 field-divider">
         <label>OR</label>
     </div>
     <div class="grid-16" style="clear: left">
@@ -70,6 +70,13 @@
         </div>
     </div>
 
+    <div class="grid-10 field-divider">
+        <label>Then</label>
+    </div>
+
+    <div class="grid-16" style="clear: left;">
+        <p>Provide a project name</p>
+    </div>
     <div class="grid-6" style="clear:left">
         <label>{{config.site_name}} URL Name
         <span class="tooltip" title="Set the project name to be used in the url of your project page">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
@@ -120,7 +127,11 @@
             $('#project_name').val(_name);
             $('#user_name').val(_owner);
             $('#project_name').trigger('change');
+
         })
     })
     </script>
+    <style>
+    .field-divider{clear: left;padding-top:5px;padding-bottom:5px;};
+    </style>
 {% endblock %}
