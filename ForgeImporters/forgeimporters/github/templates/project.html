@@ -16,7 +16,6 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{%- import '/var/local/sftheme/allura/sftheme/templates/sftheme/shared_svgs_macro.html' as shared_svgs_macro -%}
 {% extends 'forgeimporters:templates/project_base.html' %}
 
 
@@ -26,7 +25,7 @@
     </div>
      <div class="grid-7" style="clear:left">
         <label>GitHub Repository URL
-            <span class="tooltip" title="A valid Github repository URL">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="A valid Github repository URL">{{ g.icons['help'].render() }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -44,7 +43,7 @@
     <div class="grid-7" style="clear:left">
         <label>
             Github User / Organization
-            <span class="tooltip" title="Your Github user or organization Name.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="Your Github user or organization Name.">{{ g.icons['help'].render() }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -60,7 +59,7 @@
     <div class="grid-7" style="clear:left">
         <label>
             GitHub Repo Name
-            <span class="tooltip" title="The name of any repository in your Github repository list.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="The name of any repository in your Github repository list.">{{  g.icons['help'].render() }}</span>
         </label>
 
     </div>
@@ -80,7 +79,7 @@
     </div>
     <div class="grid-7" style="clear:left">
         <label>{{config.site_name}} URL Name
-        <span class="tooltip" title="A link-friendly name for your project's URL.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        <span class="tooltip" title="A link-friendly name for your project's URL.">{{  g.icons['help'].render() }}</span>
         </label>
     </div>
     <div class="grid-10">
