@@ -22,11 +22,11 @@
 
 {% block project_fields %}
     <div class="grid-16" style="clear: left">
-        <p>Paste your Github URL to autocomplete the required fields</p>
+        <p>Paste your Github URL to auto-fill your repository information</p>
     </div>
      <div class="grid-7" style="clear:left">
         <label>GitHub Project URL
-            <span class="tooltip" title="A valid Github project URL">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="A valid Github repository URL">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -39,12 +39,12 @@
         <label>OR</label>
     </div>
     <div class="grid-16" style="clear: left">
-        <p>Manually capture the required information</p>
+    <p>Manually enter your Github repository information</p>
     </div>
     <div class="grid-7" style="clear:left">
         <label>
             Github User / Organization
-            <span class="tooltip" title="Your Github User or Organization Name can be found in the dropdown menu when you click on your avatar">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="Your Github user or organization Name.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
     </div>
      <div class="grid-10">
@@ -60,7 +60,7 @@
     <div class="grid-7" style="clear:left">
         <label>
             GitHub Repo Name
-            <span class="tooltip" title="You can select any name from your repositories section">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+            <span class="tooltip" title="The name of any repository in your Github repository list.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
 
     </div>
@@ -76,11 +76,11 @@
     </div>
 
     <div class="grid-16" style="clear: left;">
-        <p>Provide a project name</p>
+        <p>Pick a URL</p>
     </div>
     <div class="grid-7" style="clear:left">
         <label>{{config.site_name}} URL Name
-        <span class="tooltip" title="Provide a project name to would be included in the url of your project page">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
+        <span class="tooltip" title="A link-friendly name for your project's URL.">{{ shared_svgs_macro.global_svgs('info-circle', class='svgico info-circle') }}</span>
         </label>
     </div>
     <div class="grid-10">
