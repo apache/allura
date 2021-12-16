@@ -24,6 +24,7 @@ import email.parser
 from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
 from email import header
+from email.message import EmailMessage
 
 import six
 import tg
@@ -46,6 +47,9 @@ config = ConfigProxy(
     return_path='forgemail.return_path',
 )
 EMAIL_VALIDATOR = fev.Email(not_empty=True)
+
+# http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
+MAX_MAIL_LINE_OCTETS = 990
 
 
 def Header(text, *more_text):
@@ -190,10 +194,6 @@ def identify_sender(peer, email_address, headers, msg):
     return M.User.anonymous()
 
 
-# http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
-MAX_MAIL_LINE_OCTETS = 990
-
-
 def encode_email_part(content, content_type):
     try:
         # simplest email - plain ascii
@@ -264,7 +264,7 @@ class SMTPClient(object):
         self._client = None
 
     def sendmail(
-            self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message,
+            self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message: EmailMessage,
             sender=None, references=None, cc=None, to=None):
         if not addrs:
             return
@@ -291,7 +291,18 @@ class SMTPClient(object):
         if references:
             references = ['<%s>' % r for r in aslist(references)]
             message['References'] = Header(*references)
-        content = message.as_string()
+
+        # Kind of Hacky, but...
+        #   Certain headers, like 'References' can become very long when sent via reply
+        #   from deep inside a ticket thread. message.as_string allows you to pass a
+        #   maxheaderlen which splits long lines for you to fit inside your exim constraints.
+        #   HOWEVER, that flag doesn't take the header name length into account. So, this
+        #   somewhat hacky code approximates the longest 'Header-Name: ' prefix and makes sure
+        #   the line octet length takes that into account.
+        longest_header_len = max(len(h[0]) for h in message._headers)
+        max_header_len = MAX_MAIL_LINE_OCTETS - (2 + longest_header_len)
+
+        content = message.as_string(maxheaderlen=max_header_len)
         smtp_addrs = list(map(_parse_smtp_addr, addrs))
         smtp_addrs = [a for a in smtp_addrs if isvalid(a)]
         if not smtp_addrs:

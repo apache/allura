@@ -34,7 +34,7 @@ import mock
 from tg import tmpl_context as c, app_globals as g
 
 from datadiff.tools import assert_equal
-from nose.tools import assert_in, assert_less
+from nose.tools import assert_in, assert_less, assert_less_equal
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
@@ -46,6 +46,7 @@ from allura.command.taskd import TaskdCommand
 from allura.lib import helpers as h
 from allura.lib import search
 from allura.lib.exceptions import CompoundError
+from allura.lib.mail_util import MAX_MAIL_LINE_OCTETS
 from allura.tasks import event_tasks
 from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
@@ -475,12 +476,13 @@ class TestMailTasks(unittest.TestCase):
                 text=('0123456789' * 100) + '\n\n' + ('Громады стро ' * 100),
                 reply_to=g.noreply,
                 subject='По оживлённым берегам',
+                references=['foo@example.com'] * 100,  # needs to handle really long headers as well
                 message_id=h.gen_message_id())
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
 
             for line in body:
-                assert_less(len(line), 991)
+                assert_less_equal(len(line), MAX_MAIL_LINE_OCTETS)
 
             # plain text
             assert_in('012345678901234567890123456789012345678901234567890123456789012345678901234=', body)
