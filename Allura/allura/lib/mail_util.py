@@ -17,7 +17,6 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from __future__ import annotations
 import re
 import logging
 import smtplib
@@ -25,7 +24,7 @@ import email.parser
 from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
 from email import header
-import typing
+from email.message import EmailMessage
 
 import six
 import tg
@@ -39,9 +38,6 @@ from allura.lib import exceptions as exc
 from allura.lib import helpers as h
 from six.moves import map
 
-if typing.TYPE_CHECKING:
-    from email.message import EmailMessage
-
 log = logging.getLogger(__name__)
 
 RE_MESSAGE_ID = re.compile(r'<(?:[^>]*/)?([^>]*)>')
@@ -53,7 +49,7 @@ config = ConfigProxy(
 EMAIL_VALIDATOR = fev.Email(not_empty=True)
 
 # http://www.jebriggs.com/blog/2010/07/smtp-maximum-line-lengths/
-MAX_MAIL_LINE_OCTETS = 998  # RFC 1000 - len(CRLF)
+MAX_MAIL_LINE_OCTETS = 990
 
 
 def Header(text, *more_text):
