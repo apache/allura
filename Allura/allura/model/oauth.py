@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import logging
 import typing
+from datetime import datetime
+
 
 import oauth2 as oauth
 from tg import tmpl_context as c, app_globals as g
@@ -58,6 +60,7 @@ class OAuthToken(MappedClass):
     type = FieldProperty(str)
     api_key = FieldProperty(str, if_missing=lambda: h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
+    last_access = FieldProperty(datetime)
 
     def to_string(self):
         return oauth.Token(self.api_key, self.secret_key).to_string()

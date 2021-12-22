@@ -43,6 +43,7 @@ from allura.lib.decorators import require_post
 from allura.lib.project_create_helpers import make_newproject_schema, deserialize_project, create_project_with_attrs
 from allura.lib.security import has_access
 import six
+from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -150,6 +151,7 @@ class OAuthNegotiator(object):
             if not (access_token and access_token.is_bearer):
                 request.environ['tg.status_code_redirect'] = True
                 raise exc.HTTPUnauthorized
+            access_token.last_access = datetime.utcnow()
             return access_token
         req = oauth.Request.from_request(
             request.method,
@@ -178,6 +180,7 @@ class OAuthNegotiator(object):
         except oauth.Error as e:
             log.error('Invalid signature %s %s', type(e), e)
             raise exc.HTTPUnauthorized
+        access_token.last_access = datetime.utcnow()
         return access_token
 
     @expose()
