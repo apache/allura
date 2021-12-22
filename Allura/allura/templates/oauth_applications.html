@@ -90,6 +90,9 @@
             <th>Bearer Token:</th><td>{{access_token.api_key}}</td>
         </tr>
         {% endif %}
+         <tr>
+            <th>Last Access:</th><td>{%  if access_token.last_access %} {{ access_token.last_access.strftime('%a %b %d, %Y %I:%M %p UTC')  }} {%  endif %}</td>
+        </tr>
         <tr class="controls">
             <td colspan="2">
                 <form method="POST" action="revoke_access_token" class="revoke_access_token">
