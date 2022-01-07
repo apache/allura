@@ -31,7 +31,7 @@
       <img {{ lib.project_icon_srcs(value, icon_url=icon_url) }} alt="{{value.name}} Logo" width="48" height="48"/>
     </div>
   {% endif %}
-  <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
+  <h2 class="h2-like"><a href="{{value.url()}}">{{value.name}}</a></h2>
   <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
   {% if show_download_button %}{{g.markdown_wiki.convert('[[download_button]]')}}{% endif %}
 </div>

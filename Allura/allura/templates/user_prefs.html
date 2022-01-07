@@ -27,7 +27,7 @@
 {% do g.register_js('js/jquery.lightbox_me.js') %}
   {{ super() }}
   <div class="grid-23">
-    <h2>Preferences</h2>
+    <h2 class="h2-like">Preferences</h2>
     {% block info %}
     <fieldset class="preferences">
       <legend>Username: {{ c.user.username }}</legend>
@@ -85,7 +85,7 @@
           </p>
         </div>
       </form>
-      {{c.enter_password.display(content='<h1>Enter password</h1>')}}
+      {{c.enter_password.display(content='<h1 class="h1-like">Enter password</h1>')}}
       <!-- end popup -->
 
       {% endif %}  {# allow_edit_prefs #}

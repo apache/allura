@@ -27,9 +27,9 @@ Moderation Queue
 {% endblock %}
 
 {% block content %}
-<h3>Filter Posts</h3>
+<h3 class="h3-like">Filter Posts</h3>
 {{c.post_filter.display(action=discussion.url()+'moderate', value=dict(status=status, flag=flag, username=username))}}
-<h3>Update Marked Posts</h3>
+<h3 class="h3-like">Update Marked Posts</h3>
 {{c.moderate_posts.display(value=dict(posts=posts), action=discussion.url()+'moderate/save_moderation')}}
 {{c.page_list.display(limit=limit, page=page, count=count)}}
 {% endblock %}

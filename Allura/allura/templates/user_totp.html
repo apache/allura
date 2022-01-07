@@ -29,9 +29,9 @@
   <div class='grid-20'>
     {% if setup %}
         {% if c.user.get_pref('multifactor') %}
-            <h3>Warning: this will invalidate your previous multifactor configuration.</h3>
+            <h3 class="h3-like">Warning: this will invalidate your previous multifactor configuration.</h3>
         {% endif %}
-        <h2>Install App</h2>
+        <h2 class="h2-like">Install App</h2>
         <form action="totp_send_link" id="totp_send_link" method="post">
         <p>To use two-factor authentication, you will need to install an app on your phone.<br>
             Install Google Authenticator for
@@ -45,14 +45,14 @@
         </form>
     {% endif %}
 
-    <h2>Scan this with your app:</h2>
+    <h2 class="h2-like">Scan this with your app:</h2>
     <img class="qrcode" src="{{ h.base64uri(qr) }}"/>
     <p style="margin-left:1rem">
         Or enter setup key: {{ key_b32 }}
     </p>
 
     {% if setup %}
-        <h2>Enter the code</h2>
+        <h2 class="h2-like">Enter the code</h2>
         <form method="POST" action="totp_set" id="totp_set">
         <p>
             Enter the {{ config['auth.multifactor.totp.length'] }}-digit code from the app, to confirm it is set up correctly:<br>

@@ -23,7 +23,7 @@
 {% block header %}Project Categorization{% endblock %}
 
 {% macro show_trove_base_cat(base) %}
-  <h3>{{base.fullname}}</h3>
+  <h3 class="h3-like">{{base.fullname}}</h3>
   {% set help_text = config.get('trovecategories.admin.help.'+base.shortname, '') %}
   {% if help_text %}
     <div class="grid-19">
@@ -86,7 +86,7 @@
   {% endif %}
 
   <div class="project_labels">
-    <h3>Project Labels</h3>
+    <h3 class="h3-like">Project Labels</h3>
     <div class="grid-19 trove_add_container">
       <form method="POST" class="can-retry" action="update_labels" id="label_edit_form">
         {{ c.label_edit.display(id='labels', name='labels', value=c.project.labels) }}

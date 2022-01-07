@@ -82,7 +82,7 @@
   {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
     <p><a rel="nofollow" href="?format=raw">Download this file</a></p>
     <div class="clip grid-19 codebrowser">
-      <h3>
+      <h3 class="h3-like">
         {{ stats.line_count }} lines ({{ stats.data_line_count }} with data), {{ stats.code_size|filesizeformat }}
       </h3>
       {% if blob.has_pypeline_view %}

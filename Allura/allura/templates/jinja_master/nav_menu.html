@@ -36,7 +36,7 @@
     {% elif c.project.icon %}
       <img class="project_icon" alt="Project Logo" {{ lib.project_icon_srcs(c.project) }}>
     {% endif %}
-        <h1 class="project_title">
+        <h1 class="h1-like project_title">
             <a href="{{c.project.url()}}" class="project_link">
                 {%- if c.project.is_user_project -%}
                     {{ c.project.user_project_of.display_name }}
@@ -55,7 +55,7 @@
     {% if status and status.shortname not in ['production', 'mature'] %}
     <span id="dev-status" class="{{ status.shortname }}">{{ status.shortname }}</span>
     {% endif %}
-    <h2 class="project_summary{% if c.project.icon %} with-icon{% endif %}">
+    <h2 class="h2-like project_summary{% if c.project.icon %} with-icon{% endif %}">
         {{c.project.summary}}
     </h2>
     {% if not c.project.is_user_project %}

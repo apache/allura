@@ -24,7 +24,7 @@
 {% block header %}{{neighborhood.name}} Moderation{% endblock %}
 
 {% block content %}
-  <h2>Invite Projects?</h2>
+  <h2 class="h2-like">Invite Projects?</h2>
   <form method="POST" action="invite" class="grid-10">
     <p>
     <select name="neighborhood_id">
@@ -45,7 +45,7 @@
 
   <div style="clear:both">&nbsp;</div>
 
-  <h2>Evict Projects?</h2>
+  <h2 class="h2-like">Evict Projects?</h2>
   <form method="POST" action="evict" class="grid-10">
     <select name="pid">
       {% for p in neighborhood.projects if p.is_root and not p.is_nbhd_project %}

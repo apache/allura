@@ -37,7 +37,7 @@
 
 {% block content %}
   {% if announcements %}
-    <h3>Announcements</h3>
+    <h3 class="h3-like">Announcements</h3>
     {{c.announcements_table.display(value=announcements)}}
   {% endif %}
   {% set visible=0 %}

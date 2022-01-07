@@ -30,7 +30,7 @@
 {% block header %}Search help{% endblock %}
 
 {% block content%}
-    <div><h1>Searching for tickets</h1>
+    <div><h1 class="h1-like">Searching for tickets</h1>
     <p>Searches use <a href="http://www.solrtutorial.com/solr-query-syntax.html" target="_blank">solr lucene query syntax</a>. Use the following fields in tracker ticket searches:</p>
     <ul>
     <li>User who owns the ticket - assigned_to</li>
@@ -59,7 +59,7 @@
     {% endif %}
     </ul>
 
-    <h2>Example searches</h2>
+    <h2 class="h2-like">Example searches</h2>
     <p>Any ticket that is not closed in the 1.0 milestone with "foo" in the title</p>
     <div class="codehilite"><pre>!status:closed AND summary:foo* AND _milestone:1.0</pre></div>
     <p>Tickets with the label "foo" but not the label "bar":</p>
@@ -73,9 +73,9 @@
     <p>Private tickets</p>
     <div class="codehilite"><pre>private:true</pre></div>
 
-    <h2>Saving searches</h2>
+    <h2 class="h2-like">Saving searches</h2>
     <p>Ticket searches may be saved for later use by project administrators. To save a search, click "Edit Searches" in the tracker sidebar. Click "Add Search" then enter a summary and search terms for the saved search. Your search will now show up in the sidebar under "Searches" with a count of how many tickets match the query.</p>
-    <h2>Sorting search results</h2>
+    <h2 class="h2-like">Sorting search results</h2>
     <p>Ticket search results can be sorted by clicking the header of the column you want to sort by. The first click will sort the results in ascending order. Clicking the header again will sort the column in descending order. In addition to sorting by the column headers, you can manually sort on these properties:</p>
     <ul>
     <li>Labels assigned to the ticket - labels_t</li>

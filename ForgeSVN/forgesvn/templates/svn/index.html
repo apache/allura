@@ -25,7 +25,7 @@
 {% block content %}
   {{ clone_info(c.app.repo) }}
   {% if log %}
-    <h2>Recent Commits</h2>
+    <h2 class="h2-like">Recent Commits</h2>
     {{c.log_widget.display(value=log, show_paging=False,
                            limit=limit, page=page, count=count)}}
     {% if count > limit %}
@@ -36,19 +36,19 @@
     <div class="message warning scm-learn-basics">
       <div class="content">
         <img src="{{g.app_static('images/svn.png')}}" style="float:left">
-        <h2>New to Subversion?</h2>
+        <h2 class="h2-like">New to Subversion?</h2>
         <a href="http://svnbook.red-bean.com/">Learn the basics</a>.
       </div>
     </div>
 
     <div class="message error scm-empty-repo">
-      <h6>Empty Repository</h6>
+      <h6 class="h6-like">Empty Repository</h6>
       <div class="content">
         It looks like this Subversion repository doesn't have any files in it. Let's commit your project code now.
       </div>
     </div>
 
-    <h2>Create default directories</h2>
+    <h2 class="h2-like">Create default directories</h2>
     <p>It's common practice among Subversion users to create a <code>/trunk</code>,
       <code>/branches</code>, and <code>/tags</code> directory at the root of each
       repository. If you'd like to do that, follow these instructions:
@@ -71,13 +71,13 @@ svn ci -m "Add initial directories"
       end of the url, and click 'Save.'
     </p>
 
-    <h2>Import project on disk to Subversion</h2>
+    <h2 class="h2-like">Import project on disk to Subversion</h2>
     <div class="codehilite">
       <pre>cd existing-{{c.app.repo.suggested_clone_dest_path()}}
 svn import {{c.app.repo.clone_url_first(anon=False, username=c.user.username)}} -m "Initial commit"</pre>
     </div>
 
-    <h2>Import remote repository to Subversion</h2>
+    <h2 class="h2-like">Import remote repository to Subversion</h2>
     <p>Use the <a href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/importer/">repository clone tool</a>
     then check out a working copy once you receive a completion email.</p>
     &nbsp;

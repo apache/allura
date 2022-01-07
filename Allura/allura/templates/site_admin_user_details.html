@@ -77,7 +77,7 @@
           {{lib.csrf_token()}}
         </form>
         <div id="password_reset_url_modal" class="modal">
-            <h1>Password Reset URL</h1>
+            <h1 class="h1-like">Password Reset URL</h1>
             <p>Be very careful to share this only with the intended user.</p>
             <input type="url" readonly id="password_reset_url">
             <a href="#" id="password_reset_url_copy">copy</a>
@@ -106,13 +106,13 @@
     <div class="grid-23">
       <fieldset class="preferences">
         <legend>Session</legend>
-        <h3>Last login</h3>
+        <h3 class="h3-like">Last login</h3>
         <ul>
           <li>Date: {{ user.last_access.login_date }} ({{ h.ago(user.last_access.login_date, show_date_after=None) }})</li>
           <li>IP: {{ user.last_access.login_ip }}</li>
           <li>UA: {{ user.last_access.login_ua }}</li>
         </ul>
-        <h3>Last page access</h3>
+        <h3 class="h3-like">Last page access</h3>
         <ul>
           <li>Date: {{ user.last_access.session_date and user.last_access.session_date.date() }}</li>
           <li>IP: {{ user.last_access.session_ip }}</li>

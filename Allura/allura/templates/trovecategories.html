@@ -33,11 +33,11 @@
         {% endfor %}
         &gt; {{selected_cat.fullname}}
       </div>
-      <h2>
+      <h2 class="h2-like">
         Sub-categories of {{selected_cat.fullname}}
       </h2>
     {% else %} 
-      <h2>
+      <h2 class="h2-like">
         List of all top-level categories
         <a href="/categories/browse">(browse all categories)</a>
       </h2>
@@ -66,7 +66,7 @@
   </div>
 
   <div class="grid-20">
-    <h2>Create a new item in this category</h2>
+    <h2 class="h2-like">Create a new item in this category</h2>
     {% if selected_cat %}
       {{g.theme.add_trove_category.display(uppercategory_id=selected_cat.trove_cat_id, value=kw)}}
     {% else %}

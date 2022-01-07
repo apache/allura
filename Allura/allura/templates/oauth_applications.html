@@ -70,7 +70,7 @@
 
 {% block content %}
     {{ super() }}
-    <h2>Authorized Applications</h2>
+    <h2 class="h2-like">Authorized Applications</h2>
     <p>
         These are applications you have authorized to act on your behalf.
         They potentially have full access to your account, so if you are
@@ -102,7 +102,7 @@
     </table>
     {% endfor %}
 
-    <h2>My Applications</h2>
+    <h2 class="h2-like">My Applications</h2>
     <p>
     These are the applications you have registered.  They can request authorization
     for a user using the Consumer Key and Consumer Secret via OAuth negotiation.
@@ -134,6 +134,6 @@
     </table>
     {% endfor %}
 
-    <h2>Register New Application</h2>
+    <h2 class="h2-like">Register New Application</h2>
     {{ c.form.display() }}
 {% endblock %}

@@ -161,7 +161,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     <a href="{{project.neighborhood.url()}}"><img {{ lib.project_icon_srcs(project.neighborhood.neighborhood_project) }} class="neighborhood_icon"
        alt="Return to {{project.neighborhood.name}}" title="Return to {{project.neighborhood.name}}"></a>
        <div class="neighborhood_title">
-         <h3><a href="{{project.neighborhood.url()}}">{{project.neighborhood.name}}</a></h3>
+         <h3 class="h3-like"><a href="{{project.neighborhood.url()}}">{{project.neighborhood.name}}</a></h3>
          {% if project.neighborhood.project_list_url %}
            <div class="neighborhood_title_link">
            <a href="{{project.neighborhood.project_list_url}}">
@@ -181,7 +181,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
     {% do g.register_forge_js('js/jquery-ui.min.js') %}
     {% do g.register_js('js/login_overlay.js') %}
     <div id="login_overlay" class="ui-widget-content">
-        <h2 class="dark title">Login Required</h2>
+        <h2 class="h2-like dark title">Login Required</h2>
         <iframe src="{{g.login_fragment_url}}"></iframe>
     </div>
 {%- endmacro %}

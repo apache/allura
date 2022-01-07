@@ -25,7 +25,7 @@
 
 {% block content %}
 <form method="post">
-    <h2>Password Confirmation</h2>
+    <h2 class="h2-like">Password Confirmation</h2>
     <p>To access this account security page, you must reconfirm your password:<br>
     {% if c.form_errors['password'] %}
         <span class="fielderror">{{ c.form_errors['password'] }}</span><br>

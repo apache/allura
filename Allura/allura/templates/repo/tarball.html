@@ -75,8 +75,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% set path = request.params.get('path', '') %}
 <div id='snapshot_status'>
     <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
-    <h2 class="busy ready">Generating snapshot...</h2>
-    <h2 class="complete">Your download will begin shortly, or use this <a rel="nofollow" href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
+    <h2 class="h2-like busy ready">Generating snapshot...</h2>
+    <h2 class="h2-like complete">Your download will begin shortly, or use this <a rel="nofollow" href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
     <form action="tarball" method="post" class="None">
       <p>We're having trouble finding that snapshot. Would you like to resubmit?</p>
       <input type="hidden" name="path" value="{{path}}" />

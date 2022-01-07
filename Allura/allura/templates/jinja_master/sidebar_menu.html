@@ -38,7 +38,7 @@
       {% do ul_active.append(False) %}
     {% endif %}
     {% if s.label %}
-      <h3 class="{{s.className or ''}}">{% if s.ui_icon %}{{ s.ui_icon.render() }}{% endif %}{{s.label}}</h3>
+      <h3 class="h3-like {{s.className or ''}}">{% if s.ui_icon %}{{ s.ui_icon.render() }}{% endif %}{{s.label}}</h3>
     {% endif %}
   {% endif %}
 {%- endmacro %}

@@ -27,7 +27,7 @@
 
 {% if show_moderate and h.has_access(value, 'moderate')() %}
   <div id="mod_thread_form" style="display: none; clear: both">
-    <h2>Moderate Thread</h2>
+    <h2 class="h2-like">Moderate Thread</h2>
     <div class="grid-19 fright">
       {{widgets.moderate_thread.display(value=value, action=value.url()+'moderate')}}
     </div>

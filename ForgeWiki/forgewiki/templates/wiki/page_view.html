@@ -55,7 +55,7 @@
     {{ g.icons['undelete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
         {{ g.icons['close'].render(tag='a', extra_css='close') }}
-        <h1>Confirm page restoration</h1>
+        <h1 class="h1-like">Confirm page restoration</h1>
         <p>
             Do you really want to restore the page?
             You can undo it later.
@@ -115,7 +115,7 @@
   {{lib.related_artifacts(page)}}
   {% if page.discussion_thread and c.app.show_discussion %}
       {% if h.has_access(page, 'post')() or page.discussion_thread.num_replies > 0 %}
-          <div id="discussion_holder"><h2>Discussion</h2>
+          <div id="discussion_holder"><h2 class="h2-like">Discussion</h2>
           {% set thread = page.discussion_thread %}
           <div>{{ c.thread.display(value=thread,page=pagenum,limit=limit,count=count) }}</div>
           </div>

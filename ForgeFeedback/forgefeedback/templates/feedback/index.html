@@ -36,13 +36,13 @@
 {% if c.user and c.user != c.user.anonymous() %} 
 <div class="index">
 	{% if user_has_already_reviewed == False %}   
-	<p><h2> Provide your <a href="{{c.app.url}}new_feedback">Feedback</a> for {{c.project.name}} </h2></p>
+	<p><h2 class="h2-like"> Provide your <a href="{{c.app.url}}new_feedback">Feedback</a> for {{c.project.name}} </h2></p>
 	{% else %} 
-	<p><h2><a href="{{c.app.url}}edit_feedback"> Edit </a> or <a class="post-link" href="#"> Delete </a> your feedback for {{c.project.name}} </h2> </p>
+	<p><h2 class="h2-like"><a href="{{c.app.url}}edit_feedback"> Edit </a> or <a class="post-link" href="#"> Delete </a> your feedback for {{c.project.name}} </h2> </p>
 	{% endif %}  
 </div>
 {% else %}
-<p><h3> <a target="_parent" href="{{ config.get('auth.login_url', '/auth/') }}">Login </a> to Add/Modify Feedback</h3></p>
+<p><h3 class="h3-like"> <a target="_parent" href="{{ config.get('auth.login_url', '/auth/') }}">Login </a> to Add/Modify Feedback</h3></p>
 {% endif %}
 <hr/>
 <div class ="index" >

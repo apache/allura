@@ -25,7 +25,7 @@
 
 {% block content %}
 <form method="post" action="/auth/do_multifactor">
-    <h2>Enter your Multifactor Authentication Code</h2>
+    <h2 class="h2-like">Enter your Multifactor Authentication Code</h2>
     <p>
     <span class="totp">Please enter the {{ config['auth.multifactor.totp.length'] }}-digit code from your authenticator app:</span>
     <span class="recovery">Please enter a recovery code:</span>

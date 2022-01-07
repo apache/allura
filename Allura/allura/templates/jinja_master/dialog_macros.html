@@ -26,7 +26,7 @@ http://stackoverflow.com/questions/26582731/redefining-imported-jinja-macros
 {%- macro revert_confirmation_dialog(version) %}
     <div class="confirmation_dialog_{{version}}" style="display:none">
         {{ g.icons['close'].render(tag='a', extra_css='close') }}
-        <h1>Confirm revert to version {{version}}</h1>
+        <h1 class="h1-like">Confirm revert to version {{version}}</h1>
         <p>
         Do you really want to revert page to version {{version}}?
         You can undo it later by reverting changes made by this revert.

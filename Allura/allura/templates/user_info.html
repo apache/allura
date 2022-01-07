@@ -26,13 +26,13 @@
 {% block content %}
   {{ super() }}
   <div style="clear:both" class="grid-20">
-    <h2>Personal Information</h2>
+    <h2 class="h2-like">Personal Information</h2>
     {{g.theme.personal_data_form.display(action="/auth/user_info/change_personal_data", user=c.user)}} 
   </div>
 
   <a name="Contacts"></a>
   <div style="clear:both" class="grid-20">
-    <h2>Personal Contacts</h2>
+    <h2 class="h2-like">Personal Contacts</h2>
     <p>
       If you want, you can set your contacts allowing other members to contact you or you can set your personal website allowing other members to introduce your self.
     </p>
@@ -41,7 +41,7 @@
 
   <a name="Availability"></a>
   <div style="clear:both" class="grid-20">
-    <h2>Availability</h2>
+    <h2 class="h2-like">Availability</h2>
     <p>
       If you want, you can set the weekly timeslot during which you are usually available to support other users of the forge. (If you didn't set any timezone, your timeslots could be meaningless to other users, therefore they will be ignored!)
     </p>
@@ -49,7 +49,7 @@
   </div>
 
   <div class="grid-20">
-    <h2>Skills list</h2>
+    <h2 class="h2-like">Skills list</h2>
     <ul><li><a href="skills">Click here to check and change your skills list</a></li></ul>
   </div>
 {% endblock %}

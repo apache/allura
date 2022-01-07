@@ -36,7 +36,7 @@
          <li><a href="{{c.project.url()}}userstats">Go back to general statistics</a></li>
        </ul>
     {% endif %}
-    <h2>General statistics</h2>
+    <h2 class="h2-like">General statistics</h2>
     <table>
       <thead>
         <tr>
@@ -61,7 +61,7 @@
       </tbody>
     </table>
 
-    <h2>Contribution statistics</h2>
+    <h2 class="h2-like">Contribution statistics</h2>
 
     <table>
       <thead>
@@ -363,7 +363,7 @@
     </table>
 
     {% if categories %}
-        <h2>Preferred categories</h2>
+        <h2 class="h2-like">Preferred categories</h2>
         <p>
           The following table shows the number projects tagged as belonging to each single category in which this user is involved.
         </p>
@@ -386,13 +386,13 @@
     {% endif %}
   {% else %}
     {% if user %}
-      <h2>Statistics not available</h2>
+      <h2 class="h2-like">Statistics not available</h2>
       <div class="grid-20">
         This user has set his or her preferences so that personal statistics are not visible
         to other users of the forge.
       </div>
     {% else %}
-      <h2>Invalid user</h2>
+      <h2 class="h2-like">Invalid user</h2>
       <div class="grid-20">
         You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
       </div>

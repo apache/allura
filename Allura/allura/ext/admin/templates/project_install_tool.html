@@ -20,7 +20,7 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set full_url = h.absurl(c.project.url()) %}
 
-<h1> Installing {{ tool.tool_label }} </h1>
+<h1 class="h1-like"> Installing {{ tool.tool_label }} </h1>
 {% if tool_name == 'subproject' %}
     {% set mount_point_re = h.re_mount_points['re_project_name'] %}
     {% set max_length = 15 %}

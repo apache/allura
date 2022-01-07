@@ -28,7 +28,7 @@
   {{ super() }}
   <div class="grid-20">
     {% if c.user.get_skills()|length > 0 %}
-      <h2>Your current skills list:</h2>
+      <h2 class="h2-like">Your current skills list:</h2>
       <table>
         <thead>
           <tr>
@@ -45,7 +45,7 @@
         </tbody>
       </table>
     {% else %}
-      <h2>At the moment, your skills list is empty!</h2>
+      <h2 class="h2-like">At the moment, your skills list is empty!</h2>
       <div class="grid-20">
         You can set your skills so that other users will be able to know what you can do best. 
         To do it, you just need to choose the options that best fit your skills in the section below. You 
@@ -55,7 +55,7 @@
   </div>
  
   <div class="grid-20">
-    <h2>Add a new skill</h2>
+    <h2 class="h2-like">Add a new skill</h2>
 
     {% if selected_skill %}
       <div class="grid-20" style="margin:0;">
@@ -75,19 +75,19 @@
  
     {% if skills_list %}
       {% if selected_skill %}
-        <h3>Select a subcategory of "{{selected_skill.fullname}}"</h3>
+        <h3 class="h3-like">Select a subcategory of "{{selected_skill.fullname}}"</h3>
       {% else %}
-        <h3>Select a category</h3>
+        <h3 class="h3-like">Select a category</h3>
       {%endif%}
       {{g.theme.select_subcategory_form.display(categories=skills_list)}}
     {% endif %}
     {% if selected_skill and not selected_skill.parent_only %}
-      <h3>Add "{{selected_skill.fullname}}" to your set of skills</h3>
+      <h3 class="h3-like">Add "{{selected_skill.fullname}}" to your set of skills</h3>
       {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
            action="{}/save_skill".format(selected_skill.trove_cat_id)) }}
     {% endif %}
 
-    <h3>Other possible actions</h3>
+    <h3 class="h3-like">Other possible actions</h3>
     <div class="grid-20" style="margin-bottom:10px;"/>
       <ul>
         {% if tg.config.get('trovecategories.enableediting', 'false') == 'true' %}

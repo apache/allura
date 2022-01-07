@@ -22,7 +22,7 @@
 {% for a in timeline %}
 <li id="{{a._id}}" data-page="{{page}}" {% if h.has_access(c.project.neighborhood, 'admin') %}data-can-delete{% endif %}>
   <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
-  <h1>
+  <h1 class="h1-like">
       {{ am.icon(a.actor, 32, 'avatar') }}
       {{am.activity_obj(a.actor)}} {{a.verb}} {{am.activity_obj(a.obj)}} {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
   </h1>

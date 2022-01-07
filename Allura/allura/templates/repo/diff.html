@@ -52,7 +52,7 @@
   </div>
   {% else %}
   <div class="clip grid-19 diffbrowser">
-    <h3>
+    <h3 class="h3-like">
         {% if session.diformat == 'sidebyside' %}
           {% set switch_url = request.url.replace('&diformat=sidebyside', '') + '&diformat=regular' %}
           {% set switch_text = 'unified' %}

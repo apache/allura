@@ -25,7 +25,7 @@
 {% block content %}
           {% if awards_count > 0 %}
           <p>
-          <h3>Current Awards</h3>
+          <h3 class="h3-like">Current Awards</h3>
             <div id="award_list">
               <table>
                 <thead>
@@ -59,7 +59,7 @@
           </p>
           {% endif %}
 
-          <h3>Create an Award</h3>
+          <h3 class="h3-like">Create an Award</h3>
           <form enctype="multipart/form-data" method="POST" action="awards/create">
             <table>
               <thead>
@@ -92,14 +92,14 @@
 
           {% if awards_count > 0 %}
           <p>
-            <h3>Grant an Award</h3>
+            <h3 class="h3-like">Grant an Award</h3>
             {{ c.award_grant_form.display(action="awards/grant") }}
           </p>
           {% endif %}
 
           {% if grants_count > 0 %}
           <p>
-            <h3>Current Grants</h3>
+            <h3 class="h3-like">Current Grants</h3>
             <div id="grant_list">
               <table>
                 <thead>

@@ -141,7 +141,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 
     {% for type, file, obj_type, is_text in artifacts %}
         <div class="inline-diff">
-            <h6>
+            <h6 class="h6-like">
             {% if type in ('added', 'changed') %}
                 {% set file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
                 <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>

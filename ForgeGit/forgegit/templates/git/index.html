@@ -25,7 +25,7 @@
 {% block content %}
   {{ clone_info(c.app.repo) }}
   {% if log %}
-    <h2>Recent Commits{% if branch %} on {{branch}}{% endif %}</h2>
+    <h2 class="h2-like">Recent Commits{% if branch %} on {{branch}}{% endif %}</h2>
     {{c.log_widget.display(value=log, show_paging=False,
                            limit=limit, page=page, count=count)}}
     {% if int(count) > int(limit) %}
@@ -36,19 +36,19 @@
     <div class="message warning scm-learn-basics">
       <div class="content">
         <img src="{{g.app_static('images/git.png')}}" style="float:left">
-        <h2>New to Git?</h2>
+        <h2 class="h2-like">New to Git?</h2>
         <a href="http://git-scm.com/doc">Learn the basics</a>.
       </div>
     </div>
 
     <div class="message error scm-empty-repo">
-      <h6>Empty Repository</h6>
+      <h6 class="h6-like">Empty Repository</h6>
       <div class="content">
         It looks like this Git repository doesn't have any files in it. Let's commit your project code now.  Just run the commands below.
       </div>
     </div>
 
-    <h2>First time using Git</h2>
+    <h2 class="h2-like">First time using Git</h2>
     {% set origin = c.app.repo.clone_url_first(anon=False, username=c.user.username) %}
     <div class="codehilite">
       <pre>cd myproject
@@ -60,7 +60,7 @@ git remote add origin {{ origin }}
 git push -u origin master</pre>
     </div>
 
-    <h2>Existing repository using Git</h2>
+    <h2 class="h2-like">Existing repository using Git</h2>
 
     <div class="codehilite">
       <pre>cd myproject

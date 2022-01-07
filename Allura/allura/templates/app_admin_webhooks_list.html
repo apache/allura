@@ -23,7 +23,7 @@
 
 {% block content %}
   {% for hook in webhooks %}
-    <h1>{{ hook.type }}</h1>
+    <h1 class="h1-like">{{ hook.type }}</h1>
     <p><a href="{{admin_url}}/{{hook.type}}">Create</a></p>
     {% if configured_hooks[hook.type] %}
       <table>

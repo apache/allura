@@ -34,7 +34,7 @@
 
     {% if data %}
     <div class="grid-20">
-      <h2>Statistics by category</h2>
+      <h2 class="h2-like">Statistics by category</h2>
       <table>
         <thead>
           <tr>
@@ -61,13 +61,13 @@
     {% endif %}
   {% else %}
     {% if user %}
-      <h2>Statistics not available</h2>
+      <h2 class="h2-like">Statistics not available</h2>
       <div class="grid-20">
         This user has set his or her preferences so that personal statistics are not visible
         to other users of the forge.
       </div>
     {% else %}
-      <h2>Invalid user</h2>
+      <h2 class="h2-like">Invalid user</h2>
       <div class="grid-20">
         You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
       </div>

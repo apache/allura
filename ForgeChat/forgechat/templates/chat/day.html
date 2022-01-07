@@ -25,7 +25,7 @@
 
 {% block content %}
   {{ clib.checkout_info(c.app) }}
-  <h2>Log for {{day.strftime('%Y-%m-%d')}}</h2>
+  <h2 class="h2-like">Log for {{day.strftime('%Y-%m-%d')}}</h2>
   <div class="grid-19">
     <a href="{{prev}}">Earlier</a>...
     <a href="{{next}}">Later</a>

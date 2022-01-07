@@ -91,7 +91,7 @@
   {% if repo and repo.status != 'ready' %}
     <div id="repo_status">
         <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
-        <h2>Repo status: <span>{{repo.status}}</span>...</h2>
+        <h2 class="h2-like">Repo status: <span>{{repo.status}}</span>...</h2>
     </div>
   {% endif %}
 {% endblock %}

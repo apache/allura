@@ -27,7 +27,7 @@
 {% block content %}
   {{ super() }}
   <div class="grid-20">
-    <h2>Availability</h2>
+    <h2 class="h2-like">Availability</h2>
     <div class="grid-18">
         Please, set your time intervals choosing a weekday and entering the
         time interval according to the timezone specified in your personal
@@ -44,7 +44,7 @@
   </div>
   <div class="grid-20">
     {%if c.user.get_availability_timeslots() %}
-      <h3>Existing availability timeslots</h3>
+      <h3 class="h3-like">Existing availability timeslots</h3>
       <table>
         <tr>
           <thead>
@@ -63,13 +63,13 @@
         {%endfor%}
       </table>
     {% endif %}
-    <h3>Add a new availability timeslot</h3>
+    <h3 class="h3-like">Add a new availability timeslot</h3>
     {{g.theme.add_timeslot_form.display(action="add_timeslot")}}
   </div>
 
   <div class="grid-20">
     {%if c.user.get_inactive_periods() %}
-      <h3>Existing periods of inactivity on the forge</h3>
+      <h3 class="h3-like">Existing periods of inactivity on the forge</h3>
       <table>
         <tr>
           <thead>
@@ -86,7 +86,7 @@
         {%endfor%}
       </table>
     {% endif %}
-    <h3>Add a new period of inactivity on the forge</h3>
+    <h3 class="h3-like">Add a new period of inactivity on the forge</h3>
     {{g.theme.add_inactive_period_form.display(action="add_inactive_period")}}
   </div>
 {% endblock %}

@@ -22,8 +22,8 @@
 {% block title %}Trove Categories List{% endblock %}
 
 {% block content %}
-    <h3><a href="/categories">(back)</a></h3>
-    <h3>Trove Categories</h3>
+    <h3 class="h3-like"><a href="/categories">(back)</a></h3>
+    <h3 class="h3-like">Trove Categories</h3>
     <ul>
         {% for key, value in tree.items() recursive %}
             <li>{{ key }}</li>
@@ -32,5 +32,5 @@
             {% endif %}
         {% endfor %}
     </ul>
-    <h3><a href="/categories">(back)</a></h3>
+    <h3 class="h3-like"><a href="/categories">(back)</a></h3>
 {% endblock content %}

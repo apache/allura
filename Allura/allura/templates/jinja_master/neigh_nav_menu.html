@@ -23,7 +23,7 @@
     {% if neighborhood.icon %}
       <a href="{{neighborhood.url()}}"><img {{ lib.project_icon_srcs(neighborhood.neighborhood_project) }} class="project_icon" alt="{{neighborhood.name}} Logo"/></a>
     {% endif %}
-	<h1 class="project_title"><a href="{{neighborhood.url()}}">{{neighborhood.name}}</a></h1>
+	<h1 class="h1-like project_title"><a href="{{neighborhood.url()}}">{{neighborhood.name}}</a></h1>
   {% if neighborhood.project_list_url %}
     <div class="project_title_link">
     <a href="{{neighborhood.project_list_url}}">

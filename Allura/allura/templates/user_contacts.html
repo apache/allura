@@ -27,14 +27,14 @@
 {% block content %}
   {{ super() }}
   <div class="grid-20">
-    <h2>Personal Contacts</h2>
-    <h3>Skype account</h3>
+    <h2 class="h2-like">Personal Contacts</h2>
+    <h3 class="h3-like">Skype account</h3>
 
     {{g.theme.skype_account_form.display(action="skype_account",
           initial_value=c.user.get_pref('skypeaccount'))}}
 
     {%if c.user.get_pref('socialnetworks') or c.user.get_pref('telnumbers') or c.user.get_pref('webpages') %}
-      <h3>Other existing contacts</h3>
+      <h3 class="h3-like">Other existing contacts</h3>
         <table>
           <tr>
             <thead>
@@ -57,11 +57,11 @@
         </table>
     {% endif %}
 
-    <h3>Add a social network account</h3>
+    <h3 class="h3-like">Add a social network account</h3>
     {{g.theme.add_socialnetwork_form.display(action="add_social_network")}}
-    <h3>Add a telephone number</h3>
+    <h3 class="h3-like">Add a telephone number</h3>
     {{g.theme.add_telnumber_form.display(action="add_telnumber")}}
-    <h3>Add a personal website</h3>
+    <h3 class="h3-like">Add a personal website</h3>
     {{g.theme.add_website_form.display(action="add_webpage")}}
   </div>
 {% endblock %}

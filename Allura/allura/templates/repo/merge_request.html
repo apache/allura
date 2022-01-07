@@ -39,19 +39,19 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   <div class="grid-19">
     <div id="merge_task_status" class="task_status">
       {% if merge_status == 'complete' %}
-        <h2 class="complete">Merged</h2>
+        <h2 class="h2-like complete">Merged</h2>
       {% else %}
         <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
-        <h2 class="busy ready">Merging...</h2>
-        <h2 class="complete">Merged</h2>
-        <h2 class="fail">Something went wrong. Please, merge manually</h2>
+        <h2 class="h2-like busy ready">Merging...</h2>
+        <h2 class="h2-like complete">Merged</h2>
+        <h2 class="h2-like fail">Something went wrong. Please, merge manually</h2>
       {% endif %}
   </div>
     <div id="can_merge_task_status" class="task_status">
       {% if can_merge_status != 'complete' %}
         <img src="{{g.forge_static('images/spinner.gif')}}" class="spinner" style="display:none"/>
-        <h2 class="busy ready">Checking if merge is possible...</h2>
-        <h2 class="fail">Something went wrong. Please, merge manually</h2>
+        <h2 class="h2-like busy ready">Checking if merge is possible...</h2>
+        <h2 class="h2-like fail">Something went wrong. Please, merge manually</h2>
       {% endif %}
     </div>
   </div>
@@ -159,7 +159,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
 {% block after_content %}
   <div id="discussion_holder">
-    <h2>Discussion</h2>
+    <h2 class="h2-like">Discussion</h2>
     {% set thread=req.discussion_thread %}
     {{c.thread.display(
         value=thread,
