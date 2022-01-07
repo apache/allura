@@ -169,7 +169,7 @@ Files {% if folder_object %} - {{path_links(folder_path.split('/'), urls)}} {% e
                 {% if not file.disabled  %}
                     {% set name, text = file.readme() %}
                     {% if name %}
-                        <h1 id="readme"> Read Me </h1>
+                        <h1 id="readme" class="h1-like"> Read Me </h1>
                         {{h.render_any_markup(name, text)}}
                     {% endif %}
                 {% endif %}

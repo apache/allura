@@ -77,7 +77,7 @@ form.tarball button:hover {
 {{c.tree_widget.display(repo=repo, commit=commit, tree=tree, path=path)}}
 {% set name, text = tree.readme() %}
 {% if name %}
-  <h1 id="readme">Read Me</h1>
+  <h1 id="readme" class="h1-like">Read Me</h1>
   {{h.render_any_markup(name, text)}}
 {% endif %}
 {% endblock %}

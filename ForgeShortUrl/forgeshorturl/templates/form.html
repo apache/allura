@@ -20,7 +20,7 @@
 
 {% set app = app or c.app %}
 <div>
-    <h1 id="short-url-form-title" style="display:none"><span id="short-url-form-action-label">Add</span> Short URL</h1>
+    <h1 id="short-url-form-title" class="h1-like" style="display:none"><span id="short-url-form-action-label">Add</span> Short URL</h1>
     <form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/add" id="short-url-form">
         <input type="hidden" name="update"/>
         <label class="grid-13">Short Name</label>

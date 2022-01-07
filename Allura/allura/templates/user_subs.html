@@ -35,7 +35,7 @@
     <p>No subscriptions.</p>
   {% endif %}
 
-  <h2 id="notifications">User notifications</h2>
+  <h2 id="notifications" class="h2-like">User notifications</h2>
   <form method="POST" action="update_user_notifications">
   <div class="grid-10">
       <input type="checkbox" id="allow_umnotif" name="allow_umnotif" {% if c.user.get_pref('mention_notifications') %} checked {% endif %}>
