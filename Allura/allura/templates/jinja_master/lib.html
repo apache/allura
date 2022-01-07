@@ -139,18 +139,15 @@
   <textarea id="{{name}}" name="{{name}}">{{value}}</textarea><br/>
 {% endmacro %}
 
-{% macro text_field(name, label, value='') %}
+{% macro text_field(name, label, value='', type='text') %}
   {% if label %}
   <label for="{{name}}">{{label}}</label><br/>
   {% endif %}
-  <input type="text" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
+  <input type="{{ type }}" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
 {% endmacro %}
 
 {% macro password_field(name, label, value='') %}
-  {% if label %}
-  <label for="{{name}}">{{label}}</label><br/>
-  {% endif %}
-  <input type="password" id="{{name}}" name="{{name}}" class="text" value="{{value}}"/><br/>
+  {{ text_field(name, label, value, type='password') }}
 {% endmacro %}
 
 {% macro hidden_field(name, value='') %}

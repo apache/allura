@@ -57,8 +57,18 @@
   </tr>
   {% endfor %}
   <tr>
-    <td colspan="2">{{lib.text_field('new_addr.addr', '')}}</td>
+    <td colspan="2">{{lib.text_field('new_addr.addr', label='', type='email')}}</td>
     <td colspan="2">{{lib.submit_button('Claim New Address', name='new_addr.claim')}}</td>
+    <script>
+        {# hitting Enter by default submits the first submit button which is Delete.  Override that #}
+        $('input[name="new_addr.addr"]').on('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                $('input[name="new_addr.claim"]').click();
+            }
+        });
+    </script>
   </tr>
 </table>
 <div class="grid-22">
