@@ -280,6 +280,7 @@ class EmojiExtension(markdown.Extension):
     EMOJI_RE = r'(:[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#\*]+:)'
 
     def extendMarkdown(self, md):
+        md.registerExtension(self)
         md.inlinePatterns["emoji"] = EmojiInlinePattern(self.EMOJI_RE)
 
 
@@ -295,6 +296,7 @@ class UserMentionExtension(markdown.Extension):
     UM_RE = r'\B(@(?![0-9]+$)(?!-)[a-z0-9_-]{2,14}[a-z0-9_])'
 
     def extendMarkdown(self, md):
+        md.registerExtension(self)
         md.inlinePatterns["user_mentions"] = UserMentionInlinePattern(self.UM_RE)
 
 
