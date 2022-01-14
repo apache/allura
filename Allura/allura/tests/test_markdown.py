@@ -146,5 +146,5 @@ Not *strong* or _underlined_."""
 
         md = ForgeMarkdown(
             extensions=[mde.CommitMessageExtension(app), 'markdown.extensions.nl2br'],
-            output_format='html4')
+            output_format='html')
         self.assertEqual(md.convert(text), expected_html)

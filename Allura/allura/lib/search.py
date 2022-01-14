@@ -375,7 +375,7 @@ def find_shortlinks(text):
 
     md = markdown.Markdown(
         extensions=['markdown.extensions.codehilite', ForgeExtension(), 'markdown.extensions.tables'],
-        output_format='html4')
+        output_format='html')
     md.convert(text)
     link_index = md.treeprocessors['links'].alinks
     return [link for link in link_index if link is not None]
