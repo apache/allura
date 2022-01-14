@@ -85,7 +85,7 @@ class ForgeMarkdown(markdown.Markdown):
             escaped = cgi.escape(h.really_unicode(source))
             return Markup('<pre>%s</pre>' % escaped)
         try:
-            return markdown.Markdown.convert(self, source)
+            return super().convert(source)
         except Exception:
             log.info('Invalid markdown: %s  Upwards trace is %s', source,
                      ''.join(traceback.format_stack()), exc_info=True)
@@ -451,7 +451,7 @@ class Globals(object):
                         ForgeExtension(**kwargs), EmojiExtension(), UserMentionExtension(),
                         'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
                         'markdown_checklist.extension'],
-            output_format='html4')
+            output_format='html')
 
     @property
     def markdown(self):
@@ -473,7 +473,7 @@ class Globals(object):
         """
         app = getattr(c, 'app', None)
         return ForgeMarkdown(extensions=[CommitMessageExtension(app), EmojiExtension(), 'markdown.extensions.nl2br'],
-                             output_format='html4')
+                             output_format='html')
 
     @property
     def production_mode(self):

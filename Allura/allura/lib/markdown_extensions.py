@@ -247,7 +247,7 @@ class ForgeExtension(markdown.Extension):
         self._is_email = email
         self._macro_context = macro_context
 
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         md.registerExtension(self)
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird
@@ -277,20 +277,14 @@ class ForgeExtension(markdown.Extension):
 
 class EmojiExtension(markdown.Extension):
 
-    EMOJI_RE = '(%s[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#*]+%s)' % (':', ':')
+    EMOJI_RE = r'(:[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#\*]+:)'
 
-    def __init__(self, **kwargs):
-        markdown.Extension.__init__(self)
-
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         md.inlinePatterns["emoji"] = EmojiInlinePattern(self.EMOJI_RE)
 
 
 class EmojiInlinePattern(markdown.inlinepatterns.Pattern):
-    
-    def __init__(self, pattern):
-        markdown.inlinepatterns.Pattern.__init__(self, pattern)
-        
+
     def handleMatch(self, m):
         emoji_code = m.group(2)
         return emoji.emojize(emoji_code, use_aliases=True)
@@ -300,17 +294,11 @@ class UserMentionExtension(markdown.Extension):
 
     UM_RE = r'\B(@(?![0-9]+$)(?!-)[a-z0-9_-]{2,14}[a-z0-9_])'
 
-    def __init__(self, **kwargs):
-        markdown.Extension.__init__(self)
-
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         md.inlinePatterns["user_mentions"] = UserMentionInlinePattern(self.UM_RE)
 
 
 class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
-
-    def __init__(self, pattern):
-        markdown.inlinepatterns.Pattern.__init__(self, pattern)
 
     def handleMatch(self, m):
         user_name = m.group(2).replace("@", "")
