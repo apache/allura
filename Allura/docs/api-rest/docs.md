@@ -72,10 +72,10 @@ Python code example to create a new ticket:
                                                        # must be created first
         })
     if r.status_code == 200:
-        print 'Ticket created at: %s' % r.url
+        print('Ticket created at: %s' % r.url)
         pprint(r.json())
     else:
-        print 'Error [%s]:\n%s' % (r.status_code, r.text)
+        print('Error [%s]:\n%s' % (r.status_code, r.text))
 
 
 
@@ -84,16 +84,16 @@ Python code example to create a new ticket:
 
 If you want your application to be able to use the API on behalf of another user, that user must authorize your application to act on their behalf.  This is usually accomplished by obtaining a request token and directing the user authorize the request.  The following is an example of how one would authorize an application in Python using the python-oauth2 library.  First, run `pip install oauth2` and `pip install certifi`.
 
+    import oauth2 as oauth  # misleading package name, oauth2 implements OAuth 1.0 spec
+    import certifi
+    from urllib.parse import parse_qs, parse_qsl, urlencode
+    import webbrowser
+
     CONSUMER_KEY = '<consumer key from registration>'
     CONSUMER_SECRET = '<consumer secret from registration>'
     REQUEST_TOKEN_URL = 'https://sourceforge.net/rest/oauth/request_token'
     AUTHORIZE_URL = 'https://sourceforge.net/rest/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://sourceforge.net/rest/oauth/access_token'
-    
-    import oauth2 as oauth  # misleading package name, oauth2 implements OAuth 1.0 spec
-    import certifi
-    from urllib.parse import parse_qsl
-    import webbrowser
     
     consumer = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
     client = oauth.Client(consumer)
@@ -107,19 +107,19 @@ If you want your application to be able to use the API on behalf of another user
     if resp['status'] != '200':
         raise Exception("Invalid response %s." % resp['status'])
     
-    request_token = dict(parse_qsl(content))
+    request_token = dict(parse_qsl(content.decode('utf-8')))
     
     # these are intermediate tokens and not needed later
     # print("Request Token:")
-    # print("    - oauth_token        = %s" % request_token[b'oauth_token'].decode())
-    # print("    - oauth_token_secret = %s" % request_token[b'oauth_token_secret'].decode())
+    # print("    - oauth_token        = %s" % request_token['oauth_token'])
+    # print("    - oauth_token_secret = %s" % request_token['oauth_token_secret'])
     # print()
     
     # Step 2: Redirect to the provider. Since this is a CLI script we do not 
     # redirect. In a web application you would redirect the user to the URL
     # below, specifying the additional parameter oauth_callback=<your callback URL>.
     
-    webbrowser.open("%s?oauth_token=%s" % (AUTHORIZE_URL, request_token[b'oauth_token'].decode()))
+    webbrowser.open("%s?oauth_token=%s" % (AUTHORIZE_URL, request_token['oauth_token']))
     
     # Since we didn't specify a callback, the user must now enter the PIN displayed in 
     # their browser.  If you had specified a callback URL, it would have been called with 
@@ -137,11 +137,11 @@ If you want your application to be able to use the API on behalf of another user
     client.ca_certs = certifi.where()
     
     resp, content = client.request(ACCESS_TOKEN_URL, "GET")
-    access_token = dict(parse_qsl(content))
+    access_token = dict(parse_qsl(content.decode('utf-8')))
     
     print("Access Token:")
-    print("    - oauth_token        = %s" % access_token[b'oauth_token'].decode())
-    print("    - oauth_token_secret = %s" % access_token[b'oauth_token_secret'].decode())
+    print("    - oauth_token        = %s" % access_token['oauth_token'])
+    print("    - oauth_token_secret = %s" % access_token['oauth_token_secret'])
     print()
     print("You may now access protected resources using the access tokens above.") 
     print()
@@ -149,7 +149,8 @@ If you want your application to be able to use the API on behalf of another user
 
 You can then use your access token with the REST API.  For instance script to create a wiki page might look like this:
 
-    urllib.parse import urlencode
+    from urllib.parse import urlparse, parse_qsl, urlencode
+
     import oauth2 as oauth
     import certifi
     
