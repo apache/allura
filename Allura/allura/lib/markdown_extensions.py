@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import re
 import logging
+from typing import List
 
 from six.moves.urllib.parse import urljoin
 
@@ -43,6 +44,32 @@ log = logging.getLogger(__name__)
 
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
+
+# SHORT_REF_RE copied from markdown pre 3.0
+SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
+
+# FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
+NOBRACKET = r'[^\]\[]*'
+BRK = (
+    r'\[(' +
+    (NOBRACKET + r'(\[')*6 +
+    (NOBRACKET + r'\])*')*6 +
+    NOBRACKET + r')\]'
+)
+FORGE_LINK_RE = markdown.inlinepatterns.NOIMG + BRK + \
+    r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
+
+
+def clear_markdown_registry(reg: markdown.util.Registry, keep: List[str] = []):
+    keep_items = {}
+    for name in keep:
+        keep_items[name] = reg[name]
+
+    # this resets Registry's internal data structures to be empty
+    reg.__init__()
+
+    for name, item in keep_items.items():
+        reg.register(item, name, 50)  # arbitrary priority :(
 
 
 class CommitMessageExtension(markdown.Extension):
@@ -70,22 +97,20 @@ class CommitMessageExtension(markdown.Extension):
     """
 
     def __init__(self, app):
-        markdown.Extension.__init__(self)
+        super().__init__()
         self.app = app
         self._use_wiki = False
 
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         md.registerExtension(self)
         # remove default preprocessors and add our own
-        md.preprocessors.clear()
+        clear_markdown_registry(md.preprocessors)
         md.preprocessors['trac_refs'] = PatternReplacingProcessor(TracRef1(), TracRef2(), TracRef3(self.app))
         # remove all inlinepattern processors except short refs and links
-        md.inlinePatterns.clear()
-        md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(markdown.inlinepatterns.LINK_RE, md)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        clear_markdown_registry(md.inlinePatterns, keep=['link'])
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(SHORT_REF_RE, md, ext=self)
         # remove all default block processors except for paragraph
-        md.parser.blockprocessors.clear()
-        md.parser.blockprocessors['paragraph'] = markdown.blockprocessors.ParagraphProcessor(md.parser)
+        clear_markdown_registry(md.parser.blockprocessors, keep=['paragraph'])
         # wrap artifact link text in square brackets
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
@@ -242,7 +267,7 @@ class PatternReplacingProcessor(markdown.preprocessors.Preprocessor):
 class ForgeExtension(markdown.Extension):
 
     def __init__(self, wiki=False, email=False, macro_context=None):
-        markdown.Extension.__init__(self)
+        super().__init__()
         self._use_wiki = wiki
         self._is_email = email
         self._macro_context = macro_context
@@ -257,8 +282,8 @@ class ForgeExtension(markdown.Extension):
                               AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md),
                               '<escape')
         # replace the link pattern with our extended version
-        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns['link'] = ForgeLinkPattern(FORGE_LINK_RE, md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(SHORT_REF_RE, md, ext=self)
         # macro must be processed before links
         md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
@@ -317,13 +342,13 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
         return result
 
 
-class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
+class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
-        markdown.inlinepatterns.LinkPattern.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def handleMatch(self, m):
         el = markdown.util.etree.Element('a')
@@ -347,7 +372,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
                 return '[TOC]'  # skip TOC
             if self.artifact_re.match(href):
                 href, classes = self._expand_alink(href, is_link_with_brackets)
-            el.set('href', self.sanitize_url(self.unescape(href.strip())))
+            el.set('href', self.unescape(href.strip()))
             el.set('class', classes)
         else:
             el.set('href', '')
@@ -394,7 +419,7 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, *args, **kwargs):
         self.ext = kwargs.pop('ext')
         self.macro = macro.parse(self.ext._macro_context)
-        markdown.inlinepatterns.Pattern.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def handleMatch(self, m):
         html = self.macro(m.group(2))
@@ -503,8 +528,7 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 class AutolinkPattern(markdown.inlinepatterns.Pattern):
 
     def __init__(self, pattern, markdown_instance=None):
-        markdown.inlinepatterns.Pattern.__init__(
-            self, pattern, markdown_instance)
+        super().__init__(pattern, markdown_instance)
         # override the complete regex, requiring the preceding text (.*?) to end
         # with whitespace or beginning of line "\s|^"
         self.compiled_re = re.compile("^(.*?\s|^)%s(.*?)$" % pattern,
