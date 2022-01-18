@@ -67,13 +67,15 @@ httplib2==0.19.0
     # via oauth2
 idna==3.2
     # via requests
+importlib-metadata==4.10.1
+    # via markdown
 inflection==0.5.1
     # via profanityfilter
 iso8601==0.1.16
     # via colander
 jinja2==3.0.2
     # via -r requirements.in
-markdown==3.1.1
+markdown==3.2.2
     # via
     #   -r requirements.in
     #   markdown-checklist
@@ -194,7 +196,9 @@ translationstring==1.4
 turbogears2==2.3.12
     # via -r requirements.in
 typing-extensions==3.10.0.2
-    # via gitpython
+    # via
+    #   gitpython
+    #   importlib-metadata
 urllib3==1.26.6
     # via requests
 waitress==2.0.0
@@ -218,6 +222,8 @@ werkzeug==2.0.2
     # via -r requirements.in
 wrapt==1.11.2
     # via -r requirements.in
+zipp==3.7.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

@@ -22,6 +22,7 @@ from __future__ import absolute_import
 import re
 import logging
 from typing import List
+import xml.etree.ElementTree as etree
 
 from six.moves.urllib.parse import urljoin
 
@@ -333,7 +334,7 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
         result = None
 
         if user and not user.pending and not user.disabled:
-            result = markdown.util.etree.Element('a')
+            result = etree.Element('a')
             result.text = "@%s" % user_name
             result.set('href', user.url())
             result.set('class', 'user-mention')
@@ -351,7 +352,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
         super().__init__(*args, **kwargs)
 
     def handleMatch(self, m):
-        el = markdown.util.etree.Element('a')
+        el = etree.Element('a')
         el.text = m.group(2)
         is_link_with_brackets = False
         try:
@@ -383,7 +384,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
 
         if 'notfound' in classes and not self.ext._use_wiki:
             text = el.text
-            el = markdown.util.etree.Element('span')
+            el = etree.Element('span')
             el.text = '[%s]' % text
         return el
 
@@ -536,7 +537,7 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, mo):
         old_link = mo.group(2)
-        result = markdown.util.etree.Element('a')
+        result = etree.Element('a')
         result.text = old_link
         # since this is run before the builtin 'escape' processor, we have to
         # do our own unescaping
