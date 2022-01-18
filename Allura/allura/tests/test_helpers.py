@@ -270,7 +270,6 @@ def test_render_any_markup_plain():
 
 
 def test_render_any_markup_formatting():
-    # this is broken until markdown 3.1 fixes it again
     assert_equals(str(h.render_any_markup('README.md', '### foo\n'
                                           '    <script>alert(1)</script> bar')),
                   '<div class="markdown_content"><h3 id="foo">foo</h3>\n'

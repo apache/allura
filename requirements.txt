@@ -73,7 +73,7 @@ iso8601==0.1.16
     # via colander
 jinja2==3.0.2
     # via -r requirements.in
-markdown==3.0.1
+markdown==3.1.1
     # via
     #   -r requirements.in
     #   markdown-checklist
