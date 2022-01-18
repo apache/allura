@@ -449,27 +449,61 @@ def test_markdown_big_text():
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
-        assert '<a class="alink" href="/p/test/wiki/Home/">[Home]</a>' in text, text
+        assert_equal(text,
+                     '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                     '<p><a class="alink" href="/p/test/wiki/Home/">[Home]</a></p></div>')
         text = g.markdown.convert('# Foo!\n[Rooted]')
-        assert '<a href=' not in text, text
+        assert_equal(text,
+                     '<div class="markdown_content"><h1 id="foo">Foo!</h1>\n'
+                     '<p><span>[Rooted]</span></p></div>')
 
-    assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
-    assert '<br' not in g.markdown.convert('Multi\n\nLine')
+    assert_equal(
+        g.markdown.convert('Multi\nLine'),
+        '<div class="markdown_content"><p>Multi<br/>\n'
+        'Line</p></div>')
+    assert_equal(
+        g.markdown.convert('Multi\n\nLine'),
+        '<div class="markdown_content"><p>Multi</p>\n'
+        '<p>Line</p></div>')
 
-    g.markdown.convert("<class 'foo'>")  # should not raise an exception
-    assert '<br' not in g.markdown.convert('''# Header
+    # should not raise an exception:
+    assert_equal(
+        g.markdown.convert("<class 'foo'>"),
+        '''<div class="markdown_content"><p>&lt;class 'foo'=""&gt;&lt;/class&gt;</p></div>''')
+
+    assert_equal(
+        g.markdown.convert('''# Header
 
 Some text in a regular paragraph
 
     :::python
     for i in range(10):
         print i
-''')
-    assert_in('http://localhost/', g.forge_markdown(email=True).convert('[Home]'))
-    assert 'class="codehilite"' in g.markdown.convert('''
+'''),
+        # no <br
+        '<div class="markdown_content"><h1 id="header">Header</h1>\n'
+        '<p>Some text in a regular paragraph</p>\n'
+        '<div class="codehilite"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
+        '    <span class="nb">print</span> <span class="n">i</span>\n'
+        '</pre></div>\n'
+        '\n'
+        '</div>'
+    )
+    assert_equal(
+        g.forge_markdown(email=True).convert('[Home]'),
+        # uses localhost:
+        '<div class="markdown_content"><p><a class="alink" href="http://localhost/p/test/wiki/Home/">[Home]</a></p></div>'
+    )
+    assert_equal(
+        g.markdown.convert('''
 ~~~~
 def foo(): pass
-~~~~''')
+~~~~'''),
+        '<div class="markdown_content"><div class="codehilite"><pre><span></span>def foo(): pass\n'
+        '</pre></div>\n'
+        '\n'
+        '</div>'
+    )
 
 
 def test_markdown_autolink():
