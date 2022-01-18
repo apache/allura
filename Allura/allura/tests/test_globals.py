@@ -177,7 +177,7 @@ def test_macro_gittip_button():
     assert_equal(
         r,
         '<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" '
-        'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
+        'style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p></div>')
 
 
 def test_macro_neighborhood_feeds():
@@ -486,7 +486,6 @@ Some text in a regular paragraph
         '<div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
         '    <span class="nb">print</span> <span class="n">i</span>\n'
         '</code></pre></div>\n'
-        '\n'
         '</div>'
     )
     assert_equal(
@@ -501,7 +500,6 @@ def foo(): pass
 ~~~~'''),
         '<div class="markdown_content"><div class="codehilite"><pre><span></span><code>def foo(): pass\n'
         '</code></pre></div>\n'
-        '\n'
         '</div>'
     )
 
