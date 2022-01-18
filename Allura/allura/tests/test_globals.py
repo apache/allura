@@ -517,9 +517,39 @@ def test_markdown_list_without_break():
 Regular text
 * first item
 * second item'''),
+        '<div class="markdown_content"><p>Regular text\n'  # no <br>
+        '* first item\n'  # no <br>
+        '* second item</p></div>'
+    )
+
+    assert_equal(
+        g.markdown.convert('''\
+Regular text
+- first item
+- second item'''),
         '<div class="markdown_content"><p>Regular text<br/>\n'
-        '<em> first item<br/>\n'
-        '</em> second item</p></div>'
+        '- first item<br/>\n'
+        '- second item</p></div>'
+    )
+
+    assert_equal(
+        g.markdown.convert('''\
+Regular text
++ first item
++ second item'''),
+        '<div class="markdown_content"><p>Regular text<br/>\n'
+        '+ first item<br/>\n'
+        '+ second item</p></div>'
+    )
+
+    assert_equal(
+        g.markdown.convert('''\
+Regular text
+1. first item
+2. second item'''),
+        '<div class="markdown_content"><p>Regular text<br/>\n'
+        '1. first item<br/>\n'
+        '2. second item</p></div>'
     )
 
 
