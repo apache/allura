@@ -50,7 +50,7 @@ def assert_equal(*a, **kw):
 
 
 def assert_equals(*a, **kw):
-    return testcase.assertEquals(*a, **kw)
+    return testcase.assertEqual(*a, **kw)
 
 
 def assert_not_equal(*a, **kw):
@@ -102,7 +102,7 @@ def assert_greater_equal(*a, **kw):
 
 
 def assert_regexp_matches(*a, **kw):
-    return testcase.assertRegexpMatches(*a, **kw)
+    return testcase.assertRegex(*a, **kw)
 
 
 #
