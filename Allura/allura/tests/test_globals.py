@@ -483,9 +483,9 @@ Some text in a regular paragraph
         # no <br
         '<div class="markdown_content"><h1 id="header">Header</h1>\n'
         '<p>Some text in a regular paragraph</p>\n'
-        '<div class="codehilite"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
+        '<div class="codehilite"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>\n'
         '    <span class="nb">print</span> <span class="n">i</span>\n'
-        '</pre></div>\n'
+        '</code></pre></div>\n'
         '\n'
         '</div>'
     )
@@ -499,8 +499,8 @@ Some text in a regular paragraph
 ~~~~
 def foo(): pass
 ~~~~'''),
-        '<div class="markdown_content"><div class="codehilite"><pre><span></span>def foo(): pass\n'
-        '</pre></div>\n'
+        '<div class="markdown_content"><div class="codehilite"><pre><span></span><code>def foo(): pass\n'
+        '</code></pre></div>\n'
         '\n'
         '</div>'
     )
@@ -522,7 +522,7 @@ def test_markdown_autolink():
               g.markdown.convert('a blahttp://sdf.com z'))
     assert_in('literal <code>http://domain.net</code> literal',
               g.markdown.convert('literal `http://domain.net` literal'))
-    assert_in('<pre><span></span>preformatted http://domain.net\n</pre>',
+    assert_in('<pre><span></span><code>preformatted http://domain.net\n</code></pre>',
               g.markdown.convert('    :::text\n'
                                  '    preformatted http://domain.net'))
 
@@ -869,12 +869,7 @@ class TestEmojis(unittest.TestCase):
         output = g.markdown.convert('```html\n<p>:camel:</p>\n```')
         assert_in(':camel:', output)
         output = g.markdown.convert('~~~\n:camel:\n~~~')
-        try:
-            # older pygments
-            assert_in('<span></span><span class="err">:camel:</span>', output)
-        except AssertionError:
-            # newer pygments
-            assert_in('<pre><span></span>:camel:\n</pre>', output)
+        assert_in('<pre><span></span><code>:camel:\n</code></pre>', output)
 
     def test_markdown_commit_with_emojis(self):
         output = g.markdown_commit.convert('Thumbs up emoji :+1: wow!')

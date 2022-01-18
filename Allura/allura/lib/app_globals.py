@@ -447,7 +447,8 @@ class Globals(object):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
             extensions=['markdown.extensions.fenced_code', 'markdown.extensions.codehilite',
-                        'markdown.extensions.extra',  # to allow markdown inside HTML tags
+                        'markdown.extensions.abbr', 'markdown.extensions.def_list', 'markdown.extensions.footnotes',
+                        'markdown.extensions.md_in_html',
                         ForgeExtension(**kwargs), EmojiExtension(), UserMentionExtension(),
                         'markdown.extensions.tables', 'markdown.extensions.toc', 'markdown.extensions.nl2br',
                         'markdown_checklist.extension'],

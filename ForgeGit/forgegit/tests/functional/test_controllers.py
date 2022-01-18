@@ -902,12 +902,12 @@ class TestFork(_TestCase):
 </li>
 </ul>
 <p>Diff:</p>
-<div class="codehilite"><pre><span></span><span class="gd">--- old</span>
+<div class="codehilite"><pre><span></span><code><span class="gd">--- old</span>
 <span class="gi">+++ new</span>
 <span class="gu">@@ -1 +1 @@</span>
 <span class="gd">-description</span>
 <span class="gi">+changed description</span>
-</pre></div>
+</code></pre></div>
 </div>
 """.strip())
 
