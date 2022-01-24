@@ -110,7 +110,9 @@ pastedeploy==2.0.1
     #   pastescript
 pastescript==3.1.0
     # via -r requirements.in
-pillow==9.0.0
+pillow==8.3.2 ; python_version < "3.7"
+    # via -r requirements.in
+pillow==9.0.0 ; python_version >= "3.7"
     # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
