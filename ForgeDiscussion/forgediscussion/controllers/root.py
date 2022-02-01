@@ -219,9 +219,9 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @expose('json:')
     @validate(dict(
-        begin=h.DateTimeConverter(if_empty=None, if_invalid=None),
-        end=h.DateTimeConverter(if_empty=None, if_invalid=None),
-    ))
+        begin=h.DateTimeConverter(not_empty=True),
+        end=h.DateTimeConverter(not_empty=True),
+    ), error_handler=exc.HTTPBadRequest)
     def stats_data(self, begin=None, end=None, forum=None, **kw):
         end = end or date.today()
         begin = begin or end - timedelta(days=60)
