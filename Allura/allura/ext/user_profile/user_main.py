@@ -127,7 +127,7 @@ class UserProfileController(BaseController, FeedController):
         require_access(c.project, 'read')
 
     def _check_can_message(self, from_user, to_user):
-        if from_user is User.anonymous():
+        if from_user.is_anonymous():
             flash('You must be logged in to send user messages.', 'info')
             redirect(six.ensure_text(request.referer or '/'))
 
