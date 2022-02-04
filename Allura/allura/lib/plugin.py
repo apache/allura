@@ -113,7 +113,10 @@ class AuthenticationProvider(object):
     def authenticate_request(self):
         from allura import model as M
         username = self.session.get('username') or self.session.get('expired-username')
-        user = M.User.query.get(username=username)
+        if username:
+            user = M.User.query.get(username=username)  # not .by_username() since that excludes pending/disabled
+        else:
+            user = None
 
         if 'multifactor-username' in self.session and request.path not in self.multifactor_allowed_urls:
             # ensure any partially completed multifactor login is not left open, if user goes to any other pages
