@@ -810,7 +810,27 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     @classmethod
     def anonymous(cls):
-        return User.query.get(_id=None)
+        anon = cls(
+            _id=None,
+            username='*anonymous',
+            display_name='Anonymous')
+        session(anon).expunge(anon)  # don't save this transient Anon record
+        return anon
+
+    def __eq__(self, o):
+        # maybe could do all _id equal, but not sure.  Just supporting *anonymous user for now
+        if self._id is None:
+            return isinstance(o, User) and hasattr(o, '_id') and o._id == self._id
+        else:
+            return super().__eq__(o)
+
+    def __hash__(self):
+        # Since we've implemented __eq__ we need to provide a __hash__ implementation
+        # https://docs.python.org/3/reference/datamodel.html#object.__hash__
+        if self._id is None:
+            return 0
+        else:
+            return super().__hash__()
 
     def is_anonymous(self):
         return self._id is None or self.username == ''

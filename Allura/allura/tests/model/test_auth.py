@@ -236,6 +236,28 @@ def test_user_by_email_address(log):
     assert_equal(M.User.by_email_address('invalid'), None)
 
 
+def test_user_equality():
+    assert_equal(M.User.by_username('test-user'), M.User.by_username('test-user'))
+    assert_equal(M.User.anonymous(), M.User.anonymous())
+    assert_equal(M.User.by_username('*anonymous'), M.User.anonymous())
+
+    assert_not_equal(M.User.by_username('test-user'), M.User.by_username('test-admin'))
+    assert_not_equal(M.User.by_username('test-user'), M.User.anonymous())
+    assert_not_equal(M.User.anonymous(), None)
+    assert_not_equal(M.User.anonymous(), 12345)
+    assert_not_equal(M.User.anonymous(), M.User())
+
+
+def test_user_hash():
+    assert M.User.by_username('test-user') in {M.User.by_username('test-user')}
+    assert M.User.anonymous() in {M.User.anonymous()}
+    assert M.User.by_username('*anonymous') in {M.User.anonymous()}
+
+    assert M.User.by_username('test-user') not in {M.User.by_username('test-admin')}
+    assert M.User.anonymous() not in {M.User.by_username('test-admin')}
+    assert M.User.anonymous() not in {0, None}
+
+
 @with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')

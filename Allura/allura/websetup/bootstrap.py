@@ -90,10 +90,8 @@ def bootstrap(command, conf, vars):
     index.run([''])
 
     log.info('Registering root user & default neighborhoods')
-    M.User(
-        _id=None,
-        username='*anonymous',
-        display_name='Anonymous')
+    anon = M.User.anonymous()
+    session(M.User).save(anon)
 
     # never make a user project for the root user
     if create_test_data:
