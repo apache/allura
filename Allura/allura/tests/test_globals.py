@@ -608,6 +608,57 @@ def test_markdown_invalid_script_in_link2():
                  'rel="nofollow">xss</a></p></div>', r)
 
 
+def test_markdown_extremely_slow():
+    r = g.markdown.convert('''bonjour, voila ce que j'obtient en voulant ajouter un utilisateur a un groupe de sécurite, que ce soit sur un groupe pre-existant, ou sur un groupe crée.
+message d'erreur:
+
+ERROR: Could not complete the Add UserLogin To SecurityGroup [file:/C:/neogia/ofbizNeogia/applications/securityext/script/org/ofbiz/securityext/securitygroup/SecurityGroupServices.xml#addUserLoginToSecurityGroup] process [problem creating the newEntity value: Exception while inserting the following entity: [GenericEntity:UserLoginSecurityGroup][createdStamp,2006-01-23 17:42:39.312(java.sql.Timestamp)][createdTxStamp,2006-01-23 17:42:38.875(java.sql.Timestamp)][fromDate,2006-01-23 17:42:39.312(java.sql.Timestamp)][groupId,FULLADMIN(java.lang.String)][lastUpdatedStamp,2006-01-23 17:42:39.312(java.sql.Timestamp)][lastUpdatedTxStamp,2006-01-23 17:42:38.875(java.sql.Timestamp)][thruDate,null()][userLoginId,10012(java.lang.String)] (while inserting: [GenericEntity:UserLoginSecurityGroup][createdStamp,2006-01-23 17:42:39.312(java.sql.Timestamp)][createdTxStamp,2006-01-23 17:42:38.875(java.sql.Timestamp)][fromDate,2006-01-23 17:42:39.312(java.sql.Timestamp)][groupId,FULLADMIN(java.lang.String)][lastUpdatedStamp,2006-01-23 17:42:39.312(java.sql.Timestamp)][lastUpdatedTxStamp,2006-01-23 17:42:38.875(java.sql.Timestamp)][thruDate,null()][userLoginId,10012(java.lang.String)] (SQL Exception while executing the following:INSERT INTO public.USER_LOGIN_SECURITY_GROUP (USER_LOGIN_ID, GROUP_ID, FROM_DATE, THRU_DATE, LAST_UPDATED_STAMP, LAST_UPDATED_TX_STAMP, CREATED_STAMP, CREATED_TX_STAMP) VALUES (?, ?, ?, ?, ?, ?, ?, ?) (ERROR: insert or update on table &quot;user_login_security_group&quot; violates foreign key constraint &quot;user_secgrp_user&quot;)))].
+
+à priori les données du formulaire ne sont pas traitées : VALUES (?, ?, ?, ?, ?, ?, ?, ?) ce qui entraine l'echec du traitement SQL.
+
+
+Si une idée vous vient à l'esprit, merci de me tenir au courant.
+
+cordialement, julien.''')
+    assert True   # finished!
+
+
+@td.with_tool('test', 'Wiki', 'wiki-len')
+def test_markdown_link_length_limits():
+    with h.push_context('test', 'wiki-len', neighborhood='Projects'):
+        # these are always ok, no matter the NOBRACKET length
+        WM.Page.upsert(title='12345678901').commit()
+        text = g.markdown.convert('See [12345678901]')
+        assert 'href="/p/test/wiki-len/12345678901/">[12345678901]</a>' in text, text
+        WM.Page.upsert(title='this is 26 characters long').commit()
+        text = g.markdown.convert('See [this is 26 characters long]')
+        assert 'href="/p/test/wiki-len/this%20is%2026%20characters%20long/">[this is 26 characters long]</a>' in text, text
+
+        # NOBRACKET regex length impacts standard markdown links
+        text = g.markdown.convert('See [short](http://a.de)')
+        assert 'href="http://a.de" rel="nofollow">short</a>' in text, text
+        text = g.markdown.convert('See [this is 26 characters long](http://a.de)')
+        assert 'href="http://a.de" rel="nofollow">this is 26 characters long</a>' in text, text  # {0,12} fails {0,13} ok
+
+        # NOBRACKET regex length impacts our custom artifact links
+        text = g.markdown.convert('See [short](Home)')
+        assert 'href="/p/test/wiki-len/Home/">short</a>' in text, text
+        text = g.markdown.convert('See [123456789](Home)')
+        assert 'href="/p/test/wiki-len/Home/">123456789</a>' in text, text
+        text = g.markdown.convert('See [12345678901](Home)')
+        assert 'href="/p/test/wiki-len/Home/">12345678901</a>' in text, text  # {0,5} fails, {0,6} ok
+        text = g.markdown.convert('See [this is 16 chars](Home)')
+        assert 'href="/p/test/wiki-len/Home/">this is 16 chars</a>' in text, text  # {0,7} fails {0,8} ok
+        text = g.markdown.convert('See [this is 26 characters long](Home)')
+        assert 'href="/p/test/wiki-len/Home/">this is 26 characters long</a>' in text, text  # {0,12} fails {0,13} ok
+
+        # breaking point, currently.  Would be nice if this worked and made a real link:
+        char110long = '1234567890'*11
+        text = g.markdown.convert(f'See [{char110long}](Home)')
+        assert f'<span>[{char110long}]</span>(Home)' in text, text  # current limitation, not a link
+        # assert f'href="/p/test/wiki-len/Home/">{char110long}</a>' in text, text  # ideal output
+
+
 @td.with_wiki
 def test_macro_include():
     r = g.markdown.convert('[[include ref=Home id=foo]]')
