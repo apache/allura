@@ -504,6 +504,23 @@ def foo(): pass
     )
 
 
+def test_markdown_list_without_break():
+    # this is not a valid way to make a list in original Markdown or python-markdown
+    #   https://github.com/Python-Markdown/markdown/issues/874
+    # it is valid in the CommonMark spec https://spec.commonmark.org/0.30/#lists
+    # TODO: try https://github.com/adamb70/mdx-breakless-lists
+    #       or https://gitlab.com/ayblaq/prependnewline
+    assert_equal(
+        g.markdown.convert('''\
+Regular text
+* first item
+* second item'''),
+        '<div class="markdown_content"><p>Regular text<br/>\n'
+        '<em> first item<br/>\n'
+        '</em> second item</p></div>'
+    )
+
+
 def test_markdown_autolink():
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
