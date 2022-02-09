@@ -50,7 +50,8 @@ MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
 SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
 
 # FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
-NOBRACKET = r'[^\]\[]*'
+# TODO: replace these with newer approach, see ForgeLinkPattern
+NOBRACKET = r'[^\]\[]{0,50}'  # "*" changed to {0,50} for performance mitigation
 BRK = (
     r'\[(' +
     (NOBRACKET + r'(\[')*6 +
@@ -344,6 +345,9 @@ class UserMentionInlinePattern(markdown.inlinepatterns.Pattern):
 
 
 class ForgeLinkPattern(markdown.inlinepatterns.Pattern):
+    # TODO: convert from extending Pattern to extending InlineProcessor
+    #  which is how core Markdown library in 3.0 made its base link parsing much faster.
+    # https://github.com/Python-Markdown/markdown/commit/d18c3d0acab0e7469c3284c897afcb61f9dd1fea
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
