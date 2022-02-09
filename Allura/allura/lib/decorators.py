@@ -176,11 +176,15 @@ def memoize(func, instance, args, kwargs):
 
 def memoize_cleanup(obj):
     """
-    Remove any _memoize_dic_* keys (if obj is a dict/obj hybrid) that were created by @memoize on methods
+    Remove any _memoize_dic_* keys that were created by @memoize on methods
     """
-    for k in list(obj.keys()):
+    attrs = obj.keys() if hasattr(obj, 'keys') else obj.__dir__()
+    for k in list(attrs):
         if k.startswith('_memoize_dic'):
-            del obj[k]
+            try:
+                del obj[k]
+            except TypeError:
+                delattr(obj, k)
 
 
 def memorable_forget():
