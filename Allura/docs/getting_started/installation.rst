@@ -35,7 +35,7 @@ First run
 `Download the latest release <http://www.apache.org/dyn/closer.cgi/allura/>`_ of Allura, or `clone from git <https://forge-allura.apache.org/p/allura/git/ci/master/tree/>`_ for the bleeding edge.
 
 Install `Docker <http://docs.docker.com/installation/>`_ and `Docker Compose <https://docs.docker.com/compose/install/>`_.
-On Linux, you may need to `create a docker group <https://docs.docker.com/engine/installation/linux/ubuntulinux/#create-a-docker-group>`_.
+On Linux, you may need to `create a docker group <https://docs.docker.com/engine/install/linux-postinstall/>`_.
 
 .. note::
 
