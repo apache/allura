@@ -805,6 +805,13 @@ class Application(object):
             with open(attachment_path.encode('utf8', 'replace'), 'wb') as fl:
                 fl.write(attachment.rfile().read())
 
+    def default_redirect(self):
+        """Redirect to url if first tool in a project. This method raises a
+        redirect exception.
+
+        """
+        return None
+
 
 class AdminControllerMixin(object):
     """Provides common functionality admin controllers need"""

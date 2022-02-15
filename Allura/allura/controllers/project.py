@@ -399,9 +399,11 @@ class ProjectController(FeedController):
     @expose()
     @with_trailing_slash
     def index(self, **kw):
-        mount = c.project.first_mount_visible(c.user)
+        mount, app = c.project.first_mount_visible(c.user)
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if mount is not None:
+            if hasattr(app, 'default_redirect'):
+                return app.default_redirect()
             if 'ac' in mount:
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:
