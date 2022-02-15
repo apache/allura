@@ -975,11 +975,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             if 'sub' in mount:
                 sub = mount['sub']
                 if has_access(sub, 'read', user):
-                    return mount
+                    return mount, sub
             elif 'ac' in mount:
                 app = self.app_instance(mount['ac'])
                 if app.is_visible_to(user):
-                    return mount
+                    return mount, app
         return None
 
     def next_mount_point(self, include_hidden=False):
