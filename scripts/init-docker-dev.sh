@@ -39,9 +39,10 @@ cp /allura/Allura/allura/public/nf/favicon.ico /allura-data/www-misc/favicon.ico
 # share venv to allow update and sharing across containers
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
-    python3 -m venv /allura-data/virtualenv
+    python3.7 -m venv /allura-data/virtualenv
     /allura-data/virtualenv/bin/pip install -U pip
-    ln -s /usr/lib/python3/dist-packages/pysvn /allura-data/virtualenv/lib/python3.*/site-packages/
+    /allura-data/virtualenv/bin/pip install -U wheel
+    curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | /allura-data/virtualenv/bin/python
     echo # just a new line
 fi
 source /allura-data/virtualenv/bin/activate

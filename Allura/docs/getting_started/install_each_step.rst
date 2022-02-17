@@ -47,19 +47,22 @@ In these instructions, we'll use `VirtualBox <http://www.virtualbox.org>`__ and 
 System Packages
 ^^^^^^^^^^^^^^^
 
-Before we begin, you'll need to install some system packages.  Allura currently supports Python 3.6 and 3.7.
+Before we begin, you'll need to install some system packages.  Allura currently supports Python 3.7.
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install git-core python3-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
+    ~$ sudo apt-get update
+    ~$ sudo apt-get install software-properties-common
+    ~$ sudo add-apt-repository ppa:deadsnakes/ppa
+    ~$ sudo apt-get update
+    ~$ sudo apt-get install git-core python3.7 python3-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
 Optional, for SVN support:
 
 .. code-block:: bash
-
-    ~$ sudo apt-get install subversion python3-svn
+    ~$ sudo apt-get install subversion libsvn-dev make g++ python3-svn
 
 Setting up a python virtual environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -116,11 +119,11 @@ We'll upgrade `pip <https://pip.pypa.io/en/stable/>`_ to make sure its a current
 
 This may take a little while.
 
-Optional, for SVN support: symlink the system pysvn package into our virtual environment
+Optional, for SVN support: install the wheel package then use the pysvn-installer script to build a pysvn wheel.
 
 .. code-block:: bash
-
-    (env-allura)~/src/allura$ ln -s /usr/lib/python3/dist-packages/pysvn ~/env-allura/lib/python3.*/site-packages/
+    (env-allura)~/src/allura$ pip install wheel
+    (env-allura)~/src/allura$ curl https://raw.githubusercontent.com/reviewboard/pysvn-installer/master/install.py | python
 
 Next, run this to set up all the Allura tools:
 
