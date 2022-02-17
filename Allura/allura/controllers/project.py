@@ -403,7 +403,7 @@ class ProjectController(FeedController):
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if mount is not None:
             if hasattr(app, 'default_redirect'):
-                return app.default_redirect()
+                app.default_redirect()
             if 'ac' in mount:
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:
