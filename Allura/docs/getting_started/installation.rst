@@ -273,7 +273,7 @@ If you'd like to use another webserver, here are a few options:
 .. code-block:: bash
 
     ~$ pip install mod_wsgi  # requires httpd2 devel libraries installed in the system
-    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python3.6/site-packages/
+    ~$ mod_wsgi-express start-server development.ini --application-type paste --user allura --group allura --port 8080  --python-path /PATH/TO/VIRTUALENV/lib/python3.7/site-packages/
 
 For any other wsgi server (e.g. mod_wsgi with Apache, or waitress) you will need a wsgi callable set up like this:
 

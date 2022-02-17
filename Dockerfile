@@ -17,23 +17,33 @@
 
 FROM ubuntu:18.04
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    git-core \
-    python3-dev \
-    gcc \
-    libmagic1 \
-    libssl-dev \
-    libldap2-dev \
-    libsasl2-dev \
-    libjpeg8-dev \
-    zlib1g-dev \
-    python3-venv \
-    zip \
-    subversion \
-    python3-svn \
-    curl \
-    locales \
-    sudo \
+# Ubunutu 18.04's latest python is 3.6 (and Ubuntu 20.04's is 3.8)
+# In order to get python3.7, we must add the deadsnakes apt repo, and install 3.7 specifically
+RUN apt-get update \
+    && apt-get install software-properties-common -y --no-install-recommends \
+    && add-apt-repository ppa:deadsnakes/ppa
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        git-core \
+        python3.7 \
+        python3.7-venv \
+        python3.7-dev \
+        gcc \
+        libmagic1 \
+        libssl-dev \
+        libldap2-dev \
+        libsasl2-dev \
+        libjpeg8-dev \
+        zlib1g-dev \
+        zip \
+        subversion \
+        curl \
+        locales \
+        g++ \
+        libsvn-dev \
+        make \
+        sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # up-to-date version of node & npm
