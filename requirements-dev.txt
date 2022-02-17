@@ -8,3 +8,6 @@ sphinx-rtd-theme
 sphinxcontrib-programoutput
 coverage
 nose
+nose-xunitmp
+pycodestyle
+pyflakes
