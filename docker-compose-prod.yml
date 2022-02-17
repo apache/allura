@@ -35,7 +35,7 @@
 #  * git-http container serves git and also proxies back to the "web" container
 ##
 
-version: "2"
+version: "2.1"
 services:
   web:
     build: .
