@@ -55,7 +55,7 @@ Before we begin, you'll need to install some system packages.  Allura currently 
     ~$ sudo apt-get install software-properties-common
     ~$ sudo add-apt-repository ppa:deadsnakes/ppa
     ~$ sudo apt-get update
-    ~$ sudo apt-get install git-core python3.7 python3-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
+    ~$ sudo apt-get install git-core python3.7 python3.7-dev gcc libmagic1 libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev libffi-dev
 
 To install MongoDB, follow the instructions `here <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>`_.
 
@@ -71,7 +71,7 @@ The first step to installing the Allura platform is installing a virtual environ
 
 .. code-block:: bash
 
-    ~$ sudo apt-get install python3-venv
+    ~$ sudo apt-get install python3.7-venv
 
 Then create a virtual environment.  We'll call our Allura environment 'env-allura'.
 
