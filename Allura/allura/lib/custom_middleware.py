@@ -264,9 +264,9 @@ class SSLMiddleware(object):
                 # and we don't want to do any redirects within that sub-request
                 pass
             elif not secure and force_ssl:
-                resp = exc.HTTPFound(location='https://' + srv_path)
+                resp = exc.HTTPMovedPermanently(location='https://' + srv_path)
             elif secure and not force_ssl:
-                resp = exc.HTTPFound(location='http://' + srv_path)
+                resp = exc.HTTPMovedPermanently(location='http://' + srv_path)
             if not resp:
                 resp = self.app
         return resp(environ, start_response)
