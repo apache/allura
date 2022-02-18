@@ -397,19 +397,14 @@ class ProjectController(FeedController):
         require_access(c.project, 'read')
 
     @expose()
-    @with_trailing_slash
     def index(self, **kw):
         mount, app = c.project.first_mount_visible(c.user)
-        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if mount is not None:
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
-            if 'ac' in mount:
-                redirect(mount['ac'].options.mount_point + '/')
-            elif 'sub' in mount:
-                redirect(mount['sub'].url())
+            redirect(app.url() if callable(app.url) else app.url)  # Application has property; Subproject has method
         else:
-            redirect(c.project.app_configs[0].options.mount_point + '/')
+            redirect(c.project.app_configs[0].url())
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing

@@ -57,7 +57,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_anon_read(self):
         r = self.app.get('/u/test-user-1',
-                extra_environ={'username': str('*anonymous')}).follow().follow()
+                extra_environ={'username': str('*anonymous')}).follow()
         assert r.html.select('div.profile-section.tools a[href="/u/test-user-1/activity/"]'),\
             'No Activity tool in top nav'
 
