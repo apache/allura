@@ -107,8 +107,6 @@ class RootController(WsgiDispatchController):
                                     'Did you run `paster setup-app` to create the database?')
         if not c.user.is_anonymous():
             c.user.track_active(request)
-            if asbool(config.get('force_ssl.logged_in')):
-                session.secure = True
 
             # Make sure the page really isn't cached (not accessible by back button, etc)
             # pylons.configuration defaults to "no-cache" only.

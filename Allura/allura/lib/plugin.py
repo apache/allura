@@ -223,11 +223,6 @@ class AuthenticationProvider(object):
         g.statsUpdater.addUserLogin(user)
         user.add_login_detail(login_details)
         user.track_login(self.request)
-        # set a non-secure cookie with same expiration as session,
-        # so an http request can know if there is a related session on https
-        response.set_cookie('allura-loggedin', value='true',
-                            expires=None if self.session['login_expires'] is True else self.session['login_expires'],
-                            secure=False, httponly=True)
         return user
 
     def login_check_password_change_needed(self, user, password, login_details):
@@ -263,7 +258,6 @@ class AuthenticationProvider(object):
     def logout(self):
         self.session.invalidate()
         self.session.save()
-        response.delete_cookie('allura-loggedin')
         response.set_cookie('memorable_forget', '/', secure=request.environ['beaker.session'].secure)
 
     def validate_password(self, user, password):

@@ -230,7 +230,7 @@ class SSLMiddleware(object):
 
     'Verify the https/http schema is correct'
 
-    def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None, force_ssl_logged_in=False):
+    def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None):
         self.app = app
         if no_redirect_pattern:
             self._no_redirect_re = re.compile(no_redirect_pattern)
@@ -240,7 +240,6 @@ class SSLMiddleware(object):
             self._force_ssl_re = re.compile(force_ssl_pattern)
         else:
             self._force_ssl_re = re.compile('$$$')
-        self._force_ssl_logged_in = force_ssl_logged_in
 
     def __call__(self, environ, start_response):
         req = Request(environ)
@@ -256,9 +255,7 @@ class SSLMiddleware(object):
         else:
             secure = req.url.startswith('https://')
             srv_path = req.url.split('://', 1)[-1]
-            # allura-loggedin is a non-secure cookie as a flag to know that the user has a session over on https
-            force_ssl = (self._force_ssl_logged_in and req.cookies.get('allura-loggedin')) \
-                        or self._force_ssl_re.match(environ['PATH_INFO'])
+            force_ssl = self._force_ssl_re.match(environ['PATH_INFO'])
             if req.environ.get('tg.original_request'):
                 # if an error occurs, then /error/document is fetched (denoted by tg.original_request)
                 # and we don't want to do any redirects within that sub-request

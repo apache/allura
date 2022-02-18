@@ -169,8 +169,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Ensure http and https used per config
     if config.get('override_root') != 'task':
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
-                            app_conf.get('force_ssl.pattern'),
-                            app_conf.get('force_ssl.logged_in'))
+                            app_conf.get('force_ssl.pattern'))
     # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,

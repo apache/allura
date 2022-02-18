@@ -8,6 +8,8 @@ Breaking Changes
    Either set the LOCAL_SHARED_DATA_ROOT env variable to /allura-data or change
    the value in the local `.env` file (or move your /allura-data to
    ./allura-data).
+ * Remove the `force_ssl.logged_in` config option.  It is recommended to use https for
+   all visitors, whether logged in or not.
 
 
 Version 1.13.0  (May 2021)
