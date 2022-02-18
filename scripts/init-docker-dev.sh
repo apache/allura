@@ -37,6 +37,7 @@ echo "# No robots.txt rules here" > /allura-data/www-misc/robots.txt
 cp /allura/Allura/allura/public/nf/favicon.ico /allura-data/www-misc/favicon.ico
 
 # share venv to allow update and sharing across containers
+rm -rf /allura-data/virtualenv
 if [ ! -e /allura-data/virtualenv ]; then
     echo -e "Creating virtualenv\n"
     python3.7 -m venv /allura-data/virtualenv
