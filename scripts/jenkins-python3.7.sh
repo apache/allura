@@ -75,8 +75,6 @@ retcode=$?
 
 #find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
 
-docker-compose run web scripts/perf/call_count.py --data-file call_count.csv
-
 echo
 echo "============================================================================="
 echo "Shutdown"
