@@ -11,8 +11,7 @@ emoji!=1.6.0
 feedgenerator
 feedparser
 FormEncode
-# 3.1.23 drops py36 support
-GitPython<=3.1.23
+GitPython
 html5lib
 Jinja2
 Markdown
