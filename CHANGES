@@ -1,6 +1,6 @@
 Unreleased
 
-This release drops support for Python 3.6.
+[#8413] This release drops support for Python 3.6.
 
 Breaking Changes
  * [#8399] In an effort to update the Docker startup steps to make them as 
