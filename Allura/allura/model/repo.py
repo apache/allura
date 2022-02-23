@@ -19,7 +19,6 @@
 # For backwards compatibility.
 # These used to be separate in this repo module, now all in repository module
 
-from __future__ import unicode_literals
 from .repository import SUser, SObjType
 from .repository import QSIZE, README_RE, VIEWABLE_EXTENSIONS, PYPELINE_EXTENSIONS, DIFF_SIMILARITY_THRESHOLD
 from .repository import CommitDoc, LastCommitDoc

@@ -18,8 +18,6 @@
 '''
 Allura plugins for authentication and project registration
 '''
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import re
 import os
 import logging

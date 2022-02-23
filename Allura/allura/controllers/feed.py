@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from tg import expose, validate, request, response
 from tg.decorators import without_trailing_slash
 from formencode import validators as V

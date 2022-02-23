@@ -18,8 +18,6 @@
 ''' This is the Collection module for the Files plugin.
 Upload, UploadFolder & UploadFile are the collections'''
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from datetime import datetime
 
 from six.moves.urllib.parse import quote

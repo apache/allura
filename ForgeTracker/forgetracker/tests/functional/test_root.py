@@ -16,8 +16,6 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from datetime import datetime
 import six.moves.urllib.request
 import six.moves.urllib.parse
@@ -312,7 +310,7 @@ class TestFunctionalController(TrackerTestController):
         assert_true(summary in ticket_view)
         opts = self.subscription_options(ticket_view)
         assert_equal(opts['subscribed'], False)
-        
+
     def test_ticket_get_markdown(self):
         self.new_ticket(summary='my ticket', description='my description')
         response = self.app.get('/bugs/1/get_markdown')
@@ -380,7 +378,7 @@ class TestFunctionalController(TrackerTestController):
 
         """
         forgetracker.model.ticket.Globals.bin_count doesn't do a permission check like corresponding milestone_count
-        
+
         # Private tickets shouldn't be included in counts if user doesn't
         # have read access to private tickets.
         r = self.app.get('/bugs/bin_counts', extra_environ=dict(username=str('*anonymous')))

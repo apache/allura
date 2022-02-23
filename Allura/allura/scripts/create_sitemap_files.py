@@ -28,9 +28,6 @@ things that would make it faster, if we need/want to.
 2. Use multiprocessing to distribute the offsets to n subprocesses.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 from datetime import datetime
 import argparse

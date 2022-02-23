@@ -17,8 +17,6 @@
 
 '''This module is added for testing the files model '''
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from nose.tools import assert_equal, assert_true, assert_false
 
 from forgefiles.tests.model import FilesTestWithModel

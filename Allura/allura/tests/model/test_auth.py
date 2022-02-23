@@ -20,8 +20,6 @@
 """
 Model tests for auth
 """
-from __future__ import unicode_literals
-from __future__ import absolute_import
 
 import textwrap
 from datetime import datetime, timedelta

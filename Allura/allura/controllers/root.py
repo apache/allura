@@ -18,8 +18,6 @@
 #       under the License.
 
 """Main Controller"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 from string import Template
 
@@ -82,11 +80,11 @@ class RootController(WsgiDispatchController):
     categories = TroveCategoryController()
     dashboard = DashboardController()
     browse = ProjectBrowseController()
-    
+
     def __init__(self):
         super(RootController, self).__init__()
         self.nf.admin = SiteAdminController()
-        
+
     @expose()
     def _lookup(self, nbhd_mount, *remainder):
         n_url_prefix = '/%s/' % nbhd_mount

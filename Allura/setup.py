@@ -17,8 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from setuptools import setup, find_packages
 
 exec(open('allura/version.py').read())
@@ -119,7 +117,7 @@ setup(
     skills = allura.ext.user_profile.user_main:SkillsSection
     tools = allura.ext.user_profile.user_main:ToolsSection
     social = allura.ext.user_profile.user_main:SocialSection
-    
+
     [allura.personal_dashboard.sections]
     projects = allura.ext.personal_dashboard.dashboard_main:ProjectsSection
     tickets = allura.ext.personal_dashboard.dashboard_main:TicketsSection

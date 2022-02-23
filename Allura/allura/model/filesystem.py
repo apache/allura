@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import os
 import re
 from io import BytesIO
@@ -205,7 +203,7 @@ class File(MappedClass):
 
         if format == 'GIF':
             save_anim = True # save all frames if GIF is provided
-        
+
         if save_original:
             original_meta = original_meta or {}
             original = cls(

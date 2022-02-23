@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from tg import tmpl_context as c
 
 import ew as ew_core
@@ -134,7 +132,7 @@ class ScreenshotAdmin(ff.ForgeFormResponsive):
     def fields(self):
         fields = [
             ew.InputField(name='screenshot', field_type='file',
-                          label='New Screenshot', 
+                          label='New Screenshot',
                           attrs={
                               'accept': 'image/*',
                               'required': 'true',

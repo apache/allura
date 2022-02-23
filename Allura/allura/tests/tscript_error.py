@@ -16,5 +16,4 @@
 #       under the License.
 
 '''Script that raises ValueError'''
-from __future__ import unicode_literals
 raise ValueError
