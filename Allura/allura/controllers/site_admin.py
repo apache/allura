@@ -226,7 +226,7 @@ class SiteAdminController(object):
                 for msg in list(c.form_errors):
                     names = {'prefix': 'Neighborhood prefix', 'shortname':
                              'Project shortname', 'mount_point': 'Repository mount point'}
-                    error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
+                    error_msg += '{}: {} '.format(names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % prefix)
@@ -697,7 +697,7 @@ class AdminUserDetailsController(object):
             M.AuditLog.comment_user(c.user, comment, user=user)
             flash('Comment added', 'ok')
         else:
-            flash('Can not add comment "%s" for user %s' % (comment, user))
+            flash('Can not add comment "{}" for user {}'.format(comment, user))
         redirect(six.ensure_text(request.referer or '/'))
 
     @expose()

@@ -103,7 +103,7 @@ class Repository(M.Repository):
             ).format(
                 merge_request.downstream_repo.clone_url_first(anon=False, username=c.user.username),
             )
-        return 'git checkout %s\n%s\ngit merge %s' % (
+        return 'git checkout {}\n{}\ngit merge {}'.format(
             merge_request.target_branch,
             fetch_command,
             merge_request.downstream.commit_id,
@@ -276,7 +276,7 @@ class GitImplementation(M.RepositoryImplementation):
                 if M.repository.Commit.query.find(dict(_id=obj.hexsha)).count():
                     graph[obj.hexsha] = set()  # mark as parentless
                     continue
-            graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
+            graph[obj.hexsha] = {p.hexsha for p in obj.parents}
             to_visit += obj.parents
         return list(topological_sort(graph))
 

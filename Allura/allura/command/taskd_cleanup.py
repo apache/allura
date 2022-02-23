@@ -123,7 +123,7 @@ class TaskdCleanupCommand(base.Command):
     def _busy_tasks(self, pid=None):
         regex = '^%s ' % self.hostname
         if pid is not None:
-            regex = '^%s pid %s' % (self.hostname, pid)
+            regex = '^{} pid {}'.format(self.hostname, pid)
         return M.MonQTask.query.find({
             'state': 'busy',
             'process': {'$regex': regex}
@@ -167,7 +167,7 @@ class TaskdCleanupCommand(base.Command):
         for i in range(self.options.num_retry):
             retry = False if i == 0 else True
             status = self._taskd_status(taskd_pid, retry)
-            line = 'taskd pid %s is currently handling task %s' % (
+            line = 'taskd pid {} is currently handling task {}'.format(
                 taskd_pid, task)
             if line in status:
                 return 'OK'

@@ -155,7 +155,7 @@ class Notification(MappedClass):
 
         from allura.model import Project
         idx = artifact.index() if artifact else None
-        subject_prefix = '[%s:%s] ' % (
+        subject_prefix = '[{}:{}] '.format(
             c.project.shortname, c.app.config.options.mount_point)
         post = ''
         if topic == 'message':
@@ -172,7 +172,7 @@ class Notification(MappedClass):
                     attach.file.seek(0)
                     url = h.absurl('{}attachment/{}'.format(
                         post.url(), h.urlquote(attach.filename)))
-                    text = "%s\n- [%s](%s) (%s; %s)" % (
+                    text = "{}\n- [{}]({}) ({}; {})".format(
                         text, attach.filename, url,
                         h.do_filesizeformat(bytecount), attach.type)
 
@@ -187,7 +187,7 @@ class Notification(MappedClass):
                 _id=msg_id,
                 from_address=str(
                     author._id) if author != User.anonymous() else None,
-                reply_to_address='"%s" <%s>' % (
+                reply_to_address='"{}" <{}>'.format(
                     subject_prefix, getattr(
                         artifact, 'email_address', g.noreply)),
                 subject=subject_prefix + subject,
@@ -202,9 +202,9 @@ class Notification(MappedClass):
                     subject=kwargs.pop('subject', ''))
             return n
         else:
-            subject = kwargs.pop('subject', '%s modified by %s' % (
+            subject = kwargs.pop('subject', '{} modified by {}'.format(
                 h.get_first(idx, 'title'), c.user.get_pref('display_name')))
-            reply_to = '"%s" <%s>' % (
+            reply_to = '"{}" <{}>'.format(
                 h.get_first(idx, 'title'),
                 getattr(artifact, 'email_address', g.noreply))
             d = dict(
@@ -217,11 +217,11 @@ class Notification(MappedClass):
             if kwargs.get('message_id'):
                 d['_id'] = kwargs['message_id']
             if c.user.get_pref('email_address'):
-                d['from_address'] = '"%s" <%s>' % (
+                d['from_address'] = '"{}" <{}>'.format(
                     c.user.get_pref('display_name'),
                     c.user.get_pref('email_address'))
             elif c.user.email_addresses:
-                d['from_address'] = '"%s" <%s>' % (
+                d['from_address'] = '"{}" <{}>'.format(
                     c.user.get_pref('display_name'),
                     c.user.email_addresses[0])
         if not d.get('text'):

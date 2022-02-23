@@ -52,32 +52,32 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
 
     def test_preprocess(self):
         d = self.diff
-        self.assertEquals(d._preprocess(None), None)
-        self.assertEquals(d._preprocess('<br>&nbsp;'), '&lt;br&gt;&amp;nbsp;')
-        self.assertEquals(d._preprocess('\ttabbed'), '    tabbed')
+        self.assertEqual(d._preprocess(None), None)
+        self.assertEqual(d._preprocess('<br>&nbsp;'), '&lt;br&gt;&amp;nbsp;')
+        self.assertEqual(d._preprocess('\ttabbed'), '    tabbed')
         # test non default tab size
         d = HtmlSideBySideDiff(2)
-        self.assertEquals(d._preprocess('\ttabbed'), '  tabbed')
+        self.assertEqual(d._preprocess('\ttabbed'), '  tabbed')
 
     def test_replace_marks(self):
         line, flag = self.diff._replace_marks('\0+line added\1')
-        self.assertEquals(line, 'line added')
-        self.assertEquals(flag, 'diff-add')
+        self.assertEqual(line, 'line added')
+        self.assertEqual(flag, 'diff-add')
         line, flag = self.diff._replace_marks('\0-line removed\1')
-        self.assertEquals(line, 'line removed')
-        self.assertEquals(flag, 'diff-rem')
+        self.assertEqual(line, 'line removed')
+        self.assertEqual(flag, 'diff-rem')
         line, flag = self.diff._replace_marks('\0^line changed\1')
-        self.assertEquals(line, '<span class="diff-chg">line changed</span>')
-        self.assertEquals(flag, 'diff-chg')
+        self.assertEqual(line, '<span class="diff-chg">line changed</span>')
+        self.assertEqual(flag, 'diff-chg')
         line, flag = self.diff._replace_marks('chunk \0+add\1ed')
-        self.assertEquals(line, 'chunk <span class="diff-add">add</span>ed')
-        self.assertEquals(flag, 'diff-chg')
+        self.assertEqual(line, 'chunk <span class="diff-add">add</span>ed')
+        self.assertEqual(flag, 'diff-chg')
         line, flag = self.diff._replace_marks('chunk \0-remov\1ed')
-        self.assertEquals(line, 'chunk <span class="diff-rem">remov</span>ed')
-        self.assertEquals(flag, 'diff-chg')
+        self.assertEqual(line, 'chunk <span class="diff-rem">remov</span>ed')
+        self.assertEqual(flag, 'diff-chg')
         line, flag = self.diff._replace_marks('chunk \0^chang\1ed')
-        self.assertEquals(line, 'chunk <span class="diff-chg">chang</span>ed')
-        self.assertEquals(flag, 'diff-chg')
+        self.assertEqual(line, 'chunk <span class="diff-chg">chang</span>ed')
+        self.assertEqual(flag, 'diff-chg')
 
     def test_make_line(self):
         # context separation
@@ -89,7 +89,7 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
   <td class="lineno"></td>
   <td class="diff-gap"><pre>...</pre></td>
 </tr>'''.strip()
-        self.assertEquals(self.diff._make_line(d), expected)
+        self.assertEqual(self.diff._make_line(d), expected)
         # no change
         d = ((1, 'aline'), (1, 'aline'), False)
         expected = '''
@@ -99,7 +99,7 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
   <td class="lineno">1</td>
   <td><pre>aline</pre></td>
 </tr>'''.strip()
-        self.assertEquals(self.diff._make_line(d), expected)
+        self.assertEqual(self.diff._make_line(d), expected)
         # has change
         d = ((1, '\0^a\1line'), (1, '\0^b\1line'), True)
         expected = '''
@@ -109,7 +109,7 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
   <td class="lineno">1</td>
   <td class="diff-chg"><pre><span class="diff-chg">b</span>line</pre></td>
 </tr>'''.strip()
-        self.assertEquals(self.diff._make_line(d), expected)
+        self.assertEqual(self.diff._make_line(d), expected)
 
     def test_make_table(self):
         a = 'line 1\nline 2'.split('\n')
@@ -137,7 +137,7 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
 </table>
 '''.strip()
         html = self.diff.make_table(a, b, 'file a', 'file b')
-        self.assertEquals(html, expected)
+        self.assertEqual(html, expected)
 
     def test_unicode_make_table(self):
         a = ['строка']

@@ -56,10 +56,10 @@ class RecloneRepoCommand(base.Command):
         assert nbhd, 'Neighborhood with prefix %s not found' % self.options.nbhd
         c.project = M.Project.query.get(
             shortname=self.args[1], neighborhood_id=nbhd._id)
-        assert c.project, 'Project with shortname %s not found in neighborhood %s' % (
+        assert c.project, 'Project with shortname {} not found in neighborhood {}'.format(
             self.args[1], nbhd.name)
         c.app = c.project.app_instance(self.args[2])
-        assert c.app, 'Mount point %s not found on project %s' % (
+        assert c.app, 'Mount point {} not found on project {}'.format(
             self.args[2], c.project.shortname)
 
     def _clone_repo(self):

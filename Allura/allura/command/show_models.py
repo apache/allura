@@ -247,15 +247,15 @@ class EnsureIndexCommand(base.Command):
         base.log.info('Done updating indexes')
 
     def _update_indexes(self, collection, indexes):
-        uindexes = dict(
+        uindexes = {
             # convert list to tuple so it's hashable for 'set'
-            (tuple(i.index_spec), i)
+            tuple(i.index_spec): i
             for i in indexes
-            if i.unique)
-        indexes = dict(
-            (tuple(i.index_spec), i)
+            if i.unique}
+        indexes = {
+            tuple(i.index_spec): i
             for i in indexes
-            if not i.unique)
+            if not i.unique}
         prev_indexes = {}
         prev_uindexes = {}
         unique_flag_drop = {}
@@ -356,7 +356,7 @@ class EnsureIndexCommand(base.Command):
 
 
 def build_model_inheritance_graph():
-    graph = dict((m.mapped_class, ([], [])) for m in Mapper.all_mappers())
+    graph = {m.mapped_class: ([], []) for m in Mapper.all_mappers()}
     for cls, (parents, children) in six.iteritems(graph):
         for b in cls.__bases__:
             if b not in graph:
@@ -368,7 +368,7 @@ def build_model_inheritance_graph():
 
 def dump_cls(depth, cls):
     indent = ' ' * 4 * depth
-    yield indent + '%s.%s' % (cls.__module__, cls.__name__)
+    yield indent + '{}.{}'.format(cls.__module__, cls.__name__)
     m = mapper(cls)
     for p in m.properties:
         s = indent * 2 + ' - ' + str(p)

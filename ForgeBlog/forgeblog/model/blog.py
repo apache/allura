@@ -77,7 +77,7 @@ class BlogPostSnapshot(M.Snapshot):
         orig = self.original()
         if not orig:
             return None
-        return '%s#%s' % (orig.shorthand_id(), self.version)
+        return '{}#{}'.format(orig.shorthand_id(), self.version)
 
     def url(self):
         orig = self.original()
@@ -203,7 +203,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     def email_address(self):
         if self.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
-            return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
+            return '{}@{}{}'.format(self.title.replace('/', '.'), domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
@@ -213,7 +213,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             ch.lower()
             for ch in title.replace(' ', '-')
             if ch.isalnum() or ch == '-')
-        return '%s/%s' % (
+        return '{}/{}'.format(
             timestamp.strftime('%Y/%m'),
             slugsafe)
 
@@ -239,7 +239,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             title=self.title,
             type_s=self.type_s,
             state_s=self.state,
-            snippet_s='%s: %s' % (self.title, h.text.truncate(self.text, 200)),
+            snippet_s='{}: {}'.format(self.title, h.text.truncate(self.text, 200)),
             text=self.text)
         return result
 
@@ -268,7 +268,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 M.Feed.post(self, self.title, self.text, author=self.author(),
                             pubdate=self.get_version(1).timestamp)
                 description = self.text
-                subject = '%s created post %s' % (
+                subject = '{} created post {}'.format(
                     c.user.username, self.title)
             elif v2.state == 'published':
                 feed_item = self.feed_item()
@@ -280,11 +280,11 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                                 pubdate=self.get_version(1).timestamp)
                 if v1.title != v2.title:
                     activity('renamed', self)
-                    subject = '%s renamed post %s to %s' % (
+                    subject = '{} renamed post {} to {}'.format(
                         c.user.username, v1.title, v2.title)
                 else:
                     activity('modified', self)
-                    subject = '%s modified post %s' % (
+                    subject = '{} modified post {}'.format(
                         c.user.username, self.title)
             elif v1.state == 'published' and v2.state == 'draft':
                 feed_item = self.feed_item()
@@ -292,7 +292,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     feed_item.delete()
         else:
             description = self.text
-            subject = '%s created post %s' % (
+            subject = '{} created post {}'.format(
                 c.user.username, self.title)
             if self.state == 'published':
                 activity('created', self)

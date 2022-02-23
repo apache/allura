@@ -612,7 +612,7 @@ class TestSVNRev(unittest.TestCase):
             print(d)
 
     def _oid(self, rev_id):
-        return '%s:%s' % (self.repo._id, rev_id)
+        return '{}:{}'.format(self.repo._id, rev_id)
 
     def test_log(self):
         # path only

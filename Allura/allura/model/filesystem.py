@@ -38,14 +38,14 @@ if typing.TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_BY_PIL = set([
+SUPPORTED_BY_PIL = {
     'image/jpg',
     'image/jpeg',
     'image/pjpeg',
     'image/png',
     'image/x-png',
     'image/gif',
-    'image/bmp'])
+    'image/bmp'}
 
 
 class File(MappedClass):

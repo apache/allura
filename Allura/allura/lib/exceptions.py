@@ -96,7 +96,7 @@ class InvalidRecoveryCode(ForgeError):
 class CompoundError(ForgeError):
 
     def __repr__(self):
-        return '<%s>\n%s\n</%s>' % (
+        return '<{}>\n{}\n</{}>'.format(
             self.__class__.__name__,
             '\n'.join(map(repr, self.args)),
             self.__class__.__name__)

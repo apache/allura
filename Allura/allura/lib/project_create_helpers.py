@@ -188,7 +188,7 @@ class NewProjectSchema(col.MappingSchema):
 def trove_ids(orig, new_):
     if new_ is None:
         return orig
-    return list(set(t._id for t in list(new_)))
+    return list({t._id for t in list(new_)})
 
 
 def make_newproject_schema(nbhd, update=False):

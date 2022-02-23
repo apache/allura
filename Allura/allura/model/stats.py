@@ -179,9 +179,9 @@ class Stats(MappedClass):
         if i is None:
             return {}
         entry = self.general[i].messages
-        by_type = dict([(el.messagetype, dict(created=el.created,
-                                              modified=el.modified))
-                        for el in entry])
+        by_type = {el.messagetype: dict(created=el.created,
+                                              modified=el.modified)
+                        for el in entry}
         return by_type
 
     def getTicketsByCategory(self):

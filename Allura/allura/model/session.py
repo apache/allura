@@ -78,7 +78,7 @@ class IndexerSessionExtension(ManagedSessionExtension):
     def _objects_by_types(self, obj_list):
         result = defaultdict(list)
         for obj in obj_list:
-            class_path = '%s.%s' % (type(obj).__module__, type(obj).__name__)
+            class_path = '{}.{}'.format(type(obj).__module__, type(obj).__name__)
             result[class_path].append(obj)
         return result
 
@@ -176,7 +176,7 @@ class BatchIndexer(ArtifactSessionExtension):
         cls = self.__class__
         cls.to_add -= set(deleted_aref_ids)
         cls.to_delete |= set(del_index_ids)
-        cls.to_add |= set([aref._id for aref in arefs_added])
+        cls.to_add |= {aref._id for aref in arefs_added}
 
     @classmethod
     def flush(cls):

@@ -47,7 +47,7 @@ class TestPageSnapshots(TestController):
             setup_global_objects()
             for i in range(10):
                 page = Page.query.get(title='test-page')
-                page.text = 'Test Page %s.%s' % (n, i)
+                page.text = 'Test Page {}.{}'.format(n, i)
                 time.sleep(random.random())
                 # tests use mim (mongo-in-memory), which isn't thread-safe
                 lock.acquire()

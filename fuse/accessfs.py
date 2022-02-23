@@ -342,7 +342,7 @@ class PermissionCache(object):
             + six.moves.urllib.parse.urlencode(dict(
                 repo_path=path,
                 username=uname)))
-        print('Checking access for %s at %s (%s)' % (uname, url, path))
+        print('Checking access for {} at {} ({})'.format(uname, url, path))
         fp = six.moves.urllib.request.urlopen(url)
         result = json.load(fp)
         print(result)
@@ -379,7 +379,7 @@ class PermissionCache(object):
         '''
         parts = [p for p in path.split(os.path.sep) if p]
         scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-        parts = ['/SCM/%s.%s' % (proj, nbhd)] + rest
+        parts = ['/SCM/{}.{}'.format(proj, nbhd)] + rest
         return '/'.join(parts)
 
 

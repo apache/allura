@@ -289,18 +289,18 @@ class TestZipDir(unittest.TestCase):
 class TestPrefixPathsUnion(unittest.TestCase):
 
     def test_disjoint(self):
-        a = set(['a1', 'a2', 'a3'])
-        b = set(['b1', 'b1/foo', 'b2'])
+        a = {'a1', 'a2', 'a3'}
+        b = {'b1', 'b1/foo', 'b2'}
         self.assertEqual(prefix_paths_union(a, b), set())
 
     def test_exact(self):
-        a = set(['a1', 'a2', 'a3'])
-        b = set(['b1', 'a2', 'a3'])
+        a = {'a1', 'a2', 'a3'}
+        b = {'b1', 'a2', 'a3'}
         self.assertEqual(prefix_paths_union(a, b), {'a2', 'a3'})
 
     def test_prefix(self):
-        a = set(['a1', 'a2', 'a3'])
-        b = set(['b1', 'a2/foo', 'b3/foo'])
+        a = {'a1', 'a2', 'a3'}
+        b = {'b1', 'a2/foo', 'b3/foo'}
         self.assertEqual(prefix_paths_union(a, b), {'a2'})
 
 

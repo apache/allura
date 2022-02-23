@@ -413,8 +413,8 @@ class TestModelCache(unittest.TestCase):
         q = mock.Mock(spec_set=['query'], query='foo')
         m = mock.Mock(spec_set=['m'], m='bar')
         n = mock.Mock(spec_set=['foo'], foo='qux')
-        self.assertEquals(self.cache._model_query(q), 'foo')
-        self.assertEquals(self.cache._model_query(m), 'bar')
+        self.assertEqual(self.cache._model_query(q), 'foo')
+        self.assertEqual(self.cache._model_query(m), 'bar')
         self.assertRaises(AttributeError, self.cache._model_query, [n])
 
     @mock.patch.object(M.repository.Tree.query, 'get')
@@ -503,7 +503,7 @@ class TestModelCache(unittest.TestCase):
         self.cache.set(M.repository.Tree, {'val': 'tree1'}, tree1)
         self.cache.set(M.repository.Tree, {'val': 'tree2'}, tree2)
         self.assertEqual(set(self.cache.instance_ids(M.repository.Tree)),
-                         set(['id1', 'id2']))
+                         {'id1', 'id2'})
         self.assertEqual(self.cache.instance_ids(M.repository.LastCommit), [])
 
     @mock.patch.object(M.repository.Tree.query, 'find')

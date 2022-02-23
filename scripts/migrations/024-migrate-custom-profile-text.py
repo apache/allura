@@ -68,7 +68,7 @@ def main():
 
             if "This is the personal project of" in page.text:
                 if description not in page.text:
-                    page.text = "%s\n\n%s" % (page.text, description)
+                    page.text = "{}\n\n{}".format(page.text, description)
                     log.info("Update wiki home page text for %s" %
                              user.username)
             elif "This is the default page" in page.text:

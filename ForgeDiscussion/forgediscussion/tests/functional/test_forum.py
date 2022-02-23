@@ -239,7 +239,7 @@ class TestForumMessageHandling(TestController):
         thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
         p = FM.ForumPost.query.find().first()
-        url = str('/discussion/testforum/thread/%s/%s/' % (thd._id, p.slug))
+        url = str('/discussion/testforum/thread/{}/{}/'.format(thd._id, p.slug))
         r = self.app.get(url)
         f = r.html.find('form', {'action': '/p/test' + url})
         params = dict()
@@ -592,9 +592,9 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')
         post2 = FM.ForumPost.query.get(text='anon reply to anon post content')
-        link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
+        link = '<a href="{}">[{}]</a>'.format(post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
         assert link in r, link
-        link = '<a href="%s">[%s]</a>' % (post2.thread.url() + '?limit=25#' + post2.slug, post2.shorthand_id())
+        link = '<a href="{}">[{}]</a>'.format(post2.thread.url() + '?limit=25#' + post2.slug, post2.shorthand_id())
         assert link in r, link
 
         # approve posts

@@ -66,7 +66,7 @@ class FeedController(object):
 
     """
     FEED_TYPES = [str('.atom'), str('.rss')]
-    FEED_NAMES = [str('feed{0}'.format(typ)) for typ in FEED_TYPES]
+    FEED_NAMES = [str('feed{}'.format(typ)) for typ in FEED_TYPES]
 
     def __getattr__(self, name):
         if name in self.FEED_NAMES:

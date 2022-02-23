@@ -180,7 +180,7 @@ class ForgeActivityController(BaseController):
         for t in data['timeline']:
             url_id = h.absurl(t.obj.activity_url)  # try to keep this consistent over time (not url-quoted)
             url = h.absurl(h.urlquote_path_only(t.obj.activity_url))
-            feed.add_item(title='%s %s %s%s' % (
+            feed.add_item(title='{} {} {}{}'.format(
                                 t.actor.activity_name,
                 t.verb,
                 t.obj.activity_name,

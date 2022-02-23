@@ -36,7 +36,7 @@ class TestCORSMiddleware(object):
         cors = CORSMiddleware(self.app, ['get', 'post'], ['Some-Header'])
         assert_equal(cors.app, self.app)
         assert_equal(cors.allowed_methods, ['GET', 'POST'])
-        assert_equal(cors.allowed_headers, set(['some-header']))
+        assert_equal(cors.allowed_headers, {'some-header'})
 
     def test_call_not_api_request(self):
         callback = MagicMock()
@@ -104,4 +104,4 @@ class TestCORSMiddleware(object):
         assert_equal(f({}), set())
         assert_equal(f({key: ''}), set())
         assert_equal(f({key: 'Authorization, Accept'}),
-                     set(['authorization', 'accept']))
+                     {'authorization', 'accept'})

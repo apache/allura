@@ -59,7 +59,7 @@ class GitHubProjectNameValidator(fev.FancyValidator):
         user_name = state.full_dict.get('user_name', '')
         user_name = state.full_dict.get('gh_user_name', user_name).strip()
         project_name = value.strip()
-        full_project_name = '%s/%s' % (user_name, project_name)
+        full_project_name = '{}/{}'.format(user_name, project_name)
         if not re.match(r'^[a-zA-Z0-9-_.]+$', project_name):
             raise fev.Invalid(self.message('invalid', state), value, state)
 

@@ -80,7 +80,7 @@ class Forum(M.Discussion):
         if c.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
             local_part = self.shortname.replace('/', '.')
-            return '%s@%s%s' % (local_part, domain, config.common_suffix)
+            return '{}@{}{}'.format(local_part, domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
@@ -136,7 +136,7 @@ class Forum(M.Discussion):
             return MailFooter.monitored(
                 toaddr,
                 h.absurl(self.url()),
-                h.absurl('{0}admin/{1}/forums'.format(
+                h.absurl('{}admin/{}/forums'.format(
                     self.project.url(),
                     self.app.config.options.mount_point)))
         return super(Forum, self).get_mail_footer(notification, toaddr)

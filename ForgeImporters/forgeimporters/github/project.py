@@ -47,7 +47,7 @@ class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):
 
     def after_project_create(self, project, **kw):
         project.set_tool_data('github', project_name=project.name)
-        project_name = '%s/%s' % (kw['user_name'], kw['project_name'])
+        project_name = '{}/{}'.format(kw['user_name'], kw['project_name'])
         tasks.import_project_info.post(project_name)
 
     @with_trailing_slash

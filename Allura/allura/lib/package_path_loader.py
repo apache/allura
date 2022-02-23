@@ -202,7 +202,7 @@ class PackagePathLoader(jinja2.BaseLoader):
                     order_rules.append((rule[1], ep.name))
                 else:
                     raise jinja2.TemplateError(
-                        'Unknown template path rule in %s: %s' % (
+                        'Unknown template path rule in {}: {}'.format(
                             ep.name, ' '.join(rule)))
         return order_rules, replacement_rules
 

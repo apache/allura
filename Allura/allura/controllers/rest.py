@@ -237,7 +237,7 @@ class OAuthNegotiator(object):
             url = rtok.callback + '&'
         else:
             url = rtok.callback + '?'
-        url += 'oauth_token=%s&oauth_verifier=%s' % (
+        url += 'oauth_token={}&oauth_verifier={}'.format(
             rtok.api_key, rtok.validation_pin)
         redirect(url)
 

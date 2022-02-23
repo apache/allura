@@ -42,7 +42,7 @@ class RefreshLastCommits(ScriptTask):
                 repo_type = repo_type.strip()
                 if repo_type not in ['git', 'hg']:
                     raise argparse.ArgumentTypeError(
-                        '{0} is not a valid repo type.'.format(repo_type))
+                        '{} is not a valid repo type.'.format(repo_type))
                 repo_types.append(repo_type)
             return repo_types
         parser = argparse.ArgumentParser(description='Using existing commit data, '

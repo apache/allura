@@ -380,7 +380,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert notification
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config['forgemail.domain']
-        email = 'noreply@%s%s' % (domain, common_suffix)
+        email = 'noreply@{}{}'.format(domain, common_suffix)
         assert_in(email, notification['reply_to_address'])
 
         commit1_loc = notification.text.find('Initial commit')

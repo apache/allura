@@ -648,7 +648,7 @@ class ProjectAdminController(BaseController):
                         new_url = new_url()
                     redirect(new_url)
         except forge_exc.ForgeError as exc:
-            flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
+            flash('{}: {}'.format(exc.__class__.__name__, exc.args[0]),
                   'error')
         if request.referer is not None and tool is not None and 'delete' in tool[0] and \
             re.search(c.project.url() + r'(admin\/|)' + tool[0]['mount_point']+ r'\/*',
@@ -804,7 +804,7 @@ class ProjectAdminRestController(BaseController):
                 'Must give at least one tool mount point to export')
         tools = aslist(tools, ',')
         exportable_tools = AdminApp.exportable_tools_for(c.project)
-        allowed = set(t.options.mount_point for t in exportable_tools)
+        allowed = {t.options.mount_point for t in exportable_tools}
         if not set(tools).issubset(allowed):
             raise exc.HTTPBadRequest('Invalid tool')
         if c.project.bulk_export_status() == 'busy':
@@ -1030,8 +1030,8 @@ class PermissionsController(BaseController):
         redirect('.')
 
     def _index_permissions(self):
-        permissions = dict(
-            (p, []) for p in c.project.permissions)
+        permissions = {
+            p: [] for p in c.project.permissions}
         for ace in c.project.acl:
             if ace.access == M.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)
@@ -1043,8 +1043,8 @@ class GroupsController(BaseController):
         require_access(c.project, 'admin')
 
     def _index_permissions(self):
-        permissions = dict(
-            (p, []) for p in c.project.permissions)
+        permissions = {
+            p: [] for p in c.project.permissions}
         for ace in c.project.acl:
             if ace.access == M.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)
@@ -1068,7 +1068,7 @@ class GroupsController(BaseController):
                 else:
                     for r in role.child_roles():
                         if r._id in role_ids:
-                            perm_info['text'] = "Inherited permission %s from %s" % (
+                            perm_info['text'] = "Inherited permission {} from {}".format(
                                 perm, r.name)
                             perm_info['has'] = "inherit"
                             break
@@ -1146,7 +1146,7 @@ class GroupsController(BaseController):
             return dict(error='User %s not found' % username)
         user_role = M.ProjectRole.by_user(user, upsert=True)
         if group._id in user_role.roles:
-            return dict(error='%s (%s) is already in the group %s.' % (user.display_name, username, group.name))
+            return dict(error='{} ({}) is already in the group {}.'.format(user.display_name, username, group.name))
         M.AuditLog.log('add user %s to %s', username, group.name)
         user_role.roles.append(group._id)
         if group.name == 'Admin':
@@ -1170,7 +1170,7 @@ class GroupsController(BaseController):
             return dict(error='User %s not found' % username)
         user_role = M.ProjectRole.by_user(user)
         if not user_role or group._id not in user_role.roles:
-            return dict(error='%s (%s) is not in the group %s.' % (user.display_name, username, group.name))
+            return dict(error='{} ({}) is not in the group {}.'.format(user.display_name, username, group.name))
         M.AuditLog.log('remove user %s from %s', username, group.name)
         user_role.roles.remove(group._id)
         if len(user_role.roles) == 0:

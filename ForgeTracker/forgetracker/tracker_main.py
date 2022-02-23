@@ -191,7 +191,7 @@ def _my_trackers(user, current_tracker_app_config):
         for ac in p.app_configs:
             if ac.tool_name.lower() == 'tickets':
                 trac = (str(ac._id),
-                        '%s/%s' % (p.shortname, ac.options['mount_point']),
+                        '{}/{}'.format(p.shortname, ac.options['mount_point']),
                         bool(current_tracker_app_config == ac))
                 trackers.append(trac)
     return trackers
@@ -535,7 +535,7 @@ class ForgeTrackerApp(Application):
             if fld.name == '_milestone':
                 for m in fld.milestones:
                     d = self.globals.milestone_count(
-                        '%s:%s' % (fld.name, m.name))
+                        '{}:{}'.format(fld.name, m.name))
                     milestones.append(dict(
                         name=m.name,
                         due_date=m.get('due_date'),
@@ -674,7 +674,7 @@ class RootController(BaseController, FeedController):
                 if m.complete:
                     continue
                 count = c.app.globals.milestone_count(
-                    '%s:%s' % (fld.name, m.name))['hits']
+                    '{}:{}'.format(fld.name, m.name))['hits']
                 name = h.text.truncate(m.name, 72)
                 milestone_counts.append({'name': name, 'count': count})
         return {'milestone_counts': milestone_counts}
@@ -782,7 +782,7 @@ class RootController(BaseController, FeedController):
                                 m.complete = new['complete'] == 'Closed'
                                 m.default = new.get('default', False)
                                 if new['old_name'] != m.name:
-                                    q = '%s:"%s"' % (fld.name, new['old_name'])
+                                    q = '{}:"{}"'.format(fld.name, new['old_name'])
                                     # search_artifact() limits results to 10
                                     # rows by default, so give it a high upper
                                     # bound to make sure we get all tickets
@@ -1092,7 +1092,7 @@ class RootController(BaseController, FeedController):
         c.user_select = ffw.ProjectUserCombo()
         if dates is None:
             today = datetime.utcnow()
-            dates = "%s to %s" % ((today - timedelta(days=61))
+            dates = "{} to {}".format((today - timedelta(days=61))
                                   .strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
         return dict(
             now=str(now),
@@ -1667,8 +1667,8 @@ class TrackerAdminController(DefaultAdminController):
     @expose('jinja:forgetracker:templates/tracker/admin_fields.html')
     def fields(self, **kw):
         c.form = W.field_admin
-        columns = dict((column, get_label(column))
-                       for column in self.app.globals['show_in_search'].keys())
+        columns = {column: get_label(column)
+                       for column in self.app.globals['show_in_search'].keys()}
         return dict(app=self.app, globals=self.app.globals, columns=columns)
 
     @expose('jinja:forgetracker:templates/tracker/admin_options.html')
@@ -1724,10 +1724,10 @@ class TrackerAdminController(DefaultAdminController):
             if field['type'] == 'milestone':
                 field.setdefault('milestones', [])
 
-        existing_milestone_fld_names = set(
-            mf.name for mf in self.app.globals.milestone_fields)
-        posted_milestone_fld_names = set(
-            cf['name'] for cf in custom_fields if cf['type'] == 'milestone')
+        existing_milestone_fld_names = {
+            mf.name for mf in self.app.globals.milestone_fields}
+        posted_milestone_fld_names = {
+            cf['name'] for cf in custom_fields if cf['type'] == 'milestone'}
         deleted_milestone_fld_names = existing_milestone_fld_names -\
             posted_milestone_fld_names
         added_milestone_fld_names = posted_milestone_fld_names -\
@@ -1762,13 +1762,13 @@ class TrackerAdminController(DefaultAdminController):
                     cf for cf in custom_fields
                     if cf['type'] == 'milestone'
                     and cf['name'] == milestone_fld_name][0]
-                existing_milestone_names = set(
+                existing_milestone_names = {
                     m.name for m in
-                    existing_milestone_fld.get('milestones', []))
-                old_posted_milestone_names = set(
+                    existing_milestone_fld.get('milestones', [])}
+                old_posted_milestone_names = {
                     m['old_name']
                     for m in posted_milestone_fld.get('milestones', [])
-                    if m.get('old_name', None))
+                    if m.get('old_name', None)}
                 deleted_milestone_names = existing_milestone_names -\
                     old_posted_milestone_names
 
@@ -1919,9 +1919,9 @@ class MilestoneController(BaseController):
         self.field = fld
         self.milestone = m
         escaped_name = escape_solr_arg(m.name)
-        self.progress_key = '%s:%s' % (fld.name, escaped_name)
+        self.progress_key = '{}:{}'.format(fld.name, escaped_name)
         self.mongo_query = {'custom_fields.%s' % fld.name: m.name}
-        self.solr_query = '%s:%s' % (_mongo_col_to_solr_col(fld.name), escaped_name)
+        self.solr_query = '{}:{}'.format(_mongo_col_to_solr_col(fld.name), escaped_name)
 
     @with_trailing_slash
     @h.vardec

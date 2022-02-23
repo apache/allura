@@ -155,7 +155,7 @@ class MonQTask(MappedClass):
             args = ()
         if kwargs is None:
             kwargs = {}
-        task_name = '%s.%s' % (
+        task_name = '{}.{}'.format(
             function.__module__,
             function.__name__)
         context = dict(

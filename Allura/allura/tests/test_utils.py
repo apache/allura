@@ -169,8 +169,8 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(ValueError, utils.AntiSpam.validate_request, r)
 
     def _encrypt_form(self, **kwargs):
-        encrypted_form = dict(
-            (self.a.enc(k), v) for k, v in kwargs.items())
+        encrypted_form = {
+            self.a.enc(k): v for k, v in kwargs.items()}
         encrypted_form.setdefault(self.a.enc('honey0'), '')
         encrypted_form.setdefault(self.a.enc('honey1'), '')
         encrypted_form['spinner'] = self.a.spinner_text
@@ -390,7 +390,7 @@ class FakeAttachment(object):
         self._id = ObjectId()
         self.filename = filename
     def __repr__(self):
-        return '%s %s' % (self._id, self.filename)
+        return '{} {}'.format(self._id, self.filename)
 
 
 def unique_attachments():

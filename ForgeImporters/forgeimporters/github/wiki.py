@@ -134,7 +134,7 @@ class GitHubWikiImporter(ToolImporter):
         """ Import a GitHub wiki into a new Wiki Allura tool.
 
         """
-        project_name = "%s/%s" % (user_name, project_name)
+        project_name = "{}/{}".format(user_name, project_name)
         extractor = GitHubProjectExtractor(project_name, user=user)
         wiki_avail = extractor.has_wiki()
         # has_wiki only indicates that wiki is enabled, but it does not mean
@@ -176,7 +176,7 @@ class GitHubWikiImporter(ToolImporter):
                     raise
             ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
-                'import tool %s from %s on %s' % (
+                'import tool {} from {} on {}'.format(
                     self.app.config.options.mount_point,
                     project_name,
                     self.source),

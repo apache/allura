@@ -112,7 +112,7 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME, current_pkg=None):
     config = get_config_file(config, current_pkg=current_pkg)
     setup_basic_test(config, app_name)
     conf_dir = tg.config.here
-    wsgiapp = loadapp('config:%s#%s' % (config, app_name),
+    wsgiapp = loadapp('config:{}#{}'.format(config, app_name),
                       relative_to=conf_dir)
     return wsgiapp
 # sometimes __test__ above isn't sufficient

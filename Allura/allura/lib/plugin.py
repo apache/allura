@@ -645,7 +645,7 @@ def ldap_user_dn(username):
     'return a Distinguished Name for a given username'
     if not username:
         raise ValueError('Empty username')
-    return 'uid=%s,%s' % (
+    return 'uid={},{}'.format(
         ldap.dn.escape_dn_chars(username),
         config['auth.ldap.suffix'])
 
@@ -690,7 +690,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         con.unbind_s()
 
         if asbool(config.get('auth.ldap.use_schroot', True)):
-            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
+            argv = ('schroot -d / -c {} -u root /ldap-userconfig.py init {}'.format(
                 config['auth.ldap.schroot_name'], user_doc['username'])).split()
             p = subprocess.Popen(
                 argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -704,7 +704,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         if not asbool(config.get('auth.ldap.use_schroot', True)):
             raise NotImplementedError('SSH keys are not supported')
 
-        argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
+        argv = ('schroot -d / -c {} -u root /ldap-userconfig.py upload {}'.format(
             config['auth.ldap.schroot_name'], username)).split() + [pubkey]
         p = subprocess.Popen(
             argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -728,7 +728,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         salt = self._get_salt(salt_len) if salt is None else salt
         encrypted = crypt.crypt(
             six.ensure_str(password),
-            '$%s$rounds=%s$%s' % (algorithm, rounds, salt))
+            '${}$rounds={}${}'.format(algorithm, rounds, salt))
         return b'{CRYPT}%s' % encrypted.encode('utf-8')
 
     def by_username(self, username):
@@ -1019,7 +1019,7 @@ class ProjectRegistrationProvider(object):
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict(
-                '%s already exists in nbhd %s' % (shortname, neighborhood._id))
+                '{} already exists in nbhd {}'.format(shortname, neighborhood._id))
 
     def index_project(self, project):
         """
@@ -1328,7 +1328,7 @@ class ThemeProvider(object):
         '''
         if theme_name is None:
             theme_name = config.get('theme', 'allura')
-        return g.resource_manager.absurl('theme/%s/%s' % (theme_name, href))
+        return g.resource_manager.absurl('theme/{}/{}'.format(theme_name, href))
 
     @LazyProperty
     def personal_data_form(self):

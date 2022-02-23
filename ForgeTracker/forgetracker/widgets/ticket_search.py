@@ -49,7 +49,7 @@ class TicketSearchResults(ew_core.SimpleForm):
         for name, field in six.iteritems(filters):
             self.filters[name] = options = [{
                 'value': val,
-                'label': '%s (%s)' % (val, count),
+                'label': '{} ({})'.format(val, count),
                 'selected': False
             } for val, count in field]
             options.append({'value': '', 'label': 'Not set', 'selected': False})

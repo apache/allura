@@ -184,7 +184,7 @@ def unknown_commit_ids(all_commit_ids):
     for chunk in utils.chunked_iter(all_commit_ids, QSIZE):
         chunk = list(chunk)
         q = CommitDoc.m.find(dict(_id={'$in': chunk}))
-        known_commit_ids = set(ci._id for ci in q)
+        known_commit_ids = {ci._id for ci in q}
         result += [oid for oid in chunk if oid not in known_commit_ids]
     return result
 
@@ -203,9 +203,9 @@ def send_notifications(repo, commit_ids):
     base_url = tg.config['base_url']
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
-        index = dict(
-            (doc._id, doc)
-            for doc in Commit.query.find(dict(_id={'$in': chunk})))
+        index = {
+            doc._id: doc
+            for doc in Commit.query.find(dict(_id={'$in': chunk}))}
         for oid in chunk:
             ci = index[oid]
             href = repo.url_for_commit(oid)
@@ -213,7 +213,7 @@ def send_notifications(repo, commit_ids):
             summary = _summarize(ci.message)
             Feed.post(
                 repo, title=title,
-                description='%s<br><a href="%s">View Changes</a>' % (
+                description='{}<br><a href="{}">View Changes</a>'.format(
                     summary, href),
                 author_link=ci.author_url,
                 author_name=ci.authored.name,

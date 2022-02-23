@@ -102,7 +102,7 @@ class TestNavigation(TestController):
         width = self.width % self.logo_data["width"]
         height = self.height % self.logo_data["height"]
         assert nav_logo.find(
-            'img', style='%s %s' % (width, height)) is not None
+            'img', style='{} {}'.format(width, height)) is not None
 
     def test_missing_logo_width(self):
         self.logo_data = {

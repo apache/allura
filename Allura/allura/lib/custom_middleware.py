@@ -92,7 +92,7 @@ class CORSMiddleware(object):
     def __init__(self, app, allowed_methods, allowed_headers, cache=None):
         self.app = app
         self.allowed_methods = [m.upper() for m in allowed_methods]
-        self.allowed_headers = set(h.lower() for h in allowed_headers)
+        self.allowed_headers = {h.lower() for h in allowed_headers}
         self.cache_preflight = cache or None
 
     def __call__(self, environ, start_response):
@@ -141,7 +141,7 @@ class CORSMiddleware(object):
 
     def get_access_control_request_headers(self, environ):
         headers = environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS', '')
-        return set(h.strip().lower() for h in headers.split(',') if h.strip())
+        return {h.strip().lower() for h in headers.split(',') if h.strip()}
 
 
 class LoginRedirectMiddleware(object):
@@ -218,7 +218,7 @@ class CSRFMiddleware(object):
                 use_secure = 'secure; ' if environ['beaker.session'].secure else ''
                 headers.append(
                     (str('Set-cookie'),
-                     str('%s=%s; %sPath=/' % (self._cookie_name, cookie, use_secure))))
+                     str('{}={}; {}Path=/'.format(self._cookie_name, cookie, use_secure))))
             return start_response(status, headers, exc_info)
 
         return self._app(environ, session_start_response)

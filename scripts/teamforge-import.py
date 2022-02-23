@@ -242,7 +242,7 @@ def get_user(orig_username):
         load_users()
         user = users[orig_username]
         if user.status != 'Active':
-            log.warn('Inactive user %s %s' % (orig_username, user.status))
+            log.warn('Inactive user {} {}'.format(orig_username, user.status))
 
         if not 3 <= len(user.fullName) <= 32:
             raise Exception('invalid fullName length: %s' % user.fullName)
@@ -309,23 +309,23 @@ def convert_project_shortname(teamforge_path):
 
 
 # FIXME hardcoded
-skip_perms_usernames = set([
+skip_perms_usernames = {
     'username1', 'username2', 'username3'
-])
+}
 
 
 def create_project(pid, nbhd):
     M.session.artifact_orm_session._get().skip_mod_date = True
     data = loadjson(pid, pid + '.json')
     # pprint(data)
-    log.info('Loading: %s %s %s' % (pid, data.data.title, data.data.path))
+    log.info('Loading: {} {} {}'.format(pid, data.data.title, data.data.path))
     shortname = convert_project_shortname(data.data.path)
 
     project = M.Project.query.get(
         shortname=shortname, neighborhood_id=nbhd._id)
     if not project:
         private = (data.access_level == 'private')
-        log.debug('Creating %s private=%s' % (shortname, private))
+        log.debug('Creating {} private={}'.format(shortname, private))
         one_admin = [
             u.userName for u in data.admins if u.status == 'Active'][0]
         project = nbhd.register_project(shortname,
@@ -547,7 +547,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                             post_data = loadjson(pid, 'forum',
                                                  forum_name, topic_name, post)
                             p = DM.ForumPost.query.get(
-                                _id='%s%s@import' % (
+                                _id='{}{}@import'.format(
                                     post_name, str(discuss_app.config._id)),
                                 thread_id=to._id,
                                 discussion_id=fo._id,
@@ -555,7 +555,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
 
                             if not p:
                                 p = DM.ForumPost(
-                                    _id='%s%s@import' % (
+                                    _id='{}{}@import'.format(
                                         post_name, str(
                                             discuss_app.config._id)),
                                     thread_id=to._id,
@@ -570,7 +570,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                                 frs_mapping, sf_project_shortname, post_data.content, nbhd)
                             p.status = 'ok'
                             if post_data.replyToId:
-                                p.parent_id = '%s%s@import' % (
+                                p.parent_id = '{}{}@import'.format(
                                     post_data.replyToId, str(discuss_app.config._id))
                             slug, full_slug = p.make_slugs(
                                 parent=p.parent, timestamp=create_date)
@@ -745,7 +745,7 @@ def wiki2markdown(markup):
             return '[[img src=%s]]' % filename
         elif '|' in snippet:
             text, link = snippet.split('|', 1)
-            return '[%s](%s)' % (text, link)
+            return '[{}]({})'.format(text, link)
         else:
             # regular link
             return '<%s>' % snippet
@@ -765,7 +765,7 @@ def convert_post_content(frs_mapping, sf_project_shortname, text, nbhd):
         relno = matchobj.group(1)
         path = frs_mapping.get(relno)
         if path:
-            return '<a href="/projects/%s.%s/files/%s">%s</a>' % (
+            return '<a href="/projects/{}.{}/files/{}">{}</a>'.format(
                 sf_project_shortname, nbhd.url_prefix.strip('/'), path, path)
         else:
             return relno

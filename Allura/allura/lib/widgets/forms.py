@@ -105,7 +105,7 @@ class ForgeForm(ew.SimpleForm):
             or ctx.get('label')
             or getattr(field, 'label', None)
             or ctx['name'])
-        html = '<label for="%s">%s</label>' % (
+        html = '<label for="{}">{}</label>'.format(
             ctx['id'], label_text)
         return Markup(html)
 
@@ -119,7 +119,7 @@ class ForgeForm(ew.SimpleForm):
         ctx = self.context_for(field)
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display = "%s<div class='error'>%s</div>" % (display,
+            display = "{}<div class='error'>{}</div>".format(display,
                                                          ctx['errors'])
         return Markup(display)
 
@@ -879,7 +879,7 @@ class NeighborhoodOverviewForm(ForgeForm):
             display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
-                display = "%s<div class='error'>%s</div>" % (display,
+                display = "{}<div class='error'>{}</div>".format(display,
                                                              ctx['errors'])
 
             return Markup(display)

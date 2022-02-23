@@ -187,8 +187,8 @@ class SitemapEntry(object):
         children or our copy with the children of the new copy.
 
         """
-        child_index = dict(
-            (ch.label, ch) for ch in self.children)
+        child_index = {
+            ch.label: ch for ch in self.children}
         for e in sitemap_entries:
             lbl = e.label
             match = child_index.get(e.label)
@@ -361,7 +361,7 @@ class Application(object):
         """
         if self.config.options.get('AllowEmailPosting', True):
             parts = list(reversed(self.url[1:-1].split('/')))
-            return '%s@%s%s' % (parts[0], '.'.join(parts[1:]), config.common_suffix)
+            return '{}@{}{}'.format(parts[0], '.'.join(parts[1:]), config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
@@ -528,9 +528,9 @@ class Application(object):
         :rtype: dict
 
         """
-        return dict(
-            (co.name, co.default)
-            for co in cls.config_options)
+        return {
+            co.name: co.default
+            for co in cls.config_options}
 
     @classmethod
     def options_on_install(cls):
@@ -896,7 +896,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         c.card = PermissionCard()
         c.block_user = BlockUser()
         c.block_list = BlockList()
-        permissions = dict((p, []) for p in self.app.permissions)
+        permissions = {p: [] for p in self.app.permissions}
         block_list = defaultdict(list)
         for ace in self.app.config.acl:
             if ace.access == model.ACE.ALLOW:
@@ -1026,7 +1026,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 return ', '.join((role.name or '<Unnamed>') for role in groups if role)
 
             if new_groups or del_groups:
-                model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
+                model.AuditLog.log('updated "{}" permission: "{}" => "{}" for {}'.format(
                     perm,
                     group_names(groups + del_groups),
                     group_names(groups + new_groups),

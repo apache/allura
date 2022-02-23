@@ -151,15 +151,15 @@ class Globals(MappedClass):
 
     @property
     def set_of_all_status_names(self):
-        return set([name for name in self.all_status_names.split(' ') if name])
+        return {name for name in self.all_status_names.split(' ') if name}
 
     @property
     def set_of_open_status_names(self):
-        return set([name for name in self.open_status_names.split(' ') if name])
+        return {name for name in self.open_status_names.split(' ') if name}
 
     @property
     def set_of_closed_status_names(self):
-        return set([name for name in self.closed_status_names.split(' ') if name])
+        return {name for name in self.closed_status_names.split(' ') if name}
 
     @property
     def not_closed_query(self):
@@ -272,7 +272,7 @@ class Globals(MappedClass):
             return self.get_custom_field_solr_type(field_name) or '_s'
 
         return [dict(
-            sortable_name='{0}{1}'.format(field['name'],
+            sortable_name='{}{}'.format(field['name'],
                 solr_type(field['name'])),
             name=field['name'],
             label=field['label'])
@@ -299,16 +299,16 @@ class Globals(MappedClass):
             sender=c.project.app_instance(self.app_config).email_address,
             fromaddr=str(c.user.email_address_header()),
             reply_to=str(c.user.email_address_header()),
-            subject='[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
+            subject='[{}:{}] Mass ticket moving by {}'.format(c.project.shortname,
                                                           self.app_config.options.mount_point,
                                                           c.user.display_name))
         tmpl = g.jinja2_env.get_template(
             'forgetracker:data/mass_move_report.html')
 
         tmpl_context = {
-            'original_tracker': '%s:%s' % (c.project.shortname,
+            'original_tracker': '{}:{}'.format(c.project.shortname,
                                            self.app_config.options.mount_point),
-            'destination_tracker': '%s:%s' % (tracker.project.shortname,
+            'destination_tracker': '{}:{}'.format(tracker.project.shortname,
                                               tracker.options.mount_point),
             'tickets': [],
         }
@@ -343,11 +343,11 @@ class Globals(MappedClass):
                     destinations=[monitoring_email]))
                 mail_tasks.sendmail.post(**mail)
 
-        moved_from = '%s/%s' % (c.project.shortname,
+        moved_from = '{}/{}'.format(c.project.shortname,
                                 self.app_config.options.mount_point)
-        moved_to = '%s/%s' % (tracker.project.shortname,
+        moved_to = '{}/{}'.format(tracker.project.shortname,
                               tracker.options.mount_point)
-        text = 'Tickets moved from %s to %s' % (moved_from, moved_to)
+        text = 'Tickets moved from {} to {}'.format(moved_from, moved_to)
         Notification.post_user(c.user, None, 'flash', text=text)
 
     def update_tickets(self, **post_data):
@@ -358,7 +358,7 @@ class Globals(MappedClass):
                              post_data['__ticket_ids'])]},
             app_config_id=self.app_config_id)).all()
 
-        fields = set(['status', 'private'])
+        fields = {'status', 'private'}
         values = {}
         labels = post_data.get('labels', [])
 
@@ -464,7 +464,7 @@ class Globals(MappedClass):
             sender=c.project.app_instance(self.app_config).email_address,
             fromaddr=str(c.user._id),
             reply_to=tg_config['forgemail.return_path'],
-            subject='[%s:%s] Mass edit changes by %s' % (c.project.shortname,
+            subject='[{}:{}] Mass edit changes by {}'.format(c.project.shortname,
                                                          self.app_config.options.mount_point,
                                                          c.user.display_name),
         )
@@ -474,13 +474,13 @@ class Globals(MappedClass):
             if f == 'assigned_to_id':
                 user = User.query.get(_id=v)
                 v = user.display_name if user else v
-            head.append('- **%s**: %s' % (get_label(f), v))
+            head.append('- **{}**: {}'.format(get_label(f), v))
         for f, v in sorted(six.iteritems(custom_values)):
             cf = custom_fields[f]
             if cf.type == 'user':
                 user = User.by_username(v)
                 v = user.display_name if user else v
-            head.append('- **%s**: %s' % (cf.label, v))
+            head.append('- **{}**: {}'.format(cf.label, v))
         tmpl_context = {'context': c, 'data':
                         {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
         for user in users:
@@ -512,7 +512,7 @@ class Globals(MappedClass):
 
         self.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-        app = '%s/%s' % (c.project.shortname,
+        app = '{}/{}'.format(c.project.shortname,
                          self.app_config.options.mount_point)
         count = len(tickets)
         text = 'Updated {} ticket{} in {}'.format(
@@ -563,7 +563,7 @@ class TicketHistory(Snapshot):
         orig = self.original()
         if not orig:
             return None
-        return '%s#%s' % (orig.shorthand_id(), self.version)
+        return '{}#{}'.format(orig.shorthand_id(), self.version)
 
     def url(self):
         orig = self.original()
@@ -810,13 +810,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             return tg_config.get('forgemail.return_path')
         if c.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
-            return '%s@%s%s' % (self.ticket_num, domain, config.common_suffix)
+            return '{}@{}{}'.format(self.ticket_num, domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
     @property
     def email_subject(self):
-        return '#%s %s' % (self.ticket_num, self.summary)
+        return '#{} {}'.format(self.ticket_num, self.summary)
 
     @LazyProperty
     def globals(self):
@@ -850,7 +850,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if not fld:
             raise KeyError('Custom field "%s" does not exist.' % custom_user_field_name)
         if fld.type != 'user':
-            raise TypeError('Custom field "%s" is of type "%s"; expected type "user".' % (
+            raise TypeError('Custom field "{}" is of type "{}"; expected type "user".'.format(
                 custom_user_field_name, fld.type))
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
@@ -907,9 +907,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             hist = TicketHistory.query.get(
                 artifact_id=self._id, version=self.version - 1)
             old = hist.data
-            changes = ['Ticket %s has been modified: %s' % (
+            changes = ['Ticket {} has been modified: {}'.format(
                 self.ticket_num, self.summary),
-                'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
+                'Edited By: {} ({})'.format(c.user.get_pref('display_name'), c.user.username)]
             fields = [
                 ('Summary', old.summary, self.summary),
                 ('Status', old.status, self.status)]
@@ -921,12 +921,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     (key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
                 if o != n:
-                    changes.append('%s updated: %r => %r' % (
+                    changes.append('{} updated: {!r} => {!r}'.format(
                         title, o, n))
             o = hist.assigned_to
             n = self.assigned_to
             if o != n:
-                changes.append('Owner updated: %r => %r' % (
+                changes.append('Owner updated: {!r} => {!r}'.format(
                     o and o.username, n and n.username))
                 self.subscribe(user=n)
                 g.statsUpdater.ticketEvent("assigned", self, self.project, n)
@@ -1345,7 +1345,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             from forgetracker.tracker_main import _mongo_col_to_solr_col
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
-            solr_sort = '%s %s' % (solr_col, sort_split[1])
+            solr_sort = '{} {}'.format(solr_col, sort_split[1])
         if not filter:
             result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
             t = cls.query.find().first()
@@ -1366,7 +1366,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             return MailFooter.monitored(
                 toaddr,
                 h.absurl(self.app.url),
-                h.absurl('{0}admin/{1}/options'.format(
+                h.absurl('{}admin/{}/options'.format(
                     self.project.url(),
                     self.app.config.options.mount_point)))
         return MailFooter.standard(

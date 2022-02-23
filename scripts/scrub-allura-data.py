@@ -47,7 +47,7 @@ def scrub_project(p, options):
     log.info('Scrubbing project "%s"' % p.shortname)
     preamble = options.preamble
     if not public(p):
-        log.info('%s project "%s"' % (preamble, p.shortname))
+        log.info('{} project "{}"'.format(preamble, p.shortname))
         if not options.dry_run:
             p.delete()
         return
@@ -59,7 +59,7 @@ def scrub_project(p, options):
         if tool_name in ('admin', 'search', 'profile'):
             continue
         if not public(ac, project=p):
-            log.info('%s tool %s/%s on project "%s"' % (
+            log.info('{} tool {}/{} on project "{}"'.format(
                 preamble, tool_name, mount_point, p.shortname))
             if not options.dry_run:
                 p.uninstall_app(mount_point)

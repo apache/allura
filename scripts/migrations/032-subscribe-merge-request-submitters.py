@@ -29,7 +29,7 @@ def main():
     for chunk in utils.chunked_find(M.MergeRequest):
         for mr in chunk:
             try:
-                print('Processing {0}'.format(mr.url()))
+                print('Processing {}'.format(mr.url()))
                 mr.subscribe(user=mr.creator)
                 ThreadLocalORMSession.flush_all()
             except Exception:

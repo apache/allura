@@ -140,7 +140,7 @@ class EmailAddress(MappedClass):
         if '@' in addr:
             try:
                 user, domain = addr.strip().split('@')
-                return '%s@%s' % (user, domain.lower())
+                return '{}@{}'.format(user, domain.lower())
             except ValueError:
                 return addr.strip()
         else:
@@ -325,10 +325,10 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def index(self):
         provider = plugin.AuthenticationProvider.get(None)  # no need in request here
-        localization = '%s/%s' % (
+        localization = '{}/{}'.format(
             self.get_pref('localization')['country'],
             self.get_pref('localization')['city'])
-        socialnetworks = ' '.join(['%s: %s' % (n['socialnetwork'], n['accounturl'])
+        socialnetworks = ' '.join(['{}: {}'.format(n['socialnetwork'], n['accounturl'])
                                    for n in self.get_pref('socialnetworks')])
         fields = dict(
             id=self.index_id(),
@@ -487,7 +487,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
         """
         tmpl = g.jinja2_env.get_template('allura:templates/mail/usermentions_email.md')
-        subject = '[%s:%s] Your name was mentioned' % (
+        subject = '[{}:{}] Your name was mentioned'.format(
             c.project.shortname, c.app.config.options.mount_point)
         item_url = artifact.url()
         if artifact.type_s == 'Post':
@@ -835,7 +835,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
 
     def email_address_header(self):
         h = header.Header()
-        h.append('"%s"%s' % (self.get_pref('display_name'),
+        h.append('"{}"{}'.format(self.get_pref('display_name'),
                              ' ' if six.PY2 else ''))  # py2 needs explicit space for unicode/text_type cast of Header
         h.append('<%s>' % self.get_pref('email_address'))
         return h
@@ -1081,7 +1081,7 @@ class AuditLog(MappedClass):
 
     @classmethod
     def comment_user(cls, by, message, *args, **kwargs):
-        message = 'Comment by %s: %s' % (by.username, message)
+        message = 'Comment by {}: {}'.format(by.username, message)
         return cls.log_user(message, *args, **kwargs)
 
 

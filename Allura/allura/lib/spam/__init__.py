@@ -49,7 +49,7 @@ class SpamFilter(object):
         log.info("No submit_ham available for %s", self.filter_name)
 
     def record_result(self, result, artifact, user):
-        log.info("spam=%s (%s): %s" % (str(result), self.filter_name, artifact.url() if artifact else ''))
+        log.info("spam={} ({}): {}".format(str(result), self.filter_name, artifact.url() if artifact else ''))
         r = SpamCheckResult(
             ref=artifact.ref if artifact else None,
             project_id=artifact.project_id if artifact else None,

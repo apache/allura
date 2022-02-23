@@ -381,9 +381,9 @@ class JQueryMixin(object):
             yield r
         if self.js_plugin_file is not None:
             yield self.js_plugin_file
-        opts = dict(
-            (k, getattr(self, k))
-            for k in self.js_params)
+        opts = {
+            k: getattr(self, k)
+            for k in self.js_params}
         yield onready('''
 $(document).bind('clone', function () {
     $('.%s').%s(%s); });

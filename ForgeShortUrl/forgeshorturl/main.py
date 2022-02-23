@@ -229,7 +229,7 @@ class ShortURLAdminController(DefaultAdminController):
                 error_msg = 'Error: '
                 for msg in list(c.form_errors):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
-                    error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
+                    error_msg += '{}: {} '.format(names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')
                 redirect(six.ensure_text(request.referer or '/'))
 
@@ -250,7 +250,7 @@ class ShortURLAdminController(DefaultAdminController):
                 shorturl = ShortUrl()
                 shorturl.created = datetime.utcnow()
                 shorturl.app_config_id = self.app.config._id
-                msg = 'create short url %s for %s' % (short_url, full_url)
+                msg = 'create short url {} for {}'.format(short_url, full_url)
                 flash("Short url created")
 
             shorturl.short_name = short_url

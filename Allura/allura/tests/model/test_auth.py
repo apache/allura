@@ -134,14 +134,14 @@ def test_email_address_send_verification_link():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert_equal(set(p.shortname for p in c.user.my_projects()),
-                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal({p.shortname for p in c.user.my_projects()},
+                 {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
     # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
     ThreadLocalORMSession.flush_all()
-    assert_equal(set(p.shortname for p in c.user.my_projects()),
-                 set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal({p.shortname for p in c.user.my_projects()},
+                 {'test', 'u/test-admin', 'adobe-1', '--init--'})
     u = M.User.register(dict(
         username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
@@ -273,11 +273,11 @@ def test_project_role():
 
 @with_setup(setUp)
 def test_default_project_roles():
-    roles = dict(
-        (pr.name, pr)
+    roles = {
+        pr.name: pr
         for pr in M.ProjectRole.query.find(dict(
             project_id=c.project._id)).all()
-        if pr.name)
+        if pr.name}
     assert 'Admin' in list(roles.keys()), list(roles.keys())
     assert 'Developer' in list(roles.keys()), list(roles.keys())
     assert 'Member' in list(roles.keys()), list(roles.keys())
@@ -302,10 +302,10 @@ def test_email_address_claimed_by_user():
 @with_setup(setUp)
 @td.with_user_project('test-admin')
 def test_user_projects_by_role():
-    assert_equal(set(p.shortname for p in c.user.my_projects()),
-                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects_by_role_name('Admin')),
-                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal({p.shortname for p in c.user.my_projects()},
+                 {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
+    assert_equal({p.shortname for p in c.user.my_projects_by_role_name('Admin')},
+                 {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
     # Remove admin access from c.user to test2 project
     project = M.Project.query.get(shortname='test2')
     admin_role = M.ProjectRole.by_name('Admin', project)
@@ -315,10 +315,10 @@ def test_user_projects_by_role():
     user_role.roles.append(developer_role._id)
     ThreadLocalORMSession.flush_all()
     g.credentials.clear()
-    assert_equal(set(p.shortname for p in c.user.my_projects()),
-                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects_by_role_name('Admin')),
-                 set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal({p.shortname for p in c.user.my_projects()},
+                 {'test', 'test2', 'u/test-admin', 'adobe-1', '--init--'})
+    assert_equal({p.shortname for p in c.user.my_projects_by_role_name('Admin')},
+                 {'test', 'u/test-admin', 'adobe-1', '--init--'})
 
 
 @td.with_user_project('test-admin')

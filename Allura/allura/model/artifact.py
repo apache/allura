@@ -279,7 +279,7 @@ class Artifact(MappedClass, SearchIndexable):
 
         """
         if subject:
-            return 'mailto:%s?subject=[%s:%s:%s] Re: %s' % (
+            return 'mailto:{}?subject=[{}:{}:{}] Re: {}'.format(
                 self.email_address,
                 self.app_config.project.shortname,
                 self.app_config.options.mount_point,
@@ -540,7 +540,7 @@ class Snapshot(Artifact):
         raise NotImplementedError('original')  # pragma no cover
 
     def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        return '{}#{}'.format(self.original().shorthand_id(), self.version)
 
     def clear_user_data(self):
         """ Redact author data for a given user """
@@ -591,7 +591,7 @@ class VersionedArtifact(Artifact):
             ip_address = '0.0.0.0'
         data = dict(
             artifact_id=self._id,
-            artifact_class='%s.%s' % (
+            artifact_class='{}.{}'.format(
                 self.__class__.__module__,
                 self.__class__.__name__),
             author=dict(
@@ -630,7 +630,7 @@ class VersionedArtifact(Artifact):
             n = self.version + n + 1
         ss = self.__mongometa__.history_class.query.get(
             artifact_id=self._id,
-            artifact_class='%s.%s' % (
+            artifact_class='{}.{}'.format(
                 self.__class__.__module__,
                 self.__class__.__name__),
             version=n)
@@ -954,7 +954,7 @@ class Feed(MappedClass):
         if author_name is None:
             author_name = author.get_pref('display_name')
         if title is None:
-            title = '%s modified by %s' % (
+            title = '{} modified by {}'.format(
                 h.get_first(idx, 'title'), author_name)
         if description is None:
             description = title

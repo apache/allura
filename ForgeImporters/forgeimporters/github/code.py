@@ -88,7 +88,7 @@ class GitHubRepoImporter(ToolImporter):
         """ Import a GitHub repo into a new Git Allura tool.
 
         """
-        project_name = "%s/%s" % (user_name, project_name)
+        project_name = "{}/{}".format(user_name, project_name)
         extractor = GitHubProjectExtractor(project_name, user=user)
         repo_url = extractor.get_repo_url()
         app = project.install_app(
@@ -102,7 +102,7 @@ class GitHubRepoImporter(ToolImporter):
             }
         )
         M.AuditLog.log(
-            'import tool %s from %s on %s' % (
+            'import tool {} from {} on {}'.format(
                 app.config.options.mount_point,
                 project_name, self.source,
             ), project=project, user=user, url=app.url)
