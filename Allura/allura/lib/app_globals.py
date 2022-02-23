@@ -100,9 +100,6 @@ class ForgeMarkdown(markdown.Markdown):
 
         """
         source_text = getattr(artifact, field_name)
-        # Check if contents macro and never cache
-        if "[[" in source_text:
-            return self.convert(source_text)
         cache_field_name = field_name + '_cache'
         cache = getattr(artifact, cache_field_name, None)
         if not cache:
@@ -131,6 +128,17 @@ class ForgeMarkdown(markdown.Markdown):
             threshold = None
             log.warn('Skipping Markdown caching - The value for config param '
                      '"markdown_cache_threshold" must be a float.')
+
+        # Check if contains macro and never cache
+        # TODO: more precise search for [[include or [[members etc (all _macros). Or even track if one ran or not
+        if "[[" in source_text:
+            if render_time > float(config.get('markdown_cache_threshold.nocache', 0.5)):
+                try:
+                    url = artifact.url()
+                except NotImplementedError:
+                    url = ''
+                log.info(f'Not saving markdown cache since [[ means it might have a dynamic macro.  Took {render_time:.03}s on {artifact.index_id()} {url}')
+            return html
 
         if threshold is not None and render_time > threshold:
             # Save the cache
