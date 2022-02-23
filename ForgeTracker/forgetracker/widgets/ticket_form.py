@@ -95,7 +95,7 @@ class GenericTicketForm(ew.SimpleForm):
             field.options = [
                 ew.Option(
                     py_value=user.username,
-                    label='%s (%s)' % (user.display_name, user.username))
+                    label='{} ({})'.format(user.display_name, user.username))
             ]
 
     @property

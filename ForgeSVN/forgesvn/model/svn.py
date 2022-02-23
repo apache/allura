@@ -169,7 +169,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def _url(self):
-        return 'file://%s%s' % (self._repo.fs_path, self._repo.name)
+        return 'file://{}{}'.format(self._repo.fs_path, self._repo.name)
 
     def shorthand_for_commit(self, oid):
         return '[r%d]' % self._revno(self.rev_parse(oid))
@@ -306,13 +306,13 @@ class SVNImplementation(M.RepositoryImplementation):
 
         """
         opts = self._repo.app.config.options
-        if not svn_path_exists('file://{0}{1}/{2}'.format(self._repo.fs_path,
+        if not svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path,
                                                           self._repo.name, opts['checkout_url'])):
             opts['checkout_url'] = ''
 
         if (not opts['checkout_url'] and
                 svn_path_exists(
-                    'file://{0}{1}/trunk'.format(self._repo.fs_path,
+                    'file://{}{}/trunk'.format(self._repo.fs_path,
                                                  self._repo.name))):
             opts['checkout_url'] = 'trunk'
 
@@ -459,11 +459,11 @@ class SVNImplementation(M.RepositoryImplementation):
         return tree_id
 
     def _tree_oid(self, commit_id, path):
-        data = 'tree\n%s\n%s' % (commit_id, h.really_unicode(path))
+        data = 'tree\n{}\n{}'.format(commit_id, h.really_unicode(path))
         return sha1(data.encode('utf-8')).hexdigest()
 
     def _blob_oid(self, commit_id, path):
-        data = 'blob\n%s\n%s' % (commit_id, h.really_unicode(path))
+        data = 'blob\n{}\n{}'.format(commit_id, h.really_unicode(path))
         return sha1(data.encode('utf-8')).hexdigest()
 
     def _obj_oid(self, commit_id, info):
@@ -500,11 +500,11 @@ class SVNImplementation(M.RepositoryImplementation):
         if revs is None:
             revno = self.head
         else:
-            revno = max([self._revno(self.rev_parse(r)) for r in revs])
+            revno = max(self._revno(self.rev_parse(r)) for r in revs)
         if exclude is None:
             exclude = 0
         else:
-            exclude = max([self._revno(self.rev_parse(r)) for r in exclude])
+            exclude = max(self._revno(self.rev_parse(r)) for r in exclude)
         if path is None:
             url = self._url
         else:
@@ -631,7 +631,7 @@ class SVNImplementation(M.RepositoryImplementation):
             self._revno(oid))
 
     def _oid(self, revno):
-        return '%s:%s' % (self._repo._id, revno)
+        return '{}:{}'.format(self._repo._id, revno)
 
     def last_commit_ids(self, commit, paths):
         '''
@@ -687,7 +687,7 @@ class SVNImplementation(M.RepositoryImplementation):
         if path:
             return path.strip('/')
         else:
-            trunk_exists = svn_path_exists('file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'), rev)
+            trunk_exists = svn_path_exists('file://{}{}/{}'.format(self._repo.fs_path, self._repo.name, 'trunk'), rev)
             if trunk_exists:
                 return 'trunk'
             return ''
@@ -706,8 +706,8 @@ class SVNImplementation(M.RepositoryImplementation):
         archive_name = self._repo.tarball_filename(commit, path)
         dest = os.path.join(self._repo.tarball_path, archive_name)
         tmpdest = os.path.join(self._repo.tarball_tmpdir, archive_name)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip')).encode('utf-8')
-        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp')).encode('utf-8')
+        filename = os.path.join(self._repo.tarball_path, '{}{}'.format(archive_name, '.zip')).encode('utf-8')
+        tmpfilename = os.path.join(self._repo.tarball_path, '{}{}'.format(archive_name, '.tmp')).encode('utf-8')
         rmtree(dest.encode('utf8'), ignore_errors=True)  # must encode into bytes or it'll fail on non-ascii filenames
         rmtree(tmpdest.encode('utf8'), ignore_errors=True)
         path = os.path.join(self._url, path)

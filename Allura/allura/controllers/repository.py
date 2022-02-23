@@ -76,8 +76,8 @@ class RepoRootController(BaseController, FeedController):
     def get_feed(self, project, app, user):
         query = dict(project_id=project._id, app_config_id=app.config._id)
         pname, repo = (project.shortname, app.config.options.mount_label)
-        title = '%s %s changes' % (pname, repo)
-        description = 'Recent changes to %s repository in %s project' % (
+        title = '{} {} changes'.format(pname, repo)
+        description = 'Recent changes to {} repository in {} project'.format(
             repo, pname)
         return FeedArgs(query, title, app.url, description=description)
 
@@ -101,7 +101,7 @@ class RepoRootController(BaseController, FeedController):
                 repo_path_parts = f.url().strip('/').split('/')
                 links.append(dict(
                     repo_url=f.url(),
-                    repo='%s / %s' % (repo_path_parts[1],
+                    repo='{} / {}'.format(repo_path_parts[1],
                                       repo_path_parts[-1]),
                 ))
         return dict(links=links)
@@ -127,7 +127,7 @@ class RepoRootController(BaseController, FeedController):
         ThreadLocalORMSession.close_all()
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
-        mount_label = mount_label or '%s - %s' % (c.project.name,
+        mount_label = mount_label or '{} - {}'.format(c.project.name,
                                                   c.app.config.options.mount_label)
         mount_point = (mount_point or from_project.shortname)
         if request.method != 'POST' or not mount_point:
@@ -718,7 +718,7 @@ class CommitBrowser(BaseController):
         status = c.app.repo.get_tarball_status(rev, path)
         if not status and request.method == 'POST':
             allura.tasks.repo_tasks.tarball.post(rev, path)
-            redirect('tarball?path={0}'.format(h.urlquote(path) if path else ''))
+            redirect('tarball?path={}'.format(h.urlquote(path) if path else ''))
         return dict(commit=self._commit, revision=rev, status=status)
 
     @expose('json:')

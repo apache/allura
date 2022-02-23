@@ -113,10 +113,10 @@ class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker, 'c')
     def test_postprocess_milestones(self, c):
         importer = tracker.GitHubTrackerImporter()
-        importer.open_milestones = set([
+        importer.open_milestones = {
             ('first', datetime(day=23, month=4, year=2015)),
             ('second', datetime(day=25, month=4, year=2015))
-        ])
+        }
         milestones = importer.postprocess_milestones()
         # for stable order
         milestones[0]['milestones'] = sorted(milestones[0]['milestones'], key=itemgetter('name'))

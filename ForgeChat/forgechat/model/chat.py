@@ -62,7 +62,7 @@ class ChatMessage(M.Artifact):
     text_cache = FieldProperty(MarkdownCache)
 
     def index_id(self):
-        id = 'Chat-%s:%s:%s.%s' % (
+        id = 'Chat-{}:{}:{}.{}'.format(
             self.channel,
             self.sender,
             self.timestamp.isoformat(),
@@ -72,7 +72,7 @@ class ChatMessage(M.Artifact):
     def index(self):
         result = super(ChatMessage, self).index()
         result.update(
-            snippet_s='%s > %s' % (self.sender, self.text),
+            snippet_s='{} > {}'.format(self.sender, self.text),
             sender_t=self.sender,
             text=self.text)
         return result

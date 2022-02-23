@@ -522,8 +522,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     @classmethod
     def icon_urls(cls, projects):
         '''Return a dict[project_id] = icon_url, efficiently'''
-        project_index = dict((p._id, p) for p in projects)
-        result = dict((p._id, None) for p in projects)
+        project_index = {p._id: p for p in projects}
+        result = {p._id: None for p in projects}
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': list(result.keys())},
                 category='icon')):
@@ -534,7 +534,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def accolades_index(cls, projects):
         '''Return a dict[project_id] = list of accolades, efficiently'''
         from .artifact import AwardGrant
-        result = dict((p._id, []) for p in projects)
+        result = {p._id: [] for p in projects}
         for award in AwardGrant.query.find(dict(
                 granted_to_project_id={'$in': list(result.keys())})):
             result[award.granted_to_project_id].append(award)
@@ -1117,8 +1117,8 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     def social_account(self, socialnetwork):
         try:
-            account = next((
-                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork))
+            account = next(
+                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork)
         except StopIteration:
             return None
         else:

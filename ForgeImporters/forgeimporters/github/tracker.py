@@ -102,7 +102,7 @@ class GitHubTrackerImporter(ToolImporter):
     def import_tool(self, project, user, project_name, mount_point=None,
                     mount_label=None, **kw):
         import_id_converter = ImportIdConverter.get()
-        project_name = '%s/%s' % (kw['user_name'], project_name)
+        project_name = '{}/{}'.format(kw['user_name'], project_name)
         extractor = GitHubProjectExtractor(project_name, user=user)
         if not extractor.has_tracker():
             return
@@ -139,7 +139,7 @@ class GitHubTrackerImporter(ToolImporter):
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
-                'import tool %s from %s on %s' % (
+                'import tool {} from {} on {}'.format(
                     app.config.options.mount_point,
                     project_name, self.source),
                 project=project, user=user, url=app.url)
@@ -249,7 +249,7 @@ class GitHubTrackerImporter(ToolImporter):
         # usual syntax is
         # ![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n
         REGEXP = r'!\[[\w0-9]+?\]\(((?:https?:\/\/)?[\da-z\.-]+\.[a-z\.]{2,6}'\
-            '[\/%\w\.-]*.(jpg|jpeg|png|gif))\)[\r\n]*'
+            '[\\/%\\w\\.-]*.(jpg|jpeg|png|gif))\\)[\r\n]*'
         attachments = []
 
         try:

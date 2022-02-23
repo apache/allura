@@ -395,7 +395,7 @@ class FilesController(BaseController):
                             fromaddr=g.noreply,
                             reply_to=g.noreply,
                             toaddr=email_addr,
-                            subject='%s - %s Release Update' % (config.get('site_name'), c.project.name),
+                            subject='{} - {} Release Update'.format(config.get('site_name'), c.project.name),
                             message_id=h.gen_message_id(),
                             text=text)
                 if folder_object.parent_folder:

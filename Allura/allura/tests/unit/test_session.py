@@ -172,23 +172,23 @@ class TestBatchIndexer(TestCase):
         find.return_value = [m(_id=i) for i in (7, 8, 9)]
         self.ext.update_index(objs_deleted, arefs)
         self.assertEqual(self.ext.to_delete,
-                         set([o.index_id() for o in objs_deleted]))
-        self.assertEqual(self.ext.to_add, set([4, 5, 6]))
+                         {o.index_id() for o in objs_deleted})
+        self.assertEqual(self.ext.to_add, {4, 5, 6})
 
         # test deleting something that was previously added
         objs_deleted += [m(_id=4)]
         find.return_value = [m(_id=4)]
         self.ext.update_index(objs_deleted, [])
         self.assertEqual(self.ext.to_delete,
-                         set([o.index_id() for o in objs_deleted]))
-        self.assertEqual(self.ext.to_add, set([5, 6]))
+                         {o.index_id() for o in objs_deleted})
+        self.assertEqual(self.ext.to_add, {5, 6})
 
     @mock.patch('allura.model.session.index_tasks')
     def test_flush(self, index_tasks):
         objs_deleted = [self._mock_indexable(_id=i) for i in (1, 2, 3)]
-        del_index_ids = set([o.index_id() for o in objs_deleted])
+        del_index_ids = {o.index_id() for o in objs_deleted}
         self.extcls.to_delete = del_index_ids
-        self.extcls.to_add = set([4, 5, 6])
+        self.extcls.to_add = {4, 5, 6}
         self.ext.flush()
         index_tasks.del_artifacts.post.assert_called_once_with(
             list(del_index_ids))

@@ -63,7 +63,7 @@ def main(options):
         return
 
     for p in projects:
-        log.info('Creating%s project "%s".' % ('/updating' if options.update else '', p.shortname))
+        log.info('Creating{} project "{}".'.format('/updating' if options.update else '', p.shortname))
         try:
             project = create_project_with_attrs(p, nbhd, update=options.update, ensure_tools=options.ensure_tools)
         except Exception as e:

@@ -553,7 +553,7 @@ def test_markdown_autolink():
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(
-        s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
+        s, '<div class="markdown_content"><p>This is <a href="{}" rel="nofollow">{}</a></p></div>'.format(tgt, tgt))
     assert '<a href=' in g.markdown.convert('This is http://domain.net')
     # beginning of doc
     assert_in('<a href=', g.markdown.convert('http://domain.net abc'))
@@ -573,7 +573,7 @@ def test_markdown_autolink():
 def test_markdown_autolink_with_escape():
     # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
     # (it occurs during html2text conversion during project migrations)
-    r = g.markdown.convert('a http://www.phpmyadmin.net/home\_page/security/\#target b')
+    r = g.markdown.convert(r'a http://www.phpmyadmin.net/home\_page/security/\#target b')
     assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
@@ -745,7 +745,7 @@ def test_myprojects_macro():
     for p in c.user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        proj_title = '<h2><a href="{}">{}</a></h2>'.format(p.url(), p.name)
         assert_in(proj_title, r)
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
@@ -754,7 +754,7 @@ def test_myprojects_macro():
     for p in user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        proj_title = '<h2><a href="{}">{}</a></h2>'.format(p.url(), p.name)
         assert_in(proj_title, r)
 
 
@@ -842,7 +842,7 @@ def get_projects_property_in_the_same_order(names, prop):
     It is required because results of the query are not in the same order as names.
     """
     projects = M.Project.query.find(dict(name={'$in': names})).all()
-    projects_dict = dict([(p['name'], p[prop]) for p in projects])
+    projects_dict = {p['name']: p[prop] for p in projects}
     return [projects_dict[name] for name in names]
 
 

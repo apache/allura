@@ -228,10 +228,10 @@ class TestToolImporter(TestCase):
             ep('importer3', importer=TI3),
         ]
         importers = base.ToolImporter.by_app(TA2)
-        self.assertEqual(set(importers.keys()), set([
+        self.assertEqual(set(importers.keys()), {
             'importer2',
             'importer3',
-        ]))
+        })
         self.assertIsInstance(importers['importer2'], TI2)
         self.assertIsInstance(importers['importer3'], TI3)
 

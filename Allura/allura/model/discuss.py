@@ -362,7 +362,7 @@ class Thread(Artifact, ActivityObject):
     def notify_moderators(self, post):
         ''' Notify moderators that a post needs approval [#2963] '''
         artifact = self.artifact or self
-        subject = '[%s:%s] Moderation action required' % (
+        subject = '[{}:{}] Moderation action required'.format(
             c.project.shortname, c.app.config.options.mount_point)
         author = post.author()
         url = self.discussion_class().query.get(_id=self.discussion_id).url()
@@ -489,7 +489,7 @@ class PostHistory(Snapshot):
     def shorthand_id(self):
         original = self.original()
         if original:
-            return '%s#%s' % (original.shorthand_id(), self.version)
+            return '{}#{}'.format(original.shorthand_id(), self.version)
         else:
             return None
 
@@ -601,7 +601,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
     def index(self):
         result = super(Post, self).index()
         result.update(
-            title='Post by %s on %s' % (
+            title='Post by {} on {}'.format(
                 self.author().username, self.subject),
             name_s=self.subject,
             type_s='Post',
@@ -728,12 +728,12 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         slug = h.urlquote(self.slug)
         url = self.main_url()
         if page == 0:
-            return '%s?limit=%s#%s' % (url, limit, slug)
-        return '%s?limit=%s&page=%s#%s' % (url, limit, page, slug)
+            return '{}?limit={}#{}'.format(url, limit, slug)
+        return '{}?limit={}&page={}#{}'.format(url, limit, page, slug)
 
     def shorthand_id(self):
         if self.thread:
-            return '%s#%s' % (self.thread.shorthand_id(), self.slug)
+            return '{}#{}'.format(self.thread.shorthand_id(), self.slug)
         else:  # pragma no cover
             return None
 

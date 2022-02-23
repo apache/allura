@@ -383,7 +383,7 @@ class TestWebhookController(TestController):
         assert_in('<h1>repo-push</h1>', r)
         rows = r.html.find('table').findAll('tr')
         assert_equal(len(rows), 2)
-        rows = sorted([self._format_row(row) for row in rows], key=lambda rows: rows[0]['text'])
+        rows = sorted((self._format_row(row) for row in rows), key=lambda rows: rows[0]['text'])
         expected_rows = sorted([
             [{'text': wh1.hook_url},
              {'text': wh1.secret},
@@ -477,7 +477,7 @@ class TestSendWebhookHelper(TestWebhookBase):
             headers=headers,
             timeout=30)
         log.info.assert_called_once_with(
-            'Webhook successfully sent: %s %s %s' % (
+            'Webhook successfully sent: {} {} {}'.format(
                 self.wh.type, self.wh.hook_url, self.wh.app_config.url()))
 
     @patch('allura.webhooks.time', autospec=True)
@@ -496,7 +496,7 @@ class TestSendWebhookHelper(TestWebhookBase):
             call('Retrying webhook in %s seconds', 240)])
         assert_equal(log.error.call_count, 4)
         log.error.assert_called_with(
-            'Webhook send error: %s %s %s %s %s %s' % (
+            'Webhook send error: {} {} {} {} {} {}'.format(
                 self.wh.type, self.wh.hook_url,
                 self.wh.app_config.url(),
                 requests.post.return_value.status_code,
@@ -515,7 +515,7 @@ class TestSendWebhookHelper(TestWebhookBase):
             log.info.assert_called_once_with('Retrying webhook in: %s', [])
             assert_equal(log.error.call_count, 1)
             log.error.assert_called_with(
-                'Webhook send error: %s %s %s %s %s %s' % (
+                'Webhook send error: {} {} {} {} {} {}'.format(
                     self.wh.type, self.wh.hook_url,
                     self.wh.app_config.url(),
                     requests.post.return_value.status_code,

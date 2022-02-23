@@ -87,7 +87,7 @@ def get_value(key, default):
         default = config.get('scm', key)
     except NoOptionError:
         pass
-    value = input('%s? [%s]' % (key, default))
+    value = input('{}? [{}]'.format(key, default))
     if not value:
         value = default
     config.set('scm', key, value)
@@ -253,7 +253,7 @@ MIDSTART=10000
 ''')
 
 
-ldapscripts_debian = '''
+ldapscripts_debian = r'''
 ### Allura-customized
 ### This file predefine some ldapscripts variables for Debian boxes.
 #

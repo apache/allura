@@ -534,7 +534,7 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
         super().__init__(pattern, markdown_instance)
         # override the complete regex, requiring the preceding text (.*?) to end
         # with whitespace or beginning of line "\s|^"
-        self.compiled_re = re.compile("^(.*?\s|^)%s(.*?)$" % pattern,
+        self.compiled_re = re.compile(r"^(.*?\s|^)%s(.*?)$" % pattern,
                                       re.DOTALL | re.UNICODE)
 
     def handleMatch(self, mo):

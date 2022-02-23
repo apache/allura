@@ -101,7 +101,7 @@ class Credentials(object):
                 'project_id': {'$in': project_ids},
                 'name': None})
             q = chain(q0, q1)
-        roles_by_project = dict((pid, []) for pid in project_ids)
+        roles_by_project = {pid: [] for pid in project_ids}
         for role in q:
             roles_by_project[role['project_id']].append(role)
         for pid, roles in six.iteritems(roles_by_project):
@@ -116,7 +116,7 @@ class Credentials(object):
             return
         q = self.project_role.find({
             'project_id': {'$in': project_ids}})
-        roles_by_project = dict((pid, []) for pid in project_ids)
+        roles_by_project = {pid: [] for pid in project_ids}
         for role in q:
             roles_by_project[role['project_id']].append(role)
         for pid, roles in six.iteritems(roles_by_project):
@@ -206,7 +206,7 @@ class RoleCache(object):
 
     @LazyProperty
     def index(self):
-        return dict((r['_id'], r) for r in self.q)
+        return {r['_id']: r for r in self.q}
 
     @LazyProperty
     def named(self):
@@ -252,7 +252,7 @@ class RoleCache(object):
     def reaching_roles(self):
         def _iter():
             to_visit = list(self.index.items())
-            project_ids = set([r['project_id'] for _id, r in to_visit])
+            project_ids = {r['project_id'] for _id, r in to_visit}
             pr_index = {r['_id']: r for r in self.cred.project_role.find({
                 'project_id': {'$in': list(project_ids)},
                 'user_id': None,
@@ -443,7 +443,7 @@ def all_allowed(obj, user_or_role=None, project=None):
                         denied[role_id].add(ace.permission)
         obj = obj.parent_security_context()
     if M.ALL_PERMISSIONS in perms:
-        return set([M.ALL_PERMISSIONS])
+        return {M.ALL_PERMISSIONS}
     return perms
 
 

@@ -43,7 +43,7 @@ class AlluraImporter(ToolImporter):
            and username != "" \
            and username != 'nobody' \
            and username != '*anonymous':
-            return '*Originally%s by:* %s\n\n%s' % (label, username, text)
+            return '*Originally{} by:* {}\n\n{}'.format(label, username, text)
 
         if text is None:
             text = ""

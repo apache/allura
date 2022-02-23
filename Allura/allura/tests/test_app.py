@@ -142,7 +142,7 @@ def test_handle_artifact_unicode(qg):
     a.handle_artifact_message(ticket, msg)
     assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ'.encode('utf-8'))
 
-    msg = dict(payload='foo'.encode('utf-8'), message_id=1, headers={})
+    msg = dict(payload=b'foo', message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
     assert_equal(post.attach.call_args[0][1].getvalue(), b'foo')
 

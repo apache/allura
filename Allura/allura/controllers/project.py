@@ -267,7 +267,7 @@ class NeighborhoodController(object):
         return {
             'options': [{
                 'value': u.username,
-                'label': '%s (%s)' % (u.display_name, u.username)
+                'label': '{} ({})'.format(u.display_name, u.username)
             } for u in p.users()]
         }
 
@@ -373,7 +373,7 @@ class ProjectController(FeedController):
         for user in c.project.users():
             roles = M.ProjectRole.query.find(
                 {'_id': {'$in': M.ProjectRole.by_user(user).roles}})
-            roles = set([r.name for r in roles])
+            roles = {r.name for r in roles}
             u = dict(
                 display_name=user.display_name,
                 username=user.username,
@@ -456,7 +456,7 @@ class ProjectController(FeedController):
         return dict(
             users=[
                 dict(
-                    label='%s (%s)' % (u.get_pref('display_name'), u.username),
+                    label='{} ({})'.format(u.get_pref('display_name'), u.username),
                     value=u.username,
                     id=u.username)
                 for u in users])
@@ -471,7 +471,7 @@ class ProjectController(FeedController):
         return {
             'options': [{
                 'value': u.username,
-                'label': '%s (%s)' % (u.display_name, u.username)
+                'label': '{} ({})'.format(u.display_name, u.username)
             } for u in users]
         }
 
@@ -657,9 +657,9 @@ class NeighborhoodAdminController(object):
         result = True
         if anchored_tools.strip() != '':
             try:
-                validate_tools = dict(
-                    (tool.split(':')[0].lower(), tool.split(':')[1])
-                    for tool in anchored_tools.replace(' ', '').split(','))
+                validate_tools = {
+                    tool.split(':')[0].lower(): tool.split(':')[1]
+                    for tool in anchored_tools.replace(' ', '').split(',')}
             except Exception:
                 flash('Anchored tools "%s" is invalid' %
                       anchored_tools, 'error')

@@ -61,9 +61,9 @@ def main():
             resp = oauth_client.request(
                 to_url, 'POST', body=six.moves.urllib.parse.urlencode(dict(text=page_json['text'].encode('utf-8'))))
             if resp[0]['status'] == '200':
-                print("Posted {0} to {1}".format(page_json['title'], to_url))
+                print("Posted {} to {}".format(page_json['title'], to_url))
             else:
-                print("Error posting {0} to {1}: {2} (project may not exist)".format(page_json['title'], to_url, resp[0]['status']))
+                print("Error posting {} to {}: {} (project may not exist)".format(page_json['title'], to_url, resp[0]['status']))
                 break
         except Exception:
             print("Error processing " + p)
@@ -96,11 +96,11 @@ def make_oauth_client(base_url):
         assert resp['status'] == '200', resp
 
         request_token = dict(six.moves.urllib.parse.parse_qsl(content))
-        pin_url = "%s?oauth_token=%s" % (
+        pin_url = "{}?oauth_token={}".format(
             AUTHORIZE_URL, request_token['oauth_token'])
         if getattr(webbrowser.get(), 'name', '') == 'links':
             # sandboxes
-            print(("Go to %s" % pin_url))
+            print("Go to %s" % pin_url)
         else:
             webbrowser.open(pin_url)
         oauth_verifier = input('What is the PIN? ')

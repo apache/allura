@@ -215,12 +215,12 @@ class ImportSupport(object):
             self.description_processing(remapped['description']))
         creator = owner = ''
         if ticket_dict.get('submitter') and not remapped.get('reported_by_id'):
-            creator = '*Originally created by:* {0}\n'.format(
+            creator = '*Originally created by:* {}\n'.format(
                 h.really_unicode(ticket_dict['submitter']))
         if ticket_dict.get('assigned_to') and not remapped.get('assigned_to_id'):
-            owner = '*Originally owned by:* {0}\n'.format(
+            owner = '*Originally owned by:* {}\n'.format(
                     h.really_unicode(ticket_dict['assigned_to']))
-        remapped['description'] = '{0}{1}{2}{3}'.format(creator, owner,
+        remapped['description'] = '{}{}{}{}'.format(creator, owner,
                                                          '\n' if creator or owner else '', description)
 
         ticket_num = ticket_dict['id']
@@ -258,7 +258,7 @@ class ImportSupport(object):
         text = h.really_unicode(
             self.comment_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
-            text = '*Originally posted by:* {0}\n\n{1}'.format(
+            text = '*Originally posted by:* {}\n\n{}'.format(
                 h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
@@ -311,7 +311,7 @@ class ImportSupport(object):
             u = M.User.by_username(allura_user)
             if not u:
                 raise ImportException(
-                    'User mapping %s:%s - target user does not exist' % (foreign_user, allura_user))
+                    'User mapping {}:{} - target user does not exist'.format(foreign_user, allura_user))
 
     #
     # Main methods

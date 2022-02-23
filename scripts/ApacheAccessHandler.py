@@ -49,7 +49,7 @@ def load_requests_lib(req):
         try:
             exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})
         except Exception as e:
-            log(req, "Couldn't activate venv via %s: %s" % (activate_this, repr(e)))
+            log(req, "Couldn't activate venv via {}: {}".format(activate_this, repr(e)))
     global requests
     import requests as requests_lib
     requests = requests_lib
@@ -64,7 +64,7 @@ def mangle(path):
     if len(parts) < 4:
         return None
     scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-    parts = ['/SCM/%s.%s' % (proj, nbhd)] + rest
+    parts = ['/SCM/{}.{}'.format(proj, nbhd)] + rest
     return '/'.join(parts)
 
 
@@ -185,13 +185,13 @@ def check_permissions(req):
     try:
         cred = json.loads(r.content)
     except Exception as ex:
-        log(req, "error decoding JSON %s %s" % (r.headers['content-type'], ex))
+        log(req, "error decoding JSON {} {}".format(r.headers['content-type'], ex))
         return False
 
     permission = get_permission_name(req_path, req_query, req.method)
     authorized = cred.get(permission, False)
 
-    log(req, "%s -> %s -> %s -> authorized:%s" % (r.url, cred, permission, authorized))
+    log(req, "{} -> {} -> {} -> authorized:{}".format(r.url, cred, permission, authorized))
     return authorized
 
 

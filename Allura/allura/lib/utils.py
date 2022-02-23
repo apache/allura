@@ -154,7 +154,7 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
         """
         title = getproctitle()
         if title.startswith('taskd:'):
-            record.name = "{0}:{1}".format(title, record.name)
+            record.name = "{}:{}".format(title, record.name)
         return super(CustomWatchedFileHandler, self).format(record)
 
 
@@ -472,7 +472,7 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
         num = self.linenostart
         yield 0, ('<pre' + (style and ' style="%s"' % style) + '>')
         for tup in inner:
-            yield (tup[0], '<div id="l%s" class="code_block">%s</div>' % (num, tup[1]))
+            yield (tup[0], '<div id="l{}" class="code_block">{}</div>'.format(num, tup[1]))
             num += 1
         yield 0, '</pre>'
 
@@ -488,7 +488,7 @@ def generate_code_stats(blob):
     stats['code_size'] = blob.size
     stats['line_count'] = len(lines)
     spaces = re.compile(r'^\s*$')
-    stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
+    stats['data_line_count'] = sum(1 for l in lines if not spaces.match(l))
     return stats
 
 
@@ -510,7 +510,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
                cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
-        etag = '{0}?{1}'.format(filename, last_modified).encode('utf-8')
+        etag = '{}?{}'.format(filename, last_modified).encode('utf-8')
     if etag:
         etag_cache(etag)
     tg.response.headers['Content-Type'] = str('')
@@ -560,9 +560,9 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
                           (ns_html, 'select'),
                           (ns_html, 'textarea'),
                           }
-        _extra_allowed_elements = set([
+        _extra_allowed_elements = {
             (ns_html, 'summary'),
-        ])
+        }
         self.allowed_elements = (set(html5lib.filters.sanitizer.allowed_elements) | _extra_allowed_elements) - _form_elements
 
         # srcset is used in our own project_list/project_summary widgets
@@ -657,7 +657,7 @@ class DateJSONEncoder(json.JSONEncoder):
 
 
 def clean_phone_number(number):
-    pattern = re.compile('\W+')
+    pattern = re.compile(r'\W+')
     number = pattern.sub('', number)
     return number
 

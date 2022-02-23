@@ -65,7 +65,7 @@ class ActivityNode(NodeBase):
 
     @property
     def node_id(self):
-        return "%s:%s" % (self.__class__.__name__, self._id)
+        return "{}:{}".format(self.__class__.__name__, self._id)
 
 
 class ActivityObject(ActivityObjectBase):
@@ -76,7 +76,7 @@ class ActivityObject(ActivityObjectBase):
     @property
     def activity_name(self):
         """Override this for each Artifact type."""
-        return "%s %s" % (self.__mongometa__.name.capitalize(), self._id)
+        return "{} {}".format(self.__mongometa__.name.capitalize(), self._id)
 
     @property
     def activity_url(self):
@@ -94,7 +94,7 @@ class ActivityObject(ActivityObjectBase):
         """Return a string which uniquely identifies this object and which can
         be used to retrieve the object from mongo.
         """
-        return "%s:%s" % (self.__class__.__name__, self._id)
+        return "{}:{}".format(self.__class__.__name__, self._id)
 
     def has_activity_access(self, perm, user, activity):
         """Return True if user has perm access to this object, otherwise

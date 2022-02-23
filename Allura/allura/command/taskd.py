@@ -94,14 +94,14 @@ class TaskdCommand(base.Command):
         self.keep_running = False
 
     def log_current_task(self, signum, frame):
-        entry = 'taskd pid %s is currently handling task %s' % (
+        entry = 'taskd pid {} is currently handling task {}'.format(
             os.getpid(), getattr(self, 'task', None))
         status_log.info(entry)
         base.log.info(entry)
 
     def worker(self):
         from allura import model as M
-        name = '%s pid %s' % (os.uname()[1], os.getpid())
+        name = '{} pid {}'.format(os.uname()[1], os.getpid())
         wsgi_app = loadapp('config:%s#task' %
                            self.args[0], relative_to=os.getcwd())
         poll_interval = asint(tg.config.get('monq.poll_interval', 10))
@@ -136,10 +136,10 @@ class TaskdCommand(base.Command):
                         waitfunc=waitfunc,
                         only=only)
                     if self.task:
-                        with(proctitle("taskd:{0}:{1}".format(
+                        with(proctitle("taskd:{}:{}".format(
                                 self.task.task_name, self.task._id))):
                             # Build the (fake) request
-                            request_path = '/--%s--/%s/' % (self.task.task_name,
+                            request_path = '/--{}--/{}/'.format(self.task.task_name,
                                                             self.task._id)
                             r = Request.blank(request_path,
                                               base_url=tg.config['base_url'].rstrip(
@@ -175,7 +175,7 @@ class TaskCommand(base.Command):
     parser.add_option('-s', '--state', dest='state', default=None,
                       help='state of processes for "list", "count", or "purge" subcommands.  * means all. '
                            '(Defaults per command: %s)' %
-                           ", ".join(['%s="%s"' % (k, v) for k, v in cmd_default_states.items()]))
+                           ", ".join(['{}="{}"'.format(k, v) for k, v in cmd_default_states.items()]))
     parser.add_option('-t', '--timeout', dest='timeout', type=int, default=60,
                       help='timeout (in seconds) for busy tasks (only applies to "timeout" command)')
     parser.add_option('--filter-name-prefix', dest='filter_name_prefix', default=None,
@@ -236,7 +236,7 @@ class TaskCommand(base.Command):
         return q
 
     def _print_query(self, cmd, *args):
-        print('running mongod cmd: %s, %s' % (cmd, args))
+        print('running mongod cmd: {}, {}'.format(cmd, args))
 
     def _list(self):
         '''List tasks'''

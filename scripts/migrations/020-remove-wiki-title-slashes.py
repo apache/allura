@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 def main():
     c.project = None
-    pages = WM.Page.query.find({'title': {'$regex': '\/'}}).all()
+    pages = WM.Page.query.find({'title': {'$regex': r'\/'}}).all()
     print('Found %s wiki titles containing "/"...' % len(pages))
     for page in pages:
         page.title = page.title.replace('/', '-')

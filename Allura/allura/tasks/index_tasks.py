@@ -43,7 +43,7 @@ def __add_objects(objects, solr_hosts=None):
 
 def __del_objects(object_solr_ids):
     solr_instance = __get_solr()
-    solr_query = 'id:({0})'.format(' || '.join(object_solr_ids))
+    solr_query = 'id:({})'.format(' || '.join(object_solr_ids))
     solr_instance.delete(q=solr_query)
 
 
@@ -153,7 +153,7 @@ def commit():
 
 @task
 def solr_del_tool(project_id, mount_point_s):
-    g.solr.delete(q='project_id_s:"%s" AND mount_point_s:"%s"' % (project_id, mount_point_s))
+    g.solr.delete(q='project_id_s:"{}" AND mount_point_s:"{}"'.format(project_id, mount_point_s))
 
 @contextmanager
 def _indexing_disabled(session):

@@ -84,7 +84,7 @@ class Config(object):
 
 
 def report_validation_error(val_name, filename, message):
-    message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
+    message = '{} Validation errors ({}):\n{}\n'.format(val_name, filename, message)
     raise AssertionError(message)
 
 

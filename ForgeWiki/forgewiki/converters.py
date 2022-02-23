@@ -44,7 +44,7 @@ def _internal_link_markdown(match):
     page_name = page_name.replace(' ', '_')
     page_name = page_name[:1].upper() + page_name[1:]
     if match.group(2):
-        return r'[%s](%s)' % (match.group(2), page_name)
+        return r'[{}]({})'.format(match.group(2), page_name)
     return r'[%s]' % page_name
 
 

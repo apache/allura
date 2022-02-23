@@ -57,4 +57,4 @@ if __name__ == '__main__':
         print('Ticket created at: %s' % r.url)
         pprint(r.json())
     else:
-        print('Error [%s]:\n%s' % (r.status_code, r.text))
+        print('Error [{}]:\n{}'.format(r.status_code, r.text))

@@ -543,12 +543,12 @@ class Globals(object):
     def register_app_css(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.CSSLink('tool/%s/%s' % (app.config.tool_name.lower(), href), **kw))
+            ew.CSSLink('tool/{}/{}'.format(app.config.tool_name.lower(), href), **kw))
 
     def register_app_js(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.JSLink('tool/%s/%s' % (app.config.tool_name.lower(), href), **kw))
+            ew.JSLink('tool/{}/{}'.format(app.config.tool_name.lower(), href), **kw))
 
     def register_theme_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink(self.theme_href(href), **kw))
@@ -625,7 +625,7 @@ class Globals(object):
             return False
 
         allura_path = os.path.dirname(os.path.dirname(__file__))
-        image_full_path = '%s/public/nf/images/%s' % (
+        image_full_path = '{}/public/nf/images/{}'.format(
             allura_path, logo['image_path'])
 
         if not os.path.isfile(image_full_path):

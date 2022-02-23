@@ -120,7 +120,7 @@ class TracTicketImporter(ToolImporter):
                     }),
                 )
             AuditLog.log(
-                'import tool %s from %s' % (
+                'import tool {} from {}'.format(
                     app.config.options.mount_point,
                     trac_url,
                 ),
@@ -179,7 +179,7 @@ class TracImportSupport(ImportSupport):
         text = text.replace('\n', ' ')
         slug = self.get_slug_by_id(ticket, comment)
         if slug:
-            return '[%s](%s/#%s)' % (text, ticket, slug)
+            return '[{}]({}/#{})'.format(text, ticket, slug)
         else:
             return text
 

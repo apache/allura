@@ -275,9 +275,9 @@ def _make_xs(X, ids):
     from allura import model as M
     X = getattr(M, X)
     ids = list(ids)
-    results = dict(
-        (r._id, r)
-        for r in X.query.find(dict(_id={'$in': ids})))
+    results = {
+        r._id: r
+        for r in X.query.find(dict(_id={'$in': ids}))}
     result = (results.get(i) for i in ids)
     return (r for r in result if r is not None)
 
@@ -403,16 +403,16 @@ def push_context(project_id, mount_point=None, app_config_id=None, neighborhood=
 def encode_keys(d):
     '''Encodes the unicode keys of d, making the result
     a valid kwargs argument'''
-    return dict(
-        (six.ensure_str(k), v)
-        for k, v in six.iteritems(d))
+    return {
+        six.ensure_str(k): v
+        for k, v in six.iteritems(d)}
 
 
 def vardec(fun):
     def vardec_hook(remainder, params):
-        new_params = variable_decode(dict(
-            (k, v) for k, v in params.items()
-            if re_clean_vardec_key.match(k)))
+        new_params = variable_decode({
+            k: v for k, v in params.items()
+            if re_clean_vardec_key.match(k)})
         params.update(new_params)
     before_validate(vardec_hook)(fun)
     return fun
@@ -563,10 +563,10 @@ def gen_message_id(_id=None):
     else:
         parts = ['mail']
     if getattr(c, 'app', None):
-        addr = '%s.%s' % (_id, c.app.config.options['mount_point'])
+        addr = '{}.{}'.format(_id, c.app.config.options['mount_point'])
     else:
         addr = _id
-    return '%s@%s.%s' % (
+    return '{}@{}.{}'.format(
         addr, '.'.join(reversed(parts)), tg.config['domain'])
 
 
@@ -585,7 +585,7 @@ class attrproxy(object):
         self.attrs = attrs
 
     def __repr__(self):
-        return '<attrproxy on %s for %s>' % (
+        return '<attrproxy on {} for {}>'.format(
             self.cls, self.attrs)
 
     def __get__(self, obj, klass=None):
@@ -610,7 +610,7 @@ class promised_attrproxy(attrproxy):
         self._promise = promise
 
     def __repr__(self):
-        return '<promised_attrproxy for %s>' % (self.attrs,)
+        return '<promised_attrproxy for {}>'.format(self.attrs)
 
     def __getattr__(self, name):
         cls = self._promise()
@@ -673,8 +673,8 @@ def config_with_prefix(d, prefix):
     with the prefix stripped
     '''
     plen = len(prefix)
-    return dict((k[plen:], v) for k, v in six.iteritems(d)
-                if k.startswith(prefix))
+    return {k[plen:]: v for k, v in six.iteritems(d)
+                if k.startswith(prefix)}
 
 
 @contextmanager
@@ -729,7 +729,7 @@ def _add_inline_line_numbers_to_text(txt):
     markup_text = '<div class="codehilite"><pre>'
     for line_num, line in enumerate(txt.splitlines(), 1):
         markup_text = markup_text + \
-            '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (
+            '<span id="l{}" class="code_block"><span class="lineno">{}</span> {}</span>'.format(
                 line_num, line_num, line)
     markup_text = markup_text + '</pre></div>'
     return markup_text
@@ -752,7 +752,7 @@ def _add_table_line_numbers_to_text(txt):
         linenumbers + '<td class="code"><div class="codehilite"><pre>'
     for line_num, line in enumerate(lines, 1):
         markup_text = markup_text + \
-            '<span id="l%s" class="code_block">%s</span>' % (line_num, line)
+            '<span id="l{}" class="code_block">{}</span>'.format(line_num, line)
     markup_text = markup_text + '</pre></div></td></tr></tbody></table>'
     return markup_text
 
@@ -926,7 +926,7 @@ def topological_sort(items, partial_order):
 
 @contextmanager
 def ming_config(**conf):
-    """Temporarily swap in a new ming configuration, restoring the previous
+    r"""Temporarily swap in a new ming configuration, restoring the previous
     one when the contextmanager exits.
 
     :param \*\*conf: keyword arguments defining the new ming configuration
@@ -1129,7 +1129,7 @@ def iter_entry_points(group, *a, **kw):
                 yield subclass(eps)
 
     def subclass(entry_points):
-        loaded = dict((ep, ep.load()) for ep in entry_points)
+        loaded = {ep: ep.load() for ep in entry_points}
         for ep, cls in six.iteritems(loaded):
             others = list(loaded.values())[:]
             others.remove(cls)

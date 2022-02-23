@@ -133,7 +133,7 @@ class Shortlink(MappedClass):
     re_link_2 = re.compile(r'^' + _core_re, re.VERBOSE)
 
     def __repr__(self):
-        return '<Shortlink %s %s %s -> %s>' % (
+        return '<Shortlink {} {} {} -> {}>'.format(
             self.project_id,
             self.app_config_id,
             self.link,
@@ -169,8 +169,8 @@ class Shortlink(MappedClass):
         if len(links):
             result = {}
             # Parse all the links
-            parsed_links = dict((link, cls._parse_link(link))
-                                for link in links)
+            parsed_links = {link: cls._parse_link(link)
+                                for link in links}
             links_by_artifact = defaultdict(list)
             project_ids = set()
             for link, d in list(parsed_links.items()):
@@ -187,9 +187,9 @@ class Shortlink(MappedClass):
                 validate=False,
                 sort=[('_id', pymongo.DESCENDING)],  # if happen to be multiple (ticket move?) have newest first
             )
-            matches_by_artifact = dict(
-                (link, list(matches))
-                for link, matches in groupby(q, key=lambda s: unquote(s.link)))
+            matches_by_artifact = {
+                link: list(matches)
+                for link, matches in groupby(q, key=lambda s: unquote(s.link))}
             for link, d in six.iteritems(parsed_links):
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (

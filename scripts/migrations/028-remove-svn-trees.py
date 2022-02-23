@@ -33,16 +33,16 @@ def kill_tree(repo, commit_id, path, tree):
         tid = repo._tree_oid(commit_id, path + '/' + tree_rec.name)
         child_tree = M.repository.Tree.query.get(_id=tid)
         if child_tree:
-            print('  Found {0}'.format((path + '/' + tree_rec.name).encode('utf8')))
+            print('  Found {}'.format((path + '/' + tree_rec.name).encode('utf8')))
             kill_tree(repo, commit_id, path + '/' + tree_rec.name, child_tree)
         else:
-            print('  Missing {0}'.format((path + '/' + tree_rec.name).encode('utf8')))
+            print('  Missing {}'.format((path + '/' + tree_rec.name).encode('utf8')))
 
 
 def main():
     for chunk in utils.chunked_find(SM.Repository):
         for r in chunk:
-            print('Processing {0}'.format(r))
+            print('Processing {}'.format(r))
             all_commit_ids = r._impl.all_commit_ids()
             if all_commit_ids:
                 for commit in M.repository.Commit.query.find({'_id': {'$in': all_commit_ids}}):

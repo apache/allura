@@ -609,7 +609,7 @@ class TestAuth(TestController):
                       params=change_params)
 
         u = M.User.by_username('test-admin')
-        print((u.get_tool_data('AuthPasswordReset', 'hash')))
+        print(u.get_tool_data('AuthPasswordReset', 'hash'))
         assert_equal(u.get_tool_data('AuthPasswordReset', 'hash'), '')
         assert_equal(u.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
 
@@ -1649,7 +1649,7 @@ To update your password on %s, please visit the following URL:
         assert_in('New Password (again):', r)
         form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
-        with td.audits('Password changed \(through recovery process\)', user=True):
+        with td.audits(r'Password changed \(through recovery process\)', user=True):
             # escape parentheses, so they would not be treated as regex group
             r = form.submit()
 
@@ -2472,7 +2472,7 @@ class TestTwoFactor(TestController):
 
         first_key_shown = r.session['totp_new_key']
 
-        with audits('Failed to set up multifactor TOTP \(wrong code\)', user=True):
+        with audits(r'Failed to set up multifactor TOTP \(wrong code\)', user=True):
             form = r.forms['totp_set']
             form['code'] = ''
             r = form.submit()

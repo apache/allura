@@ -80,11 +80,11 @@ class parse(object):
                 log.warn('macro error.  Upwards stack is %s',
                          ''.join(traceback.format_stack()),
                          exc_info=True)
-                msg = cgi.escape('[[%s]] (%s)' % (s, repr(ex)))
+                msg = cgi.escape('[[{}]] ({})'.format(s, repr(ex)))
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception as ex:
             raise
-            return '[[Error parsing %s: %s]]' % (s, ex)
+            return '[[Error parsing {}: {}]]'.format(s, ex)
 
     def _lookup_macro(self, s):
         macro, context = _macros.get(s, (None, None))
@@ -360,7 +360,7 @@ def include_file(repo, path=None, rev=None, **kw):
     try:
         file = app.repo.commit(rev).get_path(path)
     except Exception:
-        return "[[include can't find file %s in revision %s]]" % (path, rev)
+        return "[[include can't find file {} in revision {}]]".format(path, rev)
 
     text = ''
     if file.has_pypeline_view:
@@ -368,7 +368,7 @@ def include_file(repo, path=None, rev=None, **kw):
     elif file.has_html_view:
         text = g.highlight(file.text, filename=file.name)
     else:
-        return "[[include can't display file %s in revision %s]]" % (path, rev)
+        return "[[include can't display file {} in revision {}]]".format(path, rev)
 
     from allura.lib.widgets.macros import Include
     sb = Include()
@@ -409,9 +409,9 @@ def img(src=None, **kw):
     included = request.environ.setdefault('allura.macro.att_embedded', set())
     included.add(src)
     if '://' in src:
-        return '<img src="%s" %s/>' % (src, ' '.join(attrs))
+        return '<img src="{}" {}/>'.format(src, ' '.join(attrs))
     else:
-        return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
+        return '<img src="./attachment/{}" {}/>'.format(src, ' '.join(attrs))
 
 
 @macro()

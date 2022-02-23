@@ -21,7 +21,7 @@ import re
 class GitHubMarkdownConverter(object):
 
     def __init__(self, gh_user, gh_project):
-        self.gh_project = '%s/%s' % (gh_user, gh_project)
+        self.gh_project = '{}/{}'.format(gh_user, gh_project)
         self.gh_base_url = 'https://github.com/'
         self.code_patterns = ['```', '~~~']
 
@@ -110,13 +110,13 @@ class GitHubMarkdownConverter(object):
         return text
 
     def _gh_commit_url(self, project, sha, title):
-        return '[%s](%s)' % (title, self.gh_base_url + project + '/commit/' + sha)
+        return '[{}]({})'.format(title, self.gh_base_url + project + '/commit/' + sha)
 
     def _gh_ticket_url(self, project, tid, title):
-        return '[%s](%s)' % (title, self.gh_base_url + project + '/issues/' + str(tid))
+        return '[{}]({})'.format(title, self.gh_base_url + project + '/issues/' + str(tid))
 
     def _convert_sha(self, m):
-        return '%s[%s]%s' % (m.group(1), m.group(2)[:6], m.group(3))
+        return '{}[{}]{}'.format(m.group(1), m.group(2)[:6], m.group(3))
 
     def _convert_ticket(self, m):
         return '%s[%s]' % m.groups()
@@ -125,14 +125,14 @@ class GitHubMarkdownConverter(object):
         user = m.group(2)
         tid = m.group(3)
         if self.gh_project.startswith(user + '/'):
-            return '%s[%s]%s' % (m.group(1), '#' + tid, m.group(4))
+            return '{}[{}]{}'.format(m.group(1), '#' + tid, m.group(4))
         return m.group(0)
 
     def _convert_user_repo_ticket(self, m):
-        project = '%s/%s' % (m.group(2), m.group(3))
+        project = '{}/{}'.format(m.group(2), m.group(3))
         tid = m.group(4)
         if project == self.gh_project:
-            return '%s[%s]%s' % (m.group(1), '#' + tid, m.group(5))
+            return '{}[{}]{}'.format(m.group(1), '#' + tid, m.group(5))
         title = project + '#' + tid
         return ''.join([m.group(1),
                         self._gh_ticket_url(project, tid, title),
@@ -142,14 +142,14 @@ class GitHubMarkdownConverter(object):
         user = m.group(2)
         sha = m.group(3)
         if self.gh_project.startswith(user + '/'):
-            return '%s[%s]%s' % (m.group(1), sha[:6], m.group(4))
+            return '{}[{}]{}'.format(m.group(1), sha[:6], m.group(4))
         return m.group(0)
 
     def _convert_user_repo_sha(self, m):
-        project = '%s/%s' % (m.group(2), m.group(3))
+        project = '{}/{}'.format(m.group(2), m.group(3))
         sha = m.group(4)
         if project == self.gh_project:
-            return '%s[%s]%s' % (m.group(1), sha[:6], m.group(5))
+            return '{}[{}]{}'.format(m.group(1), sha[:6], m.group(5))
         title = project + '@' + sha[:6]
         return ''.join([m.group(1),
                         self._gh_commit_url(project, sha, title),

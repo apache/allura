@@ -528,9 +528,9 @@ class TestReindexCommand(object):
         cmd._chunked_add_artifacts(list(range(10)))
         # check constructors of first and second Solr() instantiations
         assert_equal(
-            set([Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]]),
-            set(['http://blah.com/solr/forge',
-                 'https://other.net/solr/forge'])
+            {Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]},
+            {'http://blah.com/solr/forge',
+                 'https://other.net/solr/forge'}
         )
 
     @patch('allura.command.show_models.utils')

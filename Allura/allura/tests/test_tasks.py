@@ -233,14 +233,14 @@ class TestIndexTasks(unittest.TestCase):
         sort_key = operator.itemgetter('id')
         assert_equal(
             sorted(solr.add.call_args[0][0], key=sort_key),
-            sorted([ref.artifact.solarize() for ref in arefs],
+            sorted((ref.artifact.solarize() for ref in arefs),
                    key=sort_key))
         index_tasks.del_artifacts(ref_ids)
         M.main_orm_session.flush()
         M.main_orm_session.clear()
         new_shortlinks = M.Shortlink.query.find().count()
         assert old_shortlinks == new_shortlinks, 'Shortlinks not deleted'
-        solr_query = 'id:({0})'.format(' || '.join(ref_ids))
+        solr_query = 'id:({})'.format(' || '.join(ref_ids))
         solr.delete.assert_called_once_with(q=solr_query)
 
 

@@ -151,7 +151,7 @@ class NamedController(object):
 
     @expose()
     def _default(self, *args):
-        return 'default(%s)(%r)' % (self.name, args)
+        return 'default({})({!r})'.format(self.name, args)
 
 
 class SecurityTests(object):

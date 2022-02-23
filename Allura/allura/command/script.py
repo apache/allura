@@ -90,7 +90,7 @@ class SetToolAccessCommand(base.Command):
                 print('Unknown tool status %s' % s)
                 sys.exit(1)
             extra_status.append(s)
-        print('Setting project "%s" tool access to production + %r' % (
+        print('Setting project "{}" tool access to production + {!r}'.format(
             self.args[1], extra_status))
         c.project._extra_tool_status = extra_status
         session(c.project).flush()

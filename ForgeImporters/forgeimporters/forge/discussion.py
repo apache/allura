@@ -141,7 +141,7 @@ class ForgeDiscussionImporter(AlluraImporter):
                     session(forum).expunge(forum)
 
                 M.AuditLog.log(
-                    "import tool %s from exported Allura JSON" % (
+                    "import tool {} from exported Allura JSON".format(
                         app.config.options.mount_point,
                     ),
                     project=project,

@@ -126,7 +126,7 @@ class TroveCategoryController(BaseController):
             show_as_skill = upper.show_as_skill
 
         newid = max(
-            [el.trove_cat_id for el in M.TroveCategory.query.find()]) + 1
+            el.trove_cat_id for el in M.TroveCategory.query.find()) + 1
         shortname = h.slugify(shortname or name, True)[1]
 
         if upper:
@@ -139,7 +139,7 @@ class TroveCategoryController(BaseController):
 
         if oldcat:
             raise TroveAdminException(
-                ('A category with shortname "%s" already exists (%s).  Try a different, unique shortname' % (shortname, oldcat.fullpath), "error"),
+                ('A category with shortname "{}" already exists ({}).  Try a different, unique shortname'.format(shortname, oldcat.fullpath), "error"),
                 '?categoryname={}&shortname={}'.format(name, shortname),
                 upper
             )

@@ -72,7 +72,7 @@ config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
 )
 
-README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
+README_RE = re.compile(r'^README(\.[^.]*)?$', re.IGNORECASE)
 VIEWABLE_EXTENSIONS = frozenset([
     '.php', '.py', '.js', '.java', '.html', '.htm', '.yaml', '.sh',
     '.rb', '.phtml', '.txt', '.bat', '.ps1', '.xhtml', '.css', '.cfm', '.jsp', '.jspx',
@@ -422,11 +422,11 @@ class Repository(Artifact, ActivityObject):
     def tarball_filename(self, revision, path=None):
         shortname = c.project.shortname.replace('/', '-')
         mount_point = c.app.config.options.mount_point
-        filename = '%s-%s-%s' % (shortname, mount_point, revision)
+        filename = '{}-{}-{}'.format(shortname, mount_point, revision)
         return filename
 
     def tarball_url(self, revision, path=None):
-        filename = '%s%s' % (self.tarball_filename(revision, path), '.zip')
+        filename = '{}{}'.format(self.tarball_filename(revision, path), '.zip')
         r = os.path.join(self.tool,
                          self.project.shortname[:1],
                          self.project.shortname[:2],
@@ -438,7 +438,7 @@ class Repository(Artifact, ActivityObject):
     def get_tarball_status(self, revision, path=None):
         pathname = os.path.join(
             self.tarball_path, self.tarball_filename(revision, path))
-        filename = '%s%s' % (pathname, '.zip')
+        filename = '{}{}'.format(pathname, '.zip')
         if os.path.isfile(filename.encode('utf-8')):
             return 'complete'
 
@@ -452,7 +452,7 @@ class Repository(Artifact, ActivityObject):
         return task.state if task else None
 
     def __repr__(self):  # pragma no cover
-        return '<%s %s>' % (
+        return '<{} {}>'.format(
             self.__class__.__name__,
             self.full_fs_path)
 
@@ -603,7 +603,7 @@ class Repository(Artifact, ActivityObject):
 
     @property
     def email_address(self):
-        return 'noreply@%s%s' % (self.email_domain, config.common_suffix)
+        return 'noreply@{}{}'.format(self.email_domain, config.common_suffix)
 
     def index(self):
         result = Artifact.index(self)
@@ -623,7 +623,7 @@ class Repository(Artifact, ActivityObject):
             projname = owning_user.username
         else:
             projname = c.project.shortname.replace('/', '-')
-        return '%s-%s' % (projname, self.name)
+        return '{}-{}'.format(projname, self.name)
 
     def clone_url(self, category, username=''):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
@@ -632,7 +632,7 @@ class Repository(Artifact, ActivityObject):
         if self.app.config.options.get('external_checkout_url', None):
             tpl = string.Template(self.app.config.options.external_checkout_url)
         else:
-            tpl = string.Template(tg.config.get('scm.host.%s.%s' % (category, self.tool)))
+            tpl = string.Template(tg.config.get('scm.host.{}.{}'.format(category, self.tool)))
         url = tpl.substitute(dict(username=username, path=self.url_path + self.name))
         # this is an svn option, but keeps clone_*() code from diverging
         url += self.app.config.options.get('checkout_url', '')
@@ -653,7 +653,7 @@ class Repository(Artifact, ActivityObject):
         '''
         if not username and c.user not in (None, User.anonymous()):
             username = c.user.username
-        tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
+        tpl = string.Template(tg.config.get('scm.clone.{}.{}'.format(category, self.tool)) or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
                                    source_url=self.clone_url(category, username),
@@ -999,7 +999,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 class RepoObject(object):
 
     def __repr__(self):  # pragma no cover
-        return '<%s %s>' % (
+        return '<{} {}>'.format(
             self.__class__.__name__, self._id)
 
     def primary(self):
@@ -1009,7 +1009,7 @@ class RepoObject(object):
         '''Globally unique artifact identifier.  Used for
         SOLR ID, shortlinks, and maybe elsewhere
         '''
-        id = '%s.%s#%s' % (
+        id = '{}.{}#{}'.format(
             'allura.model.repo',  # preserve index_id after module consolidation
             self.__class__.__name__,
             self._id)
@@ -1421,9 +1421,9 @@ class Tree(MappedClass, RepoObject):
         for commit in commits:
             commit.set_context(self.repo)
         commit_infos = {c._id: c.info for c in commits}
-        tree_names = sorted([n.name for n in self.tree_ids])
+        tree_names = sorted(n.name for n in self.tree_ids)
         blob_names = sorted(
-            [n.name for n in chain(self.blob_ids, self.other_ids)])
+            n.name for n in chain(self.blob_ids, self.other_ids))
 
         results = []
         for type, names in (('DIR', tree_names), ('BLOB', blob_names)):
@@ -1606,7 +1606,7 @@ class LastCommit(MappedClass, RepoObject):
     )])
 
     def __repr__(self):
-        return '<LastCommit /%r %s>' % (self.path, self.commit_id)
+        return '<LastCommit /{!r} {}>'.format(self.path, self.commit_id)
 
     @classmethod
     def _last_commit_id(cls, commit, path):
@@ -1664,10 +1664,10 @@ class LastCommit(MappedClass, RepoObject):
             prev_lcd = model_cache.get(
                 cls, {'path': path, 'commit_id': prev_lcd_cid})
         entries = {}
-        nodes = set(
-            [node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
-        changed = set(
-            [node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths])
+        nodes = {
+            node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)}
+        changed = {
+            node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths}
         unchanged = [os.path.join(path, node) for node in nodes - changed]
         if prev_lcd:
             # get unchanged entries from previously computed LCD
@@ -1834,13 +1834,13 @@ class ModelCache(object):
 
     def num_queries(self, cls=None):
         if cls is None:
-            return sum([len(c) for c in self._query_cache.values()])
+            return sum(len(c) for c in self._query_cache.values())
         else:
             return len(self._query_cache[cls])
 
     def num_instances(self, cls=None):
         if cls is None:
-            return sum([len(c) for c in self._instance_cache.values()])
+            return sum(len(c) for c in self._instance_cache.values())
         else:
             return len(self._instance_cache[cls])
 
@@ -1919,9 +1919,9 @@ class GitLikeTree(object):
 
     def __repr__(self):
         # this can't change, is used in hex() above
-        lines = ['t %s %s' % (t.hex(), h.really_unicode(name))
+        lines = ['t {} {}'.format(t.hex(), h.really_unicode(name))
                  for name, t in six.iteritems(self.trees)]
-        lines += ['b %s %s' % (oid, h.really_unicode(name))
+        lines += ['b {} {}'.format(oid, h.really_unicode(name))
                   for name, oid in six.iteritems(self.blobs)]
         return six.ensure_str('\n'.join(sorted(lines)))
 
@@ -1934,7 +1934,7 @@ class GitLikeTree(object):
                  (name, '\n' + t.unicode_full_tree(indent + 2, show_id=show_id)
                   if recurse else t.hex())
                  for name, t in sorted(six.iteritems(self.trees))]
-        lines += [' ' * indent + 'b %s %s' % (name, oid if show_id else '')
+        lines += [' ' * indent + 'b {} {}'.format(name, oid if show_id else '')
                   for name, oid in sorted(six.iteritems(self.blobs))]
         output = h.really_unicode('\n'.join(lines)).encode('utf-8')
         return output
@@ -2002,9 +2002,9 @@ def zipdir(source, zipfile, exclude=None):
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         raise Exception(
-            "Command: {0} returned non-zero exit code {1}\n"
-            "STDOUT: {2}\n"
-            "STDERR: {3}".format(command, p.returncode, stdout, stderr))
+            "Command: {} returned non-zero exit code {}\n"
+            "STDOUT: {}\n"
+            "STDERR: {}".format(command, p.returncode, stdout, stderr))
 
 
 Mapper.compile_all()

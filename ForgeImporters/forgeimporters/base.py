@@ -378,7 +378,7 @@ class ToolImporterMeta(type):
     def __init__(cls, name, bases, attrs):
         if not (hasattr(cls, 'target_app_ep_names')
                 or hasattr(cls, 'target_app')):
-            raise AttributeError("{0} must define either `target_app` or `target_app_ep_names`".format(name))
+            raise AttributeError("{} must define either `target_app` or `target_app_ep_names`".format(name))
         return type.__init__(cls, name, bases, attrs)
 
     def __call__(cls, *args, **kw):
@@ -538,7 +538,7 @@ class ToolImporter(six.with_metaclass(ToolImporterMeta, object)):
 
         """
         klass = self.__class__
-        importer_path = '{0}.{1}'.format(klass.__module__, klass.__name__)
+        importer_path = '{}.{}'.format(klass.__module__, klass.__name__)
         import_tool.post(importer_path, **kw)
 
 

@@ -87,7 +87,7 @@ class PageHistory(Snapshot):
         return self.original().authors()
 
     def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        return '{}#{}'.format(self.original().shorthand_id(), self.version)
 
     def url(self):
         return self.original().url() + '?version=%d' % self.version
@@ -175,14 +175,14 @@ class Page(VersionedArtifact, ActivityObject):
                 'v%d' % v2.version))
             description = '<pre>' + diff + '</pre>'
             if v1.title != v2.title:
-                subject = '%s renamed page %s to %s' % (
+                subject = '{} renamed page {} to {}'.format(
                     context.user.username, v1.title, v2.title)
             else:
-                subject = '%s modified page %s' % (
+                subject = '{} modified page {}'.format(
                     context.user.username, self.title)
         else:
             description = self.text
-            subject = '%s created page %s' % (
+            subject = '{} created page {}'.format(
                 context.user.username, self.title)
         Feed.post(self, title=None, description=description)
         Notification.post(
@@ -194,7 +194,7 @@ class Page(VersionedArtifact, ActivityObject):
         if context.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
             title = self.title.replace(' ', '_')
-            return '%s@%s%s' % (title.replace('/', '.'), domain, config.common_suffix)
+            return '{}@{}{}'.format(title.replace('/', '.'), domain, config.common_suffix)
         else:
             return tg_config.get('forgemail.return_path')
 
@@ -276,7 +276,7 @@ class Page(VersionedArtifact, ActivityObject):
         }).all()
 
     def delete(self):
-        subject = '%s removed page %s' % (
+        subject = '{} removed page {}'.format(
             context.user.username, self.title)
         description = self.text
         Notification.post(

@@ -51,7 +51,7 @@ class SearchIndexable(object):
 
         Used for SOLR ID, shortlinks, and possibly elsewhere.
         """
-        id = '%s.%s#%s' % (
+        id = '{}.{}#{}'.format(
             self.__class__.__module__,
             self.__class__.__name__,
             self._id)
@@ -188,15 +188,15 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     fq += kw.pop('fq', [])
     if isinstance(filter, six.string_types):  # may be stringified after a ticket filter, then bulk edit
         filter = ast.literal_eval(filter)
-    for name, values in six.iteritems((filter or {})):
+    for name, values in six.iteritems(filter or {}):
         field_name = name + '_s'
         parts = []
         for v in values:
             # Specific solr syntax for empty fields
             if v == '' or v is None:
-                part = '(-%s:[* TO *] AND *:*)' % (field_name,)
+                part = '(-{}:[* TO *] AND *:*)'.format(field_name)
             else:
-                part = '%s:%s' % (field_name, escape_solr_arg(v))
+                part = '{}:{}'.format(field_name, escape_solr_arg(v))
             parts.append(part)
         fq.append(' OR '.join(parts))
     if not history:
@@ -223,7 +223,7 @@ def site_admin_search(model, q, field, **kw):
         # escaping spaces with '\ ' isn't sufficient for display_name_t since its stored as text_general (why??)
         # and wouldn't handle foo@bar.com split on @ either
         # This should work, but doesn't for unknown reasons: q = u'{!term f=%s}%s' % (field, q)
-        q = obj.translate_query('%s:(%s)' % (field, q), fields)
+        q = obj.translate_query('{}:({})'.format(field, q), fields)
         kw['q.op'] = 'AND'  # so that all terms within the () are required
     fq = ['type_s:%s' % model.type_s]
     return search(q, fq=fq, ignore_errors=False, **kw)

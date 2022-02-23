@@ -182,7 +182,7 @@ def audits(*messages, **kwargs):
                 hints += '\nin these AuditLog messages:\n\t' + '\n\t'.join(a.message for a in all)
             if message != re.escape(message):
                 hints += '\nYou may need to escape the regex chars in the text you are matching'
-            raise AssertionError('Could not find "%s"%s' % (message, hints))
+            raise AssertionError('Could not find "{}"{}'.format(message, hints))
 
 
 @contextlib.contextmanager

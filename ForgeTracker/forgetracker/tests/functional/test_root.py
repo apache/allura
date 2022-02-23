@@ -930,7 +930,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'], params=params,
-                      headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                      headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
@@ -1526,7 +1526,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'], params=params,
-                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                          headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(post_content in r)
         assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1)
@@ -1542,7 +1542,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params['ticket_form.summary'] = new_summary
         r = self.app.post(f['action'], params=params,
-                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                          headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         assert_true(summary + ' --&gt; ' + new_summary in r)
         assert_true(len(r.html.findAll(attrs={'class': 'discussion-post meta_post'})) == 1)
@@ -1561,7 +1561,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'], params=params,
-                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                          headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='-1'))
         assert_true(summary in r)
         r = self.app.get('/bugs/1/', dict(page='1'))
@@ -1571,7 +1571,7 @@ class TestFunctionalController(TrackerTestController):
         # add some more posts and check for pager
         for i in range(2):
             r = self.app.post(f['action'], params=params,
-                              headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                              headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1', limit='2'))
         assert_true('Page 2 of 2' in r)
 
@@ -1589,7 +1589,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         self.app.post(f['action'], params=params,
-                      headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                      headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/feed.rss')
         post = M.Post.query.find().first()
         assert '/p/test/bugs/1/?limit=25#' + post.slug in r
@@ -1970,7 +1970,7 @@ class TestFunctionalController(TrackerTestController):
         filtered_changes = c.app.globals.filtered_by_subscription(changes)
         filtered_users = [uid for uid, data in six.iteritems(filtered_changes)]
         assert_equal(sorted(filtered_users),
-                     sorted([u._id for u in users[:-1] + [admin]]))
+                     sorted(u._id for u in users[:-1] + [admin]))
         ticket_ids = [t._id for t in tickets]
         assert_equal(filtered_changes[users[0]._id], set(ticket_ids[0:1]))
         assert_equal(filtered_changes[users[1]._id], set(ticket_ids[:-1]))
@@ -2154,8 +2154,8 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test')
         r = self.app.get('/p/test/bugs/1/move')
         trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
-        trackers = set([t.text for t in trackers])
-        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        trackers = {t.text for t in trackers}
+        expected = {'test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'}
         assert trackers == expected, trackers
 
         p = M.Project.query.get(shortname='test2')
@@ -2212,7 +2212,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = post_content
         r = self.app.post(f['action'], params=params,
-                          headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
+                          headers={'Referer': b'/p/test2/bugs2/1/'})
         r = self.app.get('/p/test2/bugs2/1/', dict(page='1'))
         assert_true(post_content in r)
         comments_cnt = len(r.html.findAll(attrs={'class': 'discussion-post'}))
@@ -2462,7 +2462,7 @@ class TestFunctionalController(TrackerTestController):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'test comment'
         self.app.post(f['action'], params=params,
-                      headers={'Referer': '/bugs/1/'.encode("utf-8")})
+                      headers={'Referer': b'/bugs/1/'})
         r = self.app.get('/bugs/1/', dict(page='1'))
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         self.app.post(post_link + 'attach',
@@ -2475,7 +2475,7 @@ class TestFunctionalController(TrackerTestController):
                      'http://localhost/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'],
-                     'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
+                     'http://localhost{}{}/attachment/test.txt'.format(discussion_url, slug))
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'],
                      11)
 
@@ -2635,7 +2635,7 @@ class TestMilestoneAdmin(TrackerTestController):
                  show_in_search='on',
                  type='milestone',
                  milestones=[
-                     dict((k, v) for k, v in six.iteritems(d)) for d in mf['milestones']])
+                     {k: v for k, v in six.iteritems(d)} for d in mf['milestones']])
             for mf in milestones]}
         return self._post(params)
 
@@ -3029,8 +3029,8 @@ class TestBulkMove(TrackerTestController):
     def test_controls_present(self):
         r = self.app.get('/bugs/move/')
         trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
-        trackers = set([t.text for t in trackers])
-        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        trackers = {t.text for t in trackers}
+        expected = {'test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'}
         assert_equal(trackers, expected)
         move_btn = r.html.find('input', attrs={'type': 'submit', 'value': 'Move'})
         assert move_btn is not None

@@ -42,7 +42,7 @@ def clone(cloned_from_path, cloned_from_name, cloned_from_url):
             cloned_from_url)
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
-            text='Repository %s/%s created' % (
+            text='Repository {}/{} created'.format(
                 c.project.shortname, c.app.config.options.mount_point))
     except Exception:
         g.post_event('repo_clone_task_failed', cloned_from_url,
@@ -120,7 +120,7 @@ def reclone_repo(*args, **kwargs):
         c.app.repo.init_as_clone(source_path, None, source_url)
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
-            text='Repository %s/%s created' % (
+            text='Repository {}/{} created'.format(
                 c.project.shortname, c.app.config.options.mount_point))
     except Exception:
         g.post_event('repo_clone_task_failed', source_url,

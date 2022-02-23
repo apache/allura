@@ -119,7 +119,7 @@ class AuthController(BaseController):
             raise AttributeError("TG decoratedcontroller calls this during import time, can't do anything complex")
         urls = plugin.UserPreferencesProvider.get().additional_urls()
         if name not in urls:
-            raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
+            raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, name))
         return urls[name]
 
     @expose()
@@ -458,7 +458,7 @@ class AuthController(BaseController):
                         continue
                     if not has_access(app, 'write', user, p):
                         continue
-                    repos.append('/%s/%s/%s' % (
+                    repos.append('/{}/{}/{}'.format(
                         app.tool_name.lower(),
                         _unix_group_name(p.neighborhood, p.shortname),
                         app.options['mount_point']))
@@ -1174,12 +1174,12 @@ class SubscriptionsController(BaseController):
         subscriptions = []
         mailboxes = list(M.Mailbox.query.find(
             dict(user_id=c.user._id, is_flash=False)))
-        projects = dict(
-            (p._id, p) for p in M.Project.query.find(dict(
-                _id={'$in': [mb.project_id for mb in mailboxes]})))
-        app_index = dict(
-            (ac._id, ac) for ac in M.AppConfig.query.find(dict(
-                _id={'$in': [mb.app_config_id for mb in mailboxes]})))
+        projects = {
+            p._id: p for p in M.Project.query.find(dict(
+                _id={'$in': [mb.project_id for mb in mailboxes]}))}
+        app_index = {
+            ac._id: ac for ac in M.AppConfig.query.find(dict(
+                _id={'$in': [mb.app_config_id for mb in mailboxes]}))}
 
         # Add the tools that are already subscribed to by the user.
         for mb in mailboxes:
@@ -1210,19 +1210,19 @@ class SubscriptionsController(BaseController):
                 subscribed=True))
 
         # Dictionary of all projects projects accessible based on a users credentials (user_roles).
-        my_projects = dict((p._id, p) for p in c.user.my_projects())
+        my_projects = {p._id: p for p in c.user.my_projects()}
 
         # Dictionary containing all tools (subscribed and un-subscribed).
         my_tools = M.AppConfig.query.find(dict(
             project_id={'$in': list(my_projects.keys())}))
 
         # Dictionary containing all the currently subscribed tools for a given user.
-        my_tools_subscriptions = dict(
-            (mb.app_config_id, mb) for mb in M.Mailbox.query.find(dict(
+        my_tools_subscriptions = {
+            mb.app_config_id: mb for mb in M.Mailbox.query.find(dict(
                 user_id=c.user._id,
                 project_id={'$in': list(projects.keys())},
                 app_config_id={'$in': list(app_index.keys())},
-                artifact_index_id=None)))
+                artifact_index_id=None))}
 
         # Add the remaining tools that are eligible for subscription.
         for tool in my_tools:
