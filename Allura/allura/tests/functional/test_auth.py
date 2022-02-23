@@ -15,9 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
 import calendar
 from base64 import b32encode
 from datetime import datetime, time, timedelta

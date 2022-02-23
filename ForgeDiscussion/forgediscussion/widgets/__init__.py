@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from .forum_widgets import ThreadSubscriptionForm, AnnouncementsTable
 from .forum_widgets import ModerateThread, ForumHeader, ThreadHeader
 from .forum_widgets import Post, Thread, Forum

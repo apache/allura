@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -1134,8 +1132,8 @@ class ReactableArtifact(MappedClass):
         for i in self.react_users:
             if user.username in self.react_users[i]:
                 return i
-        return 
-    
+        return
+
     def update_react_count(self, r, add=True):
         i = 1
         if not add:

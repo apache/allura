@@ -17,8 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import unittest
 from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
@@ -132,9 +130,9 @@ Content-Transfer-Encoding: 8bit
 > Status: closed
 > Created: Thu May 23, 2019 09:24 PM UTC by admin1
 > Attachments:
-> 
+>
 >   • foo.txt (1.0 kB; text/plain)
-> 
+>
 """
         msg = parse_message(s_msg)
         assert isinstance(msg['payload'], six.text_type)
@@ -167,15 +165,15 @@ Content-Type: text/plain; charset="utf-8"
 > Status: closed
 > Created: Thu May 23, 2019 09:24 PM UTC by admin1
 > Attachments:
-> 
+>
 >   • foo.txt (1.0 kB; text/plain)
-> 
+>
 
 
 --===============7387203749754534836==
 Content-Type: text/html; charset="utf-8"
 
-<html><head>... blah blah 
+<html><head>... blah blah
 ...
 &gt; • foo.txt (1.0 kB; text/plain)
 """

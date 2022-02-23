@@ -18,7 +18,6 @@
 """
 This module provides the security predicates used in decorating various models.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import six
 import sys

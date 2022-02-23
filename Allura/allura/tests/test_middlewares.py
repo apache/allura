@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from mock import MagicMock, patch
 from datadiff.tools import assert_equal
 from alluratest.tools import assert_not_equal

@@ -28,8 +28,6 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import os
 from unittest import skipIf
 

@@ -18,8 +18,6 @@
 #       under the License.
 
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from alluratest.tools import with_setup, assert_equal, assert_not_equal
 
 from ming.odm import ThreadLocalORMSession

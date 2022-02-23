@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import absolute_import
 from alluratest.controller import setup_basic_test
 from allura.websetup.bootstrap import clear_all_database_tables
 

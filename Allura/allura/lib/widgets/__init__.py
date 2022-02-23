@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
 from .discuss import Post, Thread
 from .subscriptions import SubscriptionForm
 from .oauth_widgets import OAuthApplicationForm, OAuthRevocationForm

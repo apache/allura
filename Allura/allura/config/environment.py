@@ -19,8 +19,6 @@
 
 """WSGI environment setup for allura."""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from allura.config.app_cfg import base_config
 
 __all__ = ['load_environment']

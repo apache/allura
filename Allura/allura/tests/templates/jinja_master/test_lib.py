@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from tg import config, app_globals as g
 from mock import Mock
 from alluratest.tools import assert_equal

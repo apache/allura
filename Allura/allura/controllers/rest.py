@@ -18,8 +18,6 @@
 #       under the License.
 
 """REST Controller"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import json
 import logging
 from six.moves.urllib.parse import unquote

@@ -19,8 +19,6 @@
 
 """The application's model objects"""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, TroveCategory, ProjectFile, AppConfig
 from .index import ArtifactReference, Shortlink

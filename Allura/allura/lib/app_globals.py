@@ -20,8 +20,6 @@
 
 """The application's Globals object"""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 import cgi
 import hashlib

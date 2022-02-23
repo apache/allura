@@ -17,9 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 from io import BytesIO
 import allura
@@ -348,7 +345,7 @@ class TestRootController(TestController):
                                             Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
 
                                             **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding
-                                            
+
                                             <script>alert(1)</script>""")
         self.app.post('/wiki/testdiff/update', params=d)
         response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')

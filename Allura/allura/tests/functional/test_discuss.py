@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import os
 from mock import patch
 from alluratest.tools import assert_in, assert_not_in, assert_equal, assert_false, assert_true, assert_raises
@@ -234,7 +232,7 @@ class TestDiscuss(TestDiscussBase):
             react_link,
             params={
                 'r': 'invalid'})
-        assert response.json['status'] == 'error' 
+        assert response.json['status'] == 'error'
         assert response.json['counts'][':+1:'] == 1
         # anon users can't react comments
         response = self.app.post(

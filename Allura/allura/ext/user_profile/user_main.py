@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
 import logging
 
 import pkg_resources
@@ -147,6 +145,9 @@ class UserProfileController(BaseController, FeedController):
 
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
+        """
+        https://sf-11.xb.sf.net/u/admin1
+        """
         user = c.project.user_project_of
         if not user:
             raise exc.HTTPNotFound()
