@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -48,7 +46,6 @@ from allura.tests import decorators as td
 
 from forgewiki import model as WM
 from forgeblog import model as BM
-from io import open
 
 
 def squish_spaces(text):
@@ -350,7 +347,7 @@ def test_macro_embed(oembed_fetch):
 def test_macro_embed_video_gone():
     # this does a real fetch
     r = g.markdown_wiki.convert('[[embed url=https://www.youtube.com/watch?v=OWsFqPZ3v-0]]')
-    r = six.text_type(r)  # convert away from Markup, to get better assertion diff output
+    r = str(r)  # convert away from Markup, to get better assertion diff output
     # either of these could happen depending on the mood of youtube's oembed API:
     assert_in(r, [
         '<div class="markdown_content"><p>Video not available</p></div>',
@@ -553,7 +550,7 @@ def test_markdown_autolink():
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(
-        s, '<div class="markdown_content"><p>This is <a href="{}" rel="nofollow">{}</a></p></div>'.format(tgt, tgt))
+        s, f'<div class="markdown_content"><p>This is <a href="{tgt}" rel="nofollow">{tgt}</a></p></div>')
     assert '<a href=' in g.markdown.convert('This is http://domain.net')
     # beginning of doc
     assert_in('<a href=', g.markdown.convert('http://domain.net abc'))
@@ -745,7 +742,7 @@ def test_myprojects_macro():
     for p in c.user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="{}">{}</a></h2>'.format(p.url(), p.name)
+        proj_title = f'<h2><a href="{p.url()}">{p.name}</a></h2>'
         assert_in(proj_title, r)
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
@@ -754,7 +751,7 @@ def test_myprojects_macro():
     for p in user.my_projects():
         if p.deleted or p.is_nbhd_project:
             continue
-        proj_title = '<h2><a href="{}">{}</a></h2>'.format(p.url(), p.name)
+        proj_title = f'<h2><a href="{p.url()}">{p.name}</a></h2>'
         assert_in(proj_title, r)
 
 
@@ -1073,7 +1070,7 @@ class TestHandlePaging(unittest.TestCase):
         self.assertEqual(g.handle_paging(10, 'asdf', 30), (10, 0, 0))
 
 
-class TestIconRender(object):
+class TestIconRender:
 
     def setUp(self):
         self.i = g.icons['edit']

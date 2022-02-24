@@ -38,7 +38,7 @@ class FollowToggle(ew.SimpleForm):
         yield ew.JSLink('activity_js/follow.js')
 
     def prepare_context(self, context):
-        default_context = super(FollowToggle, self).prepare_context({})
+        default_context = super().prepare_context({})
         if c.project.is_user_project:
             default_context.update(
                 thing=c.project.user_project_of.display_name,

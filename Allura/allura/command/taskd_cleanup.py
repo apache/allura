@@ -25,7 +25,6 @@ import six
 
 from allura import model as M
 from . import base
-from six.moves import range
 
 
 class TaskdCleanupCommand(base.Command):
@@ -123,7 +122,7 @@ class TaskdCleanupCommand(base.Command):
     def _busy_tasks(self, pid=None):
         regex = '^%s ' % self.hostname
         if pid is not None:
-            regex = '^{} pid {}'.format(self.hostname, pid)
+            regex = f'^{self.hostname} pid {pid}'
         return M.MonQTask.query.find({
             'state': 'busy',
             'process': {'$regex': regex}

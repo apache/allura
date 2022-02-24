@@ -30,7 +30,7 @@ from forgeshorturl.model import ShortUrl
 class TestRootController(TestController):
 
     def setUp(self):
-        super(TestRootController, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_url
@@ -90,7 +90,7 @@ class TestRootController(TestController):
         assert 'http://www.amazone.com/' in r
         assert '<td><small>yes</small></td>' in r
         self.app.get('/url/test_private',
-                     extra_environ=dict(username=str('*anonymous')),
+                     extra_environ=dict(username='*anonymous'),
                      status=404)
         self.app.get('/url/test_private',
                      status=302)
@@ -132,9 +132,9 @@ class TestRootController(TestController):
         self.app.post('/admin/url/add',
                       params=dict(short_url='g',
                                   full_url='http://google.com/'),
-                      extra_environ=dict(username=str('test-user')), status=403)
+                      extra_environ=dict(username='test-user'), status=403)
         self.app.post('/admin/url/remove', params=dict(shorturl='g'),
-                      extra_environ=dict(username=str('test-user')), status=403)
+                      extra_environ=dict(username='test-user'), status=403)
 
     def test_build_short_url(self):
         with h.push_config(config, **{

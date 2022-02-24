@@ -35,7 +35,7 @@ from forgetracker.site_stats import tickets_stats_24hr
 from forgetracker.tests.functional.test_root import TrackerTestController
 
 
-class TestApp(object):
+class TestApp:
 
     def setUp(self):
         setup_basic_test()
@@ -89,7 +89,7 @@ class TestBulkExport(TrackerTestController):
 
     @td.with_tracker
     def setup_with_tools(self):
-        super(TestBulkExport, self).setup_with_tools()
+        super().setup_with_tools()
         self.project = M.Project.query.get(shortname='test')
         self.tracker = self.project.app_instance('bugs')
         self.new_ticket(summary='foo', _milestone='1.0')

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -36,7 +34,7 @@ from allura import model as M
 import six
 
 
-class TestLdapAuthenticationProvider(object):
+class TestLdapAuthenticationProvider:
 
     def setUp(self):
         setup_basic_test()
@@ -76,7 +74,7 @@ class TestLdapAuthenticationProvider(object):
             'password': 'test-password',
         }
         self.provider.request.method = 'POST'
-        self.provider.request.body = '&'.join(['{}={}'.format(k,v) for k,v in six.iteritems(params)]).encode('utf-8')
+        self.provider.request.body = '&'.join([f'{k}={v}' for k,v in params.items()]).encode('utf-8')
         ldap.dn.escape_dn_chars = lambda x: x
 
         self.provider._login()
@@ -95,11 +93,11 @@ class TestLdapAuthenticationProvider(object):
             'password': 'test-password',
         }
         self.provider.request.method = 'POST'
-        self.provider.request.body = '&'.join(['{}={}'.format(k,v) for k,v in six.iteritems(params)]).encode('utf-8')
+        self.provider.request.body = '&'.join([f'{k}={v}' for k,v in params.items()]).encode('utf-8')
         ldap.dn.escape_dn_chars = lambda x: x
         dn = 'uid=%s,ou=people,dc=localdomain' % params['username']
         conn = ldap.initialize.return_value
-        conn.search_s.return_value = [(dn, {'cn': ['åℒƒ'.encode('utf-8')]})]
+        conn.search_s.return_value = [(dn, {'cn': ['åℒƒ'.encode()]})]
 
         self.provider._login()
 

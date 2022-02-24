@@ -92,7 +92,7 @@ with_wiki = with_tool('test', 'Wiki', 'wiki')
 with_url = with_tool('test', 'ShortUrl', 'url')
 
 
-class raises(object):
+class raises:
 
     '''
     Test helper in the form of a context manager, to assert that something raises an exception.
@@ -129,7 +129,7 @@ def without_module(*module_names):
     return _without_module
 
 
-class patch_middleware_config(object):
+class patch_middleware_config:
 
     '''
     Context manager that patches the configuration used during middleware
@@ -169,7 +169,7 @@ def audits(*messages, **kwargs):
         actor = kwargs.get('actor', '.*')
         ip_addr = kwargs.get('ip_addr', '.*')
         user_agent = kwargs.get('user_agent', '.*')
-        preamble = '(Done by user: {}\n)?IP Address: {}\nUser-Agent: {}\n'.format(actor, ip_addr, user_agent)
+        preamble = f'(Done by user: {actor}\n)?IP Address: {ip_addr}\nUser-Agent: {user_agent}\n'
     else:
         preamble = ''
 
@@ -182,7 +182,7 @@ def audits(*messages, **kwargs):
                 hints += '\nin these AuditLog messages:\n\t' + '\n\t'.join(a.message for a in all)
             if message != re.escape(message):
                 hints += '\nYou may need to escape the regex chars in the text you are matching'
-            raise AssertionError('Could not find "{}"{}'.format(message, hints))
+            raise AssertionError(f'Could not find "{message}"{hints}')
 
 
 @contextlib.contextmanager
@@ -199,7 +199,7 @@ def out_audits(*messages, **kwargs):
     if kwargs.get('user'):
         actor = kwargs.get('actor', '.*')
         ip_addr = kwargs.get('ip_addr', '.*')
-        preamble = '(Done by user: {}\n)?IP Address: {}\n'.format(actor, ip_addr)
+        preamble = f'(Done by user: {actor}\n)?IP Address: {ip_addr}\n'
     else:
         preamble = ''
     for message in messages:
@@ -218,7 +218,7 @@ def assert_logmsg_and_no_warnings_or_errors(logs, msg):
         if msg in r.getMessage():
             found_msg = True
         if r.levelno > logging.INFO:
-            raise AssertionError('unexpected log {} {}'.format(r.levelname, r.getMessage()))
+            raise AssertionError(f'unexpected log {r.levelname} {r.getMessage()}')
     assert found_msg, 'Did not find {} in logs: {}'.format(msg, '\n'.join([r.getMessage() for r in logs.records]))
 
 

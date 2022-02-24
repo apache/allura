@@ -42,7 +42,7 @@ def kill_tree(repo, commit_id, path, tree):
 def main():
     for chunk in utils.chunked_find(SM.Repository):
         for r in chunk:
-            print('Processing {}'.format(r))
+            print(f'Processing {r}')
             all_commit_ids = r._impl.all_commit_ids()
             if all_commit_ids:
                 for commit in M.repository.Commit.query.find({'_id': {'$in': all_commit_ids}}):

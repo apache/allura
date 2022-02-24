@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 _macros = {}
 
 
-class macro(object):
+class macro:
 
     def __init__(self, context=None):
         self._context = context
@@ -54,7 +54,7 @@ class macro(object):
         return func
 
 
-class parse(object):
+class parse:
 
     def __init__(self, context):
         self._context = context
@@ -80,11 +80,11 @@ class parse(object):
                 log.warn('macro error.  Upwards stack is %s',
                          ''.join(traceback.format_stack()),
                          exc_info=True)
-                msg = cgi.escape('[[{}]] ({})'.format(s, repr(ex)))
+                msg = cgi.escape(f'[[{s}]] ({repr(ex)})')
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception as ex:
             raise
-            return '[[Error parsing {}: {}]]'.format(s, ex)
+            return f'[[Error parsing {s}: {ex}]]'
 
     def _lookup_macro(self, s):
         macro, context = _macros.get(s, (None, None))
@@ -360,7 +360,7 @@ def include_file(repo, path=None, rev=None, **kw):
     try:
         file = app.repo.commit(rev).get_path(path)
     except Exception:
-        return "[[include can't find file {} in revision {}]]".format(path, rev)
+        return f"[[include can't find file {path} in revision {rev}]]"
 
     text = ''
     if file.has_pypeline_view:
@@ -368,7 +368,7 @@ def include_file(repo, path=None, rev=None, **kw):
     elif file.has_html_view:
         text = g.highlight(file.text, filename=file.name)
     else:
-        return "[[include can't display file {} in revision {}]]".format(path, rev)
+        return f"[[include can't display file {path} in revision {rev}]]"
 
     from allura.lib.widgets.macros import Include
     sb = Include()
@@ -405,7 +405,7 @@ def include(ref=None, repo=None, **kw):
 
 @macro()
 def img(src=None, **kw):
-    attrs = ('%s="%s"' % t for t in six.iteritems(kw))
+    attrs = ('%s="%s"' % t for t in kw.items())
     included = request.environ.setdefault('allura.macro.att_embedded', set())
     included.add(src)
     if '://' in src:
@@ -452,8 +452,8 @@ def members(limit=20):
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
     endpoint = oembed.OEmbedEndpoint('https://www.youtube.com/oembed',
-                                     [str('http://*.youtube.com/*'), str('https://*.youtube.com/*'),
-                                      str('http://*.youtube-nocookie.com/*'), str('https://*.youtube-nocookie.com/*'),
+                                     ['http://*.youtube.com/*', 'https://*.youtube.com/*',
+                                      'http://*.youtube-nocookie.com/*', 'https://*.youtube-nocookie.com/*',
                                       ])
     consumer.addEndpoint(endpoint)
 
@@ -465,14 +465,14 @@ def embed(url=None):
         except oembed.OEmbedNoEndpoint:
             html = None
         except oembed.OEmbedError:
-            log.exception('Could not embed: {}'.format(url))
-            return 'Could not embed: {}'.format(url)
+            log.exception(f'Could not embed: {url}')
+            return f'Could not embed: {url}'
         except six.moves.urllib.error.HTTPError as e:
             if e.code in (403, 404):
                 return 'Video not available'
             else:
-                log.exception('Could not embed: {}'.format(url))
-                return 'Could not embed: {}'.format(url)
+                log.exception(f'Could not embed: {url}')
+                return f'Could not embed: {url}'
 
     if html:
         # youtube has a trailing ")" at the moment

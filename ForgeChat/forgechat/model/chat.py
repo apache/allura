@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
 class ChatChannel(MappedClass):
 
     class __mongometa__:
-        name = str('globals')
+        name = 'globals'
         session = M.main_orm_session
         indexes = ['project_id']
         unique_indexes = ['channel']
@@ -48,7 +48,7 @@ class ChatChannel(MappedClass):
 class ChatMessage(M.Artifact):
 
     class __mongometa__:
-        name = str('chat_message')
+        name = 'chat_message'
         indexes = ['timestamp']
 
     query: 'Query[ChatMessage]'
@@ -70,9 +70,9 @@ class ChatMessage(M.Artifact):
         return id.replace('.', '/')
 
     def index(self):
-        result = super(ChatMessage, self).index()
+        result = super().index()
         result.update(
-            snippet_s='{} > {}'.format(self.sender, self.text),
+            snippet_s=f'{self.sender} > {self.text}',
             sender_t=self.sender,
             text=self.text)
         return result

@@ -71,7 +71,7 @@ def get_config_file(config=None, current_pkg=None):
         conf_file = os.path.join(conf_dir, config)
 
     if not os.path.exists(conf_file.split('#')[0]):
-        raise EnvironmentError('Cannot find .ini config file {}'.format(conf_file))
+        raise OSError(f'Cannot find .ini config file {conf_file}')
     else:
         return conf_file
 
@@ -112,7 +112,7 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME, current_pkg=None):
     config = get_config_file(config, current_pkg=current_pkg)
     setup_basic_test(config, app_name)
     conf_dir = tg.config.here
-    wsgiapp = loadapp('config:{}#{}'.format(config, app_name),
+    wsgiapp = loadapp(f'config:{config}#{app_name}',
                       relative_to=conf_dir)
     return wsgiapp
 # sometimes __test__ above isn't sufficient
@@ -158,7 +158,7 @@ def setup_trove_categories():
         create_trove_categories.run([''])
 
 
-class TestController(object):
+class TestController:
 
     application_under_test = 'main'
     validate_skip = False
@@ -168,7 +168,7 @@ class TestController(object):
         pkg = self.__module__.split('.')[0]
         self.app = ValidatingTestApp(
             setup_functional_test(app_name=self.application_under_test, current_pkg=pkg))
-        self.app.extra_environ = {str('REMOTE_ADDR'): str('127.0.0.1')}  # remote_addr needed by AntiSpam
+        self.app.extra_environ = {'REMOTE_ADDR': '127.0.0.1'}  # remote_addr needed by AntiSpam
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
         if asbool(tg.config.get('smtp.mock')):
@@ -201,7 +201,7 @@ class TestController(object):
 
     def find_form(self, resp, cond):
         """Find form on the page that meets given condition"""
-        for f in six.itervalues(resp.forms):
+        for f in resp.forms.values():
             if cond(f):
                 return f
 
@@ -209,7 +209,7 @@ class TestController(object):
 class TestRestApiBase(TestController):
 
     def setUp(self):
-        super(TestRestApiBase, self).setUp()
+        super().setUp()
         self._use_token = None
         self._token_cache = {}
 
@@ -255,12 +255,12 @@ class TestRestApiBase(TestController):
             params = {wrap_args: params}
         if status is None:
             status = [200, 201, 301, 302]
-        if not isinstance(params, six.string_types):
+        if not isinstance(params, str):
             params = variabledecode.variable_encode(params, add_repetitions=False)
 
         token = self.token(user).api_key
         headers = {
-            'Authorization': str('Bearer {}'.format(token))
+            'Authorization': str(f'Bearer {token}')
         }
 
         fn = getattr(self.app, method.lower())

@@ -53,7 +53,7 @@ def escape_solr_arg(term):
     """ Apply escaping to the passed in query terms
         escaping special characters like : , etc"""
     term = term.replace('\\', r'\\')   # escape \ first
-    for char, escaped_char in six.iteritems(escape_rules):
+    for char, escaped_char in escape_rules.items():
         term = term.replace(char, escaped_char)
 
     return term
@@ -73,7 +73,7 @@ def make_solr_from_config(push_servers, query_server=None, **kwargs):
     return Solr(push_servers, query_server, **solr_kwargs)
 
 
-class Solr(object):
+class Solr:
 
     """Solr interface that pushes updates to multiple solr instances.
 
@@ -123,7 +123,7 @@ class Solr(object):
         return self.query_server.search(*args, **kw)
 
 
-class MockSOLR(object):
+class MockSOLR:
 
     class MockHits(list):
 
@@ -163,7 +163,7 @@ class MockSOLR(object):
             if part in ('&&', 'AND'):
                 continue
             if part in ('||', 'OR'):
-                log.warn("MockSOLR doesn't implement OR yet; treating as AND. q={} fq={}".format(q, fq))
+                log.warn(f"MockSOLR doesn't implement OR yet; treating as AND. q={q} fq={fq}")
                 continue
             if ':' in part:
                 field, value = part.split(':', 1)

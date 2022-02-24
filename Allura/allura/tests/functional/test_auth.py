@@ -51,7 +51,6 @@ from allura.lib import plugin
 from allura.lib import helpers as h
 from allura.lib.multifactor import TotpService, RecoveryCodeService
 import six
-from six.moves import range
 
 
 def unentity(s):
@@ -84,7 +83,7 @@ class TestAuth(TestController):
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo', honey1='robot',  # bad honeypot value
             _session_id=self.app.cookies['_session_id']),
-                          extra_environ={'regular_antispam_err_handling_even_when_tests': str('true')},
+                          extra_environ={'regular_antispam_err_handling_even_when_tests': 'true'},
                           status=302)
         wf = json.loads(self.webflash(r))
         assert_equal(wf['status'], 'error')
@@ -102,18 +101,18 @@ class TestAuth(TestController):
         assert 'Invalid login' in str(r), r.showbrowser()
 
     def test_login_invalid_username(self):
-        extra = {'username': str('*anonymous')}
+        extra = {'username': '*anonymous'}
         r = self.app.get('/auth/', extra_environ=extra)
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test@user.com'
         f[encoded['password']] = 'foo'
-        r = f.submit(extra_environ={'username': str('*anonymous')})
+        r = f.submit(extra_environ={'username': '*anonymous'})
         r.mustcontain('Usernames only include small letters, ')
 
     def test_login_diff_ips_ok(self):
         # exercises AntiSpam.validate methods
-        extra = {'username': str('*anonymous'), 'REMOTE_ADDR': str('11.22.33.44')}
+        extra = {'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.44'}
         r = self.app.get('/auth/', extra_environ=extra)
 
         f = r.forms[0]
@@ -121,19 +120,19 @@ class TestAuth(TestController):
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
         with audits('Successful login', user=True):
-            r = f.submit(extra_environ={'username': str('*anonymous'), 'REMOTE_ADDR': str('11.22.33.99')})
+            r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99'})
 
     def test_login_diff_ips_bad(self):
         # exercises AntiSpam.validate methods
-        extra = {'username': str('*anonymous'), 'REMOTE_ADDR': str('24.52.32.123')}
+        extra = {'username': '*anonymous', 'REMOTE_ADDR': '24.52.32.123'}
         r = self.app.get('/auth/', extra_environ=extra)
 
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
-        r = f.submit(extra_environ={'username': str('*anonymous'), 'REMOTE_ADDR': str('11.22.33.99'),
-                                    'regular_antispam_err_handling_even_when_tests': str('true')},
+        r = f.submit(extra_environ={'username': '*anonymous', 'REMOTE_ADDR': '11.22.33.99',
+                                    'regular_antispam_err_handling_even_when_tests': 'true'},
                      status=302)
         wf = json.loads(self.webflash(r))
         assert_equal(wf['status'], 'error')
@@ -143,7 +142,7 @@ class TestAuth(TestController):
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     def test_login_hibp_compromised_password_untrusted_client(self, sendsimplemail):
         # first & only login by this user, so won't have any trusted previous logins
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
         r = self.app.get('/auth/')
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
@@ -165,7 +164,7 @@ class TestAuth(TestController):
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login first, so IP address will be recorded and then trusted
         r = self.app.get('/auth/')
@@ -201,43 +200,43 @@ class TestAuth(TestController):
     def test_login_disabled(self):
         u = M.User.query.get(username='test-user')
         u.disabled = True
-        r = self.app.get('/auth/', extra_environ={'username': str('*anonymous')})
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
         with audits('Failed login', user=True):
-            r = f.submit(extra_environ={'username': str('*anonymous')})
+            r = f.submit(extra_environ={'username': '*anonymous'})
 
     def test_login_pending(self):
         u = M.User.query.get(username='test-user')
         u.pending = True
-        r = self.app.get('/auth/', extra_environ={'username': str('*anonymous')})
+        r = self.app.get('/auth/', extra_environ={'username': '*anonymous'})
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
         with audits('Failed login', user=True):
-            r = f.submit(extra_environ={'username': str('*anonymous')})
+            r = f.submit(extra_environ={'username': '*anonymous'})
 
     def test_login_overlay(self):
-        r = self.app.get('/auth/login_fragment/', extra_environ={'username': str('*anonymous')})
+        r = self.app.get('/auth/login_fragment/', extra_environ={'username': '*anonymous'})
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = 'test-user'
         f[encoded['password']] = 'foo'
         with audits('Successful login', user=True):
-            r = f.submit(extra_environ={'username': str('*anonymous')})
+            r = f.submit(extra_environ={'username': '*anonymous'})
 
     def test_logout(self):
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
         nav_pattern = ('nav', {'class': 'nav-main'})
         r = self.app.get('/auth/')
 
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo',
             _session_id=self.app.cookies['_session_id']),
-            extra_environ={'REMOTE_ADDR': str('127.0.0.1')},
+            extra_environ={'REMOTE_ADDR': '127.0.0.1'},
             antispam=True).follow().follow()
 
         logged_in_session = r.session['_id']
@@ -258,8 +257,8 @@ class TestAuth(TestController):
 
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login',
-                      headers={str('User-Agent'): str('browser')},
-                      extra_environ={'REMOTE_ADDR': str('127.0.0.1')},
+                      headers={'User-Agent': 'browser'},
+                      extra_environ={'REMOTE_ADDR': '127.0.0.1'},
                       params=dict(
                           username='test-user',
                           password='foo',
@@ -316,7 +315,7 @@ class TestAuth(TestController):
                           'password': 'foo',
                           '_session_id': self.app.cookies['_session_id'],
                       },
-                      extra_environ=dict(username=str('test-admin')))
+                      extra_environ=dict(username='test-admin'))
 
         assert M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
         r = self.app.post('/auth/preferences/update_emails',
@@ -328,7 +327,7 @@ class TestAuth(TestController):
                               'password': 'foo',
                               '_session_id': self.app.cookies['_session_id'],
                           },
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
 
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
         assert M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).count() == 1
@@ -362,7 +361,7 @@ class TestAuth(TestController):
                               'password': 'foo',
                               '_session_id': self.app.cookies['_session_id'],
                           },
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
         assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  ' \
@@ -405,7 +404,7 @@ class TestAuth(TestController):
                               'password': 'foo',
                               '_session_id': self.app.cookies['_session_id'],
                           },
-                          extra_environ=dict(username=str('test-user-1')))
+                          extra_environ=dict(username='test-user-1'))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
         assert json.loads(self.webflash(r))['message'] == 'A verification email has been sent.  ' \
@@ -429,7 +428,7 @@ class TestAuth(TestController):
                                   'password': 'foo',
                                   '_session_id': self.app.cookies['_session_id'],
                               },
-                              extra_environ=dict(username=str('test-user-1')))
+                              extra_environ=dict(username='test-user-1'))
             assert json.loads(self.webflash(r))['status'] == 'ok'
 
             r = self.app.post('/auth/preferences/update_emails',
@@ -441,7 +440,7 @@ class TestAuth(TestController):
                                   'password': 'foo',
                                   '_session_id': self.app.cookies['_session_id'],
                               },
-                              extra_environ=dict(username=str('test-user-1')))
+                              extra_environ=dict(username='test-user-1'))
 
             assert json.loads(self.webflash(r))['status'] == 'error'
             assert json.loads(self.webflash(r))['message'] == 'You cannot claim more than 2 email addresses.'
@@ -467,7 +466,7 @@ class TestAuth(TestController):
 
         r = self.app.post('/auth/send_verification_link',
                           params=dict(a=email_address, _session_id=self.app.cookies['_session_id']),
-                          extra_environ=dict(username=str('test-user-1'), _session_id=self.app.cookies['_session_id']))
+                          extra_environ=dict(username='test-user-1', _session_id=self.app.cookies['_session_id']))
 
         assert json.loads(self.webflash(r))['status'] == 'ok'
         assert json.loads(self.webflash(r))['message'] == 'Verification link sent'
@@ -493,7 +492,7 @@ class TestAuth(TestController):
         self.app.post('/auth/send_verification_link',
                       params=dict(a=email_address,
                                   _session_id=self.app.cookies['_session_id']),
-                      extra_environ=dict(username=str('test-user')))
+                      extra_environ=dict(username='test-user'))
 
         user1 = M.User.query.get(username='test-user-1')
         user1.claim_address(email_address)
@@ -502,7 +501,7 @@ class TestAuth(TestController):
         ThreadLocalORMSession.flush_all()
         # Verify first email with the verification link
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
-                         extra_environ=dict(username=str('test-user')))
+                         extra_environ=dict(username='test-user'))
 
         assert json.loads(self.webflash(r))['status'] == 'error'
         email = M.EmailAddress.find(dict(email=email_address, claimed_by_user_id=user._id)).first()
@@ -524,23 +523,23 @@ class TestAuth(TestController):
         self.app.post('/auth/send_verification_link',
                       params=dict(a=email_address,
                                   _session_id=self.app.cookies['_session_id']),
-                      extra_environ=dict(username=str('test-user')))
+                      extra_environ=dict(username='test-user'))
 
         # logged out, gets redirected to login page
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
 
         # logged in as someone else
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
-                         extra_environ=dict(username=str('test-admin')))
+                         extra_environ=dict(username='test-admin'))
         assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
         assert_equal('You must be logged in to the correct account', json.loads(self.webflash(r))['message'])
         assert_equal('warning', json.loads(self.webflash(r))['status'])
 
         # logged in as correct user
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
-                         extra_environ=dict(username=str('test-user')))
+                         extra_environ=dict(username='test-user'))
         assert_in('confirmed', json.loads(self.webflash(r))['message'])
         assert_equal('ok', json.loads(self.webflash(r))['status'])
 
@@ -605,7 +604,7 @@ class TestAuth(TestController):
         self.app.get('/').follow()  # establish session
         change_params['_session_id'] = self.app.cookies['_session_id']
         self.app.post('/auth/preferences/update_emails',
-                      extra_environ=dict(username=str('test-admin')),
+                      extra_environ=dict(username='test-admin'),
                       params=change_params)
 
         u = M.User.by_username('test-admin')
@@ -623,7 +622,7 @@ class TestAuth(TestController):
         # Change password
         with audits('Password changed', user=True):
             self.app.post('/auth/preferences/change_password',
-                          extra_environ=dict(username=str('test-admin')),
+                          extra_environ=dict(username='test-admin'),
                           params={
                               'oldpw': 'foo',
                               'pw': 'asdfasdf',
@@ -654,7 +653,7 @@ class TestAuth(TestController):
 
         # Attempt change password with weak pwd
         r = self.app.post('/auth/preferences/change_password',
-                          extra_environ=dict(username=str('test-admin')),
+                          extra_environ=dict(username='test-admin'),
                           params={
                               'oldpw': 'foo',
                               'pw': 'password',
@@ -665,7 +664,7 @@ class TestAuth(TestController):
         assert 'Unsafe' in str(r.headers)
 
         r = self.app.post('/auth/preferences/change_password',
-                          extra_environ=dict(username=str('test-admin')),
+                          extra_environ=dict(username='test-admin'),
                           params={
                               'oldpw': 'foo',
                               'pw': '3j84rhoirwnoiwrnoiw',
@@ -683,7 +682,7 @@ class TestAuth(TestController):
     @td.with_user_project('test-admin')
     def test_prefs(self, gen_message_id, sendsimplemail):
         r = self.app.get('/auth/preferences/',
-                         extra_environ=dict(username=str('test-admin')))
+                         extra_environ=dict(username='test-admin'))
         # check preconditions of test data
         assert 'test@example.com' not in r
         assert 'test-admin@users.localhost' in r
@@ -693,7 +692,7 @@ class TestAuth(TestController):
         # add test@example
         with td.audits('New email address: test@example.com', user=True):
             r = self.app.post('/auth/preferences/update_emails',
-                              extra_environ=dict(username=str('test-admin')),
+                              extra_environ=dict(username='test-admin'),
                               params={
                                   'new_addr.addr': 'test@example.com',
                                   'new_addr.claim': 'Claim Address',
@@ -710,7 +709,7 @@ class TestAuth(TestController):
         # remove test-admin@users.localhost
         with td.audits('Email address deleted: test-admin@users.localhost', user=True):
             r = self.app.post('/auth/preferences/update_emails',
-                              extra_environ=dict(username=str('test-admin')),
+                              extra_environ=dict(username='test-admin'),
                               params={
                                   'addr-1.ord': '1',
                                   'addr-1.delete': 'on',
@@ -738,7 +737,7 @@ class TestAuth(TestController):
                               params={'preferences.display_name': 'Admin',
                                       '_session_id': self.app.cookies['_session_id'],
                                       },
-                              extra_environ=dict(username=str('test-admin')))
+                              extra_environ=dict(username='test-admin'))
 
     @td.with_user_project('test-admin')
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -754,21 +753,21 @@ class TestAuth(TestController):
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to claim new email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
         new_email_params['password'] = 'bad pass'
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to claim new email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
         new_email_params['password'] = 'foo'  # valid password
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to claim new email', self.webflash(r))
         assert_in('test@example.com', r.follow())
 
@@ -780,14 +779,14 @@ class TestAuth(TestController):
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
         change_primary_params['password'] = 'bad pass'
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
         change_primary_params['password'] = 'foo'  # valid password
@@ -795,7 +794,7 @@ class TestAuth(TestController):
         self.app.get('/auth/preferences/')  # let previous 'flash' message cookie get used up
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to change primary address', self.webflash(r))
         assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test@example.com')
 
@@ -815,26 +814,26 @@ class TestAuth(TestController):
         }
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to delete an email', self.webflash(r))
         assert_in('test@example.com', r.follow())
         remove_email_params['password'] = 'bad pass'
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_in('You must provide your current password to delete an email', self.webflash(r))
         assert_in('test@example.com', r.follow())
         remove_email_params['password'] = 'foo'  # vallid password
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
-                          extra_environ=dict(username=str('test-admin')))
+                          extra_environ=dict(username='test-admin'))
         assert_not_in('You must provide your current password to delete an email', self.webflash(r))
         assert_not_in('test@example.com', r.follow())
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
         r = self.app.get('/auth/subscriptions/',
-                         extra_environ=dict(username=str('test-admin')))
+                         extra_environ=dict(username='test-admin'))
         subscriptions = M.Mailbox.query.find(dict(
             user_id=c.user._id, is_flash=False)).all()
         # make sure page actually lists all the user's subscriptions
@@ -869,7 +868,7 @@ class TestAuth(TestController):
 
     def _find_subscriptions_form(self, r):
         form = None
-        for f in six.itervalues(r.forms):
+        for f in r.forms.values():
             if f.action == 'update_subscriptions':
                 form = f
                 break
@@ -878,7 +877,7 @@ class TestAuth(TestController):
 
     def _find_subscriptions_field(self, form, subscribed=False):
         field_name = None
-        for k, v in six.iteritems(form.fields):
+        for k, v in form.fields.items():
             if subscribed:
                 check = v and v[0].value == 'on'
             else:
@@ -891,7 +890,7 @@ class TestAuth(TestController):
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions_subscribe(self):
         resp = self.app.get('/auth/subscriptions/',
-                            extra_environ=dict(username=str('test-admin')))
+                            extra_environ=dict(username='test-admin'))
         form = self._find_subscriptions_form(resp)
         # find not subscribed tool, subscribe and verify
         field_name = self._find_subscriptions_field(form, subscribed=False)
@@ -907,7 +906,7 @@ class TestAuth(TestController):
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions_unsubscribe(self):
         resp = self.app.get('/auth/subscriptions/',
-                            extra_environ=dict(username=str('test-admin')))
+                            extra_environ=dict(username='test-admin'))
         form = self._find_subscriptions_form(resp)
         field_name = self._find_subscriptions_field(form, subscribed=True)
         s_id = ObjectId(form.fields[field_name + '.subscription_id'][0].value)
@@ -1070,7 +1069,7 @@ class TestAuth(TestController):
             dict(user_id=user._id, project_id=p._id)).count() == 0
 
         self.app.get('/p/test/admin/permissions',
-                     extra_environ=dict(username=str('aaa')), status=403)
+                     extra_environ=dict(username='aaa'), status=403)
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() <= 1
 
@@ -1083,7 +1082,7 @@ class TestAuth(TestController):
         sess = session(user)
         assert not user.disabled
         r = self.app.get('/p/test/admin/',
-                         extra_environ={'username': str('test-admin')})
+                         extra_environ={'username': 'test-admin'})
         assert_equal(r.status_int, 200, 'Redirect to %s' % r.location)
         user.disabled = True
         sess.save(user)
@@ -1091,7 +1090,7 @@ class TestAuth(TestController):
         user = M.User.query.get(username='test-admin')
         assert user.disabled
         r = self.app.get('/p/test/admin/',
-                         extra_environ={'username': str('test-admin')})
+                         extra_environ={'username': 'test-admin'})
         assert_equal(r.status_int, 302)
         assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
 
@@ -1526,9 +1525,9 @@ class TestPasswordReset(TestController):
     test_primary_email = 'testprimaryaddr@mail.com'
 
     def setUp(self):
-        super(TestPasswordReset, self).setUp()
+        super().setUp()
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
     @patch('allura.model.User.send_password_reset_email')
     @patch('allura.lib.plugin.LocalAuthenticationProvider.resend_verification_link')
@@ -1797,7 +1796,7 @@ class TestOAuth(TestController):
                                   }, status=302)
         r = self.app.get('/auth/oauth/')
         assert_equal(r.forms[1].action, 'generate_access_token')
-        r = r.forms[1].submit(extra_environ={'username': str('test-user')})  # not the right user
+        r = r.forms[1].submit(extra_environ={'username': 'test-user'})  # not the right user
         assert_in("Invalid app ID", self.webflash(r))                   # gets an error
         r = self.app.get('/auth/oauth/')                                # do it again
         r = r.forms[1].submit()                                         # as correct user
@@ -2115,7 +2114,7 @@ class TestDisableAccount(TestController):
     def test_not_authenticated(self):
         r = self.app.get(
             '/auth/disable/',
-            extra_environ={'username': str('*anonymous')})
+            extra_environ={'username': '*anonymous'})
         assert_equal(r.status_int, 302)
         assert_equal(r.location,
                      'http://localhost/auth/?return_to=%2Fauth%2Fdisable%2F')
@@ -2157,21 +2156,21 @@ class TestDisableAccount(TestController):
 
 class TestPasswordExpire(TestController):
     def login(self, username='test-user', pwd='foo', query_string=''):
-        extra = {'username': str('*anonymous'), 'REMOTE_ADDR': str('127.0.0.1')}
+        extra = {'username': '*anonymous', 'REMOTE_ADDR': '127.0.0.1'}
         r = self.app.get('/auth/' + query_string, extra_environ=extra)
 
         f = r.forms[0]
         encoded = self.app.antispam_field_names(f)
         f[encoded['username']] = username
         f[encoded['password']] = pwd
-        return f.submit(extra_environ={'username': str('*anonymous')})
+        return f.submit(extra_environ={'username': '*anonymous'})
 
     def assert_redirects(self, where='/'):
-        resp = self.app.get(where, extra_environ={'username': str('test-user')}, status=302)
+        resp = self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
         assert_equal(resp.location, 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': where}))
 
     def assert_not_redirects(self, where='/neighborhood'):
-        self.app.get(where, extra_environ={'username': str('test-user')}, status=200)
+        self.app.get(where, extra_environ={'username': 'test-user'}, status=200)
 
     def test_disabled(self):
         r = self.login()
@@ -2223,7 +2222,7 @@ class TestPasswordExpire(TestController):
             r = self.login()
             assert_true(self.expired(r))
             self.assert_redirects()
-            r = self.app.get('/auth/logout', extra_environ={'username': str('test-user')})
+            r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
             assert_false(self.expired(r))
             self.assert_not_redirects()
 
@@ -2237,12 +2236,12 @@ class TestPasswordExpire(TestController):
             user = M.User.by_username('test-user')
             old_update_time = user.last_password_updated
             old_password = user.password
-            r = self.app.get('/auth/pwd_expired', extra_environ={'username': str('test-user')})
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
             f = r.forms[0]
             f['oldpw'] = 'foo'
             f['pw'] = 'qwerty'
             f['pw2'] = 'qwerty'
-            r = f.submit(extra_environ={'username': str('test-user')}, status=302)
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
             assert_equal(r.location, 'http://localhost/')
             assert_false(self.expired(r))
             user = M.User.by_username('test-user')
@@ -2277,12 +2276,12 @@ class TestPasswordExpire(TestController):
             session(user).flush(user)
 
             # Change expired password
-            r = self.app.get('/auth/pwd_expired', extra_environ={'username': str('test-user')})
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
             f = r.forms[0]
             f['oldpw'] = 'foo'
             f['pw'] = 'qwerty'
             f['pw2'] = 'qwerty'
-            r = f.submit(extra_environ={'username': str('test-user')}, status=302)
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
             assert_equal(r.location, 'http://localhost/')
 
             user = M.User.by_username('test-user')
@@ -2296,12 +2295,12 @@ class TestPasswordExpire(TestController):
         user = M.User.by_username('test-user')
         old_update_time = user.last_password_updated
         old_password = user.password
-        r = self.app.get('/auth/pwd_expired', extra_environ={'username': str('test-user')})
+        r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
         f = r.forms[0]
         f['oldpw'] = oldpw
         f['pw'] = pw
         f['pw2'] = pw2
-        r = f.submit(extra_environ={'username': str('test-user')})
+        r = f.submit(extra_environ={'username': 'test-user'})
         assert_true(self.expired(r))
         user = M.User.by_username('test-user')
         assert_equal(user.last_password_updated, old_update_time)
@@ -2340,20 +2339,20 @@ class TestPasswordExpire(TestController):
             # but if user tries to go directly there anyway, intercept and redirect back
             self.assert_redirects(where=return_to)
 
-            r = self.app.get('/auth/pwd_expired', extra_environ={'username': str('test-user')})
+            r = self.app.get('/auth/pwd_expired', extra_environ={'username': 'test-user'})
             f = r.forms[0]
             f['oldpw'] = 'foo'
             f['pw'] = 'qwerty'
             f['pw2'] = 'qwerty'
             f['return_to'] = return_to
-            r = f.submit(extra_environ={'username': str('test-user')}, status=302)
+            r = f.submit(extra_environ={'username': 'test-user'}, status=302)
             assert_equal(r.location, 'http://localhost/p/test/tickets/?milestone=1.0&page=2')
 
 
 class TestCSRFProtection(TestController):
     def test_blocks_invalid(self):
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True'), 'REMOTE_ADDR': str('127.0.0.1')}
+        self.app.extra_environ = {'disable_auth_magic': 'True', 'REMOTE_ADDR': '127.0.0.1'}
 
         # regular login
         r = self.app.get('/auth/')
@@ -2581,7 +2580,7 @@ class TestTwoFactor(TestController):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
@@ -2618,7 +2617,7 @@ class TestTwoFactor(TestController):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
@@ -2649,7 +2648,7 @@ class TestTwoFactor(TestController):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login
         r = self.app.get('/auth/')
@@ -2679,7 +2678,7 @@ class TestTwoFactor(TestController):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')
@@ -2726,7 +2725,7 @@ class TestTwoFactor(TestController):
         self._init_totp()
 
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login
         r = self.app.get('/auth/?return_to=/p/foo')

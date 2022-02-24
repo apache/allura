@@ -388,13 +388,13 @@ class TestSubscriptionTypes(unittest.TestCase):
 
             def __init__(self, factory=list, *a, **kw):
                 self._factory = factory
-                super(OrderedDefaultDict, self).__init__(*a, **kw)
+                super().__init__(*a, **kw)
 
             def __getitem__(self, key):
                 if key not in self:
                     value = self[key] = self._factory()
                 else:
-                    value = super(OrderedDefaultDict, self).__getitem__(key)
+                    value = super().__getitem__(key)
                 return value
 
         notifications = mocked_notification.query.find.return_value.all.return_value = [

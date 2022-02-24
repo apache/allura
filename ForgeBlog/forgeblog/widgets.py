@@ -61,8 +61,7 @@ class BlogPostForm(forms.ForgeForm):
         ])
 
     def resources(self):
-        for r in super(BlogPostForm, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.JSScript('''
             $(function() {
                 $('input[name="title"]').focus();
@@ -74,7 +73,7 @@ class NewPostForm(BlogPostForm):
 
     @property
     def fields(self):
-        fields = super(NewPostForm, self).fields
+        fields = super().fields
         fields.append(ew.Checkbox(name='subscribe'))
         return fields
 
@@ -94,7 +93,7 @@ class ViewPostForm(ew_core.Widget):
         base_post=None)
 
     def __call__(self, **kw):
-        kw = super(ViewPostForm, self).__call__(**kw)
+        kw = super().__call__(**kw)
         kw['subscribed'] = \
             M.Mailbox.subscribed(artifact=kw.get('value'))
         return kw

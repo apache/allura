@@ -59,7 +59,7 @@ class GitHubProjectNameValidator(fev.FancyValidator):
         user_name = state.full_dict.get('user_name', '')
         user_name = state.full_dict.get('gh_user_name', user_name).strip()
         project_name = value.strip()
-        full_project_name = '{}/{}'.format(user_name, project_name)
+        full_project_name = f'{user_name}/{project_name}'
         if not re.match(r'^[a-zA-Z0-9-_.]+$', project_name):
             raise fev.Invalid(self.message('invalid', state), value, state)
 
@@ -83,12 +83,12 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         user = kw.pop('user', None)
         if user:
             self.token = user.get_tool_data('GitHubProjectImport', 'token')
-        super(GitHubProjectExtractor, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def add_token(self, url):
         headers = {}
         if self.token:
-            headers['Authorization'] = 'token {}'.format(self.token)
+            headers['Authorization'] = f'token {self.token}'
         return url, headers
 
     def wait_for_limit_reset(self, headers):
@@ -107,7 +107,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
             url, auth_headers = self.add_token(url)
             # need to use unredirected_hdrs for Authorization for APIs that redirect to an AWS file asset which has
             # separate authentication added automatically
-            resp = super(GitHubProjectExtractor, self).urlopen(url,
+            resp = super().urlopen(url,
                                                                headers=headers, unredirected_hdrs=auth_headers, **kw)
         except six.moves.urllib.error.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
@@ -143,12 +143,11 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return json.loads(page.read().decode('utf8')), next_page_url
 
     def get_page(self, page_name_or_url, **kw):
-        page = super(GitHubProjectExtractor, self).get_page(
+        page = super().get_page(
             page_name_or_url, **kw)
         page, next_page_url = page
         while next_page_url:
-            p = super(GitHubProjectExtractor,
-                      self).get_page(next_page_url, **kw)
+            p = super().get_page(next_page_url, **kw)
             p, next_page_url = p
             page += p
         self.page = page
@@ -180,8 +179,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
     def iter_comments(self, issue):
         comments_url = issue['comments_url']
         comments = self.get_page(comments_url)
-        for comment in comments:
-            yield comment
+        yield from comments
 
     def iter_events(self, issue):
         events_url = issue['events_url']
@@ -216,13 +214,13 @@ def valid_access_token(access_token, scopes_required=None):
 def access_token_details(access_token):
     # https://developer.github.com/v3/apps/oauth_applications/#check-a-token
     client_id = config['github_importer.client_id']
-    url = 'https://api.github.com/applications/{}/token'.format(client_id)
+    url = f'https://api.github.com/applications/{client_id}/token'
     return requests.post(url, auth=oauth_app_basic_auth(config), timeout=10, json=dict(
         access_token=access_token,
     ))
 
 
-class GitHubOAuthMixin(object):
+class GitHubOAuthMixin:
     '''
     Support for github oauth web application flow.  This is an "OAuth App" not a "GitHub App"
     '''

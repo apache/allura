@@ -24,7 +24,6 @@ sstress - an SMTP stress testing tool
 import smtplib
 import threading
 import time
-from six.moves import range
 
 C = 5
 N = 1000

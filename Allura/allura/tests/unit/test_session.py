@@ -28,8 +28,6 @@ from allura.model.session import (
     ArtifactSessionExtension,
     substitute_extensions,
 )
-from six.moves import range
-from six.moves import map
 
 
 def test_extensions_cm():

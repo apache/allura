@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -152,7 +151,7 @@ class TestRootController(SVNTestController):
 
         resp = self.app.get('/src/7/')
         print('file links on /src/7/ are:\n\t{}'.format(
-            '\n\t'.join(six.text_type(t) for t in resp.html.select('.inline-diff a'))))
+            '\n\t'.join(str(t) for t in resp.html.select('.inline-diff a'))))
         file_url = resp.html.find("a", string="/with%2Furlquote-literal.txt")['href']
         file_resp = self.app.get(file_url)
         assert_in('%2F means /',

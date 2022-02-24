@@ -105,11 +105,11 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False, commits_
         from allura.webhooks import RepoPushWebhookSender
         by_branches, by_tags = _group_commits(repo, commit_ids)
         params = []
-        for b, commits in six.iteritems(by_branches):
-            ref = 'refs/heads/{}'.format(b) if b != '__default__' else None
+        for b, commits in by_branches.items():
+            ref = f'refs/heads/{b}' if b != '__default__' else None
             params.append(dict(commit_ids=commits, ref=ref))
-        for t, commits in six.iteritems(by_tags):
-            ref = 'refs/tags/{}'.format(t)
+        for t, commits in by_tags.items():
+            ref = f'refs/tags/{t}'
             params.append(dict(commit_ids=commits, ref=ref))
         if params:
             RepoPushWebhookSender().send(params)
@@ -246,7 +246,7 @@ def send_notifications(repo, commit_ids):
 
     if commit_msgs:
         if len(commit_msgs) > 1:
-            subject = "{} new commits to {}".format(len(commit_msgs), repo.app.config.options.mount_label)
+            subject = f"{len(commit_msgs)} new commits to {repo.app.config.options.mount_label}"
         else:
             commit = commit_msgs[0]
             subject = 'New commit {} by {}'.format(commit['shorthand_id'], commit['author'])

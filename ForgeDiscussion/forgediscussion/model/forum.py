@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 class Forum(M.Discussion):
 
     class __mongometa__:
-        name = str('forum')
+        name = 'forum'
 
     query: 'Query[Forum]'
 
@@ -80,7 +80,7 @@ class Forum(M.Discussion):
         if c.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
             local_part = self.shortname.replace('/', '.')
-            return '{}@{}{}'.format(local_part, domain, config.common_suffix)
+            return f'{local_part}@{domain}{config.common_suffix}'
         else:
             return tg_config.get('forgemail.return_path')
 
@@ -104,7 +104,7 @@ class Forum(M.Discussion):
         # Delete the subforums
         for sf in self.subforums:
             sf.delete()
-        super(Forum, self).delete()
+        super().delete()
 
     def get_discussion_thread(self, data=None):
         # If the data is a reply, use the parent's thread
@@ -139,13 +139,13 @@ class Forum(M.Discussion):
                 h.absurl('{}admin/{}/forums'.format(
                     self.project.url(),
                     self.app.config.options.mount_point)))
-        return super(Forum, self).get_mail_footer(notification, toaddr)
+        return super().get_mail_footer(notification, toaddr)
 
 
 class ForumThread(M.Thread):
 
     class __mongometa__:
-        name = str('forum_thread')
+        name = 'forum_thread'
         indexes = [
             'flags',
             'discussion_id',
@@ -187,7 +187,7 @@ class ForumThread(M.Thread):
         return self
 
     def subscribed(self, user=None, include_parents=True):
-        subbed = super(ForumThread, self).subscribed(user=user, include_parents=include_parents)
+        subbed = super().subscribed(user=user, include_parents=include_parents)
         if subbed:
             return subbed
         if include_parents:
@@ -200,7 +200,7 @@ class ForumThread(M.Thread):
         return False
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
-        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id, **kw)
+        post = super().post(text, message_id=message_id, parent_id=parent_id, **kw)
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
@@ -219,7 +219,7 @@ class ForumThread(M.Thread):
 class ForumPostHistory(M.PostHistory):
 
     class __mongometa__:
-        name = str('post_history')
+        name = 'post_history'
 
     query: 'Query[ForumPostHistory]'
 
@@ -229,7 +229,7 @@ class ForumPostHistory(M.PostHistory):
 class ForumPost(M.Post):
 
     class __mongometa__:
-        name = str('forum_post')
+        name = 'forum_post'
         history_class = ForumPostHistory
         indexes = [
             'timestamp',  # for the posts_24hr site_stats query
@@ -268,7 +268,7 @@ class ForumAttachment(M.DiscussionAttachment):
     PostClass = ForumPost
 
     class __mongometa__:
-        polymorphic_identity = str('ForumAttachment')
+        polymorphic_identity = 'ForumAttachment'
 
     query: 'Query[ForumAttachment]'
 

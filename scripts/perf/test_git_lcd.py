@@ -42,7 +42,7 @@ def main(repo_dir, sub_dir='', commit=None):
     commit = Mock(_id=commit or git.head)
     paths = glob(os.path.join(repo_dir, sub_dir, '*'))
     paths = [path.replace(repo_dir + '/', '', 1) for path in paths]
-    print("Timing LCDs for {} at {}".format(paths, commit._id))
+    print(f"Timing LCDs for {paths} at {commit._id}")
     with benchmark() as timer:
         result = git.last_commit_ids(commit, paths)
     pprint(result)

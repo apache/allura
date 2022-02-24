@@ -52,7 +52,7 @@ class MilestonesAdmin(ffw.SortableTable):
         css_class='add', field_type='button', value='New Milestone')
 
     def prepare_context(self, context):
-        response = super(MilestonesAdmin, self).prepare_context(context)
+        response = super().prepare_context(context)
         if 'value' in response:
             for milestone_data in response['value']:
                 if 'name' in milestone_data:
@@ -60,8 +60,7 @@ class MilestonesAdmin(ffw.SortableTable):
         return response
 
     def resources(self):
-        for r in super(MilestonesAdmin, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.CSSScript('''div.state-field table{ width: 700px; }''')
 
 
@@ -97,8 +96,7 @@ class CustomFieldAdmin(ew.CompoundField):
     template = 'jinja:forgetracker:templates/tracker_widgets/custom_field_admin.html'
 
     def resources(self):
-        for r in super(CustomFieldAdmin, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.JSLink('tracker_js/custom-fields.js')
 
     fields = [
@@ -128,8 +126,7 @@ class TrackerFieldAdmin(f.ForgeForm):
                 onclick='window.location.reload(); return false;'))
 
     def resources(self):
-        for rr in self.fields['custom_fields'].resources():
-            yield rr
+        yield from self.fields['custom_fields'].resources()
 
 
 class CustomFieldDisplay(ew.CompoundField):
@@ -149,5 +146,4 @@ class TrackerFieldDisplay(f.ForgeForm):
         custom_fields = CustomFieldsDisplay()
 
     def resources(self):
-        for rr in self.fields['custom_fields'].resources():
-            yield rr
+        yield from self.fields['custom_fields'].resources()

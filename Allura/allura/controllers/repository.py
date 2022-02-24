@@ -76,7 +76,7 @@ class RepoRootController(BaseController, FeedController):
     def get_feed(self, project, app, user):
         query = dict(project_id=project._id, app_config_id=app.config._id)
         pname, repo = (project.shortname, app.config.options.mount_label)
-        title = '{} {} changes'.format(pname, repo)
+        title = f'{pname} {repo} changes'
         description = 'Recent changes to {} repository in {} project'.format(
             repo, pname)
         return FeedArgs(query, title, app.url, description=description)
@@ -266,7 +266,7 @@ class RepoRootController(BaseController, FeedController):
         parents = {}
         children = defaultdict(list)
         dates = {}
-        for row, (oid, ci) in enumerate(six.iteritems(commits_by_id)):
+        for row, (oid, ci) in enumerate(commits_by_id.items()):
             parents[oid] = list(ci.parent_ids)
             dates[oid] = ci.committed.date
             for p_oid in ci.parent_ids:
@@ -346,7 +346,7 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
             ]}
 
 
-class MergeRequestsController(object):
+class MergeRequestsController:
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/merge_requests.html')
@@ -367,7 +367,7 @@ class MergeRequestsController(object):
         return MergeRequestController(num), remainder
 
 
-class MergeRequestController(object):
+class MergeRequestController:
     log_widget = SCMLogWidget(show_paging=False)
     thread_widget = w.Thread(
         page=None, limit=None, page_size=None, count=None,
@@ -589,7 +589,7 @@ class MergeRequestController(object):
         }
 
 
-class RefsController(object):
+class RefsController:
 
     def __init__(self, BranchBrowserClass):
         self.BranchBrowserClass = BranchBrowserClass
@@ -606,7 +606,7 @@ class RefsController(object):
         return self.BranchBrowserClass(ref), remainder
 
 
-class CommitsController(object):
+class CommitsController:
 
     @expose()
     def _lookup(self, ci=None, *remainder):
@@ -796,7 +796,7 @@ class TreeBrowser(BaseController, DispatchIndex):
         next = h.really_unicode(unquote(next))
         if not rest:
             # Might be a file rather than a dir
-            filename = h.really_unicode(request.path_info.rsplit(str('/'))[-1])
+            filename = h.really_unicode(request.path_info.rsplit('/')[-1])
             if filename:
                 try:
                     obj = self._tree[filename]
@@ -808,7 +808,7 @@ class TreeBrowser(BaseController, DispatchIndex):
                         self._tree,
                         filename), rest
         elif rest == ('index', ):
-            rest = (request.path_info.rsplit(str('/'))[-1],)
+            rest = (request.path_info.rsplit('/')[-1],)
         try:
             tree = self._tree[next]
         except KeyError:
@@ -846,7 +846,7 @@ class FileBrowser(BaseController):
         if kw.pop('format', 'html') == 'raw':
             if self._blob.size > asint(tg.config.get('scm.download.max_file_bytes', 30*1000*1000)):
                 large_size = self._blob.size
-                flash('File is {}.  Too large to download.'.format(h.do_filesizeformat(large_size)),
+                flash(f'File is {h.do_filesizeformat(large_size)}.  Too large to download.',
                       'warning', sticky=True)
                 raise exc.HTTPForbidden
             else:
@@ -877,15 +877,15 @@ class FileBrowser(BaseController):
     def raw(self, **kw):
         content_type = self._blob.content_type
         filename = self._blob.name
-        response.headers['Content-Type'] = str('')
+        response.headers['Content-Type'] = ''
         response.content_type = str(content_type)
         if self._blob.content_encoding is not None:
             content_encoding = self._blob.content_encoding
-            response.headers['Content-Encoding'] = str('')
+            response.headers['Content-Encoding'] = ''
             response.content_encoding = str(content_encoding)
         response.headers.add(
-            str('Content-Disposition'),
-            str('attachment;filename="%s"') % h.urlquote(filename))
+            'Content-Disposition',
+            'attachment;filename="%s"' % h.urlquote(filename))
         return iter(self._blob)
 
     def diff(self, prev_commit, fmt=None, prev_file=None, **kw):
@@ -933,7 +933,7 @@ class FileBrowser(BaseController):
         else:
             # py2 unified_diff can handle some unicode but not consistently, so best to do str() and ensure_str()
             # (can drop it on py3)
-            diff = str('').join(difflib.unified_diff(la, lb, six.ensure_str(adesc), six.ensure_str(bdesc)))
+            diff = ''.join(difflib.unified_diff(la, lb, six.ensure_str(adesc), six.ensure_str(bdesc)))
         return dict(a=a, b=b, diff=diff)
 
 

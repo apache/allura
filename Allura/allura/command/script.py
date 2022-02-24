@@ -28,7 +28,6 @@ from ming.orm import session
 from allura.lib import helpers as h
 from allura.lib import utils
 from . import base
-from io import open
 
 
 class ScriptCommand(base.Command):

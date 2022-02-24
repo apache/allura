@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -364,7 +362,7 @@ def test_user_track_active():
     assert_equal(c.user.last_access['session_ip'], None)
     assert_equal(c.user.last_access['session_ua'], None)
 
-    req = Mock(headers={'User-Agent': str('browser')}, remote_addr='addr')
+    req = Mock(headers={'User-Agent': 'browser'}, remote_addr='addr')
     c.user.track_active(req)
     c.user = M.User.by_username(c.user.username)
     assert_not_equal(c.user.last_access['session_date'], None)
@@ -470,7 +468,7 @@ def test_user_backfill_login_details():
     assert_equal(details[1].ua, 'TestBrowser/57')
 
 
-class TestAuditLog(object):
+class TestAuditLog:
 
     def test_message_html(self):
         al = h.auditlog_user('our message <script>alert(1)</script>')

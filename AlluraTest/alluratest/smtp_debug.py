@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -20,8 +18,8 @@
 from smtpd import DebuggingServer
 
 
-class BetterDebuggingServer(DebuggingServer, object):
+class BetterDebuggingServer(DebuggingServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data, **kwargs):
         print('TO: ' + ', '.join(rcpttos))
-        super(BetterDebuggingServer, self).process_message(peer, mailfrom, rcpttos, data)
+        super().process_message(peer, mailfrom, rcpttos, data)

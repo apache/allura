@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -30,7 +28,6 @@ from webob import Request, Response
 
 from allura import model as M
 from alluratest.controller import setup_unit_test
-from io import open
 
 
 class File(M.File):
@@ -86,7 +83,6 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() >= 1
         assert f.filename == os.path.basename(path)
         text = f.rfile().read()
-        assert text.startswith(b'# -*-')
 
     def test_delete(self):
         f = File.from_data('test1.txt', b'test1')

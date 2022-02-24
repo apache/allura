@@ -24,7 +24,7 @@ from alluratest.controller import setup_basic_test
 from allura import model as M
 
 
-class TestReindexProjects(object):
+class TestReindexProjects:
 
     def setUp(self):
         setup_basic_test()
@@ -48,7 +48,7 @@ class TestReindexProjects(object):
         assert_equal(M.MonQTask.query.find({'task_name': 'allura.tasks.index_tasks.add_projects'}).count(), 1)
 
 
-class TestReindexUsers(object):
+class TestReindexUsers:
 
     def setUp(self):
         setup_basic_test()

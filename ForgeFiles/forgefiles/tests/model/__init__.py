@@ -29,7 +29,7 @@ def setUp():
     setup_basic_test()
 
 
-class FilesTestWithModel(object):
+class FilesTestWithModel:
 
     def setUp(self):
         bootstrap.wipe_database()

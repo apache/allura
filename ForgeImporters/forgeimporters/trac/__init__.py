@@ -28,7 +28,7 @@ class TracURLValidator(validators.URL):
     }
 
     def _to_python(self, value, state=None):
-        value = super(TracURLValidator, self)._to_python(value, state)
+        value = super()._to_python(value, state)
         # remove extraneous /wiki/[PageName] from the end of the URL
         url_parts = value.split('/')
         try:
@@ -42,7 +42,7 @@ class TracURLValidator(validators.URL):
 
         try:
             resp = requests.head(value, allow_redirects=True, timeout=10)
-        except IOError:
+        except OSError:
             # fall through to 'raise' below
             pass
         else:

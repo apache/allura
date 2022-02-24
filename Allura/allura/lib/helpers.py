@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -45,8 +43,6 @@ import cgi
 import emoji
 import tg
 import six
-from six.moves import range
-from six.moves import map
 import cchardet as chardet
 import pkg_resources
 from formencode.validators import FancyValidator
@@ -213,13 +209,13 @@ def _attempt_encodings(s, encodings):
                 if six.PY3 and isinstance(s, bytes):
                     # special handling for bytes (avoid b'asdf' turning into "b'asfd'")
                     return s.decode('utf-8')
-                return six.text_type(s)  # try default encoding, and handle other types like int, etc
+                return str(s)  # try default encoding, and handle other types like int, etc
             else:
-                return six.text_type(s, enc)
+                return str(s, enc)
         except (UnicodeDecodeError, LookupError):
             pass
     # Return the repr of the str -- should always be safe
-    return six.text_type(repr(str(s)))[1:-1]
+    return str(repr(str(s)))[1:-1]
 
 
 def really_unicode(s):
@@ -295,7 +291,7 @@ def push_config(obj, **kw):
 
     saved_attrs = {}
     new_attrs = []
-    for k, v in six.iteritems(kw):
+    for k, v in kw.items():
         try:
             saved_attrs[k] = getattr(obj, k)
         except AttributeError:
@@ -304,7 +300,7 @@ def push_config(obj, **kw):
     try:
         yield obj
     finally:
-        for k, v in six.iteritems(saved_attrs):
+        for k, v in saved_attrs.items():
             setattr(obj, k, v)
         for k in new_attrs:
             delattr(obj, k)
@@ -363,7 +359,7 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
     if app_config_id is None:
         c.app = p.app_instance(mount_point)
     else:
-        if isinstance(app_config_id, six.string_types):
+        if isinstance(app_config_id, str):
             app_config_id = ObjectId(app_config_id)
         app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
@@ -405,7 +401,7 @@ def encode_keys(d):
     a valid kwargs argument'''
     return {
         six.ensure_str(k): v
-        for k, v in six.iteritems(d)}
+        for k, v in d.items()}
 
 
 def vardec(fun):
@@ -428,7 +424,7 @@ def convert_bools(conf, prefix=''):
     :return: dict
     '''
     def convert_value(val):
-        if isinstance(val, six.string_types):
+        if isinstance(val, str):
             if val.strip().lower() == 'true':
                 return True
             elif val.strip().lower() == 'false':
@@ -437,7 +433,7 @@ def convert_bools(conf, prefix=''):
 
     return {
         k: (convert_value(v) if k.startswith(prefix) else v)
-        for k, v in six.iteritems(conf)
+        for k, v in conf.items()
     }
 
 
@@ -447,10 +443,7 @@ def nonce(length=4):
 
 def cryptographic_nonce(length=40):
     rand_bytes = os.urandom(length)
-    if six.PY2:
-        rand_ints = tuple(map(ord, rand_bytes))
-    else:
-        rand_ints = tuple(rand_bytes)
+    rand_ints = tuple(rand_bytes)
     hex_format = '%.2x' * length
     return hex_format % rand_ints
 
@@ -573,12 +566,12 @@ def gen_message_id(_id=None):
 class ProxiedAttrMeta(type):
 
     def __init__(cls, name, bases, dct):
-        for v in six.itervalues(dct):
+        for v in dct.values():
             if isinstance(v, attrproxy):
                 v.cls = cls
 
 
-class attrproxy(object):
+class attrproxy:
     cls = None
 
     def __init__(self, *attrs):
@@ -606,18 +599,18 @@ class attrproxy(object):
 class promised_attrproxy(attrproxy):
 
     def __init__(self, promise, *attrs):
-        super(promised_attrproxy, self).__init__(*attrs)
+        super().__init__(*attrs)
         self._promise = promise
 
     def __repr__(self):
-        return '<promised_attrproxy for {}>'.format(self.attrs)
+        return f'<promised_attrproxy for {self.attrs}>'
 
     def __getattr__(self, name):
         cls = self._promise()
         return getattr(cls, name)
 
 
-class proxy(object):
+class proxy:
 
     def __init__(self, obj):
         self._obj = obj
@@ -637,15 +630,15 @@ class fixed_attrs_proxy(proxy):
     """
     def __init__(self, obj, **kw):
         self._obj = obj
-        for k, v in six.iteritems(kw):
+        for k, v in kw.items():
             setattr(self, k, v)
 
 
-@tg.expose(content_type=str('text/plain'))
+@tg.expose(content_type='text/plain')
 def json_validation_error(controller, **kwargs):
     exc = request.validation['exception']
     result = dict(status='Validation Error',
-                  errors={fld: str(err) for fld, err in six.iteritems(exc.error_dict)},
+                  errors={fld: str(err) for fld, err in exc.error_dict.items()},
                   value=exc.value,
                   params=kwargs)
     response.status = 400
@@ -673,7 +666,7 @@ def config_with_prefix(d, prefix):
     with the prefix stripped
     '''
     plen = len(prefix)
-    return {k[plen:]: v for k, v in six.iteritems(d)
+    return {k[plen:]: v for k, v in d.items()
                 if k.startswith(prefix)}
 
 
@@ -752,7 +745,7 @@ def _add_table_line_numbers_to_text(txt):
         linenumbers + '<td class="code"><div class="codehilite"><pre>'
     for line_num, line in enumerate(lines, 1):
         markup_text = markup_text + \
-            '<span id="l{}" class="code_block">{}</span>'.format(line_num, line)
+            f'<span id="l{line_num}" class="code_block">{line}</span>'
     markup_text = markup_text + '</pre></div></td></tr></tbody></table>'
     return markup_text
 
@@ -834,7 +827,7 @@ def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
 
 @contextmanager
 def log_output(log):
-    class Writer(object):
+    class Writer:
 
         def __init__(self, func):
             self.func = func
@@ -940,7 +933,7 @@ def ming_config(**conf):
         yield
     finally:
         Session._datastores = datastores
-        for name, session in six.iteritems(Session._registry):
+        for name, session in Session._registry.items():
             session.bind = datastores.get(name, None)
             session._name = name
 
@@ -998,7 +991,7 @@ def null_contextmanager(returning=None, *args, **kw):
     yield returning
 
 
-class exceptionless(object):
+class exceptionless:
 
     '''Decorator making the decorated function return 'error_result' on any
     exceptions rather than propagating exceptions up the stack
@@ -1038,7 +1031,7 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
     while True:
         try:
             return six.moves.urllib.request.urlopen(url, timeout=timeout)
-        except IOError as e:
+        except OSError as e:
             no_retry = isinstance(e, six.moves.urllib.error.HTTPError) and e.code not in codes
             if attempts < retries and not no_retry:
                 attempts += 1
@@ -1049,7 +1042,7 @@ def urlopen(url, retries=3, codes=(408, 500, 502, 503, 504), timeout=None):
                 except Exception:
                     url_string = url
                 if hasattr(e, 'filename') and url_string != e.filename:
-                    url_string += ' => {}'.format(e.filename)
+                    url_string += f' => {e.filename}'
                 if timeout is None:
                     timeout = socket.getdefaulttimeout()
                 if getattr(e, 'fp', None):
@@ -1086,15 +1079,7 @@ def plain2markdown(txt, preserve_multiple_spaces=False, has_html_entities=False)
     return txt
 
 
-if six.PY2:
-    # https://stackoverflow.com/a/35968897
-    # in python 3.7 this can just be a defaultdict, probably
-    class OrderedDefaultDict(OrderedDict, defaultdict):
-        def __init__(self, default_factory=None, *args, **kwargs):
-            super(OrderedDefaultDict, self).__init__(*args, **kwargs)
-            self.default_factory = default_factory
-else:
-    OrderedDefaultDict = defaultdict  # py3.7 dicts are always ordered
+OrderedDefaultDict = defaultdict  # py3.7 dicts are always ordered
 
 
 def iter_entry_points(group, *a, **kw):
@@ -1121,7 +1106,7 @@ def iter_entry_points(group, *a, **kw):
         by_name = OrderedDefaultDict(list)
         for ep in entry_points:
             by_name[ep.name].append(ep)
-        for name, eps in six.iteritems(by_name):
+        for name, eps in by_name.items():
             ep_count = len(eps)
             if ep_count == 1:
                 yield eps[0]
@@ -1130,7 +1115,7 @@ def iter_entry_points(group, *a, **kw):
 
     def subclass(entry_points):
         loaded = {ep: ep.load() for ep in entry_points}
-        for ep, cls in six.iteritems(loaded):
+        for ep, cls in loaded.items():
             others = list(loaded.values())[:]
             others.remove(cls)
             if all([issubclass(cls, other) for other in others]):
@@ -1213,9 +1198,9 @@ def auditlog_user(message, *args, **kwargs):
     """
     from allura import model as M
     ip_address = utils.ip_address(request)
-    message = 'IP Address: {}\nUser-Agent: {}\n'.format(ip_address, request.user_agent) + message
+    message = f'IP Address: {ip_address}\nUser-Agent: {request.user_agent}\n' + message
     if c.user and kwargs.get('user') and kwargs['user'] != c.user:
-        message = 'Done by user: {}\n'.format(c.user.username) + message
+        message = f'Done by user: {c.user.username}\n' + message
     return M.AuditLog.log_user(message, *args, **kwargs)
 
 
@@ -1269,7 +1254,7 @@ def base64uri(content_or_image, image_format='PNG', mimetype='image/png', window
         content = content.replace('\n', '\r\n')
 
     data = six.ensure_text(base64.b64encode(six.ensure_binary(content)))
-    return 'data:{};base64,{}'.format(mimetype, data)
+    return f'data:{mimetype};base64,{data}'
 
 
 def slugify(name, allow_periods=False):
@@ -1289,7 +1274,7 @@ email_re = re.compile(r'(([a-z0-9_]|\-|\.)+)@([\w\.-]+)', re.IGNORECASE)
 def hide_private_info(message):
     if asbool(tg.config.get('hide_private_info', 'true')) and message:
         hidden = email_re.sub(r'\1@...', message)
-        if type(message) not in six.string_types:
+        if type(message) not in (str,):
             # custom subclass like markupsafe.Markup, convert to that type again
             hidden = type(message)(hidden)
         return hidden
@@ -1315,7 +1300,7 @@ def username_project_url(user_or_username):
     if not user_or_username:
         return url
 
-    if isinstance(user_or_username, six.string_types):
+    if isinstance(user_or_username, str):
         class UserName:
             def __init__(self, username):
                 self.username = username

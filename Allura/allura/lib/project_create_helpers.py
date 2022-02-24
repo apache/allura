@@ -31,7 +31,6 @@ import requests
 import formencode
 import six
 from six.moves.urllib.parse import urlparse
-from six.moves import range
 
 from allura.lib.helpers import slugify
 from allura.model import Neighborhood
@@ -269,13 +268,13 @@ def create_project_with_attrs(p, nbhd, update=False, ensure_tools=False):
     project.notifications_disabled = True
 
     if ensure_tools and 'tools' in project_template:
-        for i, tool in enumerate(six.iterkeys(project_template['tools'])):
+        for i, tool in enumerate(project_template['tools'].keys()):
             tool_config = project_template['tools'][tool]
             if project.app_instance(tool_config['mount_point']):
                 continue
             tool_options = tool_config.get('options', {})
-            for k, v in six.iteritems(tool_options):
-                if isinstance(v, six.string_types):
+            for k, v in tool_options.items():
+                if isinstance(v, str):
                     tool_options[k] = string.Template(v).safe_substitute(
                         project.root_project.__dict__.get('root_project', {}))
             project.install_app(tool,

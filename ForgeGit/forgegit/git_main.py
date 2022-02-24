@@ -53,7 +53,7 @@ class ForgeGitApp(RepositoryApp):
     forkable = True
 
     def __init__(self, project, config):
-        super(ForgeGitApp, self).__init__(project, config)
+        super().__init__(project, config)
         self.root = RepoRootController()
         self.api_root = RepoRestController()
         self.root.ref = RefsController(BranchBrowser)
@@ -75,12 +75,12 @@ class ForgeGitApp(RepositoryApp):
             c.project.url() + 'admin/' + self.config.options.mount_point +
             '/' + 'set_default_branch_name',
             className='admin_modal'))
-        links += super(ForgeGitApp, self).admin_menu()
+        links += super().admin_menu()
         return links
 
     def install(self, project):
         '''Create repo object for this tool'''
-        super(ForgeGitApp, self).install(project)
+        super().install(project)
         repo = GM.Repository(
             name=self.config.options.mount_point + '.git',
             tool='git',

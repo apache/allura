@@ -84,7 +84,7 @@ class ForgeFeedbackApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        super(ForgeFeedbackApp, self).install(project)
+        super().install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
@@ -106,7 +106,7 @@ class ForgeFeedbackApp(Application):
         """Remove all the tool's artifacts from the database"""
         app_config_id = {'app_config_id': c.app.config._id}
         TM.Feedback.query.remove(app_config_id)
-        super(ForgeFeedbackApp, self).uninstall(project)
+        super().uninstall(project)
 
 
 class RootController(BaseController, FeedController):

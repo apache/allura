@@ -52,7 +52,6 @@ from allura.lib.widgets.project_list import ProjectScreenshots
 
 from . import widgets as aw
 import six
-from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -102,7 +101,7 @@ class AdminApp(Application):
     @staticmethod
     def installable_tools_for(project):
         tools = []
-        for name, App in six.iteritems(g.entry_points['tool']):
+        for name, App in g.entry_points['tool'].items():
             cfg = M.AppConfig(project_id=project._id, tool_name=name)
             if App._installable(name, project.neighborhood, project.app_configs):
                 tools.append(dict(name=name, app=App))
@@ -186,7 +185,7 @@ class AdminApp(Application):
         json.dump(self.project, f, cls=jsonify.JSONEncoder, indent=2)
 
 
-class AdminExtensionLookup(object):
+class AdminExtensionLookup:
     @expose()
     def _lookup(self, name, *remainder):
         for ep_name in sorted(g.entry_points['admin'].keys()):
@@ -250,7 +249,7 @@ class ProjectAdminController(BaseController):
 
         trove_recommendations = {}
         for trove in base_troves:
-            config_name = 'trovecategories.admin.recommended.{}'.format(trove.shortname)
+            config_name = f'trovecategories.admin.recommended.{trove.shortname}'
             recommendation_pairs = aslist(config.get(config_name, []), ',')
             trove_recommendations[trove.shortname] = OrderedDict()
             for pair in recommendation_pairs:
@@ -618,7 +617,7 @@ class ProjectAdminController(BaseController):
                 App = g.entry_points['tool'][ep_name]
                 # pass only options which app expects
                 config_on_install = {
-                    k: v for (k, v) in six.iteritems(kw)
+                    k: v for (k, v) in kw.items()
                     if k in [o.name for o in App.options_on_install()]
                 }
                 new_app = c.project.install_app(
@@ -641,14 +640,14 @@ class ProjectAdminController(BaseController):
             new_app = self._update_mounts(subproject, tool, new, **kw)
             if new_app:
                 if getattr(new_app, 'tool_label', '') == 'External Link':
-                    flash('{} installed successfully.'.format(new_app.tool_label))
+                    flash(f'{new_app.tool_label} installed successfully.')
                 else:
                     new_url = new_app.url
                     if callable(new_url):  # subprojects have a method instead of property
                         new_url = new_url()
                     redirect(new_url)
         except forge_exc.ForgeError as exc:
-            flash('{}: {}'.format(exc.__class__.__name__, exc.args[0]),
+            flash(f'{exc.__class__.__name__}: {exc.args[0]}',
                   'error')
         if request.referer is not None and tool is not None and 'delete' in tool[0] and \
             re.search(c.project.url() + r'(admin\/|)' + tool[0]['mount_point']+ r'\/*',
@@ -720,7 +719,7 @@ class ProjectAdminRestController(BaseController):
                 c.project.app_config(mount_point).options.ordinal = int(ordinal)
             except AttributeError as e:
                 # Handle sub project
-                p = M.Project.query.get(shortname="{}/{}".format(c.project.shortname, mount_point),
+                p = M.Project.query.get(shortname=f"{c.project.shortname}/{mount_point}",
                                         neighborhood_id=c.project.neighborhood_id)
                 if p:
                     p.ordinal = int(ordinal)
@@ -998,9 +997,9 @@ class PermissionsController(BaseController):
             perm = args['id']
             new_group_ids = args.get('new', [])
             group_ids = args.get('value', [])
-            if isinstance(new_group_ids, six.string_types):
+            if isinstance(new_group_ids, str):
                 new_group_ids = [new_group_ids]
-            if isinstance(group_ids, six.string_types):
+            if isinstance(group_ids, str):
                 group_ids = [group_ids]
             # make sure the admin group has the admin permission
             if perm == 'admin':
@@ -1018,7 +1017,7 @@ class PermissionsController(BaseController):
             role_ids = list(map(ObjectId, group_ids + new_group_ids))
             permissions[perm] = role_ids
         c.project.acl = []
-        for perm, role_ids in six.iteritems(permissions):
+        for perm, role_ids in permissions.items():
             role_names = lambda ids: ','.join(sorted(
                 pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
             old_role_ids = old_permissions.get(perm, [])
@@ -1146,7 +1145,7 @@ class GroupsController(BaseController):
             return dict(error='User %s not found' % username)
         user_role = M.ProjectRole.by_user(user, upsert=True)
         if group._id in user_role.roles:
-            return dict(error='{} ({}) is already in the group {}.'.format(user.display_name, username, group.name))
+            return dict(error=f'{user.display_name} ({username}) is already in the group {group.name}.')
         M.AuditLog.log('add user %s to %s', username, group.name)
         user_role.roles.append(group._id)
         if group.name == 'Admin':
@@ -1170,7 +1169,7 @@ class GroupsController(BaseController):
             return dict(error='User %s not found' % username)
         user_role = M.ProjectRole.by_user(user)
         if not user_role or group._id not in user_role.roles:
-            return dict(error='{} ({}) is not in the group {}.'.format(user.display_name, username, group.name))
+            return dict(error=f'{user.display_name} ({username}) is not in the group {group.name}.')
         M.AuditLog.log('remove user %s from %s', username, group.name)
         user_role.roles.remove(group._id)
         if len(user_role.roles) == 0:

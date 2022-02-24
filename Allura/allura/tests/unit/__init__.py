@@ -23,7 +23,7 @@ def setUp(self):
     setup_basic_test()
 
 
-class MockPatchTestCase(object):
+class MockPatchTestCase:
     patches = []
 
     def setUp(self):
@@ -33,11 +33,11 @@ class MockPatchTestCase(object):
 
     def tearDown(self):
         for patch_instance in self._patch_instances:
-            patch_instance.__exit__()
+            patch_instance.__exit__(None, None, None)
 
 
 class WithDatabase(MockPatchTestCase):
 
     def setUp(self):
-        super(WithDatabase, self).setUp()
+        super().setUp()
         clear_all_database_tables()

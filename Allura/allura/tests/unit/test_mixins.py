@@ -19,7 +19,7 @@ from mock import Mock
 from allura.model import VotableArtifact
 
 
-class TestVotableArtifact(object):
+class TestVotableArtifact:
 
     def setUp(self):
         self.user1 = Mock()

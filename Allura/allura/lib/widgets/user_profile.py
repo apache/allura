@@ -64,7 +64,7 @@ class SendMessageForm(ForgeForm):
         reply_to_real_address = ew.Checkbox(label='Include my email address in the reply field for this message')
 
 
-class SectionsUtil(object):
+class SectionsUtil:
 
     @staticmethod
     def load_sections(app):
@@ -80,7 +80,7 @@ class SectionsUtil(object):
         return sections
 
 
-class SectionBase(object):
+class SectionBase:
     """
     This is the base class for sections in Profile tool and Dashboard.
     """

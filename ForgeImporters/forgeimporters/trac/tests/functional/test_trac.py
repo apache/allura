@@ -50,6 +50,6 @@ class TestTracImportController(TestController):
             )
 
     def test_import_with_phone_validation(self):
-        self.app.extra_environ = {'username': str('test-user')}
+        self.app.extra_environ = {'username': 'test-user'}
         with h.push_config(config, **{'project.verify_phone': 'true'}):
             self.test_submit()

@@ -45,7 +45,7 @@ class ForgeUserStatsCatController(BaseController):
 
     def __init__(self, category=None):
         self.category = category
-        super(ForgeUserStatsCatController, self).__init__()
+        super().__init__()
 
     @expose('jinja:forgeuserstats:templates/index.html')
     @with_trailing_slash

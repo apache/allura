@@ -28,7 +28,6 @@ from allura import version
 from allura.lib.search import search_app
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura.controllers import BaseController
-from six.moves import map
 
 log = logging.getLogger(__name__)
 

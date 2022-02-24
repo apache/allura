@@ -146,7 +146,7 @@ class ForgeDiscussionApp(Application):
         links = []
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
-        links += super(ForgeDiscussionApp, self).admin_menu()
+        links += super().admin_menu()
         return links
 
     def sidebar_menu(self):
@@ -234,7 +234,7 @@ class ForgeDiscussionApp(Application):
         DM.Forum.query.remove(dict(app_config_id=self.config._id))
         DM.ForumThread.query.remove(dict(app_config_id=self.config._id))
         DM.ForumPost.query.remove(dict(app_config_id=self.config._id))
-        super(ForgeDiscussionApp, self).uninstall(project)
+        super().uninstall(project)
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"forums": [')

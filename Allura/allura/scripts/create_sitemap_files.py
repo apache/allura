@@ -42,8 +42,6 @@ from tg import config
 from allura import model as M
 from allura.lib import security, utils
 from allura.scripts import ScriptTask
-from io import open
-from six.moves import range
 
 
 MAX_SITEMAP_URLS = 50000

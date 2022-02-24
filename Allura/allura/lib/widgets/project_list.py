@@ -41,7 +41,7 @@ class ProjectSummary(ew_core.Widget):
         )
 
     def prepare_context(self, context):
-        response = super(ProjectSummary, self).prepare_context(context)
+        response = super().prepare_context(context)
         value = response['value']
 
         if response['icon_url'] is None:
@@ -50,21 +50,21 @@ class ProjectSummary(ew_core.Widget):
         if response['accolades'] is None:
             response['accolades'] = value.accolades
 
-        if isinstance(response['columns'], six.text_type):
+        if isinstance(response['columns'], str):
             response['columns'] = int(response['columns'])
 
         true_list = ['true', 't', '1', 'yes', 'y']
-        if isinstance(response['show_proj_icon'], six.text_type):
+        if isinstance(response['show_proj_icon'], str):
             if response['show_proj_icon'].lower() in true_list:
                 response['show_proj_icon'] = True
             else:
                 response['show_proj_icon'] = False
-        if isinstance(response['show_download_button'], six.text_type):
+        if isinstance(response['show_download_button'], str):
             if response['show_download_button'].lower() in true_list:
                 response['show_download_button'] = True
             else:
                 response['show_download_button'] = False
-        if isinstance(response['show_awards_banner'], six.text_type):
+        if isinstance(response['show_awards_banner'], str):
             if response['show_awards_banner'].lower() in true_list:
                 response['show_awards_banner'] = True
             else:
@@ -88,7 +88,7 @@ class ProjectList(ew_core.Widget):
         )
 
     def prepare_context(self, context):
-        response = super(ProjectList, self).prepare_context(context)
+        response = super().prepare_context(context)
         cred = Credentials.get()
         projects = response['projects']
         cred.load_user_roles(c.user._id, *[p._id for p in projects])
@@ -102,14 +102,13 @@ class ProjectList(ew_core.Widget):
         if response['accolades_index'] is None and response['show_awards_banner']:
             response['accolades_index'] = M.Project.accolades_index(projects)
 
-        if isinstance(response['columns'], six.text_type):
+        if isinstance(response['columns'], str):
             response['columns'] = int(response['columns'])
 
         return response
 
     def resources(self):
-        for r in self.project_summary.resources():
-            yield r
+        yield from self.project_summary.resources()
 
 
 class ProjectScreenshots(ew_core.Widget):

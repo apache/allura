@@ -78,7 +78,7 @@ class IndexerSessionExtension(ManagedSessionExtension):
     def _objects_by_types(self, obj_list):
         result = defaultdict(list)
         for obj in obj_list:
-            class_path = '{}.{}'.format(type(obj).__module__, type(obj).__name__)
+            class_path = f'{type(obj).__module__}.{type(obj).__name__}'
             result[class_path].append(obj)
         return result
 
@@ -104,12 +104,12 @@ class IndexerSessionExtension(ManagedSessionExtension):
         for obj_list, action in actions:
             if obj_list:
                 types_objects_map = self._objects_by_types(obj_list)
-                for class_path, obj_list in six.iteritems(types_objects_map):
+                for class_path, obj_list in types_objects_map.items():
                     tasks = self.TASKS.get(class_path)
                     if tasks:
                         self._index_action(tasks, obj_list, action)
 
-        super(IndexerSessionExtension, self).after_flush(obj)
+        super().after_flush(obj)
 
 
 class ArtifactSessionExtension(ManagedSessionExtension):
@@ -135,7 +135,7 @@ class ArtifactSessionExtension(ManagedSessionExtension):
                 log.exception(
                     "Failed to update artifact references. Is this a borked project migration?")
             self.update_index(self.objects_deleted, arefs)
-        super(ArtifactSessionExtension, self).after_flush(obj)
+        super().after_flush(obj)
 
     def update_index(self, objects_deleted, arefs):
         # Post delete and add indexing operations

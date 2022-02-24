@@ -63,7 +63,7 @@ class CreateTroveCategoriesCommand(base.Command):
             sys.exit("Couldn't find TroveCategory with trove_cat_id=%s" %
                      trove_cat_id)
         for t in ts:
-            for k, v in six.iteritems(attr_dict):
+            for k, v in attr_dict.items():
                 setattr(t, k, v)
 
     # patching to avoid a *lot* of event hooks firing, and taking a long long time

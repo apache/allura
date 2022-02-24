@@ -44,12 +44,12 @@ class TicketSearchResults(ew_core.SimpleForm):
         lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
     def __init__(self, filters, *args, **kw):
-        super(TicketSearchResults, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.filters = {}
-        for name, field in six.iteritems(filters):
+        for name, field in filters.items():
             self.filters[name] = options = [{
                 'value': val,
-                'label': '{} ({})'.format(val, count),
+                'label': f'{val} ({count})',
                 'selected': False
             } for val, count in field]
             options.append({'value': '', 'label': 'Not set', 'selected': False})
@@ -61,8 +61,7 @@ class TicketSearchResults(ew_core.SimpleForm):
         yield ew.CSSLink('tracker_css/jquery.multiselect.css')
         yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')
-        for r in super(TicketSearchResults, self).resources():
-            yield r
+        yield from super().resources()
 
 
 class MassEdit(ew_core.SimpleForm):
@@ -83,8 +82,7 @@ class MassEdit(ew_core.SimpleForm):
 
     def resources(self):
         yield ew.CSSLink('tracker_css/ticket-list.css')
-        for r in super(MassEdit, self).resources():
-            yield r
+        yield from super().resources()
 
 
 class MassEditForm(ew_core.Widget):

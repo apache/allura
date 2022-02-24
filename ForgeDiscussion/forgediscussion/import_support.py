@@ -50,11 +50,11 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
                     c.app.config.options.mount_point,
                     w)
 
-    for name, forum in six.iteritems(json.forums):
+    for name, forum in json.forums.items():
         log.info('... %s has %d threads with %d total posts',
-                 name, len(forum.threads), sum(len(t) for t in six.itervalues(forum.threads)))
+                 name, len(forum.threads), sum(len(t) for t in forum.threads.values()))
 
-    for name, forum in six.iteritems(json.forums):
+    for name, forum in json.forums.items():
         log.info('... creating %s/%s: %s',
                  c.project.shortname,
                  c.app.config.options.mount_point,
@@ -64,7 +64,7 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
             name=forum['name'],
             shortname=forum['name'],
             description=forum['description'])
-        for tid, posts in six.iteritems(forum.threads):
+        for tid, posts in forum.threads.items():
             rest, head = posts[:-1], posts[-1]
             t = DM.ForumThread.new(
                 _id=tid,
@@ -116,7 +116,7 @@ class AlluraUser(S.FancySchemaItem):
         self.mapping = mapping
         self.default_username = default_username
         self.warnings = warnings
-        super(AlluraUser, self).__init__(**kw)
+        super().__init__(**kw)
 
     def _validate(self, value, **kw):
         value = S.String().validate(value)

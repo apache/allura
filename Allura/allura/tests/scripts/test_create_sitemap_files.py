@@ -29,7 +29,7 @@ from allura.lib import helpers as h
 from allura.scripts.create_sitemap_files import CreateSitemapFiles
 
 
-class TestCreateSitemapFiles(object):
+class TestCreateSitemapFiles:
 
     def setUp(self):
         setup_basic_test()

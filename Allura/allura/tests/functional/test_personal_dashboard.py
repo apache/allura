@@ -30,7 +30,6 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import setup_global_objects, setup_unit_test
 from forgetracker.tests.functional.test_root import TrackerTestController
-from six.moves import map
 
 
 class TestPersonalDashboard(TestController):
@@ -87,7 +86,7 @@ class TestTicketsSection(TrackerTestController):
 class TestMergeRequestsSection(TestController):
 
     def setUp(self):
-        super(TestMergeRequestsSection, self).setUp()
+        super().setUp()
         setup_unit_test()
         self.setup_with_tools()
         mr= self.merge_request

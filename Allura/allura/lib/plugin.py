@@ -34,7 +34,6 @@ from base64 import b64encode
 from datetime import datetime, timedelta
 import calendar
 import six
-from six.moves import range
 
 try:
     import ldap
@@ -63,7 +62,7 @@ from allura.tasks.index_tasks import solr_del_project_artifacts
 log = logging.getLogger(__name__)
 
 
-class AuthenticationProvider(object):
+class AuthenticationProvider:
 
     '''
     An interface to provide authentication services for Allura.
@@ -364,7 +363,7 @@ class AuthenticationProvider(object):
         :rtype: str
         '''
         # default implementation for any providers that haven't implemented this newer method yet
-        return '/{}/'.format(self.user_project_shortname(user))
+        return f'/{self.user_project_shortname(user)}/'
 
     def user_by_project_shortname(self, shortname, include_disabled=False):
         '''
@@ -596,7 +595,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         # in contrast with above user_project_shortname()
         # we allow the URL of a user-project to match the username exactly, even if user-project's name is different
         # (nbhd_lookup_first_path will figure it out)
-        return '/u/{}/'.format(user.username)
+        return f'/u/{user.username}/'
 
     def user_by_project_shortname(self, shortname, include_disabled=False):
         from allura import model as M
@@ -728,7 +727,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         salt = self._get_salt(salt_len) if salt is None else salt
         encrypted = crypt.crypt(
             six.ensure_str(password),
-            '${}$rounds={}${}'.format(algorithm, rounds, salt))
+            f'${algorithm}$rounds={rounds}${salt}')
         return b'{CRYPT}%s' % encrypted.encode('utf-8')
 
     def by_username(self, username):
@@ -774,10 +773,10 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                                                                                                 'display_name'),
                                         })
             else:
-                log.debug('LdapAuth: no user {} found in local mongo'.format(username))
+                log.debug(f'LdapAuth: no user {username} found in local mongo')
                 raise exc.HTTPUnauthorized()
         elif user.disabled or user.pending:
-            log.debug('LdapAuth: user {} is disabled or pending in Allura'.format(username))
+            log.debug(f'LdapAuth: user {username} is disabled or pending in Allura')
             raise exc.HTTPUnauthorized()
         return user
 
@@ -797,7 +796,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             con.unbind_s()
             return True
         except (ldap.INVALID_CREDENTIALS, ldap.UNWILLING_TO_PERFORM, ldap.NO_SUCH_OBJECT):
-            log.debug('LdapAuth: could not authenticate {}'.format(username), exc_info=True)
+            log.debug(f'LdapAuth: could not authenticate {username}', exc_info=True)
         return False
 
     def user_project_shortname(self, user):
@@ -832,7 +831,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         return super().recover_password(user)
 
 
-class ProjectRegistrationProvider(object):
+class ProjectRegistrationProvider:
     '''
     Project registration services for Allura.  This is a full implementation
     and the default.  Extend this class with your own if you need to add more
@@ -934,10 +933,10 @@ class ProjectRegistrationProvider(object):
         res = g.phone_service.check(request_id, pin)
         if res.get('status') == 'ok':
             user.set_tool_data('phone_verification', number_hash=number_hash)
-            msg = 'Phone verification succeeded. Hash: {}'.format(number_hash)
+            msg = f'Phone verification succeeded. Hash: {number_hash}'
             h.auditlog_user(msg, user=user)
         else:
-            msg = 'Phone verification failed. Hash: {}'.format(number_hash)
+            msg = f'Phone verification failed. Hash: {number_hash}'
             h.auditlog_user(msg, user=user)
         return res
 
@@ -1019,7 +1018,7 @@ class ProjectRegistrationProvider(object):
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict(
-                '{} already exists in nbhd {}'.format(shortname, neighborhood._id))
+                f'{shortname} already exists in nbhd {neighborhood._id}')
 
     def index_project(self, project):
         """
@@ -1084,8 +1083,8 @@ class ProjectRegistrationProvider(object):
             for i, tool in enumerate(project_template['tools'].keys()):
                 tool_config = project_template['tools'][tool]
                 tool_options = tool_config.get('options', {})
-                for k, v in six.iteritems(tool_options):
-                    if isinstance(v, six.string_types):
+                for k, v in tool_options.items():
+                    if isinstance(v, str):
                         tool_options[k] = \
                             string.Template(v).safe_substitute(
                                 p.__dict__.get('root_project', {}))
@@ -1259,8 +1258,8 @@ class ProjectRegistrationProvider(object):
                 return None, 'Project not found'
             if cnt == 1:
                 return q.first(), None
-            return None, 'Too many matches for project: {}'.format(cnt)
-        n = Neighborhood.query.get(url_prefix='/{}/'.format(url[0]))
+            return None, f'Too many matches for project: {cnt}'
+        n = Neighborhood.query.get(url_prefix=f'/{url[0]}/')
         if not n:
             return None, 'Neighborhood not found'
         p = Project.query.get(neighborhood_id=n._id, shortname=n.shortname_prefix + url[1])
@@ -1272,7 +1271,7 @@ class ProjectRegistrationProvider(object):
         return (p, 'Project not found' if p is None else None)
 
 
-class ThemeProvider(object):
+class ThemeProvider:
 
     '''
     Theme information for Allura.  This is a full implementation
@@ -1328,7 +1327,7 @@ class ThemeProvider(object):
         '''
         if theme_name is None:
             theme_name = config.get('theme', 'allura')
-        return g.resource_manager.absurl('theme/{}/{}'.format(theme_name, href))
+        return g.resource_manager.absurl(f'theme/{theme_name}/{href}')
 
     @LazyProperty
     def personal_data_form(self):
@@ -1491,7 +1490,7 @@ class ThemeProvider(object):
             Takes an instance of class Application, or else a string.
             Expected to be overriden by derived Themes.
         """
-        if isinstance(app, six.text_type):
+        if isinstance(app, str):
             app = str(app)
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:
@@ -1554,8 +1553,8 @@ class ThemeProvider(object):
 
         if note_to_show:
             cookie_chunks = []
-            for note_id, views_closed in six.iteritems(cookie_info):
-                cookie_chunks.append('{}-{}-{}'.format(note_id, views_closed[0], views_closed[1]))
+            for note_id, views_closed in cookie_info.items():
+                cookie_chunks.append(f'{note_id}-{views_closed[0]}-{views_closed[1]}')
             set_cookie_value = '_'.join(sorted(cookie_chunks))
             return note_to_show, set_cookie_value
 
@@ -1598,7 +1597,7 @@ class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
 
 
-class UserPreferencesProvider(object):
+class UserPreferencesProvider:
 
     '''
     An interface for user preferences, like display_name and email_address
@@ -1746,7 +1745,7 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
         else:
             con.unbind_s()
         if not rs:
-            log.warning('LdapUserPref: No user record found for: {}'.format(username))
+            log.warning(f'LdapUserPref: No user record found for: {username}')
             return ''
         user_dn, user_attrs = rs[0]
         ldap_attr = self.fields[pref_name]
@@ -1773,7 +1772,7 @@ class LdapUserPreferencesProvider(UserPreferencesProvider):
             return LocalUserPreferencesProvider().set_pref(user, pref_name, pref_value)
 
 
-class AdminExtension(object):
+class AdminExtension:
 
     """
     A base class for extending the admin areas in Allura.
@@ -1806,7 +1805,7 @@ class AdminExtension(object):
         pass
 
 
-class SiteAdminExtension(object):
+class SiteAdminExtension:
     """
     A base class for extending the site admin area in Allura.
 
@@ -1836,7 +1835,7 @@ class SiteAdminExtension(object):
         pass
 
 
-class ImportIdConverter(object):
+class ImportIdConverter:
 
     '''
     An interface to convert to and from import_id values for indexing,

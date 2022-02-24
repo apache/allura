@@ -36,7 +36,6 @@ from forgeimporters.trac.tickets import (
     TracTicketImportController,
     TracImportSupport,
 )
-from io import open
 
 
 class TestTracTicketImporter(TestCase):
@@ -113,7 +112,7 @@ class TestTracTicketImportController(TestController, TestCase):
 
     def setUp(self):
         """Mount Trac import controller on the Tracker admin controller"""
-        super(TestTracTicketImportController, self).setUp()
+        super().setUp()
         from forgetracker.tracker_main import TrackerAdminController
         self.importer = TrackerAdminController._importer = TracTicketImportController(TracTicketImporter())
 

@@ -34,7 +34,7 @@ from forgefeedback import feedback_main
 class TestFeedbackApp(FeedbackTestWithModel):
 
     def setUp(self):
-        super(TestFeedbackApp, self).setUp()
+        super().setUp()
         c.user = User(username='test-user')
         h.set_context('test', 'feedback', neighborhood='Projects')
 

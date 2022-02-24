@@ -29,8 +29,6 @@ import json
 from six.moves.configparser import ConfigParser, NoOptionError
 import webbrowser
 import oauth2 as oauth
-from io import open
-from six.moves import input
 
 
 def main():
@@ -119,7 +117,7 @@ def make_oauth_client(base_url):
 
     # save oauth token for later use
     cp.write(open(config_file, 'w'))
-    print('Saving oauth tokens in {} for later re-use'.format(config_file))
+    print(f'Saving oauth tokens in {config_file} for later re-use')
     print()
 
     access_token = oauth.Token(oauth_token, oauth_token_secret)

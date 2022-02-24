@@ -88,7 +88,7 @@ def main(options):
 def update_project(options, user, project, replace_users=None):
     project_role = M.ProjectRole.by_name(options.group, project=project)
     if not project_role:
-        return "Couldn't find group (ProjectRole) with name '{}' in {}".format(options.group, project.url())
+        return f"Couldn't find group (ProjectRole) with name '{options.group}' in {project.url()}"
 
     found_any_replace_users = False
     for replace_user in replace_users:

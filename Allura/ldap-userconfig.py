@@ -21,7 +21,6 @@ import os
 import sys
 import pwd
 import grp
-from io import open
 
 
 def main():

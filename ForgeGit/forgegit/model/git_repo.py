@@ -41,8 +41,6 @@ from ming.utils import LazyProperty
 from allura.lib import helpers as h
 from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
-from io import open
-from six.moves import zip
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -54,7 +52,7 @@ gitdb.util.mman = gitdb.util.mman.__class__(
     max_open_handles=128)
 
 
-class GitLibCmdWrapper(object):
+class GitLibCmdWrapper:
 
     def __init__(self, client):
         self.client = client
@@ -72,7 +70,7 @@ class Repository(M.Repository):
     type_s = 'Git Repository'
 
     class __mongometa__:
-        name = str('git-repository')
+        name = 'git-repository'
 
     query: 'Query[Repository]'
 
@@ -81,10 +79,10 @@ class Repository(M.Repository):
         return GitImplementation(self)
 
     def suggested_clone_dest_path(self):
-        return super(Repository, self).suggested_clone_dest_path()[:-4]
+        return super().suggested_clone_dest_path()[:-4]
 
     def clone_url(self, category, username=''):
-        clone_url = super(Repository, self).clone_url(category, username)
+        clone_url = super().clone_url(category, username)
         if clone_url.endswith('.git'):
             clone_url = clone_url[:-4]
         return clone_url
@@ -505,7 +503,7 @@ class GitImplementation(M.RepositoryImplementation):
         odds = oid[1::2]
         binsha = b''
         for e, o in zip(evens, odds):
-            binsha += six.int2byte(int(e + o, 16))
+            binsha += bytes((int(e + o, 16),))
         return git.Object.new_from_sha(self._git, binsha)
 
     def rev_parse(self, rev):
@@ -577,7 +575,7 @@ class GitImplementation(M.RepositoryImplementation):
             try:
                 hex_sha = ref.commit.hexsha
             except (ValueError, AssertionError) as e:
-                log.debug("Found invalid sha: {}".format(ref), exc_info=e)
+                log.debug(f"Found invalid sha: {ref}", exc_info=e)
                 continue
             refs.append(Object(name=ref.name, object_id=hex_sha))
         time_taken = time() - start_time
@@ -772,7 +770,7 @@ class GitImplementation(M.RepositoryImplementation):
                 id_only=False))
 
 
-class _OpenedGitBlob(object):
+class _OpenedGitBlob:
     CHUNK_SIZE = 4096
 
     def __init__(self, stream):

@@ -21,7 +21,7 @@ from alluratest.tools import assert_not_equal
 from allura.lib.custom_middleware import CORSMiddleware
 
 
-class TestCORSMiddleware(object):
+class TestCORSMiddleware:
 
     def setUp(self):
         self.app = MagicMock()

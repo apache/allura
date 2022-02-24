@@ -22,7 +22,7 @@ from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-class TestActivityObject_Functional(object):
+class TestActivityObject_Functional:
     # NOTE not for unit tests, this class sets up all the junk
 
     def setUp(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -48,7 +46,6 @@ import allura
 # needed for tg.configuration to work
 from allura.lib import app_globals, helpers
 from allura.lib.package_path_loader import PackagePathLoader
-from six.moves import filter
 
 log = logging.getLogger(__name__)
 
@@ -84,13 +81,12 @@ class AlluraJinjaRenderer(JinjaRenderer):
                 import pylibmc
                 from jinja2 import MemcachedBytecodeCache
                 client = pylibmc.Client([config['memcached_host']])
-                bcc_prefix = 'jinja2/{}/'.format(jinja2.__version__)
-                if six.PY3:
-                    bcc_prefix += 'py{}{}/'.format(sys.version_info.major, sys.version_info.minor)
+                bcc_prefix = f'jinja2/{jinja2.__version__}/'
+                bcc_prefix += f'py{sys.version_info.major}{sys.version_info.minor}/'
                 bcc = MemcachedBytecodeCache(client, prefix=bcc_prefix)
             elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
-                bcc = FileSystemBytecodeCache(pattern='__jinja2_{}_%s.cache'.format(jinja2.__version__))
+                bcc = FileSystemBytecodeCache(pattern=f'__jinja2_{jinja2.__version__}_%s.cache')
         except Exception:
             log.exception("Error encountered while setting up a" +
                           " %s-backed bytecode cache for Jinja" % cache_type)

@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 def main():
     for chunk in utils.chunked_find(M.User):
         for user in chunk:
-            print('Processing {}'.format(user.username))
+            print(f'Processing {user.username}')
             user.pending = False
             # Ming doesn't mark document for update, since pending is False
             # by default, even if field is missing from mongo

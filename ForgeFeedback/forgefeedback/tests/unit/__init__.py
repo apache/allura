@@ -29,7 +29,7 @@ def setUp():
     setup_basic_test()
 
 
-class FeedbackTestWithModel(object):
+class FeedbackTestWithModel:
 
     def setUp(self):
         bootstrap.wipe_database()

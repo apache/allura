@@ -69,14 +69,14 @@ class AlluraUserProperty(ForeignIdProperty):
     '''
 
     def __init__(self, **kwargs):
-        super(AlluraUserProperty, self).__init__('User', allow_none=True, **kwargs)
+        super().__init__('User', allow_none=True, **kwargs)
 
 
 class EmailAddress(MappedClass):
     re_format = re.compile(r'^.*\s+<(.*)>\s*$')
 
     class __mongometa__:
-        name = str('email_address')
+        name = 'email_address'
         session = main_orm_session
         indexes = ['nonce', ]
         unique_indexes = [('email', 'claimed_by_user_id'), ]
@@ -140,7 +140,7 @@ class EmailAddress(MappedClass):
         if '@' in addr:
             try:
                 user, domain = addr.strip().split('@')
-                return '{}@{}'.format(user, domain.lower())
+                return f'{user}@{domain.lower()}'
             except ValueError:
                 return addr.strip()
         else:
@@ -175,7 +175,7 @@ please visit the following URL:
 %s
 ''' % (self.email,
        self.claimed_by_user(include_pending=True).username,
-       h.absurl('/auth/verify_addr?a={}'.format(h.urlquote(self.nonce))),
+       h.absurl(f'/auth/verify_addr?a={h.urlquote(self.nonce)}'),
        )
         log.info('Verification email:\n%s', text)
         allura.tasks.mail_tasks.sendsimplemail.post(
@@ -189,7 +189,7 @@ please visit the following URL:
 
 class AuthGlobals(MappedClass):
     class __mongometa__:
-        name = str('auth_globals')
+        name = 'auth_globals'
         session = main_orm_session
 
     query: 'Query[AuthGlobals]'
@@ -240,7 +240,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     SALT_LEN = 8
 
     class __mongometa__:
-        name = str('user')
+        name = 'user'
         session = main_orm_session
         indexes = ['tool_data.AuthPasswordReset.hash']
         unique_indexes = ['username']
@@ -426,7 +426,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
                            hash=hash,
                            hash_expiry=datetime.utcnow() +
                                        timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
-        reset_url = h.absurl('/auth/forgotten_password/{}'.format(hash))
+        reset_url = h.absurl(f'/auth/forgotten_password/{hash}')
         return reset_url
 
     def can_send_user_message(self):
@@ -872,7 +872,7 @@ class ProjectRole(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('project_role')
+        name = 'project_role'
         unique_indexes = [('user_id', 'project_id', 'name')]
         indexes = [
             ('user_id',),
@@ -893,7 +893,7 @@ class ProjectRole(MappedClass):
 
     def __init__(self, **kw):
         assert 'project_id' in kw, 'Project roles must specify a project id'
-        super(ProjectRole, self).__init__(**kw)
+        super().__init__(**kw)
 
     def display(self):
         if self.name:
@@ -1008,7 +1008,7 @@ class ProjectRole(MappedClass):
 class AuditLog(MappedClass):
     class __mongometa__:
         session = main_orm_session
-        name = str('audit_log')
+        name = 'audit_log'
         indexes = [
             'project_id',
             'user_id',
@@ -1038,7 +1038,7 @@ class AuditLog(MappedClass):
         )
         with_br = h.nl2br_jinja_filter(self.message)
         message_bold = '<br>\n'.join([
-            line if line.startswith(standard_metadata_prefixes) else '<strong>{}</strong>'.format(line)
+            line if line.startswith(standard_metadata_prefixes) else f'<strong>{line}</strong>'
             for line in
             with_br.split('<br>\n')
         ])
@@ -1081,7 +1081,7 @@ class AuditLog(MappedClass):
 
     @classmethod
     def comment_user(cls, by, message, *args, **kwargs):
-        message = 'Comment by {}: {}'.format(by.username, message)
+        message = f'Comment by {by.username}: {message}'
         return cls.log_user(message, *args, **kwargs)
 
 
@@ -1093,7 +1093,7 @@ class UserLoginDetails(MappedClass):
     """
 
     class __mongometa__:
-        name = str('user_login_details')
+        name = 'user_login_details'
         session = main_explicitflush_orm_session
         indexes = ['user_id']
         unique_indexes = [('user_id', 'ip', 'ua'),  # DuplicateKeyError checked in add_login_detail

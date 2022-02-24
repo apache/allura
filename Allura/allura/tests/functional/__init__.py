@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -19,4 +17,3 @@
 
 """Functional test suite for the controllers of the application."""
 
-from __future__ import unicode_literals

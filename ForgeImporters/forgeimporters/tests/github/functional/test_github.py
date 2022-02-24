@@ -36,19 +36,19 @@ class TestGitHubImportController(TestController, TestCase):
 
     def test_login_overlay(self):
         r = self.app.get('/p/import_project/github/',
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         self.assertIn('GitHub Project Importer', r)
         self.assertIn('Login Required', r)
 
         r = self.app.post('/p/import_project/github/process',
-                          extra_environ=dict(username=str('*anonymous')), status=302)
+                          extra_environ=dict(username='*anonymous'), status=302)
         self.assertIn('/auth/', r.location)
 
 
 class TestGitHubOAuth(TestController):
 
     def setUp(self):
-        super(TestGitHubOAuth, self).setUp()
+        super().setUp()
         tg.config['github_importer.client_id'] = 'client_id'
         tg.config['github_importer.client_secret'] = 'secret'
 

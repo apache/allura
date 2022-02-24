@@ -91,7 +91,7 @@ class IRCBot(asynchat.async_chat):
     def set_nick(self, suffix=None):
         if suffix is None:
             suffix = '%.3d' % random.randint(0, 999)
-        nick = '{}-{}'.format(self.nick, suffix)
+        nick = f'{self.nick}-{suffix}'
         self.say('NICK ' + nick)
 
     def collect_incoming_data(self, data):
@@ -132,7 +132,7 @@ class IRCBot(asynchat.async_chat):
         self.push(s + b'\r\n')
 
     def notice(self, out, message):
-        self.say('NOTICE {} :{}'.format(out, message))
+        self.say(f'NOTICE {out} :{message}')
         CM.ChatMessage(
             sender=self.nick,
             channel=out,
@@ -181,7 +181,7 @@ class IRCBot(asynchat.async_chat):
             text = index['snippet_s'] or h.get_first(index, 'title')
             url = urljoin(
                 tg.config['base_url'], index['url_s'])
-            self.notice(rcpt, '[{}] - [{}]({})'.format(lnk.link, text, url))
+            self.notice(rcpt, f'[{lnk.link}] - [{text}]({url})')
 
     def log_channel(self, sender, cmd, rcpt, rest):
         if cmd not in ('NOTICE', 'PRIVMSG'):

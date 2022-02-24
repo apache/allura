@@ -118,7 +118,7 @@ class RepositoryApp(Application):
                 self.config.options.mount_point +
                 '/refresh'),
         ]
-        links += super(RepositoryApp, self).admin_menu()
+        links += super().admin_menu()
         [links.remove(l) for l in links[:] if l.label == 'Options']
         return links
 
@@ -223,7 +223,7 @@ class RepositoryApp(Application):
 
     def install(self, project):
         self.config.options['project_name'] = project.name
-        super(RepositoryApp, self).install(project)
+        super().install(project)
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
         role_auth = M.ProjectRole.authenticated()._id
@@ -285,7 +285,7 @@ class RepoAdminController(DefaultAdminController):
     @expose('jinja:allura:templates/repo/checkout_url.html')
     def checkout_url(self):
         return dict(app=self.app,
-                    merge_allowed=not asbool(config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))),
+                    merge_allowed=not asbool(config.get(f'scm.merge.{self.app.config.tool_name}.disabled')),
                     )
 
     @without_trailing_slash

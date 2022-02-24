@@ -31,7 +31,7 @@ def setUp():
     setup_basic_test()
 
 
-class TrackerTestWithModel(object):
+class TrackerTestWithModel:
 
     def setUp(self):
         bootstrap.wipe_database()

@@ -101,7 +101,7 @@ class TaskdCommand(base.Command):
 
     def worker(self):
         from allura import model as M
-        name = '{} pid {}'.format(os.uname()[1], os.getpid())
+        name = f'{os.uname()[1]} pid {os.getpid()}'
         wsgi_app = loadapp('config:%s#task' %
                            self.args[0], relative_to=os.getcwd())
         poll_interval = asint(tg.config.get('monq.poll_interval', 10))
@@ -175,7 +175,7 @@ class TaskCommand(base.Command):
     parser.add_option('-s', '--state', dest='state', default=None,
                       help='state of processes for "list", "count", or "purge" subcommands.  * means all. '
                            '(Defaults per command: %s)' %
-                           ", ".join(['{}="{}"'.format(k, v) for k, v in cmd_default_states.items()]))
+                           ", ".join([f'{k}="{v}"' for k, v in cmd_default_states.items()]))
     parser.add_option('-t', '--timeout', dest='timeout', type=int, default=60,
                       help='timeout (in seconds) for busy tasks (only applies to "timeout" command)')
     parser.add_option('--filter-name-prefix', dest='filter_name_prefix', default=None,
@@ -226,7 +226,7 @@ class TaskCommand(base.Command):
 
     def _add_filters(self, q):
         if self.options.filter_name_prefix:
-            q['task_name'] = {'$regex': r'^{}.*'.format(re.escape(self.options.filter_name_prefix))}
+            q['task_name'] = {'$regex': fr'^{re.escape(self.options.filter_name_prefix)}.*'}
         if self.options.filter_result_regex:
             q['result'] = {'$regex': self.options.filter_result_regex}
         if self.options.days_ago:
@@ -236,7 +236,7 @@ class TaskCommand(base.Command):
         return q
 
     def _print_query(self, cmd, *args):
-        print('running mongod cmd: {}, {}'.format(cmd, args))
+        print(f'running mongod cmd: {cmd}, {args}')
 
     def _list(self):
         '''List tasks'''

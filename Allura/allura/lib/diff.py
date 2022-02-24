@@ -22,7 +22,7 @@ import six
 from allura.lib import helpers as h
 
 
-class HtmlSideBySideDiff(object):
+class HtmlSideBySideDiff:
 
     table_tmpl = '''
 <table class="side-by-side-diff">

@@ -20,7 +20,7 @@
 import six
 
 
-class TaskController(object):
+class TaskController:
 
     '''WSGI app providing web-like RPC
 
@@ -36,6 +36,6 @@ class TaskController(object):
         nocapture = environ['nocapture']
         result = task(restore_context=False, nocapture=nocapture)
         py_response = context.response
-        py_response.headers['Content-Type'] = str('text/plain')  # `None` default is problematic for some middleware
+        py_response.headers['Content-Type'] = 'text/plain'  # `None` default is problematic for some middleware
         py_response.body = six.ensure_binary(result or b'')
         return py_response

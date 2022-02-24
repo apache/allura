@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -76,7 +74,7 @@ class TestSpamFilter(unittest.TestCase):
         self.assertTrue(log.exception.called)
 
 
-class TestSpamFilterFunctional(object):
+class TestSpamFilterFunctional:
 
     def setUp(self):
         setup_basic_test()
@@ -95,7 +93,7 @@ class TestSpamFilterFunctional(object):
         assert_equal(results[0].user.username, 'test-user')
 
 
-class TestChainedSpamFilter(object):
+class TestChainedSpamFilter:
 
     def test(self):
         config = {'spam.method': 'mock1 mock2', 'spam.settingA': 'bcd'}

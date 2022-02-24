@@ -57,7 +57,7 @@ def main():
                         anon_role_id = acl.role_id
 
                 if anon_role_id:
-                    print("revoking anon moderate privelege for '{}'".format(p._id))
+                    print(f"revoking anon moderate privelege for '{p._id}'")
                     security.simple_revoke(p.acl, anon_role_id, 'moderate')
                     session(p).flush(p)
 

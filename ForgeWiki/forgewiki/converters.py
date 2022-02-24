@@ -44,7 +44,7 @@ def _internal_link_markdown(match):
     page_name = page_name.replace(' ', '_')
     page_name = page_name[:1].upper() + page_name[1:]
     if match.group(2):
-        return r'[{}]({})'.format(match.group(2), page_name)
+        return fr'[{match.group(2)}]({page_name})'
     return r'[%s]' % page_name
 
 
@@ -53,7 +53,7 @@ def _convert_toc(wiki_html):
     soup = BeautifulSoup(wiki_html, 'html.parser')
     for toc_div in soup.findAll('div', id='toc'):
         toc_div.replaceWith('[TOC]')
-    return six.text_type(soup)
+    return str(soup)
 
 
 def mediawiki2markdown(source):

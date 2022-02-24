@@ -24,12 +24,12 @@ from alluratest.controller import TestRestApiBase
 class TestActivityHasAccessAPI(TestRestApiBase):
 
     def setUp(self, *args, **kwargs):
-        super(TestActivityHasAccessAPI, self).setUp(*args, **kwargs)
+        super().setUp(*args, **kwargs)
         self._enabled = config.get('activitystream.enabled', 'false')
         config['activitystream.enabled'] = 'true'
 
     def tearDown(self, *args, **kwargs):
-        super(TestActivityHasAccessAPI, self).tearDown(*args, **kwargs)
+        super().tearDown(*args, **kwargs)
         config['activitystream.enabled'] = self._enabled
 
     def test_has_access_no_params(self):

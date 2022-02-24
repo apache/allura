@@ -70,7 +70,7 @@ class Neighborhood(MappedClass):
     '''
     class __mongometa__:
         session = main_orm_session
-        name = str('neighborhood')
+        name = 'neighborhood'
         unique_indexes = ['url_prefix']
 
     query: 'Query[Neighborhood]'

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -54,7 +52,6 @@ from allura.tasks import export_tasks
 from allura.tasks import admin_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
-from six.moves import range
 
 
 class TestRepoTasks(unittest.TestCase):
@@ -298,13 +295,13 @@ class TestMailTasks(unittest.TestCase):
             # Also py2 and py3 vary in handling of double-quote separators when the name portion is encoded
             unquoted_cyrillic_No = '=?utf-8?b?0J/Qvg==?='  # По
             quoted_cyrillic_No = '=?utf-8?b?ItCf0L4i?='  # "По"
-            assert ('From: {} <foo@bar.com>'.format(quoted_cyrillic_No) in body or
-                    'From: {} <foo@bar.com>'.format(unquoted_cyrillic_No) in body), body
+            assert (f'From: {quoted_cyrillic_No} <foo@bar.com>' in body or
+                    f'From: {unquoted_cyrillic_No} <foo@bar.com>' in body), body
             assert_in(
                 'Subject: =?utf-8?b?0J/QviDQvtC20LjQstC70ZHQvdC90YvQvCDQsdC10YDQtdCz0LDQvA==?=', body)
             assert_in('Content-Type: text/plain; charset="utf-8"', body)
             assert_in('Content-Transfer-Encoding: base64', body)
-            assert_in(six.ensure_text(b64encode('Громады стройные теснятся'.encode('utf-8'))), body)
+            assert_in(six.ensure_text(b64encode('Громады стройные теснятся'.encode())), body)
 
     def test_send_email_with_disabled_user(self):
         c.user = M.User.by_username('test-admin')
@@ -541,7 +538,7 @@ I'm not here'''
 
 class TestUserNotificationTasks(TestController):
     def setUp(self):
-        super(TestUserNotificationTasks, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_wiki
@@ -612,7 +609,7 @@ class _TestArtifact(M.Artifact):
 
     def index(self):
         return dict(
-            super(_TestArtifact, self).index(),
+            super().index(),
             text=self.text)
 
 

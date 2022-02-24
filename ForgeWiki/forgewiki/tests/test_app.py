@@ -30,10 +30,9 @@ from allura import model as M
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgewiki import model as WM
-from io import open
 
 
-class TestBulkExport(object):
+class TestBulkExport:
 
     def setUp(self):
         setup_basic_test()
@@ -106,7 +105,7 @@ class TestBulkExport(object):
         wiki = json.loads(f.read())
         pages = sorted(wiki['pages'], key=operator.itemgetter('title'))
 
-        assert pages[3]['attachments'][0]['path'] == 'wiki/{}/test_file'.format(self.page._id)
+        assert pages[3]['attachments'][0]['path'] == f'wiki/{self.page._id}/test_file'
         assert os.path.exists(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file'))
         with open(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file')) as fl:
             assert fl.read() == 'test string'
@@ -121,11 +120,11 @@ class TestBulkExport(object):
         pages = sorted(wiki['pages'], key=operator.itemgetter('title'))
 
         assert pages[3]['attachments'][0].get('path', None) is None
-        assert pages[3]['attachments'][0]['url'] != 'wiki/{}/test_file'.format(self.page._id)
+        assert pages[3]['attachments'][0]['url'] != f'wiki/{self.page._id}/test_file'
         assert not os.path.exists(os.path.join(temp_dir, 'wiki', str(self.page._id), 'test_file'))
 
 
-class TestApp(object):
+class TestApp:
 
     def setUp(self):
         setup_basic_test()

@@ -102,13 +102,13 @@ class ForgeShortUrlApp(Application):
                                    c.project.url() +
                                    self.config.options.mount_point), ]
 
-        links += super(ForgeShortUrlApp, self).admin_menu()
+        links += super().admin_menu()
         return links
 
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
-        super(ForgeShortUrlApp, self).install(project)
+        super().install(project)
         # Setup permissions
         role_anon = M.ProjectRole.anonymous()._id
         role_admin = M.ProjectRole.by_name('Admin')._id
@@ -122,7 +122,7 @@ class ForgeShortUrlApp(Application):
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
         ShortUrl.query.remove(dict(app_config_id=c.app.config._id))
-        super(ForgeShortUrlApp, self).uninstall(project)
+        super().uninstall(project)
 
 
 class RootController(BaseController):
@@ -229,7 +229,7 @@ class ShortURLAdminController(DefaultAdminController):
                 error_msg = 'Error: '
                 for msg in list(c.form_errors):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
-                    error_msg += '{}: {} '.format(names[msg], c.form_errors[msg])
+                    error_msg += f'{names[msg]}: {c.form_errors[msg]} '
                     flash(error_msg, 'error')
                 redirect(six.ensure_text(request.referer or '/'))
 
@@ -250,7 +250,7 @@ class ShortURLAdminController(DefaultAdminController):
                 shorturl = ShortUrl()
                 shorturl.created = datetime.utcnow()
                 shorturl.app_config_id = self.app.config._id
-                msg = 'create short url {} for {}'.format(short_url, full_url)
+                msg = f'create short url {short_url} for {full_url}'
                 flash("Short url created")
 
             shorturl.short_name = short_url

@@ -34,8 +34,6 @@ from collections import deque
 
 import fuse
 import six
-from io import open
-from six.moves import zip
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +43,7 @@ fuse.fuse_python_api = (0, 2)
 fuse.feature_assert('stateful_files', 'has_init')
 
 
-class check_access(object):
+class check_access:
 
     def __init__(self, *args, **kwargs):
         self._args = args
@@ -57,7 +55,7 @@ class check_access(object):
             new_kwargs = dict(kwargs)
             for i, (mode, path) in enumerate(zip(self._args, args)):
                 new_args[i] = self.check(inst, path, mode)
-            for name, mode in six.iteritems(self._kwargs):
+            for name, mode in self._kwargs.items():
                 new_kwargs[name] = self.check(inst, kwargs.get(name), mode)
             return func(inst, *new_args, **new_kwargs)
         return wrapper
@@ -73,7 +71,7 @@ class check_access(object):
 class check_and_translate(check_access):
 
     def check(self, inst, path, mode):
-        super(check_and_translate, self).check(inst, path, mode)
+        super().check(inst, path, mode)
         return inst._to_global(path)
 
 
@@ -88,7 +86,7 @@ def flag2mode(flags):
 class AccessFS(fuse.Fuse):
 
     def __init__(self, *args, **kw):
-        super(AccessFS, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.root = '/'
         self.auth_method = 'unix'
         self.permission_host = 'http://localhost:8080'
@@ -299,7 +297,7 @@ class AccessFile(fuse.FuseFileInfo):
         fcntl.lockf(self.fd, op, kw['l_start'], kw['l_len'])
 
 
-class PermissionCache(object):
+class PermissionCache:
 
     def __init__(self, uid_cache, host, timeout=30, size=1024):
         self._host = host
@@ -342,7 +340,7 @@ class PermissionCache(object):
             + six.moves.urllib.parse.urlencode(dict(
                 repo_path=path,
                 username=uname)))
-        print('Checking access for {} at {} ({})'.format(uname, url, path))
+        print(f'Checking access for {uname} at {url} ({path})')
         fp = six.moves.urllib.request.urlopen(url)
         result = json.load(fp)
         print(result)
@@ -379,11 +377,11 @@ class PermissionCache(object):
         '''
         parts = [p for p in path.split(os.path.sep) if p]
         scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-        parts = ['/SCM/{}.{}'.format(proj, nbhd)] + rest
+        parts = [f'/SCM/{proj}.{nbhd}'] + rest
         return '/'.join(parts)
 
 
-class UnixUsernameCache(object):
+class UnixUsernameCache:
 
     def __init__(self):
         self._cache = {}

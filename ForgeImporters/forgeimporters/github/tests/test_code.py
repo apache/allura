@@ -70,7 +70,7 @@ class TestGitHubImportController(TestController, TestCase):
     @with_git
     def test_index(self):
         r = self.app.get(
-            '/p/{}/admin/ext/import/github-repo/'.format(test_project_with_repo))
+            f'/p/{test_project_with_repo}/admin/ext/import/github-repo/')
         self.assertIsNotNone(r.html.find(attrs=dict(name="gh_user_name")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="gh_project_name")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
@@ -130,5 +130,5 @@ class TestGitHubImportController(TestController, TestCase):
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
         self.app.get(
-            '/p/{}/admin/ext/import/github-repo/'.format(test_project_with_repo))
+            f'/p/{test_project_with_repo}/admin/ext/import/github-repo/')
         self.assertEqual(oauth_begin.call_count, 1)

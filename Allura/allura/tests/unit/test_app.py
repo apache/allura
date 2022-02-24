@@ -70,7 +70,7 @@ class TestDefaultDiscussion(WithDatabase):
     patches = [fake_app_patch]
 
     def setUp(self):
-        super(TestDefaultDiscussion, self).setUp()
+        super().setUp()
         install_app()
         self.discussion = model.Discussion.query.get(
             shortname='my_mounted_app')
@@ -90,7 +90,7 @@ class TestAppDefaults(WithDatabase):
     patches = [fake_app_patch]
 
     def setUp(self):
-        super(TestAppDefaults, self).setUp()
+        super().setUp()
         self.app = install_app()
 
     def test_that_it_has_an_empty_sidebar_menu(self):

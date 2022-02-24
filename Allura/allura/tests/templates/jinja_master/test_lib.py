@@ -28,7 +28,7 @@ def strip_space(s):
     return ''.join(s.split())
 
 
-class TemplateTest(object):
+class TemplateTest:
     def setUp(self):
         setup_basic_test()
         self.jinja2_env = AlluraJinjaRenderer.create(config, g)['jinja'].jinja2_env
@@ -63,7 +63,7 @@ class TestRelatedArtifacts(TemplateTest):
 
     def test_non_artifact(self):
         # e.g. a commit
-        class CommitThing(object):
+        class CommitThing:
             type_s = 'Commit'
 
             def link_text(self):

@@ -167,7 +167,7 @@ class TestForumAdmin(TestController):
         # forum can be viewed by member and non-member
         self.app.get('/discussion/secret')
         self.app.get('/discussion/secret',
-                     extra_environ=dict(username=str('test-user')))
+                     extra_environ=dict(username='test-user'))
         # make a post in the forum and confirm it is also viewable by member
         # and non-member
         r = self.app.get('/discussion/create_topic/')
@@ -185,12 +185,12 @@ class TestForumAdmin(TestController):
         r = self.app.post('/discussion/save_new_topic', params=params).follow()
         thread_url = r.request.url
         self.app.get(thread_url)
-        self.app.get(thread_url, extra_environ=dict(username=str('test-user')))
+        self.app.get(thread_url, extra_environ=dict(username='test-user'))
         # link shows up in app for member and non-member
         r = self.app.get('/discussion/')
         assert '/secret/' in r
         r = self.app.get('/discussion/',
-                         extra_environ=dict(username=str('test-user')))
+                         extra_environ=dict(username='test-user'))
         assert '/secret/' in r
         # make the forum member only viewable
         secret = FM.Forum.query.get(shortname='secret')
@@ -205,16 +205,16 @@ class TestForumAdmin(TestController):
         # member can see the forum, but non-member gets 403
         self.app.get('/discussion/secret')
         self.app.get('/discussion/secret',
-                     extra_environ=dict(username=str('test-user')), status=403)
+                     extra_environ=dict(username='test-user'), status=403)
         # member can see a thread in the forum, but non-member gets 403
         self.app.get(thread_url)
         self.app.get(thread_url,
-                     extra_environ=dict(username=str('test-user')), status=403)
+                     extra_environ=dict(username='test-user'), status=403)
         # link shows up in app for member but not non-member
         r = self.app.get('/discussion/')
         assert '/secret/' in r
         r = self.app.get('/discussion/',
-                         extra_environ=dict(username=str('test-user')))
+                         extra_environ=dict(username='test-user'))
         assert '/secret/' not in r
 
     def test_anon_posts(self):
@@ -237,7 +237,7 @@ class TestForumAdmin(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'post topic'
         r = self.app.post('/discussion/save_new_topic',
-                          params=params, extra_environ=dict(username=str('*anonymous')))
+                          params=params, extra_environ=dict(username='*anonymous'))
         assert r.location == 'http://localhost/auth/'
         # allow anon posts in the forum
         testforum = FM.Forum.query.get(shortname='testforum')

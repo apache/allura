@@ -48,7 +48,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = str('blog-globals')
+        name = 'blog-globals'
         session = M.project_orm_session
         indexes = ['app_config_id']
 
@@ -64,7 +64,7 @@ class Globals(MappedClass):
 class BlogPostSnapshot(M.Snapshot):
 
     class __mongometa__:
-        name = str('blog_post_snapshot')
+        name = 'blog_post_snapshot'
 
     query: 'Query[BlogPostSnapshot]'
 
@@ -77,7 +77,7 @@ class BlogPostSnapshot(M.Snapshot):
         orig = self.original()
         if not orig:
             return None
-        return '{}#{}'.format(orig.shorthand_id(), self.version)
+        return f'{orig.shorthand_id()}#{self.version}'
 
     def url(self):
         orig = self.original()
@@ -89,7 +89,7 @@ class BlogPostSnapshot(M.Snapshot):
         orig = self.original()
         if not orig:
             return None
-        result = super(BlogPostSnapshot, self).index()
+        result = super().index()
         result.update(
             title='%s (version %d)' % (orig.title, self.version),
             type_s=self.type_s,
@@ -112,7 +112,7 @@ class BlogPostSnapshot(M.Snapshot):
 class BlogPost(M.VersionedArtifact, ActivityObject):
 
     class __mongometa__:
-        name = str('blog_post')
+        name = 'blog_post'
         history_class = BlogPostSnapshot
         unique_indexes = [('app_config_id', 'slug')]
         indexes = [
@@ -234,12 +234,12 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         return self.slug
 
     def index(self):
-        result = super(BlogPost, self).index()
+        result = super().index()
         result.update(
             title=self.title,
             type_s=self.type_s,
             state_s=self.state,
-            snippet_s='{}: {}'.format(self.title, h.text.truncate(self.text, 200)),
+            snippet_s=f'{self.title}: {h.text.truncate(self.text, 200)}',
             text=self.text)
         return result
 
@@ -252,7 +252,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                                      related_nodes=[c.project], tags=['blog'])
         if subscribe:
             self.subscribe()
-        super(BlogPost, self).commit()
+        super().commit()
         if self.version > 1:
             v1 = self.get_version(self.version - 1)
             v2 = self
@@ -306,7 +306,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     def new(cls, **kw):
         post = cls()
         subscribe = kw.pop('subscribe', False)
-        for k, v in six.iteritems(kw):
+        for k, v in kw.items():
             setattr(post, k, v)
         post.neighborhood_id = c.project.neighborhood_id
         post.make_slug()
@@ -318,7 +318,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         return post
 
     def __json__(self, posts_limit=None, is_export=False):
-        return dict(super(BlogPost, self).__json__(posts_limit=posts_limit, is_export=is_export),
+        return dict(super().__json__(posts_limit=posts_limit, is_export=is_export),
                     author=self.author().username,
                     title=self.title,
                     url=h.absurl('/rest' + self.url()),
@@ -334,7 +334,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         feed_item = self.feed_item()
         if feed_item:
             feed_item.delete()
-        super(BlogPost, self).delete()
+        super().delete()
 
     @classmethod
     def attachment_class(cls):
@@ -346,7 +346,7 @@ class BlogAttachment(M.BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = str('BlogAttachment')
+        polymorphic_identity = 'BlogAttachment'
 
     query: 'Query[BlogAttachment]'
 

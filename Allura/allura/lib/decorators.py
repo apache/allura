@@ -20,10 +20,7 @@ import sys
 import json
 import logging
 import six
-if six.PY3:
-    from http.cookies import SimpleCookie as Cookie
-else:
-    from Cookie import Cookie
+from http.cookies import SimpleCookie as Cookie
 from collections import defaultdict
 from six.moves.urllib.parse import unquote
 from datetime import datetime
@@ -85,7 +82,7 @@ def task(*args, **kw):
     return task_
 
 
-class event_handler(object):
+class event_handler:
 
     '''Decorator to register event handlers'''
     listeners = defaultdict(set)
@@ -99,7 +96,7 @@ class event_handler(object):
         return func
 
 
-class require_post(object):
+class require_post:
     '''
     A decorator to require controllers by accessed with a POST only.  Use whenever data will be modified by a
     controller, since that's what POST is good for.  We have CSRF protection middleware on POSTs, too.
@@ -113,7 +110,7 @@ class require_post(object):
             if request.method != 'POST':
                 if self.redir is not None:
                     redirect(self.redir)
-                raise exc.HTTPMethodNotAllowed(headers={str('Allow'): str('POST')})
+                raise exc.HTTPMethodNotAllowed(headers={'Allow': 'POST'})
         before_validate(check_method)(func)
         return func
 
@@ -161,7 +158,7 @@ def memoize(func, instance, args, kwargs):
         dic = getattr_(func, "_memoize_dic", dict)
     else:
         # decorating a method
-        dic = getattr_(instance, "_memoize_dic__{}".format(func.__name__), dict)
+        dic = getattr_(instance, f"_memoize_dic__{func.__name__}", dict)
 
     cache_key = (args, frozenset(list(kwargs.items())))
     if cache_key in dic:

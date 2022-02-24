@@ -59,12 +59,11 @@ from allura.lib import utils
 from allura.controllers import BaseController
 from allura.tasks.mail_tasks import send_system_mail_to_user
 import six
-from six.moves import zip
 
 log = logging.getLogger(__name__)
 
 
-class F(object):
+class F:
     login_form = LoginForm()
     password_change_form = forms.PasswordChangeForm(action='/auth/preferences/change_password')
     upload_key_form = forms.UploadKeyForm(action='/auth/preferences/upload_sshkey')
@@ -119,7 +118,7 @@ class AuthController(BaseController):
             raise AttributeError("TG decoratedcontroller calls this during import time, can't do anything complex")
         urls = plugin.UserPreferencesProvider.get().additional_urls()
         if name not in urls:
-            raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, name))
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
         return urls[name]
 
     @expose()
@@ -166,13 +165,13 @@ class AuthController(BaseController):
         user_record = M.User.query.find(
             {'tool_data.AuthPasswordReset.hash': hash}).first()
         if not user_record:
-            log.info('Reset hash not found: {}'.format(hash))
+            log.info(f'Reset hash not found: {hash}')
             flash('Unable to process reset, please try again')
             redirect(login_url)
         hash_expiry = user_record.get_tool_data(
             'AuthPasswordReset', 'hash_expiry')
         if not hash_expiry or hash_expiry < datetime.utcnow():
-            log.info('Reset hash expired: {} {}'.format(hash, hash_expiry))
+            log.info(f'Reset hash expired: {hash} {hash_expiry}')
             flash('Unable to process reset, please try again')
             redirect(login_url)
         return user_record
@@ -198,7 +197,7 @@ class AuthController(BaseController):
         if not provider.forgotten_password_process:
             raise wexc.HTTPNotFound()
         user = self._validate_hash(hash)
-        enforce_hibp_password_check(provider, pw, '/auth/forgotten_password/{}'.format(hash))
+        enforce_hibp_password_check(provider, pw, f'/auth/forgotten_password/{hash}')
 
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')  # Clear password reset token
@@ -423,7 +422,7 @@ class AuthController(BaseController):
             return_to = self._verify_return_to(kwargs.get('return_to'))
             redirect(return_to)
 
-    @expose(content_type=str('text/plain'))
+    @expose(content_type='text/plain')
     def refresh_repo(self, *repo_path):
         # post-commit hooks use this
         if not repo_path:
@@ -548,7 +547,7 @@ class AuthController(BaseController):
         expired_reason = session.pop('expired-reason', None)
 
         session.save()
-        h.auditlog_user('Password reset ({})'.format(expired_reason))
+        h.auditlog_user(f'Password reset ({expired_reason})')
         if return_to and return_to != request.url:
             redirect(return_to)
         else:
@@ -694,7 +693,7 @@ class PreferencesController(BaseController):
             c.user.set_pref('display_name', preferences['display_name'])
             if old != preferences['display_name']:
                 h.auditlog_user('Display Name changed %s => %s', old, preferences['display_name'])
-            for k, v in six.iteritems(preferences):
+            for k, v in preferences.items():
                 if k == 'results_per_page':
                     v = int(v)
                 c.user.set_pref(k, v)
@@ -942,7 +941,7 @@ class UserSkillsController(BaseController):
 
     def __init__(self, category=None):
         self.category = category
-        super(UserSkillsController, self).__init__()
+        super().__init__()
 
     def _check_security(self):
         require_authenticated()

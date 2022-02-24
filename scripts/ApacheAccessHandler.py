@@ -43,13 +43,13 @@ def log(req, message):
 
 
 def load_requests_lib(req):
-    virtualenv_path = req.get_options().get(str('ALLURA_VIRTUALENV'), None)
+    virtualenv_path = req.get_options().get('ALLURA_VIRTUALENV', None)
     if virtualenv_path:
         activate_this = '%s/bin/activate_this.py' % virtualenv_path
         try:
             exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), {'__file__': activate_this})
         except Exception as e:
-            log(req, "Couldn't activate venv via {}: {}".format(activate_this, repr(e)))
+            log(req, f"Couldn't activate venv via {activate_this}: {repr(e)}")
     global requests
     import requests as requests_lib
     requests = requests_lib
@@ -64,7 +64,7 @@ def mangle(path):
     if len(parts) < 4:
         return None
     scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-    parts = ['/SCM/{}.{}'.format(proj, nbhd)] + rest
+    parts = [f'/SCM/{proj}.{nbhd}'] + rest
     return '/'.join(parts)
 
 
@@ -105,7 +105,7 @@ def check_authentication(req):
     log(req, "checking auth for: %s" % username)
     if not username or not password:
         return False
-    auth_url = req.get_options().get(str('ALLURA_AUTH_URL'), 'https://127.0.0.1/auth/do_login')
+    auth_url = req.get_options().get('ALLURA_AUTH_URL', 'https://127.0.0.1/auth/do_login')
 
     # work through our own Antispam protection
     auth_form_url = auth_url.replace('/do_login', '/')
@@ -176,7 +176,7 @@ def check_authentication(req):
 def check_permissions(req):
     req_path = str(req.parsed_uri[apache.URI_PATH])
     req_query = str(req.parsed_uri[apache.URI_QUERY])
-    perm_url = req.get_options().get(str('ALLURA_PERM_URL'), 'https://127.0.0.1/auth/repo_permissions')
+    perm_url = req.get_options().get('ALLURA_PERM_URL', 'https://127.0.0.1/auth/repo_permissions')
     r = requests.get(perm_url, params={'username': req.user, 'repo_path': mangle(req_path)})
     if r.status_code != 200:
         log(req, "repo_permissions return error (%d)" % r.status_code)
@@ -191,7 +191,7 @@ def check_permissions(req):
     permission = get_permission_name(req_path, req_query, req.method)
     authorized = cred.get(permission, False)
 
-    log(req, "{} -> {} -> {} -> authorized:{}".format(r.url, cred, permission, authorized))
+    log(req, f"{r.url} -> {cred} -> {permission} -> authorized:{authorized}")
     return authorized
 
 

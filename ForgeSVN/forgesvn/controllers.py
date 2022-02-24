@@ -28,7 +28,7 @@ from allura.controllers.feed import FeedController
 class BranchBrowser(repository.BranchBrowser, FeedController):
 
     def __init__(self):
-        super(BranchBrowser, self).__init__(None)
+        super().__init__(None)
 
     def get_feed(self, project, app, user):
         return repository.RepoRootController().get_feed(project, app, user)

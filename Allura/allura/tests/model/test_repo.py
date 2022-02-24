@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -32,7 +31,7 @@ from allura import model as M
 from allura.lib import helpers as h
 
 
-class TestGitLikeTree(object):
+class TestGitLikeTree:
     def test_set_blob(self):
         tree = M.GitLikeTree()
         tree.set_blob('/dir/dir2/file', 'file-oid')
@@ -63,12 +62,12 @@ class TestGitLikeTree(object):
 
     def test_hex_with_unicode(self):
         tree = M.GitLikeTree()
-        tree.set_blob(u'/dir/f•º£', 'file-oid')
+        tree.set_blob('/dir/f•º£', 'file-oid')
         # the hex() value shouldn't change, it's an important key
         assert_equal(tree.hex(), '51ce65bead2f6452da61d4f6f2e42f8648bf9e4b')
 
 
-class RepoImplTestBase(object):
+class RepoImplTestBase:
     pass
 
 
@@ -679,7 +678,7 @@ class TestModelCache(unittest.TestCase):
         session.return_value.expunge.assert_called_once_with(tree1)
 
 
-class TestMergeRequest(object):
+class TestMergeRequest:
 
     def setUp(self):
         setup_basic_test()

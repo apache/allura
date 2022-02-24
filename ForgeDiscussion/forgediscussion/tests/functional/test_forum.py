@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -42,8 +40,6 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 
 from forgediscussion import model as FM
-from io import open
-from six.moves import range
 
 log = logging.getLogger(__name__)
 
@@ -219,7 +215,7 @@ class TestForumMessageHandling(TestController):
         self._post('testforum', 'Test Thread', b'Nothing here',
                    message_id='test.attach.100@domain.net')
         # runs handle_artifact_message() where there IS a post with given message_id
-        self._post('testforum', 'Attachment Thread', 'This is binary ¶¬¡™£¢¢•º™™¶'.encode('utf-8'),
+        self._post('testforum', 'Attachment Thread', 'This is binary ¶¬¡™£¢¢•º™™¶'.encode(),
                    message_id='test.attach.100@domain.net',
                    content_type='text/plain')
 
@@ -239,7 +235,7 @@ class TestForumMessageHandling(TestController):
         thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
         r = self.app.get(thd_url)
         p = FM.ForumPost.query.find().first()
-        url = str('/discussion/testforum/thread/{}/{}/'.format(thd._id, p.slug))
+        url = str(f'/discussion/testforum/thread/{thd._id}/{p.slug}/')
         r = self.app.get(url)
         f = r.html.find('form', {'action': '/p/test' + url})
         params = dict()
@@ -357,11 +353,11 @@ class TestForum(TestController):
     def test_unicode_name(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
-        form['add_forum.shortname'] = 'téstforum'.encode('utf-8')
-        form['add_forum.name'] = 'Tést Forum'.encode('utf-8')
+        form['add_forum.shortname'] = 'téstforum'.encode()
+        form['add_forum.name'] = 'Tést Forum'.encode()
         form.submit()
         r = self.app.get('/admin/discussion/forums')
-        assert 'téstforum'.encode('utf-8') in r
+        assert 'téstforum'.encode() in r
 
     def test_markdown_description(self):
         r = self.app.get('/admin/discussion/forums')
@@ -403,7 +399,7 @@ class TestForum(TestController):
             params[f.find('select')['name']] = 'testforum'
             params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Zero Posts'
             r = self.app.post('/discussion/save_new_topic', params=params,
-                              extra_environ=dict(username=str('*anonymous')),
+                              extra_environ=dict(username='*anonymous'),
                               status=302)
             assert r.location.startswith(
                 'http://localhost/p/test/discussion/testforum/thread/'), r.location
@@ -551,11 +547,11 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'Test Thread'
         thread = self.app.post('/discussion/save_new_topic', params=params,
-                               extra_environ=dict(username=str('*anonymous'))).follow()
+                               extra_environ=dict(username='*anonymous')).follow()
 
         # assert post awaiting moderation
         r = self.app.get(thread.request.url,
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         assert 'Post awaiting moderation' in r
         assert 'name="delete"' not in r
         assert 'name="approve"' not in r
@@ -572,9 +568,9 @@ class TestForum(TestController):
             if field.has_attr('name'):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'anon reply to anon post content'
-        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username=str('*anonymous')))
+        r = self.app.post(str(rep_url), params=params, extra_environ=dict(username='*anonymous'))
         r = self.app.get(thread.request.url,
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         assert 'anon reply to anon post' not in r
         assert_equal(spam_checker.check.call_args[0][0], 'anon reply to anon post content')
 
@@ -606,7 +602,7 @@ class TestForum(TestController):
 
         # assert anon can't edit their original post
         r = self.app.get(thread.request.url,
-                    extra_environ=dict(username=str('*anonymous')))
+                    extra_environ=dict(username='*anonymous'))
         assert 'Post content' in r
         post_container = r.html.find('div', {'id': post.slug})
         btn_edit = post_container.find('a', {'title': 'Edit'})
@@ -958,7 +954,7 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'AAA'
         thread = self.app.post('/discussion/save_new_topic',
-                               params=params).follow(extra_environ=dict(username=str('*anonymous')))
+                               params=params).follow(extra_environ=dict(username='*anonymous'))
         thread_sidebar_menu = str(thread.html.find('div', {'id': 'sidebar'}))
         assert_not_in("flag_as_spam", thread_sidebar_menu)
 
@@ -979,11 +975,11 @@ class TestForum(TestController):
     def test_create_topic_unicode(self):
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
-        form['add_forum.shortname'] = 'téstforum'.encode('utf-8')
-        form['add_forum.name'] = 'Tést Forum'.encode('utf-8')
+        form['add_forum.shortname'] = 'téstforum'.encode()
+        form['add_forum.name'] = 'Tést Forum'.encode()
         form.submit()
         r = self.app.get('/admin/discussion/forums')
-        assert 'téstforum'.encode('utf-8') in r
+        assert 'téstforum'.encode() in r
         r = self.app.get(h.urlquote('/p/test/discussion/create_topic/téstforum/'))
         assert '<option value="téstforum" selected>Tést Forum</option>' in r
 

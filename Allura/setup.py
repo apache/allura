@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -54,7 +52,7 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'nose'],
-    package_data={str('allura'): ['i18n/*/LC_MESSAGES/*.mo',
+    package_data={'allura': ['i18n/*/LC_MESSAGES/*.mo',
                              'templates/**.html',
                              'templates/**.py',
                              'templates/**.xml',

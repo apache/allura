@@ -43,9 +43,6 @@ from ming.odm import session
 from allura.model.multifactor import RecoveryCode
 from allura.lib.utils import umask
 import six
-from io import open
-from six.moves import range
-from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -69,7 +66,7 @@ def check_rate_limit(num_allowed, time_allowed, attempts):
     return ok, attempts_in_limit
 
 
-class TotpService(object):
+class TotpService:
     '''
     An interface for handling multifactor auth TOTP secret keys.  Common functionality
     is provided in this base class, and specific subclasses implement different storage options.
@@ -163,7 +160,7 @@ class TotpService(object):
         raise NotImplementedError('enforce_rate_limit')
 
 
-class MongodbMultifactorCommon(object):
+class MongodbMultifactorCommon:
 
     def enforce_rate_limit(self, user):
         prev_attempts = user.get_tool_data('allura', 'multifactor_attempts') or []
@@ -201,7 +198,7 @@ class MongodbTotpService(MongodbMultifactorCommon, TotpService):
                                upsert=True)
 
 
-class GoogleAuthenticatorFile(object):
+class GoogleAuthenticatorFile:
     '''
     Parse & write server-side .google_authenticator files for PAM.
     https://github.com/google/google-authenticator/blob/master/libpam/FILEFORMAT
@@ -235,7 +232,7 @@ class GoogleAuthenticatorFile(object):
     def dump(self):
         lines = []
         lines.append(six.ensure_text(b32encode(self.key)).replace('=', ''))
-        for opt, value in six.iteritems(self.options):
+        for opt, value in self.options.items():
             parts = ['"', opt]
             if value is not None:
                 parts.append(value)
@@ -245,7 +242,7 @@ class GoogleAuthenticatorFile(object):
         return '\n'.join(lines)
 
 
-class GoogleAuthenticatorPamFilesystemMixin(object):
+class GoogleAuthenticatorPamFilesystemMixin:
 
     @property
     def basedir(self):
@@ -266,7 +263,7 @@ class GoogleAuthenticatorPamFilesystemMixin(object):
         try:
             with open(self.config_file(user)) as f:
                 return GoogleAuthenticatorFile.load(f.read())
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:  # file doesn't exist
                 if autocreate:
                     gaf = GoogleAuthenticatorFile()
@@ -339,7 +336,7 @@ class GoogleAuthenticatorPamFilesystemTotpService(GoogleAuthenticatorPamFilesyst
             self.write_file(user, gaf)
 
 
-class RecoveryCodeService(object):
+class RecoveryCodeService:
     '''
     An interface for handling multifactor recovery codes.  Common functionality
     is provided in this base class, and specific subclasses implement different storage options.
@@ -447,7 +444,7 @@ class GoogleAuthenticatorPamFilesystemRecoveryCodeService(GoogleAuthenticatorPam
             gaf.recovery_codes = codes
             self.write_file(user, gaf)
         elif codes:
-            raise IOError('No .google-authenticator file exists, cannot add recovery codes.')
+            raise OSError('No .google-authenticator file exists, cannot add recovery codes.')
 
     def verify_and_remove_code(self, user, code):
         gaf = self.read_file(user)

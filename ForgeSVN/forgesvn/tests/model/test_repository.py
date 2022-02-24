@@ -1,4 +1,3 @@
-# coding: utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -50,8 +49,6 @@ from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
 import six
-from io import open
-from six.moves import range
 
 
 class TestNewRepo(unittest.TestCase):
@@ -86,15 +83,15 @@ class TestNewRepo(unittest.TestCase):
         self.rev.author_url
         self.rev.committer_url
         assert_equal(self.rev.tree._id, self.rev.tree_id)
-        assert_equal(self.rev.shorthand_id(), '[r{}]'.format(latest_rev))
+        assert_equal(self.rev.shorthand_id(), f'[r{latest_rev}]')
         assert_equal(self.rev.symbolic_ids, ([], []))
-        assert_equal(self.rev.url(), '/p/test/src/{}/'.format(latest_rev))
+        assert_equal(self.rev.url(), f'/p/test/src/{latest_rev}/')
         all_cis = list(self.repo.log(self.rev._id, limit=25))
         assert_equal(len(all_cis), latest_rev)
         self.rev.tree.ls()
         assert_equal(self.rev.tree.readme(), ('README', 'This is readme\nAnother Line\n'))
         assert_equal(self.rev.tree.path(), '/')
-        assert_equal(self.rev.tree.url(), '/p/test/src/{}/tree/'.format(latest_rev))
+        assert_equal(self.rev.tree.url(), f'/p/test/src/{latest_rev}/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') is True
         assert_equal(self.rev.tree['a']['b']['c'].ls(), [])
@@ -612,7 +609,7 @@ class TestSVNRev(unittest.TestCase):
             print(d)
 
     def _oid(self, rev_id):
-        return '{}:{}'.format(self.repo._id, rev_id)
+        return f'{self.repo._id}:{rev_id}'
 
     def test_log(self):
         # path only
@@ -658,8 +655,8 @@ class _Test(unittest.TestCase):
         t, isnew = M.repository.Tree.upsert(object_id)
         repo = getattr(self, 'repo', None)
         t.repo = repo
-        for k, v in six.iteritems(kwargs):
-            if isinstance(v, six.string_types):
+        for k, v in kwargs.items():
+            if isinstance(v, str):
                 obj = M.repository.Blob(
                     t, k, next(self.idgen))
                 t.blob_ids.append(Object(
@@ -701,7 +698,7 @@ class _Test(unittest.TestCase):
 class _TestWithRepo(_Test):
 
     def setUp(self):
-        super(_TestWithRepo, self).setUp()
+        super().setUp()
         h.set_context('test', neighborhood='Projects')
         c.project.install_app('svn', 'test1')
         h.set_context('test', 'test1', neighborhood='Projects')
@@ -720,7 +717,7 @@ class _TestWithRepo(_Test):
 class _TestWithRepoAndCommit(_TestWithRepo):
 
     def setUp(self):
-        super(_TestWithRepoAndCommit, self).setUp()
+        super().setUp()
         self.ci, isnew = self._make_commit('foo')
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
@@ -884,7 +881,7 @@ class TestRepoObject(_TestWithRepoAndCommit):
 class TestCommit(_TestWithRepo):
 
     def setUp(self):
-        super(TestCommit, self).setUp()
+        super().setUp()
         self.ci, isnew = self._make_commit(
             'foo',
             a=dict(
@@ -1060,7 +1057,7 @@ class TestRename(unittest.TestCase):
                      'copyfrom_path': '/test/path/file.txt'}, result)
 
 
-class TestDirectRepoAccess(object):
+class TestDirectRepoAccess:
 
     def setUp(self):
         setup_basic_test()

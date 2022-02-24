@@ -51,7 +51,7 @@ class TestJsonConverter(unittest.TestCase):
 class TestJsonFile(unittest.TestCase):
     val = v.JsonFile
 
-    class FieldStorage(object):
+    class FieldStorage:
 
         def __init__(self, content):
             self.value = content
@@ -67,7 +67,7 @@ class TestJsonFile(unittest.TestCase):
 class TestUserMapFile(unittest.TestCase):
     val = v.UserMapJsonFile()
 
-    class FieldStorage(object):
+    class FieldStorage:
 
         def __init__(self, content):
             self.value = content

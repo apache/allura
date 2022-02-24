@@ -31,7 +31,7 @@ from allura.tests.unit.factories import (create_project,
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 
     def setUp(self):
-        super(TestWhenProjectIsFoundAndAppIsNot, self).setUp()
+        super().setUp()
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
 
@@ -45,7 +45,7 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
 
     def setUp(self):
-        super(TestWhenProjectIsFoundInNeighborhood, self).setUp()
+        super().setUp()
         self.myproject = create_project('myproject')
         set_context('myproject', neighborhood=self.myproject.neighborhood)
 
@@ -60,7 +60,7 @@ class TestWhenAppIsFoundByID(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
     def setUp(self):
-        super(TestWhenAppIsFoundByID, self).setUp()
+        super().setUp()
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
         set_context('myproject', app_config_id=self.app_config._id,
@@ -77,7 +77,7 @@ class TestWhenAppIsFoundByMountPoint(WithDatabase):
     patches = [patches.project_app_loading_patch]
 
     def setUp(self):
-        super(TestWhenAppIsFoundByMountPoint, self).setUp()
+        super().setUp()
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
         set_context('myproject', mount_point='my_mounted_app',

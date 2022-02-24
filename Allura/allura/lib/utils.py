@@ -61,9 +61,6 @@ from ming.utils import LazyProperty
 from ming.odm.odmsession import ODMCursor
 from ming.odm import session
 import six
-from six.moves import range
-from six.moves import zip
-from six.moves import map
 
 MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
 
@@ -103,7 +100,7 @@ def guess_mime_type(filename):
     return content_type
 
 
-class ConfigProxy(object):
+class ConfigProxy:
 
     '''Wrapper for loading config values at module-scope so we don't
     have problems when a module is imported before tg.config is initialized
@@ -122,7 +119,7 @@ class ConfigProxy(object):
         return asbool(self.get(key))
 
 
-class lazy_logger(object):
+class lazy_logger:
 
     '''Lazy instatiation of a logger, to ensure that it does not get
     created before logging is configured (which would make it disabled)'''
@@ -154,8 +151,8 @@ class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
         """
         title = getproctitle()
         if title.startswith('taskd:'):
-            record.name = "{}:{}".format(title, record.name)
-        return super(CustomWatchedFileHandler, self).format(record)
+            record.name = f"{title}:{record.name}"
+        return super().format(record)
 
 
 def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
@@ -204,7 +201,7 @@ def chunked_iter(iterable, max_size):
         yield (x for i, x in chunk)
 
 
-class AntiSpam(object):
+class AntiSpam:
 
     '''Helper class for bot-protecting forms'''
     honey_field_template = string.Template('''<p class="$honey_class">
@@ -280,7 +277,7 @@ class AntiSpam(object):
         plain = ([len(plain)]
                  + list(map(ord, plain))
                  + self.random_padding[:len(self.spinner_ord) - len(plain) - 1])
-        enc = ''.join(six.unichr(p ^ s) for p, s in zip(plain, self.spinner_ord))
+        enc = ''.join(chr(p ^ s) for p, s in zip(plain, self.spinner_ord))
         enc = six.ensure_binary(enc)
         enc = self._wrap(enc)
         enc = six.ensure_text(enc)
@@ -294,7 +291,7 @@ class AntiSpam(object):
         enc = list(map(ord, enc))
         plain = [e ^ s for e, s in zip(enc, self.spinner_ord)]
         plain = plain[1:1 + plain[0]]
-        plain = ''.join(map(six.unichr, plain))
+        plain = ''.join(map(chr, plain))
         return plain
 
     def extra_fields(self):
@@ -363,7 +360,7 @@ class AntiSpam(object):
                         raise ValueError('Value in honeypot field: %s' % value)
             except Exception as ex:
                 attrs = dict(now=now, obj=vars(obj) if obj else None)
-                log.info('Form validation failure: {}'.format(attrs))
+                log.info(f'Form validation failure: {attrs}')
                 log.info('Error is', exc_info=ex)
                 raise
         return new_params
@@ -392,7 +389,7 @@ class AntiSpam(object):
         return before_validate(antispam_hook)
 
 
-class TruthyCallable(object):
+class TruthyCallable:
 
     '''
     Wraps a callable to make it truthy in a boolean context.
@@ -472,7 +469,7 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
         num = self.linenostart
         yield 0, ('<pre' + (style and ' style="%s"' % style) + '>')
         for tup in inner:
-            yield (tup[0], '<div id="l{}" class="code_block">{}</div>'.format(num, tup[1]))
+            yield (tup[0], f'<div id="l{num}" class="code_block">{tup[1]}</div>')
             num += 1
         yield 0, '</pre>'
 
@@ -510,10 +507,10 @@ def serve_file(fp, filename, content_type, last_modified=None,
                cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
     if not etag and filename and last_modified:
-        etag = '{}?{}'.format(filename, last_modified).encode('utf-8')
+        etag = f'{filename}?{last_modified}'.encode()
     if etag:
         etag_cache(etag)
-    tg.response.headers['Content-Type'] = str('')
+    tg.response.headers['Content-Type'] = ''
     tg.response.content_type = str(content_type)
     tg.response.cache_expires = cache_expires or asint(
         tg.config.get('files_expires_header_secs', 60 * 60))
@@ -527,7 +524,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
     if not embed:
         from allura.lib import helpers as h
         tg.response.headers.add(
-            str('Content-Disposition'),
+            'Content-Disposition',
             str('attachment;filename="%s"' % h.urlquote(filename)))
     # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension
     block_size = 4096
@@ -540,7 +537,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
 class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
 
     def __init__(self, *args, **kwargs):
-        super(ForgeHTMLSanitizerFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # remove some elements from the sanitizer whitelist
         # <form> and <input> could be used for a social engineering attack to construct a form
         # others are just unexpected and confusing, and have no need to be used in markdown
@@ -603,7 +600,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
             if attrs.get((None, 'type'), '') == "checkbox":
                 self.allowed_elements.add(input_el)
 
-        return super(ForgeHTMLSanitizerFilter, self).sanitize_token(token)
+        return super().sanitize_token(token)
 
 
 def ip_address(request):
@@ -731,7 +728,7 @@ class JSONForExport(tg.jsonify.JSONEncoder):
                 return obj.__json__(is_export=True)
             except TypeError:
                 return obj.__json__()
-        return super(JSONForExport, self).default(obj)
+        return super().default(obj)
 
 
 @contextmanager
@@ -790,15 +787,15 @@ def smart_str(s):
     '''
     Returns a bytestring version of 's' from any type
     '''
-    if isinstance(s, six.binary_type):
+    if isinstance(s, bytes):
         return s
     else:
-        return six.text_type(s).encode('utf-8')
+        return str(s).encode('utf-8')
 
 
 def generate_smart_str(params):
     if isinstance(params, collections.Mapping):
-        params_list = six.iteritems(params)
+        params_list = params.items()
     else:
         params_list = params
     for key, value in params_list:

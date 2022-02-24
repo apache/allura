@@ -105,10 +105,10 @@ class RssFeedsCommand(base.BlogCommand):
         app = ForgeBlogApp(c.project, appconf)
         c.app = app
 
-        allura_base.log.info("Getting {} feed {}".format(app.url, feed_url))
+        allura_base.log.info(f"Getting {app.url} feed {feed_url}")
         f = feedparser.parse(feed_url)
         if f.bozo:
-            allura_base.log.warn("{} feed {} errored: {}".format(app.url, feed_url, f.bozo_exception))
+            allura_base.log.warn(f"{app.url} feed {feed_url} errored: {f.bozo_exception}")
             return
         for e in f.entries:
             self.process_entry(e, appid)

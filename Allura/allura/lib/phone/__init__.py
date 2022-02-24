@@ -20,7 +20,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class PhoneService(object):
+class PhoneService:
     """
     Defines the phone verification service interface and provides a default
     no-op implementation.

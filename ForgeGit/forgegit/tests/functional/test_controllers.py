@@ -1,5 +1,3 @@
-# coding: utf-8
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -43,12 +41,11 @@ from allura.tests.test_globals import squish_spaces
 from forgegit.tests import with_git
 from forgegit import model as GM
 import six
-from io import open
 
 
 class _TestCase(TestController):
     def setUp(self):
-        super(_TestCase, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -82,7 +79,7 @@ class _TestCase(TestController):
 
 class TestUIController(TestController):
     def setUp(self):
-        super(TestUIController, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -338,7 +335,7 @@ class TestRootController(_TestCase):
         self._setup_weird_chars_repo()
         ci = self._get_ci(repo='/p/test/weird-chars/')
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7')
-        diffhtml = six.text_type(resp.html.select_one('.diffbrowser'))
+        diffhtml = str(resp.html.select_one('.diffbrowser'))
         assert_in(textwrap.dedent('''\
                     <span class="gd">--- a/привіт.txt</span>
                     <span class="gi">+++ b/привіт.txt</span>
@@ -348,7 +345,7 @@ class TestRootController(_TestCase):
                   diffhtml)
 
         resp = self.app.get(h.urlquote(ci + 'tree/привіт.txt') + '?diff=407950e8fba4dbc108ffbce0128ed1085c52cfd7&diformat=sidebyside')
-        diffhtml = six.text_type(resp.html.select_one('.diffbrowser'))
+        diffhtml = str(resp.html.select_one('.diffbrowser'))
         assert_in(textwrap.dedent('''\
                     <thead>
                     <th class="lineno"></th>
@@ -549,7 +546,7 @@ class TestRootController(_TestCase):
         assert_in('refresh queued', r)
         assert_equal(1, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
 
-        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': str('/p/test/src-git/')},
+        r = self.app.get('/p/test/src-git/refresh', extra_environ={'HTTP_REFERER': '/p/test/src-git/'},
                          status=302)
         assert_in('is being refreshed', self.webflash(r))
         assert_equal(2, M.MonQTask.query.find(dict(task_name='allura.tasks.repo_tasks.refresh')).count())
@@ -565,7 +562,7 @@ class TestRestController(_TestCase):
 
 class TestHasAccessAPI(TestRestApiBase):
     def setUp(self):
-        super(TestHasAccessAPI, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -615,7 +612,7 @@ class TestHasAccessAPI(TestRestApiBase):
 
 class TestFork(_TestCase):
     def setUp(self):
-        super(TestFork, self).setUp()
+        super().setUp()
         to_project = M.Project.query.get(
             shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-git/fork', params=dict(
@@ -705,7 +702,7 @@ class TestFork(_TestCase):
 
     def test_merge_request_invisible_to_non_admin(self):
         assert 'Request Merge' not in self._fork_page(
-            extra_environ=dict(username=str('test-user')))
+            extra_environ=dict(username='test-user'))
 
     def test_merge_action_available_to_admin(self):
         self.app.get('/p/test2/code/request_merge')
@@ -713,7 +710,7 @@ class TestFork(_TestCase):
     def test_merge_action_unavailable_to_non_admin(self):
         self.app.get(
             '/p/test2/code/request_merge',
-            status=403, extra_environ=dict(username=str('test-user')))
+            status=403, extra_environ=dict(username='test-user'))
 
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
@@ -723,7 +720,7 @@ class TestFork(_TestCase):
         assert_in('git checkout master', merge_instructions)
         assert_in('git fetch /srv/git/p/test2/code master', merge_instructions)
         c_id = self.forked_repo.get_heads()[0]['object_id']
-        assert_in('git merge {}'.format(c_id), merge_instructions)
+        assert_in(f'git merge {c_id}', merge_instructions)
         assert_regexp_matches(str(r), r'[0-9]+ seconds? ago')
 
         merge_form = r.html.find('div', {'class': 'merge-help-text merge-ok'})
@@ -869,7 +866,7 @@ class TestFork(_TestCase):
                               'summary': 'changed summary',
                               'description': 'changed description'
                           },
-                          extra_environ=dict(username=str('*anonymous')),
+                          extra_environ=dict(username='*anonymous'),
                           status=302,
                           ).follow()
         assert 'Login' in r
@@ -886,7 +883,7 @@ class TestFork(_TestCase):
         assert '<p>changed description</p' in r
         assert 'Merge Request #1: changed summary (open)' in r
         changes = r.html.findAll('div', attrs={'class': 'markdown_content'})[-1]
-        dd_assert_equal(six.text_type(changes), """
+        dd_assert_equal(str(changes), """
 <div class="markdown_content"><ul>
 <li>
 <p><strong>Summary</strong>: summary --&gt; changed summary</p>
@@ -940,7 +937,7 @@ class TestFork(_TestCase):
             '/p/test/src-git/merge-requests/1/update_markdown',
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['status'] == 'no_permission'
 
     @patch.object(GM.Repository, 'merge_request_commits', autospec=True)
@@ -964,7 +961,7 @@ class TestFork(_TestCase):
 
 class TestDiff(TestController):
     def setUp(self):
-        super(TestDiff, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -993,7 +990,7 @@ class TestDiff(TestController):
 
 class TestGitRename(TestController):
     def setUp(self):
-        super(TestGitRename, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -1044,7 +1041,7 @@ class TestGitRename(TestController):
 
 class TestGitBranch(TestController):
     def setUp(self):
-        super(TestGitBranch, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @with_git
@@ -1099,7 +1096,7 @@ class TestGitBranch(TestController):
 
 class TestIncludeMacro(_TestCase):
     def setUp(self):
-        super(TestIncludeMacro, self).setUp()
+        super().setUp()
         setup_global_objects()
 
     def test_parse_repo(self):

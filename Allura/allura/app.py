@@ -48,15 +48,14 @@ from allura.lib.utils import permanent_redirect, ConfigProxy
 from allura import model as M
 from allura.tasks import index_tasks
 import six
-from io import open, BytesIO
-from six.moves import map
+from io import BytesIO
 
 log = logging.getLogger(__name__)
 
 config = ConfigProxy(common_suffix='forgemail.domain')
 
 
-class ConfigOption(object):
+class ConfigOption:
 
     """Definition of a configuration option for an :class:`Application`.
 
@@ -91,7 +90,7 @@ class ConfigOption(object):
         return ew._Jinja2Widget().j2_attrs(self.extra_attrs or {})
 
 
-class SitemapEntry(object):
+class SitemapEntry:
 
     """A labeled URL, which may optionally have
     :class:`children <SitemapEntry>`.
@@ -219,7 +218,7 @@ class SitemapEntry(object):
         )
 
 
-class Application(object):
+class Application:
 
     """
     The base Allura pluggable application
@@ -625,7 +624,7 @@ class Application(object):
         :return: a list of :class:`WebhookSender <allura.webhooks.WebhookSender>`
         """
         tool_name = self.config.tool_name.lower()
-        webhooks = [w for w in six.itervalues(g.entry_points['webhooks'])
+        webhooks = [w for w in g.entry_points['webhooks'].values()
                     if tool_name in w.triggered_by]
         return webhooks
 
@@ -668,7 +667,7 @@ class Application(object):
     def admin_menu_collapse_button(self):
         """Returns button for showing/hiding admin sidebar menu"""
         return SitemapEntry(
-            label='Admin - {}'.format(self.config.options.mount_label),
+            label=f'Admin - {self.config.options.mount_label}',
             extra_html_attrs={
                 'id': 'sidebar-admin-menu-trigger',
             })
@@ -811,7 +810,7 @@ class Application(object):
         return None
 
 
-class AdminControllerMixin(object):
+class AdminControllerMixin:
     """Provides common functionality admin controllers need"""
     def _before(self, *remainder, **params):
         # Display app's sidebar on admin page, instead of :class:`AdminApp`'s
@@ -837,7 +836,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         """Instantiate this controller for an :class:`app <Application>`.
 
         """
-        super(DefaultAdminController, self).__init__()
+        super().__init__()
         self.app = app
         self.webhooks = WebhooksLookup(app)
 
@@ -976,7 +975,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
                 try:
                     val = opt.validate(val)
                 except fev.Invalid as e:
-                    flash('{}: {}'.format(opt.name, str(e)), 'error')
+                    flash(f'{opt.name}: {str(e)}', 'error')
                     continue
                 self.app.config.options[opt.name] = val
             if is_admin:
@@ -1005,9 +1004,9 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
             new_group_ids = args.get('new', [])
             del_group_ids = []
             group_ids = args.get('value', [])
-            if isinstance(new_group_ids, six.string_types):
+            if isinstance(new_group_ids, str):
                 new_group_ids = [new_group_ids]
-            if isinstance(group_ids, six.string_types):
+            if isinstance(group_ids, str):
                 group_ids = [group_ids]
 
             for acl in old_acl:
@@ -1047,7 +1046,7 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
 class WebhooksLookup(BaseController, AdminControllerMixin):
 
     def __init__(self, app):
-        super(WebhooksLookup, self).__init__()
+        super().__init__()
         self.app = app
 
     @without_trailing_slash

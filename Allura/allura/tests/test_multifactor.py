@@ -34,7 +34,7 @@ from allura.lib.multifactor import RecoveryCodeService, MongodbRecoveryCodeServi
 from allura.lib.multifactor import GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
 
-class TestGoogleAuthenticatorFile(object):
+class TestGoogleAuthenticatorFile:
     sample = textwrap.dedent('''\
         7CL3WL756ISQCU5HRVNAODC44Q
         " RATE_LIMIT 3 30
@@ -80,7 +80,7 @@ class GenericTotpService(TotpService):
         pass
 
 
-class TestTotpService(object):
+class TestTotpService:
 
     sample_key = b'\x00K\xda\xbfv\xc2B\xaa\x1a\xbe\xa5\x96b\xb2\xa0Z:\xc9\xcf\x8a'
     sample_time = 1472502664
@@ -124,7 +124,7 @@ class TestTotpService(object):
         assert srv.get_qr_code(totp, user)
 
 
-class TestAnyTotpServiceImplementation(object):
+class TestAnyTotpServiceImplementation:
 
     __test__ = False
 
@@ -183,7 +183,7 @@ class TestMongodbTotpService(TestAnyTotpServiceImplementation):
         ming.configure(**config)
 
 
-class TestGoogleAuthenticatorPamFilesystemMixin(object):
+class TestGoogleAuthenticatorPamFilesystemMixin:
 
     def setUp(self):
         self.totp_basedir = tempfile.mkdtemp(prefix='totp-test', dir=os.getenv('TMPDIR', '/tmp'))
@@ -204,10 +204,10 @@ class TestGoogleAuthenticatorPamFilesystemTotpService(TestAnyTotpServiceImplemen
         # make a regular .google-authenticator file first, so rate limit info has somewhere to go
         self.Service().set_secret_key(self.mock_user(), self.sample_key)
         # then run test
-        super(TestGoogleAuthenticatorPamFilesystemTotpService, self).test_rate_limiting()
+        super().test_rate_limiting()
 
 
-class TestRecoveryCodeService(object):
+class TestRecoveryCodeService:
 
     def test_generate_one_code(self):
         code = RecoveryCodeService().generate_one_code()
@@ -229,7 +229,7 @@ class TestRecoveryCodeService(object):
         assert_equal(len(recovery.saved_codes), asint(config.get('auth.multifactor.recovery_code.count', 10)))
 
 
-class TestAnyRecoveryCodeServiceImplementation(object):
+class TestAnyRecoveryCodeServiceImplementation:
 
     __test__ = False
 
@@ -317,7 +317,7 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
     Service = GoogleAuthenticatorPamFilesystemRecoveryCodeService
 
     def setUp(self):
-        super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).setUp()
+        super().setUp()
 
         # make a regular .google-authenticator file first, so recovery keys have somewhere to go
         GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(),
@@ -327,7 +327,7 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
         # this deletes the file
         GoogleAuthenticatorPamFilesystemTotpService().set_secret_key(self.mock_user(), None)
 
-        super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).test_get_codes_none()
+        super().test_get_codes_none()
 
     def test_replace_codes_when_no_file(self):
         # this deletes the file
@@ -335,4 +335,4 @@ class TestGoogleAuthenticatorPamFilesystemRecoveryCodeService(TestAnyRecoveryCod
 
         # then it errors because no .google-authenticator file
         with assert_raises(IOError):
-            super(TestGoogleAuthenticatorPamFilesystemRecoveryCodeService, self).test_replace_codes()
+            super().test_replace_codes()

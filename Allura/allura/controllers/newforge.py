@@ -27,7 +27,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 
 
-class NewForgeController(object):
+class NewForgeController:
 
     # /nf/_static_/... (or whatever static.script_name is set to) is handled by StaticFilesMiddleware
     # /nf/admin/... is handled by SiteAdminController

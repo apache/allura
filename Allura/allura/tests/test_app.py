@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -138,17 +136,17 @@ def test_handle_artifact_unicode(qg):
 
     a = app.Application(c.project, c.app.config)
 
-    msg = dict(payload='foo ƒ†©¥˙¨ˆ'.encode('utf-8'), message_id=1, headers={})
+    msg = dict(payload='foo ƒ†©¥˙¨ˆ'.encode(), message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
-    assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ'.encode('utf-8'))
+    assert_equal(post.attach.call_args[0][1].getvalue(), 'foo ƒ†©¥˙¨ˆ'.encode())
 
     msg = dict(payload=b'foo', message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
     assert_equal(post.attach.call_args[0][1].getvalue(), b'foo')
 
-    msg = dict(payload="\x94my quote\x94".encode('utf-8'), message_id=1, headers={})
+    msg = dict(payload="\x94my quote\x94".encode(), message_id=1, headers={})
     a.handle_artifact_message(ticket, msg)
-    assert_equal(post.attach.call_args[0][1].getvalue(), '\x94my quote\x94'.encode('utf-8'))
+    assert_equal(post.attach.call_args[0][1].getvalue(), '\x94my quote\x94'.encode())
 
     # assert against prod example
     msg_raw = """Message-Id: <1502352031.3216858.1068961568.19EF48C6@webmail.messagingengine.com>

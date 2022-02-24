@@ -45,7 +45,7 @@ from allura.model import User, ACE, ProjectRole
 log = logging.getLogger(__name__)
 
 
-class F(object):
+class F:
     send_message = SendMessageForm()
 
 
@@ -281,7 +281,7 @@ class ProfileSectionBase(SectionBase):
         :param:`project`.  Stores the values as attributes of
         the same name.
         """
-        super(ProfileSectionBase, self).__init__(user)
+        super().__init__(user)
         self.project = project
 
 

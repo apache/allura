@@ -126,7 +126,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
         __get_solr(solr_hosts).add(solr_updates)
 
     if len(exceptions) == 1:
-        six.reraise(exceptions[0][0], exceptions[0][1], exceptions[0][2])
+        raise exceptions[0][1].with_traceback(exceptions[0][2])
     if exceptions:
         raise CompoundError(*exceptions)
     check_for_dirty_ming_records('add_artifacts task')
@@ -153,7 +153,7 @@ def commit():
 
 @task
 def solr_del_tool(project_id, mount_point_s):
-    g.solr.delete(q='project_id_s:"{}" AND mount_point_s:"{}"'.format(project_id, mount_point_s))
+    g.solr.delete(q=f'project_id_s:"{project_id}" AND mount_point_s:"{mount_point_s}"')
 
 @contextmanager
 def _indexing_disabled(session):

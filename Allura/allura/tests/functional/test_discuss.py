@@ -25,8 +25,6 @@ from allura.tests import TestController
 from allura import model as M
 from allura.lib import helpers as h
 from tg import config
-from io import open
-from six.moves import range
 
 
 class TestDiscussBase(TestController):
@@ -81,8 +79,8 @@ class TestDiscuss(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = text
         r = self.app.post(f['action'], params=params,
-                          headers={str('Referer'): str(thread_link)},
-                          extra_environ=dict(username=str('root')))
+                          headers={'Referer': str(thread_link)},
+                          extra_environ=dict(username='root'))
         r = r.follow()
         return r
 
@@ -107,7 +105,7 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'This is a new post'
         r = self.app.post(post_link,
                           params=params,
-                          headers={str('Referer'): str(thread_link)})
+                          headers={'Referer': str(thread_link)})
         r = r.follow()
         assert 'This is a new post' in r, r
         r = self.app.get(post_link)
@@ -121,7 +119,7 @@ class TestDiscuss(TestDiscussBase):
         params[post_form.find('textarea')['name']] = 'Tis a reply'
         r = self.app.post(post_link + 'reply',
                           params=params,
-                          headers={str('Referer'): str(post_link)})
+                          headers={'Referer': str(post_link)})
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
         permalinks = [post.find('form')['action']
@@ -135,7 +133,7 @@ class TestDiscuss(TestDiscussBase):
     def test_rate_limit_comments(self):
         with h.push_config(config, **{'allura.rate_limits_per_user': '{"3600": 2}'}):
             for i in range(0, 2):
-                r = self._make_post('This is a post {}'.format(i))
+                r = self._make_post(f'This is a post {i}')
                 assert 'rate limit exceeded' not in r.text
 
             r = self._make_post('This is a post that should fail.')
@@ -163,14 +161,14 @@ class TestDiscuss(TestDiscussBase):
         ]
 
         self.app.get(thread_url, status=200,  # ok
-                     extra_environ=dict(username=str('test-admin')))
+                     extra_environ=dict(username='test-admin'))
         self.app.get(thread_url, status=403,  # forbidden
                      extra_environ=dict(username=str(non_admin)))
 
     def test_spam_link(self):
         r = self._make_post('Test post')
         assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' in r
-        r = self.app.get('/wiki/Home/', extra_environ={'username': str('test-user-1')})
+        r = self.app.get('/wiki/Home/', extra_environ={'username': 'test-user-1'})
         assert '<span><i class="fa fa-exclamation" aria-hidden="true"></i></span>' not in r, 'User without moderate perm must not see Spam link'
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
@@ -214,7 +212,7 @@ class TestDiscuss(TestDiscussBase):
             update_link,
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['status'] == 'no_permission'
 
     def test_comment_post_reaction_new(self):
@@ -239,14 +237,14 @@ class TestDiscuss(TestDiscussBase):
             react_link,
             params={
                 'r': ':+1:'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['error'] == 'no_permission'
         # even anon can't send invalid reactions
         response = self.app.post(
             react_link,
             params={
                 'r': 'invalid'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['error'] == 'no_permission'
 
     def test_comment_post_reaction_change(self):
@@ -401,7 +399,7 @@ class TestDiscuss(TestDiscussBase):
 class TestAttachment(TestDiscussBase):
 
     def setUp(self):
-        super(TestAttachment, self).setUp()
+        super().setUp()
         self.thread_link = self._thread_link()
         thread = self.app.get(self.thread_link)
         for f in thread.html.findAll('form'):
@@ -415,7 +413,7 @@ class TestAttachment(TestDiscussBase):
                 params[field['name']] = field.get('value') or ''
         params[f.find('textarea')['name']] = 'Test Post'
         r = self.app.post(f['action'], params=params,
-                          headers={str('Referer'): str(self.thread_link)})
+                          headers={'Referer': str(self.thread_link)})
         r = r.follow()
         self.post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
@@ -491,15 +489,15 @@ class TestAttachment(TestDiscussBase):
         self.app.get(thumblink, status=200)
         _, slug = self.post_link.rstrip('/').rsplit('/', 1)
         post = M.Post.query.get(slug=slug)
-        assert post, 'Could not find post for {} {}'.format(slug, self.post_link)
+        assert post, f'Could not find post for {slug} {self.post_link}'
         post.deleted = True
         session(post).flush(post)
         self.app.get(alink, status=404)
         self.app.get(thumblink, status=404)
 
     def test_unmoderated_post_attachments(self):
-        ordinary_user = {'username': str('test-user')}
-        moderator = {'username': str('test-admin')}
+        ordinary_user = {'username': 'test-user'}
+        moderator = {'username': 'test-admin'}
         # set up attachment
         f = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
         with open(f, 'rb') as f:
@@ -519,7 +517,7 @@ class TestAttachment(TestDiscussBase):
         # make post unmoderated
         _, slug = self.post_link.rstrip('/').rsplit('/', 1)
         post = M.Post.query.get(slug=slug)
-        assert post, 'Could not find post for {} {}'.format(slug, self.post_link)
+        assert post, f'Could not find post for {slug} {self.post_link}'
         post.status = 'pending'
         session(post).flush(post)
         # ... make sure attachment is not visible to ordinary user

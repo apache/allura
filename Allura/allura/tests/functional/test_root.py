@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -48,7 +46,7 @@ from alluratest.controller import setup_trove_categories
 class TestRootController(TestController):
 
     def setUp(self):
-        super(TestRootController, self).setUp()
+        super().setUp()
         n_adobe = M.Neighborhood.query.get(name='Adobe')
         assert n_adobe
         u_admin = M.User.query.get(username='test-admin')
@@ -56,7 +54,7 @@ class TestRootController(TestController):
         n_adobe.register_project('adobe-2', u_admin)
 
     def test_index(self):
-        response = self.app.get('/', extra_environ=dict(username=str('*anonymous')))
+        response = self.app.get('/', extra_environ=dict(username='*anonymous'))
         assert_equal(response.location, 'http://localhost/neighborhood')
 
         response = self.app.get('/')
@@ -196,12 +194,12 @@ class TestRootController(TestController):
 class TestRootWithSSLPattern(TestController):
     def setUp(self):
         with td.patch_middleware_config({'force_ssl.pattern': '^/auth'}):
-            super(TestRootWithSSLPattern, self).setUp()
+            super().setUp()
 
     def test_no_weird_ssl_redirect_for_error_document(self):
         # test a 404, same functionality as a 500 from an error
         r = self.app.get('/auth/asdfasdf',
-                         extra_environ={'wsgi.url_scheme': str('https')},
+                         extra_environ={'wsgi.url_scheme': 'https'},
                          status=404)
         assert '302 Found' not in r.text, r.text
         assert '301 Moved Permanently' not in r.text, r.text

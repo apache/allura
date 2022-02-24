@@ -62,7 +62,6 @@ from forgewiki.converters import mediawiki2markdown
 
 
 import logging
-from six.moves import map
 log = logging.getLogger(__name__)
 
 
@@ -134,7 +133,7 @@ class GitHubWikiImporter(ToolImporter):
         """ Import a GitHub wiki into a new Wiki Allura tool.
 
         """
-        project_name = "{}/{}".format(user_name, project_name)
+        project_name = f"{user_name}/{project_name}"
         extractor = GitHubProjectExtractor(project_name, user=user)
         wiki_avail = extractor.has_wiki()
         # has_wiki only indicates that wiki is enabled, but it does not mean
@@ -327,7 +326,7 @@ class GitHubWikiImporter(ToolImporter):
         elif ext and ext in self.textile_exts:
             text = self._prepare_textile_text(text)
 
-            text = six.text_type(h.render_any_markup(filename, text))
+            text = str(h.render_any_markup(filename, text))
             text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             if html2text:
                 text = html2text.html2text(text)
@@ -390,8 +389,8 @@ class GitHubWikiImporter(ToolImporter):
 
     def _gollum_external_link(self, link, title, options):
         if title:
-            return '[{}]({})'.format(title, link)
-        return '<{}>'.format(link)
+            return f'[{title}]({link})'
+        return f'<{link}>'
 
     def _gollum_page_link(self, link, title, options):
         page = self._convert_page_name(link)
@@ -408,8 +407,8 @@ class GitHubWikiImporter(ToolImporter):
             page = self.available_pages[idx]
 
         if title:
-            return '[{}]({})'.format(title, page)
-        return '[{}]'.format(page)
+            return f'[{title}]({page})'
+        return f'[{page}]'
 
     def rewrite_links(self, html, prefix, new_prefix):
         if not prefix.endswith('/'):
@@ -426,7 +425,7 @@ class GitHubWikiImporter(ToolImporter):
                     a.string = new_page
                 elif a.string == prefix + page:
                     a.string = new_prefix + new_page
-        return six.text_type(soup)
+        return str(soup)
 
     def _prepare_textile_text(self, text):
         # need to convert lists properly

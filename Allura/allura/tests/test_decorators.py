@@ -59,7 +59,7 @@ class TestTask(TestCase):
         func.post('test', foo=2, delay=1)
 
 
-class TestMemoize(object):
+class TestMemoize:
 
     def test_function(self):
         @memoize
@@ -81,7 +81,7 @@ class TestMemoize(object):
 
     def test_methods(self):
 
-        class Randomy(object):
+        class Randomy:
             @memoize
             def randomy(self, do_random):
                 if do_random:
@@ -122,7 +122,7 @@ class TestMemoize(object):
 
     def test_methods_garbage_collection(self):
 
-        class Randomy(object):
+        class Randomy:
             @memoize
             def randomy(self, do_random):
                 if do_random:

@@ -35,7 +35,7 @@ class BaseAttachment(File):
     ArtifactType = None
 
     class __mongometa__:
-        name = str('attachment')
+        name = 'attachment'
         polymorphic_on = 'attachment_type'
         polymorphic_identity = None
         session = project_orm_session

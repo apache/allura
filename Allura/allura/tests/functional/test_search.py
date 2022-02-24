@@ -69,6 +69,6 @@ class TestSearch(TestController):
         resp.mustcontain('Welcome to your wiki! This is the default page')
         resp.mustcontain('Sample wiki comment')
 
-        resp = self.app.get('/p/test2/search/', params=dict(q='wiki'), extra_environ=dict(username=str('*anonymous')))
+        resp = self.app.get('/p/test2/search/', params=dict(q='wiki'), extra_environ=dict(username='*anonymous'))
         resp.mustcontain(no='Welcome to your wiki! This is the default page')
         resp.mustcontain(no='Sample wiki comment')

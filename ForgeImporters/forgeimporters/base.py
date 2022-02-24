@@ -29,7 +29,6 @@ from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import unquote
 from datetime import datetime
 import codecs
-from six.moves import filter
 import six
 
 from bs4 import BeautifulSoup
@@ -63,7 +62,7 @@ log = logging.getLogger(__name__)
 class ProjectImportForm(schema.Schema):
 
     def __init__(self, source):
-        super(ProjectImportForm, self).__init__()
+        super().__init__()
         provider = ProjectRegistrationProvider.get()
         self.add_field('tools', ToolsValidator(source))
         self.add_field('project_shortname', provider.shortname_validator)
@@ -76,12 +75,12 @@ class ProjectImportForm(schema.Schema):
 class ToolImportForm(schema.Schema):
 
     def __init__(self, tool_class):
-        super(ToolImportForm, self).__init__()
+        super().__init__()
         self.add_field('mount_point', v.MountPointValidator(tool_class))
     mount_label = v.UnicodeString()
 
 
-class ImportErrorHandler(object):
+class ImportErrorHandler:
 
     def __init__(self, importer, project_name, project):
         self.importer = importer
@@ -149,7 +148,7 @@ def import_tool(importer_path, project_name=None,
             handler.success(app)
 
 
-class ProjectExtractor(object):
+class ProjectExtractor:
 
     """Base class for project extractors.
 
@@ -356,7 +355,7 @@ class ToolImportControllerMeta(type):
         return type.__call__(cls, importer, *args, **kw)
 
 
-class ToolImportController(six.with_metaclass(ToolImportControllerMeta, BaseController)):
+class ToolImportController(BaseController, metaclass=ToolImportControllerMeta):
     """ Base class for ToolImporter controllers.
 
     """
@@ -378,7 +377,7 @@ class ToolImporterMeta(type):
     def __init__(cls, name, bases, attrs):
         if not (hasattr(cls, 'target_app_ep_names')
                 or hasattr(cls, 'target_app')):
-            raise AttributeError("{} must define either `target_app` or `target_app_ep_names`".format(name))
+            raise AttributeError(f"{name} must define either `target_app` or `target_app_ep_names`")
         return type.__init__(cls, name, bases, attrs)
 
     def __call__(cls, *args, **kw):
@@ -395,7 +394,7 @@ class ToolImporterMeta(type):
         return type.__call__(cls, *args, **kw)
 
 
-class ToolImporter(six.with_metaclass(ToolImporterMeta, object)):
+class ToolImporter(metaclass=ToolImporterMeta):
 
     """
     Base class for tool importers.
@@ -538,7 +537,7 @@ class ToolImporter(six.with_metaclass(ToolImporterMeta, object)):
 
         """
         klass = self.__class__
-        importer_path = '{}.{}'.format(klass.__module__, klass.__name__)
+        importer_path = f'{klass.__module__}.{klass.__name__}'
         import_tool.post(importer_path, **kw)
 
 
@@ -552,11 +551,11 @@ class ToolsValidator(fev.Set):
     """
 
     def __init__(self, source, *a, **kw):
-        super(ToolsValidator, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.source = source
 
     def to_python(self, value, state=None):
-        value = super(ToolsValidator, self).to_python(value, state)
+        value = super().to_python(value, state)
         valid = []
         invalid = []
         for name in value:
@@ -572,7 +571,7 @@ class ToolsValidator(fev.Set):
         return valid
 
 
-class ProjectToolsImportController(object):
+class ProjectToolsImportController:
 
     '''List all importers available'''
 
@@ -623,7 +622,7 @@ def bytesio_parser(page):
     }
 
 
-class File(object):
+class File:
 
     def __init__(self, url, filename=None):
         extractor = ProjectExtractor(None, url, parser=bytesio_parser)

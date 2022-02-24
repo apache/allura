@@ -31,7 +31,7 @@ from allura.lib import helpers as h
 class TestGlobalsModel(TrackerTestWithModel):
 
     def setUp(self):
-        super(TestGlobalsModel, self).setUp()
+        super().setUp()
         c.project.install_app('Tickets', 'doc-bugs')
         ThreadLocalORMSession.flush_all()
 

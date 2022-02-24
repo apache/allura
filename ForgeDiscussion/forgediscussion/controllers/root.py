@@ -59,7 +59,7 @@ log = logging.getLogger(__name__)
 
 class RootController(BaseController, DispatchIndex, FeedController):
 
-    class W(object):
+    class W:
         new_topic = DW.NewTopicPost(submit_text='Post')
 
         announcements_table = FW.AnnouncementsTable()

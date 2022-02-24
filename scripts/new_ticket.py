@@ -20,7 +20,6 @@ import sys
 import argparse
 import requests
 from pprint import pprint
-from six.moves import input
 
 
 def get_parser():
@@ -57,4 +56,4 @@ if __name__ == '__main__':
         print('Ticket created at: %s' % r.url)
         pprint(r.json())
     else:
-        print('Error [{}]:\n{}'.format(r.status_code, r.text))
+        print(f'Error [{r.status_code}]:\n{r.text}')

@@ -29,7 +29,7 @@ def create_timelines(node_id):
 @task
 def change_user_name(user_id, new_name):
     Activity.query.update(
-        {'actor.node_id': "User:{}".format(user_id)},
+        {'actor.node_id': f"User:{user_id}"},
         {'$set': {
             "actor.activity_name": new_name,
         }},

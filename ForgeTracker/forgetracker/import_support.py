@@ -46,7 +46,7 @@ class ImportException(Exception):
     pass
 
 
-class ResettableStream(object):
+class ResettableStream:
 
     '''Class supporting seeks within a header of otherwise
     unseekable stream.'''
@@ -96,7 +96,7 @@ class ResettableStream(object):
             return self.stream_pos
 
 
-class ImportSupport(object):
+class ImportSupport:
 
     ATTACHMENT_SIZE_LIMIT = 1024 * 1024
 
@@ -197,7 +197,7 @@ class ImportSupport(object):
 
     def make_artifact(self, ticket_dict):
         remapped = {}
-        for f, v in six.iteritems(ticket_dict):
+        for f, v in ticket_dict.items():
             transform = self.FIELD_MAP.get(f, ())
             if transform is None:
                 continue
@@ -307,11 +307,11 @@ class ImportSupport(object):
     def validate_user_mapping(self):
         if 'user_map' not in self.options:
             self.options['user_map'] = {}
-        for foreign_user, allura_user in six.iteritems(self.options['user_map']):
+        for foreign_user, allura_user in self.options['user_map'].items():
             u = M.User.by_username(allura_user)
             if not u:
                 raise ImportException(
-                    'User mapping {}:{} - target user does not exist'.format(foreign_user, allura_user))
+                    f'User mapping {foreign_user}:{allura_user} - target user does not exist')
 
     #
     # Main methods

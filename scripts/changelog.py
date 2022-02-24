@@ -58,7 +58,7 @@ def get_ticket_summaries(tickets):
     summaries = {}
     r = requests.get(API_URL.format(' '.join(tickets)))
     if r.status_code != 200:
-        raise ValueError('Unexpected response code: {}'.format(r.status_code))
+        raise ValueError(f'Unexpected response code: {r.status_code}')
     for ticket in r.json()['tickets']:
         summaries[ticket['ticket_num']] = ticket['summary']
     return summaries
@@ -70,9 +70,9 @@ def print_changelog(version, summaries, changes_without_tickets):
         'date': datetime.utcnow().strftime('%B %Y'),
     }))
     for ticket in sorted(summaries.keys()):
-        print(" * [#{}] {}".format(ticket, six.ensure_text(summaries[ticket])))
+        print(f" * [#{ticket}] {six.ensure_text(summaries[ticket])}")
     for change in changes_without_tickets:
-        print(" * {}".format(six.ensure_text(change)))
+        print(f" * {six.ensure_text(change)}")
 
 if __name__ == '__main__':
     main()

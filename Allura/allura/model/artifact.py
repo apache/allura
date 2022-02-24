@@ -69,7 +69,7 @@ class Artifact(MappedClass, SearchIndexable):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name = str('artifact')
+        name = 'artifact'
         indexes = [
             ('app_config_id', 'labels'),
         ]
@@ -458,7 +458,7 @@ class Artifact(MappedClass, SearchIndexable):
 
         """
         ArtifactReference.query.remove(dict(_id=self.index_id()))
-        super(Artifact, self).delete()
+        super().delete()
 
     def get_mail_footer(self, notification, toaddr):
         allow_email_posting = self.app.config.options.get('AllowEmailPosting', True)
@@ -475,7 +475,7 @@ class Artifact(MappedClass, SearchIndexable):
         False otherwise
         """
         pkg = cls.__module__.split('.', 1)[0]
-        opt = '{}.rate_limits'.format(pkg)
+        opt = f'{pkg}.rate_limits'
 
         def count_in_app():
             return cls.query.find(dict(app_config_id=app_config._id)).count()
@@ -498,7 +498,7 @@ class Snapshot(Artifact):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name = str('artifact_snapshot')
+        name = 'artifact_snapshot'
         unique_indexes = [('artifact_class', 'artifact_id', 'version')]
         indexes = [('artifact_id', 'version'),
                    'author.id',
@@ -540,7 +540,7 @@ class Snapshot(Artifact):
         raise NotImplementedError('original')  # pragma no cover
 
     def shorthand_id(self):
-        return '{}#{}'.format(self.original().shorthand_id(), self.version)
+        return f'{self.original().shorthand_id()}#{self.version}'
 
     def clear_user_data(self):
         """ Redact author data for a given user """
@@ -576,7 +576,7 @@ class VersionedArtifact(Artifact):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name = str('versioned_artifact')
+        name = 'versioned_artifact'
         history_class = Snapshot
 
     query: 'Query[VersionedArtifact]'
@@ -641,7 +641,7 @@ class VersionedArtifact(Artifact):
     def revert(self, version):
         ss = self.get_version(version)
         old_version = self.version
-        for k, v in six.iteritems(ss.data):
+        for k, v in ss.data.items():
             setattr(self, k, v)
         self.version = old_version
 
@@ -661,7 +661,7 @@ class VersionedArtifact(Artifact):
 
     def delete(self):
         # remove history so that the snapshots aren't left orphaned
-        super(VersionedArtifact, self).delete()
+        super().delete()
         HC = self.__mongometa__.history_class
         HC.query.remove(dict(artifact_id=self._id))
 
@@ -682,7 +682,7 @@ class VersionedArtifact(Artifact):
                 """
                 return len(artifacts)
             kwargs['count_by_user'] = distinct_artifacts_by_user
-        return super(VersionedArtifact, cls).is_limit_exceeded(*args, **kwargs)
+        return super().is_limit_exceeded(*args, **kwargs)
 
 
 class Message(Artifact):
@@ -696,7 +696,7 @@ class Message(Artifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = str('message')
+        name = 'message'
 
     query: 'Query[Message]'
 
@@ -747,7 +747,7 @@ class AwardFile(File):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('award_file')
+        name = 'award_file'
 
     query: 'Query[AwardFile]'
 
@@ -758,7 +758,7 @@ class Award(Artifact):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('award')
+        name = 'award'
         indexes = ['short']
 
     query: 'Query[Award]'
@@ -804,7 +804,7 @@ class AwardGrant(Artifact):
     "An :class:`Award <allura.model.artifact.Award>` can be bestowed upon a project by a neighborhood"
     class __mongometa__:
         session = main_orm_session
-        name = str('grant')
+        name = 'grant'
         indexes = ['short']
 
     query: 'Query[AwardGrant]'
@@ -857,12 +857,12 @@ class AwardGrant(Artifact):
 
 class RssFeed(FG.Rss201rev2Feed):
     def rss_attributes(self):
-        attrs = super(RssFeed, self).rss_attributes()
+        attrs = super().rss_attributes()
         attrs['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
         return attrs
 
     def add_root_elements(self, handler):
-        super(RssFeed, self).add_root_elements(handler)
+        super().add_root_elements(handler)
         if self.feed['feed_url'] is not None:
             handler.addQuickElement('atom:link', '', {
                 'rel': 'self',
@@ -879,7 +879,7 @@ class Feed(MappedClass):
     """
     class __mongometa__:
         session = project_orm_session
-        name = str('artifact_feed')
+        name = 'artifact_feed'
         indexes = [
             'pubdate',
             ('artifact_ref.project_id', 'artifact_ref.mount_point'),
@@ -924,7 +924,7 @@ class Feed(MappedClass):
 
     @classmethod
     def from_username(cls, username):
-        return cls.query.find({'author_link': "/u/{}/".format(username)}).all()
+        return cls.query.find({'author_link': f"/u/{username}/"}).all()
 
     @classmethod
     def has_access(cls, artifact):
@@ -1020,7 +1020,7 @@ class VotableArtifact(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('vote')
+        name = 'vote'
 
     query: 'Query[VotableArtifact]'
 
@@ -1150,7 +1150,7 @@ class MovedArtifact(Artifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = str('moved_artifact')
+        name = 'moved_artifact'
 
     query: 'Query[MovedArtifact]'
 
@@ -1164,7 +1164,7 @@ class MovedArtifact(Artifact):
 class SpamCheckResult(MappedClass):
     class __mongometa__:
         session = main_orm_session
-        name = str('spam_check_result')
+        name = 'spam_check_result'
         indexes = [
             ('project_id', 'result'),
             ('user_id', 'result'),

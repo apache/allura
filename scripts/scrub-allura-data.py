@@ -47,7 +47,7 @@ def scrub_project(p, options):
     log.info('Scrubbing project "%s"' % p.shortname)
     preamble = options.preamble
     if not public(p):
-        log.info('{} project "{}"'.format(preamble, p.shortname))
+        log.info(f'{preamble} project "{p.shortname}"')
         if not options.dry_run:
             p.delete()
         return

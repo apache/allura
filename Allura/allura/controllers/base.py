@@ -27,7 +27,7 @@ from tg import tmpl_context as c
 log = logging.getLogger(__name__)
 
 
-class BaseController(object):
+class BaseController:
 
     @expose()
     def _lookup(self, name=None, *remainder):
@@ -37,13 +37,13 @@ class BaseController(object):
 
     def rate_limit(self, artifact_class, message, redir='..'):
         if artifact_class.is_limit_exceeded(c.app.config, user=c.user):
-            msg = '{} rate limit exceeded. '.format(message)
+            msg = f'{message} rate limit exceeded. '
             log.warn(msg + c.app.config.url())
             flash(msg + 'Please try again later.', 'error')
             redirect(redir or '/')
 
 
-class DispatchIndex(object):
+class DispatchIndex:
 
     """Rewrite default url dispatching for controller.
 

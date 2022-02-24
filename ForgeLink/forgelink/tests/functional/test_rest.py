@@ -1,5 +1,3 @@
-# coding: utf-8
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -27,7 +25,7 @@ from allura.lib import helpers as h
 class TestLinkApi(TestRestApiBase):
 
     def setUp(self):
-        super(TestLinkApi, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_link
@@ -53,19 +51,19 @@ class TestLinkApi(TestRestApiBase):
 
     def test_rest_link_get_permissions(self):
         self.app.get('/rest/p/test/link',
-                     extra_environ={'username': str('*anonymous')}, status=200)
+                     extra_environ={'username': '*anonymous'}, status=200)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('link').config.acl
         anon = M.ProjectRole.by_name('*anonymous')._id
         anon_read = M.ACE.allow(anon, 'read')
         acl.remove(anon_read)
         self.app.get('/rest/p/test/link',
-                     extra_environ={'username': str('*anonymous')}, status=401)
+                     extra_environ={'username': '*anonymous'}, status=401)
 
     def test_rest_link_post_permissions(self):
         self.app.post('/rest/p/test/link',
                       params={'url': 'http://yahoo.com'},
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('link').config.acl
@@ -74,7 +72,7 @@ class TestLinkApi(TestRestApiBase):
         acl.append(anon_configure)
         self.app.post('/rest/p/test/link',
                       params={'url': 'http://yahoo.com'},
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=200)
         r = self.api_get('/rest/p/test/link')
         assert_equal(r.json['url'], 'http://yahoo.com')
@@ -83,7 +81,7 @@ class TestLinkApi(TestRestApiBase):
 class TestLinkHasAccess(TestRestApiBase):
 
     def setUp(self):
-        super(TestLinkHasAccess, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_link

@@ -34,13 +34,13 @@ from forgediscussion import utils
 class TestDiscussionImporter(TestCase):
 
     def setUp(self):
-        super(TestDiscussionImporter, self).setUp()
+        super().setUp()
 
         self.patcher_g = mock.patch('forgeimporters.base.g', mock.MagicMock())
         self.patcher_g.start()
 
     def tearDown(self):
-        super(TestDiscussionImporter, self).tearDown()
+        super().tearDown()
         self.patcher_g.stop()
 
     @mock.patch.object(discussion, 'c')
@@ -1176,7 +1176,7 @@ class TestDiscussionImporter(TestCase):
         text = 'foo'
 
         # Text that the method should return
-        return_text = '*Originally created by:* {username}\n\n{text}'.format(username=username, text=text)
+        return_text = f'*Originally created by:* {username}\n\n{text}'
 
         self.assertEqual(importer.annotate_text(text, user, username), return_text)
 
@@ -1274,7 +1274,7 @@ class TestDiscussionImporter(TestCase):
 class TestForgeDiscussionController(TestController, TestCase):
 
     def setUp(self):
-        super(TestForgeDiscussionController, self).setUp()
+        super().setUp()
 
     @with_discussion
     def test_index(self):

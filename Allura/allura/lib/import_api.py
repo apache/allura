@@ -26,7 +26,7 @@ from allura.lib.utils import urlencode
 log = logging.getLogger(__name__)
 
 
-class AlluraImportApiClient(object):
+class AlluraImportApiClient:
 
     def __init__(self, base_url, token, verbose=False, retry=True):
         self.base_url = base_url
@@ -51,12 +51,12 @@ class AlluraImportApiClient(object):
                 resp = result.read()
                 return json.loads(resp)
             except six.moves.urllib.error.HTTPError as e:
-                e.msg += ' ({})'.format(url)
+                e.msg += f' ({url})'
                 if self.verbose:
                     error_content = e.read()
                     e.msg += '. Error response:\n' + six.ensure_text(error_content)
                 raise e
-            except (six.moves.urllib.error.URLError, IOError):
+            except (six.moves.urllib.error.URLError, OSError):
                 if self.retry:
                     log.exception('Error making API request, will retry')
                     continue
