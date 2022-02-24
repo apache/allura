@@ -42,7 +42,6 @@ from webob import exc
 
 # local imports ##
 from forgefiles.model.files import UploadFolder, UploadFiles, Upload
-from six.moves import range
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +66,7 @@ class FilesApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
-        super(FilesApp, self).install(project)
+        super().install(project)
         role_anon = M.ProjectRole.by_name('*anonymous')._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
@@ -81,7 +80,7 @@ class FilesApp(Application):
         file_objects = UploadFiles.query.find(app_config_id).all()
         for file_object in file_objects:
             file_object.delete()
-        super(FilesApp, self).uninstall(project)
+        super().uninstall(project)
 
     def has_linked_download(self):
         return UploadFiles.query.find({

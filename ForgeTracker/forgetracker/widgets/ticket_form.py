@@ -33,12 +33,12 @@ class TicketCustomFields(ew.CompoundField):
     template = 'jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
 
     def __init__(self, *args, **kwargs):
-        super(TicketCustomFields, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._fields = None
         self._custom_fields_values = {}
 
     def context_for(self, field):
-        response = super(TicketCustomFields, self).context_for(field)
+        response = super().context_for(field)
         response['value'] = self._custom_fields_values.get(field.name)
         return response
 
@@ -89,13 +89,13 @@ class GenericTicketForm(ew.SimpleForm):
         since normally `ProjectUserCombo` shows without any options, and loads
         them asynchronously (via ajax).
         """
-        if isinstance(user, six.string_types):
+        if isinstance(user, str):
             user = M.User.by_username(user)
         if user and user != M.User.anonymous():
             field.options = [
                 ew.Option(
                     py_value=user.username,
-                    label='{} ({})'.format(user.display_name, user.username))
+                    label=f'{user.display_name} ({user.username})')
             ]
 
     @property
@@ -147,14 +147,13 @@ class TicketForm(GenericTicketForm):
 
     @property
     def fields(self):
-        fields = ew_core.NameList(super(TicketForm, self).fields)
+        fields = ew_core.NameList(super().fields)
         if c.app.globals.custom_fields:
             fields.append(TicketCustomFields(name="custom_fields"))
         return fields
 
     def resources(self):
-        for r in super(TicketForm, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.JSScript('''
         // Sometimes IE11 is not firing jQuery's ready callbacks like
         // "$(function(){...})" or "$(document).ready(function(){...});"
@@ -173,7 +172,7 @@ class TicketForm(GenericTicketForm):
         });''')
 
 
-class TicketCustomField(object):
+class TicketCustomField:
 
     def _select(field):
         options = []
@@ -249,7 +248,7 @@ class MilestoneField(ew.SingleSelectField):
         </select>''', 'jinja2')
 
     def prepare_context(self, context):
-        context = super(MilestoneField, self).prepare_context(context)
+        context = super().prepare_context(context)
 
         # group open / closed milestones
         context['open_milestones'] = [

@@ -32,6 +32,6 @@ def event(event_type, *args, **kwargs):
             exceptions.append(sys.exc_info())
     if exceptions:
         if len(exceptions) == 1:
-            six.reraise(exceptions[0][0], exceptions[0][1], exceptions[0][2])
+            raise exceptions[0][1].with_traceback(exceptions[0][2])
         else:
             raise CompoundError(*exceptions)

@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
 class UserStats(Stats):
 
     class __mongometa__:
-        name = str('userstats')
+        name = 'userstats'
         session = main_orm_session
         unique_indexes = ['_id', 'user_id']
 
@@ -60,7 +60,7 @@ class UserStats(Stats):
         return len(self.lastmonthlogins)
 
     def checkOldArtifacts(self):
-        super(UserStats, self).checkOldArtifacts()
+        super().checkOldArtifacts()
         now = datetime.utcnow()
         for l in self.lastmonthlogins:
             if now - l > timedelta(30):

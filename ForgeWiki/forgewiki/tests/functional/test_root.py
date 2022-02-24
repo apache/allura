@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -21,7 +19,6 @@ import os
 from io import BytesIO
 import allura
 import json
-from io import open
 
 import PIL
 from alluratest.tools import assert_true, assert_equal, assert_in, assert_not_equal, assert_not_in
@@ -35,13 +32,12 @@ from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 from forgewiki import model
-from six.moves import range
 
 
 class TestRootController(TestController):
 
     def setUp(self):
-        super(TestRootController, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_wiki
@@ -60,7 +56,7 @@ class TestRootController(TestController):
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
         r = self.app.get('/wiki/Home',
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         assert 'Create Page' not in r, r
 
     def test_create_wiki_page(self):
@@ -159,10 +155,10 @@ class TestRootController(TestController):
 
     def test_nonexistent_page_noedit(self):
         self.app.get(h.urlquote('/wiki/tést/'),
-                     extra_environ=dict(username=str('*anonymous')),
+                     extra_environ=dict(username='*anonymous'),
                      status=404)
         self.app.get(h.urlquote('/wiki/tést/'),
-                     extra_environ=dict(username=str('test-user')),
+                     extra_environ=dict(username='test-user'),
                      status=404)
 
     @patch('forgewiki.wiki_main.g.director.create_activity')
@@ -220,7 +216,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'text1',
                 'labels': '',
                 })
@@ -232,14 +228,14 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'text1',
                 'labels': '',
                 })
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'text2',
                 'labels': '',
                 })
@@ -252,7 +248,7 @@ class TestRootController(TestController):
         assert response.html.find('a', {'data-dialog-id': '1'}), response.html
         assert not response.html.find('a', {'data-dialog-id': '2'})
         response = self.app.get(h.urlquote('/wiki/tést/history'),
-                                extra_environ=dict(username=str('*anonymous')))
+                                extra_environ=dict(username='*anonymous'))
         # two revisions are shown
         assert '<tr data-version="2" data-username="test-admin">' in response
         assert '<tr data-version="1" data-username="test-admin">' in response
@@ -269,7 +265,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -374,7 +370,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': '',
                 'labels': '',
                 })
@@ -388,7 +384,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -403,7 +399,7 @@ class TestRootController(TestController):
         response = self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -414,7 +410,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': '- [ ] checkbox',
                 'labels': '',
                 })
@@ -425,7 +421,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': '- [ ] checkbox',
                 'labels': '',
                 })
@@ -440,7 +436,7 @@ class TestRootController(TestController):
             h.urlquote('/wiki/tést/update_markdown'),
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['status'] == 'no_permission'
 
     def test_page_label_unlabel(self):
@@ -448,7 +444,7 @@ class TestRootController(TestController):
         response = self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': 'yellow,green',
                 })
@@ -456,7 +452,7 @@ class TestRootController(TestController):
         response = self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': 'yellow',
                 })
@@ -469,7 +465,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': labels,
                 })
@@ -487,7 +483,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -501,7 +497,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -516,7 +512,7 @@ class TestRootController(TestController):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -601,7 +597,7 @@ class TestRootController(TestController):
 
     def test_show_discussion(self):
         self.app.post(h.urlquote('/wiki/tést/update'), params={
-            'title': 'tést'.encode('utf-8'),
+            'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
             })
@@ -620,7 +616,7 @@ class TestRootController(TestController):
 
     def test_show_left_bar(self):
         self.app.post(h.urlquote('/wiki/tést/update'), params={
-            'title': 'tést'.encode('utf-8'),
+            'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
             })
@@ -635,14 +631,14 @@ class TestRootController(TestController):
             '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_left_bar'].checked
         wiki_page2 = self.app.get(
-            h.urlquote('/wiki/tést/'), extra_environ=dict(username=str('*anonymous')))
+            h.urlquote('/wiki/tést/'), extra_environ=dict(username='*anonymous'))
         assert not wiki_page2.html.find('ul', {'class': 'sidebarmenu'})
         wiki_page3 = self.app.get(h.urlquote('/wiki/tést/'))
         assert not wiki_page3.html.find('ul', {'class': 'sidebarmenu'})
 
     def test_show_metadata(self):
         self.app.post(h.urlquote('/wiki/tést/update'), params={
-            'title': 'tést'.encode('utf-8'),
+            'title': 'tést'.encode(),
             'text': 'sometext',
             'labels': '',
             })
@@ -661,7 +657,7 @@ class TestRootController(TestController):
 
     def test_change_home_page(self):
         self.app.post(h.urlquote('/wiki/tést/update'), params={
-            'title': 'our_néw_home'.encode('utf-8'),
+            'title': 'our_néw_home'.encode(),
             'text': 'sometext',
             'labels': '',
             })

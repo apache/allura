@@ -37,7 +37,7 @@ class TotpKey(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('multifactor_totp')
+        name = 'multifactor_totp'
         unique_indexes = ['user_id']
 
     query: 'Query[TotpKey]'
@@ -54,7 +54,7 @@ class RecoveryCode(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('multifactor_recovery_code')
+        name = 'multifactor_recovery_code'
         indexes = ['user_id']
 
     query: 'Query[RecoveryCode]'

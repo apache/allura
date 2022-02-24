@@ -36,7 +36,6 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
 from allura import model as M
 import six
-from six.moves import filter
 from functools import reduce
 
 
@@ -99,7 +98,7 @@ class ForgeForm(ew.SimpleForm):
         target=None)
 
     def display_label(self, field, label_text=None):
-        ctx = super(ForgeForm, self).context_for(field)
+        ctx = super().context_for(field)
         label_text = (
             label_text
             or ctx.get('label')
@@ -110,7 +109,7 @@ class ForgeForm(ew.SimpleForm):
         return Markup(html)
 
     def context_for(self, field):
-        ctx = super(ForgeForm, self).context_for(field)
+        ctx = super().context_for(field)
         if self.antispam:
             ctx['rendered_name'] = g.antispam.enc(ctx['name'])
         return ctx
@@ -126,7 +125,7 @@ class ForgeForm(ew.SimpleForm):
 
 class ForgeFormResponsive(ForgeForm):
     def __init__(self):
-        super(ForgeFormResponsive, self).__init__()
+        super().__init__()
         # use alternate template if responsive overrides are on, but not actually using template override for this
         # since that would change all forms, and we want to just do individual ones right now
         for tmpl_override_ep in h.iter_entry_points('allura.theme.override'):
@@ -166,7 +165,7 @@ class PasswordChangeBase(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, value, state):
-        d = super(PasswordChangeBase, self).to_python(value, state)
+        d = super().to_python(value, state)
         if d['pw'] != d['pw2']:
             raise formencode.Invalid('Passwords must match', value, state)
         return d
@@ -216,7 +215,7 @@ class PasswordChangeForm(PasswordChangeBase):
 
     @ew_core.core.validator
     def to_python(self, value, state):
-        d = super(PasswordChangeForm, self).to_python(value, state)
+        d = super().to_python(value, state)
         if d['oldpw'] == d['pw']:
             raise formencode.Invalid(
                 'Your old and new password should not be the same',
@@ -429,7 +428,7 @@ class RemoveTextValueForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveTextValueForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["oldvalue"] = kw.get('oldvalue', '')
         return d
 
@@ -484,7 +483,7 @@ class RemoveSocialNetworkForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveSocialNetworkForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["account"] = kw.get('account', '')
         d["socialnetwork"] = kw.get('socialnetwork', '')
         return d
@@ -502,7 +501,7 @@ class AddInactivePeriodForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(AddInactivePeriodForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         if d['startdate'] > d['enddate']:
                 raise formencode.Invalid(
                     'Invalid period: start date greater than end date.',
@@ -537,7 +536,7 @@ class RemoveInactivePeriodForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveInactivePeriodForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d['startdate'] = V.convertDate(kw.get('startdate', ''))
         d['enddate'] = V.convertDate(kw.get('enddate', ''))
         return d
@@ -560,7 +559,7 @@ class AddTimeSlotForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(AddTimeSlotForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         if (d['starttime']['h'], d['starttime']['m']) > \
            (d['endtime']['h'], d['endtime']['m']):
                 raise formencode.Invalid(
@@ -601,7 +600,7 @@ class RemoveTimeSlotForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveTimeSlotForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["weekday"] = kw.get('weekday', None)
         d['starttime'] = V.convertTime(kw.get('starttime', ''))
         d['endtime'] = V.convertTime(kw.get('endtime', ''))
@@ -636,7 +635,7 @@ class RemoveTroveCategoryForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveTroveCategoryForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["categoryid"] = kw.get('categoryid')
         if d["categoryid"]:
             d["categoryid"] = int(d['categoryid'])
@@ -667,7 +666,7 @@ class AddTroveCategoryForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(AddTroveCategoryForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["uppercategory_id"] = kw.get('uppercategory_id', 0)
         return d
 
@@ -748,7 +747,7 @@ class RemoveSkillForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, kw, state):
-        d = super(RemoveSkillForm, self).to_python(kw, state)
+        d = super().to_python(kw, state)
         d["categoryid"] = kw.get('categoryid', None)
         return d
 
@@ -798,7 +797,7 @@ class RegistrationForm(ForgeForm):
 
     @ew_core.core.validator
     def to_python(self, value, state):
-        d = super(RegistrationForm, self).to_python(value, state)
+        d = super().to_python(value, state)
         value['username'] = username = value['username'].lower()
         if M.User.by_username(username):
             raise formencode.Invalid(
@@ -818,7 +817,7 @@ class AdminForm(ForgeForm):
 
 class AdminFormResponsive(ForgeForm):
     def __init__(self):
-        super(AdminFormResponsive, self).__init__()
+        super().__init__()
         # use alternate template if responsive overrides are on, but not actually using template override for this
         # since that would change all forms, and we want to just do individual ones right now
         for tmpl_override_ep in h.iter_entry_points('allura.theme.override'):
@@ -853,7 +852,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         else:
             self.list_color_inputs = False
             self.color_inputs = []
-        return super(NeighborhoodOverviewForm, self).from_python(value, state)
+        return super().from_python(value, state)
 
     def display_field(self, field, ignore_errors=False):
         if field.name == "css" and self.list_color_inputs:
@@ -884,11 +883,11 @@ class NeighborhoodOverviewForm(ForgeForm):
 
             return Markup(display)
         else:
-            return super(NeighborhoodOverviewForm, self).display_field(field, ignore_errors)
+            return super().display_field(field, ignore_errors)
 
     @ew_core.core.validator
     def to_python(self, value, state):
-        d = super(NeighborhoodOverviewForm, self).to_python(value, state)
+        d = super().to_python(value, state)
         neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
         if neighborhood and neighborhood.features['css'] == "picker":
             css_form_dict = {}
@@ -900,8 +899,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         return d
 
     def resources(self):
-        for r in super(NeighborhoodOverviewForm, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.CSSLink('css/colorPicker.css')
         yield ew.CSSLink('css/jqfontselector.css')
         yield ew.CSSScript('''
@@ -963,7 +961,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def fields(self):
         provider = plugin.ProjectRegistrationProvider.get()
         tools_options = []
-        for ep, tool in six.iteritems(g.entry_points["tool"]):
+        for ep, tool in g.entry_points["tool"].items():
             if tool.status == 'production' and tool._installable(tool_name=ep,
                                                                  nbhd=c.project.neighborhood,
                                                                  project_tools=[]):
@@ -991,15 +989,14 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
     @ew_core.core.validator
     def validate(self, value, state=None):
-        value = super(NeighborhoodAddProjectForm, self).validate(value, state)
+        value = super().validate(value, state)
         provider = plugin.ProjectRegistrationProvider.get()
         if not provider.phone_verified(c.user, c.project.neighborhood):
             raise formencode.Invalid('phone-verification', value, None)
         return value
 
     def resources(self):
-        for r in super(NeighborhoodAddProjectForm, self).resources():
-            yield r
+        yield from super().resources()
         yield ew.CSSLink('css/add_project.css')
         neighborhood = g.antispam.enc('neighborhood')
         project_name = g.antispam.enc('project_name')
@@ -1110,7 +1107,7 @@ class MoveTicketForm(ForgeForm):
 
     def __init__(self, *args, **kwargs):
         trackers = kwargs.pop('trackers', [])
-        super(MoveTicketForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields.tracker.options = (
             [ew.Option(py_value=v, label=l, selected=s)
              for v, l, s in sorted(trackers, key=lambda x: x[1])])
@@ -1123,7 +1120,7 @@ class CsrfForm(ew.SimpleForm):
         return [ew.HiddenField(name='_session_id')]
 
     def context_for(self, field):
-        ctx = super(CsrfForm, self).context_for(field)
+        ctx = super().context_for(field)
         if field.name == '_session_id':
             ctx['value'] = tg.request.cookies.get('_session_id') or tg.request.environ['_session_id']
         return ctx
@@ -1134,7 +1131,7 @@ class AwardGrantForm(ForgeForm):
     def __init__(self, *args, **kw):
         self._awards = kw.pop('awards', [])
         self._project_select_url = kw.pop('project_select_url', '')
-        super(AwardGrantForm, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def award_options(self):
         return [ew.Option(py_value=a.short, label=a.short) for a in self._awards]
@@ -1170,7 +1167,7 @@ class AdminSearchForm(ForgeForm):
         submit_text=None)
 
     def __init__(self, fields, *args, **kw):
-        super(AdminSearchForm, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self._fields = fields
 
     @property
@@ -1194,7 +1191,7 @@ class AdminSearchForm(ForgeForm):
             ])]
 
     def context_for(self, field):
-        ctx = super(AdminSearchForm, self).context_for(field)
+        ctx = super().context_for(field)
         if field.name is None and not ctx.get('value'):
             # RowField does not pass context down to the children :(
             render_ctx = ew_core.widget_context.render_context

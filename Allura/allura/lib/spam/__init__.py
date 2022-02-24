@@ -26,7 +26,7 @@ from allura.model.artifact import SpamCheckResult
 log = logging.getLogger(__name__)
 
 
-class SpamFilter(object):
+class SpamFilter:
 
     """Defines the spam checker interface and provides a default no-op impl."""
 

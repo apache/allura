@@ -38,7 +38,7 @@ from allura.lib.utils import TruthyCallable
 log = logging.getLogger(__name__)
 
 
-class Credentials(object):
+class Credentials:
 
     '''
     Role graph logic & caching
@@ -104,7 +104,7 @@ class Credentials(object):
         roles_by_project = {pid: [] for pid in project_ids}
         for role in q:
             roles_by_project[role['project_id']].append(role)
-        for pid, roles in six.iteritems(roles_by_project):
+        for pid, roles in roles_by_project.items():
             self.users[user_id, pid] = RoleCache(self, roles)
 
     def load_project_roles(self, *project_ids):
@@ -119,7 +119,7 @@ class Credentials(object):
         roles_by_project = {pid: [] for pid in project_ids}
         for role in q:
             roles_by_project[role['project_id']].append(role)
-        for pid, roles in six.iteritems(roles_by_project):
+        for pid, roles in roles_by_project.items():
             self.projects[pid] = RoleCache(self, roles)
 
     def project_roles(self, project_id):
@@ -164,7 +164,7 @@ class Credentials(object):
         return role.userids_that_reach
 
 
-class RoleCache(object):
+class RoleCache:
     '''
     An iterable collection of :class:`ProjectRoles <allura.model.auth.ProjectRole>` that is cached after first use
     '''
@@ -199,7 +199,7 @@ class RoleCache(object):
         return None
 
     def __iter__(self):
-        return six.itervalues(self.index)
+        return iter(self.index.values())
 
     def __len__(self):
         return len(self.index)
@@ -553,7 +553,7 @@ class HIBPCompromisedCredentials(Exception):
         self.partial_hash = partial_hash
 
 
-class HIBPClient(object):
+class HIBPClient:
 
     @classmethod
     def check_breached_password(cls, password):
@@ -572,7 +572,7 @@ class HIBPClient(object):
 
             # hit HIBP API
             headers = {'User-Agent': '{}-pwnage-checker'.format(tg.config.get('site_name', 'Allura'))}
-            resp = requests.get('https://api.pwnedpasswords.com/range/{}'.format(sha_1_first_5), timeout=1,
+            resp = requests.get(f'https://api.pwnedpasswords.com/range/{sha_1_first_5}', timeout=1,
                                 headers=headers)
             # check results
             result = cls.scan_response(resp, sha_1)

@@ -28,7 +28,6 @@ from allura.controllers.feed import FeedController
 from allura.lib.widgets.user_profile import SectionBase, SectionsUtil, ProjectsSectionBase
 from allura.lib.widgets import form_fields as ffw
 from paste.deploy.converters import asbool
-from six.moves import filter
 
 log = logging.getLogger(__name__)
 

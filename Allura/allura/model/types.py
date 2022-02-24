@@ -24,7 +24,7 @@ EVERYONE, ALL_PERMISSIONS = None, '*'
 class MarkdownCache(S.Object):
 
     def __init__(self, **kw):
-        super(MarkdownCache, self).__init__(
+        super().__init__(
             fields=dict(
                 md5=S.String(),
                 fix7528=S.Anything,
@@ -50,7 +50,7 @@ class ACE(S.Object):
             permission = S.String()
         else:
             permission = S.OneOf('*', *permissions)
-        super(ACE, self).__init__(
+        super().__init__(
             fields=dict(
                 access=S.OneOf(self.ALLOW, self.DENY),
                 reason=S.String(),
@@ -88,7 +88,7 @@ class ACL(S.Array):
     '''
 
     def __init__(self, permissions=None, **kwargs):
-        super(ACL, self).__init__(
+        super().__init__(
             field_type=ACE(permissions), **kwargs)
 
     @classmethod

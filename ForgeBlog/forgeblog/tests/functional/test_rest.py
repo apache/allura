@@ -1,5 +1,3 @@
-# coding: utf-8
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -32,7 +30,7 @@ from forgeblog import model as BM
 class TestBlogApi(TestRestApiBase):
 
     def setUp(self):
-        super(TestBlogApi, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_tool('test', 'Blog', 'blog')
@@ -104,21 +102,21 @@ class TestBlogApi(TestRestApiBase):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='published')
         self.app.get('/rest/p/test/blog/',
-                     extra_environ={'username': str('*anonymous')}, status=200)
+                     extra_environ={'username': '*anonymous'}, status=200)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('blog').config.acl
         anon = M.ProjectRole.by_name('*anonymous')._id
         anon_read = M.ACE.allow(anon, 'read')
         acl.remove(anon_read)
         self.app.get('/rest/p/test/blog/',
-                     extra_environ={'username': str('*anonymous')},
+                     extra_environ={'username': '*anonymous'},
                      status=401)
 
     def test_new_post_permissons(self):
         self.app.post('/rest/p/test/blog/',
                       params=dict(title='test', text='test text',
                                   state='published'),
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('blog').config.acl
@@ -128,7 +126,7 @@ class TestBlogApi(TestRestApiBase):
         self.app.post('/rest/p/test/blog/',
                       params=dict(title='test', text='test text',
                                   state='published'),
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=201)
 
     def test_update_post_permissons(self):
@@ -138,7 +136,7 @@ class TestBlogApi(TestRestApiBase):
         self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('blog').config.acl
@@ -148,7 +146,7 @@ class TestBlogApi(TestRestApiBase):
         self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=200)
         r = self.api_get(url)
         assert_equal(r.json['title'], 'test2')
@@ -159,13 +157,13 @@ class TestBlogApi(TestRestApiBase):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.app.post(url,
                       params=dict(title='test2', text='test text2',
                                   state='published'),
-                      extra_environ={'username': str('*anonymous')},
+                      extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('blog').config.acl
@@ -173,19 +171,19 @@ class TestBlogApi(TestRestApiBase):
         anon_write = M.ACE.allow(anon, 'write')
         acl.append(anon_write)
         r = self.app.get('/rest/p/test/blog/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'][0]['title'], 'test')
 
     def test_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test',
                       text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, state='published')
         r = self.app.get('/rest/p/test/blog/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'][0]['title'], 'test')
 
     def test_pagination(self):

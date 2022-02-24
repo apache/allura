@@ -50,8 +50,6 @@ import allura
 
 from six.moves.urllib.parse import urlparse
 import six
-from six.moves import range
-from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -64,7 +62,7 @@ class W:
     admin_search_form = forms.AdminSearchForm
 
 
-class SiteAdminController(object):
+class SiteAdminController:
 
     def __init__(self):
         self.task_manager = TaskManagerController()
@@ -226,7 +224,7 @@ class SiteAdminController(object):
                 for msg in list(c.form_errors):
                     names = {'prefix': 'Neighborhood prefix', 'shortname':
                              'Project shortname', 'mount_point': 'Repository mount point'}
-                    error_msg += '{}: {} '.format(names[msg], c.form_errors[msg])
+                    error_msg += f'{names[msg]}: {c.form_errors[msg]} '
                     flash(error_msg, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % prefix)
@@ -290,7 +288,7 @@ class SiteAdminController(object):
         def convert_fields(obj):
             # throw the type away (e.g. '_s' from 'url_s')
             result = {}
-            for k,val in six.iteritems(obj):
+            for k,val in obj.items():
                 name = k.rsplit('_', 1)
                 if len(name) == 2:
                     name = name[0]
@@ -343,7 +341,7 @@ class SiteAdminController(object):
         return r
 
 
-class DeleteProjectsController(object):
+class DeleteProjectsController:
     delete_form_validators = dict(
         projects=v.UnicodeString(if_empty=None),
         reason=v.UnicodeString(if_empty=None),
@@ -368,7 +366,7 @@ class DeleteProjectsController(object):
         template = '{}    # {}'
         lines = []
         for input, p, error in projects:
-            comment = 'OK: {}'.format(p.url()) if p else error
+            comment = f'OK: {p.url()}' if p else error
             lines.append(template.format(input, comment))
         return '\n'.join(lines)
 
@@ -415,15 +413,15 @@ class DeleteProjectsController(object):
             redirect('.')
         task_params = ' '.join(task_params)
         if reason:
-            task_params = '-r {} {}'.format(pipes.quote(reason), task_params)
+            task_params = f'-r {pipes.quote(reason)} {task_params}'
         if disable_users:
-            task_params = '--disable-users {}'.format(task_params)
+            task_params = f'--disable-users {task_params}'
         DeleteProjects.post(task_params)
         flash('Delete scheduled', 'ok')
         redirect('.')
 
 
-class SiteNotificationController(object):
+class SiteNotificationController:
 
     def __init__(self, note=None):
         self.note = note
@@ -517,7 +515,7 @@ class SiteNotificationController(object):
         redirect(six.ensure_text(request.referer or '/'))
 
 
-class TaskManagerController(object):
+class TaskManagerController:
 
     def _check_security(self):
         require_site_admin(c.user)
@@ -627,7 +625,7 @@ class TaskManagerController(object):
         return dict(doc=doc, error=error)
 
 
-class StatsController(object):
+class StatsController:
     """Show neighborhood stats."""
     @expose('jinja:allura:templates/site_admin_stats.html')
     @with_trailing_slash
@@ -643,7 +641,7 @@ class StatsController(object):
         return dict(neighborhoods=neighborhoods)
 
 
-class AdminUserDetailsController(object):
+class AdminUserDetailsController:
 
     @expose('jinja:allura:templates/site_admin_user_details.html')
     @without_trailing_slash
@@ -697,7 +695,7 @@ class AdminUserDetailsController(object):
             M.AuditLog.comment_user(c.user, comment, user=user)
             flash('Comment added', 'ok')
         else:
-            flash('Can not add comment "{}" for user {}'.format(comment, user))
+            flash(f'Can not add comment "{comment}" for user {user}')
         redirect(six.ensure_text(request.referer or '/'))
 
     @expose()

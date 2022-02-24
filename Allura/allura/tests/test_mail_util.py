@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -97,7 +95,7 @@ class TestReactor(unittest.TestCase):
         msg1['Message-ID'] = '<foo@bar.com>'
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
-        assert isinstance(msg2['payload'], six.text_type)
+        assert isinstance(msg2['payload'], str)
         assert_in('всех', msg2['payload'])
 
     def test_more_encodings(self):
@@ -116,7 +114,7 @@ c28uMyIsClRoZSBhcHBsaWNhdGlvbidzIGNvbW11bmljYXRpb24gd29yayB3ZWxsICxidXQgdGhl
 IGZ0cCx0ZWxuZXQscGluZyBjYW4ndCB3b3JrICEKCgpXaHk/
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], six.text_type)
+        assert isinstance(msg['payload'], str)
         assert_in('The Snap7 application', msg['payload'])
 
         s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
@@ -135,7 +133,7 @@ Content-Transfer-Encoding: 8bit
 >
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], six.text_type)
+        assert isinstance(msg['payload'], str)
         assert_in('• foo', msg['payload'])
 
         s_msg = """Date: Sat, 25 May 2019 09:32:00 +1000
@@ -148,7 +146,7 @@ Content-Transfer-Encoding: 8BIT
 programmed or èrogrammed ?
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['payload'], six.text_type)
+        assert isinstance(msg['payload'], str)
         assert_in('èrogrammed', msg['payload'])
 
     def test_more_encodings_multipart(self):
@@ -178,8 +176,8 @@ Content-Type: text/html; charset="utf-8"
 &gt; • foo.txt (1.0 kB; text/plain)
 """
         msg = parse_message(s_msg)
-        assert isinstance(msg['parts'][1]['payload'], six.text_type)
-        assert isinstance(msg['parts'][2]['payload'], six.text_type)
+        assert isinstance(msg['parts'][1]['payload'], str)
+        assert isinstance(msg['parts'][2]['payload'], str)
         assert_in('• foo', msg['parts'][1]['payload'])
         assert_in('• foo', msg['parts'][2]['payload'])
 
@@ -208,10 +206,10 @@ Content-Type: text/html; charset="utf-8"
         for part in msg2['parts']:
             if part['payload'] is None:
                 continue
-            assert isinstance(part['payload'], six.text_type), type(part['payload'])
+            assert isinstance(part['payload'], str), type(part['payload'])
 
 
-class TestHeader(object):
+class TestHeader:
 
     @raises(TypeError)
     def test_bytestring(self):
@@ -232,7 +230,7 @@ class TestHeader(object):
                      '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
 
-class TestIsAutoreply(object):
+class TestIsAutoreply:
 
     def setUp(self):
         self.msg = {'headers': {}}
@@ -278,7 +276,7 @@ class TestIsAutoreply(object):
         assert_true(is_autoreply(self.msg))
 
 
-class TestIdentifySender(object):
+class TestIdentifySender:
 
     @mock.patch('allura.model.EmailAddress')
     def test_arg(self, EA):
@@ -327,7 +325,7 @@ def test_parse_message_id():
     ])
 
 
-class TestMailServer(object):
+class TestMailServer:
 
     def setUp(self):
         setup_basic_test()
@@ -337,6 +335,6 @@ class TestMailServer(object):
         listen_port = ('0.0.0.0', 8825)
         mailserver = MailServer(listen_port, None)
         mailserver.process_message('127.0.0.1', 'foo@bar.com', ['1234@tickets.test.p.localhost'],
-                                   'this is the email body with headers and everything ÎÅ¸'.encode('utf-8'))
+                                   'this is the email body with headers and everything ÎÅ¸'.encode())
         assert_equal([], log.exception.call_args_list)
         assert log.info.call_args[0][0].startswith('Msg passed along as task '), log.info.call_args

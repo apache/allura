@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -21,7 +20,6 @@ from datetime import datetime
 import pkg_resources
 from io import BytesIO
 import logging
-from io import open
 
 import tg
 import PIL
@@ -813,7 +811,7 @@ class TestProjectAdmin(TestController):
         # make sure can still access homepage after one of user's roles were
         # deleted
         r = self.app.get('/p/test/wiki/',
-                         extra_environ=dict(username=str('test-user'))).follow()
+                         extra_environ=dict(username='test-user')).follow()
         assert r.status == '200 OK'
 
     def test_change_perms(self):
@@ -906,7 +904,7 @@ class TestProjectAdmin(TestController):
 
     def test_admin_extension_sidebar(self):
 
-        class FooSettingsController(object):
+        class FooSettingsController:
 
             @expose()
             def index(self, *a, **kw):
@@ -946,7 +944,7 @@ class TestProjectAdmin(TestController):
 class TestExport(TestController):
 
     def setUp(self):
-        super(TestExport, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_wiki
@@ -963,17 +961,17 @@ class TestExport(TestController):
 
     def test_access(self):
         r = self.app.get('/admin/export',
-                         extra_environ={'username': str('*anonymous')}).follow()
+                         extra_environ={'username': '*anonymous'}).follow()
         assert_equals(r.request.url,
                       'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
         self.app.get('/admin/export',
-                     extra_environ={'username': str('test-user')},
+                     extra_environ={'username': 'test-user'},
                      status=403)
         r = self.app.post('/admin/export',
-                          extra_environ={'username': str('*anonymous')}).follow()
+                          extra_environ={'username': '*anonymous'}).follow()
         assert_equals(r.request.url, 'http://localhost/auth/')
         self.app.post('/admin/export',
-                      extra_environ={'username': str('test-user')},
+                      extra_environ={'username': 'test-user'},
                       status=403)
 
     def test_ini_option(self):
@@ -1047,13 +1045,13 @@ class TestExport(TestController):
     def test_bulk_export_filename_for_user_project(self):
         project = M.Project.query.get(shortname='u/test-user')
         filename = project.bulk_export_filename()
-        assert filename.startswith('test-user-backup-{}-'.format(datetime.utcnow().year))
+        assert filename.startswith(f'test-user-backup-{datetime.utcnow().year}-')
         assert filename.endswith('.zip')
 
     def test_bulk_export_filename_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
         filename = project.bulk_export_filename()
-        assert filename.startswith('p-backup-{}-'.format(datetime.utcnow().year))
+        assert filename.startswith(f'p-backup-{datetime.utcnow().year}-')
         assert filename.endswith('.zip')
 
     def test_bulk_export_path_for_nbhd(self):
@@ -1255,7 +1253,7 @@ class TestRestInstallTool(TestRestApiBase):
             'mount_label': 'wiki_label1'
         }
         r = self.app.post('/rest/p/test/admin/install_tool/',
-                          extra_environ={'username': str('*anonymous')},
+                          extra_environ={'username': '*anonymous'},
                           status=401,
                           params=data)
         assert_equals(r.status, '401 Unauthorized')

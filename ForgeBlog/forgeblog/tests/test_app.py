@@ -32,7 +32,7 @@ from allura.tests import decorators as td
 from forgeblog import model as BM
 
 
-class TestApp(object):
+class TestApp:
 
     def setUp(self):
         setup_basic_test()
@@ -50,7 +50,7 @@ class TestApp(object):
         assert not BM.BlogPost.query.get(title='Test title')
 
 
-class TestBulkExport(object):
+class TestBulkExport:
 
     def setUp(self):
         setup_basic_test()

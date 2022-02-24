@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -43,8 +41,6 @@ from allura.websetup.schema import REGISTRY
 
 from forgewiki import model as WM
 import six
-from six.moves import range
-from six.moves import input
 
 log = logging.getLogger(__name__)
 
@@ -253,7 +249,7 @@ def bootstrap(command, conf, vars):
             log.info('Registering initial apps')
             with h.push_config(c, user=u_admin):
                 p0.install_apps([{'ep_name': ep_name}
-                                 for ep_name, app in six.iteritems(g.entry_points['tool'])
+                                 for ep_name, app in g.entry_points['tool'].items()
                                  if app._installable(tool_name=ep_name,
                                                      nbhd=n_projects,
                                                      project_tools=[])

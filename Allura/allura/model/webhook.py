@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
 
 class Webhook(Artifact):
     class __mongometa__:
-        name = str('webhook')
+        name = 'webhook'
         unique_indexes = [('app_config_id', 'type', 'hook_url')]
 
     query: 'Query[Webhook]'
@@ -46,7 +46,7 @@ class Webhook(Artifact):
     def url(self):
         app = self.app_config.load()
         app = app(self.app_config.project, self.app_config)
-        return '{}webhooks/{}/{}'.format(app.admin_url, self.type, self._id)
+        return f'{app.admin_url}webhooks/{self.type}/{self._id}'
 
     def enforce_limit(self):
         '''Returns False if limit is reached, otherwise True'''
@@ -71,9 +71,9 @@ class Webhook(Artifact):
 
     def __json__(self):
         return {
-            '_id': six.text_type(self._id),
+            '_id': str(self._id),
             'url': h.absurl('/rest' + self.url()),
-            'type': six.text_type(self.type),
-            'hook_url': six.text_type(self.hook_url),
+            'type': str(self.type),
+            'hook_url': str(self.hook_url),
             'mod_date': self.mod_date,
         }

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -26,7 +24,7 @@ from alluratest.tools import assert_equal
 from allura.lib.spam.stopforumspamfilter import StopForumSpamSpamFilter
 
 
-class TestStopForumSpam(object):
+class TestStopForumSpam:
 
     def setUp(self):
         self.content = 'spåm text'

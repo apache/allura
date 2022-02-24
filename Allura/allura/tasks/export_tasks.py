@@ -46,7 +46,7 @@ def bulk_export(tools, filename=None, send_email=True, with_attachments=False):
     return BulkExport().process(c.project, tools, c.user, filename, send_email, with_attachments)
 
 
-class BulkExport(object):
+class BulkExport:
 
     def process(self, project, tools, user, filename=None, send_email=True, with_attachments=False):
         export_filename = filename or project.bulk_export_filename()

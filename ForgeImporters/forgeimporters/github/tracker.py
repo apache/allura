@@ -239,7 +239,7 @@ class GitHubTrackerImporter(ToolImporter):
         for milestone in self.open_milestones:
             global_milestones['milestones'].append({
                 'name': milestone[0],
-                'due_date': six.text_type(milestone[1].date()) if milestone[1] else None,
+                'due_date': str(milestone[1].date()) if milestone[1] else None,
                 'complete': False,
             })
         return [global_milestones]
@@ -264,12 +264,12 @@ class GitHubTrackerImporter(ToolImporter):
             attachments.append(Attachment(
                 extractor,
                 match.group(1),  # url
-                'attach{}.{}'.format(i + 1, match.group(2))  # extension
+                f'attach{i + 1}.{match.group(2)}'  # extension
             ))
         return (body, attachments)
 
 
-class Attachment(object):
+class Attachment:
 
     def __init__(self, extractor, url, filename):
         self.url = url

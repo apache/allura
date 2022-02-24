@@ -35,8 +35,6 @@ from allura.tests import TestController
 from allura.tests.decorators import patch_middleware_config
 
 from forgewiki import model as WM
-from io import open
-from six.moves import range
 
 
 def parse_args():
@@ -110,14 +108,14 @@ def generate_wiki_thread(test):
 
     ThreadLocalODMSession.flush_all()
 
-    url = '/p/test/wiki/_discuss/thread/{}/'.format(thread._id)
+    url = f'/p/test/wiki/_discuss/thread/{thread._id}/'
     return url
 
 
 def count_page(test, url, verbose=False, debug_html=False):
 
     with LogCapture('stats') as stats, LogCapture('timermiddleware') as calls:
-        resp = test.app.get(url, extra_environ=dict(username=str('*anonymous')))
+        resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
         print(url, resp.status)
         if debug_html:
             debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits)

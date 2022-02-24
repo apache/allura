@@ -49,7 +49,6 @@ from alluratest.controller import (
     TestRestApiBase,
 )
 import six
-from six.moves import range
 
 
 # important to be distinct from 'test' and 'test2' which ForgeGit and
@@ -60,7 +59,7 @@ with_git = td.with_tool(test_project_with_repo, 'git', 'src', 'Git')
 with_git2 = td.with_tool(test_project_with_repo, 'git', 'src2', 'Git2')
 
 
-class TestWebhookBase(object):
+class TestWebhookBase:
     def setUp(self):
         setup_basic_test()
         self.patches = self.monkey_patch()
@@ -125,12 +124,12 @@ class TestValidators(TestWebhookBase):
         wh.app_config_id = app.config._id
         session(wh).flush(wh)
         assert_equal(v.to_python(wh._id), wh)
-        assert_equal(v.to_python(six.text_type(wh._id)), wh)
+        assert_equal(v.to_python(str(wh._id)), wh)
 
 
 class TestWebhookController(TestController):
     def setUp(self):
-        super(TestWebhookController, self).setUp()
+        super().setUp()
         self.patches = self.monkey_patch()
         for p in self.patches:
             p.start()
@@ -140,7 +139,7 @@ class TestWebhookController(TestController):
         self.url = str(self.git.admin_url + 'webhooks')
 
     def tearDown(self):
-        super(TestWebhookController, self).tearDown()
+        super().tearDown()
         for p in self.patches:
             p.stop()
 
@@ -182,10 +181,10 @@ class TestWebhookController(TestController):
     def test_access(self):
         self.app.get(self.url + '/repo-push/')
         self.app.get(self.url + '/repo-push/',
-                     extra_environ={'username': str('test-user')},
+                     extra_environ={'username': 'test-user'},
                      status=403)
         r = self.app.get(self.url + '/repo-push/',
-                         extra_environ={'username': str('*anonymous')},
+                         extra_environ={'username': '*anonymous'},
                          status=302)
         assert_equal(r.location,
                      'http://localhost/auth/'
@@ -277,7 +276,7 @@ class TestWebhookController(TestController):
         form = r.forms[0]
         assert_equal(form['url'].value, data1['url'])
         assert_equal(form['secret'].value, data1['secret'])
-        assert_equal(form['webhook'].value, six.text_type(wh1._id))
+        assert_equal(form['webhook'].value, str(wh1._id))
         form['url'] = 'http://host.org/hook'
         form['secret'] = 'new secret'
         msg = 'edit webhook repo-push\n{} => {}\n{}'.format(
@@ -320,7 +319,7 @@ class TestWebhookController(TestController):
         # invalid id in hidden field, just in case
         r = self.app.get(self.url + '/repo-push/%s' % wh._id)
         data = {k: v[0].value for (k, v) in r.forms[0].fields.items() if k}
-        data['webhook'] = six.text_type(invalid._id)
+        data['webhook'] = str(invalid._id)
         self.app.post(self.url + '/repo-push/edit', data, status=404)
 
         # empty values
@@ -339,7 +338,7 @@ class TestWebhookController(TestController):
         self.create_webhook(data).follow()
         assert_equal(M.Webhook.query.find().count(), 1)
         wh = M.Webhook.query.get(hook_url=data['url'])
-        data = {'webhook': six.text_type(wh._id)}
+        data = {'webhook': str(wh._id)}
         msg = 'delete webhook repo-push {} {}'.format(
             wh.hook_url, self.git.config.url())
         with td.audits(msg):
@@ -359,7 +358,7 @@ class TestWebhookController(TestController):
         data = {'webhook': ''}
         self.app.post(self.url + '/repo-push/delete', data, status=404)
 
-        data = {'webhook': six.text_type(invalid._id)}
+        data = {'webhook': str(invalid._id)}
         self.app.post(self.url + '/repo-push/delete', data, status=404)
         assert_equal(M.Webhook.query.find().count(), 1)
 
@@ -421,7 +420,7 @@ class TestWebhookController(TestController):
 
 class TestSendWebhookHelper(TestWebhookBase):
     def setUp(self, *args, **kw):
-        super(TestSendWebhookHelper, self).setUp(*args, **kw)
+        super().setUp(*args, **kw)
         self.payload = {'some': ['data', 23]}
         self.h = SendWebhookHelper(self.wh, self.payload)
 
@@ -451,7 +450,7 @@ class TestSendWebhookHelper(TestWebhookBase):
         response = Mock(
             status_code=500,
             text='that is why',
-            headers={str('Content-Type'): str('application/json')})
+            headers={'Content-Type': 'application/json'})
         assert_equal(
             self.h.log_msg('Error', response=response),
             "Error: repo-push http://httpbin.org/post /adobe/adobe-1/src/ 500 "
@@ -593,7 +592,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
                 webhook = M.Webhook(
                     type='repo-push',
                     app_config_id=self.git.config._id,
-                    hook_url='http://httpbin.org/{}/{}'.format(suffix, i),
+                    hook_url=f'http://httpbin.org/{suffix}/{i}',
                     secret='secret')
                 session(webhook).flush(webhook)
 
@@ -632,7 +631,7 @@ class TestRepoPushWebhookSender(TestWebhookBase):
 class TestModels(TestWebhookBase):
     def test_webhook_url(self):
         assert_equal(self.wh.url(),
-                     '/adobe/adobe-1/admin/src/webhooks/repo-push/{}'.format(self.wh._id))
+                     f'/adobe/adobe-1/admin/src/webhooks/repo-push/{self.wh._id}')
 
     def test_webhook_enforce_limit(self):
         self.wh.last_sent = None
@@ -660,7 +659,7 @@ class TestModels(TestWebhookBase):
 
     def test_json(self):
         expected = {
-            '_id': six.text_type(self.wh._id),
+            '_id': str(self.wh._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(self.wh._id),
             'type': 'repo-push',
@@ -672,7 +671,7 @@ class TestModels(TestWebhookBase):
 
 class TestWebhookRestController(TestRestApiBase):
     def setUp(self):
-        super(TestWebhookRestController, self).setUp()
+        super().setUp()
         self.patches = self.monkey_patch()
         for p in self.patches:
             p.start()
@@ -685,13 +684,13 @@ class TestWebhookRestController(TestRestApiBase):
             webhook = M.Webhook(
                 type='repo-push',
                 app_config_id=self.git.config._id,
-                hook_url='http://httpbin.org/post/{}'.format(i),
-                secret='secret-{}'.format(i))
+                hook_url=f'http://httpbin.org/post/{i}',
+                secret=f'secret-{i}')
             session(webhook).flush(webhook)
             self.webhooks.append(webhook)
 
     def tearDown(self):
-        super(TestWebhookRestController, self).tearDown()
+        super().tearDown()
         for p in self.patches:
             p.stop()
 
@@ -713,12 +712,12 @@ class TestWebhookRestController(TestRestApiBase):
     def test_webhooks_list(self):
         r = self.api_get(self.url)
         webhooks = [{
-            '_id': six.text_type(wh._id),
+            '_id': str(wh._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(wh._id),
             'type': 'repo-push',
-            'hook_url': 'http://httpbin.org/post/{}'.format(n),
-            'mod_date': six.text_type(wh.mod_date),
+            'hook_url': f'http://httpbin.org/post/{n}',
+            'mod_date': str(wh.mod_date),
         } for n, wh in enumerate(self.webhooks)]
         expected = {
             'webhooks': webhooks,
@@ -731,14 +730,14 @@ class TestWebhookRestController(TestRestApiBase):
 
     def test_webhook_GET(self):
         webhook = self.webhooks[0]
-        r = self.api_get('{}/repo-push/{}'.format(self.url, webhook._id))
+        r = self.api_get(f'{self.url}/repo-push/{webhook._id}')
         expected = {
-            '_id': six.text_type(webhook._id),
+            '_id': str(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': 'http://httpbin.org/post/0',
-            'mod_date': six.text_type(webhook.mod_date),
+            'mod_date': str(webhook.mod_date),
         }
         dd.assert_equal(r.status_int, 200)
         dd.assert_equal(r.json, expected)
@@ -777,12 +776,12 @@ class TestWebhookRestController(TestRestApiBase):
         webhook = M.Webhook.query.get(hook_url=data['url'])
         assert_equal(webhook.secret, 'super-secret')  # secret generated
         expected = {
-            '_id': six.text_type(webhook._id),
+            '_id': str(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': data['url'],
-            'mod_date': six.text_type(webhook.mod_date),
+            'mod_date': str(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
         assert_equal(M.Webhook.query.find().count(), len(self.webhooks) + 1)
@@ -813,7 +812,7 @@ class TestWebhookRestController(TestRestApiBase):
 
     def test_edit_validation(self):
         webhook = self.webhooks[0]
-        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        url = f'{self.url}/repo-push/{webhook._id}'
         data = {'url': 'qwe', 'secret': 'qwe'}
         r = self.api_post(url, status=400, **data)
         expected = {
@@ -826,7 +825,7 @@ class TestWebhookRestController(TestRestApiBase):
 
     def test_edit(self):
         webhook = self.webhooks[0]
-        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        url = f'{self.url}/repo-push/{webhook._id}'
         # change only url
         data = {'url': 'http://hook.slack.com/abcd'}
         msg = ('edit webhook repo-push\n'
@@ -837,12 +836,12 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, data['url'])
         assert_equal(webhook.secret, 'secret-0')
         expected = {
-            '_id': six.text_type(webhook._id),
+            '_id': str(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': data['url'],
-            'mod_date': six.text_type(webhook.mod_date),
+            'mod_date': str(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 
@@ -857,18 +856,18 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(webhook.hook_url, 'http://hook.slack.com/abcd')
         assert_equal(webhook.secret, 'new-secret')
         expected = {
-            '_id': six.text_type(webhook._id),
+            '_id': str(webhook._id),
             'url': 'http://localhost/rest/adobe/adobe-1/admin'
                    '/src/webhooks/repo-push/{}'.format(webhook._id),
             'type': 'repo-push',
             'hook_url': 'http://hook.slack.com/abcd',
-            'mod_date': six.text_type(webhook.mod_date),
+            'mod_date': str(webhook.mod_date),
         }
         dd.assert_equal(r.json, expected)
 
     def test_edit_duplicates(self):
         webhook = self.webhooks[0]
-        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        url = f'{self.url}/repo-push/{webhook._id}'
         data = {'url': 'http://httpbin.org/post/1'}
         r = self.api_post(url, status=400, **data)
         expected = {'result': 'error',
@@ -877,13 +876,13 @@ class TestWebhookRestController(TestRestApiBase):
         assert_equal(r.json, expected)
 
     def test_delete_validation(self):
-        url = '{}/repo-push/invalid'.format(self.url)
+        url = f'{self.url}/repo-push/invalid'
         self.api_delete(url, status=404)
 
     def test_delete(self):
         assert_equal(M.Webhook.query.find().count(), 3)
         webhook = self.webhooks[0]
-        url = '{}/repo-push/{}'.format(self.url, webhook._id)
+        url = f'{self.url}/repo-push/{webhook._id}'
         msg = 'delete webhook repo-push {} {}'.format(
             webhook.hook_url, self.git.config.url())
         with td.audits(msg):

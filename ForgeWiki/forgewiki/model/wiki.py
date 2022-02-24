@@ -59,7 +59,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = str('wiki-globals')
+        name = 'wiki-globals'
         session = project_orm_session
         indexes = ['app_config_id']
 
@@ -76,7 +76,7 @@ class Globals(MappedClass):
 class PageHistory(Snapshot):
 
     class __mongometa__:
-        name = str('page_history')
+        name = 'page_history'
 
     query: 'Query[PageHistory]'
 
@@ -87,7 +87,7 @@ class PageHistory(Snapshot):
         return self.original().authors()
 
     def shorthand_id(self):
-        return '{}#{}'.format(self.original().shorthand_id(), self.version)
+        return f'{self.original().shorthand_id()}#{self.version}'
 
     def url(self):
         return self.original().url() + '?version=%d' % self.version
@@ -114,7 +114,7 @@ class PageHistory(Snapshot):
 class Page(VersionedArtifact, ActivityObject):
 
     class __mongometa__:
-        name = str('page')
+        name = 'page'
         history_class = PageHistory
         unique_indexes = [('app_config_id', 'title')]
 
@@ -153,7 +153,7 @@ class Page(VersionedArtifact, ActivityObject):
                      url=h.absurl(attach.url())) for attach in self.attachments]
 
     def __json__(self, posts_limit=None, is_export=False):
-        return dict(super(Page, self).__json__(posts_limit=posts_limit, is_export=is_export),
+        return dict(super().__json__(posts_limit=posts_limit, is_export=is_export),
                     title=self.title,
                     text=self.text,
                     labels=list(self.labels),
@@ -283,7 +283,7 @@ class Page(VersionedArtifact, ActivityObject):
             artifact=self, topic='metadata', text=description, subject=subject)
         Shortlink.query.remove(dict(ref_id=self.index_id()))
         self.deleted = True
-        suffix = " {:%Y-%m-%d %H:%M:%S.%f}".format(datetime.utcnow())
+        suffix = f" {datetime.utcnow():%Y-%m-%d %H:%M:%S.%f}"
         self.title += suffix
 
 
@@ -292,7 +292,7 @@ class WikiAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = str('WikiAttachment')
+        polymorphic_identity = 'WikiAttachment'
 
     query: 'Query[WikiAttachment]'
 

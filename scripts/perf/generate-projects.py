@@ -18,7 +18,6 @@
 import re
 from ming.odm import ThreadLocalORMSession
 from allura import model as M
-from six.moves import range
 
 def main(start, cnt):
     n = M.Neighborhood.query.get(url_prefix='/p/')
@@ -26,10 +25,10 @@ def main(start, cnt):
     #M.Project.query.remove({'shortname': re.compile('gen-proj-.*')})
     #ThreadLocalORMSession.flush_all()
     for i in range(start, cnt):
-        name = 'gen-proj-{}'.format(i)
+        name = f'gen-proj-{i}'
         project = n.register_project(name, admin)
         if (i-start) > 0 and (i-start) % 100 == 0:
-            print('Created {} projects'.format(i-start))
+            print(f'Created {i-start} projects')
     print('Flushing...')
     ThreadLocalORMSession.flush_all()
     print('Done')

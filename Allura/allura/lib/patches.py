@@ -59,7 +59,7 @@ def apply():
         else:
             return
 
-        for content_type, content_engine in six.iteritems(engines):
+        for content_type, content_engine in engines.items():
             template = template.split(':', 1)
             template.extend(content_engine[2:])
             try:

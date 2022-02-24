@@ -87,7 +87,6 @@ class SubscribeForm(ew.SimpleForm):
         return value
 
     def resources(self):
-        for r in super(SubscribeForm, self).resources():
-            yield r
+        yield from super().resources()
         if not c.user.is_anonymous():
             yield ew.JSLink('js/subscriptions.js', location='body_js_tail')  # location, to force after react js files

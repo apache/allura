@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
 class ArtifactReference(MappedClass):
     class __mongometa__:
         session = main_orm_session
-        name = str('artifact_reference')
+        name = 'artifact_reference'
         indexes = [
             'references',
             'artifact_reference.project_id',  # used in ReindexCommand
@@ -92,7 +92,7 @@ class ArtifactReference(MappedClass):
         '''Look up the artifact referenced'''
         aref = self.artifact_reference
         try:
-            cls = loads(six.binary_type(aref.cls))
+            cls = loads(bytes(aref.cls))
             with h.push_context(aref.project_id):
                 return cls.query.get(_id=aref.artifact_id)
         except Exception:
@@ -105,7 +105,7 @@ class Shortlink(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('shortlink')
+        name = 'shortlink'
         indexes = [
             'ref_id',  # for from_artifact() and index_tasks.py:del_artifacts
             ('project_id', 'link',)  # used by from_links()  More helpful to have project_id first, for other queries
@@ -190,7 +190,7 @@ class Shortlink(MappedClass):
             matches_by_artifact = {
                 link: list(matches)
                 for link, matches in groupby(q, key=lambda s: unquote(s.link))}
-            for link, d in six.iteritems(parsed_links):
+            for link, d in parsed_links.items():
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
                     m for m in matches

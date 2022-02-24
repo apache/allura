@@ -36,13 +36,12 @@ from allura.command import base, script, set_neighborhood_features, \
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
-from six.moves import range
 
 test_config = pkg_resources.resource_filename(
     'allura', '../test.ini') + '#main'
 
 
-class EmptyClass(object):
+class EmptyClass:
     pass
 
 
@@ -183,7 +182,7 @@ def test_update_neighborhood():
     assert nb.has_home_tool is False
 
 
-class TestEnsureIndexCommand(object):
+class TestEnsureIndexCommand:
 
     def test_run(self):
         cmd = show_models.EnsureIndexCommand('ensure_index')
@@ -269,7 +268,7 @@ class TestEnsureIndexCommand(object):
         ])
 
 
-class TestTaskCommand(object):
+class TestTaskCommand:
 
     def tearDown(self):
         M.MonQTask.query.remove({})
@@ -335,7 +334,7 @@ class TestTaskCommand(object):
         assert_equal(M.MonQTask.query.find().count(), 0)
 
 
-class TestTaskdCleanupCommand(object):
+class TestTaskdCleanupCommand:
 
     def setUp(self):
         self.cmd_class = taskd_cleanup.TaskdCleanupCommand
@@ -449,24 +448,18 @@ def test_status_log_retries():
     assert cmd._taskd_status.mock_calls == expected_calls
 
 
-class TestShowModels(object):
+class TestShowModels:
 
     def test_show_models(self):
         cmd = show_models.ShowModelsCommand('models')
         with OutputCapture() as output:
             cmd.run([test_config])
-        if six.PY3:
-            assert_in('''allura.model.notification.SiteNotification
+        assert_in('''allura.model.notification.SiteNotification
          - <FieldProperty _id>
          - <FieldProperty content>
         ''', output.captured)
-        else:
-            # order of class fields are not preserved
-            assert_in('allura.model.notification.SiteNotification\n', output.captured)
-            assert_in('         - <FieldProperty _id>\n', output.captured)
-            assert_in('         - <FieldProperty content>\n', output.captured)
 
-class TestReindexAsTask(object):
+class TestReindexAsTask:
 
     cmd = 'allura.command.show_models.ReindexCommand'
     task_name = 'allura.command.base.run_command'
@@ -500,7 +493,7 @@ class TestReindexAsTask(object):
             M.MonQTask.query.remove()
 
 
-class TestReindexCommand(object):
+class TestReindexCommand:
 
     @patch('allura.command.show_models.g')
     def test_skip_solr_delete(self, g):

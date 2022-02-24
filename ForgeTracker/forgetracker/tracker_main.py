@@ -82,7 +82,6 @@ from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 import six
-from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -312,7 +311,7 @@ class ForgeTrackerApp(Application):
             self.config.options.mount_point + '/'
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
-        links += super(ForgeTrackerApp, self).admin_menu()
+        links += super().admin_menu()
         # change Options menu html class
         for link in links:
             if link.label == 'Options':
@@ -424,7 +423,7 @@ class ForgeTrackerApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        super(ForgeTrackerApp, self).install(project)
+        super().install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
@@ -473,7 +472,7 @@ class ForgeTrackerApp(Application):
         TM.Ticket.query.remove(app_config_id)
         TM.Bin.query.remove(app_config_id)
         TM.Globals.query.remove(app_config_id)
-        super(ForgeTrackerApp, self).uninstall(project)
+        super().uninstall(project)
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"tickets": [')
@@ -535,7 +534,7 @@ class ForgeTrackerApp(Application):
             if fld.name == '_milestone':
                 for m in fld.milestones:
                     d = self.globals.milestone_count(
-                        '{}:{}'.format(fld.name, m.name))
+                        f'{fld.name}:{m.name}')
                     milestones.append(dict(
                         name=m.name,
                         due_date=m.get('due_date'),
@@ -674,7 +673,7 @@ class RootController(BaseController, FeedController):
                 if m.complete:
                     continue
                 count = c.app.globals.milestone_count(
-                    '{}:{}'.format(fld.name, m.name))['hits']
+                    f'{fld.name}:{m.name}')['hits']
                 name = h.text.truncate(m.name, 72)
                 milestone_counts.append({'name': name, 'count': count})
         return {'milestone_counts': milestone_counts}
@@ -852,11 +851,11 @@ class RootController(BaseController, FeedController):
             q = query
         result = TM.Ticket.paged_search(
             c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
-        response.headers['Content-Type'] = str('')
-        response.content_type = str('application/xml')
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url),
                  description='You searched for %s' % q, language='en')
-        if request.environ['PATH_INFO'].endswith(str('.atom')):
+        if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
             feed = FG.Rss201rev2Feed(**d)
@@ -1264,7 +1263,7 @@ class BinController(BaseController, AdminControllerMixin):
         redirect('.')
 
 
-class changelog(object):
+class changelog:
 
     """
     A dict-like object which keeps log about what keys have been changed.
@@ -1624,7 +1623,7 @@ class AttachmentController(att.AttachmentController):
 
     def handle_post(self, delete, **kw):
         old_attachments = attachments_info(self.artifact.attachments)
-        super(AttachmentController, self).handle_post(delete, **kw)
+        super().handle_post(delete, **kw)
         if delete:
             session(self.artifact.attachment_class()).flush()
             # self.artifact.attachments is ming's LazyProperty, we need to reset
@@ -1651,7 +1650,7 @@ NONALNUM_RE = re.compile(r'\W+')
 class TrackerAdminController(DefaultAdminController):
 
     def __init__(self, app):
-        super(TrackerAdminController, self).__init__(app)
+        super().__init__(app)
         self.bins = BinController(app=self.app)
         # if self.app.globals and self.app.globals.milestone_names is None:
         #     self.app.globals.milestone_names = ''
@@ -1690,7 +1689,7 @@ class TrackerAdminController(DefaultAdminController):
     @validate(W.options_admin, error_handler=options)
     def set_options(self, **kw):
         require_access(self.app, 'configure')
-        for k, val in six.iteritems(kw):
+        for k, val in kw.items():
             self.app.config.options[k] = val
         flash('Options updated')
         redirect(six.ensure_text(request.referer or '/'))
@@ -1919,9 +1918,9 @@ class MilestoneController(BaseController):
         self.field = fld
         self.milestone = m
         escaped_name = escape_solr_arg(m.name)
-        self.progress_key = '{}:{}'.format(fld.name, escaped_name)
+        self.progress_key = f'{fld.name}:{escaped_name}'
         self.mongo_query = {'custom_fields.%s' % fld.name: m.name}
-        self.solr_query = '{}:{}'.format(_mongo_col_to_solr_col(fld.name), escaped_name)
+        self.solr_query = f'{_mongo_col_to_solr_col(fld.name)}:{escaped_name}'
 
     @with_trailing_slash
     @h.vardec

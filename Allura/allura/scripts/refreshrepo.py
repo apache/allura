@@ -128,7 +128,7 @@ class RefreshRepo(ScriptTask):
                 repo_type = repo_type.strip()
                 if repo_type not in ['svn', 'git', 'hg']:
                     raise argparse.ArgumentTypeError(
-                        '{} is not a valid repo type.'.format(repo_type))
+                        f'{repo_type} is not a valid repo type.')
                 repo_types.append(repo_type)
             return repo_types
 

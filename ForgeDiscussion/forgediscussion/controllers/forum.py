@@ -43,7 +43,7 @@ from forgediscussion import tasks
 log = logging.getLogger(__name__)
 
 
-class pass_validator(object):
+class pass_validator:
     def validate(self, v, s):
         return v
 
@@ -51,14 +51,14 @@ class pass_validator(object):
 pass_validator = pass_validator()
 
 
-class ModelConfig(object):
+class ModelConfig:
     Discussion = DM.Forum
     Thread = DM.ForumThread
     Post = DM.ForumPost
     Attachment = M.DiscussionAttachment
 
 
-class WidgetConfig(object):
+class WidgetConfig:
     # Forms
     subscription_form = DW.SubscriptionForm()
     subscribe_form = SubscribeForm()
@@ -91,7 +91,7 @@ class ForumController(DiscussionController):
             shortname=forum_id)
         if not self.discussion:
             raise exc.HTTPNotFound()
-        super(ForumController, self).__init__()
+        super().__init__()
 
     @expose()
     def _lookup(self, id=None, *remainder):
@@ -171,7 +171,7 @@ class ForumThreadController(ThreadController):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url() + 'deleted')
         c.thread_subscription_form = self.W.subscribe_form
-        return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)
+        return super().index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
     @h.vardec
     @expose()
@@ -223,7 +223,7 @@ class ForumPostController(PostController):
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url() + 'deleted')
-        return super(ForumPostController, self).index(**kw)
+        return super().index(**kw)
 
     @expose()
     @require_post()
@@ -234,7 +234,7 @@ class ForumPostController(PostController):
             redirect(self.thread.discussion.url() + 'deleted')
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)
-        super(ForumPostController, self).moderate(**kw)
+        super().moderate(**kw)
 
 
 class ForumModerationController(ModerationController):

@@ -34,7 +34,7 @@ class TestWhenModerating(WithDatabase):
                patches.disable_notifications_patch]
 
     def setUp(self):
-        super(TestWhenModerating, self).setUp()
+        super().setUp()
         post = create_post('mypost')
         discussion_controller = Mock(
             discussion=Mock(_id=post.discussion_id),
@@ -86,7 +86,7 @@ class TestIndexWithAPostInTheDiscussion(WithDatabase):
     patches = [patches.fake_app_patch]
 
     def setUp(self):
-        super(TestIndexWithAPostInTheDiscussion, self).setUp()
+        super().setUp()
         self.post = create_post('mypost')
         discussion = self.post.discussion
         self.template_variables = show_moderation_index(discussion)

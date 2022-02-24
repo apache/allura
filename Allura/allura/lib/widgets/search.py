@@ -38,8 +38,7 @@ class SearchResults(ew_core.Widget):
 
     def resources(self):
         for f in self.fields:
-            for r in f.resources():
-                yield r
+            yield from f.resources()
         yield ew.CSSLink('css/search.css')
 
 
@@ -50,7 +49,7 @@ class SearchHelp(ffw.Lightbox):
         trigger='a.search_help_modal')
 
     def __init__(self, comments=True, history=True, fields={}):
-        super(SearchHelp, self).__init__()
+        super().__init__()
         # can't use g.jinja2_env since this widget gets imported too early :(
         jinja2_env = jinja2.Environment(
             loader=jinja2.PackageLoader('allura', 'templates/widgets'))

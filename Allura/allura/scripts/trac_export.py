@@ -70,7 +70,7 @@ Export ticket data from a Trac instance''')
     return options, args
 
 
-class TracExport(object):
+class TracExport:
 
     PAGE_SIZE = 100
     TICKET_URL = 'ticket/%s'
@@ -105,7 +105,7 @@ class TracExport(object):
     def remap_fields(self, dict):
         "Remap fields to adhere to standard taxonomy."
         out = {}
-        for k, v in six.iteritems(dict):
+        for k, v in dict.items():
             key = self.match_pattern(r'\W*(\w+)\W*', k)
             out[self.FIELD_MAP.get(key, key)] = v
 
@@ -136,7 +136,7 @@ class TracExport(object):
     @staticmethod
     def match_pattern(regexp, string):
         m = re.match(regexp, string)
-        assert m, "'{}' didn't match '{}'".format(regexp, string)
+        assert m, f"'{regexp}' didn't match '{string}'"
         for grp in m.groups():
             if grp is not None:
                 return grp
@@ -180,10 +180,10 @@ class TracExport(object):
                 r'.* by ', '', comment.find('h3', 'change').text).strip()
             c['date'] = self.trac2z_date(
                 comment.find('a', 'timeline')['title'].replace(' in Timeline', '').replace('See timeline at ', ''))
-            changes = six.text_type(comment.find('ul', 'changes') or '')
+            changes = str(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
-            body = body.replace('href="{}'.format(relative_base_url), 'href="')  # crude way to rewrite ticket links
+            body = body.replace(f'href="{relative_base_url}', 'href="')  # crude way to rewrite ticket links
             c['comment'] = html2text.html2text(changes + body)
             c['class'] = 'COMMENT'
             comments.append(c)

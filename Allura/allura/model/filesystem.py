@@ -30,7 +30,6 @@ from ming.orm.declarative import MappedClass
 
 from .session import project_orm_session
 from allura.lib import utils
-from io import open
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -52,7 +51,7 @@ class File(MappedClass):
 
     class __mongometa__:
         session = project_orm_session
-        name = str('fs')
+        name = 'fs'
         indexes = ['filename']
 
     query: 'Query[File]'
@@ -63,7 +62,7 @@ class File(MappedClass):
     content_type = FieldProperty(str)
 
     def __init__(self, **kw):
-        super(File, self).__init__(**kw)
+        super().__init__(**kw)
         if self.content_type is None:
             self.content_type = utils.guess_mime_type(self.filename)
 
@@ -112,7 +111,7 @@ class File(MappedClass):
 
     def delete(self):
         self._fs().delete(self.file_id)
-        super(File, self).delete()
+        super().delete()
 
     def rfile(self):
         return self._fs().get(self.file_id)
@@ -189,7 +188,7 @@ class File(MappedClass):
 
         try:
             image = PIL.Image.open(fp)
-        except IOError as e:
+        except OSError as e:
             log.error('Error opening image %s %s', filename, e, exc_info=True)
             return None, None
 

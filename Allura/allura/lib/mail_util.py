@@ -34,7 +34,6 @@ from tg import app_globals as g
 from allura.lib.utils import ConfigProxy
 from allura.lib import exceptions as exc
 from allura.lib import helpers as h
-from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -57,11 +56,11 @@ def Header(text, *more_text):
     # email.header.Header handles str vs unicode differently
     # see
     # http://docs.python.org/library/email.header.html#email.header.Header.append
-    if not isinstance(text, six.text_type):
+    if not isinstance(text, str):
         raise TypeError('This must be unicode: %r' % text)
     head = header.Header(text)
     for m in more_text:
-        if not isinstance(m, six.text_type):
+        if not isinstance(m, str):
             raise TypeError('This must be unicode: %r' % text)
         head.append(m)
     return head
@@ -73,7 +72,7 @@ def AddrHeader(fromaddr):
         foo@bar.com
         "Foo Bar" <foo@bar.com>
     '''
-    if isinstance(fromaddr, six.string_types) and ' <' in fromaddr:
+    if isinstance(fromaddr, str) and ' <' in fromaddr:
         name, addr = fromaddr.rsplit(' <', 1)
         addr = '<' + addr  # restore the char we just split off
         addrheader = Header(name, addr)
@@ -134,14 +133,9 @@ def parse_message(data):
     # > A unicode string has no RFC defintion as an email, so things do not work right...
     # > You do have to conditionalize your 2/3 code to use the bytes parser and generator if you are dealing with 8-bit
     # > messages. There's just no way around that.
-    if six.PY2:
-        parser = email.feedparser.FeedParser()
-        parser.feed(data)
-        msg = parser.close()
-    else:
-        # works the same as BytesFeedParser, and better than non-"Bytes" parsers for some messages
-        parser = email.parser.BytesParser()
-        msg = parser.parsebytes(data.encode('utf-8'))
+    # works the same as BytesFeedParser, and better than non-"Bytes" parsers for some messages
+    parser = email.parser.BytesParser()
+    msg = parser.parsebytes(data.encode('utf-8'))
     # Extract relevant data
     result = {}
     result['multipart'] = multipart = msg.is_multipart()
@@ -256,7 +250,7 @@ def isvalid(addr):
         return False
 
 
-class SMTPClient(object):
+class SMTPClient:
 
     def __init__(self):
         self._client = None
@@ -281,7 +275,7 @@ class SMTPClient(object):
             message['CC'] = AddrHeader(cc)
             addrs.append(cc)
         if in_reply_to:
-            if not isinstance(in_reply_to, six.string_types):
+            if not isinstance(in_reply_to, str):
                 raise TypeError('Only strings are supported now, not lists')
             message['In-Reply-To'] = Header('<%s>' % in_reply_to)
             if not references:
@@ -305,7 +299,7 @@ class SMTPClient(object):
         smtp_addrs = [a for a in smtp_addrs if isvalid(a)]
         if not smtp_addrs:
             log.warning('No valid addrs in %s, so not sending mail',
-                        list(map(six.text_type, addrs)))
+                        list(map(str, addrs)))
             return
         try:
             self._client.sendmail(

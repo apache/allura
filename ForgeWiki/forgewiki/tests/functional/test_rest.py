@@ -1,5 +1,3 @@
-# coding: utf-8
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -18,7 +16,6 @@
 #       under the License.
 
 import json
-from io import open
 
 from alluratest.tools import assert_equal, assert_in, assert_not_equal
 import tg
@@ -33,7 +30,7 @@ from forgewiki.model import Page
 class TestWikiApi(TestRestApiBase):
 
     def setUp(self):
-        super(TestWikiApi, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_wiki
@@ -125,7 +122,7 @@ class TestWikiApi(TestRestApiBase):
 class TestWikiHasAccess(TestRestApiBase):
 
     def setUp(self):
-        super(TestWikiHasAccess, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_wiki

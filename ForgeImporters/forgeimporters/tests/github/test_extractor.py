@@ -26,7 +26,6 @@ from mock import patch, Mock
 
 from ... import github
 
-from six.moves import zip
 
 
 class TestGitHubProjectExtractor(TestCase):

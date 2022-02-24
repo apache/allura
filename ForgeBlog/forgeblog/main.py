@@ -184,7 +184,7 @@ class ForgeBlogApp(Application):
         admin_url = c.project.url() + 'admin/' + \
             self.config.options.mount_point + '/'
         # temporarily disabled until some bugs are fixed
-        links = super(ForgeBlogApp, self).admin_menu(force_options=True)
+        links = super().admin_menu(force_options=True)
         # We don't want external feeds in menu unless they're enabled
         if asbool(config.get('forgeblog.exfeed', 'false')):
             links.insert(0, SitemapEntry('External feeds',
@@ -194,7 +194,7 @@ class ForgeBlogApp(Application):
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        super(ForgeBlogApp, self).install(project)
+        super().install(project)
 
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
@@ -216,7 +216,7 @@ class ForgeBlogApp(Application):
         BM.BlogAttachment.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPost.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
-        super(ForgeBlogApp, self).uninstall(project)
+        super().uninstall(project)
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"posts": [')
@@ -429,7 +429,7 @@ class PostController(BaseController, FeedController):
         old_text = self.post.text
         if attachment is not None:
             self.post.add_multiple_attachments(attachment)
-        for k, val in six.iteritems(kw):
+        for k, val in kw.items():
             setattr(self.post, k, val)
         self.post.commit()
         notification_tasks.send_usermentions_notification.post(self.post.index_id(), kw['text'], old_text)
@@ -537,7 +537,7 @@ class BlogAdminController(DefaultAdminController):
     @require_post()
     def set_exfeed(self, new_exfeed=None, **kw):
         exfeed_val = kw.get('exfeed', [])
-        if isinstance(exfeed_val, six.text_type):
+        if isinstance(exfeed_val, str):
             tmp_exfeed_list = []
             tmp_exfeed_list.append(exfeed_val)
         else:

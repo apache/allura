@@ -43,8 +43,6 @@ from .attachments import BaseAttachment
 from .auth import User, ProjectRole, AlluraUserProperty
 from .timeline import ActivityObject
 from .types import MarkdownCache
-from six.moves import range
-from six.moves import map
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -55,7 +53,7 @@ log = logging.getLogger(__name__)
 class Discussion(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = str('discussion')
+        name = 'discussion'
 
     query: 'Query[Discussion]'
 
@@ -133,7 +131,7 @@ class Discussion(Artifact, ActivityObject):
         self.thread_class().query.remove(dict(discussion_id=self._id))
         self.post_class().query.remove(dict(discussion_id=self._id))
         self.attachment_class().remove(dict(discussion_id=self._id))
-        super(Discussion, self).delete()
+        super().delete()
 
     def find_posts(self, **kw):
         q = dict(kw, discussion_id=self._id, deleted=False)
@@ -143,7 +141,7 @@ class Discussion(Artifact, ActivityObject):
 class Thread(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = str('thread')
+        name = 'thread'
         indexes = [
             ('artifact_id',),
             ('ref_id',),
@@ -462,7 +460,7 @@ class Thread(Artifact, ActivityObject):
         for p in self.post_class().query.find(dict(thread_id=self._id)):
             p.delete()
         self.attachment_class().remove(dict(thread_id=self._id))
-        super(Thread, self).delete()
+        super().delete()
 
     def spam(self):
         """Mark this thread as spam."""
@@ -473,7 +471,7 @@ class Thread(Artifact, ActivityObject):
 class PostHistory(Snapshot):
 
     class __mongometa__:
-        name = str('post_history')
+        name = 'post_history'
 
     query: 'Query[PostHistory]'
 
@@ -489,7 +487,7 @@ class PostHistory(Snapshot):
     def shorthand_id(self):
         original = self.original()
         if original:
-            return '{}#{}'.format(original.shorthand_id(), self.version)
+            return f'{original.shorthand_id()}#{self.version}'
         else:
             return None
 
@@ -510,7 +508,7 @@ class PostHistory(Snapshot):
 class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
 
     class __mongometa__:
-        name = str('post')
+        name = 'post'
         history_class = PostHistory
         indexes = [
             # used in general lookups, last_post, etc
@@ -599,7 +597,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         return d
 
     def index(self):
-        result = super(Post, self).index()
+        result = super().index()
         result.update(
             title='Post by {} on {}'.format(
                 self.author().username, self.subject),
@@ -728,12 +726,12 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         slug = h.urlquote(self.slug)
         url = self.main_url()
         if page == 0:
-            return '{}?limit={}#{}'.format(url, limit, slug)
-        return '{}?limit={}&page={}#{}'.format(url, limit, page, slug)
+            return f'{url}?limit={limit}#{slug}'
+        return f'{url}?limit={limit}&page={page}#{slug}'
 
     def shorthand_id(self):
         if self.thread:
-            return '{}#{}'.format(self.thread.shorthand_id(), self.slug)
+            return f'{self.thread.shorthand_id()}#{self.slug}'
         else:  # pragma no cover
             return None
 
@@ -840,7 +838,7 @@ class DiscussionAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
 
     class __mongometa__:
-        polymorphic_identity = str('DiscussionAttachment')
+        polymorphic_identity = 'DiscussionAttachment'
         indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
 
     query: 'Query[DiscussionAttachment]'

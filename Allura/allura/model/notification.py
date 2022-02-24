@@ -58,7 +58,6 @@ import allura.tasks.mail_tasks
 from .session import main_orm_session
 from .auth import User, AlluraUserProperty
 import six
-from six.moves import filter
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -77,7 +76,7 @@ class Notification(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('notification')
+        name = 'notification'
         indexes = ['project_id']
 
     query: 'Query[Notification]'
@@ -393,7 +392,7 @@ class Mailbox(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('mailbox')
+        name = 'mailbox'
         unique_indexes = [
             ('user_id', 'project_id', 'app_config_id',
              'artifact_index_id', 'topic', 'is_flash'),
@@ -660,7 +659,7 @@ class Mailbox(MappedClass):
                         'Error sending notification: %s to mbox %s (user %s)',
                         n._id, self._id, self.user_id)
             # Accumulate messages from same address with same subject
-            for (subject, from_address, reply_to_address, author_id), ns in six.iteritems(ngroups):
+            for (subject, from_address, reply_to_address, author_id), ns in ngroups.items():
                 try:
                     if len(ns) == 1:
                         ns[0].send_direct(self.user_id)
@@ -684,7 +683,7 @@ class Mailbox(MappedClass):
                 notifications)
 
 
-class MailFooter(object):
+class MailFooter:
     view = jinja2.Environment(
         loader=jinja2.PackageLoader('allura', 'templates'),
         auto_reload=asbool(config.get('auto_reload_templates', True)),
@@ -719,7 +718,7 @@ class SiteNotification(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('site_notification')
+        name = 'site_notification'
         indexes = [
             ('active', '_id'),
         ]

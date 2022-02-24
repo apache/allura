@@ -91,12 +91,12 @@ class ForgeLinkApp(Application):
         return []
 
     def admin_menu(self):
-        return super(ForgeLinkApp, self).admin_menu()
+        return super().admin_menu()
 
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
-        super(ForgeLinkApp, self).install(project)
+        super().install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_anon = M.ProjectRole.anonymous()._id
@@ -107,7 +107,7 @@ class ForgeLinkApp(Application):
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
-        super(ForgeLinkApp, self).uninstall(project)
+        super().uninstall(project)
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         json.dump(RootRestController(self).link_json(),
@@ -162,7 +162,7 @@ class AdminController(DefaultAdminController):
     @require_post()
     def configure(self, *args, **kwargs):
         try:
-            return super(AdminController, self).configure(*args, **kwargs)
+            return super().configure(*args, **kwargs)
         finally:
             # since sitemap() uses the link URL which was changed
             g.post_event('project_menu_updated')

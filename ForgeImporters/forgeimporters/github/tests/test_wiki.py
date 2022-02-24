@@ -1,5 +1,3 @@
-# coding: utf-8
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -31,7 +29,6 @@ from alluratest.tools import module_not_available
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
-from six.moves import range
 
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the

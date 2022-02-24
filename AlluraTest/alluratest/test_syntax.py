@@ -92,7 +92,7 @@ def run_pyflakes(files):
         raise Exception('pyflakes failure, see stdout')
 
 
-class TestLinters(object):
+class TestLinters:
     # this will get populated dynamically with test methods, see below
     pass
 
@@ -115,12 +115,12 @@ def create_many_lint_methods():
             continue
 
         lint_test_method = lambda self, these_files=files: run_linter(these_files)
-        lint_test_method.__name__ = str('test_pylint_{}'.format(i))
-        setattr(TestLinters, 'test_pylint_{}'.format(i), lint_test_method)
+        lint_test_method.__name__ = str(f'test_pylint_{i}')
+        setattr(TestLinters, f'test_pylint_{i}', lint_test_method)
 
         pyflake_test_method = lambda self, these_files=files: run_pyflakes(these_files)
-        pyflake_test_method.__name__ = str('test_pyflakes_{}'.format(i))
-        setattr(TestLinters, 'test_pyflakes_{}'.format(i), pyflake_test_method)
+        pyflake_test_method.__name__ = str(f'test_pyflakes_{i}')
+        setattr(TestLinters, f'test_pyflakes_{i}', pyflake_test_method)
 
 
 create_many_lint_methods()

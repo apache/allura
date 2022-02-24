@@ -75,7 +75,7 @@ class ProjectBrowseController(BaseController):
         if self.category:
             title = self.category.label
             if self.parent_category:
-                title = "{}: {}".format(self.parent_category.label, title)
+                title = f"{self.parent_category.label}: {title}"
         return title
 
     def _build_nav(self):

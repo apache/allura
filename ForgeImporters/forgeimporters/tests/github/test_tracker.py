@@ -28,13 +28,13 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 class TestTrackerImporter(TestCase):
 
     def setUp(self):
-        super(TestTrackerImporter, self).setUp()
+        super().setUp()
         # every single test method here creates an importer and ToolImporterMeta uses 'g'
         self.patcher_g = mock.patch('forgeimporters.base.g', mock.MagicMock())
         self.patcher_g.start()
 
     def tearDown(self):
-        super(TestTrackerImporter, self).tearDown()
+        super().tearDown()
         self.patcher_g.stop()
 
     @mock.patch.object(tracker, 'g')

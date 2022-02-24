@@ -26,7 +26,7 @@ from allura import model as M
 from alluratest.controller import setup_basic_test
 
 
-class TestBulkExport(object):
+class TestBulkExport:
 
     def setUp(self):
         setup_basic_test()

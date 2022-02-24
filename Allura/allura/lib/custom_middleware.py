@@ -35,7 +35,6 @@ from allura.lib import helpers as h
 from allura.lib.utils import is_ajax
 from allura import model as M
 import allura.model.repository
-from six.moves import range
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ log = logging.getLogger(__name__)
 tool_entry_points = list(h.iter_entry_points('allura'))
 
 
-class StaticFilesMiddleware(object):
+class StaticFilesMiddleware:
 
     '''Custom static file middleware
 
@@ -80,13 +79,13 @@ class StaticFilesMiddleware(object):
                 resource_cls = ep.load().has_resource(resource_path)
                 if resource_cls:
                     file_path = pkg_resources.resource_filename(resource_cls.__module__, resource_path)
-                    return fileapp.FileApp(file_path, [(str('Access-Control-Allow-Origin'), str('*'))])
+                    return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename('allura', os.path.join('public', 'nf', filename))
-        return fileapp.FileApp(file_path, [(str('Access-Control-Allow-Origin'), str('*'))])
+        return fileapp.FileApp(file_path, [('Access-Control-Allow-Origin', '*')])
 
 
-class CORSMiddleware(object):
+class CORSMiddleware:
     '''Enables Cross-Origin Resource Sharing for REST API'''
 
     def __init__(self, app, allowed_methods, allowed_headers, cache=None):
@@ -96,7 +95,7 @@ class CORSMiddleware(object):
         self.cache_preflight = cache or None
 
     def __call__(self, environ, start_response):
-        is_api_request = environ.get('PATH_INFO', '').startswith(str('/rest/'))
+        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
         valid_cors = 'HTTP_ORIGIN' in environ
         if not is_api_request or not valid_cors:
             return self.app(environ, start_response)
@@ -125,17 +124,17 @@ class CORSMiddleware(object):
         return r(environ, start_response)
 
     def get_response_headers(self, preflight=False):
-        headers = [(str('Access-Control-Allow-Origin'), str('*'))]
+        headers = [('Access-Control-Allow-Origin', '*')]
         if preflight:
             ac_methods = ', '.join(self.allowed_methods)
             ac_headers = ', '.join(sorted(self.allowed_headers))
             headers.extend([
-                (str('Access-Control-Allow-Methods'), str(ac_methods)),
-                (str('Access-Control-Allow-Headers'), str(ac_headers)),
+                ('Access-Control-Allow-Methods', str(ac_methods)),
+                ('Access-Control-Allow-Headers', str(ac_headers)),
             ])
             if self.cache_preflight:
                 headers.append(
-                    (str('Access-Control-Max-Age'), str(self.cache_preflight))
+                    ('Access-Control-Max-Age', str(self.cache_preflight))
                 )
         return headers
 
@@ -144,7 +143,7 @@ class CORSMiddleware(object):
         return {h.strip().lower() for h in headers.split(',') if h.strip()}
 
 
-class LoginRedirectMiddleware(object):
+class LoginRedirectMiddleware:
 
     '''Actually converts a 401 into a 302 so we can do a redirect to a different
     app for login.  (StatusCodeRedirect does a WSGI-only redirect which cannot
@@ -155,7 +154,7 @@ class LoginRedirectMiddleware(object):
 
     def __call__(self, environ, start_response):
         status, headers, app_iter, exc_info = call_wsgi_application(self.app, environ)
-        is_api_request = environ.get('PATH_INFO', '').startswith(str('/rest/'))
+        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
         if status[:3] == '401' and not is_api_request and not is_ajax(Request(environ)):
             login_url = tg.config.get('auth.login_url', '/auth/')
             if environ['REQUEST_METHOD'] == 'GET':
@@ -172,7 +171,7 @@ class LoginRedirectMiddleware(object):
         return app_iter
 
 
-class CSRFMiddleware(object):
+class CSRFMiddleware:
 
     '''On POSTs, looks for a special field name that matches the value of a given
     cookie.  If this field is missing, the cookies are cleared to anonymize the
@@ -217,14 +216,14 @@ class CSRFMiddleware(object):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
                 use_secure = 'secure; ' if environ['beaker.session'].secure else ''
                 headers.append(
-                    (str('Set-cookie'),
-                     str('{}={}; {}Path=/'.format(self._cookie_name, cookie, use_secure))))
+                    ('Set-cookie',
+                     str(f'{self._cookie_name}={cookie}; {use_secure}Path=/')))
             return start_response(status, headers, exc_info)
 
         return self._app(environ, session_start_response)
 
 
-class SSLMiddleware(object):
+class SSLMiddleware:
 
     'Verify the https/http schema is correct'
 
@@ -267,7 +266,7 @@ class SSLMiddleware(object):
         return resp(environ, start_response)
 
 
-class SetRequestHostFromConfig(object):
+class SetRequestHostFromConfig:
     """
     Set request properties for host and port, based on the 'base_url' config setting.
     This permits code to use request.host etc to construct URLs correctly, even when behind a proxy, like in docker
@@ -300,10 +299,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import ming
         import pymongo
         import socket
-        if six.PY2:
-            import urllib2 as urlopen_pkg
-        else:
-            import urllib.request as urlopen_pkg
+        import urllib.request as urlopen_pkg
         import activitystream
         import pygments
         import difflib
@@ -400,7 +396,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         return timers
 
 
-class RememberLoginMiddleware(object):
+class RememberLoginMiddleware:
     '''
     This middleware changes session's cookie expiration time according to login_expires
     session variable'''
@@ -424,19 +420,19 @@ class RememberLoginMiddleware(object):
                     session._set_cookie_expires(login_expires)
                 # Replace the cookie header that SessionMiddleware set
                 # with one that has the new expires parameter value
-                cookie = session.cookie[session.key].output(header=str(''))
+                cookie = session.cookie[session.key].output(header='')
                 for i in range(len(headers)):
                     header, contents = headers[i]
                     if header == 'Set-cookie' and \
                             contents.lstrip().startswith(session.key):
-                        headers[i] = (str('Set-cookie'), cookie)
+                        headers[i] = ('Set-cookie', cookie)
                         break
             return start_response(status, headers, exc_info)
 
         return self.app(environ, remember_login_start_response)
 
 
-class MingTaskSessionSetupMiddleware(object):
+class MingTaskSessionSetupMiddleware:
     '''
     This middleware ensures there is a "task" session always established.  This avoids:
 

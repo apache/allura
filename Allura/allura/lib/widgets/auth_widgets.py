@@ -70,7 +70,7 @@ class LoginForm(ForgeForm):
 
     @validator
     def validate(self, value, state=None):
-        super(LoginForm, self).validate(value, state=state)
+        super().validate(value, state=state)
         auth_provider = plugin.AuthenticationProvider.get(request)
 
         # can't use a validator attr on the username TextField, since the antispam encoded name changes and doesn't

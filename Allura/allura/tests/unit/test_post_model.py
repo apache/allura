@@ -22,8 +22,6 @@ from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import create_post
-from six.moves import range
-from six.moves import map
 
 
 class TestPostModel(WithDatabase):
@@ -31,7 +29,7 @@ class TestPostModel(WithDatabase):
                patches.disable_notifications_patch]
 
     def setUp(self):
-        super(TestPostModel, self).setUp()
+        super().setUp()
         self.post = create_post('mypost')
 
     def test_that_it_is_pending_by_default(self):

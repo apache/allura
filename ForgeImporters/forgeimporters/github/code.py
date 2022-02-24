@@ -88,7 +88,7 @@ class GitHubRepoImporter(ToolImporter):
         """ Import a GitHub repo into a new Git Allura tool.
 
         """
-        project_name = "{}/{}".format(user_name, project_name)
+        project_name = f"{user_name}/{project_name}"
         extractor = GitHubProjectExtractor(project_name, user=user)
         repo_url = extractor.get_repo_url()
         app = project.install_app(

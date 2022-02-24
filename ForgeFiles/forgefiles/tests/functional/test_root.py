@@ -25,7 +25,6 @@ from forgefiles.model.files import UploadFolder
 from forgefiles.model.files import UploadFiles
 
 from testfixtures import TempDirectory
-from io import open
 
 
 class TestFiles(TestController):

@@ -62,7 +62,7 @@ class W:
     award_grant_form = ff.AwardGrantForm
 
 
-class NeighborhoodController(object):
+class NeighborhoodController:
 
     '''Manages a neighborhood of projects.
     '''
@@ -267,7 +267,7 @@ class NeighborhoodController(object):
         return {
             'options': [{
                 'value': u.username,
-                'label': '{} ({})'.format(u.display_name, u.username)
+                'label': f'{u.display_name} ({u.username})'
             } for u in p.users()]
         }
 
@@ -276,7 +276,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
         self.neighborhood = neighborhood
-        super(NeighborhoodProjectBrowseController, self).__init__(
+        super().__init__(
             category_name=category_name, parent_category=parent_category)
         self.nav_stub = '%sbrowse/' % self.neighborhood.url()
         self.additional_filters = {'neighborhood_id': self.neighborhood._id}
@@ -305,7 +305,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
                     limit=limit, page=page, count=count)
 
 
-class ToolListController(object):
+class ToolListController:
 
     """Renders a list of all tools of a given type in the current project."""
 
@@ -471,23 +471,23 @@ class ProjectController(FeedController):
         return {
             'options': [{
                 'value': u.username,
-                'label': '{} ({})'.format(u.display_name, u.username)
+                'label': f'{u.display_name} ({u.username})'
             } for u in users]
         }
 
 
-class ScreenshotsController(object):
+class ScreenshotsController:
 
     @expose()
     def _lookup(self, filename, *args):
         if args:
             filename = unquote(filename)
         else:
-            filename = unquote(request.path.rsplit(str('/'), 1)[-1])
+            filename = unquote(request.path.rsplit('/', 1)[-1])
         return ScreenshotController(filename), args
 
 
-class ScreenshotController(object):
+class ScreenshotController:
 
     def __init__(self, filename):
         self.filename = filename
@@ -533,7 +533,7 @@ def set_nav(neighborhood):
             SitemapEntry('Awards', admin_url + 'accolades')]
 
 
-class NeighborhoodAdminController(object):
+class NeighborhoodAdminController:
 
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
@@ -696,7 +696,7 @@ class NeighborhoodAdminController(object):
         )
 
 
-class NeighborhoodStatsController(object):
+class NeighborhoodStatsController:
 
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
@@ -772,7 +772,7 @@ class NeighborhoodStatsController(object):
                     )
 
 
-class NeighborhoodModerateController(object):
+class NeighborhoodModerateController:
 
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
@@ -833,7 +833,7 @@ class NeighborhoodModerateController(object):
         redirect('.')
 
 
-class NeighborhoodAwardsController(object):
+class NeighborhoodAwardsController:
 
     def __init__(self, neighborhood=None):
         if neighborhood is not None:
@@ -901,7 +901,7 @@ class NeighborhoodAwardsController(object):
         redirect(six.ensure_text(request.referer or '/'))
 
 
-class AwardController(object):
+class AwardController:
 
     def __init__(self, neighborhood=None, award_id=None):
         self.neighborhood = neighborhood
@@ -969,7 +969,7 @@ class AwardController(object):
         redirect(six.ensure_text(request.referer or '/'))
 
 
-class GrantController(object):
+class GrantController:
 
     def __init__(self, neighborhood=None, award=None, recipient=None):
         self.neighborhood = neighborhood
@@ -1011,10 +1011,10 @@ class GrantController(object):
         redirect(six.ensure_text(request.referer or '/'))
 
 
-class ProjectImporterController(object):
+class ProjectImporterController:
 
     def __init__(self, neighborhood, *a, **kw):
-        super(ProjectImporterController, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.neighborhood = neighborhood
 
     @expose()

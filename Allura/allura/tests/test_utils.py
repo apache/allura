@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -22,7 +20,6 @@ import time
 import unittest
 import datetime as dt
 from os import path
-from io import open
 
 import six
 import ming
@@ -47,7 +44,6 @@ from alluratest.controller import setup_unit_test
 from allura import model as M
 from allura.lib import utils
 from allura.lib import helpers as h
-from six.moves import range
 
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
@@ -385,12 +381,12 @@ def test_skip_mod_date():
     assert getattr(session(M.Artifact)._get(), 'skip_mod_date', None) is False
 
 
-class FakeAttachment(object):
+class FakeAttachment:
     def __init__(self, filename):
         self._id = ObjectId()
         self.filename = filename
     def __repr__(self):
-        return '{} {}'.format(self._id, self.filename)
+        return f'{self._id} {self.filename}'
 
 
 def unique_attachments():
@@ -435,5 +431,5 @@ def test_urlencode():
     assert_equal(utils.urlencode({'a': 'hello'}),
                  'a=hello')
     # list of pairs - including unicode and bytes
-    assert_equal(utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode('utf8'))]),
+    assert_equal(utils.urlencode([('a', 1), ('b', 'ƒ'), ('c', 'ƒ'.encode())]),
                  'a=1&b=%C6%92&c=%C6%92')

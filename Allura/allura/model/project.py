@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -65,7 +64,6 @@ from .monq_model import MonQTask
 
 from .filesystem import File
 import six
-from six.moves import map
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -97,7 +95,7 @@ class ProjectCategory(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('project_category')
+        name = 'project_category'
 
     query: 'Query[ProjectCategory]'
 
@@ -132,7 +130,7 @@ class TroveCategory(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('trove_category')
+        name = 'trove_category'
         extensions = [TroveCategoryMapperExtension]
         indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
 
@@ -197,7 +195,7 @@ class ProjectNameFieldProperty(FieldProperty):
             owning_user = instance.user_project_of
             if owning_user:
                 return owning_user.username
-        return super(ProjectNameFieldProperty, self).__get__(instance, cls)
+        return super().__get__(instance, cls)
 
 
 class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
@@ -211,7 +209,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('project')
+        name = 'project'
         indexes = [
             'name',
             'neighborhood_id',
@@ -407,7 +405,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
                 file_sha256 = sha256(file_bytes).hexdigest()
                 self.set_tool_data('allura', icon_sha256=file_sha256)
             except Exception as ex:
-                log.exception('Failed to calculate sha256 for icon file for {}'.format(self.shortname))
+                log.exception(f'Failed to calculate sha256 for icon file for {self.shortname}')
             return True
         return False
 
@@ -419,11 +417,11 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def icon_sized(self, w):
         allowed_sizes = list(map(int, aslist(config.get('project_icon_sizes', '16 24 32 48 64 72 96'))))
         if w not in allowed_sizes:
-            raise ValueError('Width must be one of {} (see project_icon_sizes in your .ini file)'.format(allowed_sizes))
+            raise ValueError(f'Width must be one of {allowed_sizes} (see project_icon_sizes in your .ini file)')
         if w == DEFAULT_ICON_WIDTH:
             icon_cat_name = 'icon'
         else:
-            icon_cat_name = 'icon-{}'.format(w)
+            icon_cat_name = f'icon-{w}'
         sized = ProjectFile.query.get(project_id=self._id, category=icon_cat_name)
         if not sized and w != DEFAULT_ICON_WIDTH:
             orig = self.icon_original
@@ -663,7 +661,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         i = 0
         new_tools = []
         if not self.is_nbhd_project:
-            for tool, label in six.iteritems(anchored_tools):
+            for tool, label in anchored_tools.items():
                 if (tool not in installed_tools) and (self.app_instance(tool) is None):
                     try:
                         new_tools.append(
@@ -777,8 +775,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         yield self
         pp = self.parent_project
         if pp:
-            for p in pp.parent_iter():
-                yield p
+            yield from pp.parent_iter()
 
     @property
     def subprojects(self):
@@ -848,7 +845,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         try:
             return opt.validate(value)
         except fe.Invalid as e:
-            raise exceptions.ToolError('{}: {}'.format(opt.name, str(e)))
+            raise exceptions.ToolError(f'{opt.name}: {str(e)}')
 
     def last_ordinal_value(self):
         last_menu_item = self.ordered_mounts(include_hidden=True)[-1]
@@ -888,7 +885,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
         options_on_install = {o.name: o for o in App.options_on_install()}
-        for o, val in six.iteritems(override_options):
+        for o, val in override_options.items():
             if o in options_on_install:
                 val = self._validate_tool_option(options_on_install[o], val)
             options[o] = val
@@ -1193,7 +1190,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         try:
             _private = self.private
         except Exception:
-            log.warn('Error getting self.private on project {}'.format(self.shortname), exc_info=True)
+            log.warn(f'Error getting self.private on project {self.shortname}', exc_info=True)
             _private = False
         fields = dict(id=self.index_id(),
                       title='Project %s' % self.name,
@@ -1372,7 +1369,7 @@ class AppConfig(MappedClass, ActivityObject):
 
     class __mongometa__:
         session = project_orm_session
-        name = str('config')
+        name = 'config'
         indexes = [
             'project_id',
             'options.import_id',

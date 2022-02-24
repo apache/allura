@@ -47,7 +47,7 @@ class OAuthToken(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name = str('oauth_token')
+        name = 'oauth_token'
         indexes = ['api_key']
         polymorphic_on = 'type'
         polymorphic_identity = None
@@ -70,8 +70,8 @@ class OAuthToken(MappedClass):
 class OAuthConsumerToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = str('consumer')
-        name = str('oauth_consumer_token')
+        polymorphic_identity = 'consumer'
+        name = 'oauth_consumer_token'
         unique_indexes = [('name', 'user_id')]
 
     query: 'Query[OAuthConsumerToken]'
@@ -117,7 +117,7 @@ class OAuthConsumerToken(OAuthToken):
 class OAuthRequestToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = str('request')
+        polymorphic_identity = 'request'
 
     query: 'Query[OAuthRequestToken]'
 
@@ -133,7 +133,7 @@ class OAuthRequestToken(OAuthToken):
 class OAuthAccessToken(OAuthToken):
 
     class __mongometa__:
-        polymorphic_identity = str('access')
+        polymorphic_identity = 'access'
 
     query: 'Query[OAuthAccessToken]'
 

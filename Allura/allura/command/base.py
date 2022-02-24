@@ -51,7 +51,7 @@ def run_command(command, args):
     return command.run(arg_list)
 
 
-class EmptyClass(object):
+class EmptyClass:
     pass
 
 
@@ -61,7 +61,7 @@ class MetaParserDocstring(type):
         return cls.parser.format_help()
 
 
-class Command(six.with_metaclass(MetaParserDocstring, command.Command)):
+class Command(command.Command, metaclass=MetaParserDocstring):
     min_args = 1
     max_args = 1
     usage = '[<ini file>]'
@@ -69,7 +69,7 @@ class Command(six.with_metaclass(MetaParserDocstring, command.Command)):
 
     @classmethod
     def post(cls, *args, **kw):
-        cmd = '{}.{}'.format(cls.__module__, cls.__name__)
+        cmd = f'{cls.__module__}.{cls.__name__}'
         return run_command.post(cmd, *args, **kw)
 
     @ming.utils.LazyProperty

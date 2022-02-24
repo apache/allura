@@ -88,7 +88,7 @@ class ForgeTrackerImporter(AlluraImporter):
     tool_label = 'Tickets'
 
     def __init__(self, *args, **kwargs):
-        super(ForgeTrackerImporter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.max_ticket_num = 0
 
     def _load_json(self, project):

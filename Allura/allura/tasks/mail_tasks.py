@@ -153,7 +153,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     addrs_multi = []
     if fromaddr is None:
         fromaddr = g.noreply
-    elif not isinstance(fromaddr, six.string_types) or '@' not in fromaddr:
+    elif not isinstance(fromaddr, str) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False, pending=False)
         if not user:
@@ -222,7 +222,7 @@ def sendsimplemail(
     from allura import model as M
     if fromaddr is None:
         fromaddr = g.noreply
-    elif not isinstance(fromaddr, six.string_types) or '@' not in fromaddr:
+    elif not isinstance(fromaddr, str) or '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False, pending=False)
         if not user:
@@ -231,7 +231,7 @@ def sendsimplemail(
         else:
             fromaddr = user.email_address_header()
 
-    if not isinstance(toaddr, six.string_types) or '@' not in toaddr:
+    if not isinstance(toaddr, str) or '@' not in toaddr:
         log.warning('Looking up user with toaddr: %s', toaddr)
         user = M.User.query.get(_id=ObjectId(toaddr), disabled=False, pending=False)
         if not user:
@@ -255,7 +255,7 @@ def send_system_mail_to_user(user_or_emailaddr, subject, text):
     :param subject: subject of the email
     :param text: text of the email (markdown)
     '''
-    if isinstance(user_or_emailaddr, six.string_types):
+    if isinstance(user_or_emailaddr, str):
         toaddr = user_or_emailaddr
     else:
         toaddr = user_or_emailaddr._id
@@ -266,8 +266,8 @@ def send_system_mail_to_user(user_or_emailaddr, subject, text):
             config['site_name'],
             config['forgemail.return_path']
         ),
-        'sender': six.text_type(config['forgemail.return_path']),
-        'reply_to': six.text_type(config['forgemail.return_path']),
+        'sender': str(config['forgemail.return_path']),
+        'reply_to': str(config['forgemail.return_path']),
         'message_id': h.gen_message_id(),
         'subject': subject,
         'text': text,

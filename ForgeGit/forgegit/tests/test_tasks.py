@@ -70,7 +70,7 @@ class TestCoreAlluraTasks(GitRealDataBaseTestCase):
     """
 
     def setUp(self):
-        super(TestCoreAlluraTasks, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     def test_refreshrepo(self):

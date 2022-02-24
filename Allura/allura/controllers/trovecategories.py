@@ -34,14 +34,14 @@ from allura.app import SitemapEntry
 import six
 
 
-class F(object):
+class F:
     remove_category_form = forms.RemoveTroveCategoryForm()
     add_category_form = forms.AddTroveCategoryForm()
 
 
 class TroveAdminException(Exception):
     def __init__(self, flash_args, redir_params='', upper=None):
-        super(TroveAdminException, self).__init__()
+        super().__init__()
 
         self.flash_args = flash_args
         self.redir_params = redir_params
@@ -67,7 +67,7 @@ class TroveCategoryController(BaseController):
 
     def __init__(self, category=None):
         self.category = category
-        super(TroveCategoryController, self).__init__()
+        super().__init__()
 
     @expose('jinja:allura:templates/trovecategories.html')
     def index(self, **kw):
@@ -99,7 +99,7 @@ class TroveCategoryController(BaseController):
             (self.generate_category(child) for child in category.subcategories)
         }
 
-        return category.fullname, OrderedDict(sorted(six.iteritems(children)))
+        return category.fullname, OrderedDict(sorted(children.items()))
 
     @without_trailing_slash
     @expose('jinja:allura:templates/browse_trove_categories.html')
@@ -110,7 +110,7 @@ class TroveCategoryController(BaseController):
             for (key, value) in
             (self.generate_category(child) for child in parent_categories)
         }
-        return dict(tree=OrderedDict(sorted(six.iteritems(tree))))
+        return dict(tree=OrderedDict(sorted(tree.items())))
 
     @classmethod
     def _create(cls, name, upper_id, shortname):
@@ -131,7 +131,7 @@ class TroveCategoryController(BaseController):
 
         if upper:
             trove_type = upper.fullpath.split(' :: ')[0]
-            fullpath_re = re.compile(r'^{} :: '.format(re.escape(trove_type)))  # e.g. scope within "Topic :: "
+            fullpath_re = re.compile(fr'^{re.escape(trove_type)} :: ')  # e.g. scope within "Topic :: "
         else:
             # no parent, so making a top-level.  Don't limit fullpath_re, so enforcing global uniqueness
             fullpath_re = re.compile(r'')
@@ -139,8 +139,8 @@ class TroveCategoryController(BaseController):
 
         if oldcat:
             raise TroveAdminException(
-                ('A category with shortname "{}" already exists ({}).  Try a different, unique shortname'.format(shortname, oldcat.fullpath), "error"),
-                '?categoryname={}&shortname={}'.format(name, shortname),
+                (f'A category with shortname "{shortname}" already exists ({oldcat.fullpath}).  Try a different, unique shortname', "error"),
+                f'?categoryname={name}&shortname={shortname}',
                 upper
             )
         else:
@@ -171,9 +171,9 @@ class TroveCategoryController(BaseController):
         flash(*flash_args)
 
         if upper:
-            redirect('/categories/{}/{}'.format(upper.trove_cat_id, redir_params))
+            redirect(f'/categories/{upper.trove_cat_id}/{redir_params}')
         else:
-            redirect('/categories/{}'.format(redir_params))
+            redirect(f'/categories/{redir_params}')
 
     @expose()
     @require_post()

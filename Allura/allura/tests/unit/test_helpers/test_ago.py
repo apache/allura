@@ -23,7 +23,7 @@ from alluratest.tools import assert_equal
 from allura.lib import helpers
 
 
-class TestAgo(object):
+class TestAgo:
 
     def setUp(self):
         self.start_time = datetime(2010, 1, 1, 0, 0, 0)

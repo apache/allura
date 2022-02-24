@@ -47,9 +47,6 @@ from allura.lib import helpers as h
 from allura.model.auth import User
 from allura.model.repository import zipdir
 from allura.model import repository as RM
-from io import open
-from six.moves import range
-from six.moves import map
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -64,7 +61,7 @@ class Repository(M.Repository):
     type_s = 'SVN Repository'
 
     class __mongometa__:
-        name = str('svn-repository')
+        name = 'svn-repository'
 
     query: 'Query[Repository]'
 
@@ -81,7 +78,7 @@ class Repository(M.Repository):
         return self._impl.commit('HEAD')
 
     def tarball_filename(self, revision, path=None):
-        fn = super(Repository, self).tarball_filename('r'+revision, path)
+        fn = super().tarball_filename('r'+revision, path)
         path = self._impl._tarball_path_clean(path, revision)
         fn += ('-' + '-'.join(path.split('/'))) if path else ''
         return fn
@@ -116,7 +113,7 @@ def svn_path_exists(path, rev=None):
         return False
 
 
-class SVNLibWrapper(object):
+class SVNLibWrapper:
 
     """Wrapper around pysvn, used for instrumentation."""
 
@@ -169,7 +166,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def _url(self):
-        return 'file://{}{}'.format(self._repo.fs_path, self._repo.name)
+        return f'file://{self._repo.fs_path}{self._repo.name}'
 
     def shorthand_for_commit(self, oid):
         return '[r%d]' % self._revno(self.rev_parse(oid))
@@ -459,11 +456,11 @@ class SVNImplementation(M.RepositoryImplementation):
         return tree_id
 
     def _tree_oid(self, commit_id, path):
-        data = 'tree\n{}\n{}'.format(commit_id, h.really_unicode(path))
+        data = f'tree\n{commit_id}\n{h.really_unicode(path)}'
         return sha1(data.encode('utf-8')).hexdigest()
 
     def _blob_oid(self, commit_id, path):
-        data = 'blob\n{}\n{}'.format(commit_id, h.really_unicode(path))
+        data = f'blob\n{commit_id}\n{h.really_unicode(path)}'
         return sha1(data.encode('utf-8')).hexdigest()
 
     def _obj_oid(self, commit_id, info):
@@ -631,7 +628,7 @@ class SVNImplementation(M.RepositoryImplementation):
             self._revno(oid))
 
     def _oid(self, revno):
-        return '{}:{}'.format(self._repo._id, revno)
+        return f'{self._repo._id}:{revno}'
 
     def last_commit_ids(self, commit, paths):
         '''
@@ -714,7 +711,7 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             # need to set system locale to handle all symbols in filename
             import locale
-            locale.setlocale(locale.LC_ALL, str('en_US.UTF-8'))
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
             self._svn.export(path,
                              tmpdest,
                              revision=pysvn.Revision(

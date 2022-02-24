@@ -51,7 +51,7 @@ import six
 log = logging.getLogger(__name__)
 
 
-class pass_validator(object):
+class pass_validator:
     def validate(self, v, s):
         return v
 
@@ -59,14 +59,14 @@ class pass_validator(object):
 pass_validator = pass_validator()
 
 
-class ModelConfig(object):
+class ModelConfig:
     Discussion = M.Discussion
     Thread = M.Thread
     Post = M.Post
     Attachment = M.DiscussionAttachment
 
 
-class WidgetConfig(object):
+class WidgetConfig:
     # Forms
     subscription_form = DW.SubscriptionForm()
     edit_post = DW.EditPost()
@@ -148,7 +148,7 @@ class AppDiscussionController(DiscussionController):
             app_config_id=c.app.config._id)
 
 
-class ThreadsController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
+class ThreadsController(BaseController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -169,7 +169,7 @@ class ThreadsController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
             raise exc.HTTPNotFound()
 
 
-class ThreadController(six.with_metaclass(h.ProxiedAttrMeta, BaseController, FeedController)):
+class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -277,7 +277,7 @@ def handle_post_or_reply(thread, edit_widget, rate_limit, kw, parent_post_id=Non
     redirect(six.ensure_text(request.referer or '/'))
 
 
-class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
+class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')
     ThreadController = h.attrproxy(
@@ -316,7 +316,7 @@ class PostController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
             post_fields = self.W.edit_post.to_python(kw, None)  # could raise Invalid, but doesn't seem like it does
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
-            for k, v in six.iteritems(post_fields):
+            for k, v in post_fields.items():
                 try:
                     setattr(self.post, k, v)
                 except AttributeError:
@@ -468,7 +468,7 @@ class DiscussionAttachmentsController(AttachmentsController):
     AttachmentControllerClass = DiscussionAttachmentController
 
 
-class ModerationController(six.with_metaclass(h.ProxiedAttrMeta, BaseController)):
+class ModerationController(BaseController, metaclass=h.ProxiedAttrMeta):
     PostModel = M.Post
     M = h.attrproxy('_discussion_controller', 'M')
     W = h.attrproxy('_discussion_controller', 'W')

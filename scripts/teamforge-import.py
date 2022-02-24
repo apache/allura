@@ -44,8 +44,6 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
 import six
-from io import open
-from six.moves import map
 
 log = logging.getLogger('teamforge-import')
 
@@ -183,7 +181,7 @@ def load_users():
 
 
 def save_user(usernames):
-    if isinstance(usernames, six.string_types):
+    if isinstance(usernames, str):
         usernames = [usernames]
 
     load_users()
@@ -242,7 +240,7 @@ def get_user(orig_username):
         load_users()
         user = users[orig_username]
         if user.status != 'Active':
-            log.warn('Inactive user {} {}'.format(orig_username, user.status))
+            log.warn(f'Inactive user {orig_username} {user.status}')
 
         if not 3 <= len(user.fullName) <= 32:
             raise Exception('invalid fullName length: %s' % user.fullName)
@@ -318,14 +316,14 @@ def create_project(pid, nbhd):
     M.session.artifact_orm_session._get().skip_mod_date = True
     data = loadjson(pid, pid + '.json')
     # pprint(data)
-    log.info('Loading: {} {} {}'.format(pid, data.data.title, data.data.path))
+    log.info(f'Loading: {pid} {data.data.title} {data.data.path}')
     shortname = convert_project_shortname(data.data.path)
 
     project = M.Project.query.get(
         shortname=shortname, neighborhood_id=nbhd._id)
     if not project:
         private = (data.access_level == 'private')
-        log.debug('Creating {} private={}'.format(shortname, private))
+        log.debug(f'Creating {shortname} private={private}')
         one_admin = [
             u.userName for u in data.admins if u.status == 'Active'][0]
         project = nbhd.register_project(shortname,
@@ -745,7 +743,7 @@ def wiki2markdown(markup):
             return '[[img src=%s]]' % filename
         elif '|' in snippet:
             text, link = snippet.split('|', 1)
-            return '[{}]({})'.format(text, link)
+            return f'[{text}]({link})'
         else:
             # regular link
             return '<%s>' % snippet
@@ -865,7 +863,7 @@ def get_homepage_wiki(project):
             download_file('wiki', img_url, project.id,
                           'wiki', 'homepage', filename)
 
-    for path, text in six.iteritems(pages):
+    for path, text in pages.items():
         if options.default_wiki_text in text:
             log.debug('skipping default wiki page %s' % path)
         else:
@@ -1079,7 +1077,7 @@ def test_make_valid_sf_username():
         'u012345678901234567890': 'u0123456789-mmi',
         'foo^213': 'foo213-mmi'
     }
-    for k, v in six.iteritems(tests):
+    for k, v in tests.items():
         assert make_valid_sf_username(k) == v
 
 

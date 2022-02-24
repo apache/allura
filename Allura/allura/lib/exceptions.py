@@ -17,7 +17,6 @@
 
 import webob.exc
 from formencode import Invalid
-from six.moves import map
 
 
 class ForgeError(Exception):
@@ -29,7 +28,7 @@ class ProjectConflict(ForgeError, Invalid):
     # support the single string constructor in addition to full set of params
     # that Invalid.__init__ requires
     def __init__(self, msg, value=None, state=None, error_list=None, error_dict=None):
-        super(ProjectConflict, self).__init__(
+        super().__init__(
             msg, value, state, error_list, error_dict)
 
 

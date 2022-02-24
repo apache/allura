@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -30,7 +28,7 @@ from ming.orm import ThreadLocalORMSession
 class TestDiscussionApiBase(TestRestApiBase):
 
     def setUp(self):
-        super(TestDiscussionApiBase, self).setUp()
+        super().setUp()
         self.setup_with_tools()
 
     @td.with_discussion
@@ -221,16 +219,16 @@ class TestRootRestController(TestDiscussionApiBase):
         acl.append(auth_read)
         self.api_get('/rest/p/test/discussion/')
         self.app.get('/rest/p/test/discussion/',
-                     extra_environ={'username': str('*anonymous')},
+                     extra_environ={'username': '*anonymous'},
                      status=401)
         self.api_get('/rest/p/test/discussion/general/')
         self.app.get('/rest/p/test/discussion/general/',
-                     extra_environ={'username': str('*anonymous')},
+                     extra_environ={'username': '*anonymous'},
                      status=401)
         t = ForumThread.query.find({'subject': 'Hi guys'}).first()
         self.api_get('/rest/p/test/discussion/general/thread/%s/' % t._id)
         self.app.get('/rest/p/test/discussion/general/thread/%s/' % t._id,
-                     extra_environ={'username': str('*anonymous')},
+                     extra_environ={'username': '*anonymous'},
                      status=401)
 
     def test_private_forums(self):
@@ -244,7 +242,7 @@ class TestRootRestController(TestDiscussionApiBase):
         r = self.api_get('/rest/p/test/discussion/')
         assert_equal(len(r.json['forums']), 2)
         r = self.app.get('/rest/p/test/discussion/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(len(r.json['forums']), 1)
         assert_equal(r.json['forums'][0]['shortname'], 'general')
 

@@ -44,7 +44,6 @@ from allura.lib.widgets.form_fields import PageList
 from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
-from six.moves import filter
 import re
 log = logging.getLogger(__name__)
 
@@ -84,7 +83,7 @@ class W:
 class ForgeActivityController(BaseController):
 
     def __init__(self, app, *args, **kw):
-        super(ForgeActivityController, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.app = app
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
@@ -164,8 +163,8 @@ class ForgeActivityController(BaseController):
     @expose()
     def feed(self, **kw):
         data = self._get_activities_data(**kw)
-        response.headers['Content-Type'] = str('')
-        response.content_type = str('application/xml')
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
         d = {
             'title': 'Activity for %s' % data['followee'].activity_name,
             'link': h.absurl(self.app.url),
@@ -173,7 +172,7 @@ class ForgeActivityController(BaseController):
                 data['followee'].activity_name),
             'language': 'en',
         }
-        if request.environ['PATH_INFO'].endswith(str('.atom')):
+        if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
             feed = FG.Rss201rev2Feed(**d)
@@ -257,7 +256,7 @@ class ForgeActivityController(BaseController):
 class ForgeActivityRestController(BaseController, AppRestControllerMixin):
 
     def __init__(self, app, *args, **kw):
-        super(ForgeActivityRestController, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.app = app
 
     def _check_security(self):
@@ -288,7 +287,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
     template = 'forgeactivity:templates/widgets/profile_section.html'
 
     def __init__(self, *a, **kw):
-        super(ForgeActivityProfileSection, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.activity_app = self.project.app_instance('activity')
 
     def check_display(self):

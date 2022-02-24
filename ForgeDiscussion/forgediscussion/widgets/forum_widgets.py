@@ -87,7 +87,7 @@ class _ForumSelector(ew.SingleSelectField):
         return result
 
     def from_python(self, value, state):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             return value
         else:
             return value.shortname
@@ -151,5 +151,4 @@ class Forum(DW.HierWidget):
                    )
 
     def resources(self):
-        for r in super(Forum, self).resources():
-            yield r
+        yield from super().resources()

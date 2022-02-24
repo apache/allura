@@ -286,7 +286,7 @@ The wiki uses [Markdown](%s) syntax.
 
         if not self.show_left_bar and not skip_common_menu:
             links += self.create_common_wiki_menu(has_create_access=True, admin_menu=True)
-        links += super(ForgeWikiApp, self).admin_menu(force_options=True)
+        links += super().admin_menu(force_options=True)
 
         return links
 
@@ -327,7 +327,7 @@ The wiki uses [Markdown](%s) syntax.
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
-        super(ForgeWikiApp, self).install(project)
+        super().install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_developer = M.ProjectRole.by_name('Developer')._id
@@ -363,7 +363,7 @@ The wiki uses [Markdown](%s) syntax.
         WM.WikiAttachment.query.remove(dict(app_config_id=self.config._id))
         WM.Page.query.remove(dict(app_config_id=self.config._id))
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
-        super(ForgeWikiApp, self).uninstall(project)
+        super().uninstall(project)
 
     def bulk_export(self, f, export_path='', with_attachments=False):
         f.write('{"pages": [')
@@ -684,7 +684,7 @@ class PageController(BaseController, FeedController):
         return dict(p1=p1, p2=p2, edits=result)
 
     @without_trailing_slash
-    @expose(content_type=str('text/plain'))
+    @expose(content_type='text/plain')
     def raw(self):
         if not self.page:
             raise exc.HTTPNotFound

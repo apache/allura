@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -46,7 +44,7 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 
-class RestController(object):
+class RestController:
 
     def __init__(self):
         self.oauth = OAuthNegotiator()
@@ -86,7 +84,7 @@ class RestController(object):
         """
         summary = dict()
         stats = dict()
-        for stat, provider in six.iteritems(g.entry_points['site_stats']):
+        for stat, provider in g.entry_points['site_stats'].items():
             stats[stat] = provider()
         if stats:
             summary['site_stats'] = stats
@@ -117,7 +115,7 @@ class RestController(object):
         return NeighborhoodRestController(neighborhood), remainder
 
 
-class OAuthNegotiator(object):
+class OAuthNegotiator:
 
     @property
     def server(self):
@@ -292,7 +290,7 @@ def rest_has_access(obj, user, perm):
     return resp
 
 
-class AppRestControllerMixin(object):
+class AppRestControllerMixin:
     @expose('json:')
     def has_access(self, user, perm, **kw):
         return rest_has_access(c.app, user, perm)
@@ -345,7 +343,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
             raise exc.HTTPNotFound
         if user.disabled and not is_site_admin:
             raise exc.HTTPNotFound
-        if not api and user.url() != '/{}{}/'.format(prefix, pname):
+        if not api and user.url() != f'/{prefix}{pname}/':
             # might be different URL than the URL requested
             # e.g. if username isn't valid project name and user_project_shortname() converts the name
             new_url = user.url()
@@ -366,7 +364,7 @@ def nbhd_lookup_first_path(nbhd, name, current_user, remainder, api=False):
     return project, remainder
 
 
-class NeighborhoodRestController(object):
+class NeighborhoodRestController:
 
     def __init__(self, neighborhood):
         # type: (M.Neighborhood) -> None
@@ -407,7 +405,7 @@ class NeighborhoodRestController(object):
         except (colander.Invalid, ForgeError) as e:
             response.status_int = 400
             return {
-                'error': six.text_type(e) or repr(e),
+                'error': str(e) or repr(e),
             }
 
         project = create_project_with_attrs(pdata, self._neighborhood)
@@ -420,7 +418,7 @@ class NeighborhoodRestController(object):
         }
 
 
-class ProjectRestController(object):
+class ProjectRestController:
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -445,8 +443,8 @@ class ProjectRestController(object):
     @expose('json:')
     def index(self, **kw):
         if 'doap' in kw:
-            response.headers['Content-Type'] = str('')
-            response.content_type = str('application/rdf+xml')
+            response.headers['Content-Type'] = ''
+            response.content_type = 'application/rdf+xml'
             return b'<?xml version="1.0" encoding="UTF-8" ?>' + c.project.doap()
         return c.project.__json__()
 

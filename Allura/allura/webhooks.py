@@ -43,7 +43,6 @@ from allura.lib.decorators import require_post, task
 from allura.lib.utils import DateJSONEncoder
 from allura import model as M
 import six
-from six.moves import map
 
 
 log = logging.getLogger(__name__)
@@ -53,7 +52,7 @@ class WebhookValidator(fev.FancyValidator):
     def __init__(self, sender, app, **kw):
         self.app = app
         self.sender = sender
-        super(WebhookValidator, self).__init__(**kw)
+        super().__init__(**kw)
 
     def _to_python(self, value, state):
         wh = None
@@ -78,7 +77,7 @@ class WebhookCreateForm(schema.Schema):
 
 class WebhookEditForm(WebhookCreateForm):
     def __init__(self, sender, app):
-        super(WebhookEditForm, self).__init__()
+        super().__init__()
         self.add_field('webhook', WebhookValidator(
             sender=sender, app=app, not_empty=True))
 
@@ -101,12 +100,12 @@ class WebhookControllerMeta(type):
         return type.__call__(cls, sender, app, *args, **kw)
 
 
-class WebhookController(six.with_metaclass(WebhookControllerMeta, BaseController, AdminControllerMixin)):
+class WebhookController(BaseController, AdminControllerMixin, metaclass=WebhookControllerMeta):
     create_form = WebhookCreateForm
     edit_form = WebhookEditForm
 
     def __init__(self, sender, app):
-        super(WebhookController, self).__init__()
+        super().__init__()
         self.sender = sender()
         self.app = app
 
@@ -202,7 +201,7 @@ class WebhookController(six.with_metaclass(WebhookControllerMeta, BaseController
             raise exc.HTTPNotFound()
         c.form_values = {'url': kw.get('url') or wh.hook_url,
                          'secret': kw.get('secret') or wh.secret,
-                         'webhook': six.text_type(wh._id)}
+                         'webhook': str(wh._id)}
         return {'sender': self.sender,
                 'action': 'edit',
                 'form': form}
@@ -210,7 +209,7 @@ class WebhookController(six.with_metaclass(WebhookControllerMeta, BaseController
 
 class WebhookRestController(BaseController):
     def __init__(self, sender, app):
-        super(WebhookRestController, self).__init__()
+        super().__init__()
         self.sender = sender()
         self.app = app
         self.create_form = WebhookController.create_form
@@ -220,8 +219,8 @@ class WebhookRestController(BaseController):
         error = getattr(e, 'error_dict', None)
         if error:
             _error = {}
-            for k, val in six.iteritems(error):
-                _error[k] = six.text_type(val)
+            for k, val in error.items():
+                _error[k] = str(val)
             return _error
         error = getattr(e, 'msg', None)
         if not error:
@@ -235,7 +234,7 @@ class WebhookRestController(BaseController):
     @expose('json:')
     @require_post()
     def index(self, **kw):
-        response.content_type = str('application/json')
+        response.content_type = 'application/json'
         try:
             params = {'secret': kw.pop('secret', ''),
                       'url': kw.pop('url', None)}
@@ -299,7 +298,7 @@ class WebhookRestController(BaseController):
         try:
             params = {'secret': kw.pop('secret', old_secret),
                       'url': kw.pop('url', old_url),
-                      'webhook': six.text_type(webhook._id)}
+                      'webhook': str(webhook._id)}
             valid = form.to_python(params)
         except Exception as e:
             response.status_int = 400
@@ -328,7 +327,7 @@ class WebhookRestController(BaseController):
         return {'result': 'ok'}
 
 
-class SendWebhookHelper(object):
+class SendWebhookHelper:
     def __init__(self, webhook, payload):
         self.webhook = webhook
         self.payload = payload
@@ -405,7 +404,7 @@ def send_webhook(webhook_id, payload):
     SendWebhookHelper(webhook, payload).send()
 
 
-class WebhookSender(object):
+class WebhookSender:
     """Base class for webhook senders.
 
     Subclasses are required to implement :meth:`get_payload()` and set

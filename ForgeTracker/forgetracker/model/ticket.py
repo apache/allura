@@ -101,7 +101,7 @@ config = utils.ConfigProxy(
 class Globals(MappedClass):
 
     class __mongometa__:
-        name = str('globals')
+        name = 'globals'
         session = project_orm_session
         indexes = ['app_config_id']
 
@@ -332,7 +332,7 @@ class Globals(MappedClass):
                 'original_num': original_ticket_nums[_id],
                 'destination_num': moved_tickets[_id].ticket_num,
                 'summary': moved_tickets[_id].summary
-            } for _id, t in six.iteritems(moved_tickets)
+            } for _id, t in moved_tickets.items()
                 if (not t.private or
                     self.app_config.options.get('TicketMonitoringType') ==
                     'AllTicketChanges')]
@@ -347,7 +347,7 @@ class Globals(MappedClass):
                                 self.app_config.options.mount_point)
         moved_to = '{}/{}'.format(tracker.project.shortname,
                               tracker.options.mount_point)
-        text = 'Tickets moved from {} to {}'.format(moved_from, moved_to)
+        text = f'Tickets moved from {moved_from} to {moved_to}'
         Notification.post_user(c.user, None, 'flash', text=text)
 
     def update_tickets(self, **post_data):
@@ -399,7 +399,7 @@ class Globals(MappedClass):
             message = ''
             if labels:
                 values['labels'] = self.append_new_labels(ticket.labels, labels.split(','))
-            for k, v in sorted(six.iteritems(values)):
+            for k, v in sorted(values.items()):
                 if k == 'deleted':
                     if v:
                         ticket.soft_delete()
@@ -429,7 +429,7 @@ class Globals(MappedClass):
                         v,
                         getattr(ticket, k))
                 setattr(ticket, k, v)
-            for k, v in sorted(six.iteritems(custom_values)):
+            for k, v in sorted(custom_values.items()):
                 def cf_val(cf):
                     return ticket.get_custom_user(cf.name) \
                         if cf.type == 'user' \
@@ -470,17 +470,17 @@ class Globals(MappedClass):
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
-        for f, v in sorted(six.iteritems(values)):
+        for f, v in sorted(values.items()):
             if f == 'assigned_to_id':
                 user = User.query.get(_id=v)
                 v = user.display_name if user else v
-            head.append('- **{}**: {}'.format(get_label(f), v))
-        for f, v in sorted(six.iteritems(custom_values)):
+            head.append(f'- **{get_label(f)}**: {v}')
+        for f, v in sorted(custom_values.items()):
             cf = custom_fields[f]
             if cf.type == 'user':
                 user = User.by_username(v)
                 v = user.display_name if user else v
-            head.append('- **{}**: {}'.format(cf.label, v))
+            head.append(f'- **{cf.label}**: {v}')
         tmpl_context = {'context': c, 'data':
                         {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
         for user in users:
@@ -524,7 +524,7 @@ class Globals(MappedClass):
         ac_id = app_config_id if app_config_id else self.app_config_id
         ticket_ids = list(tickets.keys())
         tickets_index_id = {
-            ticket.index_id(): t_id for t_id, ticket in six.iteritems(tickets)}
+            ticket.index_id(): t_id for t_id, ticket in tickets.items()}
         subscriptions = Mailbox.query.find({
             'project_id': p_id,
             'app_config_id': ac_id,
@@ -552,7 +552,7 @@ class Globals(MappedClass):
 class TicketHistory(Snapshot):
 
     class __mongometa__:
-        name = str('ticket_history')
+        name = 'ticket_history'
 
     query: 'Query[TicketHistory]'
 
@@ -563,7 +563,7 @@ class TicketHistory(Snapshot):
         orig = self.original()
         if not orig:
             return None
-        return '{}#{}'.format(orig.shorthand_id(), self.version)
+        return f'{orig.shorthand_id()}#{self.version}'
 
     def url(self):
         orig = self.original()
@@ -589,9 +589,9 @@ class TicketHistory(Snapshot):
             text=self.data.summary)
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to match on it too.
-        result['text'] += '\n'.join([six.text_type(v)
+        result['text'] += '\n'.join([str(v)
                                      for k, v
-                                     in six.iteritems(result)
+                                     in result.items()
                                      if k not in ('id', 'project_id_s')
                                      ])
         return result
@@ -600,7 +600,7 @@ class TicketHistory(Snapshot):
 class Bin(Artifact, ActivityObject):
 
     class __mongometa__:
-        name = str('bin')
+        name = 'bin'
 
     query: 'Query[Bin]'
 
@@ -645,7 +645,7 @@ class Bin(Artifact, ActivityObject):
 class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     class __mongometa__:
-        name = str('ticket')
+        name = 'ticket'
         history_class = TicketHistory
         indexes = [
             'ticket_num',
@@ -676,7 +676,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     reported_by = RelationProperty(User, via='reported_by_id')
 
     def link_text(self):
-        text = super(Ticket, self).link_text()
+        text = super().link_text()
         if self.is_closed:
             return jinja2.Markup('<s>') + text + jinja2.Markup('</s>')
         return text
@@ -733,11 +733,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             votes_total_i=(self.votes_up - self.votes_down),
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
         )
-        for k, v in six.iteritems(self.custom_fields):
+        for k, v in self.custom_fields.items():
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):
-                result[k + '_s'] = six.text_type(v)
+                result[k + '_s'] = str(v)
 
             # Now let's also index with proper Solr types.
             solr_type = self.app.globals.get_custom_field_solr_type(k)
@@ -751,9 +751,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         # Tracker uses search with default solr parser. It would match only on
         # `text`, so we're appending all other field values into `text`, to
         # match on it too.
-        result['text'] += '\n'.join([six.text_type(v)
+        result['text'] += '\n'.join([str(v)
                                      for k, v
-                                     in six.iteritems(result)
+                                     in result.items()
                                      if k not in ('id', 'project_id_s')
                                      ])
         return result
@@ -764,7 +764,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @classmethod
     def translate_query(cls, q, fields):
-        q = super(Ticket, cls).translate_query(q, fields)
+        q = super().translate_query(q, fields)
         cf = [f.name for f in c.app.globals.custom_fields]
         solr_field = '{0}{1}'
         solr_type = '_s'
@@ -810,13 +810,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             return tg_config.get('forgemail.return_path')
         if c.app.config.options.get('AllowEmailPosting', True):
             domain = self.email_domain
-            return '{}@{}{}'.format(self.ticket_num, domain, config.common_suffix)
+            return f'{self.ticket_num}@{domain}{config.common_suffix}'
         else:
             return tg_config.get('forgemail.return_path')
 
     @property
     def email_subject(self):
-        return '#{} {}'.format(self.ticket_num, self.summary)
+        return f'#{self.ticket_num} {self.summary}'
 
     @LazyProperty
     def globals(self):
@@ -1006,7 +1006,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if 'custom_fields' not in ticket_form:
                 ticket_form['custom_fields'] = dict()
             ticket_form['custom_fields']['_milestone'] = milestone
-        for k, v in six.iteritems(ticket_form):
+        for k, v in ticket_form.items():
             if k == 'assigned_to':
                 if v:
                     user = c.project.user_in_project(v)
@@ -1018,7 +1018,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
-            for k, v in six.iteritems(ticket_form['custom_fields']):
+            for k, v in ticket_form['custom_fields'].items():
                 if k in custom_users:
                     # restrict custom user field values to project members
                     user = self.app_config.project.user_in_project(v)
@@ -1345,7 +1345,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             from forgetracker.tracker_main import _mongo_col_to_solr_col
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
-            solr_sort = '{} {}'.format(solr_col, sort_split[1])
+            solr_sort = f'{solr_col} {sort_split[1]}'
         if not filter:
             result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
             t = cls.query.find().first()
@@ -1389,7 +1389,7 @@ class TicketAttachment(BaseAttachment):
     ArtifactType = Ticket
 
     class __mongometa__:
-        polymorphic_identity = str('TicketAttachment')
+        polymorphic_identity = 'TicketAttachment'
 
     query: 'Query[TicketAttachment]'
 
@@ -1400,7 +1400,7 @@ class MovedTicket(MovedArtifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name = str('moved_ticket')
+        name = 'moved_ticket'
         indexes = [
             ('app_config_id', 'ticket_num'),
         ]

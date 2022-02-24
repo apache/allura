@@ -75,7 +75,7 @@ class ProjectHomeApp(Application):
         return []
 
     def install(self, project):
-        super(ProjectHomeApp, self).install(project)
+        super().install(project)
         pr = model.ProjectRole.by_user(c.user)
         if pr:
             self.config.acl = [

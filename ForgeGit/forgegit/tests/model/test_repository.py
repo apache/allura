@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
@@ -45,7 +44,6 @@ from allura.webhooks import RepoPushWebhookSender
 from forgegit import model as GM
 from forgegit.tests import with_git
 from forgewiki import model as WM
-from io import open
 
 
 class TestNewGit(unittest.TestCase):
@@ -380,7 +378,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert notification
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config['forgemail.domain']
-        email = 'noreply@{}{}'.format(domain, common_suffix)
+        email = f'noreply@{domain}{common_suffix}'
         assert_in(email, notification['reply_to_address'])
 
         commit1_loc = notification.text.find('Initial commit')

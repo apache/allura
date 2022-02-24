@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -33,7 +32,7 @@ class TestFeeds(TestController):
 
     def _post(self, slug='', **kw):
         d = {
-            'title': 'My Pôst'.encode('utf-8'),
+            'title': 'My Pôst'.encode(),
             'text': 'Nothing to see here',
             'labels': '',
             'state': 'published'}

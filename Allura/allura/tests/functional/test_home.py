@@ -18,7 +18,6 @@
 import json
 import re
 import os
-from io import open
 
 from tg import tmpl_context as c
 from alluratest.tools import assert_equal, assert_not_in, assert_in
@@ -28,8 +27,6 @@ import allura
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
-from six.moves import range
-from six.moves import zip
 
 
 class TestProjectHome(TestController):
@@ -224,13 +221,13 @@ class TestProjectHome(TestController):
 
     def test_members_anonymous(self):
         r = self.app.get('/p/test/_members/',
-                         extra_environ=dict(username=str('*anonymous')))
+                         extra_environ=dict(username='*anonymous'))
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
 
     def test_toolaccess_before_subproject(self):
-        self.app.extra_environ = {'username': str('test-admin')}
+        self.app.extra_environ = {'username': 'test-admin'}
         # Add the subproject with a wiki.
         self.app.post('/p/test/admin/update_mounts', params={
             'new.install': 'install',
@@ -261,7 +258,7 @@ class TestProjectHome(TestController):
         })
 
         # Try to access the  installed tool as anon.
-        r = self.app.get('/p/test/test-mount/test-sub/', extra_environ=dict(username=str('*anonymous')), status=404)
+        r = self.app.get('/p/test/test-mount/test-sub/', extra_environ=dict(username='*anonymous'), status=404)
 
         # Try to access the installed tool as Admin.
         r = self.app.get('/p/test/test-mount/test-sub/').follow()

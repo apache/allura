@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -44,13 +42,13 @@ from forgewiki import model as WM
 class Checkmessage(M.Message):
 
     class __mongometa__:
-        name = str('checkmessage')
+        name = 'checkmessage'
 
     def url(self):
         return ''
 
     def __init__(self, **kw):
-        super(Checkmessage, self).__init__(**kw)
+        super().__init__(**kw)
         if self.slug is not None and self.full_slug is None:
             self.full_slug = datetime.utcnow().strftime('%Y%m%d%H%M%S%f') + ':' + self.slug
 Mapper.compile_all()

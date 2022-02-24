@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -124,7 +122,7 @@ class CommitMessageExtension(markdown.Extension):
         self.forge_link_tree_processor.reset()
 
 
-class Pattern(object):
+class Pattern:
 
     """Base class for regex patterns used by the :class:`PatternReplacingProcessor`.
 
@@ -479,7 +477,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'src')
 
         # html5lib parser adds html/head/body tags, so output <body> without its own tags
-        return six.text_type(soup.body)[len('<body>'):-len('</body>')]
+        return str(soup.body)[len('<body>'):-len('</body>')]
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)

@@ -31,7 +31,6 @@ import difflib
 
 from allura.model.session import main_orm_session
 from allura.lib import helpers as h
-from six.moves import range
 from functools import reduce
 
 if typing.TYPE_CHECKING:
@@ -41,7 +40,7 @@ if typing.TYPE_CHECKING:
 class Stats(MappedClass):
 
     class __mongometa__:
-        name = str('basestats')
+        name = 'basestats'
         session = main_orm_session
         unique_indexes = ['_id']
 

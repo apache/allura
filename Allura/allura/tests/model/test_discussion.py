@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -38,7 +36,6 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_global_objects
-from six.moves import range
 
 
 def setUp():
@@ -205,7 +202,7 @@ def test_attachment_methods():
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
         subject='[test:wiki] Test comment notification')
-    url = h.absurl('{}attachment/{}'.format(p.url(), fs.filename))
+    url = h.absurl(f'{p.url()}attachment/{fs.filename}')
     assert_in(
         '\nAttachments:\n\n'
         '- [fake.txt]({}) (37 Bytes; text/plain)'.format(url),
@@ -270,7 +267,7 @@ def test_notification_two_attaches():
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(
         subject='[test:wiki] Test comment notification')
-    base_url = h.absurl('{}attachment/'.format(p.url()))
+    base_url = h.absurl(f'{p.url()}attachment/')
     assert_in(
         '\nAttachments:\n\n'
         '- [fake.txt]({0}fake.txt) (37 Bytes; text/plain)\n'

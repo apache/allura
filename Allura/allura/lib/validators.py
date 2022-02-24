@@ -98,14 +98,14 @@ class UnicodeString(fev.UnicodeString):
 
 
 # make UnicodeString fix above work through this String alias, just like formencode aliases String
-String = UnicodeString if str is six.text_type else fev.ByteString
+String = UnicodeString if str is str else fev.ByteString
 
 
 class Ming(fev.FancyValidator):
 
     def __init__(self, cls, **kw):
         self.cls = cls
-        super(Ming, self).__init__(**kw)
+        super().__init__(**kw)
 
     def _to_python(self, value, state):
         result = self.cls.query.get(_id=value)
@@ -333,8 +333,8 @@ class UserMapJsonFile(JsonFile):
     def _to_python(self, value, state):
         value = super(self.__class__, self)._to_python(value, state)
         try:
-            for k, v in six.iteritems(value):
-                if not(isinstance(k, six.string_types) and isinstance(v, six.string_types)):
+            for k, v in value.items():
+                if not(isinstance(k, str) and isinstance(v, str)):
                     raise
             return json.dumps(value) if self.as_string else value
         except Exception:
@@ -386,7 +386,7 @@ class OneOfValidator(fev.FancyValidator):
     def __init__(self, validvalues, not_empty=True):
         self.validvalues = validvalues
         self.not_empty = not_empty
-        super(OneOfValidator, self).__init__()
+        super().__init__()
 
     def _to_python(self, value, state):
         if not value.strip():
@@ -411,7 +411,7 @@ class MapValidator(fev.FancyValidator):
     def __init__(self, mapvalues, not_empty=True):
         self.map = mapvalues
         self.not_empty = not_empty
-        super(MapValidator, self).__init__()
+        super().__init__()
 
     def _to_python(self, value, state):
         if not value.strip():
@@ -442,7 +442,7 @@ class YouTubeConverter(fev.FancyValidator):
         match = re.match(YouTubeConverter.REGEX, value)
         if match:
             video_id = match.group(1)
-            return 'www.youtube.com/embed/{}?rel=0'.format(video_id)
+            return f'www.youtube.com/embed/{video_id}?rel=0'
         else:
             raise fe.Invalid(
                 "The URL does not appear to be a valid YouTube video.",

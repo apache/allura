@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -82,7 +80,7 @@ class RootController(WsgiDispatchController):
     browse = ProjectBrowseController()
 
     def __init__(self):
-        super(RootController, self).__init__()
+        super().__init__()
         self.nf.admin = SiteAdminController()
 
     @expose()
@@ -110,7 +108,7 @@ class RootController(WsgiDispatchController):
             # pylons.configuration defaults to "no-cache" only.
             # See also http://blog.55minutes.com/2011/10/how-to-defeat-the-browser-back-button-cache/ and
             # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=en#defining_optimal_cache-control_policy
-            response.headers[str('Cache-Control')] = str('no-cache, no-store, must-revalidate')
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
 
     @expose()
     @with_trailing_slash

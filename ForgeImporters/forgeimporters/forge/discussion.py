@@ -88,7 +88,7 @@ class ForgeDiscussionImporter(AlluraImporter):
     tool_description = 'Import an allura discussion.'
 
     def __init__(self, *args, **kwargs):
-        super(ForgeDiscussionImporter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _load_json(self, project):
         return self._load_json_by_filename(project, 'discussions.json')

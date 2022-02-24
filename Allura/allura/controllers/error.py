@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -24,7 +22,7 @@ from tg import request, expose
 __all__ = ['ErrorController']
 
 
-class ErrorController(object):
+class ErrorController:
 
     @expose('jinja:allura:templates/error.html')
     def document(self, *args, **kwargs):

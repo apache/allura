@@ -23,7 +23,7 @@ from alluratest.tools import assert_in, assert_not_in
 from allura.lib.phone.nexmo import NexmoPhoneService
 
 
-class TestPhoneService(object):
+class TestPhoneService:
 
     def setUp(self):
         config = {'phone.api_key': 'test-api-key',

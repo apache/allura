@@ -46,7 +46,6 @@ from . import version
 from . import widgets
 from .controllers import BranchBrowser
 from .model.svn import svn_path_exists
-from six.moves import map
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class ForgeSVNApp(RepositoryApp):
     default_branch_name = 'HEAD'
 
     def __init__(self, project, config):
-        super(ForgeSVNApp, self).__init__(project, config)
+        super().__init__(project, config)
         self.root = BranchBrowser()
         default_root = RepoRootController()
         self.api_root = RepoRestController()
@@ -88,7 +87,7 @@ class ForgeSVNApp(RepositoryApp):
 
     def install(self, project):
         '''Create repo object for this tool'''
-        super(ForgeSVNApp, self).install(project)
+        super().install(project)
         SM.Repository(
             name=self.config.options.mount_point,
             tool='svn',
@@ -106,7 +105,7 @@ class ForgeSVNApp(RepositoryApp):
             allura.tasks.repo_tasks.init.post()
 
     def admin_menu(self):
-        links = super(ForgeSVNApp, self).admin_menu()
+        links = super().admin_menu()
         links.insert(1, SitemapEntry(
             'Import Repo',
             c.project.url() + 'admin/' + self.config.options.mount_point + '/' + 'importer/'))
@@ -116,7 +115,7 @@ class ForgeSVNApp(RepositoryApp):
 class SVNRepoAdminController(RepoAdminController):
 
     def __init__(self, app):
-        super(SVNRepoAdminController, self).__init__(app)
+        super().__init__(app)
         self.importer = SVNImportController(self.app)
 
     @without_trailing_slash

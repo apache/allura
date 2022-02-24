@@ -25,7 +25,7 @@ from allura import model as M
 from allura.lib import helpers as h
 
 
-class FeedArgs(object):
+class FeedArgs:
 
     """A facade for the arguments required by
     :meth:`allura.model.artifact.Feed.feed`.
@@ -50,7 +50,7 @@ class FeedArgs(object):
         self.description = description or title
 
 
-class FeedController(object):
+class FeedController:
 
     """Mixin class which adds RSS and Atom feed endpoints to an existing
     controller.
@@ -65,8 +65,8 @@ class FeedController(object):
     a customized feed should override :meth:`get_feed`.
 
     """
-    FEED_TYPES = [str('.atom'), str('.rss')]
-    FEED_NAMES = [str('feed{}'.format(typ)) for typ in FEED_TYPES]
+    FEED_TYPES = ['.atom', '.rss']
+    FEED_NAMES = [str(f'feed{typ}') for typ in FEED_TYPES]
 
     def __getattr__(self, name):
         if name in self.FEED_NAMES:
@@ -99,8 +99,8 @@ class FeedController(object):
             feed_def.url,
             feed_def.description,
             since, until, page, limit)
-        response.headers['Content-Type'] = str('')
-        response.content_type = str('application/xml')
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
         return feed.writeString('utf-8')
 
     def get_feed(self, project, app, user):

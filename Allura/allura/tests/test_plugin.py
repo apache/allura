@@ -47,7 +47,7 @@ from allura.tests.decorators import audits
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
-class TestProjectRegistrationProvider(object):
+class TestProjectRegistrationProvider:
 
     def setUp(self):
         self.provider = ProjectRegistrationProvider()
@@ -84,7 +84,7 @@ class TestProjectRegistrationProvider(object):
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
 
-class TestProjectRegistrationProviderParseProjectFromUrl(object):
+class TestProjectRegistrationProviderParseProjectFromUrl:
 
     def setUp(self):
         setup_basic_test()
@@ -138,7 +138,7 @@ class TestProjectRegistrationProviderParseProjectFromUrl(object):
         assert_equal((p, None), self.parse('http://localhost:8080/p/test/not-a-sub'))
 
 
-class UserMock(object):
+class UserMock:
     def __init__(self):
         self.tool_data = {}
         self._projects = []
@@ -158,7 +158,7 @@ class UserMock(object):
         return self._projects
 
 
-class TestProjectRegistrationProviderPhoneVerification(object):
+class TestProjectRegistrationProviderPhoneVerification:
 
     def setUp(self):
         self.p = ProjectRegistrationProvider()
@@ -275,7 +275,7 @@ class TestProjectRegistrationProviderPhoneVerification(object):
                     assert_equal(result, g.phone_service.verify.return_value)
             assert_equal(5, g.phone_service.verify.call_count)
 
-class TestThemeProvider(object):
+class TestThemeProvider:
 
     @patch('allura.app.g')
     @patch('allura.lib.plugin.g')
@@ -307,7 +307,7 @@ class TestThemeProvider(object):
         g.theme_href.assert_called_with('images/testapp_24.png')
 
 
-class TestThemeProvider_notifications(object):
+class TestThemeProvider_notifications:
 
     Provider = ThemeProvider
 
@@ -628,7 +628,7 @@ class TestThemeProvider_notifications(object):
         assert get_note[1] == 'testid-2-False'
 
 
-class TestLocalAuthenticationProvider(object):
+class TestLocalAuthenticationProvider:
 
     def setUp(self):
         setup_basic_test()
@@ -742,7 +742,7 @@ class TestLocalAuthenticationProvider(object):
         assert_equal(detail.ua, 'mybrowser')
 
 
-class TestAuthenticationProvider(object):
+class TestAuthenticationProvider:
 
     def setUp(self):
         setup_basic_test()

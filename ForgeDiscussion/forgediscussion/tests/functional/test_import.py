@@ -32,7 +32,7 @@ from alluratest.controller import TestRestApiBase
 class TestImportController(TestRestApiBase):  # TestController):
 
     def setUp(self):
-        super(TestImportController, self).setUp()
+        super().setUp()
         here_dir = os.path.dirname(__file__)
         self.app.get('/discussion/')
         self.json_text = open(here_dir + '/data/sf.json').read()

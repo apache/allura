@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -56,5 +54,5 @@ def setup_schema(command, conf, vars):
     log.info('setup_schema called')
 
 
-class EmptyClass(object):
+class EmptyClass:
     pass

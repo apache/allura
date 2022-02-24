@@ -60,8 +60,6 @@ from .monq_model import MonQTask
 from .project import AppConfig
 from .session import main_doc_session
 from .session import repository_orm_session
-from io import open
-from six.moves import range
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -107,7 +105,7 @@ PYPELINE_EXTENSIONS = frozenset(utils.MARKDOWN_EXTENSIONS + ['.rst', '.textile',
 DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
 
 
-class RepositoryImplementation(object):
+class RepositoryImplementation:
 
     # Repository-specific code
     def init(self):  # pragma no cover
@@ -201,7 +199,7 @@ class RepositoryImplementation(object):
 
     def url_for_commit(self, commit, url_type='ci'):
         'return an URL, given either a commit or object id'
-        if isinstance(commit, six.string_types):
+        if isinstance(commit, str):
             object_id = commit
         else:
             object_id = commit._id
@@ -351,7 +349,7 @@ class Repository(Artifact, ActivityObject):
     BATCH_SIZE = 100
 
     class __mongometa__:
-        name = str('generic-repository')
+        name = 'generic-repository'
         indexes = ['upstream_repo.name']
 
     query: 'Query[Repository]'
@@ -382,7 +380,7 @@ class Repository(Artifact, ActivityObject):
                 kw['fs_path'] = self.default_fs_path(c.project, kw['tool'])
             if kw.get('url_path') is None:
                 kw['url_path'] = self.default_url_path(c.project, kw['tool'])
-        super(Repository, self).__init__(**kw)
+        super().__init__(**kw)
 
     @property
     def activity_name(self):
@@ -422,7 +420,7 @@ class Repository(Artifact, ActivityObject):
     def tarball_filename(self, revision, path=None):
         shortname = c.project.shortname.replace('/', '-')
         mount_point = c.app.config.options.mount_point
-        filename = '{}-{}-{}'.format(shortname, mount_point, revision)
+        filename = f'{shortname}-{mount_point}-{revision}'
         return filename
 
     def tarball_url(self, revision, path=None):
@@ -603,14 +601,14 @@ class Repository(Artifact, ActivityObject):
 
     @property
     def email_address(self):
-        return 'noreply@{}{}'.format(self.email_domain, config.common_suffix)
+        return f'noreply@{self.email_domain}{config.common_suffix}'
 
     def index(self):
         result = Artifact.index(self)
         result.update(
             name_s=self.name,
             type_s=self.type_s,
-            title='{} {} repository'.format(self.project.name, self.app.tool_label))
+            title=f'{self.project.name} {self.app.tool_label} repository')
         return result
 
     @property
@@ -623,7 +621,7 @@ class Repository(Artifact, ActivityObject):
             projname = owning_user.username
         else:
             projname = c.project.shortname.replace('/', '-')
-        return '{}-{}'.format(projname, self.name)
+        return f'{projname}-{self.name}'
 
     def clone_url(self, category, username=''):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
@@ -632,7 +630,7 @@ class Repository(Artifact, ActivityObject):
         if self.app.config.options.get('external_checkout_url', None):
             tpl = string.Template(self.app.config.options.external_checkout_url)
         else:
-            tpl = string.Template(tg.config.get('scm.host.{}.{}'.format(category, self.tool)))
+            tpl = string.Template(tg.config.get(f'scm.host.{category}.{self.tool}'))
         url = tpl.substitute(dict(username=username, path=self.url_path + self.name))
         # this is an svn option, but keeps clone_*() code from diverging
         url += self.app.config.options.get('checkout_url', '')
@@ -653,7 +651,7 @@ class Repository(Artifact, ActivityObject):
         '''
         if not username and c.user not in (None, User.anonymous()):
             username = c.user.username
-        tpl = string.Template(tg.config.get('scm.clone.{}.{}'.format(category, self.tool)) or
+        tpl = string.Template(tg.config.get(f'scm.clone.{category}.{self.tool}') or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
                                    source_url=self.clone_url(category, username),
@@ -673,7 +671,7 @@ class Repository(Artifact, ActivityObject):
         conf = tg.config.get('scm.clonechoices{}.{}'.format('_anon' if anon else '', self.tool))
         if not conf and anon:
             # check for a non-anon config
-            conf = tg.config.get('scm.clonechoices.{}'.format(self.tool))
+            conf = tg.config.get(f'scm.clonechoices.{self.tool}')
         if conf:
             return json.loads(conf)
         elif anon:
@@ -803,7 +801,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     statuses = ['open', 'merged', 'rejected']
 
     class __mongometa__:
-        name = str('merge-request')
+        name = 'merge-request'
         indexes = ['commit_id', 'creator_id']
         unique_indexes = [('app_config_id', 'request_number')]
 
@@ -915,7 +913,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return False
         if self.status != 'open':
             return False
-        if asbool(tg.config.get('scm.merge.{}.disabled'.format(self.app.config.tool_name))):
+        if asbool(tg.config.get(f'scm.merge.{self.app.config.tool_name}.disabled')):
             return False
         if not h.has_access(self.app, 'write', user):
             return False
@@ -930,7 +928,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         """
         source_hash = self.downstream.commit_id
         target_hash = self.app.repo.commit(self.target_branch)._id
-        key = '{}-{}'.format(source_hash, target_hash)
+        key = f'{source_hash}-{target_hash}'
         return key
 
     def get_can_merge_cache(self):
@@ -996,7 +994,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         self.discussion_thread.add_post(text=message, is_meta=True, ignore_security=True)
 
 
-class RepoObject(object):
+class RepoObject:
 
     def __repr__(self):  # pragma no cover
         return '<{} {}>'.format(
@@ -1034,7 +1032,7 @@ class RepoObject(object):
 # this is duplicative with the Commit model
 # would be nice to get rid of this "doc" based view, but it is used a lot
 CommitDoc = collection(
-    str('repo_ci'), main_doc_session,
+    'repo_ci', main_doc_session,
     Field('_id', str),
     Field('tree_id', str),
     Field('committed', SUser),
@@ -1051,7 +1049,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
 
     class __mongometa__:
         session = repository_orm_session
-        name = str('repo_ci')
+        name = 'repo_ci'
         indexes = [
             'parent_ids',
             'child_ids',
@@ -1074,7 +1072,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
     repo = None
 
     def __init__(self, **kw):
-        for k, v in six.iteritems(kw):
+        for k, v in kw.items():
             setattr(self, k, v)
 
     @property
@@ -1321,7 +1319,7 @@ class Tree(MappedClass, RepoObject):
     # Basic tree information
     class __mongometa__:
         session = repository_orm_session
-        name = str('repo_tree')
+        name = 'repo_tree'
         indexes = [
         ]
 
@@ -1479,7 +1477,7 @@ class Tree(MappedClass, RepoObject):
         return Blob(self, name, x.id)
 
 
-class Blob(object):
+class Blob:
 
     '''Lightweight object representing a file in the repo'''
 
@@ -1576,7 +1574,7 @@ class EmptyBlob(Blob):
 # this is duplicative with the LastCommit model
 # would be nice to get rid of this "doc" based view, but it is used a lot
 LastCommitDoc = collection(
-    str('repo_last_commit'), main_doc_session,
+    'repo_last_commit', main_doc_session,
     Field('_id', S.ObjectId()),
     Field('commit_id', str),
     Field('path', str),
@@ -1590,7 +1588,7 @@ class LastCommit(MappedClass, RepoObject):
     # Information about the last commit to touch a tree
     class __mongometa__:
         session = repository_orm_session
-        name = str('repo_last_commit')
+        name = 'repo_last_commit'
         indexes = [
             ('commit_id', 'path'),
         ]
@@ -1606,7 +1604,7 @@ class LastCommit(MappedClass, RepoObject):
     )])
 
     def __repr__(self):
-        return '<LastCommit /{!r} {}>'.format(self.path, self.commit_id)
+        return f'<LastCommit /{self.path!r} {self.commit_id}>'
 
     @classmethod
     def _last_commit_id(cls, commit, path):
@@ -1682,13 +1680,13 @@ class LastCommit(MappedClass, RepoObject):
                 entries = {}
             # paths are fully-qualified; shorten them back to just node names
             entries = {
-                os.path.basename(path): commit_id for path, commit_id in six.iteritems(entries)}
+                os.path.basename(path): commit_id for path, commit_id in entries.items()}
         # update with the nodes changed in this tree's commit
         entries.update({node: tree.commit._id for node in changed})
         # convert to a list of dicts, since mongo doesn't handle arbitrary keys
         # well (i.e., . and $ not allowed)
         entries = [{'name': name, 'commit_id': value}
-                   for name, value in six.iteritems(entries)]
+                   for name, value in entries.items()]
         lcd = cls(
             commit_id=tree.commit._id,
             path=path,
@@ -1702,7 +1700,7 @@ class LastCommit(MappedClass, RepoObject):
         return {n.name: n.commit_id for n in self.entries}
 
 
-class ModelCache(object):
+class ModelCache:
 
     '''
     Cache model instances based on query params passed to get.  LRU cache.
@@ -1862,7 +1860,7 @@ class ModelCache(object):
             self.set(cls, keys, result)
 
 
-class GitLikeTree(object):
+class GitLikeTree:
 
     '''
     A tree node similar to that which is used in git
@@ -1919,10 +1917,10 @@ class GitLikeTree(object):
 
     def __repr__(self):
         # this can't change, is used in hex() above
-        lines = ['t {} {}'.format(t.hex(), h.really_unicode(name))
-                 for name, t in six.iteritems(self.trees)]
-        lines += ['b {} {}'.format(oid, h.really_unicode(name))
-                  for name, oid in six.iteritems(self.blobs)]
+        lines = [f't {t.hex()} {h.really_unicode(name)}'
+                 for name, t in self.trees.items()]
+        lines += [f'b {oid} {h.really_unicode(name)}'
+                  for name, oid in self.blobs.items()]
         return six.ensure_str('\n'.join(sorted(lines)))
 
     def __unicode__(self):
@@ -1933,9 +1931,9 @@ class GitLikeTree(object):
         lines = [' ' * indent + 't %s %s' %
                  (name, '\n' + t.unicode_full_tree(indent + 2, show_id=show_id)
                   if recurse else t.hex())
-                 for name, t in sorted(six.iteritems(self.trees))]
+                 for name, t in sorted(self.trees.items())]
         lines += [' ' * indent + 'b {} {}'.format(name, oid if show_id else '')
-                  for name, oid in sorted(six.iteritems(self.blobs))]
+                  for name, oid in sorted(self.blobs.items())]
         output = h.really_unicode('\n'.join(lines)).encode('utf-8')
         return output
 

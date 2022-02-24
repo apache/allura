@@ -30,7 +30,7 @@ class MockPhoneService(PhoneService):
         return {'status': 'ok'}
 
 
-class TestPhoneService(object):
+class TestPhoneService:
 
     def test_verify(self):
         res = PhoneService({}).verify('1234567890')

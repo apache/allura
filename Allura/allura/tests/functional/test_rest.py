@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -141,7 +139,7 @@ class TestRestHome(TestRestApiBase):
         ThreadLocalODMSession.flush_all()
         token = access_token.api_key
         request.headers = {
-            'Authorization': 'Bearer {}'.format(token)
+            'Authorization': f'Bearer {token}'
         }
         request.scheme = 'https'
         r = self.api_post('/rest/p/test/wiki', access_token='foo', status=200)
@@ -205,7 +203,7 @@ class TestRestHome(TestRestApiBase):
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test/',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['shortname'], 'test')
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
         assert_in('bugs', tool_mounts)
@@ -316,7 +314,7 @@ class TestRestHome(TestRestApiBase):
         self.app.post(
             h.urlquote('/wiki/tést/update'),
             params={
-                'title': 'tést'.encode('utf-8'),
+                'title': 'tést'.encode(),
                 'text': 'sometext',
                 'labels': '',
                 })
@@ -337,10 +335,10 @@ class TestRestHome(TestRestApiBase):
         if auth_read_perm in acl:
             acl.remove(auth_read_perm)
         self.app.get('/rest/p/test/wiki/Home/',
-                     extra_environ={'username': str('*anonymous')},
+                     extra_environ={'username': '*anonymous'},
                      status=401)
         self.app.get('/rest/p/test/wiki/Home/',
-                     extra_environ={'username': str('test-user-0')},
+                     extra_environ={'username': 'test-user-0'},
                      status=403)
 
     def test_index(self):
@@ -372,7 +370,7 @@ class TestRestHome(TestRestApiBase):
     @td.with_wiki
     def test_cors_POST_req_blocked_by_csrf(self):
         # so test-admin isn't automatically logged in for all requests
-        self.app.extra_environ = {'disable_auth_magic': str('True')}
+        self.app.extra_environ = {'disable_auth_magic': 'True'}
 
         # regular login to get a session cookie set up
         r = self.app.get('/auth/')
@@ -384,14 +382,14 @@ class TestRestHome(TestRestApiBase):
         # simulate CORS ajax request withCredentials (cookie headers)
         # make sure we don't allow the cookies to authorize the request (else could be a CSRF attack vector)
         assert self.app.cookies['allura']
-        self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': str('http://bad.com/')},
+        self.app.post('/rest/p/test/wiki/NewPage', headers={'Origin': 'http://bad.com/'},
                       status=401)
 
     @mock.patch('allura.lib.plugin.ThemeProvider._get_site_notification')
     def test_notification(self, _get_site_notification):
         user = M.User.by_username('test-admin')
         note = M.SiteNotification()
-        cookie = '{}-1-False'.format(note._id)
+        cookie = f'{note._id}-1-False'
         g.theme._get_site_notification = mock.Mock(return_value=(note, cookie))
 
         r = self.app.get('/rest/notification?url=test_url&cookie=test_cookie&tool_name=test_tool')
@@ -414,7 +412,7 @@ class TestRestHome(TestRestApiBase):
 class TestRestNbhdAddProject(TestRestApiBase):
 
     def setUp(self):
-        super(TestRestNbhdAddProject, self).setUp()
+        super().setUp()
         # create some troves we'll need
         M.TroveCategory(fullname="Root", trove_cat_id=1, trove_parent_id=0)
         M.TroveCategory(fullname="License", trove_cat_id=2, trove_parent_id=1)
@@ -608,7 +606,7 @@ class TestDoap(TestRestApiBase):
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test?doap',
-                         extra_environ={'username': str('*anonymous')})
+                         extra_environ={'username': '*anonymous'})
         p = r.xml.find(self.ns + 'Project')
         tools = p.findall(self.ns_sf + 'feature')
         tools = [(t.find(self.ns_sf + 'Feature').find(self.ns + 'name').text,

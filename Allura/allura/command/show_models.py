@@ -235,14 +235,14 @@ class EnsureIndexCommand(base.Command):
                 idx = project_indexes[cname]
             idx.extend(mgr.indexes)
         base.log.info('Updating indexes for main DB')
-        for odm_session, db_indexes in six.iteritems(main_indexes):
+        for odm_session, db_indexes in main_indexes.items():
             db = odm_session.impl.db
-            for name, indexes in six.iteritems(db_indexes):
+            for name, indexes in db_indexes.items():
                 self._update_indexes(db[name], indexes)
         base.log.info('Updating indexes for project DB')
         db = M.project_doc_session.db
         base.log.info('... DB: %s', db)
-        for name, indexes in six.iteritems(project_indexes):
+        for name, indexes in project_indexes.items():
             self._update_indexes(db[name], indexes)
         base.log.info('Done updating indexes')
 
@@ -261,7 +261,7 @@ class EnsureIndexCommand(base.Command):
         unique_flag_drop = {}
         unique_flag_add = {}
         try:
-            existing_indexes = six.iteritems(collection.index_information())
+            existing_indexes = collection.index_information().items()
         except OperationFailure:
             # exception is raised if db or collection doesn't exist yet
             existing_indexes = {}
@@ -280,13 +280,13 @@ class EnsureIndexCommand(base.Command):
                 else:
                     prev_indexes[iname] = keys
 
-        for iname, keys in six.iteritems(unique_flag_drop):
+        for iname, keys in unique_flag_drop.items():
             self._recreate_index(collection, iname, list(keys), unique=False)
-        for iname, keys in six.iteritems(unique_flag_add):
+        for iname, keys in unique_flag_add.items():
             self._recreate_index(collection, iname, list(keys), unique=True)
 
         # Ensure all indexes
-        for keys, idx in six.iteritems(uindexes):
+        for keys, idx in uindexes.items():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             while True:
                 try:
@@ -301,11 +301,11 @@ class EnsureIndexCommand(base.Command):
                 except DuplicateKeyError as err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
-        for keys, idx in six.iteritems(indexes):
+        for keys, idx in indexes.items():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.ensure_index(idx.index_spec, background=True, **idx.index_options)
         # Drop obsolete indexes
-        for iname, keys in six.iteritems(prev_indexes):
+        for iname, keys in prev_indexes.items():
             if keys not in indexes:
                 if self.options.clean:
                     base.log.info('...... drop index %s:%s', collection.name, iname)
@@ -313,7 +313,7 @@ class EnsureIndexCommand(base.Command):
                 else:
                     base.log.info('...... potentially unneeded index, could be removed by running with --clean %s:%s',
                                   collection.name, iname)
-        for iname, keys in six.iteritems(prev_uindexes):
+        for iname, keys in prev_uindexes.items():
             if keys not in uindexes:
                 if self.options.clean:
                     base.log.info('...... drop index %s:%s', collection.name, iname)
@@ -357,7 +357,7 @@ class EnsureIndexCommand(base.Command):
 
 def build_model_inheritance_graph():
     graph = {m.mapped_class: ([], []) for m in Mapper.all_mappers()}
-    for cls, (parents, children) in six.iteritems(graph):
+    for cls, (parents, children) in graph.items():
         for b in cls.__bases__:
             if b not in graph:
                 continue
@@ -368,7 +368,7 @@ def build_model_inheritance_graph():
 
 def dump_cls(depth, cls):
     indent = ' ' * 4 * depth
-    yield indent + '{}.{}'.format(cls.__module__, cls.__name__)
+    yield indent + f'{cls.__module__}.{cls.__name__}'
     m = mapper(cls)
     for p in m.properties:
         s = indent * 2 + ' - ' + str(p)
@@ -380,5 +380,4 @@ def dump_cls(depth, cls):
 def dfs(root, graph, depth=0):
     yield depth, root
     for node in graph[root][1]:
-        for r in dfs(node, graph, depth + 1):
-            yield r
+        yield from dfs(node, graph, depth + 1)

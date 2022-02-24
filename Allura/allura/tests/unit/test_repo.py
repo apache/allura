@@ -304,7 +304,7 @@ class TestPrefixPathsUnion(unittest.TestCase):
         self.assertEqual(prefix_paths_union(a, b), {'a2'})
 
 
-class TestGroupCommits(object):
+class TestGroupCommits:
 
     def setUp(self):
         self.repo = Mock()

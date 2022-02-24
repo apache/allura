@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -44,7 +42,7 @@ from allura.lib import utils
 log = logging.getLogger(__name__)
 
 
-class Config(object):
+class Config:
 
     "Config to encapsulate flexible/complex test enabled/disabled rules."
     _instance = None
@@ -84,7 +82,7 @@ class Config(object):
 
 
 def report_validation_error(val_name, filename, message):
-    message = '{} Validation errors ({}):\n{}\n'.format(val_name, filename, message)
+    message = f'{val_name} Validation errors ({filename}):\n{message}\n'
     raise AssertionError(message)
 
 
@@ -135,11 +133,11 @@ def validate_html5(html_or_response):
             # Docs: https://github.com/validator/validator/wiki/Service-%C2%BB-Input-%C2%BB-POST-body   and other pages
             resp = requests.post('http://html5.validator.nu/nu/?out=text',  # could do out=json
                                  data=html,
-                                 headers={'Content-Type': str('text/html; charset=utf-8')},
+                                 headers={'Content-Type': 'text/html; charset=utf-8'},
                                  timeout=5)
             resp = resp.text
             break
-        except IOError:
+        except OSError:
             resp = "Couldn't connect to validation service to check the HTML"
             count -= 1
             if count == 0:
@@ -225,11 +223,11 @@ class AntiSpamTestApp(TestApp):
                 antispam.enc('honey0'): '',
                 antispam.enc('honey1'): '',
             }
-            for k, v in six.iteritems(kwargs['params']):
+            for k, v in kwargs['params'].items():
                 params[antispam.enc(k)] = v
             params['_session_id'] = kwargs['params'].get('_session_id')  # exclude csrf token from encryption
             kwargs['params'] = params
-        return super(AntiSpamTestApp, self).post(*args, **kwargs)
+        return super().post(*args, **kwargs)
 
     def antispam_field_names(self, form):
         """
@@ -256,13 +254,13 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         if not params:
             return
         # params can be raw data (json data post, for example)
-        if isinstance(params, (six.binary_type, six.string_types)):
+        if isinstance(params, (bytes, (str,))):
             return
         # params can be a list or a dict
         if hasattr(params, 'items'):
             params = list(params.items())
         for k, v in params:
-            if not isinstance(k, six.string_types):
+            if not isinstance(k, str):
                 raise TypeError('%s key %s is %s, not str' %
                                 (method, k, type(k)))
             self._validate_val(k, v, method)
@@ -271,11 +269,11 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         if isinstance(v, (list, tuple)):
             for vv in v:
                 self._validate_val(k, vv, method)
-        elif not isinstance(v, (six.text_type, six.binary_type, webtest.forms.File, webtest.forms.Upload)):
+        elif not isinstance(v, (str, bytes, webtest.forms.File, webtest.forms.Upload)):
             raise TypeError(
                 '%s key %s has value %s of type %s, not str. ' %
                 (method, k, v, type(v)))
-        elif six.PY2 and isinstance(v, six.text_type):
+        elif six.PY2 and isinstance(v, str):
             try:
                 v.encode('ascii')
                 #pass
@@ -291,7 +289,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         elif len(args) > 1:
             params = args[1]
         self._validate_params(params, 'get')
-        return super(PostParamCheckingTestApp, self).get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         params = None
@@ -300,7 +298,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         elif len(args) > 1:
             params = args[1]
         self._validate_params(params, 'post')
-        return super(PostParamCheckingTestApp, self).post(*args, **kwargs)
+        return super().post(*args, **kwargs)
 
 
 class ValidatingTestApp(PostParamCheckingTestApp):
@@ -348,7 +346,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         :rtype: webtest.app.TestResponse
         '''
         val_params, kw = self._get_validation_params(kw)
-        resp = super(ValidatingTestApp, self).get(*args, **kw)
+        resp = super().get(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'get', val_params)
         return resp
@@ -358,7 +356,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         :rtype: webtest.app.TestResponse
         '''
         val_params, kw = self._get_validation_params(kw)
-        resp = super(ValidatingTestApp, self).post(*args, **kw)
+        resp = super().post(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'post', val_params)
         return resp
@@ -368,7 +366,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         :rtype: webtest.app.TestResponse
         '''
         val_params, kw = self._get_validation_params(kw)
-        resp = super(ValidatingTestApp, self).delete(*args, **kw)
+        resp = super().delete(*args, **kw)
         if not self.validate_skip and not val_params['validate_skip']:
             self._validate(resp, 'delete', val_params)
         return resp

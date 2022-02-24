@@ -24,7 +24,7 @@ from allura.model.repository import Commit
 from forgesvn.model.svn import SVNImplementation
 
 
-class TestSVNImplementation(object):
+class TestSVNImplementation:
 
     def setUp(self):
         setup_unit_test()

@@ -65,7 +65,7 @@ class MetaParserDocstring(type):
         return task(type.__new__(meta, classname, bases, classDict))
 
 
-class ScriptTask(six.with_metaclass(MetaParserDocstring, object)):
+class ScriptTask(metaclass=MetaParserDocstring):
 
     """Base class for a command-line script that is also executable as a task."""
 

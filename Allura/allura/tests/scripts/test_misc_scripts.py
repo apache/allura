@@ -24,7 +24,7 @@ from allura import model as M
 from ming.odm import session
 
 
-class TestClearOldNotifications(object):
+class TestClearOldNotifications:
 
     def setUp(self):
         setup_basic_test()

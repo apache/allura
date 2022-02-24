@@ -29,7 +29,7 @@ from forgeimporters.github import GitHubOAuthMixin
 class TestGitHubOAuthMixin(TestController, TestCase):
 
     def setUp(self):
-        super(TestGitHubOAuthMixin, self).setUp()
+        super().setUp()
         c.user = Mock()
         self.mix = GitHubOAuthMixin()
 

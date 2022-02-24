@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -76,7 +74,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
     if override_root_module_name:
         # get an actual instance of it, like BasetestProjectRootController or TaskController
         className = override_root_module_name.title().replace('_', '') + 'Controller'
-        module = importlib.import_module('allura.controllers.{}'.format(override_root_module_name))
+        module = importlib.import_module(f'allura.controllers.{override_root_module_name}')
         rootClass = getattr(module, className)
         root = rootClass()
     else:

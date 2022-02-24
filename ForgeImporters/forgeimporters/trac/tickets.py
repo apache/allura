@@ -179,7 +179,7 @@ class TracImportSupport(ImportSupport):
         text = text.replace('\n', ' ')
         slug = self.get_slug_by_id(ticket, comment)
         if slug:
-            return '[{}]({}/#{})'.format(text, ticket, slug)
+            return f'[{text}]({ticket}/#{slug})'
         else:
             return text
 

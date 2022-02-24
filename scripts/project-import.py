@@ -18,7 +18,6 @@
 import json
 import logging
 import sys
-from io import open
 
 from ming.orm import session
 import colander
@@ -39,7 +38,7 @@ def main(options):
     if not nbhd:
         return 'Invalid neighborhood "%s".' % options.neighborhood
 
-    data = json.load(open(options.file, 'r'))
+    data = json.load(open(options.file))
 
     projectSchema = make_newproject_schema(nbhd, options.update)
     # allow 'icon' as a local filesystem path via this script only

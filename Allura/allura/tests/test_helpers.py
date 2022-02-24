@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -41,7 +39,6 @@ from allura.lib.security import Credentials
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 import six
-from io import open
 
 
 def setUp(self):
@@ -101,12 +98,12 @@ def test_really_unicode():
     assert s.startswith('\ufeff'), repr(s)
     s = h.really_unicode(
         open(path.join(here_dir, 'data/unicode_test.txt')).read())
-    assert isinstance(s, six.text_type)
+    assert isinstance(s, str)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode('\u0410\u0401'.encode('cp1251'))
     # ensure invalid encodings are handled gracefully
     s = h._attempt_encodings(b'foo', ['LKDJFLDK'])
-    assert isinstance(s, six.text_type)
+    assert isinstance(s, str)
     # unicode stays the same
     assert_equals(h.really_unicode('¬∂•°‹'), '¬∂•°‹')
     # other types are handled too
@@ -115,7 +112,7 @@ def test_really_unicode():
     assert_equals(h.really_unicode(None), '')
     # markup stays markup
     s = h.really_unicode(Markup('<b>test</b>'))
-    assert isinstance(s, six.text_type)
+    assert isinstance(s, str)
     assert isinstance(s, Markup)
     assert_equals(s, '<b>test</b>')
 
@@ -252,7 +249,7 @@ def test_paging_sanitizer():
         (10, 0): (10, 0),
         ('junk', 'more junk'): (25, 0),
     }
-    for input, output in six.iteritems(test_data):
+    for input, output in test_data.items():
         assert (h.paging_sanitizer(*input)) == output
 
 
@@ -278,7 +275,7 @@ def test_render_any_markup_formatting():
 
 def test_render_any_markdown_encoding():
     # send encoded content in, make sure it converts it to actual unicode object which Markdown lib needs
-    assert_equals(h.render_any_markup('README.md', 'Müller'.encode('utf8')),
+    assert_equals(h.render_any_markup('README.md', 'Müller'.encode()),
                   '<div class="markdown_content"><p>Müller</p></div>')
 
 
@@ -485,7 +482,7 @@ class TestUrlOpen(TestCase):
         import errno
 
         def side_effect(url, timeout=None):
-            raise socket.error(errno.ECONNRESET, 'Connection reset by peer')
+            raise OSError(errno.ECONNRESET, 'Connection reset by peer')
         urlopen.side_effect = side_effect
         self.assertRaises(socket.error, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
@@ -550,7 +547,7 @@ class TestIterEntryPoints(TestCase):
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_subclassed_ep(self, pkg_resources):
-        class App(object):
+        class App:
             pass
 
         class BetterApp(App):
@@ -566,13 +563,13 @@ class TestIterEntryPoints(TestCase):
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_ambiguous_eps(self, pkg_resources):
-        class App(object):
+        class App:
             pass
 
         class BetterApp(App):
             pass
 
-        class BestApp(object):
+        class BestApp:
             pass
 
         pkg_resources.iter_entry_points.return_value = [
@@ -580,7 +577,7 @@ class TestIterEntryPoints(TestCase):
             self._make_ep('myapp', BetterApp),
             self._make_ep('myapp', BestApp)]
 
-        self.assertRaisesRegexp(ImportError,
+        self.assertRaisesRegex(ImportError,
                                 r'Ambiguous \[allura\] entry points detected. '
                                 'Multiple entry points with name "myapp".',
                                 list, h.iter_entry_points('allura'))

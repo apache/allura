@@ -20,7 +20,7 @@ from alluratest.tools import assert_equal
 from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
-class TestGitHubMarkdownConverter(object):
+class TestGitHubMarkdownConverter:
 
     def setUp(self):
         self.conv = GitHubMarkdownConverter('user', 'project')

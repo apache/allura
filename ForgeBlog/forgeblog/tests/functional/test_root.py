@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -26,7 +24,6 @@ from mock import patch
 
 from allura.lib import helpers as h
 from alluratest.controller import TestController
-from six.moves import range
 
 
 class Test(TestController):
@@ -69,7 +66,7 @@ class Test(TestController):
         assert 'Nothing to see here' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/',
-                              extra_environ=dict(username=str('*anonymous')))
+                              extra_environ=dict(username='*anonymous'))
         # anonymous user can't see Edit links
         assert 'Nothing to see here' in anon_r
         assert '/blog/%s/my-post/edit' % d not in anon_r
@@ -83,7 +80,7 @@ class Test(TestController):
         assert 'Draft' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/',
-                              extra_environ=dict(username=str('*anonymous')))
+                              extra_environ=dict(username='*anonymous'))
         # anonymous user can't see draft posts
         assert 'Nothing to see here' not in anon_r
 
@@ -136,7 +133,7 @@ class Test(TestController):
         assert 'Nothing to see here' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/%s/my-post/' % d,
-                              extra_environ=dict(username=str('*anonymous')))
+                              extra_environ=dict(username='*anonymous'))
         # anonymous user can't see Edit links
         assert 'Nothing to see here' in anon_r
         assert '/blog/%s/my-post/edit' % d not in anon_r
@@ -150,7 +147,7 @@ class Test(TestController):
         assert 'Draft' in response
         assert '/blog/%s/my-post/edit' % d in response
         anon_r = self.app.get('/blog/%s/my-post/' % d,
-                              extra_environ=dict(username=str('*anonymous')))
+                              extra_environ=dict(username='*anonymous'))
         # anonymous user can't get to draft posts
         assert 'Nothing to see here' not in anon_r
 
@@ -161,7 +158,7 @@ class Test(TestController):
         assert 'Nothing' in response
         # anon users can't edit
         response = self.app.get('/blog/%s/my-post/edit' % d,
-                                extra_environ=dict(username=str('*anonymous')))
+                                extra_environ=dict(username='*anonymous'))
         assert 'Nothing' not in response
 
     def test_post_get_markdown(self):
@@ -183,7 +180,7 @@ class Test(TestController):
             '/blog/%s/my-post/update_markdown' % d,
             params={
                 'text': '- [x] checkbox'},
-            extra_environ=dict(username=str('*anonymous')))
+            extra_environ=dict(username='*anonymous'))
         assert response.json['status'] == 'no_permission'
 
     def test_post_attachments(self):
@@ -239,7 +236,7 @@ class Test(TestController):
     def test_post_revert(self):
         self._post()
         d = self._blog_date()
-        self._post('/%s/my-post' % d, text='sometést'.encode('utf-8'))
+        self._post('/%s/my-post' % d, text='sometést'.encode())
         response = self.app.post('/blog/%s/my-post/revert' % d, params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get('/blog/%s/my-post/' % d)

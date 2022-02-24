@@ -1,4 +1,3 @@
-# coding=utf-8
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -31,7 +30,7 @@ from allura.lib import plugin
 class TestDeleteProjects(TestController):
 
     def setUp(self):
-        super(TestDeleteProjects, self).setUp()
+        super().setUp()
         n = M.Neighborhood.query.get(name='Projects')
         admin = M.User.by_username('test-admin')
         self.p_shortname = 'test-delete'
@@ -59,7 +58,7 @@ class TestDeleteProjects(TestController):
     def test_project_is_deleted(self):
         p = M.Project.query.get(shortname=self.p_shortname)
         assert p is not None, 'Can not find project to delete'
-        self.run_script(['p/{}'.format(p.shortname)])
+        self.run_script([f'p/{p.shortname}'])
         session(p).expunge(p)
         p = M.Project.query.get(shortname=p.shortname)
         assert p is None, 'Project is not deleted'
@@ -68,7 +67,7 @@ class TestDeleteProjects(TestController):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
         things = self.things_related_to_project(pid)
         assert len(things) > 0, 'No things related to project to begin with'
-        self.run_script(['p/{}'.format(self.p_shortname)])
+        self.run_script([f'p/{self.p_shortname}'])
         things = self.things_related_to_project(pid)
         assert len(things) == 0, 'Not all things are deleted: %s' % things
 
@@ -97,7 +96,7 @@ class TestDeleteProjects(TestController):
     @patch('allura.lib.plugin.solr_del_project_artifacts', autospec=True)
     def test_solr_index_is_deleted(self, del_solr):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
-        self.run_script(['p/{}'.format(self.p_shortname)])
+        self.run_script([f'p/{self.p_shortname}'])
         del_solr.post.assert_called_once_with(pid)
 
     @with_user_project('test-user')
@@ -113,7 +112,7 @@ class TestDeleteProjects(TestController):
     @patch.object(plugin.g, 'post_event', autospec=True)
     def test_event_is_fired(self, post_event):
         pid = M.Project.query.get(shortname=self.p_shortname)._id
-        self.run_script(['p/{}'.format(self.p_shortname)])
+        self.run_script([f'p/{self.p_shortname}'])
         post_event.assert_called_once_with('project_deleted', project_id=pid, reason=None)
 
     @patch.object(plugin.g, 'post_event', autospec=True)
@@ -122,7 +121,7 @@ class TestDeleteProjects(TestController):
         p = M.Project.query.get(shortname=self.p_shortname)
         pid = p._id
         assert p is not None, 'Can not find project to delete'
-        self.run_script(['-r', 'The Reason¢¢', 'p/{}'.format(p.shortname)])
+        self.run_script(['-r', 'The Reason¢¢', f'p/{p.shortname}'])
         session(p).expunge(p)
         p = M.Project.query.get(shortname=p.shortname)
         assert p is None, 'Project is not deleted'
@@ -134,8 +133,8 @@ class TestDeleteProjects(TestController):
         self.proj.add_user(dev, ['Developer'])
         ThreadLocalODMSession.flush_all()
         g.credentials.clear()
-        proj = 'p/{}'.format(self.p_shortname)
-        msg = 'Account disabled because project /{} is deleted. Reason: The Reason'.format(proj)
+        proj = f'p/{self.p_shortname}'
+        msg = f'Account disabled because project /{proj} is deleted. Reason: The Reason'
         opts = ['-r', 'The Reason', proj]
         if disable:
             opts.insert(0, '--disable-users')

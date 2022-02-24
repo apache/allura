@@ -376,7 +376,7 @@ def test_save_importer_upload(giup, os):
                   'project', 'file', 'data')
 
 
-class TestFile(object):
+class TestFile:
 
     @mock.patch.object(base, 'ProjectExtractor')
     def test_type(self, PE):

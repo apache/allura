@@ -97,11 +97,11 @@ class ForgeChatApp(Application):
         ]
 
     def admin_menu(self):
-        return super(ForgeChatApp, self).admin_menu()
+        return super().admin_menu()
 
     def install(self, project):
         'Set up any default permissions and roles here'
-        super(ForgeChatApp, self).install(project)
+        super().install(project)
         role_admin = M.ProjectRole.by_name('Admin')._id
         role_anon = M.ProjectRole.anonymous()._id
         self.config.acl = [
@@ -118,7 +118,7 @@ class ForgeChatApp(Application):
         CM.ChatChannel.query.remove(dict(
             project_id=self.config.project_id,
             app_config_id=self.config._id))
-        super(ForgeChatApp, self).uninstall(project)
+        super().uninstall(project)
 
 
 class AdminController(DefaultAdminController):
@@ -137,7 +137,7 @@ class AdminController(DefaultAdminController):
                 app_config_id=self.app.config._id)
             chan.channel = channel
         flash('Chat options updated')
-        super(AdminController, self).configure(channel=channel)
+        super().configure(channel=channel)
 
 
 class RootController(BaseController):

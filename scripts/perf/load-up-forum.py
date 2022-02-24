@@ -25,7 +25,6 @@ from forgediscussion.model import ForumPost, Forum
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
 from allura.lib import helpers as h
 from random import randint
-from six.moves import range
 
 
 log = logging.getLogger(__name__)
@@ -57,7 +56,7 @@ def main():
             shortname=args.forumname)
 
         for i in range(5000):
-            subject = 'fake topic {}'.format(str(i))
+            subject = f'fake topic {str(i)}'
             thd = discussion.thread_class()(discussion_id=discussion._id, subject=subject)
             # subj = str(uuid.uuid4())[:8]
             p = thd.post(subject, 'a new topic 2')

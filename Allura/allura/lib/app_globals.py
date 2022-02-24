@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -157,7 +155,7 @@ class ForgeMarkdown(markdown.Markdown):
         return html
 
 
-class Globals(object):
+class Globals:
 
     """Container for objects available throughout the life of the application.
 
@@ -305,7 +303,7 @@ class Globals(object):
 
         # Set listeners to update stats
         statslisteners = []
-        for name, ep in six.iteritems(self.entry_points['stats']):
+        for name, ep in self.entry_points['stats'].items():
             statslisteners.append(ep())
         self.statsUpdater = PostEvent(statslisteners)
 
@@ -330,7 +328,7 @@ class Globals(object):
         if asbool(config.get('activitystream.recording.enabled', False)):
             return activitystream.director()
         else:
-            class NullActivityStreamDirector(object):
+            class NullActivityStreamDirector:
 
                 def connect(self, *a, **kw):
                     pass
@@ -361,7 +359,7 @@ class Globals(object):
             except AttributeError:
                 script_without_ming_middleware = True
             else:
-                script_without_ming_middleware = env['PATH_INFO'] == str('--script--')
+                script_without_ming_middleware = env['PATH_INFO'] == '--script--'
             if script_without_ming_middleware:
                 kwargs['flush_immediately'] = True
             else:
@@ -543,12 +541,12 @@ class Globals(object):
     def register_app_css(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.CSSLink('tool/{}/{}'.format(app.config.tool_name.lower(), href), **kw))
+            ew.CSSLink(f'tool/{app.config.tool_name.lower()}/{href}', **kw))
 
     def register_app_js(self, href, **kw):
         app = kw.pop('app', c.app)
         self.resource_manager.register(
-            ew.JSLink('tool/{}/{}'.format(app.config.tool_name.lower(), href), **kw))
+            ew.JSLink(f'tool/{app.config.tool_name.lower()}/{href}', **kw))
 
     def register_theme_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink(self.theme_href(href), **kw))
@@ -579,7 +577,7 @@ class Globals(object):
         'h.set_context() is preferred over this method'
         if isinstance(pid_or_project, M.Project):
             c.project = pid_or_project
-        elif isinstance(pid_or_project, six.string_types):
+        elif isinstance(pid_or_project, str):
             raise TypeError('need a Project instance, got %r' % pid_or_project)
         elif pid_or_project is None:
             c.project = None
@@ -596,7 +594,7 @@ class Globals(object):
 
     @LazyProperty
     def noreply(self):
-        return six.text_type(config.get('noreply', 'noreply@%s' % config['domain']))
+        return str(config.get('noreply', 'noreply@%s' % config['domain']))
 
     @property
     def build_key(self):
@@ -640,7 +638,7 @@ class Globals(object):
             "image_height": logo['image_height']
         }
 
-class Icon(object):
+class Icon:
 
     def __init__(self, css, title=None):
         self.css = css
@@ -658,7 +656,7 @@ class Icon(object):
         attrs = ew._Jinja2Widget().j2_attrs(attrs)
         visible_title = ''
         if show_title:
-            visible_title = '&nbsp;{}'.format(Markup.escape(title))
-        closing_tag = '</{}>'.format(tag) if closing_tag else ''
-        icon = '<{} {}><i class="{}"></i>{}{}'.format(tag, attrs, self.css, visible_title, closing_tag)
+            visible_title = f'&nbsp;{Markup.escape(title)}'
+        closing_tag = f'</{tag}>' if closing_tag else ''
+        icon = f'<{tag} {attrs}><i class="{self.css}"></i>{visible_title}{closing_tag}'
         return Markup(icon)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -71,7 +69,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
         # neighborhoods & projects handled in _lookup
 
-        super(BasetestProjectRootController, self).__init__()
+        super().__init__()
 
     def _setup_request(self):
         pass
@@ -129,10 +127,10 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             environ['beaker.session'].save()
             environ['beaker.session'].persist()
             c.user = auth.authenticate_request()
-        return super(BasetestProjectRootController, self)._perform_call(context)
+        return super()._perform_call(context)
 
 
-class DispatchTest(object):
+class DispatchTest:
     @expose()
     def _lookup(self, *args):
         if args:
@@ -141,7 +139,7 @@ class DispatchTest(object):
             raise exc.HTTPNotFound()
 
 
-class NamedController(object):
+class NamedController:
     def __init__(self, name):
         self.name = name
 
@@ -151,10 +149,10 @@ class NamedController(object):
 
     @expose()
     def _default(self, *args):
-        return 'default({})({!r})'.format(self.name, args)
+        return f'default({self.name})({args!r})'
 
 
-class SecurityTests(object):
+class SecurityTests:
     @expose()
     def _lookup(self, name, *args):
         name = unquote(name)
@@ -163,7 +161,7 @@ class SecurityTests(object):
         return SecurityTest(), args
 
 
-class SecurityTest(object):
+class SecurityTest:
     def __init__(self):
         from forgewiki import model as WM
         c.app = c.project.app_instance('wiki')
