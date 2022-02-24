@@ -33,7 +33,6 @@ from datetime import datetime
 from six.moves.configparser import ConfigParser
 import random
 import string
-import codecs
 
 import sqlalchemy
 from suds.client import Client
@@ -158,7 +157,7 @@ def main():
                 get_news(project)
                 if not options.skip_unsupported_check:
                     check_unsupported_tools(project)
-                with codecs.open(os.path.join(options.output_dir, 'users.json'), 'w', encoding='utf-8') as user_file:
+                with open(os.path.join(options.output_dir, 'users.json'), 'w', encoding='utf-8') as user_file:
                     json.dump(users, user_file, default=str)
             except Exception:
                 log.exception('Error extracting %s' % pid)
@@ -678,7 +677,7 @@ def save(content, project, *paths):
     out_file = os.path.join(options.output_dir, project.id, *paths)
     if not os.path.exists(os.path.dirname(out_file)):
         os.makedirs(os.path.dirname(out_file))
-    with codecs.open(out_file, 'w', encoding='utf-8') as out:
+    with open(out_file, 'w', encoding='utf-8') as out:
         out.write(content.encode('utf-8'))
 
 
@@ -714,7 +713,7 @@ def download_file(tool, url_path, *filepaths):
             'returnToUrl': url,
             'sfsubmit': 'submit'
         }))
-    with codecs.open(out_file, 'w', encoding='utf-8') as out:
+    with open(out_file, 'w', encoding='utf-8') as out:
         out.write(resp.fp.read())
     return out_file
 

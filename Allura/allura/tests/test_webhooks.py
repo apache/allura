@@ -678,7 +678,7 @@ class TestWebhookRestController(TestRestApiBase):
         self.setup_with_tools()
         self.project = M.Project.query.get(shortname=test_project_with_repo)
         self.git = self.project.app_instance('src')
-        self.url = str('/rest' + self.git.admin_url + 'webhooks')
+        self.url = '/rest' + self.git.admin_url + 'webhooks'
         self.webhooks = []
         for i in range(3):
             webhook = M.Webhook(

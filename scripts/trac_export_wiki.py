@@ -19,7 +19,6 @@
 
 import sys
 from optparse import OptionParser
-import codecs
 
 from tracwikiimporter.scripts.wiki_from_trac.extractors import WikiExporter
 
@@ -52,6 +51,6 @@ if __name__ == '__main__':
 
     out = sys.stdout
     if options.out_filename:
-        out = codecs.open(options.out_filename, 'w', encoding='utf-8')
+        out = open(options.out_filename, 'w', encoding='utf-8')
 
     exporter.export(out)

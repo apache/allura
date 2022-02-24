@@ -377,7 +377,7 @@ class TestFunctionalController(TrackerTestController):
 
         # Private tickets shouldn't be included in counts if user doesn't
         # have read access to private tickets.
-        r = self.app.get('/bugs/bin_counts', extra_environ=dict(username=str('*anonymous')))
+        r = self.app.get('/bugs/bin_counts', extra_environ=dict(username='*anonymous'))
         assert_equal(r.json, {"bin_counts": [{"count": 1, "label": "Changes"},
                                              {"count": 0, "label": "Closed Tickets"},
                                              {"count": 1, "label": "Open Tickets"}]})

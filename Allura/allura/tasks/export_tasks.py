@@ -19,7 +19,6 @@ import os
 import os.path
 import logging
 import shutil
-import codecs
 
 import tg
 from tg import app_globals as g, tmpl_context as c
@@ -100,7 +99,7 @@ class BulkExport:
         tool = app.config.options.mount_point
         json_file = os.path.join(export_path, '%s.json' % tool)
         try:
-            with codecs.open(json_file, 'w', encoding='utf-8') as f:
+            with open(json_file, 'w', encoding='utf-8') as f:
                 app.bulk_export(f, export_path, with_attachments)
         except Exception:
             log.error('Error exporting: %s on %s', tool,

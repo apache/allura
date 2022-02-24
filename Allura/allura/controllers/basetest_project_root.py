@@ -109,7 +109,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     def _perform_call(self, context):
         """ Called from a WebTest 'app' instance, going through TurboGears dispatcher code
-        Example: self.app.get('/auth/', extra_environ={'disable_auth_magic': str("True")})
+        Example: self.app.get('/auth/', extra_environ={'disable_auth_magic': "True"})
         """
         environ = context.request.environ
         c.app = None

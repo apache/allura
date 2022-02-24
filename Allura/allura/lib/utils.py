@@ -23,7 +23,6 @@ import string
 import hashlib
 import binascii
 import logging.handlers
-import codecs
 import os.path
 import datetime
 import random
@@ -223,7 +222,7 @@ class AntiSpam:
             self.spinner_text = request.params['spinner']
             self.timestamp = int(self.timestamp_text)
             self.spinner = self._unwrap(self.spinner_text)
-        trans_fn = ord if six.PY2 else int
+        trans_fn = int
         self.spinner_ord = list(map(trans_fn, self.spinner))
         self.random_padding = [random.randint(0, 255) for x in self.spinner]
         self.honey_class = self.enc(self.spinner_text, css_safe=True)
@@ -525,7 +524,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
         from allura.lib import helpers as h
         tg.response.headers.add(
             'Content-Disposition',
-            str('attachment;filename="%s"' % h.urlquote(filename)))
+            'attachment;filename="%s"' % h.urlquote(filename))
     # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension
     block_size = 4096
     if 'wsgi.file_wrapper' in tg.request.environ:

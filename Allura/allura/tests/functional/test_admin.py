@@ -165,7 +165,7 @@ class TestProjectAdmin(TestController):
     def test_features(self):
         proj = M.Project.query.get(shortname='test')
         assert_equals(proj.features, [])
-        with audits(r"change project features to \[{u}'One', {u}'Two'\]".format(u='u' if six.PY2 else '')):
+        with audits(r"change project features to \[{u}'One', {u}'Two'\]".format(u='')):
             resp = self.app.post('/admin/update', params={
                 'features-0.feature': 'One',
                 'features-1.feature': '  ',

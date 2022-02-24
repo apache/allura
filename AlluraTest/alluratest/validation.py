@@ -273,14 +273,6 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
             raise TypeError(
                 '%s key %s has value %s of type %s, not str. ' %
                 (method, k, v, type(v)))
-        elif six.PY2 and isinstance(v, str):
-            try:
-                v.encode('ascii')
-                #pass
-            except UnicodeEncodeError:
-                raise TypeError(
-                    '%s key "%s" has value "%s" of type %s, should be utf-8 encoded. ' %
-                    (method, k, v, type(v)))
 
     def get(self, *args, **kwargs):
         params = None
