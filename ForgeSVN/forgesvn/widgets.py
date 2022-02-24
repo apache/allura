@@ -26,7 +26,7 @@ from allura.lib import validators
 from allura.lib.widgets.forms import ForgeForm
 
 
-class ValidateSvnUrl(validators.URL):
+class ValidateSvnUrl(validators.URLIsPrivate):
     url_re = re.compile(r'''
         ^(http|https|svn)://
         (?:[%:\w]*@)?                              # authenticator

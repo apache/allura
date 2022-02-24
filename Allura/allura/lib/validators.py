@@ -26,6 +26,9 @@ from tg import tmpl_context as c
 from . import helpers as h
 from datetime import datetime
 import six
+from urllib.parse import urlparse
+from ipaddress import ip_address
+import socket
 
 
 class URL(fev.URL):
@@ -45,6 +48,21 @@ class URL(fev.URL):
         (?P<path>/[a-z0-9\-\._~:/\?#\[\]@!%\$&\'\(\)\*\+,;=]*)?
         $
     ''', re.I | re.VERBOSE)
+
+
+class URLIsPrivate(URL):
+
+    def _to_python(self, value, state):
+        value = super(URLIsPrivate, self)._to_python(value, state)
+        url_components = urlparse(value)
+        try:
+            host_ip = socket.gethostbyname(url_components.netloc)
+        except socket.gaierror:
+            raise fev.Invalid("Invalid URL.", value, state)
+        parse_ip = ip_address(host_ip)
+        if parse_ip and parse_ip.is_private:
+            raise fev.Invalid("Invalid URL.", value, state)
+        return value
 
 
 class NonHttpUrl(URL):

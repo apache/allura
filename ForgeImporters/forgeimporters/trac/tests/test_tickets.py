@@ -26,7 +26,7 @@ from ming.orm import ThreadLocalORMSession
 from tg import tmpl_context as c
 
 from allura.tests import TestController
-from allura.tests.decorators import with_tracker
+from allura.tests.decorators import with_tracker, with_wiki
 from alluratest.controller import TestRestApiBase, setup_unit_test
 from alluratest.tools import module_not_available
 
@@ -184,6 +184,32 @@ class TestTracTicketImportController(TestController, TestCase):
                               'user_map', 'myfile', b'{"orig_user": "new_user"}'
                           )])
         self.assertEqual(import_tool.post.call_count, 0)
+
+        @with_tracker
+        @patch('forgeimporters.trac.requests.head')
+        @patch('forgeimporters.base.import_tool')
+        def test_url_ticket_import_fail(self, import_tool, head):
+            head.return_value.status_code = 200
+            params = dict(trac_url='https://sf-1.xb.sf.net/trac/url',
+                          mount_label='mylabel',
+                          mount_point='mymount',
+                          )
+            r = self.app.post('/p/test/admin/ext/import/trac-tickets-sf/create', params,
+                              status=200)
+            self.assertIn('Invalid URL', r.text)
+
+        @with_wiki
+        @patch('forgeimporters.trac.requests.head')
+        @patch('forgeimporters.base.import_tool')
+        def test_url_wiki_import_fail(self, import_tool, head):
+            head.return_value.status_code = 200
+            params = dict(trac_url='https://sf-1.xb.sf.net/trac/url',
+                          mount_label='mylabel',
+                          mount_point='mymount',
+                          )
+            r = self.app.post('/p/test/admin/ext/import/trac-wiki/create', params,
+                              status=200)
+            self.assertIn('Invalid URL', r.text)
 
 
 class TestTracImportSupport(TestCase):
