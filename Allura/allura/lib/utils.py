@@ -223,7 +223,7 @@ class AntiSpam:
             self.spinner_text = request.params['spinner']
             self.timestamp = int(self.timestamp_text)
             self.spinner = self._unwrap(self.spinner_text)
-        trans_fn = ord if six.PY2 else int
+        trans_fn = int
         self.spinner_ord = list(map(trans_fn, self.spinner))
         self.random_padding = [random.randint(0, 255) for x in self.spinner]
         self.honey_class = self.enc(self.spinner_text, css_safe=True)

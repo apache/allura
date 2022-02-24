@@ -100,9 +100,6 @@ class TestRootController(TestController):
             self.app.get('/', headers=dict(Accept=str(hdr)), validate_skip=True)
 
     def test_encoded_urls(self):
-        if six.PY2:
-            # not valid unicode
-            self.app.get(b'/foo\xFF', status=400)
         self.app.get('/foo%FF', status=400)
         # encoded
         self.app.get('/foo%C3%A9', status=404)
