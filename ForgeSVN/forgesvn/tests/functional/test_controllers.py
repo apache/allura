@@ -320,7 +320,6 @@ class TestImportController(SVNTestController):
 
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_url_import_validation_fail(self):
-        #r = self.app.get('/p/test/admin/empty/importer').follow(status=200)
         params = dict(checkout_url='https://sf-1.xb.sf.net/trac/url')
         r = self.app.post('/p/test/admin/empty/importer/do_import', params,
                           status=200)
@@ -331,7 +330,7 @@ class TestImportController(SVNTestController):
     def test_do_import_empty_repo(self, tasks):
         self.app.post('/p/test/admin/empty/importer/do_import',
                       {'checkout_url': 'http://fake.svn/'})
-        assert tasks.reclone.post.called
+        assert not tasks.reclone.post.called
 
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
