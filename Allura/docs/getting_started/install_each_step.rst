@@ -229,7 +229,7 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
 
 .. code-block:: bash
 
-    (env-allura)~/src/allura/Allura$ gunicorn --reload --paste development.ini  # add --daemon to run in the background
+    (env-allura)~/src/allura/Allura$ gunicorn --reload --paste development.ini -b :8080  # add --daemon to run in the background
 
 Next Steps
 ^^^^^^^^^^

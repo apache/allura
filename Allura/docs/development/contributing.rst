@@ -182,7 +182,7 @@ foreground::
 
     cd Allura
     # web
-    pkill -f gunicorn; gunicorn --reload --paste development.ini
+    pkill -f gunicorn; gunicorn --reload --paste development.ini -b :8080
     # taskd
     pkill "^taskd"; paster taskd development.ini --nocapture
 
@@ -200,7 +200,7 @@ as ``pudb`` are also available.
 
        docker-compose run web pip install ipdb
        docker-compose stop web taskd
-       docker-compose run --service-ports web gunicorn --reload --paste Allura/docker-dev.ini
+       docker-compose run --service-ports web gunicorn --reload --paste Allura/docker-dev.ini -b :8088
        docker-compose run taskd paster taskd docker-dev.ini --nocapture
 
 
