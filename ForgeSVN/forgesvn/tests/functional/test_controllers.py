@@ -329,8 +329,8 @@ class TestImportController(SVNTestController):
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_do_import_empty_repo(self, tasks):
         self.app.post('/p/test/admin/empty/importer/do_import',
-                      {'checkout_url': 'http://fake.svn/'})
-        assert not tasks.reclone.post.called
+                      {'checkout_url': 'http://github.com/'})
+        assert tasks.reclone.post.called
 
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
