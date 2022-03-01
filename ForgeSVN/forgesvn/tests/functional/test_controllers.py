@@ -318,13 +318,6 @@ class TestImportController(SVNTestController):
         r = self.app.get('/p/test/admin/empty/importer').follow(status=200)
         assert 'Enter the URL of the source repository below' in r
 
-    @with_tool('test', 'SVN', 'empty', 'empty SVN')
-    def test_url_import_validation_fail(self):
-        params = dict(checkout_url='https://sf-1.xb.sf.net/trac/url')
-        r = self.app.post('/p/test/admin/empty/importer/do_import', params,
-                          status=200)
-        assert 'Invalid URL' in r.text
-
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_do_import_empty_repo(self, tasks):
@@ -335,6 +328,10 @@ class TestImportController(SVNTestController):
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_validator(self, tasks):
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                          {'checkout_url': 'http://10.0.0.0/trac/url'})
+        assert 'Invalid URL' in r
+        
         r = self.app.post('/p/test/admin/empty/importer/do_import',
                           {'checkout_url': 'http://fake.svn/'})
         assert 'That is not a valid URL' not in r
