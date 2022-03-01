@@ -525,7 +525,7 @@ def serve_file(fp, filename, content_type, last_modified=None,
         from allura.lib import helpers as h
         tg.response.headers.add(
             'Content-Disposition',
-            str('attachment;filename="%s"' % h.urlquote(filename)))
+            'attachment;filename="%s"' % h.urlquote(filename))
     # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension
     block_size = 4096
     if 'wsgi.file_wrapper' in tg.request.environ:

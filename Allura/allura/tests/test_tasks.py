@@ -591,7 +591,7 @@ def raise_exc():
     errs = []
     for x in range(10):
         try:
-            assert False, str('assert %d' % x)
+            assert False, 'assert %d' % x
         except Exception:
             errs.append(sys.exc_info())
     raise CompoundError(*errs)

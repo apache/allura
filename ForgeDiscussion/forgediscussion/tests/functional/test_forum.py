@@ -222,7 +222,7 @@ class TestForumMessageHandling(TestController):
     def test_threads(self):
         self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        url = str('/discussion/testforum/thread/%s/' % thd._id)
+        url = '/discussion/testforum/thread/%s/' % thd._id
         self.app.get(url)
         # accessing a non-existent thread should return a 404
         self.app.get('/discussion/testforum/thread/foobar/', status=404)
@@ -232,7 +232,7 @@ class TestForumMessageHandling(TestController):
         c.user = M.User.by_username('test-admin')
         self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
-        thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
+        thd_url = '/discussion/testforum/thread/%s/' % thd._id
         r = self.app.get(thd_url)
         p = FM.ForumPost.query.find().first()
         url = str(f'/discussion/testforum/thread/{thd._id}/{p.slug}/')
