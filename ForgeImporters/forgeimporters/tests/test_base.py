@@ -363,13 +363,13 @@ def test_save_importer_upload(giup, os):
     os.path.join = lambda *a: '/'.join(a)
     giup.return_value = 'path'
     os.makedirs.side_effect = OSError(errno.EEXIST, 'foo')
-    _open = mock.MagicMock()
-    fp = _open.return_value.__enter__.return_value
-    with mock.patch.object(base.codecs, 'open', _open):
+    with mock.patch('forgeimporters.base.open') as m_open:
+        m_open = mock.mock_open(m_open)
+        fp = m_open.return_value.__enter__.return_value
         base.save_importer_upload('project', 'file', 'data')
-    os.makedirs.assert_called_once_with('path')
-    _open.assert_called_once_with('path/file', 'w', encoding='utf-8')
-    fp.write.assert_called_once_with('data')
+        os.makedirs.assert_called_once_with('path')
+        m_open.assert_called_once_with('path/file', 'w', encoding='utf-8')
+        fp.write.assert_called_once_with('data')
 
     os.makedirs.side_effect = OSError(errno.EACCES, 'foo')
     assert_raises(OSError, base.save_importer_upload,

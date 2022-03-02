@@ -28,7 +28,6 @@ import traceback
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import unquote
 from datetime import datetime
-import codecs
 import six
 
 from bs4 import BeautifulSoup
@@ -664,6 +663,6 @@ def save_importer_upload(project, filename, data):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    with codecs.open(dest_file, 'w', encoding='utf-8') as fp:
+    with open(dest_file, 'w', encoding='utf-8') as fp:
         fp.write(data)
     return dest_file

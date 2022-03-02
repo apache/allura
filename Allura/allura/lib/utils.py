@@ -23,7 +23,6 @@ import string
 import hashlib
 import binascii
 import logging.handlers
-import codecs
 import os.path
 import datetime
 import random
