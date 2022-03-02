@@ -38,6 +38,7 @@ python-magic
 python-oembed
 pytz
 qrcode
+regex-as-re-globally
 requests
 requests-oauthlib
 # for taskd proc name switching

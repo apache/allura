@@ -136,7 +136,7 @@ class TestSiteAdmin(TestController):
         r = self.app.get(
             url, extra_environ=dict(username='*anonymous'), status=302)
         r = self.app.get(url)
-        assert 're.search' in r, r
+        assert 'regex.regex.search' in r, r
         assert '<td>pattern</td>' in r, r
         assert '<td>string</td>' in r, r
         assert '<th class="second-column-headers side-header">flags</th>' in r, r
