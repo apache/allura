@@ -30,7 +30,7 @@
     {{ g.icons['edit'].render(id='mod_thread_link') }}
   {% endif %}
   {# {{ g.icons['tag'].render(title='Label This', extra_css='thread_tag') }}   these labels aren't used anywhere ... #}
-  {{ g.icons['feed'].render(href='feed.rss', title='Follow This', extra_css='thread_feed0') }}
+  {{ g.icons['feed'].render(href='feed.rss', title='Follow This', extra_css='thread_feed0', rel='nofollow') }}
   {{ c.thread_subscription_form.display(value=thread.subscribed(), action='subscribe', style='icon', thing='topic') }}
 {% endblock %}
 

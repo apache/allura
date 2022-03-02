@@ -29,7 +29,7 @@
           title='Send Email to Create a New Topic',
           href=h.really_unicode(discussion.email_link(subject=None))) }}
   {% endif %}
-  {{ g.icons['feed'].render(href='feed.rss') }}
+  {{ g.icons['feed'].render(href='feed.rss',rel='nofollow') }}
 {% endblock %}
 
 {% block edit_box %}

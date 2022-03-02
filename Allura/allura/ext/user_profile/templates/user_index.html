@@ -32,7 +32,7 @@
 {% endblock %}
 
 {% block actions %}
-  {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow') }}
+  {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow', rel='nofollow') }}
 {% endblock %}
 
 {% block nav_menu %}

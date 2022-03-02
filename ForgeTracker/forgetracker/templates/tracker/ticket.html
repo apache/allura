@@ -34,7 +34,7 @@
 {% set editable = h.has_access(ticket, 'update') and not ticket.deleted %}
 
 {% block actions %}
-  {{ g.icons['feed'].render(href='feed.rss', title='Follow this Ticket') }}
+  {{ g.icons['feed'].render(href='feed.rss', title='Follow this Ticket', rel='nofollow') }}
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
 {% endif %}
