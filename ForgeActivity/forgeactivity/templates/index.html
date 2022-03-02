@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block actions %}
-    {{ g.icons['feed'].render(href='feed.rss', title='RSS') }}
+    {{ g.icons['feed'].render(href='feed.rss', title='RSS', rel='nofollow') }}
     {% if c.user and c.user != c.user.anonymous() and followee != c.user %}
         {{c.follow_toggle.display(following=following)}}
     {% endif %}

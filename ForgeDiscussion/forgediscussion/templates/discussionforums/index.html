@@ -24,7 +24,7 @@
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
 {% block actions %}
-  {{ g.icons['feed'].render(href='feed.rss', extra_css='follow', title='Follow') }}
+  {{ g.icons['feed'].render(href='feed.rss', extra_css='follow', title='Follow', rel='nofollow') }}
 {% endblock %}
 
 {% if h.has_access(c.app, 'configure')() and (not hide_forum) %}

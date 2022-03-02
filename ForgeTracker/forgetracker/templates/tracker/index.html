@@ -31,7 +31,7 @@
 
 {% block actions %}
   {{ lib.maximize_content_button() }}
-    {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow') }}
+    {{ g.icons['feed'].render(href=c.app.url + 'feed.rss', title='Follow', rel='nofollow') }}
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
   {% endif %}

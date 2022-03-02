@@ -68,7 +68,7 @@ form.tarball button:hover {
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}
-{{ g.icons['feed'].render(href='{}feed/'.format(c.app.url)) }}
+{{ g.icons['feed'].render(href='{}feed/'.format(c.app.url), rel='nofollow') }}
 {% endblock %}
 
 {% block content %}

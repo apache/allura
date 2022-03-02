@@ -30,7 +30,7 @@
   {% if c.user and c.user != c.user.anonymous() %}
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
   {% endif %}
-  {{ g.icons['feed'].render(href='feed.rss', title='RSS') }}
+  {{ g.icons['feed'].render(href='feed.rss', title='RSS', rel='nofollow') }}
 {% endblock %}
 
 {% block content %}

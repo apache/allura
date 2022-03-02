@@ -32,7 +32,7 @@
 {% block actions %}
   {{ lib.maximize_content_button() }}
   {% set feed_url = tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort)) %}
-  {{ g.icons['feed'].render(href=feed_url) }}
+  {{ g.icons['feed'].render(href=feed_url, rel='nofollow') }}
 {% if allow_edit and count != 0 %}
   {% set bulk_edit_url = tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter)) %}
   {{ g.icons['edit'].render(href=bulk_edit_url, title='Bulk Edit') }}
