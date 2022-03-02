@@ -652,11 +652,11 @@ def test_markdown_link_length_limits():
         text = g.markdown.convert('See [this is 26 characters long](Home)')
         assert 'href="/p/test/wiki-len/Home/">this is 26 characters long</a>' in text, text  # {0,12} fails {0,13} ok
 
-        # breaking point, currently.  Would be nice if this worked and made a real link:
-        char110long = '1234567890'*11
-        text = g.markdown.convert(f'See [{char110long}](Home)')
-        assert f'<span>[{char110long}]</span>(Home)' in text, text  # current limitation, not a link
-        # assert f'href="/p/test/wiki-len/Home/">{char110long}</a>' in text, text  # ideal output
+        # limit, currently
+        charSuperLong = '1234567890'*21
+        text = g.markdown.convert(f'See [{charSuperLong}](Home)')
+        assert f'<span>[{charSuperLong}]</span>(Home)' in text, text  # current limitation, not a link
+        # assert f'href="/p/test/wiki-len/Home/">{charSuperLong}</a>' in text, text  # ideal output
 
 
 @td.with_wiki

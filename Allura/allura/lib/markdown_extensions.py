@@ -51,7 +51,7 @@ SHORT_REF_RE = markdown.inlinepatterns.NOIMG + r'\[([^\]]+)\]'
 
 # FORGE_LINK_RE copied from markdown pre 3.0's LINK_RE
 # TODO: replace these with newer approach, see ForgeLinkPattern
-NOBRACKET = r'[^\]\[]{0,50}'  # "*" changed to {0,50} for performance mitigation
+NOBRACKET = r'[^\]\[]{0,100}'  # "*" changed to {0,100} for performance mitigation
 BRK = (
     r'\[(' +
     (NOBRACKET + r'(\[')*6 +
