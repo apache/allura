@@ -298,6 +298,17 @@ class ForgeTrackerApp(Application):
             self.config.options.mount_label,
             '.')]
 
+    def sitemap_xml(self):
+        """
+        Used for generating sitemap.xml.
+        If the root page has default content, omit it from the sitemap.xml.
+        Assumes :attr:`main_menu` will return an entry pointing to the root page.
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
+        if self.should_noindex():
+            return []
+        return self.main_menu()
+
     @property
     @h.exceptionless([], log)
     def sitemap(self):
@@ -305,6 +316,10 @@ class ForgeTrackerApp(Application):
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
+
+    def should_noindex(self):
+        has_ticket = TM.Ticket.query.get(app_config_id=self.config._id, deleted=False)
+        return has_ticket is None
 
     def admin_menu(self):
         admin_url = c.project.url() + 'admin/' + \

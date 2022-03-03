@@ -84,6 +84,21 @@ class TestApp:
         TM.Ticket.new()
         assert_equal(2, tickets_stats_24hr())
 
+    @td.with_tracker
+    def test_sitemap_xml(self):
+        assert_equal([], c.app.sitemap_xml())
+        TM.Ticket.new()
+        assert_equal(1, len(c.app.sitemap_xml()))
+
+    @td.with_tracker
+    def test_sitemap_xml_ignored(self):
+        TM.Ticket.new(form_fields=dict(deleted=True))
+        assert_equal([], c.app.sitemap_xml())
+        # still add to sitemap even if only tickets are closed
+        TM.Ticket.new(form_fields=dict(
+            status=c.app.globals.closed_status_names[0]))
+        assert_equal(1, len(c.app.sitemap_xml()))
+
 
 class TestBulkExport(TrackerTestController):
 
