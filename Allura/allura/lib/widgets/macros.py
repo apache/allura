@@ -27,12 +27,6 @@ class Include(ew.Widget):
     }
 
 
-class GittipButton(ew.Widget):
-    template = 'jinja:allura:templates/widgets/gittip_button.html'
-    params = ['username']
-    project = None
-
-
 class NeighborhoodFeeds(ew.Widget):
     template = 'jinja:allura:templates/macro/neighborhood_feeds.html'
     params = ['feeds']

@@ -567,7 +567,7 @@ class ForgeHTMLSanitizerFilter(html5lib.filters.sanitizer.Filter):
 
         self.valid_iframe_srcs = ('https://www.youtube.com/embed/',
                                   'https://www.youtube-nocookie.com/embed/',
-                                  'https://www.gittip.com/')
+                                  )
         self._prev_token_was_ok_iframe = False
 
     def sanitize_token(self, token):

@@ -317,15 +317,6 @@ def project_screenshots():
     return response
 
 
-@macro()
-def gittip_button(username):
-    from allura.lib.widgets.macros import GittipButton
-    button = GittipButton(username=username)
-    g.resource_manager.register(button)
-    response = button.display(username=username)
-    return response
-
-
 def parse_repo(repo):
     if not repo:
         return None
