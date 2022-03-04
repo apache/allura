@@ -14,7 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
+from __future__ import annotations
 
 """The application's Globals object"""
 
@@ -41,7 +41,7 @@ from tg import request
 from tg import tmpl_context as c
 from paste.deploy.converters import asbool, asint, aslist
 from pypeline.markup import markup as pypeline_markup
-from ming.odm import session
+from ming.odm import session, MappedClass
 
 import ew as ew_core
 import ew.jinja2_ew as ew
@@ -90,10 +90,12 @@ class ForgeMarkdown(markdown.Markdown):
             return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
 
-    def cached_convert(self, artifact, field_name):
-        """Convert ``artifact.field_name`` markdown source to html, caching
+    def cached_convert(self, artifact: MappedClass, field_name: str) -> str:
+        """
+        Convert ``artifact.field_name`` markdown source to html, caching
         the result if the render time is greater than the defined threshold.
 
+        :param artifact: often an artifact, but also can be Neighborhood, OAuthConsumerToken, etc
         """
         source_text = getattr(artifact, field_name)
         cache_field_name = field_name + '_cache'
@@ -130,10 +132,14 @@ class ForgeMarkdown(markdown.Markdown):
         if "[[" in source_text:
             if render_time > float(config.get('markdown_cache_threshold.nocache', 0.5)):
                 try:
-                    url = artifact.url()
-                except NotImplementedError:
-                    url = ''
-                log.info(f'Not saving markdown cache since [[ means it might have a dynamic macro.  Took {render_time:.03}s on {artifact.index_id()} {url}')
+                    details = artifact.index_id()
+                except Exception:
+                    details = str(artifact._id)
+                try:
+                    details += ' ' + artifact.url()
+                except Exception:
+                    pass
+                log.info(f'Not saving markdown cache since [[ means it might have a dynamic macro.  Took {render_time:.03}s on {details}')
             return html
 
         if threshold is not None and render_time > threshold:
