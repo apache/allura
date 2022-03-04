@@ -153,7 +153,7 @@
         sticky: false,
         title: '',
         sanitize: true,
-        tmpl: '<div class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><h6><%=title%></h6><% } %><div class="content"><%=message%></div></div>',
+        tmpl: '<div class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><h6><%=title%></h6><% } %><div class="content"><pre><%=message%></pre></div></div>',
         stickyClass: 'notify-sticky',
 		persistentClass: 'notify-persistent',
 		persistentCookie: 'notify-persistent-closed',
