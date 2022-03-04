@@ -187,7 +187,7 @@ testfixtures==6.10.0
     # via -r requirements.in
 textile==3.0.4
     # via pypeline
-timermiddleware==0.5.1
+timermiddleware==0.5.2
     # via -r requirements.in
 translationstring==1.4
     # via colander
