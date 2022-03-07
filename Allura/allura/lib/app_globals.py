@@ -16,6 +16,8 @@
 #       under the License.
 from __future__ import annotations
 
+import re
+
 """The application's Globals object"""
 
 import logging
@@ -60,6 +62,7 @@ from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
+from allura.lib.macro import uncacheable_macros_names
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.solr import MockSOLR, make_solr_from_config
@@ -89,6 +92,11 @@ class ForgeMarkdown(markdown.Markdown):
             escaped = cgi.escape(escaped)
             return Markup("""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
+
+    @LazyProperty
+    def uncacheable_macro_regex(self):
+        regex_names = '|'.join(uncacheable_macros_names())
+        return re.compile(rf"\[\[\s*({regex_names})\b")
 
     def cached_convert(self, artifact: MappedClass, field_name: str) -> str:
         """
@@ -128,8 +136,7 @@ class ForgeMarkdown(markdown.Markdown):
                      '"markdown_cache_threshold" must be a float.')
 
         # Check if contains macro and never cache
-        # TODO: more precise search for [[include or [[members etc (all _macros). Or even track if one ran or not
-        if "[[" in source_text:
+        if self.uncacheable_macro_regex.search(source_text):
             if render_time > float(config.get('markdown_cache_threshold.nocache', 0.5)):
                 try:
                     details = artifact.index_id()
@@ -139,7 +146,7 @@ class ForgeMarkdown(markdown.Markdown):
                     details += ' ' + artifact.url()
                 except Exception:
                     pass
-                log.info(f'Not saving markdown cache since [[ means it might have a dynamic macro.  Took {render_time:.03}s on {details}')
+                log.info(f'Not saving markdown cache since it has a dynamic macro.  Took {render_time:.03}s on {details}')
             return html
 
         if threshold is not None and render_time > threshold:

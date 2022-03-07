@@ -887,9 +887,35 @@ class TestCachedMarkdown(unittest.TestCase):
             self.assertEqual(html, self.expected_html)
             self.assertIsInstance(html, Markup)
             self.assertFalse(convert_func.called)
-            self.post.text = "text [[macro]] pass"
+            self.post.text = "text [[include]] pass"
             html = self.md.cached_convert(self.post, 'text')
             self.assertTrue(convert_func.called)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
+    def test_cacheable_macro(self):
+        # cachable
+        self.post.text = "text [[img src=...]] pass"
+        del self.post.text_cache
+        self.md.cached_convert(self.post, 'text')
+        assert self.post.text_cache.html
+
+        # cachable, its not even a macro!
+        self.post.text = "text [[ blah"
+        del self.post.text_cache
+        self.md.cached_convert(self.post, 'text')
+        assert self.post.text_cache.html
+
+        # not cacheable
+        self.post.text = "text [[include file=...]] pass"
+        del self.post.text_cache
+        self.md.cached_convert(self.post, 'text')
+        assert not self.post.text_cache.html
+
+        # not cacheable
+        self.post.text = "text [[   \n   include file=... ]] pass"
+        del self.post.text_cache
+        self.md.cached_convert(self.post, 'text')
+        assert not self.post.text_cache.html
 
     @patch.dict('allura.lib.app_globals.config', {})
     def test_no_threshold_defined(self):

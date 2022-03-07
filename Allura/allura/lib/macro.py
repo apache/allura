@@ -15,10 +15,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import annotations
+
 import cgi
 import random
 import logging
 import traceback
+from dataclasses import dataclass
+from typing import Callable
+
 import six.moves.urllib.parse
 import six.moves.urllib.request
 import six.moves.urllib.error
@@ -41,16 +46,36 @@ import six
 
 log = logging.getLogger(__name__)
 
-_macros = {}
+
+@dataclass
+class RegisteredMacro:
+    func: Callable
+    context: str
+    cacheable: bool
+
+
+_macros: dict[str, RegisteredMacro] = {}
+
+
+def uncacheable_macros_names():
+    return [name for name, m in _macros.items() if not m.cacheable]
 
 
 class macro:
+    """
+    Decorator to declare a function is a custom markdown macro
+    """
 
-    def __init__(self, context=None):
+    def __init__(self, context: str = None, cacheable: bool = False):
+        """
+        :param context: either "neighborhood-wiki" or "userproject-wiki" to limit the macro to be used in those contexts
+        :param cacheable: indicates if its ok to cache the macro's output permanently
+        """
         self._context = context
+        self._cacheable = cacheable
 
     def __call__(self, func):
-        _macros[func.__name__] = (func, self._context)
+        _macros[func.__name__] = RegisteredMacro(func, self._context, self._cacheable)
         return func
 
 
@@ -87,9 +112,11 @@ class parse:
             return f'[[Error parsing {s}: {ex}]]'
 
     def _lookup_macro(self, s):
-        macro, context = _macros.get(s, (None, None))
-        if context is None or context == self._context:
-            return macro
+        macro = _macros.get(s)
+        if not macro:
+            return None
+        elif macro.context is None or macro.context == self._context:
+            return macro.func
         else:
             return None
 
@@ -394,7 +421,7 @@ def include(ref=None, repo=None, **kw):
     return response
 
 
-@macro()
+@macro(cacheable=True)
 def img(src=None, **kw):
     attrs = ('%s="%s"' % t for t in kw.items())
     included = request.environ.setdefault('allura.macro.att_embedded', set())
@@ -439,7 +466,7 @@ def members(limit=20):
     return response
 
 
-@macro()
+@macro(cacheable=True)
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
     endpoint = oembed.OEmbedEndpoint('https://www.youtube.com/oembed',
