@@ -666,29 +666,17 @@ class TestProjectAdmin(TestController):
                 user_id=uid, project_id=p._id, app_config_id=ac._id)
             assert sub, 'New admin not subscribed to app %s' % ac
 
-    def test_admin_unsubscriptions(self):
         """
         When user is removed from admins group then user must be unsubscribed
         from all the tools in the project
         """
-        r = self.app.get('/admin/groups/')
-        admin_holder = r.html.find(
-            'table', {'id': 'usergroup_admin'}).findAll('tr')[1]
-        admin_id = admin_holder['data-group']
-        with audits('add user test-user to Admin'):
-            self.app.post('/admin/groups/add_user', params={
-                'role_id': admin_id,
-                'username': 'test-user'})
-        p_nbhd = M.Neighborhood.query.get(name='Projects')
-        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
-        uid = M.User.by_username('test-user')._id
+        self.app.post('/admin/groups/remove_user', params={
+            'role_id': admin_id,
+            'username': 'test-user'})
         for ac in p.app_configs:
-            M.Mailbox.unsubscribe(
-                user_id=uid, project_id=p._id, app_config_id=ac._id
-            )
             sub = M.Mailbox.subscribed(
                 user_id=uid, project_id=p._id, app_config_id=ac._id)
-        assert not sub, 'New admin not unsubscribed to app %s' % ac
+            assert not sub, 'New admin not unsubscribed to app %s' % ac
 
     def test_new_user_subscriptions(self):
         """Newly added user must not be subscribed to all the tools in the project if he is not admin"""
