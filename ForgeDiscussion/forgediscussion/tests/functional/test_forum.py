@@ -367,7 +367,7 @@ class TestForum(TestController):
         form['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
         form.submit()
         r = self.app.get('/discussion/')
-        assert_equal(len(r.html.findAll('a', rel='nofollow')), 1)
+        assert_equal(len(r.html.findAll('a', rel='nofollow')), 2)
 
     def test_forum_search(self):
         self.app.get('/discussion/search')
