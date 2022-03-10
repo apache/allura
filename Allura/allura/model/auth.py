@@ -853,8 +853,8 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
             url=h.absurl(self.url()),
         )
 
-    def registration_date(self):
-        p = plugin.AuthenticationProvider.get(request)
+    def registration_date(self, provider=None):
+        p = provider if provider else plugin.AuthenticationProvider.get(request)
         return p.user_registration_date(self)
 
 
