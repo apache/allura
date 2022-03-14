@@ -85,31 +85,27 @@ class parse:
         self._context = context
 
     def __call__(self, s):
+        if s.startswith('quote '):
+            return '[[' + s[len('quote '):] + ']]'
         try:
-            if s.startswith('quote '):
-                return '[[' + s[len('quote '):] + ']]'
-            try:
-                parts = h.shlex_split(s)
-                if not parts:
-                    return '[[' + s + ']]'
-                macro = self._lookup_macro(parts[0])
-                if not macro:
-                    return '[[' + s + ']]'
-                for t in parts[1:]:
-                    if '=' not in t:
-                        return '[-%s: missing =-]' % ' '.join(parts)
-                args = dict(t.split('=', 1) for t in parts[1:])
-                response = macro(**h.encode_keys(args))
-                return response
-            except (ValueError, TypeError) as ex:
-                log.warn('macro error.  Upwards stack is %s',
-                         ''.join(traceback.format_stack()),
-                         exc_info=True)
-                msg = cgi.escape(f'[[{s}]] ({repr(ex)})')
-                return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
-        except Exception as ex:
-            raise
-            return f'[[Error parsing {s}: {ex}]]'
+            parts = h.shlex_split(s)
+            if not parts:
+                return '[[' + s + ']]'
+            macro = self._lookup_macro(parts[0])
+            if not macro:
+                return '[[' + s + ']]'
+            for t in parts[1:]:
+                if '=' not in t:
+                    return '[-%s: missing =-]' % ' '.join(parts)
+            args = dict(t.split('=', 1) for t in parts[1:])
+            response = macro(**h.encode_keys(args))
+            return response
+        except (ValueError, TypeError) as ex:
+            log.warn('macro error.  Upwards stack is %s',
+                     ''.join(traceback.format_stack()),
+                     exc_info=True)
+            msg = cgi.escape(f'[[{s}]] ({repr(ex)})')
+            return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
 
     def _lookup_macro(self, s):
         macro = _macros.get(s)
