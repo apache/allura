@@ -162,6 +162,9 @@ class Artifact(MappedClass, SearchIndexable):
         :return: list of :attr:`allura.model.index.ArtifactReference._id`'s
 
         """
+        if hasattr(self, '_backrefs'):
+            return self._backrefs
+
         q = ArtifactReference.query.find(dict(references=self.index_id()))
         return [aref._id for aref in q]
 

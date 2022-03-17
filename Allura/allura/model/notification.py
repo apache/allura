@@ -35,6 +35,7 @@ Periodically:
 '''
 
 import logging
+from allura.lib.decorators import memoize
 from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
