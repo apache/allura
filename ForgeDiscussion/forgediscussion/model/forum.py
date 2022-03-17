@@ -32,6 +32,7 @@ from allura import model as M
 from allura.model.notification import MailFooter
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.decorators import memoize
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
@@ -186,6 +187,7 @@ class ForumThread(M.Thread):
     def primary(self):
         return self
 
+    @memoize
     def subscribed(self, user=None, include_parents=True):
         subbed = super().subscribed(user=user, include_parents=include_parents)
         if subbed:

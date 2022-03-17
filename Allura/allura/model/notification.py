@@ -35,6 +35,7 @@ Periodically:
 '''
 
 import logging
+from allura.lib.decorators import memoize
 from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -515,6 +516,7 @@ class Mailbox(MappedClass):
             artifact_index_id=artifact_index_id,
             topic=topic))
 
+    @memoize
     @classmethod
     def subscribed(
             cls, user_id=None, project_id=None, app_config_id=None,

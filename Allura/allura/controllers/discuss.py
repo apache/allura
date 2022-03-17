@@ -44,6 +44,7 @@ from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
 
 from allura.model.auth import User
+from allura.model.artifact import ArtifactReference
 from .attachments import AttachmentsController, AttachmentController
 from .feed import FeedArgs, FeedController
 import six
@@ -206,6 +207,13 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         M.session.artifact_orm_session._get().skip_mod_date = True
         M.session.artifact_orm_session._get().skip_last_updated = True
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
+
+        # bulk fetch backrefs to save on many queries within EW
+        index_ids = [a.index_id() for a in self.thread.discussion.posts]
+        q = ArtifactReference.query.find(dict(references={'$in': index_ids})).all()
+        for a in self.thread.discussion.posts:
+            a._backrefs = [aref._id for aref in q if a.index_id() in (aref.references or [])]
+
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
                     page=int(page),
