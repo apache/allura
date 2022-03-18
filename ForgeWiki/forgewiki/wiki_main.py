@@ -276,7 +276,8 @@ The wiki uses [Markdown](%s) syntax.
             links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail']))
         if not admin_menu:
             links += [SitemapEntry(''),
-                      SitemapEntry('Formatting Help', '/nf/markdown_syntax', extra_html_attrs={'target': '_blank'})]
+                      SitemapEntry('Formatting Help', '/nf/markdown_syntax',
+                                   extra_html_attrs={'target': '_blank', 'rel': 'nofollow'})]
         return links
 
     def admin_menu(self, skip_common_menu=False):
@@ -287,7 +288,6 @@ The wiki uses [Markdown](%s) syntax.
         if not self.show_left_bar and not skip_common_menu:
             links += self.create_common_wiki_menu(has_create_access=True, admin_menu=True)
         links += super().admin_menu(force_options=True)
-
         return links
 
     @h.exceptionless([], log)
