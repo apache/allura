@@ -126,6 +126,29 @@ class ForgeDiscussionApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
+    def sitemap_xml(self):
+        """
+        Used for generating sitemap.xml.
+        If the root page has default content, omit it from the sitemap.xml.
+        Assumes :attr:`main_menu` will return an entry pointing to the root page.
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
+        if self.should_noindex():
+            return []
+        return self.main_menu()
+
+    def should_noindex(self):
+        forums = self.forums
+        for forum in forums:
+            post = DM.ForumPost.query.get(
+                discussion_id=forum._id,
+                status='ok',
+                deleted=False,
+            )
+            if post:
+                return False
+        return True
+
     @property
     def forums(self):
         return DM.Forum.query.find(dict(app_config_id=self.config._id)).all()
