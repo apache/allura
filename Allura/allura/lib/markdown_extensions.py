@@ -488,6 +488,8 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             # just make sure no spaces
             val = val.replace(' ', '%20')
             tag[attr] = val
+        if 'markdown_syntax' in val:
+            tag['rel'] = 'nofollow'
         if '://' in val:
             if is_nofollow_url(val):
                 tag['rel'] = 'nofollow'

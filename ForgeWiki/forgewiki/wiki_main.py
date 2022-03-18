@@ -248,12 +248,13 @@ The wiki uses [Markdown](%s) syntax.
         if has_create_access:
             links += [SitemapEntry('Create Page', self.url + 'create_wiki_page/',
                                    ui_icon=g.icons['add'],
-                                   className='admin_modal')]
+                                   className='admin_modal',
+                                   extra_html_attrs={'rel': 'nofollow'})]
         if not admin_menu:
             links += [SitemapEntry(''),
-                      SitemapEntry('Wiki Home', self.url, className='wiki_home')]
-        links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
-                  SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
+                      SitemapEntry('Wiki Home', self.url, className='wiki_home', extra_html_attrs={'rel': 'nofollow'})]
+        links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/', extra_html_attrs={'rel': 'nofollow'}),
+                  SitemapEntry('Browse Labels', self.url + 'browse_tags/', extra_html_attrs={'rel': 'nofollow'})]
         discussion = self.config.discussion
         pending_mod_count = M.Post.query.find({
             'discussion_id': discussion._id,
@@ -264,7 +265,7 @@ The wiki uses [Markdown](%s) syntax.
             links.append(
                 SitemapEntry(
                     'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['moderate'],
-                    small=pending_mod_count))
+                    small=pending_mod_count, extra_html_attrs={'rel': 'nofollow'}))
         if not c.user.is_anonymous() and not admin_menu:
             subscribed = M.Mailbox.subscribed(app_config_id=self.config._id)
             subscribe_action = 'unsubscribe' if subscribed else 'subscribe'
@@ -273,21 +274,23 @@ The wiki uses [Markdown](%s) syntax.
                 '' if subscribed else ' to wiki')
             subscribe_url = '{}#toggle-{}'.format(self.url + 'subscribe', subscribe_action)
             links.append(SitemapEntry(None))
-            links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail']))
+            links.append(SitemapEntry(subscribe_title, subscribe_url, ui_icon=g.icons['mail'],
+                                      extra_html_attrs={'rel': 'nofollow'}))
         if not admin_menu:
             links += [SitemapEntry(''),
-                      SitemapEntry('Formatting Help', '/nf/markdown_syntax', extra_html_attrs={'target': '_blank'})]
+                      SitemapEntry('Formatting Help', '/nf/markdown_syntax',
+                                   extra_html_attrs={'target': '_blank', 'rel': 'nofollow'})]
         return links
 
     def admin_menu(self, skip_common_menu=False):
         links = [SitemapEntry('Set Home',
                               self.admin_url + 'home',
-                              className='admin_modal')]
+                              className='admin_modal',
+                              extra_html_attrs={'rel': 'nofollow'})]
 
         if not self.show_left_bar and not skip_common_menu:
             links += self.create_common_wiki_menu(has_create_access=True, admin_menu=True)
         links += super().admin_menu(force_options=True)
-
         return links
 
     @h.exceptionless([], log)

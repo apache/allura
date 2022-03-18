@@ -664,14 +664,16 @@ class Application:
         links = []
         if self.permissions and has_access(c.project, 'admin')():
             links.append(
-                SitemapEntry('Permissions', admin_url + 'permissions'))
+                SitemapEntry('Permissions', admin_url + 'permissions', extra_html_attrs={'rel': 'nofollow'}))
         if force_options or len(self.config_options) > 3:
             links.append(
-                SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
+                SitemapEntry('Options', admin_url + 'options', className='admin_modal',
+                             extra_html_attrs={'rel': 'nofollow'}))
         links.append(
-            SitemapEntry('Rename', admin_url + 'edit_label', className='admin_modal'))
+            SitemapEntry('Rename', admin_url + 'edit_label', className='admin_modal',
+                         extra_html_attrs={'rel': 'nofollow'}))
         if len(self._webhooks) > 0:
-            links.append(SitemapEntry('Webhooks', admin_url + 'webhooks'))
+            links.append(SitemapEntry('Webhooks', admin_url + 'webhooks', extra_html_attrs={'rel': 'nofollow'}))
         return links
 
     @LazyProperty
@@ -693,6 +695,7 @@ class Application:
                 label='Delete Everything',
                 url=self.admin_url + 'delete',
                 className='admin_modal',
+                extra_html_attrs={'rel': 'nofollow'},
             )
 
     def handle_message(self, topic, message):
