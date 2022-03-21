@@ -670,31 +670,6 @@ def config_with_prefix(d, prefix):
                 if k.startswith(prefix)}
 
 
-@contextmanager
-def twophase_transaction(*engines):
-    connections = [
-        e.contextual_connect()
-        for e in engines]
-    txns = []
-    to_rollback = []
-    try:
-        for conn in connections:
-            txn = conn.begin_twophase()
-            txns.append(txn)
-            to_rollback.append(txn)
-        yield
-        to_rollback = []
-        for txn in txns:
-            txn.prepare()
-            to_rollback.append(txn)
-        for txn in txns:
-            txn.commit()
-    except Exception:
-        for txn in to_rollback:
-            txn.rollback()
-        raise
-
-
 def paging_sanitizer(limit, page, total_count=sys.maxsize, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to
     valid ranges based on total_count.
