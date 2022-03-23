@@ -49,6 +49,29 @@ class TestApp:
         c.project.uninstall_app('blog')
         assert not BM.BlogPost.query.get(title='Test title')
 
+    @td.with_tool('test', 'Blog', 'blog')
+    def test_sitemap_xml(self):
+        assert_equal([], c.app.sitemap_xml())
+        BM.BlogPost.new(
+            title='Blog Title',
+            state='draft',
+            text='This is my first blog Post',
+        )
+        assert_equal([], c.app.sitemap_xml())
+        BM.BlogPost.new(
+            title='Blog Title',
+            state='published',
+            text='This is my first blog Post',
+            deleted=True
+        )
+        assert_equal([], c.app.sitemap_xml())
+        BM.BlogPost.new(
+            title='Blog Title',
+            state='published',
+            text='This is my first blog Post',
+        )
+        assert_equal(1, len(c.app.sitemap_xml()))
+
 
 class TestBulkExport:
 

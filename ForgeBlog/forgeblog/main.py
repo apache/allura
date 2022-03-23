@@ -155,6 +155,29 @@ class ForgeBlogApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
+    def sitemap_xml(self):
+        """
+        Used for generating sitemap.xml.
+        If the root page has default content, omit it from the sitemap.xml.
+        Assumes :attr:`main_menu` will return an entry pointing to the root page.
+        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """
+        if self.should_noindex():
+            return []
+        return self.main_menu()
+
+    def should_noindex(self):
+        if not has_access(self, 'read'):
+            return True
+
+        post = BM.BlogPost.query.get(
+            app_config_id=self.config._id,
+            state='published',
+            deleted=False)
+        if post:
+            return False
+        return True
+
     @property
     def show_discussion(self):
         if 'show_discussion' in self.config.options:
