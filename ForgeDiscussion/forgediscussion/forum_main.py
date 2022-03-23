@@ -138,6 +138,9 @@ class ForgeDiscussionApp(Application):
         return self.main_menu()
 
     def should_noindex(self):
+        if not has_access(self, 'read'):
+            return True
+
         forums = self.forums
         for forum in forums:
             post = DM.ForumPost.query.get(
