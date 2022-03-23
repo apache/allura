@@ -167,9 +167,6 @@ class ForgeBlogApp(Application):
         return self.main_menu()
 
     def should_noindex(self):
-        if not has_access(self, 'read'):
-            return True
-
         post = BM.BlogPost.query.get(
             app_config_id=self.config._id,
             state='published',
