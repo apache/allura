@@ -277,7 +277,7 @@ The wiki uses [Markdown](%s) syntax.
         if not admin_menu:
             links += [SitemapEntry(''),
                       SitemapEntry('Formatting Help', '/nf/markdown_syntax',
-                                   extra_html_attrs={'target': '_blank'})]
+                                   extra_html_attrs={'target': '_blank', 'rel': 'nofollow'})]
         return links
 
     def admin_menu(self, skip_common_menu=False):
