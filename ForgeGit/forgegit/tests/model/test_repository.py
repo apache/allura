@@ -483,6 +483,18 @@ By Dave Brondsema''', text_body)
 
 <p>By Dave Brondsema''', html_body)
 
+    def test_commit_artifact_references(self):
+        self._setup_weird_chars_repo()
+        # commits aren't artifacts :/ but still can do some references with them
+        # commit b85dfbe message mentions [616d24f8dd4e95cadd8e93df5061f09855d1a066]
+        ref = M.ArtifactReference.query.get(_id='allura.model.repository.Commit#616d24f8dd4e95cadd8e93df5061f09855d1a066')
+        assert ref
+        assert 'b85dfbe' in ref.references[0], ref.references
+
+        otherway = M.ArtifactReference.query.get(_id='allura.model.repository.Commit#b85dfbec3a5d08677bdd402fc0338934f623a234')
+        assert otherway
+        assert not otherway.references
+
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
