@@ -346,6 +346,16 @@ class Thread(HierWidget):
         post=Post(),
         edit_post=EditPost(submit_text='Submit'))
 
+    def prepare_context(self, context):
+        context = super().prepare_context(context)
+        # bulk fetch backrefs to save on many queries within EW
+        thread: M.Thread = context['value']
+        index_ids = [a.index_id() for a in thread.discussion.posts]
+        q = M.ArtifactReference.query.find(dict(references={'$in': index_ids})).all()
+        for a in thread.discussion.posts:
+            a._backrefs = [aref._id for aref in q if a.index_id() in (aref.references or [])]
+        return context
+
     def resources(self):
         yield from super().resources()
         for w in self.widgets.values():
