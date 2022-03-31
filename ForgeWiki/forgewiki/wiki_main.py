@@ -605,13 +605,16 @@ class PageController(BaseController, FeedController):
         next = cur + 1
         hide_left_bar = not (c.app.show_left_bar)
         subscribed_to_page = M.Mailbox.subscribed(artifact=self.page)
+        latest_version = self.page.history().limit(1).first()
+        is_latest_version = cur == latest_version.version
         return dict(
             page=page,
             cur=cur, prev=prev, next=next,
             page_subscribed=subscribed_to_page,
             hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
             pagenum=pagenum, limit=limit, count=post_count,
-            noindex=c.app.should_noindex_page(self.page))
+            noindex=c.app.should_noindex_page(self.page),
+            is_latest_version=is_latest_version,)
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')

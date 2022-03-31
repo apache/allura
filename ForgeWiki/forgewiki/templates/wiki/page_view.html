@@ -20,6 +20,8 @@
 {% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
+{%  set base_url = page.url().split('?')[0] %}
+
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
 {% block header %}{{page.title}}{% if page['deleted'] %}<span> (deleted)</span>{% endif %}{% endblock %}
@@ -39,7 +41,8 @@
 <link rel="alternate" type="application/atom+xml" title="Page Atom" href="feed.atom"/>
 <link rel="alternate" type="application/rss+xml" title="Wiki RSS" href="../feed.rss"/>
 <link rel="alternate" type="application/atom+xml" title="Wiki Atom" href="../feed.atom"/>
-<link rel="canonical" href="{{ h.absurl(page.url()) }}">
+<link rel="canonical" href="{{ h.absurl(base_url) }}">
+
 {% endblock %}
 {% block body_css_class %} {{super()}} wiki-{{(page.title).replace(' ','_')}}{% endblock %}
 
@@ -50,7 +53,7 @@
       {% elif c.user.is_anonymous() and h.is_allowed_by_role(page, 'edit', '*authenticated', c.project) %}
           <a href="{{ tg.config.get('auth.login_url', '/auth/') }}">Log in to Edit</a>
       {% endif %}
-      {{ g.icons['history'].render(href='history') }}
+      {{ g.icons['history'].render(href='history',rel='nofollow') }}
   {% elif h.has_access(page, 'delete')() %}
     {{ g.icons['undelete'].render(extra_css='post-link') }}
     <div class="confirmation_dialog" style="display:none">
@@ -75,6 +78,7 @@
 {% endblock %}
 
 {% block wiki_content %}
+    {%  if not is_latest_version %}<div data-alert class="alert-box info"><p>You can find the latest version of this page <a href="{{ base_url }}" rel="nofollow">here</a></p></div>{% endif %}
 <div{% if h.has_access(page, 'edit') %} class="active-md" data-markdownlink="" {% endif %}>{{page.html_text}}</div>
 {% endblock %}
 
