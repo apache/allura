@@ -343,7 +343,9 @@ class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
                 ss = HC.query.find(
                     {'artifact_id': self.post._id, 'version': int(version)}).first()
                 if not ss:
-                    raise exc.HTTPNotFound
+                    url = '/p/{}/discussion/{}/thread/{}/{}'.format(c.project.shortname, c.forum.shortname,
+                                                                    self.thread._id, self._post_slug)
+                    utils.permanent_redirect(url)
 
                 class VersionedSnapshotTempObject(Object):
                     pass
