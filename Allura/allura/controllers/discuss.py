@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote, urlsplit, parse_qs
 from datetime import datetime
 import logging
 
@@ -189,7 +189,8 @@ class ThreadController(BaseController, FeedController, metaclass=h.ProxiedAttrMe
         self.discussion = discussion_controller.discussion
         self.thread = self.M.Thread.query.get(_id=thread_id)
         if not self.thread:
-            raise exc.HTTPNotFound
+            url = '/p/{}/discussion/{}/'.format(c.project.shortname, c.forum.shortname)
+            utils.permanent_redirect(url)
 
     @expose()
     def _lookup(self, id, *remainder):

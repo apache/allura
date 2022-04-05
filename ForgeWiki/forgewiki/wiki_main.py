@@ -21,7 +21,7 @@ import os
 from pprint import pformat
 
 import six
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote, urlencode
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash, jsonify
@@ -400,6 +400,10 @@ class RootController(BaseController, DispatchIndex, FeedController):
     def __init__(self):
         self._discuss = AppDiscussionController()
 
+    def catch_all(self, *args, **kw):
+        url = '/{}/?{}'.format(request.controller_url, urlencode(kw))
+        redirect(h.urlquote(h.really_unicode(url)))
+
     def _check_security(self):
         require_access(c.app, 'read')
 
@@ -444,7 +448,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @validate(dict(sort=v.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False),
                    page=validators.Int(if_empty=0, if_invalid=0),
-                   limit=validators.Int(if_empty=None, if_invalid=None)))
+                   limit=validators.Int(if_empty=None, if_invalid=None)),
+              error_handler=catch_all)
     def browse_pages(self, sort='alpha', show_deleted=False, page=0, limit=None, **kw):
         'list of all pages in the wiki'
         c.page_list = W.page_list
