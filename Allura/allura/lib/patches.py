@@ -115,8 +115,11 @@ def newrelic():
         '''Set NewRelic transaction name to actual controller name'''
         __traceback_hide__ = 'before_and_this'  # for paste/werkzeug shorter traces
         import newrelic.agent
-        newrelic.agent.set_transaction_name(
-            newrelic.agent.callable_name(controller))
+        controller_name = newrelic.agent.callable_name(controller)
+        # https://docs.newrelic.com/docs/apm/agents/python-agent/python-agent-api/settransactionname-python-agent-api/
+        # if a second internal request for /error/document happens, use a lower (1) priority so original name stays
+        name_priority = 1 if 'ErrorController' in controller_name else 2
+        newrelic.agent.set_transaction_name(controller_name, priority=name_priority)
         return old_controller_call(self, controller, *args, **kwargs)
 
     import newrelic.api.error_trace
