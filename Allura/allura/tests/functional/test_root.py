@@ -180,7 +180,7 @@ class TestRootController(TestController):
             arg = callable_name.call_args[0][0]
             assert_equal(arg.__wrapped__,
                          NeighborhoodController.index.__wrapped__)
-            set_transaction_name.assert_called_with('foo')
+            set_transaction_name.assert_called_with('foo', priority=2)
 
     def test_error_page(self):
         # hard to force a real error (esp. with middleware debugging being different for tests) but we can hit direct:
