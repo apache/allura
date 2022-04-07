@@ -20,7 +20,7 @@ import re
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from jinja2 import Markup
+from markupsafe import Markup
 from paste.deploy.converters import asbool
 import tg
 from tg import app_globals as g

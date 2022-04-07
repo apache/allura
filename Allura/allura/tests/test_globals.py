@@ -880,7 +880,7 @@ class TestCachedMarkdown(unittest.TestCase):
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='-0.01')
     def test_valid_cache(self):
-        from jinja2 import Markup
+        from markupsafe import Markup
         self.md.cached_convert(self.post, 'text')
         with patch.object(self.md, 'convert') as convert_func:
             html = self.md.cached_convert(self.post, 'text')

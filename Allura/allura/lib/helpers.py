@@ -56,7 +56,7 @@ from tg import response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
-from jinja2 import Markup
+from markupsafe import Markup
 from jinja2.filters import escape, do_filesizeformat
 from jinja2.utils import pass_context
 from paste.deploy.converters import asbool, aslist, asint
