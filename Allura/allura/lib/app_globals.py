@@ -48,7 +48,7 @@ from ming.odm import session, MappedClass
 import ew as ew_core
 import ew.jinja2_ew as ew
 from ming.utils import LazyProperty
-from jinja2 import Markup
+from markupsafe import Markup
 
 import allura.tasks.event_tasks
 from allura import model as M

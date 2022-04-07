@@ -20,7 +20,7 @@ import re
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from jinja2 import Markup
+from markupsafe import Markup
 from paste.deploy.converters import asbool
 import tg
 from tg import app_globals as g
@@ -123,7 +123,7 @@ class SectionBase:
         and the :attr:`template`, if :meth:`check_display` returns True.
 
         If overridden or this base class is not used, this method should
-        return either plain text (which will be escaped) or a `jinja2.Markup`
+        return either plain text (which will be escaped) or a `marksupsafe.Markup`
         instance.
         """
         if not self.check_display():

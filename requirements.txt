@@ -36,7 +36,7 @@ decorator==5.1.0
     # via -r requirements.in
 docutils==0.17.1
     # via pypeline
-easywidgets==0.3.6
+easywidgets==0.3.7
     # via -r requirements.in
 emoji==1.5.0
     # via -r requirements.in
@@ -73,7 +73,7 @@ inflection==0.5.1
     # via profanityfilter
 iso8601==0.1.16
     # via colander
-jinja2==3.0.2
+jinja2==3.1.1
     # via -r requirements.in
 markdown==3.3.6
     # via

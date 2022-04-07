@@ -33,6 +33,7 @@ from pymongo.errors import OperationFailure
 from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import aslist, asbool
 import jinja2
+import markupsafe
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -459,7 +460,7 @@ class Globals(MappedClass):
                 # mark changes text as safe, thus it wouldn't be escaped in plain-text emails
                 # html part of email is handled by markdown and it'll be
                 # properly escaped
-                yield (changed_tickets[t_id], jinja2.Markup(changes[t_id]))
+                yield (changed_tickets[t_id], markupsafe.Markup(changes[t_id]))
         mail = dict(
             sender=c.project.app_instance(self.app_config).email_address,
             fromaddr=str(c.user._id),
@@ -482,7 +483,7 @@ class Globals(MappedClass):
                 v = user.display_name if user else v
             head.append(f'- **{cf.label}**: {v}')
         tmpl_context = {'context': c, 'data':
-                        {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
+                        {'header': markupsafe.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
@@ -501,7 +502,7 @@ class Globals(MappedClass):
                         self.app_config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
                     visible_changes.append(
-                        (changed_tickets[t_id], jinja2.Markup(changes[t_id])))
+                        (changed_tickets[t_id], markupsafe.Markup(changes[t_id])))
             if visible_changes:
                 tmpl_context['data'].update({'changes': visible_changes})
                 mail.update(dict(
@@ -678,7 +679,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def link_text(self):
         text = super().link_text()
         if self.is_closed:
-            return jinja2.Markup('<s>') + text + jinja2.Markup('</s>')
+            return markupsafe.Markup('<s>') + text + markupsafe.Markup('</s>')
         return text
 
     @property

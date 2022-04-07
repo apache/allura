@@ -30,6 +30,7 @@ import six.moves.urllib.error
 
 import oembed
 import jinja2
+import markupsafe
 from operator import attrgetter
 from six.moves.urllib.parse import urlparse, urlunparse
 
@@ -504,6 +505,6 @@ def embed(url=None):
                 embed_url = embed_url.geturl()
             embed_url = embed_url.replace('www.youtube.com', 'www.youtube-nocookie.com')
             html.find('iframe')['src'] = embed_url
-        return jinja2.Markup('<p>%s</p>' % html)
+        return markupsafe.Markup('<p>%s</p>' % html)
 
     return '[[embed url=%s]]' % url

@@ -28,7 +28,7 @@ from datadiff import tools as dd
 from webob import Request
 from webob.exc import HTTPUnauthorized
 from ming.orm import ThreadLocalORMSession
-from jinja2 import Markup
+from markupsafe import Markup
 
 from allura import model as M
 from allura.lib import exceptions as exc
