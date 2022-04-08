@@ -16,11 +16,11 @@ bleach==5.0.0
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
-certifi==2021.5.30
+certifi==2021.10.8
     # via requests
 cffi==1.15.0
     # via cryptography
-charset-normalizer==2.0.4
+charset-normalizer==2.0.12
     # via requests
 colander==1.8.3
     # via -r requirements.in
@@ -65,7 +65,7 @@ html5lib==1.1
     #   textile
 httplib2==0.19.0
     # via oauth2
-idna==3.2
+idna==3.3
     # via requests
 importlib-metadata==4.11.3
     # via markdown
@@ -97,7 +97,6 @@ https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d926
     # via -r requirements.in
 oauthlib==3.0.2
     # via requests-oauthlib
-packaging==21.3
 paginate==0.5.6
     # via -r requirements.in
 paste==3.5.0
@@ -127,9 +126,7 @@ pymongo==3.11.4
     #   activitystream
     #   ming
 pyparsing==2.4.7
-    # via
-    #   httplib2
-    #   packaging
+    # via httplib2
 pypeline[creole,markdown,rst,textile]==0.5.3
     # via -r requirements.in
 pysolr==3.9.0
@@ -157,7 +154,7 @@ regex-as-re-globally==0.0.2
     # via -r requirements.in
 repoze.lru==0.7
     # via turbogears2
-requests==2.26.0
+requests==2.27.1
     # via
     #   -r requirements.in
     #   pysolr
@@ -175,7 +172,6 @@ six==1.16.0
     #   creoleparser
     #   easywidgets
     #   formencode
-    #   genshi
     #   html5lib
     #   ming
     #   mock
@@ -202,7 +198,7 @@ typing-extensions==4.1.1
     # via
     #   gitpython
     #   importlib-metadata
-urllib3==1.26.6
+urllib3==1.26.9
     # via requests
 waitress==2.1.1
     # via webtest
