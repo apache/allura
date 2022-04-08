@@ -18,7 +18,7 @@ cchardet==2.1.7
     # via -r requirements.in
 certifi==2021.5.30
     # via requests
-cffi==1.14.6
+cffi==1.15.0
     # via cryptography
 charset-normalizer==2.0.4
     # via requests
@@ -28,7 +28,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==35.0.0
+cryptography==36.0.2
     # via -r requirements.in
 datadiff==2.0.0
     # via -r requirements.in
@@ -116,7 +116,7 @@ pillow==9.0.1
     # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
-pycparser==2.20
+pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements.in
