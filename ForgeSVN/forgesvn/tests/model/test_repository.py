@@ -703,7 +703,7 @@ class _TestWithRepo(_Test):
         c.project.install_app('svn', 'test1')
         h.set_context('test', 'test1', neighborhood='Projects')
         self.repo = M.Repository(name='test1', tool='svn')
-        self.repo._impl = mock.Mock(spec=M.RepositoryImplementation())
+        self.repo._impl = mock.Mock()
         self.repo._impl.shorthand_for_commit = M.RepositoryImplementation.shorthand_for_commit
         self.repo._impl.url_for_commit = (
             lambda *a, **kw: M.RepositoryImplementation.url_for_commit(

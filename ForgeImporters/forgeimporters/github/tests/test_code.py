@@ -35,6 +35,9 @@ with_git = with_tool(test_project_with_repo, 'git', 'src', 'git')
 
 class TestGitHubRepoImporter(TestCase):
 
+    def setUp(self):
+        setup_unit_test()
+
     def _make_project(self, gh_proj_name=None):
         project = Mock()
         project.get_tool_data.side_effect = lambda *args: gh_proj_name
@@ -44,7 +47,6 @@ class TestGitHubRepoImporter(TestCase):
     @patch('forgeimporters.github.code.g')
     @patch('forgeimporters.github.code.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, M):
-        setup_unit_test()
         ghpe.return_value.get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gh_proj_name='myproject')
         u = Mock(name='c.user')

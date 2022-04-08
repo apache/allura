@@ -91,7 +91,7 @@ markupsafe==2.0.1
     #   webhelpers2
 ming==0.11.2
     # via -r requirements.in
-mock==3.0.5
+mock==4.0.3
     # via -r requirements.in
 https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
     # via -r requirements.in
@@ -174,7 +174,6 @@ six==1.16.0
     #   formencode
     #   html5lib
     #   ming
-    #   mock
     #   paste
     #   pastescript
     #   python-dateutil
