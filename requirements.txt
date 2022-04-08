@@ -144,7 +144,7 @@ pytz==2022.1
     #   -r requirements.in
     #   feedgenerator
     #   ming
-qrcode==6.1
+qrcode==7.3.1
     # via -r requirements.in
 regex==2022.3.2
     # via
@@ -178,7 +178,6 @@ six==1.16.0
     #   paste
     #   pastescript
     #   python-dateutil
-    #   qrcode
     #   webhelpers2
 smmap==5.0.0
     # via gitdb
