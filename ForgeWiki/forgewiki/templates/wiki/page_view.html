@@ -78,7 +78,7 @@
 {% endblock %}
 
 {% block wiki_content %}
-    {%  if not is_latest_version %}<div data-alert class="alert-box info"><p>You can find the latest version of this page <a href="{{ base_url }}" rel="nofollow">here</a></p></div>{% endif %}
+    {%  if not is_latest_version %}<div data-alert class="alert-box info">There is a newer version of this page. You can find it <a href="{{ base_url }}" rel="nofollow">here</a>.</div>{% endif %}
 <div{% if h.has_access(page, 'edit') %} class="active-md" data-markdownlink="" {% endif %}>{{page.html_text}}</div>
 {% endblock %}
 
