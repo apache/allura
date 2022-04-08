@@ -439,6 +439,7 @@ class Globals:
             return Markup('<em>Empty file</em>')
         # Don't use line numbers for diff highlight's, as per [#1484]
         if lexer == 'diff':
+            # FIXME: this?
             formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite', linenos=False)
         else:
             formatter = self.pygments_formatter
