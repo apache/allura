@@ -48,7 +48,7 @@ formencode==2.0.1
     # via
     #   -r requirements.in
     #   easywidgets
-future==0.17.1
+future==0.18.2
     # via timermiddleware
 genshi==0.7.6
     # via creoleparser
