@@ -12,7 +12,7 @@ beautifulsoup4==4.11.0
     # via
     #   -r requirements.in
     #   webtest
-bleach==4.1.0
+bleach==5.0.0
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
@@ -34,7 +34,7 @@ datadiff==2.0.0
     # via -r requirements.in
 decorator==5.1.1
     # via -r requirements.in
-docutils==0.17.1
+docutils==0.18.1
     # via pypeline
 easywidgets==0.4
     # via -r requirements.in
@@ -50,7 +50,7 @@ formencode==2.0.1
     #   easywidgets
 future==0.17.1
     # via timermiddleware
-genshi==0.7.3
+genshi==0.7.6
     # via creoleparser
 gitdb==4.0.9
     # via gitpython
@@ -97,8 +97,7 @@ https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d926
     # via -r requirements.in
 oauthlib==3.0.2
     # via requests-oauthlib
-packaging==21.0
-    # via bleach
+packaging==21.3
 paginate==0.5.6
     # via -r requirements.in
 paste==3.5.0
@@ -151,7 +150,9 @@ pytz==2022.1
 qrcode==6.1
     # via -r requirements.in
 regex==2022.3.2
-    # via regex-as-re-globally
+    # via
+    #   regex-as-re-globally
+    #   textile
 regex-as-re-globally==0.0.2
     # via -r requirements.in
 repoze.lru==0.7
@@ -174,6 +175,7 @@ six==1.16.0
     #   creoleparser
     #   easywidgets
     #   formencode
+    #   genshi
     #   html5lib
     #   ming
     #   mock
@@ -181,7 +183,6 @@ six==1.16.0
     #   pastescript
     #   python-dateutil
     #   qrcode
-    #   textile
     #   webhelpers2
 smmap==5.0.0
     # via gitdb
@@ -189,7 +190,7 @@ soupsieve==2.3.2
     # via beautifulsoup4
 testfixtures==6.10.0
     # via -r requirements.in
-textile==3.0.4
+textile==4.0.2
     # via pypeline
 timermiddleware==0.6.0
     # via -r requirements.in
