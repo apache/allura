@@ -38,7 +38,7 @@ docutils==0.17.1
     # via pypeline
 easywidgets==0.3.7
     # via -r requirements.in
-emoji==1.5.0
+emoji==1.7.0
     # via -r requirements.in
 feedgenerator==2.0.0
     # via -r requirements.in
