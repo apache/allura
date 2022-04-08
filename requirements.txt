@@ -112,7 +112,7 @@ pastedeploy==2.1.1
     #   pastescript
 pastescript==3.2.1
     # via -r requirements.in
-pillow==9.0.1
+pillow==9.1.0
     # via -r requirements.in
 profanityfilter==2.0.6
     # via -r requirements.in
