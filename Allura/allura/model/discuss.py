@@ -21,6 +21,7 @@ from datetime import datetime
 import typing
 
 import jinja2
+import markupsafe
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from tg import tmpl_context as c, app_globals as g
@@ -588,7 +589,7 @@ class Post(Message, VersionedArtifact, ActivityObject, ReactableArtifact):
         # For activity summary, convert Post text to html,
         # strip all tags, and truncate
         LEN = 500
-        summary = jinja2.Markup.escape(
+        summary = markupsafe.Markup.escape(
             g.markdown.cached_convert(self, 'text')).striptags()
         if len(summary) > LEN:
             split = max(summary.find(' ', LEN), LEN)

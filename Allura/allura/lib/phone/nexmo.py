@@ -22,6 +22,7 @@ import json
 
 import requests
 import jinja2
+import markupsafe
 
 from allura.lib.phone import PhoneService
 from allura.lib.utils import phone_number_hash
@@ -56,7 +57,7 @@ class NexmoPhoneService(PhoneService):
         if code is None or str(code) not in allowed_codes:
             msg = 'Failed sending request to Nexmo'
         if str(code) == '3' and msg.endswith(' number'):
-            msg = jinja2.Markup(
+            msg = markupsafe.Markup(
                 '{}{}{}'.format(
                     cgi.escape(msg),  # escape it just in case Nexmo sent some HTML we don't want through
                     '<br>Make sure you include the country code (see examples above)',

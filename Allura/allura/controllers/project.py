@@ -29,6 +29,7 @@ from tg import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
 import jinja2
+import markupsafe
 import pymongo
 
 from ming.utils import LazyProperty
@@ -175,7 +176,7 @@ class NeighborhoodController:
             session['phone_verification.number_hash'] = number_hash
             session.save()
         if 'error' in result:
-            result['error'] = jinja2.Markup.escape(result['error'])
+            result['error'] = markupsafe.Markup.escape(result['error'])
             result['error'] = h.really_unicode(result['error'])
         return result
 
@@ -187,7 +188,7 @@ class NeighborhoodController:
         number_hash = session.get('phone_verification.number_hash')
         res = p.check_phone_verification(c.user, request_id, pin, number_hash)
         if 'error' in res:
-            res['error'] = jinja2.Markup.escape(res['error'])
+            res['error'] = markupsafe.Markup.escape(res['error'])
             res['error'] = h.really_unicode(res['error'])
         return res
 

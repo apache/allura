@@ -123,7 +123,7 @@ class SectionBase:
         and the :attr:`template`, if :meth:`check_display` returns True.
 
         If overridden or this base class is not used, this method should
-        return either plain text (which will be escaped) or a `jinja2.Markup`
+        return either plain text (which will be escaped) or a `marksupsafe.Markup`
         instance.
         """
         if not self.check_display():

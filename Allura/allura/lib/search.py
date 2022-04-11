@@ -25,6 +25,7 @@ from logging import getLogger
 import bson
 import markdown
 import jinja2
+import markupsafe
 from tg import redirect, url
 from tg import tmpl_context as c, app_globals as g
 from tg import request
@@ -101,7 +102,7 @@ class SearchIndexable:
         # Convert text to plain text (It usually contains markdown markup).
         # To do so, we convert markdown into html, and then strip all html tags.
         text = g.markdown.convert(text)
-        doc['text'] = jinja2.Markup.escape(text).striptags()
+        doc['text'] = markupsafe.Markup.escape(text).striptags()
 
         # convert some date/time field types to str
         # from https://github.com/django-haystack/pysolr/blob/1a8887cb2ce1c30ef9d6570704254b4520f8a959/pysolr.py#L692
@@ -309,13 +310,13 @@ def search_app(q='', fq=None, app=True, **kw):
                 title = h.get_first(m, 'title')
                 text = h.get_first(m, 'text')
                 if title:
-                    title = (jinja2.escape(title)
-                                   .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
-                                   .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
+                    title = (markupsafe.escape(title)
+                                   .replace('#ALLURA-HIGHLIGHT-START#', markupsafe.Markup('<strong>'))
+                                   .replace('#ALLURA-HIGHLIGHT-END#', markupsafe.Markup('</strong>')))
                 if text:
-                    text = (jinja2.escape(text)
-                                  .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
-                                  .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
+                    text = (markupsafe.escape(text)
+                                  .replace('#ALLURA-HIGHLIGHT-START#', markupsafe.Markup('<strong>'))
+                                  .replace('#ALLURA-HIGHLIGHT-END#', markupsafe.Markup('</strong>')))
                 doc['title_match'] = title
                 doc['text_match'] = text or h.get_first(doc, 'text')
                 return doc
