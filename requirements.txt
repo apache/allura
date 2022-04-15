@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-activitystream==0.3.0
+activitystream==0.4.0
     # via -r requirements.in
 beaker==1.11.0
     # via -r requirements.in
@@ -36,7 +36,7 @@ decorator==5.1.0
     # via -r requirements.in
 docutils==0.17.1
     # via pypeline
-easywidgets==0.3.7
+easywidgets==0.4
     # via -r requirements.in
 emoji==1.5.0
     # via -r requirements.in
@@ -191,7 +191,7 @@ testfixtures==6.10.0
     # via -r requirements.in
 textile==3.0.4
     # via pypeline
-timermiddleware==0.5.2
+timermiddleware==0.6.0
     # via -r requirements.in
 translationstring==1.4
     # via colander
