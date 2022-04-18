@@ -12,7 +12,7 @@ beautifulsoup4==4.11.0
     # via
     #   -r requirements.in
     #   webtest
-bleach==5.0.0
+bleach[css]==5.0.0
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
@@ -93,7 +93,7 @@ ming==0.11.2
     # via -r requirements.in
 mock==4.0.3
     # via -r requirements.in
-https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip#egg=oauth2
+oauth2 @ https://github.com/joestump/python-oauth2/archive/b94f69b1ad195513547924e380d9265133e995fa.zip
     # via -r requirements.in
 oauthlib==3.2.0
     # via requests-oauthlib
@@ -127,7 +127,7 @@ pymongo==3.11.4
     #   ming
 pyparsing==2.4.7
     # via httplib2
-pypeline[creole,markdown,rst,textile]==0.5.3
+pypeline[creole,markdown,rst,textile]==0.6.0
     # via -r requirements.in
 pysolr==3.9.0
     # via -r requirements.in
@@ -152,7 +152,7 @@ regex==2022.3.15
     #   textile
 regex-as-re-globally==0.0.2
     # via -r requirements.in
-repoze.lru==0.7
+repoze-lru==0.7
     # via turbogears2
 requests==2.27.1
     # via
@@ -172,6 +172,7 @@ six==1.16.0
     #   creoleparser
     #   easywidgets
     #   formencode
+    #   genshi
     #   html5lib
     #   ming
     #   paste
@@ -188,6 +189,8 @@ textile==4.0.2
     # via pypeline
 timermiddleware==0.6.0
     # via -r requirements.in
+tinycss2==1.1.1
+    # via bleach
 translationstring==1.4
     # via colander
 turbogears2==2.3.12
@@ -204,6 +207,7 @@ webencodings==0.5.1
     # via
     #   bleach
     #   html5lib
+    #   tinycss2
 webhelpers2==2.0
     # via -r requirements.in
 webob==1.7.4
