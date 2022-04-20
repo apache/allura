@@ -21,10 +21,13 @@ FROM ubuntu:18.04
 # In order to get python3.7, we must add the deadsnakes apt repo, and install 3.7 specifically
 RUN apt-get update \
     && apt-get install software-properties-common -y --no-install-recommends \
-    && add-apt-repository ppa:deadsnakes/ppa
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && add-apt-repository ppa:git-core/ppa -y \
+    && apt-get update
+    
+RUN apt-get upgrade -y git
 
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git-core \
         python3.7 \
         python3.7-venv \
