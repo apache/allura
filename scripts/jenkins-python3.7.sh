@@ -20,18 +20,30 @@
 
 IMAGE_TAG=allura
 
+# this fixes the input device is not a TTY .. see https://github.com/docker/compose/issues/5696
+# export COMPOSE_INTERACTIVE_NO_CLI=1
+
 echo
 echo "============================================================================="
 echo "Jenkins Host Info:"
 echo "============================================================================="
+touch "foo.txt"
 echo -n 'cpu count: '; grep -c processor /proc/cpuinfo 
 echo hostname: `hostname --short`
+echo whoami: `whoami`
 echo NODE_NAME: $NODE_NAME
+echo docker: 
+docker version
+echo docker compose: 
+docker-compose version
 echo path: $PATH
 echo workspace: $WORKSPACE
 echo jenkins_home: $JENKINS_HOME
 echo home: $HOME
 echo pwd: `pwd`
+ls -lAh
+ls -lAh ./scripts/
+ls -lAh ../
 env
 
 echo
@@ -41,23 +53,13 @@ echo "==========================================================================
 rm -rf ./allura-data
 git clean -f -x  # remove test.log, nosetest.xml etc (don't use -d since it'd remove our venv dir)
 
+docker-compose down
+
 echo
 echo "============================================================================="
 echo "Run: build docker image"
 echo "============================================================================="
 docker-compose build
-
-echo
-echo "============================================================================="
-echo "Docker Container Info:"
-echo "============================================================================="
-docker-compose run web bash -c '
-echo python path: `which python; python -V`;
-echo python3.7 path: `which python3.7; python3.7 -V`;
-git --version;
-svn --version;
-echo pip: `pip3 --version`;
-echo npm: `npm --version`;'
 
 echo
 echo "============================================================================="
@@ -67,10 +69,38 @@ docker-compose run web scripts/init-docker-dev.sh
 
 echo
 echo "============================================================================="
+echo "Starting up docker containers"
+echo "============================================================================="
+docker-compose up -d web
+
+echo
+echo "============================================================================="
+echo "Docker Container Info:"
+echo "============================================================================="
+docker-compose exec -T web bash -c '
+echo python path: `which python; python -V`;
+echo python3.7 path: `which python3.7; python3.7 -V`;
+git --version;
+svn --version;
+echo pip: `pip3 --version`;
+echo npm: `npm --version`;
+echo whoami: `whoami`;
+ls -lAh /allura;
+ls -lAh /allura/;
+ls -lAh /allura/ForgeGit/forgegit/tests/data/;
+ls -lAh /allura/ForgeGit/forgegit/tests/data/*.git;
+'
+
+echo
+echo "============================================================================="
 echo "Setup: tests"
 echo "============================================================================="
 # set up test dependencies
-docker-compose run web pip install -r requirements-dev.txt
+docker-compose exec -T web pip install -q -r requirements-dev.txt
+
+# make test git repos safe to run even though owned by different user
+docker-compose exec -T web chown root:root -R /allura
+docker-compose exec -T web git config --global --add safe.directory '*'
 
 echo
 echo "============================================================================="
@@ -78,14 +108,14 @@ echo "Run: tests"
 echo "============================================================================="
 
 # use "Allura* Forge* scripts" instead of "." so that .allura-venv doesn't get checked too (and '.' gives './' prefixed results which don't work out)
-docker-compose run web pyflakes Allura* Forge* scripts | awk -F\: '{printf "%s:%s: [E]%s\n", $1, $2, $3}' > pyflakes.txt
-docker-compose run web pycodestyle Allura* Forge* scripts > pep8.txt
+docker-compose exec -T web bash -c "pyflakes Allura* Forge* scripts | awk -F\: '{printf \"%s:%s: [E]%s\n\", \$1, \$2, \$3}' > pyflakes.txt"
+docker-compose exec -T web bash -c "pycodestyle Allura* Forge* scripts > pep8.txt"
 
 # TODO: ALLURA_VALIDATION=all
-docker-compose run -e LANG=en_US.UTF-8 web ./run_tests --with-xunitmp # --with-coverage --cover-erase
+docker-compose exec -T -e LANG=en_US.UTF-8 web ./run_tests --with-xunitmp # --with-coverage --cover-erase
 retcode=$?
 
-#find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
+find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
 
 echo
 echo "============================================================================="
