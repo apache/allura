@@ -1,0 +1,25 @@
+# see https://s.apache.org/asfyaml for more information
+notifications:
+  commits:      commits@allura.apache.org
+  issues:       dev@allura.apache.org
+  pullrequests: dev@allura.apache.org
+github:
+  description: "Apache Allura - a software forge to manage source code repositories, bug reports, discussions, wiki pages, blogs, and more"
+  homepage: https://allura.apache.org/
+  labels:
+    - apache
+    - allura
+    - devops
+    - server
+    - repository
+    - wiki
+    - issue-tracker
+    - python
+    - mongodb
+    - markdown
+  features:
+    wiki: false
+    issues: false
+    projects: false
+  dependabot_alerts:  true
+  dependabot_updates: false
