@@ -20,30 +20,21 @@
 
 IMAGE_TAG=allura
 
-# this fixes the input device is not a TTY .. see https://github.com/docker/compose/issues/5696
-# export COMPOSE_INTERACTIVE_NO_CLI=1
-
 echo
 echo "============================================================================="
 echo "Jenkins Host Info:"
 echo "============================================================================="
-touch "foo.txt"
 echo -n 'cpu count: '; grep -c processor /proc/cpuinfo 
 echo hostname: `hostname --short`
 echo whoami: `whoami`
 echo NODE_NAME: $NODE_NAME
-echo docker: 
-docker version
-echo docker compose: 
-docker-compose version
+echo docker: `docker version`
+echo docker compose: `docker-compose version`
 echo path: $PATH
 echo workspace: $WORKSPACE
 echo jenkins_home: $JENKINS_HOME
 echo home: $HOME
 echo pwd: `pwd`
-ls -lAh
-ls -lAh ./scripts/
-ls -lAh ../
 env
 
 echo
@@ -85,10 +76,6 @@ svn --version;
 echo pip: `pip3 --version`;
 echo npm: `npm --version`;
 echo whoami: `whoami`;
-ls -lAh /allura;
-ls -lAh /allura/;
-ls -lAh /allura/ForgeGit/forgegit/tests/data/;
-ls -lAh /allura/ForgeGit/forgegit/tests/data/*.git;
 '
 
 echo
@@ -100,7 +87,6 @@ docker-compose exec -T web pip install -q -r requirements-dev.txt
 
 # make test git repos safe to run even though owned by different user
 docker-compose exec -T web chown root:root -R /allura
-docker-compose exec -T web git config --global --add safe.directory '*'
 
 echo
 echo "============================================================================="
@@ -115,7 +101,7 @@ docker-compose exec -T web bash -c "pycodestyle Allura* Forge* scripts > pep8.tx
 docker-compose exec -T -e LANG=en_US.UTF-8 web ./run_tests --with-xunitmp # --with-coverage --cover-erase
 retcode=$?
 
-find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
+#find . -name .coverage -maxdepth 2 | while read coveragefile; do pushd `dirname $coveragefile`; coverage xml --include='forge*,allura*'; popd; done;
 
 echo
 echo "============================================================================="

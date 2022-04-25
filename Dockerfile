@@ -49,8 +49,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# RUN git config --global --add safe.directory /allura/ForgeGit/forgegit/tests/data/*.git
-
 # up-to-date version of node & npm
 RUN curl --silent --location https://deb.nodesource.com/setup_10.x | sudo bash - && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends nodejs
