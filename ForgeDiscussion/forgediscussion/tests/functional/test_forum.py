@@ -224,8 +224,8 @@ class TestForumMessageHandling(TestController):
         thd = FM.ForumThread.query.find().first()
         url = '/discussion/testforum/thread/%s/' % thd._id
         self.app.get(url)
-        # accessing a non-existent thread should return a 404
-        self.app.get('/discussion/testforum/thread/foobar/', status=404)
+        resp = self.app.get('/discussion/testforum/thread/foobar/', status=301)
+        assert('/discussion/testforum/' in resp.location)
 
     def test_posts(self):
         # not sure why this fails when set to root (to match self.user_id)
