@@ -360,7 +360,8 @@ class PostController(BaseController, metaclass=h.ProxiedAttrMeta):
                     attachments=self.post.attachments,
                     related_artifacts=self.post.related_artifacts,
                     parent_security_context=lambda: None,
-                    last_edit_by=lambda: self.post.last_edit_by()
+                    last_edit_by=lambda: self.post.last_edit_by(),
+                    react_users=self.post.react_users
                 )
             else:
                 post = self.post
