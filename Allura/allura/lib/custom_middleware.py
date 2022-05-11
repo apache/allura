@@ -165,7 +165,7 @@ class LoginRedirectMiddleware:
             else:
                 # Don't try to re-post; the body has been lost.
                 location = tg.url(login_url)
-            r = exc.HTTPFound(location=location)
+            r = exc.HTTPFound(location=location, headers={'X-Robots-Tag': 'noindex,follow'})
             return r(environ, start_response)
         start_response(status, headers, exc_info)
         return app_iter
