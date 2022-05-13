@@ -301,12 +301,25 @@ class SMTPClient:
             log.warning('No valid addrs in %s, so not sending mail',
                         list(map(str, addrs)))
             return
+        if not self._client:
+            self._connect()
         try:
             self._client.sendmail(
                 config.return_path,
                 smtp_addrs,
                 content)
-        except Exception:
+            need_retry = False
+        except (smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError) as e:
+            log.info(f'will retry after getting this smtp error: {e!r}')
+            need_retry = True
+        except smtplib.SMTPResponseException as e:
+            if 400 <= e.smtp_code < 500:  # 4__ is "Transient Negative"
+                log.info(f'will retry after getting this smtp error: {e!r}')
+                need_retry = True
+            else:
+                raise
+        if need_retry:
+            # maybe could sleep?  or if we're in a task, reschedule it somehow?
             self._connect()
             self._client.sendmail(
                 config.return_path,
@@ -314,6 +327,7 @@ class SMTPClient:
                 content)
 
     def _connect(self):
+        log.info('connecting to SMTP server')
         if asbool(tg.config.get('smtp_ssl', False)):
             smtp_client = smtplib.SMTP_SSL(
                 tg.config.get('smtp_server', 'localhost'),
@@ -327,6 +341,7 @@ class SMTPClient:
                 timeout=float(tg.config.get('smtp_timeout', 10)),
             )
         if tg.config.get('smtp_user', None):
+            log.info('authenticating to SMTP server')
             smtp_client.login(tg.config['smtp_user'],
                               tg.config['smtp_password'])
         if asbool(tg.config.get('smtp_tls', False)):
