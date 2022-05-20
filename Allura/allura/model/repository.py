@@ -1362,6 +1362,9 @@ class Tree(MappedClass, RepoObject):
         path = path.split('/')
         obj = self
         for p in path:
+            if isinstance(obj, Blob):  # normally is Tree
+                # can get a Blob (incl git symlink in past) if it changed type in a commit
+                return None
             try:
                 obj = obj[p]
             except KeyError:
@@ -1478,7 +1481,6 @@ class Tree(MappedClass, RepoObject):
 
 
 class Blob:
-
     '''Lightweight object representing a file in the repo'''
 
     def __init__(self, tree, name, _id):
