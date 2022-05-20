@@ -896,9 +896,11 @@ class FileBrowser(BaseController):
         :return:
         '''
         try:
-            path, filename = os.path.split(self._blob.path())
             a_ci = c.app.repo.commit(prev_commit)
             a = a_ci.get_path(prev_file or self._blob.path())
+            if not isinstance(a, M.repository.Blob):
+                # could be a Tree (directory) in the previous commit, can't diff that!
+                raise TypeError()
             apath = a.path()
         except Exception:
             # prev commit doesn't have the file
