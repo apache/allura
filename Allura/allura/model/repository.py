@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 import json
 import os
 import stat
@@ -79,7 +80,7 @@ VIEWABLE_EXTENSIONS = frozenset([
 
 # Some schema types
 SUser = dict(name=str, email=str, date=datetime)
-SObjType = S.OneOf('blob', 'tree', 'submodule')
+SObjType = S.OneOf('blob', 'tree', 'submodule', 'symlink')
 
 # Used for when we're going to batch queries using $in
 QSIZE = 100
@@ -133,7 +134,7 @@ class RepositoryImplementation:
         commit'''
         raise NotImplementedError('commit_parents')
 
-    def refresh_commit_info(self, oid, lazy=True):  # pragma no cover
+    def refresh_commit_info(self, oid, seen, lazy=True):  # pragma no cover
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError('refresh_commit_info')
 
@@ -1336,7 +1337,7 @@ class Tree(MappedClass, RepoObject):
     parent = None
     name = None
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Tree | Blob:
         cache = getattr(c, 'model_cache', '') or ModelCache()
         obj = self.by_name[name]
         if obj['type'] == 'blob':
@@ -1344,6 +1345,8 @@ class Tree(MappedClass, RepoObject):
         if obj['type'] == 'submodule':
             log.info('Skipping submodule "%s"' % name)
             raise KeyError(name)
+        if obj['type'] == 'symlink':
+            return Symlink(self, name, obj['id'])
         obj = cache.get(Tree, dict(_id=obj['id']))
         if obj is None:
             oid = self.repo.compute_tree_new(
@@ -1423,11 +1426,11 @@ class Tree(MappedClass, RepoObject):
             commit.set_context(self.repo)
         commit_infos = {c._id: c.info for c in commits}
         tree_names = sorted(n.name for n in self.tree_ids)
-        blob_names = sorted(
-            n.name for n in chain(self.blob_ids, self.other_ids))
+        blob_names = sorted(n.name for n in self.blob_ids)
+        other_names = sorted(n.name for n in self.other_ids)
 
         results = []
-        for type, names in (('DIR', tree_names), ('BLOB', blob_names)):
+        for type, names in (('DIR', tree_names), ('BLOB', blob_names), ('OTHER', other_names)):
             for name in names:
                 commit_info = commit_infos.get(lcd.by_name.get(name))
                 if not commit_info:
@@ -1571,6 +1574,11 @@ class EmptyBlob(Blob):
 
     def __bool__(self):
         return False
+
+
+class Symlink(Blob):
+    # maybe this shouldn't inherit from Blob, but its handy for now and works well with git (where symlinks are blobs)
+    pass
 
 
 # this is duplicative with the LastCommit model

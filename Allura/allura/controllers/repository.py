@@ -685,9 +685,17 @@ class CommitBrowser(BaseController):
                     filepath = f['new']
                 else:
                     filepath = f
-                is_text = filepath and tree.get_blob_by_path(filepath) and tree.get_blob_by_path(filepath).has_html_view
+                is_text = False
+                fileobj_type = 'tree'
+                if filepath:
+                    fileobj = tree.get_obj_by_path(filepath)
+                    if isinstance(fileobj, M.repository.Symlink):
+                        fileobj_type = 'symlink'
+                    elif isinstance(fileobj, M.repository.Blob):
+                        fileobj_type = 'blob'
+                        is_text = fileobj.has_html_view
                 result['artifacts'].append(
-                    (t, f, 'blob' if tree.get_blob_by_path(f) else 'tree', is_text)
+                    (t, f, fileobj_type, is_text)
                 )
         count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))

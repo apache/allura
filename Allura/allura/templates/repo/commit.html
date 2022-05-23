@@ -180,6 +180,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                       });
                     </script>
                   {% endif %}
+                {% elif obj_type == 'symlink' %}
+                    <span class="empty-diff">Symlink.</span>
                 {% elif obj_type == 'tree' %}
                     <span class="empty-diff">Directory.</span>
                 {% elif not is_text %}
