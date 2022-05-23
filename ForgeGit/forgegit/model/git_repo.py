@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from __future__ import annotations
 
 import os
 import shutil
@@ -310,7 +311,7 @@ class GitImplementation(M.RepositoryImplementation):
         self.refresh_tree_info(ci.tree, seen, lazy)
         return True
 
-    def refresh_tree_info(self, tree, seen, lazy=True):
+    def refresh_tree_info(self, tree: git.objects.tree.Tree, seen: set, lazy=True):
         from allura.model.repository import Tree
         if lazy and tree.binsha in seen:
             return
@@ -330,7 +331,11 @@ class GitImplementation(M.RepositoryImplementation):
                 self.refresh_tree_info(o, seen, lazy)
                 doc.tree_ids.append(obj)
             elif o.type == 'blob':
-                doc.blob_ids.append(obj)
+                if o.mode == o.link_mode:
+                    obj.type = 'symlink'
+                    doc.other_ids.append(obj)
+                else:
+                    doc.blob_ids.append(obj)
             else:
                 obj.type = o.type
                 doc.other_ids.append(obj)

@@ -45,8 +45,10 @@
       <td class="nowrap">
         {% if dirent.kind == 'DIR' %}
           {% set icon_name = 'folder' %}
-        {% else %}
+        {% elif dirent.kind == 'BLOB' %}
           {% set icon_name = 'file' %}
+        {% else %}
+          {% set icon_name = 'star' %}
         {% endif %}
         {{ g.icons[icon_name].render(
             href=h.urlquote(dirent.href),

@@ -1038,6 +1038,23 @@ class TestGitRename(TestController):
                   .replace(' ', ''), resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
+    def test_directory_changed_type(self):
+        # change a_dir to a file; b_dir to a symlink
+        resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/')
+
+        resp_no_ws = re.sub(r'\s+', '', str(resp))
+        assert_in('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir">b_dir</a>'
+                  '</h6>'
+                  '<div id="diff-3" class="inline-diff-body">'
+                  '<span class="empty-diff">Symlink.</span>'
+                  .replace(' ', ''), resp_no_ws)
+
+    def test_symlink_in_tree(self):
+        # change a_dir to a file; b_dir to a symlink
+        resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/')
+
+        resp.mustcontain('<a class="icon" href="b_dir" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>')
+
 
 class TestGitBranch(TestController):
     def setUp(self):
