@@ -243,8 +243,7 @@ class GitImplementation(M.RepositoryImplementation):
                     url = ' at ' + request.url
                 except Exception:
                     pass
-                log.exception('Error with rev_parse(%s)%s' %
-                              (str(rev) + '^0', url))
+                log.info(f"couldn't run rev_parse({str(rev) + '^0'}){url}", exc_info=True)
         if result:
             result.set_context(self._repo)
         return result
