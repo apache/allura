@@ -17,11 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-for APP in Allura* *Forge*
-do
-    echo "# setting up $APP dependencies"
-    pushd $APP > /dev/null
-    python setup.py -q develop || echo "    # Error setting up $APP
-    # You may want to run 'pip uninstall $APP' to un-register it so you don't get further errors."
-    popd > /dev/null
-done
+# the "${...-e}" magic is inspired by this stack exchange and turns a list into a oneline
+# https://unix.stackexchange.com/a/445522
+APPS=(Allura* *Forge*)
+pip install --no-index "${APPS[@]/#/-e}"
