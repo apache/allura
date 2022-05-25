@@ -919,6 +919,12 @@ class FileBrowser(BaseController):
         if not self._blob.has_html_view:
             diff = "Cannot display: file marked as a binary type."
             return dict(a=a, b=b, diff=diff)
+            
+        if max(a.size, b.size) > asint(tg.config.get('scm.view.max_diff_bytes', 2000000)):
+            # have to check the original file size, not diff size, because difflib._mdiff inside HtmlSideBySideDiff
+            # can take an extremely long time on large files (and its even a generator)
+            diff = 'File too large to view diff'
+            return dict(a=a, b=b, diff=diff)
 
         # could consider making Blob.__iter__ do unicode conversion?
         # py2 unified_diff can handle some unicode but not consistently, so best to do ensure_str (can drop it on py3)
@@ -932,14 +938,10 @@ class FileBrowser(BaseController):
         else:
             web_session['diformat'] = fmt
             web_session.save()
+        
         if fmt == 'sidebyside':
-            if max(a.size, b.size) > asint(tg.config.get('scm.view.max_syntax_highlight_bytes', 500000)):
-                # have to check the original file size, not diff size, because difflib._mdiff inside HtmlSideBySideDiff
-                # can take an extremely long time on large files (and its even a generator)
-                diff = '<em>File too large for side-by-side view</em>'
-            else:
-                hd = HtmlSideBySideDiff()
-                diff = hd.make_table(la, lb, adesc, bdesc)
+            hd = HtmlSideBySideDiff()
+            diff = hd.make_table(la, lb, adesc, bdesc)
         else:
             # py2 unified_diff can handle some unicode but not consistently, so best to do str() and ensure_str()
             # (can drop it on py3)
