@@ -188,17 +188,18 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
     fq += kw.pop('fq', [])
     if isinstance(filter, str):  # may be stringified after a ticket filter, then bulk edit
         filter = ast.literal_eval(filter)
-    for name, values in (filter or {}).items():
-        field_name = name + '_s'
-        parts = []
-        for v in values:
-            # Specific solr syntax for empty fields
-            if v == '' or v is None:
-                part = f'(-{field_name}:[* TO *] AND *:*)'
-            else:
-                part = f'{field_name}:{escape_solr_arg(v)}'
-            parts.append(part)
-        fq.append(' OR '.join(parts))
+    if isinstance(filter, dict):
+        for name, values in (filter or {}).items():
+            field_name = name + '_s'
+            parts = []
+            for v in values:
+                # Specific solr syntax for empty fields
+                if v == '' or v is None:
+                    part = f'(-{field_name}:[* TO *] AND *:*)'
+                else:
+                    part = f'{field_name}:{escape_solr_arg(v)}'
+                parts.append(part)
+            fq.append(' OR '.join(parts))
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
