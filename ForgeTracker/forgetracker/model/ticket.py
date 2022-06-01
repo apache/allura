@@ -1306,7 +1306,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_error = e
             matches = None
         if matches:
-            count = matches.hits
             # ticket_matches is in sorted order
             ticket_matches = [ObjectId(match['id'].split('#')[1]) for match in matches.docs]
             query = cls.query.find(
@@ -1317,6 +1316,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ticket_by_id[t._id] = t
             # and pull them out in the order given by ticket_numbers
             tickets = []
+            count = 0
             for t_id in ticket_matches:
                 if t_id in ticket_by_id:
                     show_deleted = show_deleted and security.has_access(
@@ -1325,6 +1325,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                                             app_config.project.root_project if app_config else None) and
                             (show_deleted or ticket_by_id[t_id].deleted is False)):
                         tickets.append(ticket_by_id[t_id])
+                        count = count + 1
                     else:
                         count = count - 1
         return dict(tickets=tickets,
