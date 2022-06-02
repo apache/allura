@@ -105,7 +105,7 @@ class ForumController(DiscussionController):
                    limit=validators.Int(if_empty=None, if_invalid=None)))
     def index(self, threads=None, limit=None, page=0, count=0, **kw):
         if self.discussion.deleted:
-            redirect(self.discussion.url() + 'deleted')
+            raise exc.HTTPNotFound()
         limit, page, start = g.handle_paging(limit, page)
         if not c.user.is_anonymous():
             c.subscribed = M.Mailbox.subscribed(artifact=self.discussion)
@@ -121,10 +121,6 @@ class ForumController(DiscussionController):
             threads=threads.skip(start).limit(int(limit)).all(),
             limit=limit,
             page=page)
-
-    @expose('jinja:forgediscussion:templates/discussionforums/deleted.html')
-    def deleted(self):
-        return dict()
 
     @expose('json:')
     @require_post()
@@ -169,7 +165,7 @@ class ForumThreadController(ThreadController):
                    limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, limit=25, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url() + 'deleted')
+            raise exc.HTTPNotFound()
         c.thread_subscription_form = self.W.subscribe_form
         return super().index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
@@ -180,7 +176,7 @@ class ForumThreadController(ThreadController):
     def moderate(self, **kw):
         require_access(self.thread, 'moderate')
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url() + 'deleted')
+            raise exc.HTTPNotFound()
         args = self.W.moderate_thread.validate(kw, None)
         tasks.calc_forum_stats.post(self.thread.discussion.shortname)
         if args.pop('delete', None):
@@ -222,7 +218,7 @@ class ForumPostController(PostController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url() + 'deleted')
+            raise exc.HTTPNotFound()
         return super().index(**kw)
 
     @expose()
@@ -231,7 +227,7 @@ class ForumPostController(PostController):
     def moderate(self, **kw):
         require_access(self.post.thread, 'moderate')
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url() + 'deleted')
+            raise exc.HTTPNotFound()
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)
         super().moderate(**kw)
