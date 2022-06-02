@@ -89,7 +89,7 @@ markupsafe==2.0.1
     #   jinja2
     #   turbogears2
     #   webhelpers2
-ming==0.11.2
+ming==0.12.0
     # via -r requirements.in
 mock==4.0.3
     # via -r requirements.in
@@ -174,7 +174,6 @@ six==1.16.0
     #   formencode
     #   genshi
     #   html5lib
-    #   ming
     #   paste
     #   pastescript
     #   python-dateutil
