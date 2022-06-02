@@ -371,7 +371,7 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' +
                          c.app.config.options.mount_point + '/bins/', ui_icon=g.icons['search']))
         links.append(SitemapEntry('View Stats', self.config.url()
-                     + 'stats', ui_icon=g.icons['stats']))
+                     + 'stats/', ui_icon=g.icons['stats']))
         discussion = c.app.config.discussion
         pending_mod_count = M.Post.query.find({
             'discussion_id': discussion._id,
