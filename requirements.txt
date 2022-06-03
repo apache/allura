@@ -8,7 +8,7 @@ activitystream==0.4.0
     # via -r requirements.in
 beaker==1.11.0
     # via -r requirements.in
-beautifulsoup4==4.11.0
+beautifulsoup4==4.11.1
     # via
     #   -r requirements.in
     #   webtest
@@ -180,7 +180,7 @@ six==1.16.0
     #   webhelpers2
 smmap==5.0.0
     # via gitdb
-soupsieve==2.3.2
+soupsieve==2.3.2.post1
     # via beautifulsoup4
 testfixtures==6.18.5
     # via -r requirements.in
@@ -200,7 +200,7 @@ typing-extensions==4.1.1
     #   importlib-metadata
 urllib3==1.26.9
     # via requests
-waitress==2.1.1
+waitress==2.1.2
     # via webtest
 webencodings==0.5.1
     # via
