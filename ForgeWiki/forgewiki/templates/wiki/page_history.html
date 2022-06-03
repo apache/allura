@@ -22,7 +22,10 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{title}}{% endblock %}
 
-{% block header %}{{title}}{% endblock %}
+{% block header %}
+    {{title}}
+    <meta name="robots" content="noindex,follow" />
+{% endblock %}
 
 {% block actions %}
   {{ g.icons['eye'].render(href='.', title='View Page') }}
