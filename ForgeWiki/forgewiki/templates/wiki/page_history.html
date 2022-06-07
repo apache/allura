@@ -22,9 +22,12 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{title}}{% endblock %}
 
+{%  block head %}
+    <meta name="robots" content="noindex,follow" />
+{% endblock %}
+
 {% block header %}
     {{title}}
-    <meta name="robots" content="noindex,follow" />
 {% endblock %}
 
 {% block actions %}
