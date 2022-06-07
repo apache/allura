@@ -20,6 +20,12 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
+{% block head %}
+    {% if count == 0 %}
+    <meta name="robots" content="noindex, follow"/>
+    {% endif %}
+{% endblock %}
+
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Recent posts{% endblock %}
 
 {% block extra_css %}
