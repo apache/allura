@@ -44,6 +44,7 @@ class TestUserProfile(TestController):
         assert_in('No skills entered', r.html.find(None, 'skills').getText())
 
     @td.with_user_project('test-admin')
+    @mock.patch.dict(tg.config, {'use_gravatar': 'true'})
     def test_profile_user_card(self):
         user = User.by_username('test-admin')
         locals =  {

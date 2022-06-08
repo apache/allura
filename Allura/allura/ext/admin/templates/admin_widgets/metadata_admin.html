@@ -116,7 +116,7 @@
         <div class="viewer">
           No {% if c.project.is_user_project %}user{% endif %} icon.
           {{ g.icons['edit'].render(id='edit-icon', title='Upload one', show_title=True) }}
-        {% if c.project.is_user_project %}<br><small>
+        {% if c.project.is_user_project and h.asbool(tg.config.get('use_gravatar')) %}<br><small>
             Or a  <a href="http://gravatar.com/">gravatar.com</a> image will be used if available.</small>{% endif %}
         </div>
       {% endif %}
