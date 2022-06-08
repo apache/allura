@@ -23,7 +23,7 @@
 
 {% block title %}{{c.project.name}} / Admin Welcome{% endblock %}
 
-{% block header %}Welcome to your {{config.site_name}} project!<span class="title-end"></span>{% endblock %}
+{% block header %}Welcome to your {{config.site_name}} {% if c.project.is_user_project %}user-profile{% endif %} project!<span class="title-end"></span>{% endblock %}
 
 {% set tour = {
     "id": "admin-welcome",

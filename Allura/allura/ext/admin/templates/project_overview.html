@@ -21,7 +21,7 @@
 
 {% block title %}{{c.project.name}} / Metadata{% endblock %}
 
-{% block header %}Project Admin{% endblock %}
+{% block header %}{% if c.project.is_user_project %}Profile Metadata{% else %}Project Admin{% endif %}{% endblock %}
 
 {% block content %}
   {% if c.project.deleted %}
