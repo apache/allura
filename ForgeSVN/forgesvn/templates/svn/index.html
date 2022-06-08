@@ -19,7 +19,9 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
-
+{%  block head %}
+    <meta name="robots" content="noindex, follow">
+{% endblock %}
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
 {% block content %}
