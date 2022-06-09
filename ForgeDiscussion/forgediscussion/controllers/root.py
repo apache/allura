@@ -87,9 +87,11 @@ class RootController(BaseController, DispatchIndex, FeedController):
             app_config_id=c.app.config._id,
             parent_id=None, deleted=False)).all()
         forums = [f for f in forums if h.has_access(f, 'read')()]
+        noindex = all([f.num_topics == 0 for f in forums])
         return dict(forums=forums,
                     announcements=announcements,
-                    hide_forum=(not new_forum))
+                    hide_forum=(not new_forum),
+                    noindex=noindex)
 
     @expose('jinja:forgediscussion:templates/discussionforums/index.html')
     def new_forum(self, **kw):

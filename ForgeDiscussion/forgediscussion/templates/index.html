@@ -18,6 +18,12 @@
 -#}
 {% extends 'allura:templates/discussion/index.html' %}
 
+{% block head %}
+    {{ super() }}
+    {% if not threads|length %}
+        <meta name="robots" content="noindex, follow">
+    {% endif %}
+{%  endblock %}
 
 {% block actions %}
   {{ super() }}
