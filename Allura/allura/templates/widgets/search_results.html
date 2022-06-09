@@ -60,7 +60,7 @@
 {% for doc in results %}
   <div class="grid-19">
     <p>
-    <a href="{{doc['url_paginated'] or doc['url_s']}}">
+    <a href="{{doc['url_paginated'] or doc['url_s']}}" rel="nofollow">
       {% if doc.title_match %}
         {{ doc.title_match }}
       {% else %}
