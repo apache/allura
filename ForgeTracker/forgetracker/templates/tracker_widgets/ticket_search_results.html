@@ -17,6 +17,11 @@
        under the License.
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
+{% block head %}
+    {% if 'q=' in request.query_string %}
+        <meta name="robots" content="noindex, follow">
+    {% endif %}
+{% endblock %}
 <div id="ticket_search_results_holder">
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
