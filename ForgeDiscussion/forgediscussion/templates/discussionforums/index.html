@@ -22,7 +22,7 @@
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {%  block head %}
-    {%  if not forums|length %}
+    {%  if forums|length and forums[0].num_topics == 0 %}
         <meta name="robots" content="noindex, follow">
     {% endif %}
 {%  endblock %}
