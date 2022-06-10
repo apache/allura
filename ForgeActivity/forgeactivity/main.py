@@ -124,15 +124,31 @@ class ForgeActivityController(BaseController):
 
         filtered_timeline = list(islice(filter(perm_check(c.user), timeline),
                                         0, limit))
-        if config.get("default_avatar_image"):
-            for t in filtered_timeline:
-                if not t.actor.activity_extras.get('icon_url'):
-                    t.actor.activity_extras.icon_url = config['default_avatar_image']
+        use_gravatar = h.asbool(config.get('use_gravatar'))
+        default_avatar = config.get("default_avatar_image")
+        icon_base = config.get('static.icon_base', '')  # CDN, possibly
+        for t in filtered_timeline:
+            # fix broken links for Anonymous user
+            if t.actor.activity_url == '/u/userid-None/':
+                t.actor.activity_url = None
+            # fix avatars
+            if not use_gravatar:
+                # force current user icon (overwrites previous gravatar urls or defaults)
+                if t.actor.activity_url:
+                    t.actor.activity_extras.icon_url = icon_base + t.actor.activity_url + 'user_icon'
+                    # ideally ?{icon_timestamp} would be appended to URL for cache-busting when CDN is used, but that
+                    # value would only be available by querying and loading the user-project
                 else:
+                    t.actor.activity_extras.icon_url = None
+            elif default_avatar:
+                if not t.actor.activity_extras.get('icon_url'):
+                    t.actor.activity_extras.icon_url = default_avatar
+                else:
+                    # fix gravatar urls with old default avatar urls in them
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
-                                                              r'\1d={}'.format(config["default_avatar_image"]),
+                                                              r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
-                session(t).expunge(t)  # don't save back this change
+            session(t).expunge(t)  # don't save back these changes
 
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for

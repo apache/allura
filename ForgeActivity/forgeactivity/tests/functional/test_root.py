@@ -61,10 +61,7 @@ class TestActivityController(TestController):
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_index_html(self, director):
-        from activitystream.storage.base import StoredActivity
-        from bson import ObjectId
-        from datadiff.tools import assert_equal
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
@@ -182,9 +179,7 @@ class TestActivityController(TestController):
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_feed_rss_project(self, director):
-        from activitystream.storage.base import StoredActivity
-        from bson import ObjectId
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
@@ -234,8 +229,7 @@ class TestActivityController(TestController):
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_feed_rss_project_verb_without_activity_name(self, director):
-        from activitystream.storage.base import StoredActivity
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "obj": {
                 "activity_extras": {},
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
@@ -259,9 +253,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     @patch('forgeactivity.main.g.director')
     def test_feed_rss_user(self, director):
-        from activitystream.storage.base import StoredActivity
-        from bson import ObjectId
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
@@ -309,9 +301,7 @@ class TestActivityController(TestController):
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_feed_atom_project(self, director):
-        from activitystream.storage.base import StoredActivity
-        from bson import ObjectId
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
@@ -365,9 +355,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     @patch('forgeactivity.main.g.director')
     def test_feed_atom_user(self, director):
-        from activitystream.storage.base import StoredActivity
-        from bson import ObjectId
-        director.get_timeline.return_value = [StoredActivity(**{
+        director.get_timeline.return_value = [Activity(**{
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
