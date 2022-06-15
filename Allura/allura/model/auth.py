@@ -678,7 +678,7 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
         users = [ea.claimed_by_user(not only_confirmed) for ea in addrs]
         users = [u for u in users if u is not None]
         if len(users) > 1:
-            log.warn('Multiple active users matching confirmed email %s %s. '
+            log.warn('Multiple active users matching confirmed email: %s %s. '
                      'Using first one', [u.username for u in users], addr)
         return users[0] if len(users) > 0 else None
 

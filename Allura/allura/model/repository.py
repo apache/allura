@@ -1172,7 +1172,7 @@ class Commit(MappedClass, RepoObject, ActivityObject):
 
     def guess_repo(self):
         import traceback
-        log.error('guess_repo: should not be called: %s' %
+        log.error('guess_repo should not be called: %s' %
                   ''.join(traceback.format_stack()))
         for ac in c.project.app_configs:
             try:
