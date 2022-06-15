@@ -20,7 +20,7 @@
 {% extends g.theme.master %}
 
 {% block title %}{{c.project.name}} / Search{% endblock %}
-
+{% block head %} <meta name="robots" content="noindex, follow"> {% endblock %}
 {% block header %}Search Project: {{q}}{% endblock %}
 
 {% block content %}
