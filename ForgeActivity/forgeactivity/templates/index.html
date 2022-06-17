@@ -24,6 +24,7 @@
     {% if noindex %}
         <meta name="robots" content="noindex, follow">
     {%  endif %}
+    <link rel="canonical" href="{{ request.host_url ~ request.path }}">
 {% endblock %}
 
 {% block title %}{{c.project.name}} Activity{% endblock %}
