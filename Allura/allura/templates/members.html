@@ -17,8 +17,9 @@
        under the License.
 -#}
 {% set hide_left_bar = True %}
+{% set h1_text = c.project.name ~ ' ' ~ 'Project' ~ ' ' ~ 'Member List' %}
 {% extends g.theme.master %}
-{% block title %}Members{% endblock %}
+{% block title %}{{ h1_text }}{% endblock %}
 {% block header %}Members{% endblock %}
 {% block content %}
 <div class="grid-23">
