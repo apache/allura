@@ -48,8 +48,6 @@ formencode==2.0.1
     # via
     #   -r requirements.in
     #   easywidgets
-future==0.18.2
-    # via timermiddleware
 genshi==0.7.6
     # via creoleparser
 gitdb==4.0.9
@@ -186,7 +184,7 @@ testfixtures==6.18.5
     # via -r requirements.in
 textile==4.0.2
     # via pypeline
-timermiddleware==0.6.0
+timermiddleware==0.6.1
     # via -r requirements.in
 tinycss2==1.1.1
     # via bleach
