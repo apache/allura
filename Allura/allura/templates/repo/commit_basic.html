@@ -22,28 +22,28 @@
     {% for diff in commit.diffs.added %}
     <tr>
       <td>add</td>
-      <td><a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
+      <td><a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}" rel="nofollow">{{h.really_unicode(diff)}}</a></td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.removed %}
     <tr>
       <td>remove</td>
-      <td><a href="{{prev[0].url()}}tree/{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
+      <td><a href="{{prev[0].url()}}tree/{{h.really_unicode(diff)}}" rel="nofollow">{{h.really_unicode(diff)}}</a></td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.changed %}
     <tr>
       <td>change</td>
       <td>
-        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
-        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}?diff={{prev[0]._id}}">(diff)</a>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}" rel="nofollow">{{h.really_unicode(diff)}}</a>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}?diff={{prev[0]._id}}" rel="nofollow">(diff)</a>
       </td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.copied %}
     <tr>
       <td>copy</td>
       <td>
-        <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
+        <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}" rel="nofollow">{{h.really_unicode(diff.old)}}</a>
         <br/>to<br/>
-        <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}" rel="nofollow">{{h.really_unicode(diff.new)}}</a>
       </td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.renamed %}
@@ -54,13 +54,13 @@
         <td>rename</td>
       {% endif %}
       <td>
-        <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
+        <a href="{{prev[0].url()}}tree/{{h.really_unicode(diff.old)}}" rel="nofollow">{{h.really_unicode(diff.old)}}</a>
         <br/>to<br/>
-        <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}" rel="nofollow">{{h.really_unicode(diff.new)}}</a>
       </td>
       <td>
         {% if diff.ratio < 1  %}
-          <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}?diff={{prev[0]._id}}?prev-file={{h.really_unicode(diff.old)}}">(diff)</a>
+          <a href="{{commit.url()}}tree/{{h.really_unicode(diff.new)}}?diff={{prev[0]._id}}?prev-file={{h.really_unicode(diff.old)}}" rel="nofollow">(diff)</a>
         {% endif %}
       </td>  
     </tr>

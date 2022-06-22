@@ -58,9 +58,9 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
   {% if req.downstream_repo %}
     <p>
-      <a href="{{req.creator_url}}">{{req.creator_name}}</a>
+      <a href="{{req.creator_url}}" rel="nofollow">{{req.creator_name}}</a>
       wants to merge {{h.text.plural(commits|count, 'commit', 'commits')}}
-      from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+      from <a href="{{req.downstream_url}}" rel="nofollow">{{req.downstream_url}}</a>
       to {{ req.target_branch }},
       {{lib.abbr_date(req.mod_date)}}
     </p>
@@ -70,7 +70,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
     {% if error %}
       <div class='grid-19 error'>
         Can't find commits to merge. Please checkout
-        <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+        <a href="{{req.downstream_url}}" rel="nofollow">{{req.downstream_url}}</a>
         and follow the instructions to merge manually.
       </div>
     {% endif %}
@@ -145,7 +145,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
   {% else %}
     <p>
       Original repository by
-      <a href="{{req.creator_url}}">{{req.creator_name}}</a>
+      <a href="{{req.creator_url}}" rel="nofollow">{{req.creator_name}}</a>
       is deleted
     </p>
     <div>{{g.markdown.convert(req.description)}}</div>

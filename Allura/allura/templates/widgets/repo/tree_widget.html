@@ -31,7 +31,7 @@
     {% if tree._parent %}
     <tr>
       <td></td>
-      <td><a href="..">[Up one dir]</a></td>
+      <td><a href=".." rel="nofollow">[Up one dir]</a></td>
       <td></td>
       <td></td>
       <td></td>
@@ -53,19 +53,19 @@
         {{ g.icons[icon_name].render(
             href=h.urlquote(dirent.href),
             title=h.really_unicode(dirent.name),
-            show_title=True) }}
+            show_title=True, rel='nofollow') }}
       </td>
       <td class="nowrap">{{lib.abbr_date(dirent.last_commit.date)}}</td>
       <td class="nowrap">
         {% if dirent.last_commit.author_url %}
-          <a href="{{dirent.last_commit.author_url}}">{{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}}</a>
-          <a href="{{dirent.last_commit.author_url}}">{{h.really_unicode(dirent.last_commit.author)}}</a>
+          <a href="{{dirent.last_commit.author_url}}" rel="nofollow">{{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}}</a>
+          <a href="{{dirent.last_commit.author_url}}" rel="nofollow">{{h.really_unicode(dirent.last_commit.author)}}</a>
         {% else %}
           {{lib.email_gravatar(dirent.last_commit.author_email, title=h.really_unicode(dirent.last_commit.author), size=16)}} {{h.really_unicode(dirent.last_commit.author)}}
         {% endif %}
       </td>
       <td>
-        <a href="{{dirent.last_commit.href}}">
+        <a href="{{dirent.last_commit.href}}" rel="nofollow">
           {{dirent.last_commit.shortlink}}
           {{ h.hide_private_info(dirent.last_commit.summary) }}
         </a>

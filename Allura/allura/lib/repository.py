@@ -129,21 +129,25 @@ class RepositoryApp(Application):
         links = []
         if not self.repo.is_empty():
             links.append(SitemapEntry('Browse Commits', c.app.url + 'commit_browser',
-                                      ui_icon=g.icons['browse_commits']))
+                                      ui_icon=g.icons['browse_commits'],
+                                      extra_html_attrs=dict(rel='nofollow')))
         if self.forkable and self.repo.status == 'ready' and not self.repo.is_empty():
             links.append(
-                SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
+                SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork'],
+                             extra_html_attrs=dict(rel='nofollow')))
         merge_request_count = self.repo.merge_requests_by_statuses(
             'open').count()
         if self.forkable:
             links += [
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
-                    small=merge_request_count)]
+                    small=merge_request_count,
+                    extra_html_attrs=dict(rel='nofollow'))]
         if self.repo.forks:
             links += [
                 SitemapEntry('Forks', c.app.url + 'forks/',
-                             small=len(self.repo.forks))
+                             small=len(self.repo.forks),
+                             extra_html_attrs=dict(rel='nofollow'))
             ]
 
         has_upstream_repo = False
@@ -170,14 +174,14 @@ class RepositoryApp(Application):
                 if getattr(c, 'revision', None):
                     merge_url = merge_url + '?branch=' + h.urlquote(c.revision)
                 links.append(SitemapEntry('Request Merge', merge_url,
-                             ui_icon=g.icons['merge'],
+                             ui_icon=g.icons['merge'], extra_html_attrs=dict(rel='nofollow')
                                           ))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
                     'Pending Merges',
                     self.repo.upstream_repo.name + 'merge-requests/',
-                    small=pending_upstream_merges))
+                    small=pending_upstream_merges, extra_html_attrs=dict(rel='nofollow')))
         ref_url = self.repo.url_for_commit(
             self.default_branch_name, url_type='ref')
         branches = self.repo.get_branches()
@@ -192,17 +196,19 @@ class RepositoryApp(Application):
             for branch in branches[:max_branches]:
                 links.append(SitemapEntry(
                     branch.name,
-                    h.urlquote(self.repo.url_for_commit(branch.name) + 'tree/')))
+                    h.urlquote(self.repo.url_for_commit(branch.name) + 'tree/'),
+                    extra_html_attrs=dict(rel='nofollow')))
             if len(branches) > max_branches:
                 links.append(
                     SitemapEntry(
                         'More Branches',
                         ref_url + 'branches/',
+                        extra_html_attrs=dict(rel='nofollow')
                     ))
         elif not self.repo.is_empty():
             # SVN repos, for example, should have a sidebar link to get to the main view
             links.append(
-                SitemapEntry('Browse Files', c.app.url)
+                SitemapEntry('Browse Files', c.app.url, extra_html_attrs=dict(rel='nofollow'))
             )
 
         tags = self.repo.get_tags()
@@ -212,12 +218,14 @@ class RepositoryApp(Application):
             for b in tags[:max_tags]:
                 links.append(SitemapEntry(
                     b.name,
-                    h.urlquote(self.repo.url_for_commit(b.name) + 'tree/')))
+                    h.urlquote(self.repo.url_for_commit(b.name) + 'tree/'), 
+                    extra_html_attrs=dict(rel='nofollow')))
             if len(tags) > max_tags:
                 links.append(
                     SitemapEntry(
                         'More Tags',
                         ref_url + 'tags/',
+                        extra_html_attrs=dict(rel='nofollow')
                     ))
         return links
 

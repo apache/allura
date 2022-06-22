@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block header %}
-Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
+Tree <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
 {{lib.path_links(path.strip('/').split('/'))}}
 {% endblock %}
 
@@ -64,7 +64,7 @@ form.tarball button:hover {
 </form>
 {% endif %}
 
-{{ g.icons['history'].render(href='%slog/?path=%s' % (commit.url(), path), show_title=True) }}
+{{ g.icons['history'].render(href='%slog/?path=%s' % (commit.url(), path), show_title=True, rel='nofollow') }}
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}
