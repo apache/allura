@@ -26,14 +26,14 @@
 {% endblock %}
 
 {% block header %}Diff of
-<a href="{{b.url()}}">{{b.path()}}</a>
+<a href="{{b.url()}}" rel="nofollow">{{b.path()}}</a>
 {% if a %}
-<a href="{{a.url()}}">{{a.commit.shorthand_id()}}</a>
+<a href="{{a.url()}}" rel="nofollow">{{a.commit.shorthand_id()}}</a>
 {% else %}
 [000000]
 {% endif %}
 ..
-<a href="{{b.url()}}">{{b.commit.shorthand_id()}}</a>
+<a href="{{b.url()}}" rel="nofollow">{{b.commit.shorthand_id()}}</a>
 {% endblock %}
 
 {% block actions %}

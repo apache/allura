@@ -31,7 +31,7 @@
 {% block content %}
   <div class="grid-19">
   {% for b in tags %}
-    <a href="{{c.app.repo.url_for_commit(b.name)}}tree/">{{b.name}}</a><br>
+    <a href="{{c.app.repo.url_for_commit(b.name)}}tree/" rel="nofollow">{{b.name}}</a><br>
   {% endfor %}
   </div>
 {% endblock %}

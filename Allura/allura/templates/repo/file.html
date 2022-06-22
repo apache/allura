@@ -27,13 +27,13 @@
 {% endblock %}
 
 {% block header %}
-<a href="{{blob.commit.url()}}">{{blob.commit.shorthand_id()}}</a>:
+<a href="{{blob.commit.url()}}" rel="nofollow">{{blob.commit.shorthand_id()}}</a>:
 {{lib.path_links(blob.path().split('/')[1:-1])}} {{h.really_unicode(blob.name)}}
 {% endblock %}
 
 {% block actions %}
 {{ lib.maximize_content_button() }}
-{{ g.icons['history'].render(href='%slog/?path=%s' % (blob.commit.url(), blob.path()), show_title=True) }}
+{{ g.icons['history'].render(href='%slog/?path=%s' % (blob.commit.url(), blob.path()), show_title=True, rel='nofollow') }}
 {% endblock %}
 
 {% block extra_js %}

@@ -27,12 +27,12 @@
 {% endblock %}
 
 {% block header -%}
-Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
+Commit <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
 {%- endblock %}
 
 {% block actions %}
 {{ lib.maximize_content_button() }}
-{{ g.icons['history'].render(href='{}log/'.format(commit.url()), show_title=True) }}
+{{ g.icons['history'].render(href='{}log/'.format(commit.url()), show_title=True, rel='nofollow') }}
 {% endblock %}
 
 {% block body_top_js %}
@@ -144,7 +144,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             <h6>
             {% if type in ('added', 'changed') %}
                 {% set file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
-                <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>
+                <a href="{{ file_url }}" rel="nofollow">{{h.really_unicode(file)}}</a>
                 {% if obj_type != 'tree' and is_text %}
                     {% set diff_url = file_url + '?barediff=' + (prev[0]._id if prev else '') %}
                     <a class="commit-diff-link" rel="nofollow" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>
@@ -152,12 +152,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% endif %}
             {% elif type == 'removed' %}
                 {% set file_url = prev[0].url() + 'tree/' + h.urlquote(h.really_unicode(file)) %}
-                <a href="{{ file_url }}">{{h.really_unicode(file)}}</a>
+                <a href="{{ file_url }}" rel="nofollow">{{h.really_unicode(file)}}</a>
             {% elif type in ('copied', 'renamed') %}
-                <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file.old))}}">{{h.really_unicode(file.old)}}</a>
+                <a href="{{prev[0].url()}}tree/{{h.urlquote(h.really_unicode(file.old))}}" rel="nofollow">{{h.really_unicode(file.old)}}</a>
                 to
                 {% set new_file_url = commit.url() + 'tree/' + h.urlquote(h.really_unicode(file.new)) %}
-                <a href="{{ new_file_url }}">{{h.really_unicode(file.new)}}</a>
+                <a href="{{ new_file_url }}" rel="nofollow">{{h.really_unicode(file.new)}}</a>
                 {% if file.ratio != 1 %}
                     {% set diff_url = new_file_url + '?barediff=' + (prev[0]._id if prev else '') + '&prev_file=' + h.urlquote(h.really_unicode(file['old'])) %}
                     <a class="commit-diff-link" rel="nofollow" href="{{ diff_url.replace('?barediff=', '?diff=') }}">Diff</a>

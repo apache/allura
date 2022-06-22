@@ -69,7 +69,7 @@
         $.get('{{repo.url()}}status', function(data) {
             if (data.status === 'ready') {
                 $('.spinner').hide()
-                $('#repo_status h2').html('Repo status: ready. <a href=".">Click here to refresh this page.</a>');
+                $('#repo_status h2').html('Repo status: ready. <a href="." rel="nofollow">Click here to refresh this page.</a>');
             }
             else {
                 $('#repo_status h2 span').html(data.status);

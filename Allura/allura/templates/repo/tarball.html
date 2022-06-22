@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block header -%}
-Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
+Commit <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
 {%- endblock %}
 
 {% block extra_js %}

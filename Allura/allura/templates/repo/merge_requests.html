@@ -53,15 +53,15 @@
     <tbody>
       {% for req in requests %}
       <tr>
-        <td><a href="{{req.request_number}}/">{{req.request_number}}</a></td>
-        <td><a href="{{req.request_number}}/">{{req.status}}</a></td>
-        <td><a href="{{req.request_number}}/">{{req.summary}}</a></td>
+        <td><a href="{{req.request_number}}/" rel="nofollow">{{req.request_number}}</a></td>
+        <td><a href="{{req.request_number}}/" rel="nofollow">{{req.status}}</a></td>
+        <td><a href="{{req.request_number}}/" rel="nofollow">{{req.summary}}</a></td>
         <td>{% if req.downstream_repo %}
-          <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+          <a href="{{req.downstream_url}}" rel="nofollow">{{req.downstream_url}}</a>
         {% else %}
           <i>(deleted)</i>
         {% endif %}</td>
-        <td><a href="{{req.creator_url}}">{{req.creator_name}}</a></td>
+        <td><a href="{{req.creator_url}}" rel="nofollow">{{req.creator_name}}</a></td>
         <td>{{lib.abbr_date(req.created)}}</td>
         <td>{{lib.abbr_date(req.mod_date)}}</td>
       </tr>
