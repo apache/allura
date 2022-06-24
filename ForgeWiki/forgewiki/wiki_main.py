@@ -241,7 +241,11 @@ The wiki uses [Markdown](%s) syntax.
     def should_noindex_page(self, page):
         """Checks whether a page should not be indexed."""
         # If page has default name (i.e. 'Home') and has not been edited, noindex.
-        return page and page['title'] == self.default_root_page_name and page['version'] == 1
+        res = page and page['title'] == self.default_root_page_name and page['version'] == 1
+        if not res:
+            if page and page['text'] in ('You can edit this description', ):
+                res = True
+        return res
 
     def create_common_wiki_menu(self, has_create_access, admin_menu=False):
         links = []
