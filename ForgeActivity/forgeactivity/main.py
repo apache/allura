@@ -148,6 +148,7 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
                                                               r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
+            activity_obj = get_activity_object(t.obj)
             t.obj.noindex = followee.noindex_tool_name(activity_obj.activity_url)
             session(t).expunge(t)  # don't save back these changes
 
