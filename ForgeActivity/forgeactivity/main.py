@@ -99,6 +99,7 @@ class ForgeActivityController(BaseController):
         g.register_app_css('css/activity.css', app=self.app)
 
     def _get_activities_data(self, **kw):
+        noindex_tags = ['git', 'svn', 'hg', 'commit', 'merge-request']
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
             raise exc.HTTPNotFound()
@@ -148,8 +149,10 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
                                                               r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
+            should_noindex = any(name in noindex_tags for name in t.tags)
+            t.obj.noindex = should_noindex
+            t.target.noindex = should_noindex
             session(t).expunge(t)  # don't save back these changes
-
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for
             has_more = len(timeline) == limit
@@ -329,7 +332,6 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             session(activity).expunge(activity)
             activity_obj = get_activity_object(activity.obj)
             activity.obj.project = getattr(activity_obj, 'project', None)
-
         context.update({
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),
