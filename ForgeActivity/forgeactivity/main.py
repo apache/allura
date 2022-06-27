@@ -148,6 +148,7 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
                                                               r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
+            t.obj.noindex = followee.noindex_tool_name(activity_obj.activity_url)
             session(t).expunge(t)  # don't save back these changes
 
         if extra_limit == limit:
@@ -329,7 +330,8 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             session(activity).expunge(activity)
             activity_obj = get_activity_object(activity.obj)
             activity.obj.project = getattr(activity_obj, 'project', None)
-
+            if hasattr(c, 'project'):
+                activity.obj.noindex = c.project.noindex_tool_name(activity.obj.activity_url)
         context.update({
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),

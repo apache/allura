@@ -19,7 +19,9 @@
 
 {% macro activity_obj(o) %}
   {% if o.activity_url %}
-    <a href="{{o.activity_url}}">{{o.activity_name}}</a>
+    <a href="{{o.activity_url}}"
+    {% if 'noindex' in o and o.noindex %} rel="nofollow" {% endif %}
+    >{{o.activity_name}}</a>
   {% else %}
     {{o.activity_name}}
   {% endif %}
