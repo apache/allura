@@ -885,3 +885,24 @@ This page is based on some examples from Greg Schueler, <a href="mailto:greg@var
     {%- do g.register_forge_js('js/create-react-class.min.js', location=location) %}
     {%- do g.register_forge_js('js/prop-types.min.js', location=location) %}
 {%- endmacro %}
+
+{% macro canonical_tag() %}
+{% set page= '?page=' ~ request.GET['page'] if 'page=' in request.query_string and request.GET['page']|int > 0  else '' %}
+<link rel="canonical" href="{{ request.host_url ~ request.path }}{{ page }}"/>
+{%  endmacro %}
+
+{% macro pagination_meta_tags(request, last_page=None) %}
+{% if 'page=' in request.query_string and request.GET['page']|int > 0 and last_page %}
+    {% set current_page = request.GET['page']|int %}
+    {%- if current_page > 1 -%}
+        <link rel="prev" href="{{ h.querystring(request, dict(page=current_page-1,limit=None)) }}"/>
+    {% elif current_page == 1 %}
+        <link rel="prev" href="{{ request.path_qs.split('?')[0] }}"/>
+    {% endif %}
+
+    {% if current_page+1 < last_page -%}
+        <link rel="next" href="{{ h.querystring(request, dict(page=current_page+1,limit=None))}}"/>
+    {% endif %}
+{%- endif %}
+
+{% endmacro %}

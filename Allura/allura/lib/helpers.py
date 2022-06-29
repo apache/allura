@@ -65,6 +65,9 @@ from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
 from allura.lib import utils
+import urllib.parse as urlparse
+from urllib.parse import urlencode
+from webob.multidict import MultiDict
 
 # import to make available to templates, don't delete:
 from .security import has_access, is_allowed_by_role, is_site_admin
@@ -151,6 +154,18 @@ def make_safe_path_portion(ustr, relaxed=True):
 
 def escape_json(data):
     return json.dumps(data).replace('<', '\\u003C')
+
+def querystring(request, data):
+    params = urlparse.parse_qs(request.query_string)
+    params.update(data)
+    for param in list(params.keys()):
+        if params[param] is None:
+            del params[param]
+    # flatten dict values
+    params = {k: v[0] if isinstance(v, list) else v for k, v in params.items()}
+    url_parts = urlparse.urlparse(request.url)
+    url = url_parts._replace(query=urlencode(params)).geturl()
+    return url
 
 
 def strip_bad_unicode(s):

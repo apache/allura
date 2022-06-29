@@ -17,12 +17,14 @@
        under the License.
 -#}
 {% extends 'allura:templates/discussion/index.html' %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% block head %}
     {{ super() }}
     {% if not threads|length %}
         <meta name="robots" content="noindex, follow">
     {% endif %}
+    {{ lib.canonical_tag() }}
+    {{ lib.pagination_meta_tags(request, count) }}
 {%  endblock %}
 
 {% block actions %}

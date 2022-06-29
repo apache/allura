@@ -478,6 +478,13 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/browse_tags/?page=3')
         assert '<td>label77</td>' in r
         assert '<td>label99</td>' in r
+        r.mustcontain('canonical')
+        canonical = r.html.select_one('link[rel=canonical]')
+        assert 'browse_tags' in canonical['href']
+        next = r.html.select_one('link[rel=next]')
+        assert('page=4' in next['href'])
+        prev = r.html.select_one('link[rel=prev]')
+        assert('page=2' in prev['href'])
 
     def test_new_attachment(self):
         self.app.post(

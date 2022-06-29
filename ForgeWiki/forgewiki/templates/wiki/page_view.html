@@ -19,6 +19,7 @@
 {% extends 'forgewiki:templates/wiki/master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import g.theme.jinja_macros as theme_macros with context %}
 
 {%  set base_url = page.url().split('?')[0] %}
 
@@ -34,14 +35,14 @@
 {% endblock %}
 
 {% block head %}
-    {%  if noindex %}
+    {{ super() }}
+    {%-  if noindex -%}
         <meta name="robots" content="noindex, follow">
-    {% endif %}
+    {%- endif -%}
 <link rel="alternate" type="application/rss+xml" title="Page RSS" href="feed.rss"/>
 <link rel="alternate" type="application/atom+xml" title="Page Atom" href="feed.atom"/>
 <link rel="alternate" type="application/rss+xml" title="Wiki RSS" href="../feed.rss"/>
 <link rel="alternate" type="application/atom+xml" title="Wiki Atom" href="../feed.atom"/>
-<link rel="canonical" href="{{ h.absurl(base_url) }}">
 
 {% endblock %}
 {% block body_css_class %} {{super()}} wiki-{{(page.title).replace(' ','_')}}{% endblock %}

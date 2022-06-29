@@ -19,11 +19,13 @@
 {% extends 'forgewiki:templates/wiki/master.html' %}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
 {% import 'allura:templates/jinja_master/dialog_macros.html' as dialog_macros with context %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{title}}{% endblock %}
 
 {%  block head %}
+    {{ super() }}
     <meta name="robots" content="noindex,follow" />
+    {{ lib.pagination_meta_tags(request, count) }}
 {% endblock %}
 
 {% block header %}

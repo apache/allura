@@ -17,7 +17,14 @@
        under the License.
 -#}
 {% extends g.theme.master %}
+{% import g.theme.jinja_macros as theme_macros with context %}
 {% do g.register_app_css('css/wiki.css', compress=False) %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{% block head %}
+    {{ lib.canonical_tag() }}
+{% endblock %}
+
 
 {% block edit_box %}
   {% if show_meta %}{% block wiki_meta %}{% endblock %}{% endif %}

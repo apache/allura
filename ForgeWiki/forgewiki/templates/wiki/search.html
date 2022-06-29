@@ -21,7 +21,9 @@
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
 
 {%  block head %}
+    {{ super() }}
     <meta name="robots" content="noindex, follow">
+    {{ lib.pagination_meta_tags(request, count) }}
 {% endblock %}
 
 {% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}

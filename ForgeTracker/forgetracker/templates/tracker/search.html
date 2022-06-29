@@ -30,6 +30,9 @@
     {% endif %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+    {{ lib.canonical_tag() }}
+    {{ lib.pagination_meta_tags(request, count) }}
+
 {% endblock %}
 
 {% block actions %}

@@ -1380,6 +1380,7 @@ class TestFunctionalController(TrackerTestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=test&limit=2')
+        response.mustcontain('canonical')
         response.mustcontain('results of 3')
         response.mustcontain('test second ticket')
         next_page_link = response.html.select('.page_list a')[0]
@@ -1389,6 +1390,26 @@ class TestFunctionalController(TrackerTestController):
 
         # 'filter' is special kwarg, don't let it cause problems
         r = self.app.get('/p/test/bugs/search/?q=test&filter=blah')
+
+    def test_search_canonical(self):
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        self.new_ticket(summary='test third ticket')
+        self.new_ticket(summary='test fourth ticket')
+        self.new_ticket(summary='test fifth ticket')
+        self.new_ticket(summary='test sixth ticket')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=2')
+        canonical = response.html.select_one('link[rel=canonical]')
+        assert ('limit=2' not in canonical['href'])
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=2&page=3')
+        next = response.html.select_one('link[rel=next]')
+        assert ('page=4' in next['href'])
+        prev = response.html.select_one('link[rel=prev]')
+        assert ('page=2' in prev['href'])
+
 
     def test_search_with_strange_chars(self):
         r = self.app.get('/p/test/bugs/search/?' +
