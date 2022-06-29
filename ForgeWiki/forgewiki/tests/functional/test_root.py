@@ -32,6 +32,7 @@ from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 from forgewiki import model
+from unittest.mock import MagicMock
 
 
 class TestRootController(TestController):
@@ -90,6 +91,7 @@ class TestRootController(TestController):
         for ext in ['', '.rss', '.atom']:
             self.app.get('/wiki/feed%s' % ext, status=200)
 
+    @patch('allura.lib.helpers.ceil',  MagicMock(return_value=1))
     @patch('allura.lib.search.search')
     def test_search(self, search):
         r = self.app.get('/wiki/search/?q=test')
@@ -475,9 +477,19 @@ class TestRootController(TestController):
         assert '(Page 1 of 4)' in r
         assert '<td>label30</td>' in r
         assert '<td>label1</td>' in r
-        r = self.app.get('/wiki/browse_tags/?page=3')
-        assert '<td>label77</td>' in r
-        assert '<td>label99</td>' in r
+        r = self.app.get('/wiki/browse_tags/?page=2')
+        assert '<td>label69</td>' in r
+        assert '<td>label70</td>' in r
+        r.mustcontain('canonical')
+        canonical = r.html.select_one('link[rel=canonical]')
+        assert 'browse_tags' in canonical['href']
+        next = r.html.select_one('link[rel=next]')
+        assert('page=3' in next['href'])
+        prev = r.html.select_one('link[rel=prev]')
+        assert('page=1' in prev['href'])
+        r = self.app.get('/wiki/browse_tags/?page=0')
+        canonical = r.html.select_one('link[rel=canonical]')
+        assert 'page=' not in canonical
 
     def test_new_attachment(self):
         self.app.post(

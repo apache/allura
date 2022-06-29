@@ -886,3 +886,29 @@ This page is based on some examples from Greg Schueler, <a href="mailto:greg@var
     {%- do g.register_forge_js('js/create-react-class.min.js', location=location) %}
     {%- do g.register_forge_js('js/prop-types.min.js', location=location) %}
 {%- endmacro %}
+
+{% macro canonical_tag(page=None) %}
+    {#  in case is inherithed from a child template and has no access to a page value #}
+    {% set page = request.GET['page'] if not page and 'page=' in request.query_string else page  %}
+    {% if page == '0' %}
+        <link rel="canonical" href="{{ h.querystring(request, dict(page=None,limit=None)) }}"/>
+    {% else %}
+        <link rel="canonical" href="{{ h.querystring(request, dict(limit=None)) }}"/>
+
+    {% endif %}
+{% endmacro %}
+
+{% macro pagination_meta_tags(request, current_page=None, results_count=None, limit=None) %}
+    {%- if current_page > 0  -%}
+        {% if current_page == 1 %}
+            <link rel="prev" href="{{ h.querystring(request, dict(page=None,limit=None))  }}"/>
+        {% else %}
+            <link rel="prev" href="{{ h.querystring(request, dict(page=current_page - 1,limit=None)) }}"/>
+        {% endif %}
+    {% endif %}
+    {% set current_page = current_page + 1 %}
+    {% set total_pages = h.ceil(results_count/limit) %}
+    {% if results_count and current_page <  total_pages -%}
+        <link rel="next" href="{{ h.querystring(request, dict(page=current_page,limit=None)) }}"/>
+    {% endif %}
+{% endmacro %}

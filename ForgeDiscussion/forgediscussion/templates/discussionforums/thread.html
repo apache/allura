@@ -17,14 +17,16 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% block title %}
-  {{c.project.name}} / {{c.app.config.options.mount_label}} / 
+  {{c.project.name}} / {{c.app.config.options.mount_label}} /
   {{thread.subject and '%s: %s' % (thread.discussion.name, (thread.subject or '(no subject)')) or thread.discussion.name}}
 {% endblock %}
-
+{%  block head %}
+    {{ lib.canonical_tag(page) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
+{% endblock %}
 {% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
-
 {% block actions %}
   {% if show_moderate and h.has_access(thread, 'moderate')() %}
     {{ g.icons['edit'].render(id='mod_thread_link') }}

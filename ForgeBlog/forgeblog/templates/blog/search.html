@@ -17,11 +17,13 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
 
 {%  block head %}
     <meta name="robots" content="noindex, follow">
+    {{ lib.canonical_tag(page) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}

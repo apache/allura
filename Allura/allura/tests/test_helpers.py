@@ -472,6 +472,7 @@ class TestUrlOpen(TestCase):
 
         def side_effect(url, timeout=None):
             raise socket.timeout()
+
         urlopen.side_effect = side_effect
         self.assertRaises(socket.timeout, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
@@ -483,6 +484,7 @@ class TestUrlOpen(TestCase):
 
         def side_effect(url, timeout=None):
             raise OSError(errno.ECONNRESET, 'Connection reset by peer')
+
         urlopen.side_effect = side_effect
         self.assertRaises(socket.error, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
@@ -493,6 +495,7 @@ class TestUrlOpen(TestCase):
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 408, 'timeout', None, None)
+
         urlopen.side_effect = side_effect
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 4)
@@ -503,6 +506,7 @@ class TestUrlOpen(TestCase):
 
         def side_effect(url, timeout=None):
             raise HTTPError('url', 404, 'timeout', None, None)
+
         urlopen.side_effect = side_effect
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 1)
@@ -681,3 +685,12 @@ def test_hide_private_info():
 
 def test_emojize():
     assert_equals(h.emojize(':smile:'), '😄')
+
+
+def test_querystring():
+    req = Request.blank('/p/test/foobar?page=1&limit=10&count=100', remote_addr='127.0.0.1',
+                        base_url='https://mysite.com/p/test/foobar')
+    assert_equals(h.querystring(req, dict(page=2, limit=5)),
+                  'https://mysite.com/p/test/foobar/p/test/foobar?page=2&limit=5&count=100')
+    assert_equals(h.querystring(req, dict(page=5, limit=2, count=None)),
+                  'https://mysite.com/p/test/foobar/p/test/foobar?page=5&limit=2')

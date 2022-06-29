@@ -65,6 +65,10 @@ from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
 from allura.lib import utils
+import urllib.parse as urlparse
+from urllib.parse import urlencode
+import math
+from webob.multidict import MultiDict
 
 # import to make available to templates, don't delete:
 from .security import has_access, is_allowed_by_role, is_site_admin
@@ -152,6 +156,28 @@ def make_safe_path_portion(ustr, relaxed=True):
 def escape_json(data):
     return json.dumps(data).replace('<', '\\u003C')
 
+def querystring(request, url_params):
+    """
+    add/update/remove url parameters. When a value is set to None the key will
+    be removed from the final constructed url.
+
+    :param request: request object
+    :param url_params: dict with the params that should be updated/added/deleted.
+    :return: a full url with updated url parameters.
+    """
+    params = urlparse.parse_qs(request.query_string)
+    params.update(url_params)
+    for param in list(params.keys()):
+        if params[param] is None:
+            del params[param]
+    # flatten dict values
+    params = {k: v[0] if isinstance(v, list) else v for k, v in params.items()}
+    url_parts = urlparse.urlparse(request.url)
+    url = url_parts._replace(query=urlencode(params)).geturl()
+    return url
+
+def ceil(number):
+    return math.ceil(number)
 
 def strip_bad_unicode(s):
     """
