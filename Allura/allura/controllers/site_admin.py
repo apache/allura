@@ -705,15 +705,21 @@ class AdminUserDetailsController:
         if not user or user.is_anonymous():
             raise HTTPNotFound()
         if status == 'enable' and (user.disabled or user.pending):
-            AuthenticationProvider.get(request).activate_user(user, audit=False)
-            AuthenticationProvider.get(request).enable_user(user)
+            if user.pending:
+                AuthenticationProvider.get(request).activate_user(user,
+                                                                  audit=not user.disabled)  # avoid dupe audits
+            if user.disabled:
+                AuthenticationProvider.get(request).enable_user(user)
             flash('User enabled')
         elif status == 'disable' and not user.disabled:
             AuthenticationProvider.get(request).disable_user(user)
             flash('User disabled')
         elif status == 'pending':
-            AuthenticationProvider.get(request).deactivate_user(user)
-            AuthenticationProvider.get(request).enable_user(user, audit=False)
+            if user.disabled:
+                AuthenticationProvider.get(request).enable_user(user,
+                                                                audit=user.pending)  # skip dupe audits
+            if not user.pending:
+                AuthenticationProvider.get(request).deactivate_user(user)
             flash('Set user status to pending')
         redirect(six.ensure_text(request.referer or '/'))
 

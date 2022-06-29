@@ -580,7 +580,7 @@ class TestUserDetails(TestController):
         assert_equal(form['username'].value, 'test-user-3')
         assert_equal(form['status'].value, 'pending')
         form['status'].value = 'enable'
-        with td.audits('Account enabled', user=True):
+        with td.audits('Account activated', user=True):
             r = form.submit()
             assert_equal(M.AuditLog.query.find().count(), 1)
         assert_in('User enabled', self.webflash(r))
