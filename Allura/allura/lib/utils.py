@@ -405,8 +405,6 @@ class TruthyCallable:
     def __bool__(self):
         return self.callable()
 
-    __nonzero__ = __bool__  # python 2
-
 
 class TransformedDict(collections.MutableMapping):
 

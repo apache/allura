@@ -1569,9 +1569,6 @@ class EmptyBlob(Blob):
     def size(self):
         return 0
 
-    def __nonzero__(self):
-        return False
-
     def __bool__(self):
         return False
 
@@ -1933,7 +1930,7 @@ class GitLikeTree:
                   for name, oid in self.blobs.items()]
         return six.ensure_str('\n'.join(sorted(lines)))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.pretty_tree(recurse=False)
 
     def pretty_tree(self, indent=0, recurse=True, show_id=True):
@@ -1944,7 +1941,7 @@ class GitLikeTree:
                  for name, t in sorted(self.trees.items())]
         lines += [' ' * indent + 'b {} {}'.format(name, oid if show_id else '')
                   for name, oid in sorted(self.blobs.items())]
-        output = h.really_unicode('\n'.join(lines)).encode('utf-8')
+        output = h.really_unicode('\n'.join(lines))
         return output
 
 
