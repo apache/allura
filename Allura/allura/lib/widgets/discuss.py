@@ -351,10 +351,27 @@ class Thread(HierWidget):
         # bulk fetch backrefs to save on many queries within EW
         thread: M.Thread = context['value']
         posts = thread.posts
-        index_ids = [a.index_id() for a in posts]
-        q = M.ArtifactReference.query.find(dict(references={'$in': index_ids})).all()
-        for a in posts:
-            a._backrefs = [aref._id for aref in q if a.index_id() in (aref.references or [])]
+        post_ids = [post._id for post in posts]
+        post_index_ids = [post.index_id() for post in posts]
+
+        # prefill refs
+        refs = M.ArtifactReference.query.find(dict(_id={'$in': post_index_ids})).all()
+        for post in posts:
+            for ref in refs:
+                if post.index_id() == ref._id:
+                    post._ref = ref
+                    break
+
+        # prefill backrefs
+        refs = M.ArtifactReference.query.find(dict(references={'$in': post_index_ids})).all()
+        for post in posts:
+            post._backrefs = [ref._id for ref in refs if post.index_id() in (ref.references or [])]
+
+        # prefill attachments
+        refs = thread.attachment_class().query.find(
+            dict(app_config_id=thread.app_config_id, artifact_id={'$in': post_ids}, type='attachment')).all()
+        for post in posts:
+            post._attachments = [ref for ref in refs if post._id == ref.post_id]
         return context
 
     def resources(self):
