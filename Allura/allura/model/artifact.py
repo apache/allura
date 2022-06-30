@@ -145,6 +145,9 @@ class Artifact(MappedClass, SearchIndexable):
         Artifact.
 
         """
+        if hasattr(self, '_ref'):
+            return self._ref
+
         return ArtifactReference.from_artifact(self)
 
     @LazyProperty
@@ -452,8 +455,11 @@ class Artifact(MappedClass, SearchIndexable):
 
     @LazyProperty
     def attachments(self):
-        atts = self.attachment_class().query.find(dict(
-            app_config_id=self.app_config_id, artifact_id=self._id, type='attachment')).all()
+        if hasattr(self, '_attachments'):
+            atts = self._attachments
+        else:
+            atts = self.attachment_class().query.find(dict(
+                app_config_id=self.app_config_id, artifact_id=self._id, type='attachment')).all()
         return utils.unique_attachments(atts)
 
     def delete(self):
