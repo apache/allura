@@ -125,7 +125,7 @@ Commit <a href="{{commit.url()}}" rel="nofollow">{{commit.shorthand_id()}}</a> {
         <td>{{ type }}
             {% if type in ('copied', 'renamed') and file.ratio != 1 %}(with changes){% endif %}
         </td>
-        <td><a href="#diff-{{loop.index}}">
+        <td><a href="#diff-{{loop.index}}" rel="nofollow">
             {% if type == 'copied' %}
               {{ '%s -> %s' % (h.really_unicode(file.old), h.really_unicode(file.new)) }}
             {% elif type == 'renamed' %}

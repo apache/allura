@@ -39,11 +39,11 @@
                 {%if is_file %}
                     <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit.id}}" url_commit="{{app.repo.url_for_commit(commit.id)}}"></div>
                 {% endif %}
-                <a class="rev" href="{{app.repo.url_for_commit(commit.id)}}">{{app.repo.shorthand_for_commit(commit.id)}}</a>
+                <a class="rev" href="{{app.repo.url_for_commit(commit.id)}}" rel="nofollow">{{app.repo.shorthand_for_commit(commit.id)}}</a>
                 {% if commit.refs -%}
                     (
                     {%- for ref in commit.refs -%}
-                        <a class="ref" href="{{app.repo.url_for_commit(ref)}}">{{ref}}</a>{% if not loop.last %},&nbsp;{% endif %}
+                        <a class="ref" href="{{app.repo.url_for_commit(ref)}}" rel="nofollow">{{ref}}</a>{% if not loop.last %},&nbsp;{% endif %}
                     {%- endfor -%}
                     )
                 {%- endif %}
@@ -58,7 +58,7 @@
                 {% if commit.rename_details %}
                     <div>
                       <b>renamed from</b>
-                      <a href={{commit.rename_details['commit_url']}}log/?path={{ commit.rename_details['path'] }}>
+                      <a href={{commit.rename_details['commit_url']}}log/?path={{ commit.rename_details['path'] }} rel="nofollow">
                         {{ commit.rename_details['path'] }}
                       </a>
                     </div>
@@ -69,7 +69,7 @@
             {% if commit.authored.date %}{{commit.authored.date|datetimeformat}}{% endif %}
           </td>
           <td style="text-align: left; vertical-align: text-top">
-              <a class="browse" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}">
+              <a class="browse" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}" rel="nofollow">
                   {{ 'View' if is_file else 'Tree' }}
               </a>
               {%if is_file%}
@@ -85,6 +85,6 @@
     </tbody>
   </table>
   {% if show_paging and next_commit %}
-      <a class="page_list" href="{{app.repo.url_for_commit(next_commit.id)}}log{{tg.url(params=request.params)}}">Older ></a>
+      <a class="page_list" href="{{app.repo.url_for_commit(next_commit.id)}}log{{tg.url(params=request.params)}}" rel="nofollow">Older ></a>
   {% endif %}
 </div>
