@@ -28,8 +28,8 @@
             <p>
             <label>Authored by:</label>
             {% if value.author_url %}
-                <a href="{{value.author_url}}">{{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}}</a>
-                <a href="{{value.author_url}}">{{h.really_unicode(value.authored.name)}}</a>
+                <a href="{{value.author_url}}" rel="nofollow">{{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}}</a>
+                <a href="{{value.author_url}}" rel="nofollow">{{h.really_unicode(value.authored.name)}}</a>
             {% else %}
                 {{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}} {{h.really_unicode(value.authored.name)}}
             {% endif %}
@@ -41,8 +41,8 @@
                 <p>
                 <label>Committed by:</label>
                 {% if value.committer_url %}
-                    <a href="{{value.committer_url}}">{{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}}</a>
-                    <a href="{{value.committer_url}}">{{h.really_unicode(value.committed.name)}}</a>
+                    <a href="{{value.committer_url}}" rel="nofollow">{{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}}</a>
+                    <a href="{{value.committer_url}}" rel="nofollow">{{h.really_unicode(value.committed.name)}}</a>
                 {% else %}
                     {{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}} {{h.really_unicode(value.committed.name)}}
                 {% endif %}
@@ -52,18 +52,18 @@
         </div>
 
         <div class="commit-links">
-            <a class="commit-tree-link" href="{{value.url()}}tree/">Browse code at this revision</a>
+            <a class="commit-tree-link" href="{{value.url()}}tree/" rel="nofollow">Browse code at this revision</a>
             <div class="commit-ancestry">
                 {% if prev %}
                 <p class="commit-parents">
                   Parent{% if prev|length > 1 %}s{% endif %}:
-                  {% for ci in prev %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
+                  {% for ci in prev %}<a href="{{ci.url()}}" rel="nofollow">{{ci.shorthand_id()}}</a>{% endfor %}
                 </p>
                 {% endif %}
                 {% if next %}
                 <p class="commit-children">
                   Child{% if next|length > 1 %}ren{% endif %}:
-                  {% for ci in next %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
+                  {% for ci in next %}<a href="{{ci.url()}}" rel="nofollow">{{ci.shorthand_id()}}</a>{% endfor %}
                 </p>
                 {% endif %}
             </div>
