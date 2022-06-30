@@ -99,6 +99,7 @@ class ForgeActivityController(BaseController):
         g.register_app_css('css/activity.css', app=self.app)
 
     def _get_activities_data(self, **kw):
+        noindex_tools = ['git', 'svn', 'hg', 'merge-requests']
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
             raise exc.HTTPNotFound()
@@ -148,10 +149,10 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
                                                               r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
-            activity_obj = get_activity_object(t.obj)
-            t.obj.noindex = followee.noindex_tool_name(activity_obj.activity_url)
+            should_noindex = True if any(name in noindex_tools for name in t.tags) or any(tool_name in t.obj.activity_url for tool_name in noindex_tools) else False
+            t.obj.noindex = should_noindex
+            t.target.noindex = should_noindex
             session(t).expunge(t)  # don't save back these changes
-
         if extra_limit == limit:
             # if we didn't ask for extra, then we expect there's more if we got all we asked for
             has_more = len(timeline) == limit
@@ -331,8 +332,6 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             session(activity).expunge(activity)
             activity_obj = get_activity_object(activity.obj)
             activity.obj.project = getattr(activity_obj, 'project', None)
-            if hasattr(c, 'project'):
-                activity.obj.noindex = c.project.noindex_tool_name(activity.obj.activity_url)
         context.update({
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),

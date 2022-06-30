@@ -337,15 +337,6 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, default)
 
-    def noindex_tool_name(self, activity_url):
-        noindex_tool_names = ['git', 'svn', 'hg']
-        tools = self.app_configs
-        for c in tools:
-            if hasattr(c, 'tool_name') and c.tool_name in noindex_tool_names:
-                if c.options.mount_point in activity_url:
-                    return True
-        return False
-
     def set_tool_data(self, tool, **kw):
         d = self.tool_data.setdefault(tool, {})
         d.update(kw)
