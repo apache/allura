@@ -97,7 +97,7 @@ class TestUIController(TestController):
 
     def test_repo_loading(self):
         resp = self.app.get('/src-git/').follow().follow()
-        assert '<a href="/p/test/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/">' in resp
+        assert '<a href="/p/test/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/" rel="nofollow">' in resp
 
     def test_status_html(self):
         resp = self.app.get('/src-git/ci/e0d7765883017040d53f9ca9c528940a4dd311c6/')
@@ -777,7 +777,7 @@ class TestFork(_TestCase):
 
         r = self.app.get('/p/test/src-git/merge-requests/1/')
         assert '''Original repository by
-      <a href="/u/test-admin/">Test Admin</a>
+      <a href="/u/test-admin/" rel="nofollow">Test Admin</a>
       is deleted''' in r, r
 
     def test_merge_request_list_view(self):
@@ -906,7 +906,7 @@ class TestFork(_TestCase):
 """.strip())
 
         r = self.app.get('/p/test/src-git/merge-requests').follow()
-        assert '<a href="1/">changed summary</a>' in r
+        assert '<a href="1/" rel="nofollow">changed summary</a>' in r
 
     def test_merge_request_get_markdown(self):
         self.app.post('/p/test2/code/do_request_merge',
@@ -1033,8 +1033,8 @@ class TestGitRename(TestController):
 
         # the diff portion of the output
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert_in('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt">f.txt</a>'
-                  'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt">f2.txt</a>'
+        assert_in('<a href="/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/tree/f.txt" rel="nofollow">f.txt</a>'
+                  'to<a href="/p/test/src-git/ci/b120505a61225e6c14bee3e5b5862db81628c35c/tree/f2.txt" rel="nofollow">f2.txt</a>'
                   .replace(' ', ''), resp_no_ws)
         assert '<span class="empty-diff">File was renamed.</span>' in resp
 
@@ -1043,7 +1043,7 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/')
 
         resp_no_ws = re.sub(r'\s+', '', str(resp))
-        assert_in('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir">b_dir</a>'
+        assert_in('<a href="/p/test/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/b_dir" rel="nofollow">b_dir</a>'
                   '</h6>'
                   '<div id="diff-3" class="inline-diff-body">'
                   '<span class="empty-diff">Symlink.</span>'
@@ -1053,7 +1053,7 @@ class TestGitRename(TestController):
         # change a_dir to a file; b_dir to a symlink
         resp = self.app.get('/src-git/ci/7b1c9ef214eb0ef8c06bada0966dd941f442beec/tree/')
 
-        resp.mustcontain('<a class="icon" href="b_dir" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>')
+        resp.mustcontain('<a class="icon" href="b_dir" rel="nofollow" title="b_dir"><i class="fa fa-star"></i>&nbsp;b_dir</a>')
 
 
 class TestGitBranch(TestController):
