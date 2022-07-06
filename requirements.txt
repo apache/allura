@@ -36,7 +36,7 @@ decorator==5.1.1
     # via -r requirements.in
 docutils==0.18.1
     # via pypeline
-easywidgets==0.4
+easywidgets==0.4.1
     # via -r requirements.in
 emoji==1.7.0
     # via -r requirements.in
@@ -80,7 +80,7 @@ markdown==3.3.6
     #   pypeline
 markdown-checklist==0.4.3
     # via -r requirements.in
-markupsafe==2.0.1
+markupsafe==2.1.0
     # via
     #   -r requirements.in
     #   easywidgets
@@ -97,7 +97,7 @@ oauthlib==3.2.0
     # via requests-oauthlib
 paginate==0.5.6
     # via -r requirements.in
-paste==3.5.0
+paste==3.5.1
     # via
     #   -r requirements.in
     #   easywidgets
@@ -129,7 +129,7 @@ pypeline[creole,markdown,rst,textile]==0.6.0
     # via -r requirements.in
 pysolr==3.9.0
     # via -r requirements.in
-python-dateutil==2.8.0
+python-dateutil==2.8.2
     # via
     #   -r requirements.in
     #   easywidgets

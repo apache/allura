@@ -16,7 +16,7 @@ html5lib
 Jinja2
 Markdown
 markdown-checklist
-MarkupSafe
+MarkupSafe!=2.1.1
 Ming
 # TODO: move to "oauthlib" instead
 # oauth2 doesn't have a release with py3.6 support, but does have fixes on master:
