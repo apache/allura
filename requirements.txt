@@ -18,7 +18,7 @@ cchardet==2.1.7
     # via -r requirements.in
 certifi==2021.10.8
     # via requests
-cffi==1.15.0
+cffi==1.15.1
     # via cryptography
 charset-normalizer==2.0.12
     # via requests
@@ -28,7 +28,7 @@ crank==0.8.1
     # via turbogears2
 creoleparser==0.7.5
     # via pypeline
-cryptography==36.0.2
+cryptography==37.0.4
     # via -r requirements.in
 datadiff==2.0.0
     # via -r requirements.in
