@@ -12,7 +12,7 @@ beautifulsoup4==4.11.1
     # via
     #   -r requirements.in
     #   webtest
-bleach[css]==5.0.0
+bleach[css]==5.0.1
     # via pypeline
 cchardet==2.1.7
     # via -r requirements.in
@@ -48,7 +48,7 @@ formencode==2.0.1
     # via
     #   -r requirements.in
     #   easywidgets
-genshi==0.7.6
+genshi==0.7.7
     # via creoleparser
 gitdb==4.0.9
     # via gitpython
@@ -144,7 +144,7 @@ pytz==2022.1
     #   ming
 qrcode==7.3.1
     # via -r requirements.in
-regex==2022.3.15
+regex==2022.6.2
     # via
     #   regex-as-re-globally
     #   textile
