@@ -65,7 +65,7 @@ httplib2==0.19.0
     # via oauth2
 idna==3.3
     # via requests
-importlib-metadata==4.11.3
+importlib-metadata==4.12.0
     # via markdown
 inflection==0.5.1
     # via profanityfilter
@@ -73,7 +73,7 @@ iso8601==1.0.2
     # via colander
 jinja2==3.1.2
     # via -r requirements.in
-markdown==3.3.6
+markdown==3.3.7
     # via
     #   -r requirements.in
     #   markdown-checklist
@@ -192,7 +192,7 @@ translationstring==1.4
     # via colander
 turbogears2==2.3.12
     # via -r requirements.in
-typing-extensions==4.1.1
+typing-extensions==4.3.0
     # via
     #   gitpython
     #   importlib-metadata
