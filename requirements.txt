@@ -42,7 +42,7 @@ emoji==1.7.0
     # via -r requirements.in
 feedgenerator==2.0.0
     # via -r requirements.in
-feedparser==6.0.8
+feedparser==6.0.10
     # via -r requirements.in
 formencode==2.0.1
     # via
