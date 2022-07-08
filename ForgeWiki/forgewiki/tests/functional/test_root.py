@@ -830,7 +830,7 @@ class TestRootController(TestController):
 
     def test_user_browse_page(self):
         r = self.app.get('/wiki/browse_pages/')
-        assert '<td><a href="/u/test-admin/" class="user-mention">test-admin</a></td>' in r
+        assert '<td><a href="/u/test-admin/profile/" class="user-mention">test-admin</a></td>' in r
 
     def test_subscribe(self):
         user = M.User.query.get(username='test-user')

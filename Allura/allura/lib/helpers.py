@@ -1291,4 +1291,4 @@ def username_project_url(user_or_username):
         user = user_or_username
         url = user.url()
 
-    return url
+    return f'{url}profile/'

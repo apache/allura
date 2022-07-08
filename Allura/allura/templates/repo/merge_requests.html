@@ -17,9 +17,9 @@
        under the License.
 -#}
 {% extends 'allura:templates/repo/repo_master.html' %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set status = request.params.get('status' , '') %}
-
+{% set profile_path = 'profile/' if g.user_profile_urls_with_profile_path == 'true' else '' %}
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}} / Merge Requests
 {% endblock %}
@@ -61,7 +61,7 @@
         {% else %}
           <i>(deleted)</i>
         {% endif %}</td>
-        <td><a href="{{req.creator_url}}" rel="nofollow">{{req.creator_name}}</a></td>
+        <td><a href="{{req.creator_url ~ profile_path}}" rel="nofollow">{{req.creator_name}}</a></td>
         <td>{{lib.abbr_date(req.created)}}</td>
         <td>{{lib.abbr_date(req.mod_date)}}</td>
       </tr>

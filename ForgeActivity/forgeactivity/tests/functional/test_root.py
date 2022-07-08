@@ -101,7 +101,7 @@ class TestActivityController(TestController):
         h1 = """\
         <h1>
          <img alt="Administrator 1" class="emboss x32 avatar" src="/u/test-admin/user_icon" title="Administrator 1"/>
-         <a href="/u/test-admin/">
+         <a href="/u/test-admin/profile/">
           Administrator 1
          </a>
          posted

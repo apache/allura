@@ -579,6 +579,10 @@ class Globals:
             base = request.scheme + base
         return base + resource
 
+    @property
+    def user_profile_urls_with_profile_path(self):
+        return config['user_profile_url_with_profile_path']
+
     def app_static(self, resource, app=None):
         base = config['static.url_base']
         app = app or c.app
