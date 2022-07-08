@@ -115,6 +115,20 @@ class require_post:
         return func
 
 
+def require_method(*methods):
+    """
+    Usage:
+
+    @require_method('GET', 'HEAD')
+    def foo()
+    """
+    def check_methods(func, *args, **kwargs):
+        if request.method not in methods:
+            raise exc.HTTPMethodNotAllowed(headers={'Allow': str(','.join(methods))})
+        return func(*args, **kwargs)
+    return decorator(check_methods)
+
+
 @decorator
 def reconfirm_auth(func, *args, **kwargs):
     '''
