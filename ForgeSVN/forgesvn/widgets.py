@@ -19,6 +19,7 @@ import re
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+from formencode import validators as fev
 
 from allura.lib import validators
 from allura.lib.widgets.forms import ForgeForm
@@ -38,6 +39,12 @@ class ValidateSvnUrl(validators.URLIsPrivate):
         (?P<path>/[a-z0-9\-\._~:/\?#\[\]@!%\$&\'\(\)\*\+,;=]*)?
         $
     ''', re.I | re.VERBOSE)
+
+    def _to_python(self, value, state):
+        value = super()._to_python(value, state)
+        if 'plugins.svn.wordpress.org' in value:
+            raise fev.Invalid("That SVN repo is to large to import from.", value, state)
+        return value
 
 
 class ImportForm(ForgeForm):

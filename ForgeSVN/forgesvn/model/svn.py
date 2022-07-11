@@ -271,7 +271,7 @@ class SVNImplementation(M.RepositoryImplementation):
             clear_hook('pre-revprop-change')
         else:
             def retry_cmd(cmd, fail_count=0):
-                max_fail = asint(tg.config.get('scm.import.retry_count', 50))
+                max_fail = asint(tg.config.get('scm.import.retry_count', 3))
                 returncode = -1
                 while returncode != 0 and fail_count < max_fail:
                     stdout, stderr, returncode = self.check_call(cmd, fail_on_error=False)
