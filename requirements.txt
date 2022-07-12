@@ -184,7 +184,7 @@ testfixtures==6.18.5
     # via -r requirements.in
 textile==4.0.2
     # via pypeline
-timermiddleware==0.6.1
+timermiddleware==0.6.2
     # via -r requirements.in
 tinycss2==1.1.1
     # via bleach
