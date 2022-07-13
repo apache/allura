@@ -23,7 +23,7 @@
 {% block head %}
     <meta name="robots" content="noindex, follow">
     {{ lib.canonical_tag() }}
-    {{ lib.pagination_meta_tags(request, count) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}

@@ -18,7 +18,6 @@
 -#}
 {% extends g.theme.master %}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% do g.register_app_css('css/tracker.css') %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{field.label}} {{milestone.name}}{% endblock %}
@@ -27,7 +26,7 @@
 
 {% block head %}
     {{ lib.canonical_tag() }}
-    {{ lib.pagination_meta_tags(request, count) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block actions %}

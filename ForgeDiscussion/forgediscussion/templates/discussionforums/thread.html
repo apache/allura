@@ -24,7 +24,7 @@
 {% endblock %}
 {%  block head %}
     {{ lib.canonical_tag() }}
-    {{ lib.pagination_meta_tags(request, count) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 {% block header %}{{'subject' in thread and thread.subject or '(no subject)'}}{% endblock %}
 {% block actions %}

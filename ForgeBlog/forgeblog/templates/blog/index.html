@@ -17,13 +17,15 @@
        under the License.
 -#}
 {% extends g.theme.master %}
-
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
 
 {% block head %}
     {% if count == 0 %}
     <meta name="robots" content="noindex, follow"/>
     {% endif %}
+    {{ lib.canonical_tag() }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Recent posts{% endblock %}

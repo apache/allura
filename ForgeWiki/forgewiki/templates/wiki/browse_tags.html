@@ -22,7 +22,7 @@
 
 {% block head %}
     {{ super() }}
-    {{ lib.pagination_meta_tags(request, count) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 
 {% block header %}Browse Labels{% endblock %}

@@ -24,7 +24,7 @@
         <meta name="robots" content="noindex, follow">
     {% endif %}
     {{ lib.canonical_tag() }}
-    {{ lib.pagination_meta_tags(request, count) }}
+    {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {%  endblock %}
 
 {% block actions %}
