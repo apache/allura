@@ -24,16 +24,15 @@
         {{widgets.page_list.display(limit=limit, page=page, count=count)}}
       {% endif %}
       <div id="comment">
-        {% set posts = value.find_posts(page=page, limit=limit) %}
-          {% if posts %}
-            {% for t in value.create_post_threads(posts) %}
-            <ul>
-              {{widgets.post_thread.display(value=t['post'], children=t['children'],
-                  indent=0, show_subject=show_subject,
-                  page=page, limit=limit, primary_artifact=primary_artifact)}}
-            </ul>
-            {% endfor %}
-          {% endif %}
+        {% if posts %}
+          {% for t in value.create_post_threads(posts) %}
+          <ul>
+            {{widgets.post_thread.display(value=t['post'], children=t['children'],
+                indent=0, show_subject=show_subject,
+                page=page, limit=limit, primary_artifact=primary_artifact)}}
+          </ul>
+          {% endfor %}
+        {% endif %}
         {% if h.has_access(value, 'moderate')() %}
           <div id="allow_moderate"></div>
         {% endif %}
