@@ -20,12 +20,13 @@ from formencode import validators as fev
 import ew as ew_core
 import ew.jinja2_ew as ew
 
+from tg import app_globals as g
+
 from allura.lib import utils
 from allura.lib import validators as v
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M
-import six
 
 
 class NullValidator(fev.FancyValidator):
@@ -337,6 +338,7 @@ class Thread(HierWidget):
         page=None,
         limit=50,
         count=None,
+        posts=None,
         show_subject=False,
         new_post_text='+ New Comment')
     widgets = dict(
@@ -350,7 +352,14 @@ class Thread(HierWidget):
         context = super().prepare_context(context)
         # bulk fetch backrefs to save on many queries within EW
         thread: M.Thread = context['value']
-        posts = thread.posts
+
+        page = context.get('page')
+        limit = context.get('limit')
+        limit, page, _ = g.handle_paging(limit, page)
+        posts: list[M.Post] = thread.find_posts(page=page, limit=limit)
+
+        context['posts'] = posts
+
         post_ids = [post._id for post in posts]
         post_index_ids = [post.index_id() for post in posts]
 
@@ -363,15 +372,15 @@ class Thread(HierWidget):
                     break
 
         # prefill backrefs
-        refs = M.ArtifactReference.query.find(dict(references={'$in': post_index_ids})).all()
+        backrefs = M.ArtifactReference.query.find(dict(references={'$in': post_index_ids})).all()
         for post in posts:
-            post._backrefs = [ref._id for ref in refs if post.index_id() in (ref.references or [])]
+            post._backrefs = [ref._id for ref in backrefs if post.index_id() in (ref.references or [])]
 
         # prefill attachments
-        refs = thread.attachment_class().query.find(
+        attachments = thread.attachment_class().query.find(
             dict(app_config_id=thread.app_config_id, artifact_id={'$in': post_ids}, type='attachment')).all()
         for post in posts:
-            post._attachments = [ref for ref in refs if post._id == ref.post_id]
+            post._attachments = [att for att in attachments if post._id == att.post_id]
         return context
 
     def resources(self):
