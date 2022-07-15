@@ -1398,17 +1398,19 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test fourth ticket')
         self.new_ticket(summary='test fifth ticket')
         self.new_ticket(summary='test sixth ticket')
+        self.new_ticket(summary='test seventh ticket')
+        self.new_ticket(summary='test eighth ticket')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        response = self.app.get('/p/test/bugs/search/?q=test&limit=2')
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=1')
         canonical = response.html.select_one('link[rel=canonical]')
         assert ('limit=2' not in canonical['href'])
-        response = self.app.get('/p/test/bugs/search/?q=test&limit=2&page=3')
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=2&page=2')
         next = response.html.select_one('link[rel=next]')
-        assert ('page=4' in next['href'])
+        assert ('page=3' in next['href'])
         prev = response.html.select_one('link[rel=prev]')
-        assert ('page=2' in prev['href'])
+        assert ('page=1' in prev['href'])
 
 
     def test_search_with_strange_chars(self):
