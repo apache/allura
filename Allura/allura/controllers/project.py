@@ -380,17 +380,12 @@ class ProjectController(FeedController):
                 username=user.username,
                 url=user.url(),
                 roles=', '.join(sorted(roles)))
-            if 'Admin' in roles:
-                admins.append(u)
-            elif 'Developer' in roles:
-                developers.append(u)
-            else:
-                users.append(u)
+            _user = user
+            _user['roles'] = ', '.join(sorted(roles))
+            users.append(_user)
         get_username = lambda user: user['username']
-        admins = sorted(admins, key=get_username)
-        developers = sorted(developers, key=get_username)
         users = sorted(users, key=get_username)
-        return dict(users=admins + developers + users)
+        return dict(users=users)
 
     def _check_security(self):
         require_access(c.project, 'read')
@@ -401,7 +396,7 @@ class ProjectController(FeedController):
         if mount is not None:
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
-            redirect(app.url() if callable(app.url) else app.url)  # Application has property; Subproject has method
+            redirect(app.url() if callable(app.url) else app.url, redirect_with=exc.HTTPMovedPermanently)  # Application has property; Subproject has method
         else:
             redirect(c.project.app_configs[0].url())
 

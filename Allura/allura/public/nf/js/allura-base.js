@@ -297,7 +297,7 @@ $(function(){
                 // load from cache
             }
             else {
-                $.get(userUrl + 'profile/user_card', function(data) {
+                $.get(userUrl + 'user_card', function(data) {
                     displayUserCard(instance, data);
                     umProfileStore[userUrl] = data;
                 });
