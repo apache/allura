@@ -25,7 +25,7 @@
 {% block head %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
-  {{ lib.canonical_tag() }}
+  {{ lib.canonical_tag(page) }}
   {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {% endblock %}
 

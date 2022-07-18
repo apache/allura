@@ -23,7 +23,7 @@
     {% if not threads|length %}
         <meta name="robots" content="noindex, follow">
     {% endif %}
-    {{ lib.canonical_tag() }}
+    {{ lib.canonical_tag(page) }}
     {{ lib.pagination_meta_tags(request, page, count, limit) }}
 {%  endblock %}
 
