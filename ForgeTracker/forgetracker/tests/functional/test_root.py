@@ -1405,12 +1405,15 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/bugs/search/?q=test&limit=1')
         canonical = response.html.select_one('link[rel=canonical]')
-        assert ('limit=2' not in canonical['href'])
+        assert 'limit=2' not in canonical['href']
         response = self.app.get('/p/test/bugs/search/?q=test&limit=2&page=2')
         next = response.html.select_one('link[rel=next]')
-        assert ('page=3' in next['href'])
+        assert 'page=3' in next['href']
         prev = response.html.select_one('link[rel=prev]')
-        assert ('page=1' in prev['href'])
+        assert 'page=1' in prev['href']
+        response = self.app.get('/p/test/bugs/search/?q=test&limit=2&page=0')
+        canonical = response.html.select_one('link[rel=canonical]')
+        assert 'page=' not in canonical
 
 
     def test_search_with_strange_chars(self):
