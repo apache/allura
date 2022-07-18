@@ -375,17 +375,14 @@ class ProjectController(FeedController):
             roles = M.ProjectRole.query.find(
                 {'_id': {'$in': M.ProjectRole.by_user(user).roles}})
             roles = {r.name for r in roles}
-            u = dict(
-                display_name=user.display_name,
-                username=user.username,
-                url=user.url(),
-                roles=', '.join(sorted(roles)))
+            _user = user
+            _user['roles'] = ', '.join(sorted(roles))
             if 'Admin' in roles:
-                admins.append(u)
+                admins.append(_user)
             elif 'Developer' in roles:
-                developers.append(u)
+                developers.append(_user)
             else:
-                users.append(u)
+                users.append(_user)
         get_username = lambda user: user['username']
         admins = sorted(admins, key=get_username)
         developers = sorted(developers, key=get_username)
@@ -401,7 +398,7 @@ class ProjectController(FeedController):
         if mount is not None:
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
-            redirect(app.url() if callable(app.url) else app.url)  # Application has property; Subproject has method
+            redirect(app.url() if callable(app.url) else app.url, redirect_with=exc.HTTPMovedPermanently)  # Application has property; Subproject has method
         else:
             redirect(c.project.app_configs[0].url())
 

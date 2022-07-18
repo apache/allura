@@ -581,7 +581,7 @@ class Globals:
 
     @property
     def user_profile_urls_with_profile_path(self):
-        return config['user_profile_url_with_profile_path']
+        return asbool(config['user_profile_url_with_profile_path'])
 
     def app_static(self, resource, app=None):
         base = config['static.url_base']
