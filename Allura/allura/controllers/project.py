@@ -375,17 +375,19 @@ class ProjectController(FeedController):
             roles = M.ProjectRole.query.find(
                 {'_id': {'$in': M.ProjectRole.by_user(user).roles}})
             roles = {r.name for r in roles}
-            u = dict(
-                display_name=user.display_name,
-                username=user.username,
-                url=user.url(),
-                roles=', '.join(sorted(roles)))
             _user = user
             _user['roles'] = ', '.join(sorted(roles))
-            users.append(_user)
+            if 'Admin' in roles:
+                admins.append(_user)
+            elif 'Developer' in roles:
+                developers.append(_user)
+            else:
+                users.append(_user)
         get_username = lambda user: user['username']
+        admins = sorted(admins, key=get_username)
+        developers = sorted(developers, key=get_username)
         users = sorted(users, key=get_username)
-        return dict(users=users)
+        return dict(users=admins + developers + users)
 
     def _check_security(self):
         require_access(c.project, 'read')
