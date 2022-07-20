@@ -18,30 +18,40 @@
 -#}
 {% set hide_left_bar = True %}
 {% extends g.theme.master %}
-
+{% set legacy_chrome = False %}
+{% block extra_css %}<style>.pad{ min-height: 0 } .full-width{ width: 100%} .flex-container{display: flex; justify-content: center; align-items: center; flex-direction: column;} .extra-pad{padding: 10px;}</style>{% endblock %}
 {% block title %} Authorize third-party application? {% endblock %}
 
-{% block header %}Authorize third party application?{% endblock %}
+{% block header %}Authorize third party application{% endblock %}
+{% block header_classes %} full-width {% endblock %}
+
 
 {% block content %}
+<div class="extra-pad">
 <p>
   {% if name %}
-    The application {{ name }} wishes to access your account using the {{ consumer.name }} key.
+      The application <strong>{{ name }}</strong> wants to access your account using the {{ consumer.name }} key.
   {% else %}
-    The application {{ consumer.name }} wishes to access your account.
+      The application <strong>{{ consumer.name }}</strong> wants to access your account.
   {% endif %}
   If you grant them access, they will be able to perform any actions on
   the site as though they were logged in as you.  Do you wish to grant
   them access?
 </p>
-<form method="POST" action="do_authorize">
-  <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
-  <input type="submit" name="no" value="No, do not authorize {{ consumer.name }}">
-  <input type="submit" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
-  {{lib.csrf_token()}}
-</form>
+
 <br style="clear:both"/>
-<h2>{{consumer.name}}</h2>
-<h3>Description</h3>
-{{consumer.description_html|safe}}
+<div class="flex-container">
+    <p><strong>App Name:</strong> {{consumer.name}}</p>
+    <p><strong>Description:</strong> <br> {{consumer.description_html|safe}}</p>
+</div>
+<br style="clear:both"/>
+<div class="flex-container">
+    <form method="POST" action="do_authorize">
+      <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
+      <input type="submit" class="submit" style="background: #ccc;color:#555" name="no" value="No, do not authorize {{ consumer.name }}">
+      <input type="submit" class="button" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
+      {{lib.csrf_token()}}
+    </form>
+</div>
+</div>
 {% endblock %}
