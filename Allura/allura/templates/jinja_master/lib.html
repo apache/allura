@@ -109,13 +109,15 @@
     {% endif %}
 {%- endmacro %}
 
-{% macro user_link(user, avatar=False, size=16, nofollow=False) -%}
+{% macro user_link(user, avatar=False, size=16, nofollow=False, show_username=False) -%}
     {% if user %}
         {% if not user.is_anonymous() %}
             {% set profile_path = user.url() + 'profile/' if g.user_profile_urls_with_profile_path else user.url() %}
             <a href="{{profile_path}}" class="user-mention" {% if nofollow %}rel="nofollow" {% endif %}>
                 {% if avatar %}
                     {{ gravatar_or_name(user, size) }}
+                {% elif show_username %}
+                    {{ h.really_unicode(user.username) }}
                 {% else %}
                     {{ h.really_unicode(user.display_name) }}
                 {% endif %}

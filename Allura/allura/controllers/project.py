@@ -49,6 +49,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin, exceptions
 from .search import ProjectBrowseController
+from allura.ext.user_profile.user_main import UserProfileApp
 
 log = logging.getLogger(__name__)
 
@@ -398,7 +399,9 @@ class ProjectController(FeedController):
         if mount is not None:
             if hasattr(app, 'default_redirect'):
                 app.default_redirect()
-            redirect(app.url() if callable(app.url) else app.url, redirect_with=exc.HTTPMovedPermanently)  # Application has property; Subproject has method
+            # 301 redirect for user profiles only
+            args = dict(redirect_with=exc.HTTPMovedPermanently) if isinstance(app, UserProfileApp) else dict()
+            redirect(app.url() if callable(app.url) else app.url, **args)  # Application has property; Subproject has method
         else:
             redirect(c.project.app_configs[0].url())
 

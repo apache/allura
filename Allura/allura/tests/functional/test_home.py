@@ -208,7 +208,7 @@ class TestProjectHome(TestController):
         r = self.app.get('/p/test/_members/')
 
         assert '<td>Test Admin</td>' in r
-        assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td><a href="/u/test-admin/profile/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
         tr = r.html.findAll('tr')
         assert "<td>Test Admin</td>" in str(tr[1])
@@ -223,7 +223,7 @@ class TestProjectHome(TestController):
         r = self.app.get('/p/test/_members/',
                          extra_environ=dict(username='*anonymous'))
         assert '<td>Test Admin</td>' in r
-        assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td><a href="/u/test-admin/profile/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
 
     def test_toolaccess_before_subproject(self):

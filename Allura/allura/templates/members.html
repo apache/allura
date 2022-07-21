@@ -36,7 +36,7 @@
     {%for user in users%}
     <tr>
         <td>{{ user.display_name }}</td>
-        <td>{{ lib.user_link(user) }}</td>
+        <td>{{ lib.user_link(user, show_username=True) }}</td>
         <td>{{user.roles}}</td>
     </tr>
     {%endfor%}

@@ -950,7 +950,7 @@ class TestNeighborhood(TestController):
                             {'$set': {'disabled': True}})
         self.app.get('/u/donald-duck/', status=404, extra_environ={'username': '*anonymous'})
         self.app.get('/u/donald-duck/', status=404, extra_environ={'username': 'test-user'})
-        self.app.get('/u/donald-duck/', status=302, extra_environ={'username': 'test-admin'})  # site admin user
+        self.app.get('/u/donald-duck/', status=301, extra_environ={'username': 'test-admin'})  # site admin user
 
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')
