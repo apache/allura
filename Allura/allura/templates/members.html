@@ -19,6 +19,7 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set hide_left_bar = True %}
 {% set h1_text = c.project.name ~ ' ' ~ 'Project' ~ ' ' ~ 'Member List' %}
+{% set profile_path = 'profile/' if g.user_profile_urls_with_profile_path else '' %}
 {% extends g.theme.master %}
 {% block title %}{{ h1_text }}{% endblock %}
 {% block header %}Members{% endblock %}
@@ -36,7 +37,7 @@
     {%for user in users%}
     <tr>
         <td>{{ user.display_name }}</td>
-        <td>{{ lib.user_link(user, show_username=True) }}</td>
+        <td><a href="{{ user.url() ~ profile_path }}">{{ user.username }}</a></td>
         <td>{{user.roles}}</td>
     </tr>
     {%endfor%}
