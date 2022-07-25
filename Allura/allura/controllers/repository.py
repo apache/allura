@@ -927,9 +927,8 @@ class FileBrowser(BaseController):
             return dict(a=a, b=b, diff=diff)
 
         # could consider making Blob.__iter__ do unicode conversion?
-        # py2 unified_diff can handle some unicode but not consistently, so best to do ensure_str (can drop it on py3)
-        la = [six.ensure_str(h.really_unicode(line)) for line in a]
-        lb = [six.ensure_str(h.really_unicode(line)) for line in b]
+        la = [h.really_unicode(line) for line in a]
+        lb = [h.really_unicode(line) for line in b]
         adesc = 'a' + h.really_unicode(apath)
         bdesc = 'b' + h.really_unicode(b.path())
 
@@ -943,9 +942,14 @@ class FileBrowser(BaseController):
             hd = HtmlSideBySideDiff()
             diff = hd.make_table(la, lb, adesc, bdesc)
         else:
-            # py2 unified_diff can handle some unicode but not consistently, so best to do str() and ensure_str()
-            # (can drop it on py3)
-            diff = ''.join(difflib.unified_diff(la, lb, six.ensure_str(adesc), six.ensure_str(bdesc)))
+            # always end with a newline, and indicate if original file didn't
+            # doesn't work well with sidebyside (above), but that's ok without this too
+            if la and not la[-1].endswith('\n'):
+                la[-1] += '\n\\ No newline at end of file\n'
+            if lb and not lb[-1].endswith('\n'):
+                lb[-1] += '\n\\ No newline at end of file\n'
+
+            diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
         return dict(a=a, b=b, diff=diff)
 
 
