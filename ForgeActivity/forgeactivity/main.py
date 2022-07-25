@@ -149,7 +149,8 @@ class ForgeActivityController(BaseController):
                     t.actor.activity_extras.icon_url = re.sub(r'([&?])d=[^&]*',
                                                               r'\1d={}'.format(default_avatar),
                                                               t.actor.activity_extras.icon_url)
-            t.actor.activity_url = f'{t.actor.activity_url}profile/'
+            if t.actor.activity_url:
+                t.actor.activity_url = f'{t.actor.activity_url}profile/'
 
             should_noindex = any(name in noindex_tags for name in t.tags)
             t.obj.noindex = should_noindex
