@@ -309,6 +309,8 @@ class PageList(ew_core.Widget):
         def page_url(page):
             params = request.GET.copy()
             params['page'] = page - page_offset
+            if params['page'] == 0:
+                del params['page']
             # REQUEST_URI keeps double-slashes, but not available in all environments (like tests)
             curr_path = urlparse(request.environ.get('REQUEST_URI')).path or request.path
             return url(curr_path, params)

@@ -477,16 +477,21 @@ class TestRootController(TestController):
         assert '(Page 1 of 4)' in r
         assert '<td>label30</td>' in r
         assert '<td>label1</td>' in r
+
         r = self.app.get('/wiki/browse_tags/?page=2')
+        # back to first page (page 0) doesn't need page=0 in url:
+        assert '<a href="/wiki/browse_tags/">' in r
+        assert '<a href="/wiki/browse_tags/?page=0">' not in r
         assert '<td>label69</td>' in r
         assert '<td>label70</td>' in r
         r.mustcontain('canonical')
         canonical = r.html.select_one('link[rel=canonical]')
         assert 'browse_tags' in canonical['href']
         next = r.html.select_one('link[rel=next]')
-        assert('page=3' in next['href'])
+        assert 'page=3' in next['href']
         prev = r.html.select_one('link[rel=prev]')
-        assert('page=1' in prev['href'])
+        assert 'page=1' in prev['href']
+
         r = self.app.get('/wiki/browse_tags/?page=0')
         canonical = r.html.select_one('link[rel=canonical]')
         assert 'page=' not in canonical
