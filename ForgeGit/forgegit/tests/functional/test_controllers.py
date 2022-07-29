@@ -556,10 +556,13 @@ class TestRestController(_TestCase):
     def test_index(self):
         resp = self.app.get('/rest/p/test/src-git/', status=200)
         assert_equal(resp.json, {
+            'api_url': 'http://localhost/rest/p/test/src-git/',
+            'url': 'http://localhost/p/test/src-git/',
+            'mount_label': 'Git',
+            'mount_point': 'src-git',
+            'name': 'git',
+            'clone_url_file': '/srv/git/p/test/testgit',  # should be "src-git" but test data is weird?
             'commit_count': 5,
-            'name': 'Git',
-            'type': 'Git',
-            'clone_url_file': '/srv/git/p/test/testgit',
         })
 
     def test_commits(self):

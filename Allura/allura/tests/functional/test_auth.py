@@ -45,7 +45,7 @@ import oauth2
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.tests.decorators import audits, out_audits
-from alluratest.controller import setup_trove_categories
+from alluratest.controller import setup_trove_categories, TestRestApiBase
 from allura import model as M
 from allura.lib import plugin
 from allura.lib import helpers as h
@@ -1136,6 +1136,43 @@ class TestAuth(TestController):
         )
         assert_equal(r.location, 'http://localhost/')
         assert_not_equal(r.content_length, 777)
+
+
+class TestAuthRest(TestRestApiBase):
+
+    def test_tools_list_anon(self):
+        resp = self.api_get('/rest/auth/tools/wiki', user='*anonymous')
+        assert_equal(resp.json, {
+            'tools': []
+        })
+
+    def test_tools_list_invalid_tool(self):
+        resp = self.api_get('/rest/auth/tools/af732q9547235')
+        assert_equal(resp.json, {
+            'tools': []
+        })
+
+    @td.with_tool('test', 'Wiki', mount_point='docs', mount_label='Documentation')
+    def test_tools_list_wiki(self):
+        resp = self.api_get('/rest/auth/tools/wiki')
+        assert_equal(resp.json, {
+            'tools': [
+                {
+                    'mount_label': 'Wiki',
+                    'mount_point': 'wiki',
+                    'name': 'wiki',
+                    'url': 'http://localhost/adobe/wiki/',
+                    'api_url': 'http://localhost/rest/adobe/wiki/',
+                },
+                {
+                    'mount_label': 'Documentation',
+                    'mount_point': 'docs',
+                    'name': 'wiki',
+                    'url': 'http://localhost/p/test/docs/',
+                    'api_url': 'http://localhost/rest/p/test/docs/',
+                },
+            ]
+        })
 
 
 class TestPreferences(TestController):

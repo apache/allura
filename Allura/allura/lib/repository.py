@@ -250,6 +250,16 @@ class RepositoryApp(Application):
     def uninstall(self, project):
         allura.tasks.repo_tasks.uninstall.post()
 
+    def __json__(self):
+        data = super().__json__()
+        repo: M.Repository = self.repo
+        for clone_cat in repo.clone_command_categories(anon=c.user.is_anonymous()):
+            respkey = 'clone_url_' + clone_cat['key']
+            data[respkey] = repo.clone_url(clone_cat['key'],
+                                           username='' if c.user.is_anonymous() else c.user.username,
+                                           )
+        return data
+
 
 class RepoAdminController(DefaultAdminController):
 

@@ -313,6 +313,11 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
     def index(self, **kw):
         app: Application = c.app
         repo: M.Repository = app.repo
+
+        # core fields, shared in other API endpoints
+        resp = app.__json__()
+
+        # more expensive fields that we only show in this individual API endpoint
         try:
             all_commits = repo._impl.new_commits(all_commits=True)
         except Exception:
@@ -320,16 +325,8 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
             commit_count = None
         else:
             commit_count = len(all_commits)
-        resp = dict(
-            commit_count=commit_count,
-            name=app.config.options.mount_label,
-            type=app.tool_label,
-        )
-        for clone_cat in repo.clone_command_categories(anon=c.user.is_anonymous()):
-            respkey = 'clone_url_' + clone_cat['key']
-            resp[respkey] = repo.clone_url(clone_cat['key'],
-                                           username='' if c.user.is_anonymous() else c.user.username,
-                                           )
+        resp['commit_count'] = commit_count
+
         return resp
 
     @expose('json:')

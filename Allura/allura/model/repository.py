@@ -365,7 +365,6 @@ class Repository(Artifact, ActivityObject):
     fs_path = FieldProperty(str)
     url_path = FieldProperty(str)
     status = FieldProperty(str)
-    email_address = ''
     additional_viewable_extensions = FieldProperty(str)
     heads = FieldProperty(S.Deprecated)
     branches = FieldProperty(S.Deprecated)

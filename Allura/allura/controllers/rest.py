@@ -31,6 +31,7 @@ import colander
 from ming.orm import session
 
 from allura import model as M
+from allura.controllers.auth import AuthRestController
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
@@ -48,6 +49,7 @@ class RestController:
 
     def __init__(self):
         self.oauth = OAuthNegotiator()
+        self.auth = AuthRestController()
 
     def _check_security(self):
         if not request.path.startswith('/rest/oauth/'):  # everything but OAuthNegotiator
