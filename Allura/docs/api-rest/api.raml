@@ -54,7 +54,6 @@ documentation:
       get:
         queryParameters:
           perm:
-            displayName: Permission
             required: true
             type: string
             example: create
@@ -113,7 +112,6 @@ documentation:
         get:
           queryParameters:
             perm:
-              displayName: Permission
               required: true
               type: string
               example: create
@@ -127,7 +125,6 @@ documentation:
         displayName: SCM Tool
         uriParameters:
           scm_tool:
-            displayName: Name of SCM Tool
             type: string
             example: git
 
@@ -152,10 +149,8 @@ documentation:
           }
         }
 
-        displayName: Wiki
         uriParameters:
          wiki:
-           displayName: Wiki Name
            type: string
            example: wiki
 
@@ -168,10 +163,8 @@ documentation:
               }
             }
 
-          displayName: Title
           uriParameters:
            title:
-             displayName: Wiki Title
              type: string
              example: Home
           get:
@@ -199,7 +192,6 @@ documentation:
           get:
             queryParameters:
               perm:
-                displayName: Permission
                 required: true
                 type: string
                 example: post
@@ -218,7 +210,6 @@ documentation:
         displayName: Tracker Url
         uriParameters:
          tracker:
-           displayName: Tracker Name
            type: string
            example: tickets
 
@@ -331,7 +322,6 @@ documentation:
         /_discuss/thread/{threadId}:
           uriParameters:
            threadId:
-             displayName: Thread ID
              type: string
              example: f78b98a0
 
@@ -342,7 +332,6 @@ documentation:
           /{slug}:
             uriParameters:
              slug:
-               displayName: Slug
                type: string
                example: 9133
             get:
@@ -383,7 +372,6 @@ documentation:
           get:
             queryParameters:
               perm:
-                displayName: Permission
                 required: true
                 type: string
                 example: post
@@ -404,7 +392,6 @@ documentation:
         displayName: Discussion
         uriParameters:
          discussion:
-           displayName: Discussion Tool Name
            type: string
            example: "discussion"
         get:
@@ -424,7 +411,6 @@ documentation:
           displayName: forum
           uriParameters:
            forum:
-             displayName: Forum Name
              type: string
              example: general
 
@@ -447,7 +433,6 @@ documentation:
           get:
             queryParameters:
               perm:
-                displayName: Permission
                 required: true
                 type: string
                 example: post
@@ -467,7 +452,6 @@ documentation:
         displayName: Blog
         uriParameters:
          blog:
-           displayName: Blog Name
            type: string
            example: blog
 
@@ -514,15 +498,12 @@ documentation:
             displayName: Blog Post
             uriParameters:
              year:
-               displayName: Year
                type: number
                example: 2015
              month:
-               displayName: Month
                type: string
                example: 04
              title:
-               displayName: Title
                type: string
                example: project-insights
 
@@ -556,7 +537,6 @@ documentation:
           get:
             queryParameters:
               perm:
-                displayName: Permission
                 required: true
                 type: string
                 example: post
