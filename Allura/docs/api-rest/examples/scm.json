@@ -1,6 +1,9 @@
 {
-  "name": "Code",
-  "type": "Git",
+  "url": "https://forge-allura.apache.org/p/test/code/",
+  "api_url": "https://forge-allura.apache.org/rest/p/test/code/",
+  "mount_label": "Code",
+  "mount_point": "code",
+  "name": "git",
   "commit_count": 17,
   "clone_url_https_anon": "https://forge-allura.apache.org/git/p/test/code",
   "clone_url_ro": "git://forge-allura.apache.org/git/p/test/code"

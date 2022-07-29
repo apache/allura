@@ -15,9 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import annotations
+
 import logging
 from calendar import timegm
 from collections import Counter, OrderedDict
+from collections.abc import Iterable
 from hashlib import sha256
 import typing
 from datetime import datetime
@@ -67,6 +70,7 @@ import six
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
+    from allura.model import AppConfig
 
 
 log = logging.getLogger(__name__)
@@ -250,7 +254,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
     acl = FieldProperty(ACL(permissions=_perms_init))
     neighborhood_invitations = FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
-    app_configs = RelationProperty('AppConfig')
+    app_configs: Iterable[AppConfig] = RelationProperty('AppConfig')
     category_id = FieldProperty(S.ObjectId, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
     labels = FieldProperty([str])
@@ -899,7 +903,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
             app.install(self)
         return app
 
-    def uninstall_app(self, mount_point):
+    def uninstall_app(self, mount_point: str):
         app = self.app_instance(mount_point)
         if app is None:
             return
@@ -908,7 +912,7 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         with h.push_config(c, project=self, app=app):
             app.uninstall(self)
 
-    def app_instance(self, mount_point_or_config):
+    def app_instance(self, mount_point_or_config: AppConfig | str):
         if isinstance(mount_point_or_config, AppConfig):
             app_config = mount_point_or_config
         else:
@@ -921,12 +925,12 @@ class Project(SearchIndexable, MappedClass, ActivityNode, ActivityObject):
         else:
             return App(self, app_config)
 
-    def app_config(self, mount_point):
+    def app_config(self, mount_point: str):
         return AppConfig.query.find({
             'project_id': self._id,
             'options.mount_point': mount_point}).first()
 
-    def app_config_by_tool_type(self, tool_type):
+    def app_config_by_tool_type(self, tool_type: str):
         for ac in self.app_configs:
             if ac.tool_name == tool_type:
                 return ac

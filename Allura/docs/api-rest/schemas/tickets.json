@@ -46,7 +46,7 @@
                 },
                 "default": {
                   "id": "default",
-                  "type": ""
+                  "type": "string"
                 },
                 "description": {
                   "id": "description",

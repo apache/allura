@@ -17,7 +17,9 @@
 #       under the License.
 #
 #
-# http://apiworkbench.com/ is a useful tool to edit this file
+# https://github.com/mulesoft/api-designer is a useful tool to edit this file
+# web version http://mulesoft.github.io/api-designer/
+# version that works well with local files: https://github.com/sichvoge/api-designer-fs but you must change git:// to https:// in its package.json before `npm install`
 ---
 title: Apache Allura
 version: 1
@@ -37,6 +39,25 @@ baseUriParameters:
 documentation:
   - title: API Overview
     content: !include docs.md
+
+/auth:
+    description: |
+      Authorization related APIs.  See also OAuth
+
+    /tools/{tool_type}:
+      uriParameters:
+        tool_type:
+          type: string
+          example: git
+      type: {
+        generic: {
+          example: !include examples/auth-tools.json,
+          schema: !include schemas/auth-tools.json
+        }
+      }
+      get:
+        description: |
+          List tools (e.g. "git" repos) that the current user is associated with
 
 /oauth:
     description: |
@@ -263,7 +284,7 @@ documentation:
                       description: ticket description
                       type: string
                       required: false
-                    ticket_form.assigned_to::
+                    ticket_form.assigned_to:
                       type: string
                       required: false
                       description: username of ticket assignee
@@ -311,7 +332,7 @@ documentation:
                     description: ticket description
                     type: string
                     required: false
-                  ticket_form.assigned_to::
+                  ticket_form.assigned_to:
                     type: string
                     required: false
                     description: username of ticket assignee

@@ -554,6 +554,21 @@ class AuthController(BaseController):
             redirect('/')
 
 
+class AuthRestController:
+
+    @expose('json:')
+    def tools(self, tool_type: str):
+        apps = []
+        for p in c.user.my_projects():
+            for ac in p.app_configs:
+                if ac.tool_name == tool_type and h.has_access(ac, 'read'):
+                    apps.append(p.app_instance(ac))
+
+        return {
+            'tools': apps,  # TG automatically runs their __json__ methods
+        }
+
+
 def select_new_primary_addr(user, ignore_emails=[]):
     for obj_e in user.email_addresses:
         obj = user.address_object(obj_e)

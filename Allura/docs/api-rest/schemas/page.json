@@ -4,7 +4,7 @@
   "properties": {
     "related_artifacts": {
       "items": {
-        "type": ["null", "string"],
+        "type": ["null", "string"]
       },
       "type": ["null", "array"],
       "id": "related_artifacts"

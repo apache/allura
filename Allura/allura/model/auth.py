@@ -15,6 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from __future__ import annotations
+
 import logging
 import calendar
 import typing
@@ -56,6 +58,7 @@ from .timeline import ActivityNode, ActivityObject
 
 if typing.TYPE_CHECKING:
     from ming.odm.mapper import Query
+    from allura.model.project import Project
 
 
 log = logging.getLogger(__name__)
@@ -768,9 +771,9 @@ class User(MappedClass, ActivityNode, ActivityObject, SearchIndexable):
     def script_name(self):
         return '/u/' + self.username + '/'
 
-    def my_projects(self):
+    def my_projects(self) -> typing.Iterable[Project]:
         if self.is_anonymous():
-            return
+            return []
         roles = g.credentials.user_roles(user_id=self._id)
         # filter out projects to which the user belongs to no named groups (i.e., role['roles'] is empty)
         projects = [r['project_id'] for r in roles if r['roles']]

@@ -3,13 +3,25 @@
     "type": "object",
     "id": "#",
     "properties": {
+        "url": {
+            "type": "string",
+            "id": "url"
+        },
+        "api_url": {
+            "type": "string",
+            "id": "api_url"
+        },
+        "mount_label": {
+            "type": "string",
+            "id": "mount_label"
+        },
+        "mount_point": {
+            "type": "string",
+            "id": "mount_point"
+        },
         "name": {
             "type": "string",
             "id": "name"
-        },
-        "type": {
-            "type": "string",
-            "id": "type"
         },
         "commit_count": {
             "type": "integer",
@@ -17,15 +29,15 @@
         },
         "clone_url_https_anon": {
             "type": "string",
-            "id": "name"
+            "id": "clone_url_https_anon"
         },
         "clone_url_ro": {
             "type": "string",
-            "id": "name"
+            "id": "clone_url_ro"
         },
         "clone_url_*": {
             "type": "string",
-            "id": "name"
+            "id": "clone_url_*"
         }
     }
 }

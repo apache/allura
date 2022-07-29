@@ -786,15 +786,15 @@ class Application:
 
         Returns dict that will be included in project's API under tools key.
         """
-        return {
+        json = {
             'name': self.config.tool_name,
             'mount_point': self.config.options.mount_point,
-            'url': self.config.url(),
-            'icons': self.icons,
-            'installable': self.installable,
-            'tool_label': self.tool_label,
+            'url': h.absurl(self.config.url()),
             'mount_label': self.config.options.mount_label
         }
+        if self.api_root:
+            json['api_url'] = h.absurl('/rest' + self.config.url())
+        return json
 
     def get_attachment_export_path(self, path='', *args):
         return os.path.join(path, self.config.options.mount_point, *args)
