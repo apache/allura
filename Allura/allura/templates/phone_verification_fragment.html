@@ -23,7 +23,9 @@
   {% import g.theme.jinja_macros as theme_macros with context %}
 {% endif %}
 {% do lib.register_react_js_files(location='head_js') %}
-{% do g.register_forge_js('js/jquery-base.js', location='head_js') %}
+{% do g.register_forge_js('js/jquery-3.6.0.min.js', location='head_js') %}
+{% do g.register_forge_js('js/jquery-migrate-3.4.0.js', location='head_js') %}
+{% do g.register_forge_js('js/jquery.cookie-1.4.1.js', location='head_js') %}
 {% do g.register_forge_js('js/phone-verification.js', location='body_js_tail') %}
 {% do g.theme.require() %}
 {% do g.resource_manager.register_widgets(c) %}
