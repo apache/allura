@@ -69,7 +69,7 @@ function manage()
         url:'{{url}}feedback_check',
         type:'GET',
         data: {'description':description},
-        success: function(status){
+        done: function(status){
             if (status == 'true'){
                 $('#button').attr('disabled', true);
                 $('#status_msg').show();

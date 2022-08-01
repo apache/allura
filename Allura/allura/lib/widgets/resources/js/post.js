@@ -37,7 +37,7 @@
                 type: 'POST',
                 url: this.parentNode.action,
                 data: jQuery(this.parentNode).serialize(),
-                success: function() {
+                done: function() {
                     if (mod === 'Delete'){
                         $(post).remove();
                     }
@@ -52,7 +52,7 @@
                         spam_block_display($(post), 'hide_spam');
                     }
                 },
-                error: function() {
+                fail: function() {
                     flash('Oops, something went wrong.', 'error')
                 },
             });
@@ -70,7 +70,7 @@
                     perm: 'post',
                     '_session_id': cval
                 },
-                success: function (data, textStatus, jqxhr) {
+                done: function (data, textStatus, jqxhr) {
                     if (data.error) {
                         flash(data.error, 'error');
                     } else if (data.username) {
@@ -84,7 +84,7 @@
                         flash('Error.  Make sure you are logged in still.', 'error');
                     }
                 },
-                error: function() {
+                fail: function() {
                     flash('Oops, something went wrong.', 'error')
                 },
             });
