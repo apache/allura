@@ -554,7 +554,13 @@ class TestRootController(_TestCase):
 
 class TestRestController(_TestCase):
     def test_index(self):
-        self.app.get('/rest/p/test/src-git/', status=200)
+        resp = self.app.get('/rest/p/test/src-git/', status=200)
+        assert_equal(resp.json, {
+            'commit_count': 5,
+            'name': 'Git',
+            'type': 'Git',
+            'clone_url_file': '/srv/git/p/test/testgit',
+        })
 
     def test_commits(self):
         self.app.get('/rest/p/test/src-git/commits', status=200)

@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#",
+    "properties": {
+        "name": {
+            "type": "string",
+            "id": "name"
+        },
+        "type": {
+            "type": "string",
+            "id": "type"
+        },
+        "commit_count": {
+            "type": "integer",
+            "id": "commit_count"
+        },
+        "clone_url_https_anon": {
+            "type": "string",
+            "id": "name"
+        },
+        "clone_url_ro": {
+            "type": "string",
+            "id": "name"
+        },
+        "clone_url_*": {
+            "type": "string",
+            "id": "name"
+        }
+    }
+}
+	
