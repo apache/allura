@@ -60,6 +60,8 @@ from allura.controllers.feed import FeedController, FeedArgs
 from .base import BaseController
 import six
 
+from ..app import Application
+
 log = logging.getLogger(__name__)
 
 
@@ -309,8 +311,26 @@ class RepoRestController(RepoRootController, AppRestControllerMixin):
 
     @expose('json:')
     def index(self, **kw):
-        all_commits = c.app.repo._impl.new_commits(all_commits=True)
-        return dict(commit_count=len(all_commits))
+        app: Application = c.app
+        repo: M.Repository = app.repo
+        try:
+            all_commits = repo._impl.new_commits(all_commits=True)
+        except Exception:
+            log.exception(f'Error getting commits on {c.app.url}')
+            commit_count = None
+        else:
+            commit_count = len(all_commits)
+        resp = dict(
+            commit_count=commit_count,
+            name=app.config.options.mount_label,
+            type=app.tool_label,
+        )
+        for clone_cat in repo.clone_command_categories(anon=c.user.is_anonymous()):
+            respkey = 'clone_url_' + clone_cat['key']
+            resp[respkey] = repo.clone_url(clone_cat['key'],
+                                           username='' if c.user.is_anonymous() else c.user.username,
+                                           )
+        return resp
 
     @expose('json:')
     def commits(self, rev=None, limit=25, **kw):

@@ -124,9 +124,14 @@ documentation:
 
       /{scm_tool}:
         description: |
-          Represents the **Git/Hg/SVN tool** and returns the commit count.
-
+          Represents a **Git/Hg/SVN tool** repo
         displayName: SCM Tool
+        type: {
+          generic: {
+            example: !include examples/scm.json,
+            schema: !include schemas/scm.json
+          }
+        }
         uriParameters:
           scm_tool:
             type: string
