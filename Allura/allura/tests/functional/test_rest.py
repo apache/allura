@@ -46,6 +46,7 @@ class TestRestHome(TestRestApiBase):
         request.headers = {}
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         self._patch_token(OAuthAccessToken)
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
@@ -58,6 +59,7 @@ class TestRestHome(TestRestApiBase):
         request.headers = {}
         request.params = {'access_token': 'foo'}
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         self._patch_token(OAuthAccessToken)
         OAuthAccessToken.query.get.return_value = None
         r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
@@ -87,6 +89,7 @@ class TestRestHome(TestRestApiBase):
         request.headers = {}
         request.params = {'access_token': access_token.api_key}
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 200)
 
@@ -97,6 +100,7 @@ class TestRestHome(TestRestApiBase):
             'Authorization': 'Bearer foo'
         }
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         self._patch_token(OAuthAccessToken)
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
@@ -110,6 +114,7 @@ class TestRestHome(TestRestApiBase):
             'Authorization': 'Bearer foo'
         }
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         self._patch_token(OAuthAccessToken)
         OAuthAccessToken.query.get.return_value = None
         r = self.api_post('/rest/p/test/wiki', access_token='foo', status=401)
@@ -142,6 +147,7 @@ class TestRestHome(TestRestApiBase):
             'Authorization': f'Bearer {token}'
         }
         request.scheme = 'https'
+        request.path = '/rest/p/test/wiki'
         r = self.api_post('/rest/p/test/wiki', access_token='foo', status=200)
         # reverse proxy situation
         request.scheme = 'http'

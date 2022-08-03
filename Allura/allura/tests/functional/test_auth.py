@@ -1857,7 +1857,7 @@ class TestOAuth(TestController):
             oauth_client.request('http://localhost/rest/p/test/', 'GET')
             oa2url = oa2_req.call_args[0][1]
             oa2url = oa2url.replace('http://localhost', '')
-            print(oa2url)
+            # print(oa2url)
             oa2kwargs = oa2_req.call_args[1]
         self.app.get(oa2url, headers=oa2kwargs['headers'], status=200)
         self.app.get(oa2url.replace('oauth_signature=', 'removed='), headers=oa2kwargs['headers'], status=401)
