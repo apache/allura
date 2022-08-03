@@ -23,9 +23,9 @@ from tg import tmpl_context as c
 from tg import request
 from webob import exc
 from tg import expose
+from tg import TGController
 from paste.deploy.converters import asbool
 
-from allura.lib.base import WsgiDispatchController
 from allura.lib.security import require, require_authenticated, require_access, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -39,7 +39,7 @@ __all__ = ['RootController']
 log = logging.getLogger(__name__)
 
 
-class BasetestProjectRootController(WsgiDispatchController, ProjectController):
+class BasetestProjectRootController(TGController, ProjectController):
     '''Root controller for testing -- it behaves just like the RootController
     plus acts as shorthand for the ProjectController at /p/test/ plus all tools are mounted,
     on-demand, at the mount point that is the same as their entry point name.
@@ -70,9 +70,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         # neighborhoods & projects handled in _lookup
 
         super().__init__()
-
-    def _setup_request(self):
-        pass
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -116,9 +113,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.project = M.Project.query.get(
             shortname='test', neighborhood_id=self.p_nbhd._id)
         auth = plugin.AuthenticationProvider.get(request)
-        if asbool(environ.get('disable_auth_magic')):
-            c.user = auth.authenticate_request()
-        else:
+        if not asbool(environ.get('disable_auth_magic')):
             user = auth.by_username(environ.get('username', 'test-admin'))
             if not user:
                 user = M.User.anonymous()
@@ -126,7 +121,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
             # save and persist, so that a creation time is set
             environ['beaker.session'].save()
             environ['beaker.session'].persist()
-            c.user = auth.authenticate_request()
+        c.user = auth.authenticate_request()
         return super()._perform_call(context)
 
 

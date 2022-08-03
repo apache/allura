@@ -49,6 +49,12 @@ class RestController:
     def __init__(self):
         self.oauth = OAuthNegotiator()
 
+    def _check_security(self):
+        if not request.path.startswith('/rest/oauth/'):  # everything but OAuthNegotiator
+            c.api_token = self._authenticate_request()
+            if c.api_token:
+                c.user = c.api_token.user
+
     def _authenticate_request(self):
         'Based on request.params or oauth, authenticate the request'
         headers_auth = 'Authorization' in request.headers
@@ -92,11 +98,9 @@ class RestController:
 
     @expose('json:')
     def notification(self, cookie='', url='', tool_name='', **kw):
-        c.api_token = self._authenticate_request()
-        user = c.api_token.user if c.api_token else c.user
         r = g.theme._get_site_notification(
             url=url,
-            user=user,
+            user=c.user,
             tool_name=tool_name,
             site_notification_cookie_value=cookie
         )
@@ -106,9 +110,6 @@ class RestController:
 
     @expose()
     def _lookup(self, name, *remainder):
-        c.api_token = self._authenticate_request()
-        if c.api_token:
-            c.user = c.api_token.user
         neighborhood = M.Neighborhood.query.get(url_prefix='/' + name + '/')
         if not neighborhood:
             raise exc.HTTPNotFound(name)

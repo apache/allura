@@ -23,11 +23,10 @@ from tg import expose, request, config, session, redirect, flash
 from tg.decorators import with_trailing_slash
 from tg import tmpl_context as c
 from tg import response
-from paste.deploy.converters import asbool
+from tg import TGController
 from webob import exc
 
 from allura.app import SitemapEntry
-from allura.lib.base import WsgiDispatchController
 from allura.lib import plugin
 from allura.controllers.error import ErrorController
 from allura.controllers.project import NeighborhoodController
@@ -52,7 +51,7 @@ class W:
     project_summary = plw.ProjectSummary()
 
 
-class RootController(WsgiDispatchController):
+class RootController(TGController):
 
     """
     The root controller for the allura application.
@@ -96,7 +95,7 @@ class RootController(WsgiDispatchController):
         n = M.Neighborhood.query.get(url_prefix=url_prefix)
         return n
 
-    def _setup_request(self):
+    def _check_security(self):
         c.project = c.app = None
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
         assert c.user is not None, ('c.user should always be at least User.anonymous(). '
