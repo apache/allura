@@ -1051,6 +1051,9 @@ class ProjectRegistrationProvider:
                 'private', False),
             apps=apps or [] if 'tools' in project_template else None)
 
+        M.AuditLog(project_id=p._id, user_id=user._id, message='Project Created!',
+                   url=neighborhood.url_prefix + 'add_project')
+
         # Setup defaults from neighborhood project template if applicable
         offset = p.next_mount_point(include_hidden=True)
         if 'groups' in project_template:
