@@ -1051,9 +1051,8 @@ class ProjectRegistrationProvider:
                 'private', False),
             apps=apps or [] if 'tools' in project_template else None)
 
-        with h.push_config(c, project=p, user=user):
-            M.AuditLog.log('Project Created!')
-        h.auditlog_user(f'Created project "{project_name}"', user=user)
+        M.AuditLog(project_id=p._id, user_id=user._id, message='Project Created!',
+                   url=neighborhood.url_prefix + 'add_project')
 
         # Setup defaults from neighborhood project template if applicable
         offset = p.next_mount_point(include_hidden=True)
