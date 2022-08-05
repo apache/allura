@@ -32,7 +32,9 @@
 
 <div>
   <div id="{{value.slug}}" class="discussion-post{%if value.is_meta %} meta_post{% endif %}">
-    {% if h.has_access(value, 'moderate')() %}
+    {% set can_moderate_post = h.has_access(value, 'moderate')() %}  {# you might have 'moderate' perm in your on post #}
+    {% set can_moderate_thread = h.has_access(value.thread, 'moderate')() %} {# but not on the whole thread #}
+    {% if can_moderate_post %}
     <div class="info grid-15 spam-present">
       <span class="spam-text">Comment has been marked as spam.&nbsp;</span>
       <form method="POST" action="{{value.url()+'moderate'}}">
@@ -59,7 +61,6 @@
        </p>
       </div>
       {% set pending = value.status == 'pending' %}
-      {% set moderator = h.has_access(value, 'moderator')() %}
       {% set current_reaction = h.get_current_reaction(value.react_users) %}
       <div class="grid-16 post-content bubble" style="width: {{indent == 0 and 652 or (indent <= 40 and 642-indent*10 or 65)}}px;  {% if indent != 0 %} margin-right:0px {% endif %}">
           <div class="header">
@@ -70,30 +71,30 @@
                 <a href="#" id="react_{{value.slug.replace('/','_')}}" data-commentlink="{{value.url()}}" data-currentreact="{{ current_reaction }}" class="reaction-button icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
                     <span><i class="fa fa-smile-o" aria-hidden="true"></i></span></a>
             {% endif %}
-            {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or moderator %}
+            {% if (h.has_access(value.thread, 'post')() and value.status == 'ok') or can_moderate_post %}
                 <a class="icon reply_post btn" href="#" style="" title="Reply" role="button"><span class="ui-button-text"><i class="fa fa-reply"></i></span></a>
             {% endif %}
             <a href="{{shortlink_url}}" title="Link" class="little_link shortlink icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"{%if value.status == 'pending'%} style="display:none"{%endif%}>
               <span><i class="fa fa-link" aria-hidden="true"></i></span></a>
 
-            {% if h.has_access(value, 'moderate')()%}
+            {% if can_moderate_post %}
                 <a href="#" title="Edit" class="icon btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only edit_post little_link"><span><i class="fa fa-pencil" aria-hidden="true"></i></span></a>
             {% endif %}
 
-                {% if h.has_access(value.thread, 'moderate')() %}
+                {% if can_moderate_thread %}{# "def moderate" endpoint requires *thread* not just post perm #}
                     {{widgets.moderate_post.display(value=value, action=value.url()+'moderate', status = value.status)}}
                 {%endif%}
             </div>
           </div>
-          <div class="display_post{% if pending and moderator %} moderate{% endif %}">
-          {% if pending and not moderator %}
+          <div class="display_post{% if pending and can_moderate_post %} moderate{% endif %}">
+          {% if pending and not can_moderate_post %}
             <b>Post awaiting moderation.</b>
           {% else %}
             {% if show_subject %}
                 <b>{{value.subject or '(no subject)'}}<br/></b>
             {% endif %}
 
-            <div{% if h.has_access(value, 'moderate') %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
+            <div{% if can_moderate_post %} class="active-md" data-markdownlink="{{value.url()}}" {% endif %}>{{g.markdown.cached_convert(value, 'text')|safe}}</div>&nbsp;
             <div class='reactions{% if not c.user.is_anonymous() %} reactions-active{% endif %}' style='user-select: none; cursor: default'>
               {% for reaction in value.react_counts %}<div class="reaction{% if current_reaction == reaction %} reaction-current{% endif %}" data-react="{{ reaction }}"><div class="emoj">{{ h.emojize(reaction) }}</div><div class="emoj-count">{{ value.react_counts[reaction] }}</div></div>{% endfor %}
             </div>
@@ -103,17 +104,15 @@
             {% endif %}
           {% endif %}
         </div>
-        {% if h.has_access(value, 'moderate')() %}
+        {% if can_moderate_post %}
         <div class="edit_post_form reply" style="display:none; padding-left: 5px;">
             {{widgets.edit_post.display(value=value, submit_text='Post', action=value.url(), primary_artifact=primary_artifact)}}
         </div>
-        {% endif %}
-        {% if h.has_access(value, 'moderate')() %}
         <div class="add_attachment_form" style="display:none; clear: both; overflow: auto;">
             {{widgets.attach_post.display(value=value, action=value.url() + 'attach')}}
         </div>
         {% endif %}
-        {% if value.attachments and (not pending or moderator) %}
+        {% if value.attachments and (not pending or can_moderate_post) %}
         <div class="attachment_holder">
           {% for att in value.attachments %}
             <div class="attachment_item">
@@ -133,7 +132,7 @@
                 </div>
                  <div class="attachment_toolbar">
                     <form method="POST" action="{{att.url()}}">
-                        {% if h.has_access(value, 'moderate')()%}
+                        {% if can_moderate_post %}
                             <a href="javascript: void(0)"  onclick="$(this).closest('form').submit();" title="Remove Attachment" class="btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only">
                                 <span><i class="fa fa-trash-o" aria-hidden="true"></i></span>
                             </a>
