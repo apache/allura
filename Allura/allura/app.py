@@ -868,10 +868,13 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
         user = model.User.by_username(username)
         if not user:
             return dict(error='User "%s" not found' % username)
-        ace = model.ACE.deny(
-            model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
+        ace = model.ACE.deny(model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
+            model.AuditLog.log('blocked user "{}" from {} for reason: "{}"'.format(
+                username,
+                self.app.config.options['mount_point'],
+                reason))
             return dict(user_id=str(user._id), username=user.username, reason=reason)
         return dict(error='User "%s" already blocked' % user.username)
 

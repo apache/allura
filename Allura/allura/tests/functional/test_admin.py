@@ -211,9 +211,15 @@ class TestProjectAdmin(TestController):
             r.json, dict(user_id=str(user._id), username='test-admin', reason='Comment'))
         user = M.User.by_username('test-admin')
         admin_role = M.ProjectRole.by_user(user)
-        app = M.Project.query.get(shortname='test').app_instance('wiki')
+        project = M.Project.query.get(shortname='test')
+        app = project.app_instance('wiki')
         ace = M.ACL.contains(M.ACE.deny(admin_role._id, 'read'), app.acl)
         assert_equals(ace.reason, 'Comment')
+        audit_log = M.AuditLog.query.find(
+            {'project_id': project._id}).sort('_id', -1).first()
+        assert 'blocked user "test-admin"' in audit_log.message
+        assert 'for reason: "Comment"' in audit_log.message
+
         r = self.app.get('/admin/wiki/permissions')
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user._id in r
 
