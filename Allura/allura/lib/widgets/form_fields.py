@@ -134,7 +134,7 @@ class ProjectUserSelect(ew.InputField):
                 data: {
                   term: request.term
                 },
-                done: function (data) {
+                success: function (data) {
                   response(data.users);
                 }
               });
@@ -198,7 +198,7 @@ class NeighborhoodProjectSelect(ew.InputField):
                 data: {
                   term: request.term
                 },
-                done: function (data) {
+                success: function (data) {
                   response(data.projects);
                 }
               });

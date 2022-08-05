@@ -260,7 +260,7 @@ $(function(){
                     'text' : markdown,
                     '_session_id' : $.cookie('_session_id')
                 },
-                done: callback
+                success: callback
             });
         });
     });

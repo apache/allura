@@ -83,7 +83,7 @@
             data: {
               '_session_id': $.cookie('_session_id')
             },
-            done: function(data) {
+            success: function(data) {
                 $(elem).parent().parent().remove();
             }
           });

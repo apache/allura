@@ -93,7 +93,7 @@ function reactComment(btn, r) {
             'r': r,
             '_session_id': $.cookie('_session_id')
         },
-        done: function (res) {
+        success: function (res) {
             var react_html = '';
 
             for (var i in res.counts) {

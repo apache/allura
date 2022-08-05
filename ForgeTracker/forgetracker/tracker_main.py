@@ -399,7 +399,7 @@ class ForgeTrackerApp(Application):
         $(function() {
             $.ajax({
                 url:'%(app_url)sbin_counts',
-                done: function(data) {
+                success: function(data) {
                     var $spans = $('.search_bin > span');
                     $.each(data.bin_counts, function(i, item) {
                         $spans.each(function() {
@@ -413,7 +413,7 @@ class ForgeTrackerApp(Application):
             if ($('.milestones').length > 0) {
                 $.ajax({
                     url: '%(app_url)smilestone_counts',
-                    done: function(data) {
+                    success: function(data) {
                         var $spans = $('.milestones > span');
                         $.each(data.milestone_counts, function(i, item) {
                             $spans.each(function() {

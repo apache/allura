@@ -522,7 +522,7 @@ var Main = React.createClass({
             type: 'POST',
             url: url,
             data: params,
-            done: function() {
+            success: function() {
                 $('#messages').notify('Tool order updated',
                     {
                         status: 'confirm',
@@ -532,7 +532,7 @@ var Main = React.createClass({
                 _this.getNavJson();
             },
 
-            fail: function() {
+            error: function() {
                 $('#messages').notify('Error saving tool order.',
                     {
                         status: 'error'

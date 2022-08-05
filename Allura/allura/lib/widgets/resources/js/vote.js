@@ -30,7 +30,7 @@ $(document).ready(function() {
         vote: vote,
         _session_id: _session_id
       },
-      done: function(data) {
+      success: function(data) {
         if (data.status == 'ok') {
           $('#vote .votes-up').text(data.votes_up);
           $('#vote .votes-down').text(data.votes_down);
