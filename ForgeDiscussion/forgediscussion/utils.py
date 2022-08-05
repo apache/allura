@@ -20,7 +20,7 @@
 from bson import ObjectId
 from tg import flash
 from allura.lib import helpers as h
-from allura.model import ProjectRole, ACE, ALL_PERMISSIONS, DENY_ALL
+from allura.model import ProjectRole, ACE, ALL_PERMISSIONS, DENY_ALL, AuditLog
 from forgediscussion import model as DM
 
 
@@ -43,6 +43,8 @@ def create_forum(app, new_forum):
                  anon_posts=new_forum.get('anon_posts', False),
                  monitoring_email=new_forum.get('monitoring_email', None),
                  )
+    AuditLog.log('created forum "{}" for {}'.format(
+        f.name, app.config.options['mount_point']))
     if f.members_only and f.anon_posts:
         flash('You cannot have anonymous posts in a members only forum.',
               'warning')

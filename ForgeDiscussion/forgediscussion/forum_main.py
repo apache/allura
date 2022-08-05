@@ -319,8 +319,14 @@ class ForumAdminController(DefaultAdminController):
             forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
                 forum.deleted = True
+                M.AuditLog.log('deleted forum "{}" from {}'.format(
+                    forum.name,
+                    self.app.config.options['mount_point']))
             elif f.get('undelete'):
                 forum.deleted = False
+                M.AuditLog.log('undeleted forum "{}" from {}'.format(
+                    forum.name,
+                    self.app.config.options['mount_point']))
             else:
                 if '.' in f['shortname'] or '/' in f['shortname'] or ' ' in f['shortname']:
                     flash('Shortname cannot contain space . or /', 'error')

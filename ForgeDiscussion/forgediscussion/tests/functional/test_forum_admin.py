@@ -36,6 +36,7 @@ class TestForumAdmin(TestController):
         self.app.get('/discussion/')
 
     def test_forum_CRUD(self):
+        project = M.Project.query.get(shortname='test')
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
         form['add_forum.shortname'] = 'testforum'
@@ -51,6 +52,8 @@ class TestForumAdmin(TestController):
                                   'forum-0.shortname': 'NewTestForum',
                                   'forum-0.description': 'My desc',
                                   'forum-0.monitoring_email': ''})
+        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
+        assert 'created forum "Test Forum"' in audit_log.message
         r = self.app.get('/admin/discussion/forums')
         assert 'New Test Forum' in r
         assert 'My desc' in r
@@ -129,6 +132,7 @@ class TestForumAdmin(TestController):
         assert 'error' in r
 
     def test_delete_undelete(self):
+        project = M.Project.query.get(shortname='test')
         r = self.app.get('/admin/discussion/forums')
         form = r.forms['add-forum']
         form['add_forum.shortname'] = 'testforum'
@@ -148,6 +152,8 @@ class TestForumAdmin(TestController):
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
         assert len(soup_form.findAll('input', {'value': 'Delete'})) == 1
+        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
+        assert 'deleted forum "Test Forum"' in audit_log.message
         r = self.app.post('/admin/discussion/update_forums',
                           params={'forum-0.undelete': 'on',
                                   'forum-0.id': str(frm._id),
@@ -156,6 +162,8 @@ class TestForumAdmin(TestController):
         r = self.app.get('/admin/discussion/forums')
         soup_form = r.html.find('form', action='update_forums')
         assert len(soup_form.findAll('input', {'value': 'Delete'})) == 2
+        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort('_id', -1).first()
+        assert 'undeleted forum "Test Forum"' in audit_log.message
 
     def test_members_only(self):
         # make a forum anyone can see
