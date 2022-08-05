@@ -944,7 +944,12 @@ class DefaultAdminController(BaseController, AdminControllerMixin):
 
         """
         require_access(self.app, 'configure')
+        old_label = self.app.config.options['mount_label']
         self.app.config.options['mount_label'] = mount_label
+        model.AuditLog.log('updated label: "{}" => "{}" for {}'.format(
+            old_label,
+            mount_label,
+            self.app.config.options['mount_point']))
         g.post_event('project_menu_updated')
         redirect(six.ensure_text(request.referer or '/'))
 
