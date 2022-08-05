@@ -214,7 +214,9 @@ http://ftp-master.metadata.debian.org/changelogs//main/m/mime-support/mime-suppo
 
 jQuery, jQueryUI, and various related plugins, which are available
 under the MIT license.  For details, see the individual files:
-    allura/public/nf/js/jquery-base.js
+    allura/public/nf/js/jquery-3.6.0.min.js
+    allura/public/nf/js/jquery-migrate-3.4.0.js
+    allura/public/nf/js/jquery.cookie-1.4.1.js
     allura/public/nf/js/jquery-ui.min.js
     allura/public/nf/css/smoothness/jquery-ui.min.css
     allura/public/nf/js/jquery.daterangepicker.js
