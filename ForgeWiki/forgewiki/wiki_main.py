@@ -932,12 +932,17 @@ class WikiAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_home(self, new_home):
+        old_home = self.app.root_page_name
         self.app.root_page_name = new_home
         self.app.upsert_root(new_home)
         flash('Home updated')
         mount_base = c.project.url() + \
             self.app.config.options.mount_point + '/'
         url = h.really_unicode(mount_base) + h.really_unicode(new_home) + '/'
+        M.AuditLog.log('set home page: "{}" => "{}" for {}'.format(
+            old_home,
+            new_home,
+            self.app.config.options['mount_point']))
         redirect(h.urlquote(url))
 
     @without_trailing_slash
@@ -945,9 +950,27 @@ class WikiAdminController(DefaultAdminController):
     @require_post()
     def set_options(self, show_discussion=False, show_left_bar=False, show_right_bar=False,
                     allow_email_posting=False):
-        self.app.show_discussion = show_discussion
-        self.app.show_left_bar = show_left_bar
-        self.app.show_right_bar = show_right_bar
-        self.app.allow_email_posting = allow_email_posting
+        mount_point = self.app.config.options['mount_point']
+
+        if self.app.show_discussion != bool(show_discussion):
+            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+                mount_point, "Show Discussion", self.app.show_discussion, bool(show_discussion)))
+            self.app.show_discussion = show_discussion
+
+        if self.app.show_left_bar != bool(show_left_bar):
+            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+                mount_point, "Show left Bar", self.app.show_left_bar, bool(show_left_bar)))
+            self.app.show_left_bar = show_left_bar
+
+        if self.app.show_right_bar != bool(show_right_bar):
+            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+                mount_point, "Show metadata", self.app.show_right_bar, bool(show_right_bar)))
+            self.app.show_right_bar = show_right_bar
+
+        if self.app.allow_email_posting != bool(allow_email_posting):
+            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+                mount_point, "Allow posting replies via email", self.app.allow_email_posting, bool(allow_email_posting)))
+            self.app.allow_email_posting = allow_email_posting
+
         flash('Wiki options updated')
         redirect(six.ensure_text(request.referer or '/'))
