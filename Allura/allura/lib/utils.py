@@ -389,7 +389,6 @@ class AntiSpam:
 
 
 class TruthyCallable:
-
     '''
     Wraps a callable to make it truthy in a boolean context.
 
@@ -404,6 +403,14 @@ class TruthyCallable:
 
     def __bool__(self):
         return self.callable()
+
+    def __eq__(self, other):
+        if other is True and bool(self):
+            return True
+        elif other is False and not bool(self):
+            return True
+        else:
+            return NotImplemented
 
 
 class TransformedDict(collections.MutableMapping):

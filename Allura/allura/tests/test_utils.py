@@ -190,6 +190,10 @@ class TestTruthyCallable(unittest.TestCase):
         assert bool(true_predicate) is True
         assert bool(false_predicate) is False
 
+        t, f = True, False  # use variables because '== True' would generate warnings, and we do want '==' not 'is'
+        assert true_predicate == t
+        assert false_predicate == f
+
 
 class TestCaseInsensitiveDict(unittest.TestCase):
 
