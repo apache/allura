@@ -535,10 +535,20 @@ class BlogAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_options(self, show_discussion=False, allow_email_posting=False):
-        self.app.config.options[
-            'show_discussion'] = show_discussion and True or False
-        self.app.config.options[
-            'AllowEmailPosting'] = allow_email_posting and True or False
+        mount_point = self.app.config.options['mount_point']
+
+        if self.app.config.options.get('show_discussion') != bool(show_discussion):
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
+                mount_point, "show_discussion", self.app.config.options.get('show_discussion'),
+                bool(show_discussion)))
+            self.app.config.options['show_discussion'] = bool(show_discussion)
+
+        if self.app.config.options.get('AllowEmailPosting') != bool(allow_email_posting):
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
+                mount_point, "AllowEmailPosting", self.app.config.options.get('AllowEmailPosting'),
+                bool(allow_email_posting)))
+            self.app.config.options['AllowEmailPosting'] = bool(allow_email_posting)
+
         flash('Blog options updated')
         redirect(six.ensure_text(request.referer or '/'))
 
