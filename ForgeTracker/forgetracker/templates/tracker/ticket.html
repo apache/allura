@@ -170,7 +170,7 @@
 {% endblock %}
 
 {% block after_content %}
-  {{lib.related_artifacts(ticket)}}
+  {{lib.related_artifacts(ticket, c.user)}}
   <div id="discussion_holder">
     <h2>Discussion</h2>
     {% set thread=ticket.discussion_thread %}

@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import 'allura:templates/jinja_master/lib.html' as lib %}
 <div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
   <div class="clear"></div>
   {% set pager_widget_output = widget.fields['page_list'].display(limit=limit, page=page, count=count) %}

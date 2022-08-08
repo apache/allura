@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import 'allura:templates/jinja_master/lib.html' as lib %}
 <form {{widget.j2_attrs({'name':name, 'id':id, 'method':method, 'action':action, 'enctype':enctype})}}
     {{attrs|default({}, true)|xmlattr}}>
   <fieldset class="grid-19">
