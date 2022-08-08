@@ -135,6 +135,9 @@ class SVNRepoAdminController(RepoAdminController):
                                                 self.app.repo.name,
                                                 checkout_url)):
             if (self.app.config.options.get('checkout_url') or '') != checkout_url:
+                M.AuditLog.log('{}: set "{}" {} => {}'.format(
+                    self.app.config.options['mount_point'], "checkout_url",
+                    self.app.config.options.get('checkout_url'), checkout_url))
                 self.app.config.options.checkout_url = checkout_url
                 flash("Checkout URL successfully changed")
         else:
@@ -142,6 +145,9 @@ class SVNRepoAdminController(RepoAdminController):
                   checkout_url, "error")
         if 'external_checkout_url' not in c.form_errors:
             if (self.app.config.options.get('external_checkout_url') or '') != external_checkout_url:
+                M.AuditLog.log('{}: set "{}" {} => {}'.format(
+                    self.app.config.options['mount_point'], "external_checkout_url",
+                    self.app.config.options.get('external_checkout_url'), external_checkout_url))
                 self.app.config.options.external_checkout_url = external_checkout_url
                 flash("External checkout URL successfully changed")
         else:
@@ -174,6 +180,9 @@ class SVNImportController(BaseController, AdminControllerMixin):
                     cloned_from_path=None,
                     cloned_from_name=None,
                     cloned_from_url=checkout_url)
+                M.AuditLog.log('{}: import initiated from "{}"'.format(
+                    self.app.config.options['mount_point'], checkout_url))
+
             M.Notification.post_user(
                 c.user, self.app.repo, 'importing',
                 text='''Repository import scheduled,

@@ -44,6 +44,8 @@ def clone(cloned_from_path, cloned_from_name, cloned_from_url):
             c.user, c.app.repo, 'created',
             text='Repository {}/{} created'.format(
                 c.project.shortname, c.app.config.options.mount_point))
+        M.AuditLog.log('{}: import completed from "{}"'.format(
+            c.app.config.options['mount_point'], cloned_from_url))
     except Exception:
         g.post_event('repo_clone_task_failed', cloned_from_url,
                      cloned_from_path, traceback.format_exc())
