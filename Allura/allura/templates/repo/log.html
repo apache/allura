@@ -60,7 +60,7 @@
         $(".revision").click(function(){
             if ( $("input:checked").length > 2){
                 $("tr.selected").toggleClass("selected", false);
-                $("input.selected").removeAttr("checked");
+                $("input.selected").prop("checked", false);
                 $("input.selected").toggleClass("selected", false);
             }
             $(this).closest("tr").toggleClass("selected");

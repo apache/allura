@@ -32,10 +32,10 @@
             modal.find('#short-url-form-title').show();
             modal.find('#short-url-form-action-label').text('Add');
             modal.find('input[name="update"]').val('False');
-            modal.find('input[name="short_url"]').val('').removeAttr('readonly').trigger('keyup');
+            modal.find('input[name="short_url"]').val('').prop('readonly', false).trigger('keyup');
             modal.find('input[name="full_url"]').val('');
             modal.find('textarea[name="description"]').val('');
-            modal.find('input[name="private"]').removeAttr('checked');
+            modal.find('input[name="private"]').prop('checked', false);
         });
     });
 </script>
