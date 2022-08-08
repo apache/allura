@@ -953,22 +953,22 @@ class WikiAdminController(DefaultAdminController):
         mount_point = self.app.config.options['mount_point']
 
         if self.app.show_discussion != bool(show_discussion):
-            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
                 mount_point, "Show Discussion", self.app.show_discussion, bool(show_discussion)))
             self.app.show_discussion = show_discussion
 
         if self.app.show_left_bar != bool(show_left_bar):
-            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
                 mount_point, "Show left Bar", self.app.show_left_bar, bool(show_left_bar)))
             self.app.show_left_bar = show_left_bar
 
         if self.app.show_right_bar != bool(show_right_bar):
-            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
                 mount_point, "Show metadata", self.app.show_right_bar, bool(show_right_bar)))
             self.app.show_right_bar = show_right_bar
 
         if self.app.allow_email_posting != bool(allow_email_posting):
-            M.AuditLog.log('{} set option "{}": {} => {}'.format(
+            M.AuditLog.log('{}: set option "{}" {} => {}'.format(
                 mount_point, "Allow posting replies via email", self.app.allow_email_posting, bool(allow_email_posting)))
             self.app.allow_email_posting = allow_email_posting
 
