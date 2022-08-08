@@ -1704,8 +1704,12 @@ class TrackerAdminController(DefaultAdminController):
     @validate(W.options_admin, error_handler=options)
     def set_options(self, **kw):
         require_access(self.app, 'configure')
+        mount_point = self.app.config.options['mount_point']
         for k, val in kw.items():
-            self.app.config.options[k] = val
+            if self.app.config.options[k] != val:
+                M.AuditLog.log('{}: set option "{}" {} => {}'.format(
+                    mount_point, k, self.app.config.options[k], bool(val)))
+                self.app.config.options[k] = val
         flash('Options updated')
         redirect(six.ensure_text(request.referer or '/'))
 
