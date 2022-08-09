@@ -95,7 +95,7 @@ function chartProjectStats(url, params, series, checkEmpty, tooltipFormat){
   $(".busy").hide();
 
   var previousPoint = null;
-  holder.bind("plothover", function (event, pos, item) {
+  holder.on("plothover", function (event, pos, item) {
       if (item) {
         if (previousPoint !== item.dataIndex) {
           previousPoint = item.dataIndex;

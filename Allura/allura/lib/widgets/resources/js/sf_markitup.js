@@ -121,7 +121,7 @@ $(window).load(function() {
                   $('.markdown_syntax_toc_crumb').toggle(!$this_section.is('.md_ex_toc'));
                 };
                 $('.markdown_syntax_toc a', $help_contents).click(display_section);
-                $(window).bind('hashchange', display_section); // handle back button
+                $(window).on('hashchange', display_section); // handle back button
               });
               $help_area.lightbox_me();
             }
@@ -141,7 +141,7 @@ $(window).load(function() {
               return 'Loading...';
             }
 
-            $('.close', $help_area).bind('click', function() {
+            $('.close', $help_area).on('click', function() {
               $help_area.hide();
             });
         });

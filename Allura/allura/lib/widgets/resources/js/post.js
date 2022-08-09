@@ -157,7 +157,7 @@
                     }
                 });
             });
-            $('.close', popup).bind('click', function() {
+            $('.close', popup).on('click', function() {
                 popup.hide();
             });
         }

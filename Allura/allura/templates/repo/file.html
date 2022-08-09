@@ -39,7 +39,7 @@
 {% block extra_js %}
 {{ super() }}
 <script type="text/javascript">(function() {
-  $(window).bind('hashchange', function(e) {
+  $(window).on('hashchange', function(e) {
     var hash = window.location.hash.substring(1);
 	if ('originalEvent' in e && 'oldURL' in e.originalEvent) {
       $('#' + e.originalEvent.oldURL.split('#')[1]).css('background-color', 'transparent');
@@ -51,7 +51,7 @@
 
   var clicks = 0;
   $('.code_block').each(function(index, element) {
-    $(element).bind('click', function() {
+    $(element).on('click', function() {
       // Trick to ignore double and triple clicks
       clicks++;
       if (clicks === 1) {

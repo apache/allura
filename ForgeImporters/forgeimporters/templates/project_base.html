@@ -65,17 +65,17 @@
         }
 
         $(function() {
-            $('#project_name').bind('change keyup', suggest_name);
-            $('#project_shortname').bind('change keyup', function(event) {
+            $('#project_name').on('change keyup', suggest_name);
+            $('#project_shortname').on('change keyup', function(event) {
                 if (event.type == 'keyup') {
                     manual = true;
                 }
                 update_url();
             });
-            $('#project_name').bind('blur', check_names);
-            $('#project_shortname').bind('blur', check_names);
+            $('#project_name').on('blur', check_names);
+            $('#project_shortname').on('blur', check_names);
             if($('#project_url').length === 1) {
-                $('#project_url').bind('blur', check_names);
+                $('#project_url').on('blur', check_names);
             }
         });
     </script>

@@ -380,7 +380,7 @@ class JQueryMixin:
             k: getattr(self, k)
             for k in self.js_params}
         yield onready('''
-$(document).bind('clone', function () {
+$(document).on('clone', function () {
     $('.%s').%s(%s); });
 $(document).trigger('clone');
             ''' % (self.container_cls, self.js_widget_name, json.dumps(opts)))
