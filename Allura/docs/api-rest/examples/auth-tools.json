@@ -6,6 +6,7 @@
       "mount_label": "Code",
       "mount_point": "code",
       "name": "git",
+      "project_name": "Test",
       "clone_url_https_anon": "https://forge-allura.apache.org/git/p/test/code/",
       "clone_url_ro": "git://forge-allura.apache.org/git/p/test/code"
     },
@@ -15,6 +16,7 @@
       "mount_label": "Widgets - Fork",
       "mount_point": "widgets-fork",
       "name": "git",
+      "project_name": "someuser",
       "clone_url_https_anon": "https://forge-allura.apache.org/git/u/someuser/widgets-fork",
       "clone_url_ro": "git://forge-allura.apache.org/git/u/someuser/widgets-fork"
     }

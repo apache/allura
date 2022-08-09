@@ -28,6 +28,10 @@
                         "type": "string",
                         "id": "name"
                     },
+                    "project_name": {
+                        "type": "string",
+                        "id": "name"
+                    },
                     "clone_url_https_anon": {
                         "type": "string",
                         "id": "clone_url_https_anon"

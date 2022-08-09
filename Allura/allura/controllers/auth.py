@@ -565,7 +565,11 @@ class AuthRestController:
                     apps.append(p.app_instance(ac))
 
         return {
-            'tools': apps,  # TG automatically runs their __json__ methods
+            'tools': [
+                dict(app.__json__(),
+                     project_name=app.project.name,
+                     )
+                for app in apps]
         }
 
 
