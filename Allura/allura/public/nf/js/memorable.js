@@ -238,6 +238,7 @@ Memorable.inputFactory = function(obj) {
     }
 };
 
+Memorable.items = [];
 
 /**
  * Convenience method to find any classes decorated with `.memorable` and create a related Input object for it
@@ -246,7 +247,6 @@ Memorable.inputFactory = function(obj) {
 Memorable.initialize = function(selector){
     Memorable.forget();
     var s = selector || '.memorable';
-    Memorable.items = [];
     $(s).each(function(){
         Memorable.add(this);
     });
