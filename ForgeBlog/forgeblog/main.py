@@ -537,14 +537,16 @@ class BlogAdminController(DefaultAdminController):
     def set_options(self, show_discussion=False, allow_email_posting=False):
         mount_point = self.app.config.options['mount_point']
 
-        if self.app.config.options['show_discussion'] != bool(show_discussion):
+        if self.app.config.options.get('show_discussion') != bool(show_discussion):
             M.AuditLog.log('{}: set option "{}" {} => {}'.format(
-                mount_point, "show_discussion", self.app.config.options['show_discussion'], bool(show_discussion)))
+                mount_point, "show_discussion", self.app.config.options.get('show_discussion'),
+                bool(show_discussion)))
             self.app.config.options['show_discussion'] = bool(show_discussion)
 
-        if self.app.config.options['AllowEmailPosting'] != bool(allow_email_posting):
+        if self.app.config.options.get('AllowEmailPosting') != bool(allow_email_posting):
             M.AuditLog.log('{}: set option "{}" {} => {}'.format(
-                mount_point, "AllowEmailPosting", self.app.config.options['AllowEmailPosting'], bool(allow_email_posting)))
+                mount_point, "AllowEmailPosting", self.app.config.options.get('AllowEmailPosting'),
+                bool(allow_email_posting)))
             self.app.config.options['AllowEmailPosting'] = bool(allow_email_posting)
 
         flash('Blog options updated')
