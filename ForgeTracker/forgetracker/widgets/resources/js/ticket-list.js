@@ -82,7 +82,7 @@
                 $ele.html($ele.html().replace(/columns-(.*?)\./g, 'columns-'+i+'.'))
             });
         }
-    }).disableSelection();
+    });
 
     $('.ticket-list th[data-filter-toggle]').click(function(event) {
       event.stopPropagation();
