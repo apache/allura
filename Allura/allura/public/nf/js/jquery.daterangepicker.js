@@ -102,7 +102,7 @@ jQuery.fn.daterangepicker = function(settings){
 	//Capture Dates from input(s)
 	var inputDateA, inputDateB = Date.parse('today');
 	var inputDateAtemp, inputDateBtemp;
-	if(rangeInput.size() == 2){
+	if(rangeInput.length == 2){
 		inputDateAtemp = Date.parse( rangeInput.eq(0).val() );
 		inputDateBtemp = Date.parse( rangeInput.eq(1).val() );
 		if(inputDateAtemp == null){inputDateAtemp = inputDateBtemp;}
@@ -291,7 +291,7 @@ jQuery.fn.daterangepicker = function(settings){
 	}
 
 	//add arrows (only available on one input)
-	if(options.arrows && rangeInput.size()==1){
+	if(options.arrows && rangeInput.length ==1){
 		var prevLink = jQuery('<a href="#" class="ui-daterangepicker-prev ui-corner-all" title="'+ options.prevLinkText +'"><span class="ui-icon ui-icon-circle-triangle-w">'+ options.prevLinkText +'</span></a>');
 		var nextLink = jQuery('<a href="#" class="ui-daterangepicker-next ui-corner-all" title="'+ options.nextLinkText +'"><span class="ui-icon ui-icon-circle-triangle-e">'+ options.nextLinkText +'</span></a>');
 		jQuery(this)
