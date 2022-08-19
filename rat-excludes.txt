@@ -41,7 +41,6 @@ Allura/allura/public/nf/js/foundation.min.js
 Allura/allura/public/nf/js/foundation.min.js.map
 Allura/allura/public/nf/js/hidpi-canvas.min.js
 Allura/allura/public/nf/js/jquery-3.6.0.min.js
-Allura/allura/public/nf/js/jquery-migrate-3.4.0.js
 Allura/allura/public/nf/js/jquery.cookie-1.4.1.js
 Allura/allura/public/nf/js/jquery-ui.min.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
