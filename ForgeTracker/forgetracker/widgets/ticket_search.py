@@ -55,9 +55,9 @@ class TicketSearchResults(ew_core.SimpleForm):
             options.append({'value': '', 'label': 'Not set', 'selected': False})
 
     def resources(self):
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
         yield ew.JSLink('tracker_js/jquery.multiselect.min.js')
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css')
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css')
         yield ew.CSSLink('tracker_css/jquery.multiselect.css')
         yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')

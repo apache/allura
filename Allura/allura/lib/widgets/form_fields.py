@@ -76,7 +76,7 @@ class LabelEdit(ew.InputField):
             return ','.join(value)
 
     def resources(self):
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
         yield ew.JSLink('js/jquery.tagsinput.js')
         yield ew.CSSLink('css/jquery.tagsinput.css')
         yield onready('''
@@ -123,7 +123,7 @@ class ProjectUserSelect(ew.InputField):
 
     def resources(self):
         yield from super().resources()
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield onready('''
           $('input.project_user_select').autocomplete({
@@ -157,7 +157,7 @@ class ProjectUserCombo(ew.SingleSelectField):
 
     def resources(self):
         yield from super().resources()
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield ew.CSSLink('css/combobox.css')
         yield ew.JSLink('js/combobox.js')
@@ -187,7 +187,7 @@ class NeighborhoodProjectSelect(ew.InputField):
 
     def resources(self):
         yield from super().resources()
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
         yield ew.CSSLink('css/autocomplete.css')  # customized in [6b78ed] so we can't just use jquery-ui.min.css
         yield onready('''
           $('input.neighborhood-project-select').autocomplete({
@@ -464,8 +464,8 @@ class DateField(JQueryMixin, ew.TextField):
 
     def resources(self):
         yield from super().resources()
-        yield ew.JSLink('allura/js/jquery-ui.min.js', location='body_top_js')
-        yield ew.CSSLink('allura/css/smoothness/jquery-ui.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
+        yield ew.JSLink('allura/js/jquery-ui-1.13.2.min.js', location='body_top_js')
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.13.2.min.css', compress=False)  # compress will also serve from a different location, breaking image refs
 
 
 class FieldCluster(ew.CompoundField):

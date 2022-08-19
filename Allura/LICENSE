@@ -216,18 +216,17 @@ jQuery, jQueryUI, and various related plugins, which are available
 under the MIT license.  For details, see the individual files:
     allura/public/nf/js/jquery-3.6.0.min.js
     allura/public/nf/js/jquery.cookie-1.4.1.js
-    allura/public/nf/js/jquery-ui.min.js
-    allura/public/nf/css/smoothness/jquery-ui.min.css
+    allura/public/nf/js/jquery-ui-1.13.2.min.js
+    allura/public/nf/css/smoothness/jquery-ui-1.13.2.min.css
     allura/public/nf/js/jquery.daterangepicker.js
     allura/public/nf/css/forge/ui.daterangepicker.css
     allura/lib/widgets/resources/css/autocomplete.css
     allura/lib/widgets/resources/js/jqfontselector.js
-    Allura/allura/lib/widgets/resources/css/jqfontselector.css
+    allura/lib/widgets/resources/css/jqfontselector.css
     allura/lib/widgets/resources/js/jquery.autosize-min.js
     allura/lib/widgets/resources/js/jquery.colorPicker.js
-    Allura/allura/lib/widgets/resources/css/jquery.colorPicker.css
     allura/lib/widgets/resources/js/jquery.tagsinput.js
-    Allura/allura/lib/widgets/resources/css/jquery.tagsinput.css
+    allura/lib/widgets/resources/css/jquery.tagsinput.css
     allura/public/nf/js/jquery.flot.js
     allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js

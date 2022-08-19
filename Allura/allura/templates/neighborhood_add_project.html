@@ -25,7 +25,7 @@
 
 {% block content %}
   {% if c.show_phone_verification_overlay %}
-    {% do g.register_forge_js('js/jquery-ui.min.js') %}
+    {% do g.register_forge_js('js/jquery-ui-1.13.2.min.js') %}
     {% do g.register_js('js/jquery.lightbox_me.js') %}
     <div id="phone_verification_overlay" class="ui-widget-content">
       <h2 class="dark title">Phone Verification Required</h2>
