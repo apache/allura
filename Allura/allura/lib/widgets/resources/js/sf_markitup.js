@@ -19,7 +19,7 @@
 
 /*global EasyMDE, _replaceSelection, Memorable */
 window.CodeMirror = EasyMDE.CodeMirror; // https://github.com/Ionaru/easy-markdown-editor/pull/263
-$(window).load(function() {
+$(window).on('load', function() {
     if(!window.markdown_init){
         window.markdown_init = true;
         $('div.markdown_edit').each(function(){

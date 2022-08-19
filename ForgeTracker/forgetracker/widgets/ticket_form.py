@@ -157,7 +157,7 @@ class TicketForm(GenericTicketForm):
         yield ew.JSScript('''
         // Sometimes IE11 is not firing jQuery's ready callbacks like
         // "$(function(){...})" or "$(document).ready(function(){...});"
-        $(window).load(function(){
+        $(window).on('load', function(){
             $('form').submit(function() {
                 $('input[type=submit]', this).prop('disabled', true);
             });
