@@ -32,7 +32,7 @@ Allura/allura/public/nf/css/chosen.min.css
 Allura/allura/public/nf/css/font-awesome.min.css
 Allura/allura/public/nf/css/forge/tooltipster.css
 Allura/allura/public/nf/css/forge/ui.daterangepicker.css
-Allura/allura/public/nf/css/smoothness/jquery-ui.min.css
+Allura/allura/public/nf/css/smoothness/jquery-ui-1.13.2.min.css
 Allura/allura/public/nf/fonts/
 Allura/allura/public/nf/js/browser-polyfill.min.js
 Allura/allura/public/nf/js/chosen.jquery.min.js
@@ -42,7 +42,7 @@ Allura/allura/public/nf/js/foundation.min.js.map
 Allura/allura/public/nf/js/hidpi-canvas.min.js
 Allura/allura/public/nf/js/jquery-3.6.0.min.js
 Allura/allura/public/nf/js/jquery.cookie-1.4.1.js
-Allura/allura/public/nf/js/jquery-ui.min.js
+Allura/allura/public/nf/js/jquery-ui-1.13.2.min.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
 Allura/allura/public/nf/js/jquery.flot.js
 Allura/allura/public/nf/js/jquery.maxlength.min.js
