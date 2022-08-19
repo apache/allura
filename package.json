@@ -42,7 +42,7 @@
     "eslint-plugin-react": "^3.16.1",
     "esprima-fb": "^15001.1001.0-dev-harmony-fb",
     "foundation-sites": "^6.4.3",
-    "node-sass": "^4.9.4",
     "per-env": "^1.0.2"
-  }
+  },
+  "dependencies": {}
 }

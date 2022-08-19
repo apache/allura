@@ -205,7 +205,6 @@ For non-Ubuntu installations see https://nodejs.org/en/download/package-manager/
     (env-allura)~$ cd ~/src/allura
     (env-allura)~$ npm ci
     (env-allura)~$ npm run build
-    (env-allura)~$ npm run css
 
 
 The application server

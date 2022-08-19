@@ -78,7 +78,7 @@ tar xzf $RELEASE_FILE
 cd $RELEASE_FILE_EXTRACTED
 npm ci >/dev/null
 NODE_ENV=production npm run build
-NODE_ENV=production npm run css
+#NODE_ENV=production npm run css
 rm -rf node_modules
 cd ..
 tar czf $RELEASE_FILE $RELEASE_BASE

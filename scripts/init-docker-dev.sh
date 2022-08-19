@@ -63,10 +63,10 @@ if [[ ! -e /allura/Allura/allura/public/nf/js/build/transpiled.js || ! -e /allur
     npm run build
   fi
 
-  if [ ! -e /allura/Allura/allura/nf/responsive/css/styles.css ]; then
-    echo -e "\nCompiling CSS"
-    npm run css
-  fi
+#  if [ ! -e /allura/Allura/allura/nf/responsive/css/styles.css ]; then
+#    echo -e "\nCompiling CSS"
+#    npm run css
+#  fi
 fi
 
 echo "Done"
