@@ -92,7 +92,7 @@
         </div>
     </div>
     <script>
-    $(window).load(function() {
+    $(window).on('load', function() {
 
         function name(str) {
             return str ? str.replace(/^\W+|\.git$/g, '') : null;

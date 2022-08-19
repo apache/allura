@@ -242,7 +242,7 @@ class SubscriptionForm(ew.SimpleForm):
     def resources(self):
         yield from super().resources()
         yield ew.JSScript('''
-        $(window).load(function () {
+        $(window).on('load', function () {
             $('tbody').children(':even').addClass('even');
         });''')
 
