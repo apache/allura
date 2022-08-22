@@ -174,21 +174,21 @@ class TestNeighborhood(TestController):
                                       anchored_tools='w!iki:Wiki, tickets:Ticket'),
                           extra_environ=dict(username='root'))
         assert 'error' in self.webflash(r)
-        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+        assert neighborhood.anchored_tools == 'wiki:Wiki, tickets:Ticket'
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='wiki:Wiki,'),
                           extra_environ=dict(username='root'))
         assert 'error' in self.webflash(r)
-        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+        assert neighborhood.anchored_tools == 'wiki:Wiki, tickets:Ticket'
 
         r = self.app.post('/p/_admin/update',
                           params=dict(name='Projects',
                                       anchored_tools='badname,'),
                           extra_environ=dict(username='root'))
         assert 'error' in self.webflash(r)
-        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+        assert neighborhood.anchored_tools == 'wiki:Wiki, tickets:Ticket'
 
         r = self.app.get('/p/test/admin/overview')
         top_nav = r.html.find(id='top_nav')
@@ -769,10 +769,10 @@ class TestNeighborhood(TestController):
         assert "My home text!" in r
         # check tool options
         opts = p.app_config('wiki').options
-        assert_equal(False, opts.show_discussion)
-        assert_equal(False, opts.show_left_bar)
-        assert_equal(False, opts.show_right_bar)
-        assert_equal("http://foo.com/testtemp/", opts.some_url)
+        assert False == opts.show_discussion
+        assert False == opts.show_left_bar
+        assert False == opts.show_right_bar
+        assert "http://foo.com/testtemp/" == opts.some_url
         # check that custom groups/perms/users were setup correctly
         roles = p.named_roles
         for group in test_groups:
@@ -846,15 +846,15 @@ class TestNeighborhood(TestController):
         for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):
             r = self.app.get(
                 '/p/check_names?neighborhood=Projects&project_unixname=%s' % name)
-            assert_equal(
-                r.json,
+            assert (
+                r.json ==
                 {'project_unixname': 'Please use 3-15 small letters, numbers, and dashes.'})
         r = self.app.get(
             '/p/check_names?neighborhood=Projects&project_unixname=mymoz')
-        assert_equal(r.json, {})
+        assert r.json == {}
         r = self.app.get(
             '/p/check_names?neighborhood=Projects&project_unixname=test')
-        assert_equal(r.json,
+        assert (r.json ==
                      {'project_unixname': 'This project name is taken.'})
 
     @td.with_tool('test/sub1', 'Wiki', 'wiki')
@@ -914,8 +914,8 @@ class TestNeighborhood(TestController):
                       extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/accolades',
                          extra_environ=dict(username='root'))
-        assert_in('Winner!', r)
-        assert_in('http://award.org', r)
+        assert 'Winner!' in r
+        assert 'http://award.org' in r
         self.app.get('/adobe/_admin/awards/%s/adobe-1' %
                      foo_id, extra_environ=dict(username='root'))
         self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
@@ -991,11 +991,11 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/verify_phone', {'number': '1234567890'})
             expected = {'status': 'error',
                         'error': 'Phone service is not configured'}
-            assert_equal(r.json, expected)
+            assert r.json == expected
             rid = r.session.get('phone_verification.request_id')
             hash = r.session.get('phone_verification.number_hash')
-            assert_equal(rid, None)
-            assert_equal(hash, None)
+            assert rid == None
+            assert hash == None
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_verify_phone(self, phone_service):
@@ -1004,11 +1004,11 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                 'request_id': 'request-id', 'status': 'ok'}
             r = self.app.get('/p/verify_phone', {'number': '1-555-444-3333'})
             phone_service.verify.assert_called_once_with('15554443333')
-            assert_equal(r.json, {'status': 'ok'})
+            assert r.json == {'status': 'ok'}
             rid = r.session.get('phone_verification.request_id')
             hash = r.session.get('phone_verification.number_hash')
-            assert_equal(rid, 'request-id')
-            assert_equal(hash, 'f9ac49faef45d18746ced08d001e23b179107940')
+            assert rid == 'request-id'
+            assert hash == 'f9ac49faef45d18746ced08d001e23b179107940'
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_verify_phone_escapes_error(self, phone_service):
@@ -1022,7 +1022,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             'status': 'error',
             'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
         }
-        assert_equal(r.json, expected)
+        assert r.json == expected
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_verify_phone_already_used(self, phone_service):
@@ -1032,10 +1032,10 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             session(u).flush(u)
             phone_service.verify.return_value = {'request_id': 'request-id', 'status': 'ok'}
             r = self.app.get('/p/verify_phone', {'number': '1-555-444-9999'})
-            assert_equal(r.json, {
+            assert r.json == {
                 'status': 'error',
                 'error': 'That phone number has already been used.'
-            })
+            }
 
     def test_check_phone_verification_no_params(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
@@ -1053,12 +1053,12 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/verify_phone', {'number': '1234567890'})
 
             r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
-            assert_equal(r.json, {'status': 'error'})
+            assert r.json == {'status': 'error'}
             phone_service.check.assert_called_once_with(req_id, '1234')
 
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('phone_verification', 'number_hash')
-            assert_equal(hash, None)
+            assert hash == None
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_check_phone_verification_ok(self, phone_service):
@@ -1072,12 +1072,12 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             r = self.app.get('/p/verify_phone', {'number': '11234567890'})
 
             r = self.app.get('/p/check_phone_verification', {'pin': '1234'})
-            assert_equal(r.json, {'status': 'ok'})
+            assert r.json == {'status': 'ok'}
             phone_service.check.assert_called_once_with(req_id, '1234')
 
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('phone_verification', 'number_hash')
-            assert_equal(hash, '54c61c96d5d5aea5254c2d4f41508a938e5501b4')
+            assert hash == '54c61c96d5d5aea5254c2d4f41508a938e5501b4'
 
     @patch.object(g, 'phone_service', autospec=True)
     def test_check_phone_verification_escapes_error(self, phone_service):
@@ -1091,7 +1091,7 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
             'status': 'error',
             'error': '&lt;script&gt;alert(&#34;hacked&#34;);&lt;/script&gt;',
         }
-        assert_equal(r.json, expected)
+        assert r.json == expected
 
     def test_register_phone_not_verified(self):
         with h.push_config(config, **{'project.verify_phone': 'true'}):
@@ -1105,11 +1105,11 @@ class TestPhoneVerificationOnProjectRegistration(TestController):
                 extra_environ=dict(username='test-user'),
                 antispam=True)
             overlay = r.html.find('div', {'id': 'phone_verification_overlay'})
-            assert_not_equal(overlay, None)
+            assert overlay != None
             header = overlay.find('h2')
             iframe = overlay.find('iframe')
-            assert_equal(header.getText(), 'Phone Verification Required')
-            assert_equal(iframe.get('src'), '/p/phone_verification_fragment')
+            assert header.getText() == 'Phone Verification Required'
+            assert iframe.get('src') == '/p/phone_verification_fragment'
 
 
 class TestProjectImport(TestController):

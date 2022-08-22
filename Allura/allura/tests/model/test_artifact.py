@@ -203,7 +203,7 @@ def test_last_updated(_datetime):
     _datetime.utcnow.return_value = datetime(2014, 1, 2)
     WM.Page(title='TestPage1')
     ThreadLocalORMSession.flush_all()
-    assert_equal(c.project.last_updated, datetime(2014, 1, 2))
+    assert c.project.last_updated == datetime(2014, 1, 2)
 
 
 @with_setup(setUp, tearDown)
@@ -215,7 +215,7 @@ def test_last_updated_disabled(_datetime):
         M.artifact_orm_session._get().skip_last_updated = True
         WM.Page(title='TestPage1')
         ThreadLocalORMSession.flush_all()
-        assert_equal(c.project.last_updated, datetime(2014, 1, 1))
+        assert c.project.last_updated == datetime(2014, 1, 1)
     finally:
         M.artifact_orm_session._get().skip_last_updated = False
 
@@ -235,12 +235,12 @@ def test_get_discussion_thread_dupe():
     thr4 = M.Thread.new(ref_id=thr1.ref_id)
 
     thread_q = M.Thread.query.find(dict(ref_id=artif.index_id()))
-    assert_equal(thread_q.count(), 4)
+    assert thread_q.count() == 4
 
     thread = artif.get_discussion_thread()[0]  # force cleanup
     threads = thread_q.all()
-    assert_equal(len(threads), 1)
-    assert_equal(len(thread.posts), 6)
+    assert len(threads) == 1
+    assert len(thread.posts) == 6
     assert not any(p.deleted for p in thread.posts)  # normal thread deletion propagates to children, make sure that doesn't happen
 
 
@@ -249,11 +249,11 @@ def test_snapshot_clear_user_data():
                            'display_name': 'John Doe',
                            'logged_ip': '1.2.3.4'})
     s.clear_user_data()
-    assert_equal(s.author, {'username': '',
+    assert s.author == {'username': '',
                             'display_name': '',
                             'logged_ip': None,
                             'id': None,
-                            })
+                            }
 
 
 @with_setup(setUp, tearDown)
@@ -265,7 +265,7 @@ def test_snapshot_from_username():
                            'display_name': 'John Doe',
                            'logged_ip': '1.2.3.4'})
     ThreadLocalORMSession.flush_all()
-    assert_equal(len(M.Snapshot.from_username('johndoe')), 1)
+    assert len(M.Snapshot.from_username('johndoe')) == 1
 
 
 def test_feed_clear_user_data():
@@ -273,17 +273,17 @@ def test_feed_clear_user_data():
                author_link='/u/johndoe/',
                title='Something')
     f.clear_user_data()
-    assert_equal(f.author_name, '')
-    assert_equal(f.author_link, '')
-    assert_equal(f.title, 'Something')
+    assert f.author_name == ''
+    assert f.author_link == ''
+    assert f.title == 'Something'
 
     f = M.Feed(author_name='John Doe',
                author_link='/u/johndoe/',
                title='Home Page modified by John Doe')
     f.clear_user_data()
-    assert_equal(f.author_name, '')
-    assert_equal(f.author_link, '')
-    assert_equal(f.title, 'Home Page modified by <REDACTED>')
+    assert f.author_name == ''
+    assert f.author_link == ''
+    assert f.title == 'Home Page modified by <REDACTED>'
 
 
 @with_setup(setUp, tearDown)
@@ -295,7 +295,7 @@ def test_feed_from_username():
            author_link='/u/johnsmith/',
            title='Something')
     ThreadLocalORMSession.flush_all()
-    assert_equal(len(M.Feed.from_username('johndoe')), 1)
+    assert len(M.Feed.from_username('johndoe')) == 1
 
 
 @with_setup(setUp, tearDown)

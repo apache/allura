@@ -99,7 +99,7 @@ class TestAgo:
         self.assertTimeSince('in 2 years', 2008, 6, 1, 0, 0, 0, show_date_after=None)
 
     def assertTimeSince(self, time_string, *time_components, **kwargs):
-        assert_equal(time_string, self.time_since(*time_components, **kwargs))
+        assert time_string == self.time_since(*time_components, **kwargs)
 
     def time_since(self, *time_components, **kwargs):
         end_time = datetime(*time_components)

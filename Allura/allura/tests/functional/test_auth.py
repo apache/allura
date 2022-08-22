@@ -80,7 +80,7 @@ class TestAuth(TestController):
                 username='test-user', password='foo',
                 _session_id=self.app.cookies['_session_id']),
                 antispam=True).follow()
-            assert_equal(r.headers['Location'], 'http://localhost/dashboard')
+            assert r.headers['Location'] == 'http://localhost/dashboard'
 
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo', honey1='robot',  # bad honeypot value
@@ -88,8 +88,8 @@ class TestAuth(TestController):
                           extra_environ={'regular_antispam_err_handling_even_when_tests': 'true'},
                           status=302)
         wf = json.loads(self.webflash(r))
-        assert_equal(wf['status'], 'error')
-        assert_equal(wf['message'], 'Spambot protection engaged')
+        assert wf['status'] == 'error'
+        assert wf['message'] == 'Spambot protection engaged'
 
         with audits('Failed login', user=True):
             r = self.app.post('/auth/do_login', antispam=True, params=dict(
@@ -137,8 +137,8 @@ class TestAuth(TestController):
                                     'regular_antispam_err_handling_even_when_tests': 'true'},
                      status=302)
         wf = json.loads(self.webflash(r))
-        assert_equal(wf['status'], 'error')
-        assert_equal(wf['message'], 'Spambot protection engaged')
+        assert wf['status'] == 'error'
+        assert wf['message'] == 'Spambot protection engaged'
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @patch('allura.tasks.mail_tasks.sendsimplemail')
@@ -158,11 +158,11 @@ class TestAuth(TestController):
         r.mustcontain('reset your password via email.<br>\nPlease check your email')
 
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(sendsimplemail.post.call_count, 1)
-        assert_equal(kwargs['subject'], 'Update your %s password' % config['site_name'])
-        assert_in('/auth/forgotten_password/', kwargs['text'])
+        assert sendsimplemail.post.call_count == 1
+        assert kwargs['subject'] == 'Update your %s password' % config['site_name']
+        assert '/auth/forgotten_password/' in kwargs['text']
 
-        assert_equal([], M.UserLoginDetails.query.find().all())  # no records created
+        assert [] == M.UserLoginDetails.query.find().all()  # no records created
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     def test_login_hibp_compromised_password_trusted_client(self, sendsimplemail):
@@ -191,8 +191,8 @@ class TestAuth(TestController):
                 r = f.submit(status=302)
 
             assert r.session.get('pwd-expired')
-            assert_equal(r.session.get('expired-reason'), 'hibp')
-            assert_equal(r.location, 'http://localhost/auth/pwd_expired')
+            assert r.session.get('expired-reason') == 'hibp'
+            assert r.location == 'http://localhost/auth/pwd_expired'
 
             r = r.follow()
             r.mustcontain('must be updated to be more secure')
@@ -243,19 +243,19 @@ class TestAuth(TestController):
 
         logged_in_session = r.session['_id']
         links = r.html.find(*nav_pattern).findAll('a')
-        assert_equal(links[-1].string, "Log Out")
+        assert links[-1].string == "Log Out"
 
         r = self.app.get('/auth/logout').follow().follow()
         logged_out_session = r.session['_id']
         assert logged_in_session is not logged_out_session
         links = r.html.find(*nav_pattern).findAll('a')
-        assert_equal(links[-1].string, 'Log In')
+        assert links[-1].string == 'Log In'
 
     def test_track_login(self):
         user = M.User.by_username('test-user')
-        assert_equal(user.last_access['login_date'], None)
-        assert_equal(user.last_access['login_ip'], None)
-        assert_equal(user.last_access['login_ua'], None)
+        assert user.last_access['login_date'] == None
+        assert user.last_access['login_ip'] == None
+        assert user.last_access['login_ua'] == None
 
         self.app.get('/').follow()  # establish session
         self.app.post('/auth/do_login',
@@ -269,9 +269,9 @@ class TestAuth(TestController):
                       antispam=True,
                       )
         user = M.User.by_username('test-user')
-        assert_not_equal(user.last_access['login_date'], None)
-        assert_equal(user.last_access['login_ip'], '127.0.0.1')
-        assert_equal(user.last_access['login_ua'], 'browser')
+        assert user.last_access['login_date'] != None
+        assert user.last_access['login_ip'] == '127.0.0.1'
+        assert user.last_access['login_ua'] == 'browser'
 
     def test_rememberme(self):
         username = M.User.query.get(username='test-user').username
@@ -283,24 +283,24 @@ class TestAuth(TestController):
             username='test-user', password='foo',
             _session_id=self.app.cookies['_session_id'],
         ), antispam=True)
-        assert_equal(r.session['username'], username)
-        assert_equal(r.session['login_expires'], True)
+        assert r.session['username'] == username
+        assert r.session['login_expires'] == True
 
         for header, contents in r.headerlist:
             if header == 'Set-cookie':
-                assert_not_in('expires', contents)
+                assert 'expires' not in contents
 
         # Login as test-user with remember me checkbox on
         r = self.app.post('/auth/do_login', params=dict(
             username='test-user', password='foo', rememberme='on',
             _session_id=self.app.cookies['_session_id'],
         ), antispam=True)
-        assert_equal(r.session['username'], username)
-        assert_not_equal(r.session['login_expires'], True)
+        assert r.session['username'] == username
+        assert r.session['login_expires'] != True
 
         for header, contents in r.headerlist:
             if header == 'Set-cookie':
-                assert_in('expires', contents)
+                assert 'expires' in contents
 
     @td.with_user_project('test-admin')
     def test_user_can_not_claim_duplicate_emails(self):
@@ -530,25 +530,25 @@ class TestAuth(TestController):
         # logged out, gets redirected to login page
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
                          extra_environ=dict(username='*anonymous'))
-        assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
+        assert '/auth/?return_to=%2Fauth%2Fverify_addr' in r.location
 
         # logged in as someone else
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
                          extra_environ=dict(username='test-admin'))
-        assert_in('/auth/?return_to=%2Fauth%2Fverify_addr', r.location)
-        assert_equal('You must be logged in to the correct account', json.loads(self.webflash(r))['message'])
-        assert_equal('warning', json.loads(self.webflash(r))['status'])
+        assert '/auth/?return_to=%2Fauth%2Fverify_addr' in r.location
+        assert 'You must be logged in to the correct account' == json.loads(self.webflash(r))['message']
+        assert 'warning' == json.loads(self.webflash(r))['status']
 
         # logged in as correct user
         r = self.app.get('/auth/verify_addr', params=dict(a=email.nonce),
                          extra_environ=dict(username='test-user'))
-        assert_in('confirmed', json.loads(self.webflash(r))['message'])
-        assert_equal('ok', json.loads(self.webflash(r))['status'])
+        assert 'confirmed' in json.loads(self.webflash(r))['message']
+        assert 'ok' == json.loads(self.webflash(r))['status']
 
         # assert 'email added' notification email sent
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], user._id)
-        assert_equal(kwargs['subject'], 'New Email Address Added')
+        assert kwargs['toaddr'] == user._id
+        assert kwargs['subject'] == 'New Email Address Added'
 
     @staticmethod
     def _create_password_reset_hash():
@@ -566,8 +566,8 @@ class TestAuth(TestController):
         session(user).flush(user)
 
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-        assert_equal(hash, 'generated_hash_value')
-        assert_equal(hash_expiry, '04-08-2020')
+        assert hash == 'generated_hash_value'
+        assert hash_expiry == '04-08-2020'
         return user
 
     def test_token_generator(self):
@@ -611,8 +611,8 @@ class TestAuth(TestController):
 
         u = M.User.by_username('test-admin')
         print(u.get_tool_data('AuthPasswordReset', 'hash'))
-        assert_equal(u.get_tool_data('AuthPasswordReset', 'hash'), '')
-        assert_equal(u.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
+        assert u.get_tool_data('AuthPasswordReset', 'hash') == ''
+        assert u.get_tool_data('AuthPasswordReset', 'hash_expiry') == ''
 
     @td.with_user_project('test-admin')
     def test_change_password(self):
@@ -633,17 +633,17 @@ class TestAuth(TestController):
                           })
 
         # Confirm password was changed.
-        assert_not_equal(old_pass, user.get_pref('password'))
+        assert old_pass != user.get_pref('password')
 
         # Confirm any existing tokens were reset.
-        assert_equal(user.get_tool_data('AuthPasswordReset', 'hash'), '')
-        assert_equal(user.get_tool_data('AuthPasswordReset', 'hash_expiry'), '')
+        assert user.get_tool_data('AuthPasswordReset', 'hash') == ''
+        assert user.get_tool_data('AuthPasswordReset', 'hash_expiry') == ''
 
         # Confirm an email was sent
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Password Changed')
-        assert_in('The password for your', tasks[0].kwargs['text'])
+        assert len(tasks) == 1
+        assert tasks[0].kwargs['subject'] == 'Password Changed'
+        assert 'The password for your' in tasks[0].kwargs['text']
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     @td.with_user_project('test-admin')
@@ -677,7 +677,7 @@ class TestAuth(TestController):
 
         # Confirm password was changed.
         user = M.User.by_username('test-admin')
-        assert_not_equal(old_pass, user.get_pref('password'))
+        assert old_pass != user.get_pref('password')
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -688,7 +688,7 @@ class TestAuth(TestController):
         # check preconditions of test data
         assert 'test@example.com' not in r
         assert 'test-admin@users.localhost' in r
-        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
+        assert (M.User.query.get(username='test-admin').get_pref('email_address') ==
                      'test-admin@users.localhost')
 
         # add test@example
@@ -706,7 +706,7 @@ class TestAuth(TestController):
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
         user = M.User.query.get(username='test-admin')
-        assert_equal(user.get_pref('email_address'), 'test-admin@users.localhost')
+        assert user.get_pref('email_address') == 'test-admin@users.localhost'
 
         # remove test-admin@users.localhost
         with td.audits('Email address deleted: test-admin@users.localhost', user=True):
@@ -725,14 +725,14 @@ class TestAuth(TestController):
 
         # assert 'email_removed' notification email sent
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], user._id)
-        assert_equal(kwargs['subject'], 'Email Address Removed')
+        assert kwargs['toaddr'] == user._id
+        assert kwargs['subject'] == 'Email Address Removed'
 
         r = self.app.get('/auth/preferences/')
         assert 'test-admin@users.localhost' not in r
         # preferred address has not changed if email is not verified
         user = M.User.query.get(username='test-admin')
-        assert_equal(user.get_pref('email_address'), None)
+        assert user.get_pref('email_address') == None
 
         with td.audits('Display Name changed Test Admin => Admin', user=True):
             r = self.app.post('/auth/preferences/update',
@@ -756,22 +756,22 @@ class TestAuth(TestController):
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to claim new email', self.webflash(r))
-        assert_not_in('test@example.com', r.follow())
+        assert 'You must provide your current password to claim new email' in self.webflash(r)
+        assert 'test@example.com' not in r.follow()
         new_email_params['password'] = 'bad pass'
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to claim new email', self.webflash(r))
-        assert_not_in('test@example.com', r.follow())
+        assert 'You must provide your current password to claim new email' in self.webflash(r)
+        assert 'test@example.com' not in r.follow()
         new_email_params['password'] = 'foo'  # valid password
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=new_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_not_in('You must provide your current password to claim new email', self.webflash(r))
-        assert_in('test@example.com', r.follow())
+        assert 'You must provide your current password to claim new email' not in self.webflash(r)
+        assert 'test@example.com' in r.follow()
 
         # Change primary address
         change_primary_params = {
@@ -782,28 +782,28 @@ class TestAuth(TestController):
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to change primary address', self.webflash(r))
-        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
+        assert 'You must provide your current password to change primary address' in self.webflash(r)
+        assert M.User.by_username('test-admin').get_pref('email_address') == 'test-admin@users.localhost'
         change_primary_params['password'] = 'bad pass'
 
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to change primary address', self.webflash(r))
-        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test-admin@users.localhost')
+        assert 'You must provide your current password to change primary address' in self.webflash(r)
+        assert M.User.by_username('test-admin').get_pref('email_address') == 'test-admin@users.localhost'
         change_primary_params['password'] = 'foo'  # valid password
 
         self.app.get('/auth/preferences/')  # let previous 'flash' message cookie get used up
         r = self.app.post('/auth/preferences/update_emails',
                           params=change_primary_params,
                           extra_environ=dict(username='test-admin'))
-        assert_not_in('You must provide your current password to change primary address', self.webflash(r))
-        assert_equal(M.User.by_username('test-admin').get_pref('email_address'), 'test@example.com')
+        assert 'You must provide your current password to change primary address' not in self.webflash(r)
+        assert M.User.by_username('test-admin').get_pref('email_address') == 'test@example.com'
 
         # assert 'email added' notification email sent using original primary addr
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], 'test-admin@users.localhost')
-        assert_equal(kwargs['subject'], 'Primary Email Address Changed')
+        assert kwargs['toaddr'] == 'test-admin@users.localhost'
+        assert kwargs['subject'] == 'Primary Email Address Changed'
 
         # Remove email
         remove_email_params = {
@@ -817,20 +817,20 @@ class TestAuth(TestController):
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to delete an email', self.webflash(r))
-        assert_in('test@example.com', r.follow())
+        assert 'You must provide your current password to delete an email' in self.webflash(r)
+        assert 'test@example.com' in r.follow()
         remove_email_params['password'] = 'bad pass'
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_in('You must provide your current password to delete an email', self.webflash(r))
-        assert_in('test@example.com', r.follow())
+        assert 'You must provide your current password to delete an email' in self.webflash(r)
+        assert 'test@example.com' in r.follow()
         remove_email_params['password'] = 'foo'  # vallid password
         r = self.app.post('/auth/preferences/update_emails',
                           params=remove_email_params,
                           extra_environ=dict(username='test-admin'))
-        assert_not_in('You must provide your current password to delete an email', self.webflash(r))
-        assert_not_in('test@example.com', r.follow())
+        assert 'You must provide your current password to delete an email' not in self.webflash(r)
+        assert 'test@example.com' not in r.follow()
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
@@ -938,10 +938,10 @@ class TestAuth(TestController):
         r = self.app.post('/auth/save_new',
                           params=dict(username='AAA', pw='123',
                                       _session_id=self.app.cookies['_session_id']))
-        assert_in('Enter a value 6 characters long or more', r)
-        assert_in('Usernames must include only small letters, numbers, '
+        assert 'Enter a value 6 characters long or more' in r
+        assert ('Usernames must include only small letters, numbers, '
                   'and dashes. They must also start with a letter and be '
-                  'at least 3 characters long.', r)
+                  'at least 3 characters long.' in r)
         r = self.app.post(
             '/auth/save_new',
             params=dict(
@@ -985,7 +985,7 @@ class TestAuth(TestController):
                 ))
             user = M.User.query.get(username='aaa')
             assert not user.pending
-            assert_equal(M.Project.query.find({'name': 'u/aaa'}).count(), 1)
+            assert M.Project.query.find({'name': 'u/aaa'}).count() == 1
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
             self.app.post(
                 '/auth/save_new',
@@ -999,7 +999,7 @@ class TestAuth(TestController):
                 ))
             user = M.User.query.get(username='bbb')
             assert user.pending
-            assert_equal(M.Project.query.find({'name': 'u/bbb'}).count(), 0)
+            assert M.Project.query.find({'name': 'u/bbb'}).count() == 0
 
     def test_verify_email(self):
         with h.push_config(config, **{'auth.require_email_addr': 'true'}):
@@ -1024,7 +1024,7 @@ class TestAuth(TestController):
             assert not user.pending
             assert em.confirmed
             assert user.get_pref('email_address')
-            assert_equal(M.Project.query.find({'name': 'u/aaa'}).count(), 1)
+            assert M.Project.query.find({'name': 'u/aaa'}).count() == 1
 
     def test_create_account_disabled_header_link(self):
         with h.push_config(config, **{'auth.allow_user_registration': 'false'}):
@@ -1085,7 +1085,7 @@ class TestAuth(TestController):
         assert not user.disabled
         r = self.app.get('/p/test/admin/',
                          extra_environ={'username': 'test-admin'})
-        assert_equal(r.status_int, 200, 'Redirect to %s' % r.location)
+        assert r.status_int == 200, 'Redirect to %s' % r.location
         user.disabled = True
         sess.save(user)
         sess.flush()
@@ -1093,8 +1093,8 @@ class TestAuth(TestController):
         assert user.disabled
         r = self.app.get('/p/test/admin/',
                          extra_environ={'username': 'test-admin'})
-        assert_equal(r.status_int, 302)
-        assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
+        assert r.status_int == 302
+        assert r.location == 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F'
 
     def test_no_open_return_to(self):
         r = self.app.get('/auth/logout').follow().follow()
@@ -1104,28 +1104,28 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']),
             antispam=True
         )
-        assert_equal(r.location, 'http://localhost/foo')
+        assert r.location == 'http://localhost/foo'
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://localhost/foo',
             _session_id=self.app.cookies['_session_id']))
-        assert_equal(r.location, 'http://localhost/foo')
+        assert r.location == 'http://localhost/foo'
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='http://example.com/foo',
             _session_id=self.app.cookies['_session_id'])).follow()
-        assert_equal(r.location, 'http://localhost/dashboard')
+        assert r.location == 'http://localhost/dashboard'
 
         r = self.app.get('/auth/logout')
         r = self.app.post('/auth/do_login', antispam=True, params=dict(
             username='test-user', password='foo',
             return_to='//example.com/foo',
             _session_id=self.app.cookies['_session_id'])).follow()
-        assert_equal(r.location, 'http://localhost/dashboard')
+        assert r.location == 'http://localhost/dashboard'
 
     def test_no_injected_headers_in_return_to(self):
         r = self.app.get('/auth/logout').follow().follow()
@@ -1136,28 +1136,28 @@ class TestAuth(TestController):
             _session_id=self.app.cookies['_session_id']),
             antispam=True
         )
-        assert_equal(r.location, 'http://localhost/')
-        assert_not_equal(r.content_length, 777)
+        assert r.location == 'http://localhost/'
+        assert r.content_length != 777
 
 
 class TestAuthRest(TestRestApiBase):
 
     def test_tools_list_anon(self):
         resp = self.api_get('/rest/auth/tools/wiki', user='*anonymous')
-        assert_equal(resp.json, {
+        assert resp.json == {
             'tools': []
-        })
+        }
 
     def test_tools_list_invalid_tool(self):
         resp = self.api_get('/rest/auth/tools/af732q9547235')
-        assert_equal(resp.json, {
+        assert resp.json == {
             'tools': []
-        })
+        }
 
     @td.with_tool('test', 'Wiki', mount_point='docs', mount_label='Documentation')
     def test_tools_list_wiki(self):
         resp = self.api_get('/rest/auth/tools/wiki')
-        assert_equal(resp.json, {
+        assert resp.json == {
             'tools': [
                 {
                     'mount_label': 'Wiki',
@@ -1176,7 +1176,7 @@ class TestAuthRest(TestRestApiBase):
                     'api_url': 'http://localhost/rest/p/test/docs/',
                 },
             ]
-        })
+        }
 
 
 class TestPreferences(TestController):
@@ -1259,8 +1259,8 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
-        assert_equal(user.socialnetworks[0].socialnetwork, socialnetwork)
-        assert_equal(user.socialnetworks[0].accounturl, accounturl)
+        assert user.socialnetworks[0].socialnetwork == socialnetwork
+        assert user.socialnetworks[0].accounturl == accounturl
 
         # Add second social network account
         socialnetwork2 = 'Twitter'
@@ -1272,8 +1272,8 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2
-        assert_in({'socialnetwork': socialnetwork, 'accounturl': accounturl}, user.socialnetworks)
-        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
+        assert {'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks
+        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
@@ -1283,7 +1283,7 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
-        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
+        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1292,7 +1292,7 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
-        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
+        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
@@ -1301,7 +1301,7 @@ class TestPreferences(TestController):
                                   ))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1
-        assert_in({'socialnetwork': socialnetwork2, 'accounturl': accounturl2}, user.socialnetworks)
+        assert {'socialnetwork': socialnetwork2, 'accounturl': accounturl2} in user.socialnetworks
 
         # Add telephone number
         telnumber = '+3902123456'
@@ -1389,8 +1389,8 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         timeslot2dict = dict(week_day=weekday2, start_time=starttime2, end_time=endtime2)
         assert len(user.availability) == 2
-        assert_in(timeslot1dict, user.get_availability_timeslots())
-        assert_in(timeslot2dict, user.get_availability_timeslots())
+        assert timeslot1dict in user.get_availability_timeslots()
+        assert timeslot2dict in user.get_availability_timeslots()
 
         # Remove availability timeslot
         r = self.app.post('/auth/user_info/availability/remove_timeslot',
@@ -1446,8 +1446,8 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         period2dict = dict(start_date=startdate2, end_date=enddate2)
         assert len(user.inactiveperiod) == 2
-        assert_in(period1dict, user.get_inactive_periods())
-        assert_in(period2dict, user.get_inactive_periods())
+        assert period1dict in user.get_inactive_periods()
+        assert period2dict in user.get_inactive_periods()
 
         # Remove first inactivity period
         r = self.app.post(
@@ -1558,7 +1558,7 @@ class TestPreferences(TestController):
         with mock.patch.object(plugin.UserPreferencesProvider, 'get') as upp_get:
             upp_get.return_value = MyPP()
             r = self.app.get('/auth/new_page')
-            assert_equal(r.text, 'new page')
+            assert r.text == 'new page'
             self.app.get('/auth/not_page', status=404)
 
 
@@ -1624,7 +1624,7 @@ class TestPasswordReset(TestController):
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
             args, kwargs = sendmail.post.call_args
-            assert_equal(kwargs['toaddr'], self.test_primary_email)
+            assert kwargs['toaddr'] == self.test_primary_email
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -1644,7 +1644,7 @@ class TestPasswordReset(TestController):
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             assert hash is not None
             args, kwargs = sendmail.post.call_args
-            assert_equal(kwargs['toaddr'], email1.email)
+            assert kwargs['toaddr'] == email1.email
 
     @patch('allura.tasks.mail_tasks.sendsimplemail')
     @patch('allura.lib.helpers.gen_message_id')
@@ -1684,9 +1684,9 @@ To update your password on %s, please visit the following URL:
 
         # load reset form and fill it out
         r = self.app.get('/auth/forgotten_password/%s' % hash)
-        assert_in('Enter a new password for: test-admin', r)
-        assert_in('New Password:', r)
-        assert_in('New Password (again):', r)
+        assert 'Enter a new password for: test-admin' in r
+        assert 'New Password:' in r
+        assert 'New Password (again):' in r
         form = r.forms[0]
         form['pw'] = form['pw2'] = new_password = '154321'
         with td.audits(r'Password changed \(through recovery process\)', user=True):
@@ -1695,21 +1695,21 @@ To update your password on %s, please visit the following URL:
 
         # verify 'Password Changed' email sent
         args, kwargs = sendsimplemail.post.call_args
-        assert_equal(kwargs['toaddr'], user._id)
-        assert_equal(kwargs['subject'], 'Password Changed')
+        assert kwargs['toaddr'] == user._id
+        assert kwargs['subject'] == 'Password Changed'
 
         # confirm password changed and works
         user = M.User.query.get(username='test-admin')
-        assert_not_equal(old_pw_hash, user.password)
+        assert old_pw_hash != user.password
         provider = plugin.LocalAuthenticationProvider(None)
-        assert_true(provider._validate_password(user, new_password))
+        assert provider._validate_password(user, new_password)
 
         # confirm reset fields cleared
         user = M.User.query.get(username='test-admin')
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-        assert_equal(hash, '')
-        assert_equal(hash_expiry, '')
+        assert hash == ''
+        assert hash_expiry == ''
 
         # confirm can log in now in same session
         r = r.follow()
@@ -1739,16 +1739,16 @@ To update your password on %s, please visit the following URL:
         user.set_tool_data('AuthPasswordReset',
                            hash_expiry=datetime(2000, 10, 10))
         r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
-        assert_in('Unable to process reset, please try again', r.follow().text)
+        assert 'Unable to process reset, please try again' in r.follow().text
         r = self.app.post('/auth/set_new_password/%s' %
                           hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321',
                                                  '_session_id': self.app.cookies['_session_id'],
                                                  })
-        assert_in('Unable to process reset, please try again', r.follow().text)
+        assert 'Unable to process reset, please try again' in r.follow().text
 
     def test_hash_invalid(self):
         r = self.app.get('/auth/forgotten_password/123412341234', status=302)
-        assert_in('Unable to process reset, please try again', r.follow().text)
+        assert 'Unable to process reset, please try again' in r.follow().text
 
     @patch('allura.lib.plugin.AuthenticationProvider')
     def test_provider_disabled(self, AP):
@@ -1799,7 +1799,7 @@ To update your password on %s, please visit the following URL:
         # confirm password changed and works
         user = M.User.query.get(username='test-admin')
         provider = plugin.LocalAuthenticationProvider(None)
-        assert_true(provider._validate_password(user, new_password))
+        assert provider._validate_password(user, new_password)
 
         # confirm can log in now in same session
         r = r.follow()
@@ -1823,7 +1823,7 @@ class TestOAuth(TestController):
                                   }).follow()
         assert 'oautstapp' in r
         # deregister
-        assert_equal(r.forms[0].action, 'deregister')
+        assert r.forms[0].action == 'deregister'
         r.forms[0].submit()
         r = self.app.get('/auth/oauth/')
         assert 'oautstapp' not in r
@@ -1836,24 +1836,24 @@ class TestOAuth(TestController):
                                   '_session_id': self.app.cookies['_session_id'],
                                   }, status=302)
         r = self.app.get('/auth/oauth/')
-        assert_equal(r.forms[1].action, 'generate_access_token')
+        assert r.forms[1].action == 'generate_access_token'
         r = r.forms[1].submit(extra_environ={'username': 'test-user'})  # not the right user
-        assert_in("Invalid app ID", self.webflash(r))                   # gets an error
+        assert "Invalid app ID" in self.webflash(r)                   # gets an error
         r = self.app.get('/auth/oauth/')                                # do it again
         r = r.forms[1].submit()                                         # as correct user
-        assert_equal('', self.webflash(r))
+        assert '' == self.webflash(r)
 
         r = self.app.get('/auth/oauth/')
         assert 'Bearer Token:' in r
-        assert_not_equal(
-            M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
+        assert (
+            M.OAuthAccessToken.for_user(M.User.by_username('test-admin')) != [])
         # revoke
-        assert_equal(r.forms[0].action, 'revoke_access_token')
+        assert r.forms[0].action == 'revoke_access_token'
         r.forms[0].submit()
         r = self.app.get('/auth/oauth/')
-        assert_not_equal(r.forms[0].action, 'revoke_access_token')
-        assert_equal(
-            M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
+        assert r.forms[0].action != 'revoke_access_token'
+        assert (
+            M.OAuthAccessToken.for_user(M.User.by_username('test-admin')) == [])
 
     def test_interactive(self):
         user = M.User.by_username('test-admin')
@@ -2140,8 +2140,8 @@ class TestOAuthAccessToken(TestController):
         oauth_params = dict(self.oauth_params, signature_type=signature_type)
         r = self.app.get(*oauth1_webtest('/rest/oauth/access_token', self.oauth_params))
         atok = parse_qs(r.text)
-        assert_equal(len(atok['oauth_token']), 1)
-        assert_equal(len(atok['oauth_token_secret']), 1)
+        assert len(atok['oauth_token']) == 1
+        assert len(atok['oauth_token_secret']) == 1
 
     def test_access_token_ok_by_query(self):
         self.test_access_token_ok(signature_type='query')
@@ -2152,8 +2152,8 @@ class TestDisableAccount(TestController):
         r = self.app.get(
             '/auth/disable/',
             extra_environ={'username': '*anonymous'})
-        assert_equal(r.status_int, 302)
-        assert_equal(r.location,
+        assert r.status_int == 302
+        assert (r.location ==
                      'http://localhost/auth/?return_to=%2Fauth%2Fdisable%2F')
 
     def test_lists_user_projects(self):
@@ -2162,8 +2162,8 @@ class TestDisableAccount(TestController):
         for p in user.my_projects_by_role_name('Admin'):
             if p.name == 'u/test-admin':
                 continue
-            assert_in(p.name, r)
-            assert_in(p.url(), r)
+            assert p.name in r
+            assert p.url() in r
 
     def test_has_asks_password(self):
         r = self.app.get('/auth/disable/')
@@ -2174,21 +2174,21 @@ class TestDisableAccount(TestController):
         self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/disable/do_disable', {'password': 'bad',
                                                        '_session_id': self.app.cookies['_session_id'], })
-        assert_in('Invalid password', r)
+        assert 'Invalid password' in r
         user = M.User.by_username('test-admin')
-        assert_equal(user.disabled, False)
+        assert user.disabled == False
 
     def test_disable(self):
         self.app.get('/').follow()  # establish session
         r = self.app.post('/auth/disable/do_disable', {'password': 'foo',
                                                        '_session_id': self.app.cookies['_session_id'], })
-        assert_equal(r.status_int, 302)
-        assert_equal(r.location, 'http://localhost/')
+        assert r.status_int == 302
+        assert r.location == 'http://localhost/'
         flash = json.loads(self.webflash(r))
-        assert_equal(flash['status'], 'ok')
-        assert_equal(flash['message'], 'Your account was successfully disabled!')
+        assert flash['status'] == 'ok'
+        assert flash['message'] == 'Your account was successfully disabled!'
         user = M.User.by_username('test-admin')
-        assert_equal(user.disabled, True)
+        assert user.disabled == True
 
 
 class TestPasswordExpire(TestController):
@@ -2204,14 +2204,14 @@ class TestPasswordExpire(TestController):
 
     def assert_redirects(self, where='/'):
         resp = self.app.get(where, extra_environ={'username': 'test-user'}, status=302)
-        assert_equal(resp.location, 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': where}))
+        assert resp.location == 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': where})
 
     def assert_not_redirects(self, where='/neighborhood'):
         self.app.get(where, extra_environ={'username': 'test-user'}, status=200)
 
     def test_disabled(self):
         r = self.login()
-        assert_false(r.session.get('pwd-expired'))
+        assert not r.session.get('pwd-expired')
         self.assert_not_redirects()
 
     def expired(self, r):
@@ -2228,12 +2228,12 @@ class TestPasswordExpire(TestController):
 
         with h.push_config(config, **{'auth.pwdexpire.days': 180}):
             r = self.login()
-            assert_false(self.expired(r))
+            assert not self.expired(r)
             self.assert_not_redirects()
 
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
 
     def test_before(self):
@@ -2243,31 +2243,31 @@ class TestPasswordExpire(TestController):
         before = calendar.timegm(before.timetuple())
         with h.push_config(config, **{'auth.pwdexpire.before': before}):
             r = self.login()
-            assert_false(self.expired(r))
+            assert not self.expired(r)
             self.assert_not_redirects()
 
         before = datetime.utcnow() - timedelta(days=90)
         before = calendar.timegm(before.timetuple())
         with h.push_config(config, **{'auth.pwdexpire.before': before}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
 
     def test_logout(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
             r = self.app.get('/auth/logout', extra_environ={'username': 'test-user'})
-            assert_false(self.expired(r))
+            assert not self.expired(r)
             self.assert_not_redirects()
 
     def test_change_pwd(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
 
             user = M.User.by_username('test-user')
@@ -2279,28 +2279,28 @@ class TestPasswordExpire(TestController):
             f['pw'] = 'qwerty'
             f['pw2'] = 'qwerty'
             r = f.submit(extra_environ={'username': 'test-user'}, status=302)
-            assert_equal(r.location, 'http://localhost/')
-            assert_false(self.expired(r))
+            assert r.location == 'http://localhost/'
+            assert not self.expired(r)
             user = M.User.by_username('test-user')
-            assert_true(user.last_password_updated > old_update_time)
-            assert_not_equal(user.password, old_password)
+            assert user.last_password_updated > old_update_time
+            assert user.password != old_password
 
             # Can log in with new password and change isn't required anymore
             r = self.login(pwd='qwerty').follow()
-            assert_equal(r.location, 'http://localhost/dashboard')
-            assert_not_in('Invalid login', r)
-            assert_false(self.expired(r))
+            assert r.location == 'http://localhost/dashboard'
+            assert 'Invalid login' not in r
+            assert not self.expired(r)
             self.assert_not_redirects()
 
             # and can't log in with old password
             r = self.login(pwd='foo')
-            assert_in('Invalid login', r)
+            assert 'Invalid login' in r
 
     def test_expired_pwd_change_invalidates_token(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
             user = M.User.by_username('test-user')
             user.set_tool_data('AuthPasswordReset',
@@ -2308,8 +2308,8 @@ class TestPasswordExpire(TestController):
                                hash_expiry="04-08-2020")
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            assert_equal(hash, 'generated_hash_value')
-            assert_equal(hash_expiry, '04-08-2020')
+            assert hash == 'generated_hash_value'
+            assert hash_expiry == '04-08-2020'
             session(user).flush(user)
 
             # Change expired password
@@ -2319,14 +2319,14 @@ class TestPasswordExpire(TestController):
             f['pw'] = 'qwerty'
             f['pw2'] = 'qwerty'
             r = f.submit(extra_environ={'username': 'test-user'}, status=302)
-            assert_equal(r.location, 'http://localhost/')
+            assert r.location == 'http://localhost/'
 
             user = M.User.by_username('test-user')
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
             hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
 
-            assert_equal(hash, '')
-            assert_equal(hash_expiry, '')
+            assert hash == ''
+            assert hash_expiry == ''
 
     def check_validation(self, oldpw, pw, pw2):
         user = M.User.by_username('test-user')
@@ -2338,32 +2338,32 @@ class TestPasswordExpire(TestController):
         f['pw'] = pw
         f['pw2'] = pw2
         r = f.submit(extra_environ={'username': 'test-user'})
-        assert_true(self.expired(r))
+        assert self.expired(r)
         user = M.User.by_username('test-user')
-        assert_equal(user.last_password_updated, old_update_time)
-        assert_equal(user.password, old_password)
+        assert user.last_password_updated == old_update_time
+        assert user.password == old_password
         return r
 
     def test_change_pwd_validation(self):
         self.set_expire_for_user()
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login()
-            assert_true(self.expired(r))
+            assert self.expired(r)
             self.assert_redirects()
 
             r = self.check_validation('', '', '')
-            assert_in('Please enter a value', r)
+            assert 'Please enter a value' in r
             r = self.check_validation('', 'qwe', 'qwerty')
-            assert_in('Enter a value 6 characters long or more', r)
+            assert 'Enter a value 6 characters long or more' in r
             r = self.check_validation('bad', 'qwerty1', 'qwerty')
-            assert_in('Passwords must match', r)
+            assert 'Passwords must match' in r
             r = self.check_validation('bad', 'qwerty', 'qwerty')
-            assert_in('Incorrect password', self.webflash(r))
-            assert_equal(r.location, 'http://localhost/auth/pwd_expired?return_to=')
+            assert 'Incorrect password' in self.webflash(r)
+            assert r.location == 'http://localhost/auth/pwd_expired?return_to='
 
             with h.push_config(config, **{'auth.min_password_len': 3}):
                 r = self.check_validation('foo', 'foo', 'foo')
-                assert_in('Your old and new password should not be the same', r)
+                assert 'Your old and new password should not be the same' in r
 
     def test_return_to(self):
         return_to = '/p/test/tickets/?milestone=1.0&page=2'
@@ -2371,7 +2371,7 @@ class TestPasswordExpire(TestController):
         with h.push_config(config, **{'auth.pwdexpire.days': 90}):
             r = self.login(query_string='?' + urlencode({'return_to': return_to}))
             # don't go to the return_to yet
-            assert_equal(r.location, 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': return_to}))
+            assert r.location == 'http://localhost/auth/pwd_expired?' + urlencode({'return_to': return_to})
 
             # but if user tries to go directly there anyway, intercept and redirect back
             self.assert_redirects(where=return_to)
@@ -2383,7 +2383,7 @@ class TestPasswordExpire(TestController):
             f['pw2'] = 'qwerty'
             f['return_to'] = return_to
             r = f.submit(extra_environ={'username': 'test-user'}, status=302)
-            assert_equal(r.location, 'http://localhost/p/test/tickets/?milestone=1.0&page=2')
+            assert r.location == 'http://localhost/p/test/tickets/?milestone=1.0&page=2'
 
 
 class TestCSRFProtection(TestController):
@@ -2402,13 +2402,13 @@ class TestCSRFProtection(TestController):
         # regular form submit
         r = self.app.get('/admin/overview')
         r = r.form.submit()
-        assert_equal(r.location, 'http://localhost/admin/overview')
+        assert r.location == 'http://localhost/admin/overview'
 
         # invalid form submit
         r = self.app.get('/admin/overview')
         r.form['_session_id'] = 'bogus'
         r = r.form.submit()
-        assert_equal(r.location, 'http://localhost/auth/')
+        assert r.location == 'http://localhost/auth/'
 
     def test_blocks_invalid_on_login(self):
         r = self.app.get('/auth/')
@@ -2417,7 +2417,7 @@ class TestCSRFProtection(TestController):
 
     def test_token_present_on_first_request(self):
         r = self.app.get('/auth/')
-        assert_true(r.form['_session_id'].value)
+        assert r.form['_session_id'].value
 
 
 class TestTwoFactor(TestController):
@@ -2457,13 +2457,13 @@ class TestTwoFactor(TestController):
     def test_user_disabled(self):
         r = self.app.get('/auth/preferences/')
         info_html = str(r.html.find(attrs={'class': 'preferences multifactor'}))
-        assert_in('disabled', info_html)
+        assert 'disabled' in info_html
 
     def test_user_enabled(self):
         self._init_totp()
         r = self.app.get('/auth/preferences/')
         info_html = str(r.html.find(attrs={'class': 'preferences multifactor'}))
-        assert_in('enabled', info_html)
+        assert 'enabled' in info_html
 
     def test_reconfirm_auth(self):
         from datetime import datetime as real_datetime
@@ -2473,22 +2473,22 @@ class TestTwoFactor(TestController):
             # reconfirm required at first
             datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 0, 0)
             r = self.app.get('/auth/preferences/totp_new')
-            assert_in('Password Confirmation', r)
+            assert 'Password Confirmation' in r
 
             # submit form, and its not required
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_not_in('Password Confirmation', r)
+            assert 'Password Confirmation' not in r
 
             # still not required
             datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 1, 45)
             r = self.app.get('/auth/preferences/totp_new')
-            assert_not_in('Password Confirmation', r)
+            assert 'Password Confirmation' not in r
 
             # required later
             datetime.utcnow.return_value = real_datetime(2016, 1, 1, 0, 2, 3)
             r = self.app.get('/auth/preferences/totp_new')
-            assert_in('Password Confirmation', r)
+            assert 'Password Confirmation' in r
 
     def test_enable_totp(self):
         # create a separate session, for later use in the test
@@ -2498,13 +2498,13 @@ class TestTwoFactor(TestController):
 
         with out_audits(user=True):
             r = self.app.get('/auth/preferences/totp_new')
-            assert_in('Password Confirmation', r)
+            assert 'Password Confirmation' in r
 
         with audits('Visited multifactor new TOTP page', user=True):
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_in('Scan this', r)
-            assert_in('Or enter setup key: ', r)
+            assert 'Scan this' in r
+            assert 'Or enter setup key: ' in r
 
         first_key_shown = r.session['totp_new_key']
 
@@ -2512,9 +2512,9 @@ class TestTwoFactor(TestController):
             form = r.forms['totp_set']
             form['code'] = ''
             r = form.submit()
-            assert_in('Invalid', r)
-            assert_in(f'Or enter setup key: {b32encode(first_key_shown).decode()}', r)
-            assert_equal(first_key_shown, r.session['totp_new_key'])  # different keys on each pageload would be bad!
+            assert 'Invalid' in r
+            assert f'Or enter setup key: {b32encode(first_key_shown).decode()}' in r
+            assert first_key_shown == r.session['totp_new_key']  # different keys on each pageload would be bad!
 
         new_totp = TotpService().Totp(r.session['totp_new_key'])
         code = new_totp.generate(time_time())
@@ -2522,20 +2522,19 @@ class TestTwoFactor(TestController):
         form['code'] = code
         with audits('Set up multifactor TOTP', user=True):
             r = form.submit()
-            assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
-                         self.webflash(r))
+            assert 'Two factor authentication has now been set up.' == json.loads(self.webflash(r))['message'], self.webflash(r)
 
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Enabled')
-        assert_in('new two-factor authentication', tasks[0].kwargs['text'])
+        assert len(tasks) == 1
+        assert tasks[0].kwargs['subject'] == 'Two-Factor Authentication Enabled'
+        assert 'new two-factor authentication' in tasks[0].kwargs['text']
 
         r = r.follow()
-        assert_in('Recovery Codes', r)
+        assert 'Recovery Codes' in r
 
         # Confirm any pre-existing sessions have to re-authenticate
         r = other_session.app.get('/auth/preferences/')
-        assert_in('/auth/?return_to', r.headers['Location'])
+        assert '/auth/?return_to' in r.headers['Location']
         other_session.tearDown()
 
     def test_reset_totp(self):
@@ -2543,28 +2542,28 @@ class TestTwoFactor(TestController):
 
         # access page
         r = self.app.get('/auth/preferences/totp_new')
-        assert_in('Password Confirmation', r)
+        assert 'Password Confirmation' in r
 
         # reconfirm password to get to it
         r.form['password'] = 'foo'
         r = r.form.submit()
 
         # confirm warning message, and key is not changed yet
-        assert_in('Scan this', r)
-        assert_in('Or enter setup key: ', r)
-        assert_in('this will invalidate your previous', r)
+        assert 'Scan this' in r
+        assert 'Or enter setup key: ' in r
+        assert 'this will invalidate your previous' in r
         current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
-        assert_equal(self.sample_key, current_key)
+        assert self.sample_key == current_key
 
         # incorrect submission
         form = r.forms['totp_set']
         form['code'] = ''
         r = form.submit()
-        assert_in('Invalid', r)
+        assert 'Invalid' in r
 
         # still unchanged key
         current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
-        assert_equal(self.sample_key, current_key)
+        assert self.sample_key == current_key
 
         # valid submission
         new_key = r.session['totp_new_key']
@@ -2573,13 +2572,12 @@ class TestTwoFactor(TestController):
         form = r.forms['totp_set']
         form['code'] = code
         r = form.submit()
-        assert_equal('Two factor authentication has now been set up.', json.loads(self.webflash(r))['message'],
-                     self.webflash(r))
+        assert 'Two factor authentication has now been set up.' == json.loads(self.webflash(r))['message'], self.webflash(r)
 
         # new key in place
         current_key = TotpService.get().get_secret_key(M.User.query.get(username='test-admin'))
-        assert_equal(new_key, current_key)
-        assert_not_equal(self.sample_key, current_key)
+        assert new_key == current_key
+        assert self.sample_key != current_key
 
     def test_disable(self):
         self._init_totp()
@@ -2592,26 +2590,25 @@ class TestTwoFactor(TestController):
         r = form.submit()
 
         # confirm first, no change
-        assert_in('Password Confirmation', r)
+        assert 'Password Confirmation' in r
         user = M.User.query.get(username='test-admin')
-        assert_equal(user.get_pref('multifactor'), True)
+        assert user.get_pref('multifactor') == True
 
         # confirm submit, everything goes off
         r.form['password'] = 'foo'
         with audits('Disabled multifactor TOTP', user=True):
             r = r.form.submit()
-            assert_equal('Multifactor authentication has now been disabled.', json.loads(self.webflash(r))['message'],
-                         self.webflash(r))
+            assert 'Multifactor authentication has now been disabled.' == json.loads(self.webflash(r))['message'], self.webflash(r)
         user = M.User.query.get(username='test-admin')
-        assert_equal(user.get_pref('multifactor'), False)
-        assert_equal(TotpService().get().get_secret_key(user), None)
-        assert_equal(RecoveryCodeService().get().get_codes(user), [])
+        assert user.get_pref('multifactor') == False
+        assert TotpService().get().get_secret_key(user) == None
+        assert RecoveryCodeService().get().get_codes(user) == []
 
         # email confirmation
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Disabled')
-        assert_in('disabled two-factor authentication', tasks[0].kwargs['text'])
+        assert len(tasks) == 1
+        assert tasks[0].kwargs['subject'] == 'Two-Factor Authentication Disabled'
+        assert 'disabled two-factor authentication' in tasks[0].kwargs['text']
 
     def test_login_totp(self):
         self._init_totp()
@@ -2636,7 +2633,7 @@ class TestTwoFactor(TestController):
         r.form['code'] = 'invalid-code'
         with audits('Multifactor login - invalid code', user=True):
             r = r.form.submit()
-        assert_in('Invalid code', r)
+        assert 'Invalid code' in r
         assert not r.session.get('username')
 
         # use a valid code
@@ -2647,7 +2644,7 @@ class TestTwoFactor(TestController):
             r = r.form.submit()
 
         # confirm login and final page
-        assert_equal(r.session['username'], 'test-admin')
+        assert r.session['username'] == 'test-admin'
         assert r.location.endswith('/p/foo'), r
 
     def test_login_rate_limit(self):
@@ -2669,7 +2666,7 @@ class TestTwoFactor(TestController):
         for i in range(3):
             r.form['code'] = 'invalid-code'
             r = r.form.submit()
-            assert_in('Invalid code', r)
+            assert 'Invalid code' in r
 
         # use a valid code, but it'll hit rate limit
         totp = TotpService().Totp(self.sample_key)
@@ -2678,7 +2675,7 @@ class TestTwoFactor(TestController):
         with audits('Multifactor login - rate limit', user=True):
             r = r.form.submit()
 
-        assert_in('rate limit exceeded', r)
+        assert 'rate limit exceeded' in r
         assert not r.session.get('username')
 
     def test_login_totp_disrupted(self):
@@ -2705,11 +2702,10 @@ class TestTwoFactor(TestController):
         r = r.form.submit()
 
         # sent back to regular login
-        assert_equal('Your multifactor login was disrupted, please start over.',
-                     json.loads(self.webflash(r))['message'],
-                     self.webflash(r))
+        assert ('Your multifactor login was disrupted, please start over.' ==
+                     json.loads(self.webflash(r))['message']), self.webflash(r)
         r = r.follow()
-        assert_in('Password Login', r)
+        assert 'Password Login' in r
 
     def test_login_recovery_code(self):
         self._init_totp()
@@ -2735,7 +2731,7 @@ class TestTwoFactor(TestController):
         # try an invalid code
         r.form['code'] = 'invalid-code'
         r = r.form.submit()
-        assert_in('Invalid code', r)
+        assert 'Invalid code' in r
         assert not r.session.get('username')
 
         # use a valid code
@@ -2748,11 +2744,11 @@ class TestTwoFactor(TestController):
             r = r.form.submit()
 
         # confirm login and final page
-        assert_equal(r.session['username'], 'test-admin')
+        assert r.session['username'] == 'test-admin'
         assert r.location.endswith('/p/foo'), r
 
         # confirm code used up
-        assert_not_in(recovery_code, RecoveryCodeService().get().get_codes(user))
+        assert recovery_code not in RecoveryCodeService().get().get_codes(user)
 
     @patch('allura.lib.plugin.AuthenticationProvider.hibp_password_check_enabled', Mock(return_value=True))
     def test_login_totp_with_hibp(self):
@@ -2785,7 +2781,7 @@ class TestTwoFactor(TestController):
             r = r.form.submit()
 
         # confirm login and final page
-        assert_equal(r.session['username'], 'test-admin')
+        assert r.session['username'] == 'test-admin'
         assert r.location.endswith('/p/foo'), r
 
     def test_view_key(self):
@@ -2793,13 +2789,13 @@ class TestTwoFactor(TestController):
 
         with out_audits(user=True):
             r = self.app.get('/auth/preferences/totp_view')
-            assert_in('Password Confirmation', r)
+            assert 'Password Confirmation' in r
 
         with audits('Viewed multifactor TOTP config page', user=True):
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_in('Scan this', r)
-            assert_in(f'Or enter setup key: {self.sample_b32}', r)
+            assert 'Scan this' in r
+            assert f'Or enter setup key: {self.sample_b32}' in r
 
     def test_view_recovery_codes_and_regen(self):
         self._init_totp()
@@ -2807,14 +2803,14 @@ class TestTwoFactor(TestController):
         # reconfirm password
         with out_audits(user=True):
             r = self.app.get('/auth/preferences/multifactor_recovery')
-            assert_in('Password Confirmation', r)
+            assert 'Password Confirmation' in r
 
         # actual visit
         with audits('Viewed multifactor recovery codes', user=True):
             r.form['password'] = 'foo'
             r = r.form.submit()
-            assert_in('Download', r)
-            assert_in('Print', r)
+            assert 'Download' in r
+            assert 'Print' in r
 
         # regenerate codes
         with audits('Regenerated multifactor recovery codes', user=True):
@@ -2822,9 +2818,9 @@ class TestTwoFactor(TestController):
 
         # email confirmation
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Recovery Codes Regenerated')
-        assert_in('regenerated', tasks[0].kwargs['text'])
+        assert len(tasks) == 1
+        assert tasks[0].kwargs['subject'] == 'Two-Factor Recovery Codes Regenerated'
+        assert 'regenerated' in tasks[0].kwargs['text']
 
     def test_send_links(self):
         r = self.app.get('/auth/preferences/totp_new')
@@ -2834,7 +2830,7 @@ class TestTwoFactor(TestController):
         r = r.forms['totp_send_link'].submit()
 
         tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Two-Factor Authentication Apps')
-        assert_in('itunes.apple.com', tasks[0].kwargs['text'])
-        assert_in('play.google.com', tasks[0].kwargs['text'])
+        assert len(tasks) == 1
+        assert tasks[0].kwargs['subject'] == 'Two-Factor Authentication Apps'
+        assert 'itunes.apple.com' in tasks[0].kwargs['text']
+        assert 'play.google.com' in tasks[0].kwargs['text']

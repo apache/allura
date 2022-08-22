@@ -133,8 +133,8 @@ class TestFile(TestCase):
             response_body = list(f.serve())
             etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
-            assert_equal([b'test1'], response_body)
-            assert_equal(response.content_type, f.content_type)
+            assert [b'test1'] == response_body
+            assert response.content_type == f.content_type
             assert 'Content-Disposition' not in response.headers
 
     def test_serve_embed_false(self):
@@ -146,9 +146,9 @@ class TestFile(TestCase):
             response_body = list(f.serve(embed=False))
             etag_cache.assert_called_once_with('{}?{}'.format(f.filename,
                                                                f._id.generation_time).encode('utf-8'))
-            assert_equal([b'test1'], response_body)
-            assert_equal(response.content_type, f.content_type)
-            assert_equal(response.headers['Content-Disposition'],
+            assert [b'test1'] == response_body
+            assert response.content_type == f.content_type
+            assert (response.headers['Content-Disposition'] ==
                          'attachment;filename="te%20s%E0%AD%AE1.txt"')
 
     def test_image(self):
@@ -199,8 +199,8 @@ class TestFile(TestCase):
         attachment = M.BaseAttachment.save_attachment('user.png', fp,
                                                       save_original=True)
         assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
-        assert_equal(attachment.length, 500)
-        assert_equal(attachment.filename, 'user.png')
+        assert attachment.length == 500
+        assert attachment.filename == 'user.png'
 
     def test_attachment_name_encoding(self):
         path = os.path.join(os.path.dirname(__file__),
@@ -211,7 +211,7 @@ class TestFile(TestCase):
             'Strukturpr\xfcfung.dvi', fp,
             save_original=True)
         assert not isinstance(attachment, tuple)   # tuple is for (img, thumb) pairs
-        assert_equal(attachment.filename, 'Strukturpr\xfcfung.dvi')
+        assert attachment.filename == 'Strukturpr\xfcfung.dvi'
 
     def _assert_content(self, f, content):
         result = f.rfile().read()

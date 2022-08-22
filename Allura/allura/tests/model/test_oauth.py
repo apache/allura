@@ -38,6 +38,6 @@ def test_upsert():
     token1 = M.OAuthConsumerToken.upsert(name, admin)
     token2 = M.OAuthConsumerToken.upsert(name, admin)
     token3 = M.OAuthConsumerToken.upsert(name, user)
-    assert_equal(M.OAuthConsumerToken.query.find().count(), 2)
-    assert_equal(token1._id, token2._id)
-    assert_not_equal(token1._id, token3._id)
+    assert M.OAuthConsumerToken.query.find().count() == 2
+    assert token1._id == token2._id
+    assert token1._id != token3._id

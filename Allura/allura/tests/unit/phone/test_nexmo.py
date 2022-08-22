@@ -38,44 +38,44 @@ class TestPhoneService:
                     'brand': 'Allura',
                     'api_key': 'test-api-key',
                     'api_secret': 'test-api-secret'}
-        assert_equal(expected, res)
+        assert expected == res
 
         self.phone.config['phone.lang'] = 'it-it'
         res = self.phone.add_common_params(params)
         expected['lg'] = 'it-it'
-        assert_equal(expected, res)
+        assert expected == res
 
     def test_error(self):
         res = self.phone.error()
         expected = {'status': 'error',
                     'error': 'Failed sending request to Nexmo'}
-        assert_equal(expected, res)
+        assert expected == res
         # not allowed code
         res = self.phone.error(code='2', msg='text')
-        assert_equal(expected, res)
+        assert expected == res
         # allowed code
         res = self.phone.error(code='15', msg='text')
         expected = {'status': 'error', 'error': 'text'}
-        assert_equal(expected, res)
+        assert expected == res
 
         # invalid format, possibly US
         res = self.phone.error(code='3', msg='Invalid value for parameter: number', number='8005551234')
-        assert_equal(res['status'], 'error')
-        assert_in('Invalid value for parameter: number', res['error'])
-        assert_in('country code', res['error'])
-        assert_in('US', res['error'])
+        assert res['status'] == 'error'
+        assert 'Invalid value for parameter: number' in res['error']
+        assert 'country code' in res['error']
+        assert 'US' in res['error']
 
         # invalid format, not US
         res = self.phone.error(code='3', msg='Invalid value for parameter: number', number='738005551234')
-        assert_equal(res['status'], 'error')
-        assert_in('Invalid value for parameter: number', res['error'])
-        assert_in('country code', res['error'])
-        assert_not_in('US', res['error'])
+        assert res['status'] == 'error'
+        assert 'Invalid value for parameter: number' in res['error']
+        assert 'country code' in res['error']
+        assert 'US' not in res['error']
 
     def test_ok(self):
         res = self.phone.ok(request_id='123', other='smth')
         expected = {'status': 'ok', 'request_id': '123', 'other': 'smth'}
-        assert_equal(expected, res)
+        assert expected == res
 
     @patch('allura.lib.phone.nexmo.requests', autospec=True)
     def test_verify(self, req):
@@ -93,7 +93,7 @@ class TestPhoneService:
 
         resp = self.phone.verify('1234567890')
         expected = {'status': 'ok', 'request_id': 'test-req-id'}
-        assert_equal(expected, resp)
+        assert expected == resp
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/json',
             data=data,
@@ -106,7 +106,7 @@ class TestPhoneService:
         }
         resp = self.phone.verify('1234567890')
         expected = {'status': 'error', 'error': 'Something went wrong'}
-        assert_equal(expected, resp)
+        assert expected == resp
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/json',
             data=data,
@@ -118,7 +118,7 @@ class TestPhoneService:
         resp = self.phone.verify('1234567890')
         expected = {'status': 'error',
                     'error': 'Failed sending request to Nexmo'}
-        assert_equal(expected, resp)
+        assert expected == resp
 
     @patch('allura.lib.phone.nexmo.requests', autospec=True)
     def test_check(self, req):
@@ -136,7 +136,7 @@ class TestPhoneService:
 
         resp = self.phone.check('test-req-id', '1234')
         expected = {'status': 'ok', 'request_id': 'test-req-id'}
-        assert_equal(expected, resp)
+        assert expected == resp
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/check/json',
             data=data,
@@ -149,7 +149,7 @@ class TestPhoneService:
         }
         resp = self.phone.check('test-req-id', '1234')
         expected = {'status': 'error', 'error': 'Something went wrong'}
-        assert_equal(expected, resp)
+        assert expected == resp
         req.post.assert_called_once_with(
             'https://api.nexmo.com/verify/check/json',
             data=data,
@@ -161,4 +161,4 @@ class TestPhoneService:
         resp = self.phone.check('req-id', '1234')
         expected = {'status': 'error',
                     'error': 'Failed sending request to Nexmo'}
-        assert_equal(expected, resp)
+        assert expected == resp

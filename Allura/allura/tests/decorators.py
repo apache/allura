@@ -237,7 +237,6 @@ def assert_logmsg_and_no_warnings_or_errors(logs, msg):
 def assert_equivalent_urls(url1, url2):
     base1, _, qs1 = url1.partition('?')
     base2, _, qs2 = url2.partition('?')
-    assert_equal(
-        (base1, parse_qs(qs1)),
-        (base2, parse_qs(qs2)),
-    )
+    assert (
+        (base1, parse_qs(qs1)) ==
+        (base2, parse_qs(qs2)))

@@ -54,25 +54,25 @@ class TestGoogleAuthenticatorFile:
 
     def test_parse(self):
         gaf = GoogleAuthenticatorFile.load(self.sample)
-        assert_equal(gaf.key, b'\xf8\x97\xbb/\xfd\xf2%\x01S\xa7\x8dZ\x07\x0c\\\xe4')
-        assert_equal(gaf.options['RATE_LIMIT'], '3 30')
-        assert_equal(gaf.options['DISALLOW_REUSE'], None)
-        assert_equal(gaf.options['TOTP_AUTH'], None)
-        assert_equal(gaf.recovery_codes, [
+        assert gaf.key == b'\xf8\x97\xbb/\xfd\xf2%\x01S\xa7\x8dZ\x07\x0c\\\xe4'
+        assert gaf.options['RATE_LIMIT'] == '3 30'
+        assert gaf.options['DISALLOW_REUSE'] == None
+        assert gaf.options['TOTP_AUTH'] == None
+        assert gaf.recovery_codes == [
             '43504045',
             '16951331',
             '16933944',
             '38009587',
             '49571579',
-        ])
+        ]
 
     def test_dump(self):
         gaf = GoogleAuthenticatorFile.load(self.sample)
-        assert_equal(gaf.dump(), self.sample)
+        assert gaf.dump() == self.sample
 
     def test_dump2(self):
         gaf = GoogleAuthenticatorFile.load(self.sample2)
-        assert_equal(gaf.dump(), self.sample2)
+        assert gaf.dump() == self.sample2
 
 
 class GenericTotpService(TotpService):
@@ -138,21 +138,21 @@ class TestAnyTotpServiceImplementation:
     def test_none(self):
         srv = self.Service()
         user = self.mock_user()
-        assert_equal(None, srv.get_secret_key(user))
+        assert None == srv.get_secret_key(user)
 
     def test_set_get(self):
         srv = self.Service()
         user = self.mock_user()
         srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
+        assert self.sample_key == srv.get_secret_key(user)
 
     def test_delete(self):
         srv = self.Service()
         user = self.mock_user()
         srv.set_secret_key(user, self.sample_key)
-        assert_equal(self.sample_key, srv.get_secret_key(user))
+        assert self.sample_key == srv.get_secret_key(user)
         srv.set_secret_key(user, None)
-        assert_equal(None, srv.get_secret_key(user))
+        assert None == srv.get_secret_key(user)
 
     @patch('allura.lib.multifactor.time')
     def test_rate_limiting(self, time):
@@ -225,8 +225,8 @@ class TestRecoveryCodeService:
 
         recovery.regenerate_codes(user)
 
-        assert_equal(recovery.saved_user, user)
-        assert_equal(len(recovery.saved_codes), asint(config.get('auth.multifactor.recovery_code.count', 10)))
+        assert recovery.saved_user == user
+        assert len(recovery.saved_codes) == asint(config.get('auth.multifactor.recovery_code.count', 10))
 
 
 class TestAnyRecoveryCodeServiceImplementation:
@@ -239,7 +239,7 @@ class TestAnyRecoveryCodeServiceImplementation:
     def test_get_codes_none(self):
         recovery = self.Service()
         user = self.mock_user()
-        assert_equal(recovery.get_codes(user), [])
+        assert recovery.get_codes(user) == []
 
     def test_regen_get_codes(self):
         recovery = self.Service()
@@ -255,7 +255,7 @@ class TestAnyRecoveryCodeServiceImplementation:
             '67890'
         ]
         recovery.replace_codes(user, codes)
-        assert_equal(recovery.get_codes(user), codes)
+        assert recovery.get_codes(user) == codes
 
     def test_verify_fail(self):
         recovery = self.Service()
@@ -274,8 +274,8 @@ class TestAnyRecoveryCodeServiceImplementation:
         ]
         recovery.replace_codes(user, codes)
         result = recovery.verify_and_remove_code(user, '12345')
-        assert_equal(result, True)
-        assert_equal(recovery.get_codes(user), ['67890'])
+        assert result == True
+        assert recovery.get_codes(user) == ['67890']
 
     def test_rate_limiting(self):
         recovery = self.Service()

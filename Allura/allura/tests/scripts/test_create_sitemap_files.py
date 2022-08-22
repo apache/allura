@@ -50,9 +50,9 @@ class TestCreateSitemapFiles:
             xml_index = ET.parse(os.path.join(tmpdir.path, 'sitemap.xml'))
             ns = {'ns0': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
             locs = [loc.text for loc in xml_index.findall('ns0:sitemap/ns0:loc', ns)]
-            assert_in('http://localhost/allura_sitemap/sitemap-0.xml', locs)
+            assert 'http://localhost/allura_sitemap/sitemap-0.xml' in locs
 
             xml_0 = ET.parse(os.path.join(tmpdir.path, 'sitemap-0.xml'))
             urls = [loc.text for loc in xml_0.findall('ns0:url/ns0:loc', ns)]
-            assert_not_in('http://localhost/p/wiki/', urls)  # blank wiki pages omitted from sitemap
-            assert_in('http://localhost/p/test/sub1/', urls)
+            assert 'http://localhost/p/wiki/' not in urls  # blank wiki pages omitted from sitemap
+            assert 'http://localhost/p/test/sub1/' in urls

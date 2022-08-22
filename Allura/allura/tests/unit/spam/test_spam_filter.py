@@ -88,9 +88,9 @@ class TestSpamFilterFunctional:
         ThreadLocalORMSession.flush_all()
 
         results = SpamCheckResult.query.find().all()
-        assert_equal(len(results), 1)
-        assert_equal(results[0].result, True)
-        assert_equal(results[0].user.username, 'test-user')
+        assert len(results) == 1
+        assert results[0].result == True
+        assert results[0].user.username == 'test-user'
 
 
 class TestChainedSpamFilter:
@@ -101,8 +101,8 @@ class TestChainedSpamFilter:
         checker = SpamFilter.get(config, entry_points)
         assert isinstance(checker, ChainedSpamFilter)
         assert len(checker.filters) == 2, checker.filters
-        assert_equal(checker.filters[0].config, {'spam.method': 'mock1', 'spam.settingA': 'bcd'})
-        assert_equal(checker.filters[1].config, {'spam.method': 'mock2', 'spam.settingA': 'bcd'})
+        assert checker.filters[0].config == {'spam.method': 'mock1', 'spam.settingA': 'bcd'}
+        assert checker.filters[1].config == {'spam.method': 'mock2', 'spam.settingA': 'bcd'}
 
         assert checker.check()  # first filter errors out (but ignored by `exceptionless`), and 2nd returns True
 

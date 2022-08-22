@@ -55,16 +55,16 @@ class TestDiscuss(TestDiscussBase):
         # remove tool-wide subscription, so it doesn't interfere
         M.Mailbox.query.remove(dict(user_id=user._id, app_config_id=thread.app_config_id))
 
-        assert_false(self._is_subscribed(user, thread))
+        assert not self._is_subscribed(user, thread)
         link = self._thread_link()
         params = {
             'threads-0._id': thread_id,
             'threads-0.subscription': 'on'}
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
-        assert_true(self._is_subscribed(user, thread))
+        assert self._is_subscribed(user, thread)
         params = {'threads-0._id': thread_id}
         r = self.app.post('/wiki/_discuss/subscribe', params=params)
-        assert_false(self._is_subscribed(user, thread))
+        assert not self._is_subscribed(user, thread)
 
     def _make_post(self, text):
         thread_link = self._thread_link()
@@ -90,7 +90,7 @@ class TestDiscuss(TestDiscussBase):
         thread_link = self._thread_link()
         r = self._make_post('This is a post')
         assert 'This is a post' in r, r
-        assert_equal(check_spam.call_args[0][0], 'This is a post')
+        assert check_spam.call_args[0][0] == 'This is a post'
 
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
@@ -289,7 +289,7 @@ class TestDiscuss(TestDiscussBase):
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'moderate', params=dict(spam='spam'))
-        assert_equal(r.json, {"result": "success"})
+        assert r.json == {"result": "success"}
         post = M.Post.query.find().first()
         post_username = post.author().username
         moderate_link = '/p/test/wiki/_discuss/moderate'
@@ -343,15 +343,15 @@ class TestDiscuss(TestDiscussBase):
         post_link = str(
             r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         post = M.Post.query.find().first()
-        assert_equal(post.status, 'pending')
+        assert post.status == 'pending'
         r = self.app.get('/wiki/feed.rss')
-        assert_not_in('Post needs moderation!', r)
+        assert 'Post needs moderation!' not in r
 
         self.app.post(post_link + 'moderate', params=dict(approve='approve'))
         post = M.Post.query.find().first()
-        assert_equal(post.status, 'ok')
+        assert post.status == 'ok'
         r = self.app.get('/wiki/feed.rss')
-        assert_in('Post needs moderation!', r)
+        assert 'Post needs moderation!' in r
 
     def test_post_paging(self):
         thread_link = self._thread_link()

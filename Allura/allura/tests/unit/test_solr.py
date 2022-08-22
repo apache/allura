@@ -36,14 +36,14 @@ class TestSolr(unittest.TestCase):
         solr = Solr(servers, commit=False, commitWithin='10000')
         calls = [mock.call('server1'), mock.call('server2')]
         pysolr.Solr.assert_has_calls(calls)
-        assert_equal(len(solr.push_pool), 2)
+        assert len(solr.push_pool) == 2
 
         pysolr.reset_mock()
         solr = Solr(servers, 'server3', commit=False, commitWithin='10000')
         calls = [mock.call('server1'), mock.call('server2'),
                  mock.call('server3')]
         pysolr.Solr.assert_has_calls(calls)
-        assert_equal(len(solr.push_pool), 2)
+        assert len(solr.push_pool) == 2
 
     @mock.patch('allura.lib.solr.pysolr')
     def test_add(self, pysolr):
@@ -124,21 +124,21 @@ class TestSearchIndexable(unittest.TestCase):
 
     def test_solarize_empty_index(self):
         self.obj.index = lambda: None
-        assert_equal(self.obj.solarize(), None)
+        assert self.obj.solarize() == None
 
     def test_solarize_doc_without_text(self):
         self.obj.index = lambda: dict()
-        assert_equal(self.obj.solarize(), dict(text=''))
+        assert self.obj.solarize() == dict(text='')
 
     def test_solarize_strips_markdown(self):
         self.obj.index = lambda: dict(text='# Header')
-        assert_equal(self.obj.solarize(), dict(text='Header'))
+        assert self.obj.solarize() == dict(text='Header')
 
     def test_solarize_html_in_text(self):
         self.obj.index = lambda: dict(text='<script>a(1)</script>')
-        assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
+        assert self.obj.solarize() == dict(text='<script>a(1)</script>')
         self.obj.index = lambda: dict(text='&lt;script&gt;a(1)&lt;/script&gt;')
-        assert_equal(self.obj.solarize(), dict(text='<script>a(1)</script>'))
+        assert self.obj.solarize() == dict(text='<script>a(1)</script>')
 
 
 class TestSearch_app(unittest.TestCase):
@@ -156,7 +156,7 @@ class TestSearch_app(unittest.TestCase):
         url_fn.side_effect = ['the-score-url', 'the-date-url']
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             resp = search_app(q='foo bar')
-        assert_equal(resp, dict(
+        assert resp == dict(
             q='foo bar',
             history=None,
             results=[],
@@ -167,7 +167,7 @@ class TestSearch_app(unittest.TestCase):
             sort_score_url='the-score-url',
             sort_date_url='the-date-url',
             sort_field='score',
-        ))
+        )
 
     @td.with_wiki
     @mock.patch('allura.lib.search.g.solr.search')
@@ -196,7 +196,7 @@ class TestSearch_app(unittest.TestCase):
         with h.push_context('test', 'wiki', neighborhood='Projects'):
             resp = search_app(q='foo bar')
 
-        assert_equal(resp, dict(
+        assert resp == dict(
             q='foo bar',
             history=None,
             count=2,
@@ -224,14 +224,14 @@ class TestSearch_app(unittest.TestCase):
                 'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
                 '_artifact': None,
             }]
-        ))
+        )
 
     def test_escape_solr_arg(self):
         text = 'some: weird "text" with symbols'
         escaped_text = escape_solr_arg(text)
-        assert_equal(escaped_text, r'some\: weird \"text\" with symbols')
+        assert escaped_text == r'some\: weird \"text\" with symbols'
 
     def test_escape_solr_arg_with_backslash(self):
         text = 'some: weird "text" with \\ backslash'
         escaped_text = escape_solr_arg(text)
-        assert_equal(escaped_text, r'some\: weird \"text\" with \\ backslash')
+        assert escaped_text == r'some\: weird \"text\" with \\ backslash'
